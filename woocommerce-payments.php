@@ -9,3 +9,14 @@
  * Domain Path: /languages
  * Version: 0.1.0
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+function wcpay_init() {
+	include_once dirname( __FILE__ ) . '/includes/class-wc-payments.php';
+	WC_Payments::init( plugin_basename( __FILE__ ) );
+}
+
+add_action( 'plugins_loaded', 'wcpay_init' );
