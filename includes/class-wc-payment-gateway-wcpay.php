@@ -1,13 +1,13 @@
 <?php
 
-class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway {
+class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const GATEWAY_ID = 'woocommerce_payments';
 
 	public function __construct() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon
-		$this->has_fields         = false;
+		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
 
@@ -40,6 +40,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway {
 		$this->description  = $this->get_option( 'description' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+	}
+
+	public function payment_fields() {
+		echo $this->get_description();
 	}
 
 	public function process_payment( $order_id ) {
