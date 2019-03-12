@@ -8,6 +8,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const GATEWAY_ID = 'woocommerce_payments';
 
+	public static function get_settings_url() {
+		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
+	}
+
 	public function __construct() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon
