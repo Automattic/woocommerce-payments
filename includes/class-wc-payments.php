@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments {
 
 	public static function init( $plugin_name ) {
-		// TODO: bail if WooCommerce / WordPress / Gutenberg / WC-Admin versions required are not present
+		// TODO: (#7) bail if WooCommerce / WordPress / Gutenberg / WC-Admin versions required are not present
 
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		add_filter( 'plugin_action_links_' . $plugin_name, array( __CLASS__, 'add_plugin_links' ) );
