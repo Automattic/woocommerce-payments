@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const GATEWAY_ID = 'woocommerce_payments';
