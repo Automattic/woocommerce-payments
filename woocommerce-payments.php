@@ -8,6 +8,8 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * Version: 0.1.0
+ *
+ * @package WooCommerce\Payments
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
