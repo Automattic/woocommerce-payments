@@ -10,9 +10,13 @@
       "composer/installers": "1.6.0"
     },
     "require-dev": {
+      "phpunit/phpunit": "6.5.13",
       "woocommerce/woocommerce-sniffs": "0.0.6"
     },
     "scripts": {
+      "test": [
+        "phpunit"
+      ],
       "phpcs": [
         "phpcs -s -p"
       ],
@@ -22,6 +26,7 @@
     },
     "extra": {
       "scripts-description": {
+        "test": "Run unit tests",
         "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
         "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
       }
