@@ -1,0 +1,29 @@
+{
+    "name": "woocommerce/payments",
+    "description": "WooCommerce Payments",
+    "homepage": "https://github.com/Automattic/woocommerce-payments",
+    "type": "wordpress-plugin",
+    "license": "GPL-3.0-or-later",
+    "prefer-stable": true,
+    "minimum-stability": "dev",
+    "require": {
+      "composer/installers": "1.6.0"
+    },
+    "require-dev": {
+      "woocommerce/woocommerce-sniffs": "0.0.6"
+    },
+    "scripts": {
+      "phpcs": [
+        "phpcs -s -p"
+      ],
+      "phpcbf": [
+        "phpcbf -p"
+      ]
+    },
+    "extra": {
+      "scripts-description": {
+        "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
+        "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
+      }
+    }
+  }
