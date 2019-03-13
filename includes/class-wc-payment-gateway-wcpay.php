@@ -4,10 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+/**
+ * Gateway class for WooCommerce Payments
+ */
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
+	/**
+	 * Internal ID of the payment gateway.
+	 * @type string
+	 */
 	const GATEWAY_ID = 'woocommerce_payments';
 
+	/**
+	 * @return string URL of the configuration screen for this gateway
+	 */
 	public static function get_settings_url() {
 		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
 	}
@@ -50,10 +60,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
+	/**
+	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 */
 	public function payment_fields() {
 		echo $this->get_description();
 	}
 
+	/**
+	 * Process the payment for a given order.
+	 * @param int $order_id Order ID to process the payment for.
+	 *
+	 * @return array|null
+	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$amount = $order->get_total();

@@ -14,6 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
+ * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
+ */
 function wcpay_init() {
 	include_once dirname( __FILE__ ) . '/includes/class-wc-payments.php';
 	WC_Payments::init( plugin_basename( __FILE__ ) );
