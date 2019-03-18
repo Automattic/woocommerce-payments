@@ -11,14 +11,108 @@ class WC_Payments {
 
 	/**
 	 * Entry point to the initialization logic.
-	 * @param $plugin_name string The extension's plugin name. It will be "woocommerce-payments/woocommerce-payments.php" unless the user renamed the plugin directory.
 	 */
-	public static function init( $plugin_name ) {
-		// TODO: (#7) bail if WooCommerce / WordPress / Gutenberg / WC-Admin versions required are not present
+	public static function init() {
+		if ( ! self::check_plugin_dependencies( true ) ) {
+			add_filter( 'admin_notices', array( __CLASS__, 'check_plugin_dependencies' ) );
+			return;
+		}
 
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
-		add_filter( 'plugin_action_links_' . $plugin_name, array( __CLASS__, 'add_plugin_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
+	}
+
+	/**
+     * Prints the given message in an "admin notice" wrapper with "error" class.
+	 * @param $message string Message to print. Can contain HTML.
+	 */
+	private static function display_admin_error( $message ) {
+		?>
+		<div class="notice notice-error">
+			<p><?php echo $message; ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Checks if all the dependencies needed to run this plugin are present
+	 * TODO: Before public launch, revisit these dependencies. We may need to bump the WC dependency so we require one where WC-Admin is already in Core
+	 * @param bool $silent True if the function should just return true/false, False if this function should display notice messages for failed dependencies
+	 *
+	 * @return bool True if all dependencies are met, false otherwise
+	 */
+	public static function check_plugin_dependencies( $silent ) {
+		$plugin_headers = get_file_data( WCPAY_PLUGIN_FILE, array(
+			// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916
+			'WCRequires' => 'WC requires at least',
+			// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
+			// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead
+			'RequiresWP' => 'Requires WP',
+		) );
+		$wc_version = $plugin_headers['WCRequires'];
+		$wp_version = $plugin_headers['RequiresWP'];
+
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			if ( ! $silent ) {
+				$message = sprintf(
+				    /* translators: %1: WooCommerce plugin URL */
+					__( 'WooCommerce Payments requires <a href="%1$s">WooCommerce</a> to be installed and active.', 'woocommerce-payments' ),
+					'https://wordpress.org/plugins/woocommerce/'
+				);
+
+				if ( current_user_can( 'install_plugins' ) ) {
+					$wc_plugin_name = 'woocommerce/woocommerce.php';
+					$wc_plugin_slug = 'woocommerce';
+					if ( validate_plugin( $wc_plugin_name ) ) {
+						$activate_url = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $wc_plugin_slug ), 'install-plugin_' . $wc_plugin_slug );
+						$message .= ' <a href="' . $activate_url . '">' . __( 'Install WooCommerce', 'woocommerce-payments' ) . '</a>' ;
+                    } else {
+						$activate_url = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $wc_plugin_name ), 'activate-plugin_' . $wc_plugin_name );
+						$message .= ' <a href="' . $activate_url . '">' . __( 'Activate WooCommerce', 'woocommerce-payments' ) . '</a>' ;
+                    }
+				}
+
+                self::display_admin_error( $message );
+			}
+			return false;
+		}
+
+		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
+			if ( ! $silent ) {
+			    $message = sprintf(
+			        /* translators: %1: required WC version number, %2: currently installed WC version number */
+				    __( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+				    $wc_version,
+				    WC_VERSION
+			    );
+			    if ( current_user_can( 'update_plugins' ) ) {
+			        // Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
+                    // on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version
+			        $message .= ' <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>' ;
+                }
+				self::display_admin_error( $message );
+			}
+			return false;
+		}
+
+		if ( version_compare( get_bloginfo( 'version' ), $wp_version, '<' ) ) {
+			if ( ! $silent ) {
+				$message = sprintf(
+				/* translators: %1: required WP version number, %2: currently installed WP version number */
+					__( 'WooCommerce Payments requires <strong>WordPress %1$s</strong> or greater (you are using %2$s).', 'woocommerce-payments' ),
+					$wp_version,
+					get_bloginfo( 'version' )
+				);
+				if ( current_user_can( 'update_core' ) ) {
+					$message .= ' <a href="' . admin_url( 'update-core.php' ). '">' . __( 'Update WordPress', 'woocommerce-payments' ) . '</a>' ;
+				}
+				self::display_admin_error( $message );
+			}
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
