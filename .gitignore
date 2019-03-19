@@ -6,7 +6,6 @@ project.properties
 .project
 .settings*
 .idea
-*.iml
 .vscode
 *.sublime-project
 *.sublime-workspace
