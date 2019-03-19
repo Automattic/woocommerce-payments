@@ -20,9 +20,21 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 require_once $_tests_dir . '/includes/functions.php';
 
 /**
+ * Returns WooCommerce main directory.
+ *
+ * @return string
+ */
+function wc_dir() {
+	return dirname( dirname( dirname( __FILE__ ) ) ) . '/woocommerce';
+}
+
+/**
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
+	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
+	require_once wc_dir() . '/woocommerce.php';
+
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
