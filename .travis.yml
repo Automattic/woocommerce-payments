@@ -1,10 +1,10 @@
 language: php
 dist: trusty
 
-cache:
-  directories:
-    - vendor
-    - $HOME/.composer/cache
+# cache:
+#   directories:
+#     - vendor
+#     - $HOME/.composer/cache
 
 # Test main supported versions of PHP against latest WP.
 php:
