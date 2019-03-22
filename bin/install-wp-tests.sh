@@ -178,4 +178,4 @@ install_woocommerce() {
 install_wp
 install_test_suite
 install_db
-install_woocommerce_plugin
+install_woocommerce
