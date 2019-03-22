@@ -170,7 +170,7 @@ install_plugins() {
 
 	# Install and activate the WooCommerce Payments plugin
 	# php wp-cli.phar plugin install https://github.com/$REPO/archive/$BRANCH.zip --activate
-	php wp-cli.phar plugin install https://github.com/Automattic/woocommerce-payments/archive/add/travisci.zip --activate
+	# php wp-cli.phar plugin install https://github.com/Automattic/woocommerce-payments/archive/add/travisci.zip --activate
 	git clone git@github.com:Automattic/woocommerce-payments.git
 
 	# Back to original dir
