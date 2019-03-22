@@ -37,6 +37,7 @@ matrix:
 
 before_script:
   - export PATH="$HOME/vendor/bin:$PATH"
+  - composer global require "phpunit/phpunit=4.8.*|6.5.*"
   - composer install
   - bash bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION
 
