@@ -150,7 +150,7 @@ install_db() {
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
-install_woocommerce_plugin() {
+install_plugins() {
 	WP_SITE_URL="http://local.wordpress.test"
 	WORKING_DIR="$PWD"
 
@@ -168,6 +168,11 @@ install_woocommerce_plugin() {
 	cd "$WP_CORE_DIR"
 	php wp-cli.phar plugin activate woocommerce
 
+	# Install and activate the WooCommerce Payments plugin
+	# php wp-cli.phar plugin install https://github.com/$REPO/archive/$BRANCH.zip --activate
+	php wp-cli.phar plugin install https://github.com/Automattic/woocommerce-payments/archive/add/travisci.zip --activate
+	git clone git@github.com:Automattic/woocommerce-payments.git
+
 	# Back to original dir
 	cd "$WORKING_DIR"
 }
@@ -175,4 +180,4 @@ install_woocommerce_plugin() {
 install_wp
 install_test_suite
 install_db
-install_woocommerce_plugin
+install_plugins
