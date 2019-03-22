@@ -36,8 +36,12 @@ matrix:
   #   env: WP_VERSION=latest WP_MULTISITE=0
 
 before_script:
+  - echo $HOME
+  - echo $PWD
   - export PATH="$HOME/vendor/bin:$PATH"
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer global require "phpunit/phpunit=4.8.*|6.5.*"
+  - phpunit --version
   - composer install
   - bash bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION
 
