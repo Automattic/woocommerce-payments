@@ -42,7 +42,12 @@ before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - composer global require "phpunit/phpunit=4.8.*|6.5.*"
   - phpunit --version
-  - composer install
+  - |
+    # Run composer install only if we need it to run PHPCS
+    if [[ ${RUN_PHPCS} == 1 ]]; then
+      composer install
+    fi
+  # - composer install
   - bash bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION
 
 script:
