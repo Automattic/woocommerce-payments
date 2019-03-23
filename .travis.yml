@@ -8,7 +8,7 @@ dist: trusty
 
 # Test main supported versions of PHP against latest WP.
 php:
-  # - 5.6
+  - 5.6
   # - 7.0
   # - 7.1
   - 7.2
