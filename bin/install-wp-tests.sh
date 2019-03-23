@@ -150,34 +150,25 @@ install_db() {
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
-install_plugins() {
-	WP_SITE_URL="http://local.wordpress.test"
-	WORKING_DIR="$PWD"
+install_woocommerce() {
+	if [ "$TRAVIS_BUILD_DIR" !== "" ]; then
+		cd $TRAVIS_BUILD_DIR
+	fi
+	cd ..
+	git clone https://github.com/woocommerce/woocommerce.git
+	cd woocommerce
 
-	# Set up wp-cli
-	mkdir -p "$WP_CORE_DIR"
-	cd "$WP_CORE_DIR"
+	# if [ $WC_VERSION == 'latest' ]; then
+	# 	local WC_VERSION=$(get_latest_release)
+	# else
+	# 	local WC_VERSION=$WC_VERSION
+	# fi
 
-	curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-	php wp-cli.phar core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
-	php wp-cli.phar core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --path=$WP_CORE_DIR --skip-email
-
-	# Install WooCommerce using wp-cli
-	cd "wp-content/plugins/"
-	git clone --depth 1 https://github.com/woocommerce/woocommerce.git
-	cd "$WP_CORE_DIR"
-	php wp-cli.phar plugin activate woocommerce
-
-	# Install and activate the WooCommerce Payments plugin
-	# php wp-cli.phar plugin install https://github.com/$REPO/archive/$BRANCH.zip --activate
-	# php wp-cli.phar plugin install https://github.com/Automattic/woocommerce-payments/archive/add/travisci.zip --activate
-	git clone git@github.com:Automattic/woocommerce-payments.git
-
-	# Back to original dir
-	cd "$WORKING_DIR"
+	# git checkout $WC_VERSION
+	cd -
 }
 
 install_wp
 install_test_suite
 install_db
-install_plugins
+install_woocommerce
