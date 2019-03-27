@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 # ./vendor/bin/phpunit
-phpunit -c phpunit.xml
+
+elif [[ ${TRAVIS_PHP_VERSION:0:3} == "5.6" ]]; then
+	phpunit -c phpunit.xml
+else
+  ./vendor/bin/phpunit
+fi
+
 # WORKING_DIR="$PWD"
 # cd "$WP_CORE_DIR/wp-content/plugins/woocommerce-payments/"
 # phpunit --version
