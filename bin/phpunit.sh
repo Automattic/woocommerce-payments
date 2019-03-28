@@ -2,7 +2,7 @@
 
 # ./vendor/bin/phpunit
 
-elif [[ ${TRAVIS_PHP_VERSION:0:3} == "5.6" ]]; then
+if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.6" ]]; then
 	phpunit -c phpunit.xml
 else
   ./vendor/bin/phpunit
