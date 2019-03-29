@@ -53,6 +53,7 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
+		// Check if WooCommerce is installed and active
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			if ( ! $silent ) {
 				$message = sprintf(
@@ -65,9 +66,11 @@ class WC_Payments {
 					$wc_plugin_name = 'woocommerce/woocommerce.php';
 					$wc_plugin_slug = 'woocommerce';
 					if ( validate_plugin( $wc_plugin_name ) ) {
+					    // The plugin is installed, so it just needs to be enabled
 						$activate_url = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $wc_plugin_slug ), 'install-plugin_' . $wc_plugin_slug );
 						$message .= ' <a href="' . $activate_url . '">' . __( 'Install WooCommerce', 'woocommerce-payments' ) . '</a>' ;
 					} else {
+					    // The plugin is not installed
 						$activate_url = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $wc_plugin_name ), 'activate-plugin_' . $wc_plugin_name );
 						$message .= ' <a href="' . $activate_url . '">' . __( 'Activate WooCommerce', 'woocommerce-payments' ) . '</a>' ;
 					}
@@ -78,6 +81,7 @@ class WC_Payments {
 			return false;
 		}
 
+		// Check if the version of WooCommerce is compatible with WooCommerce Payments
 		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
 			if ( ! $silent ) {
 				$message = sprintf(
@@ -96,6 +100,7 @@ class WC_Payments {
 			return false;
 		}
 
+		// Check if the version of WordPress is compatible with WooCommerce Payments
 		if ( version_compare( get_bloginfo( 'version' ), $wp_version, '<' ) ) {
 			if ( ! $silent ) {
 				$message = sprintf(
