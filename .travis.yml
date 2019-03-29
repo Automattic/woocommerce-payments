@@ -22,8 +22,8 @@ matrix:
   fast_finish: true
   include:
   - name: "Coding standard check"
-   php: 7.2
-   env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1
+    php: 7.2
+    env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1
   - name: "PHP 7.3 unit tests"
     php: 7.3
     env: WP_VERSION=latest WP_MULTISITE=0
