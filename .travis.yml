@@ -8,10 +8,10 @@ language: php
 # Test main supported versions of PHP against latest WP.
 php:
   - 5.6
-  # - 7.0
-  # - 7.1
+  - 7.0
+  - 7.1
   - 7.2
-  # - 7.3
+  - 7.3
 
 env:
   - WP_VERSION=latest WP_MULTISITE=0
@@ -22,17 +22,17 @@ matrix:
   fast_finish: true
   include:
   - name: "Coding standard check"
-    php: 7.2
-    env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1
-  # - name: "PHP 7.3 unit tests"
-  #   php: 7.3
-  #   env: WP_VERSION=latest WP_MULTISITE=0
-  # - name: "PHP 7.3 unit tests using WordPress nightly"
-  #   php: 7.3
-  #   env: WP_VERSION=nightly WP_MULTISITE=0
-  # allow_failures:
-  # - php: 7.3
-  #   env: WP_VERSION=latest WP_MULTISITE=0
+   php: 7.2
+   env: WP_VERSION=latest WP_MULTISITE=0 RUN_PHPCS=1
+  - name: "PHP 7.3 unit tests"
+    php: 7.3
+    env: WP_VERSION=latest WP_MULTISITE=0
+  - name: "PHP 7.3 unit tests using WordPress nightly"
+    php: 7.3
+    env: WP_VERSION=nightly WP_MULTISITE=0
+  allow_failures:
+  - php: 7.3
+    env: WP_VERSION=latest WP_MULTISITE=0
 
 before_script:
   - echo $HOME
