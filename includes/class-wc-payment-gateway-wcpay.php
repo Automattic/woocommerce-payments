@@ -1,7 +1,12 @@
 <?php
+/**
+ * Class WC_Payment_Gateway_WCPay
+ *
+ * @package WooCommerce\Payments
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 /**
@@ -11,17 +16,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Internal ID of the payment gateway.
+	 *
 	 * @type string
 	 */
 	const GATEWAY_ID = 'woocommerce_payments';
 
 	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
 		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
 	}
 
+	/**
+	 * WC_Payment_Gateway_WCPay constructor.
+	 */
 	public function __construct() {
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon
@@ -30,21 +41,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
 
 		$this->form_fields = array(
-			'enabled'         => array(
+			'enabled'     => array(
 				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			),
-			'title'           => array(
+			'title'       => array(
 				'title'       => __( 'Title', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
 				'default'     => __( 'Credit Card (WooCommerce Payments)', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
-			'description'     => array(
+			'description' => array(
 				'title'       => __( 'Description', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
@@ -54,8 +65,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 		$this->init_settings();
 
-		$this->title        = $this->get_option( 'title' );
-		$this->description  = $this->get_option( 'description' );
+		$this->title       = $this->get_option( 'title' );
+		$this->description = $this->get_option( 'description' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
@@ -69,12 +80,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Process the payment for a given order.
-	 * @param int $order_id Order ID to process the payment for.
 	 *
+	 * @param int $order_id Order ID to process the payment for.
 	 * @return array|null
 	 */
 	public function process_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
+		$order  = wc_get_order( $order_id );
 		$amount = $order->get_total();
 
 		if ( $amount > 0 ) {
@@ -91,8 +102,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC()->cart->empty_cart();
 
 		return array(
-			'result' 	=> 'success',
-			'redirect'	=> $this->get_return_url( $order ),
+			'result'   => 'success',
+			'redirect' => $this->get_return_url( $order ),
 		);
 	}
 
