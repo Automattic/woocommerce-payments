@@ -39,6 +39,8 @@ tests/cli/vendor
 /tests/bin/tmp
 /tests/e2e-tests/config/local-*.json
 /tests/e2e-tests/config/local.json
+phpcs.xml
+phpunit.xml
 
 # Logs
 /logs
