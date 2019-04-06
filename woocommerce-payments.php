@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
+define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
 
 /**
  * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
