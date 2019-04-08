@@ -36,14 +36,14 @@ class WC_Payments {
 	private static function display_admin_error( $message ) {
 		?>
 		<div class="notice notice-error">
-			<p><?php echo $message; ?></p>
+			<p><?php echo $message; // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		</div>
 		<?php
 	}
 
 	/**
 	 * Checks if all the dependencies needed to run this plugin are present
-	 * TODO: Before public launch, revisit these dependencies. We may need to bump the WC dependency so we require one where WC-Admin is already in Core
+	 * TODO: Before public launch, revisit these dependencies. We may need to bump the WC dependency so we require one where WC-Admin is already in Core.
 	 *
 	 * @param bool $silent True if the function should just return true/false, False if this function should display notice messages for failed dependencies.
 	 * @return bool True if all dependencies are met, false otherwise
@@ -55,7 +55,7 @@ class WC_Payments {
 				// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
 				'WCRequires' => 'WC requires at least',
 				// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
-				// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead
+				// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
 				'RequiresWP' => 'Requires WP',
 			)
 		);

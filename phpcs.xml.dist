@@ -11,7 +11,9 @@
 	<config name="testVersion" value="5.2-" />
 
 	<!-- Rules -->
-	<rule ref="WooCommerce-Core" />
+	<rule ref="WooCommerce-Core" >
+		<exclude name="Generic.Commenting.Todo.TaskFound"/>
+	</rule>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
