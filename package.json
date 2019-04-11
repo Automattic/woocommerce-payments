@@ -1,0 +1,29 @@
+{
+  "name": "woocommerce-payments",
+  "version": "0.1.0",
+  "main": "webpack.config.js",
+  "author": "Automattic",
+  "license": "GPL-2.0-or-later",
+  "repository": "",
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=6.0.0"
+  },
+  "scripts": {
+    "build": "NODE_ENV=production webpack",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "@wordpress/element": "^2.3.0",
+    "css-loader": "^2.1.1"
+  },
+  "devDependencies": {
+    "@wordpress/babel-preset-default": "^4.1.0",
+    "babel-loader": "^8.0.5",
+    "mini-css-extract-plugin": "^0.6.0",
+    "node-sass": "^4.11.0",
+    "sass-loader": "^7.1.0",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
+  }
+}
