@@ -169,44 +169,74 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
+	 *
 	 * @return array|null
 	 */
 	public function process_payment( $order_id ) {
-		$order  = wc_get_order( $order_id );
-		$amount = $order->get_total();
+		$order = wc_get_order( $order_id );
 
-		if ( $amount > 0 ) {
-			// TODO: implement the actual payment (that's the easy part, right?).
-			try {
-				$charge = $this->payments_api_client->create_charge( $amount, 'dummy-source-id' );
+		try {
+			$amount = $order->get_total();
+
+			$transaction_id = '';
+
+			if ( $amount > 0 ) {
+				// Get the payment token from the request (generated when the user entered their card details).
+				$token = $this->get_token_from_request();
+
+				// Capture the payment.
+				$charge = $this->payments_api_client->create_charge( $amount, $token );
 
 				$transaction_id = $charge->get_id();
-				$order->add_order_note(
-					sprintf(
-						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #2%$s)', 'woocommerce-payments' ),
-						wc_price( $amount ),
-						$transaction_id
-					)
+
+				$note = sprintf(
+					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+					__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #%2$s)', 'woocommerce-payments' ),
+					wc_price( $amount ),
+					$transaction_id
 				);
-
-				$order->payment_complete( $transaction_id );
-			} catch ( Exception $e ) {
-				// TODO: Make this a less generic exception and handle a payment failing.
-				// TODO: There may be failure cases we need to handle that we wouldn't raise an exception for as well.
-				return null;
+				$order->add_order_note( $note );
 			}
-		} else {
-			$order->payment_complete();
+
+			$order->payment_complete( $transaction_id );
+
+			wc_reduce_stock_levels( $order_id );
+			WC()->cart->empty_cart();
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		} catch ( Exception $e ) {
+			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
+			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
+			wc_add_notice( $e->getMessage(), 'error' );
+
+			$order->update_status( 'failed' );
+
+			return array(
+				'result'   => 'fail',
+				'redirect' => '',
+			);
 		}
-
-		wc_reduce_stock_levels( $order_id );
-		WC()->cart->empty_cart();
-
-		return array(
-			'result'   => 'success',
-			'redirect' => $this->get_return_url( $order ),
-		);
 	}
 
+	/**
+	 * Extract the payment token from the request's POST variables
+	 *
+	 * @return string
+	 * @throws Exception - If no token is found.
+	 */
+	private function get_token_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		if ( ! isset( $_POST['wc-payment-token'] ) ) {
+			// If no payment token is set then stop here with an error.
+			throw new Exception( __( 'Payment token not found.', 'woocommerce-payments' ) );
+		}
+
+		$token = wc_clean( $_POST['wc-payment-token'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+
+		return $token;
+	}
 }
