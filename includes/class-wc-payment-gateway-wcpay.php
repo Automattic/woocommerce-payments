@@ -156,8 +156,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 */
 	public function payment_fields() {
-		// TODO: Revisit properly escaping this once showing payment fields is implemented.
-		echo $this->get_description(); // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		// TODO: Style this up. Formatting, escaping double line breaks etc.
+		?>
+		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
+		<div id="wc-payment-card-element"></div>
+		<div id="wc-payment-errors" role="alert"></div>
+		<input id="wc-payment-token" type="hidden" name="wc-payment-token" />
+		<?php
 	}
 
 	/**
