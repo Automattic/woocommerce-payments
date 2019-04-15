@@ -154,8 +154,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 *
+	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
+		// Add JavaScript for the payment form.
+		$js_config = array(
+			'publishableKey' => $this->publishable_key,
+		);
+
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however.
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			array(),
+			'3.0',
+			true
+		);
+
+		wp_register_script(
+			'wc-payment-checkout',
+			plugins_url( 'assets/js/wc-payment-checkout.js', WCPAY_PLUGIN_FILE ),
+			array( 'stripe', 'wc-checkout' ),
+			filemtime( WCPAY_ABSPATH . 'assets/js/wc-payment-checkout.js' ),
+			true
+		);
+
+		wp_localize_script( 'wc-payment-checkout', 'wc_payment_config', $js_config );
+		wp_enqueue_script( 'wc-payment-checkout' );
+
+		// Output the form HTML.
 		// TODO: Style this up. Formatting, escaping double line breaks etc.
 		?>
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>

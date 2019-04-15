@@ -15,6 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments {
 
 	/**
+	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private static $gateway;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -24,6 +31,9 @@ class WC_Payments {
 		}
 
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
+
+		self::$gateway = self::create_gateway();
+
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 
@@ -158,7 +168,8 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::create_gateway();
+		$gateways[] = self::$gateway;
+
 		return $gateways;
 	}
 
