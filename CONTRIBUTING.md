@@ -53,3 +53,27 @@ new WordPressExternalDependenciesPlugin( {
 ```
 
 When running webpack `index.deps.json` will be created, listing all the needed dependencies. More info can be found here: https://wordpress.org/gutenberg/handbook/designers-developers/developers/packages/packages-dependency-extraction-webpack-plugin/.
+
+## Docker Local Setup
+
+Docker can be used to setup a local development environment:
+
+* Ensure Docker is installed ([Docker Desktop](https://www.docker.com/products/docker-desktop) is a good option for developers)
+* Follow the steps above in the Development section to build the project's JavaScript
+* From the root of this project, run `docker-compose up -d`
+* Once <http://localhost:8082> displays the WordPress install screen, run `./bin/docker-setup.sh`
+* The fully configured site can now be accessed on <http://localhost:8082>
+* The prompt to run the setup wizard can be dismissed unless there is something specific you would like to configure
+
+To shutdown:
+
+* Use `docker-compose down` to stop the running containers
+* The state of the environment will be persisted in `docker/wordpress` and `docker/data`. To restart the environment simply run `docker-compose up` again. To start afresh, delete these folders and let `docker-compose up` re-create them.
+
+IDE setup:
+
+* Adding `docker/wordpress` to your IDE's PHP include path will allow it to provide hinting for WordPress functions etc.
+* The WordPress container has xdebug setup. Add the following path mappings to your IDE so it can find the correct code:
+
+   * `<project folder>/ -> /var/www/html/wp-content/plugins/woocommerce-payments`
+   * `<project folder>/docker/wordpress -> /var/www/html`
