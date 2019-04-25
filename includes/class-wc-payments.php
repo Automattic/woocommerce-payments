@@ -152,8 +152,23 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = 'WC_Payment_Gateway_WCPay';
+		$gateways[] = self::create_gateway();
 		return $gateways;
 	}
 
+	/**
+	 * Create the payment gateway instance
+	 *
+	 * @return WC_Payment_Gateway_WCPay
+	 */
+	public static function create_gateway() {
+		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
+
+		$payments_api_client = new WC_Payments_API_Client();
+
+		$gateway = new WC_Payment_Gateway_WCPay( $payments_api_client );
+
+		return $gateway;
+	}
 }

@@ -22,6 +22,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const GATEWAY_ID = 'woocommerce_payments';
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway
@@ -32,8 +39,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
 	 */
-	public function __construct() {
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+		$this->payments_api_client = $payments_api_client;
+
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
@@ -91,18 +102,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $amount > 0 ) {
 			// TODO: implement the actual payment (that's the easy part, right?).
-			$transaction_id = 'my-groovy-transaction-id';
+			try {
+				$charge = $this->payments_api_client->create_charge( $amount, 'dummy-source-id' );
 
-			$order->add_order_note(
-				sprintf(
-					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-					__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #2%$s)', 'woocommerce-payments' ),
-					wc_price( $amount ),
-					$transaction_id
-				)
-			);
+				$transaction_id = $charge->get_id();
+				$order->add_order_note(
+					sprintf(
+						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #2%$s)', 'woocommerce-payments' ),
+						wc_price( $amount ),
+						$transaction_id
+					)
+				);
 
-			$order->payment_complete( $transaction_id );
+				$order->payment_complete( $transaction_id );
+			} catch ( Exception $e ) {
+				// TODO: Make this a less generic exception and handle a payment failing.
+				// TODO: There may be failure cases we need to handle that we wouldn't raise an exception for as well.
+				return null;
+			}
 		} else {
 			$order->payment_complete();
 		}

@@ -36,6 +36,9 @@ function _manually_load_plugin() {
 	require_once wc_dir() . '/woocommerce.php';
 
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
+
+	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
+	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
