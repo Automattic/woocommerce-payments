@@ -26,6 +26,12 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
+
+		// Add admin screens.
+		if ( is_admin() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
+			new WC_Payments_Admin();
+		}
 	}
 
 	/**

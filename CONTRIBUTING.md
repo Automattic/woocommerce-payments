@@ -23,3 +23,10 @@ You can also set up linting hints in your editor. Here are some useful instructi
 ## Running the tests
 
 Follow the instructions in the [tests readme](tests/README.md).
+
+## Development
+
+After cloning the repo, install dependencies using `npm install`. You can build the files using one of these npm scripts:
+
+- `$ npm run build`: Build a production version
+- `$ npm run watch`: Build a development version, and watch for file changes
