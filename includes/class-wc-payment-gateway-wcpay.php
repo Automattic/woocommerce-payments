@@ -29,6 +29,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $payments_api_client;
 
 	/**
+	 * Is test mode active?
+	 *
+	 * @var bool
+	 */
+	public $testmode;
+
+	/**
+	 * API access secret key
+	 *
+	 * @var string
+	 */
+	public $secret_key;
+
+	/**
+	 * API access publishable key
+	 *
+	 * @var string
+	 */
+	public $publishable_key;
+
+	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway
@@ -51,87 +72,201 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
 
+		// Define setting fields.
 		$this->form_fields = array(
-			'enabled'     => array(
+			'enabled'              => array(
 				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			),
-			'title'       => array(
+			'title'                => array(
 				'title'       => __( 'Title', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
 				'default'     => __( 'Credit Card (WooCommerce Payments)', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
-			'description' => array(
+			'description'          => array(
 				'title'       => __( 'Description', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
 				'default'     => __( 'Pay with your credit card via WooCommerce Payments.', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
+			'testmode'             => array(
+				'title'       => __( 'Test mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable Test Mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			),
+			'test_publishable_key' => array(
+				'title'       => __( 'Test Publishable Key', 'woocommerce-payments' ),
+				'type'        => 'password',
+				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
+			'test_secret_key'      => array(
+				'title'       => __( 'Test Secret Key', 'woocommerce-payments' ),
+				'type'        => 'password',
+				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
+			'publishable_key'      => array(
+				'title'       => __( 'Live Publishable Key', 'woocommerce-payments' ),
+				'type'        => 'password',
+				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
+			'secret_key'           => array(
+				'title'       => __( 'Live Secret Key', 'woocommerce-payments' ),
+				'type'        => 'password',
+				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
 		);
+
+		// Load the settings.
 		$this->init_settings();
 
+		// Extract values we want to use in this class from the settings.
 		$this->title       = $this->get_option( 'title' );
 		$this->description = $this->get_option( 'description' );
+
+		$this->testmode        = ( ! empty( $this->settings['testmode'] ) && 'yes' === $this->settings['testmode'] ) ? true : false;
+		$this->publishable_key = ! empty( $this->settings['publishable_key'] ) ? $this->settings['publishable_key'] : '';
+		$this->secret_key      = ! empty( $this->settings['secret_key'] ) ? $this->settings['secret_key'] : '';
+
+		if ( $this->testmode ) {
+			$this->publishable_key = ! empty( $this->settings['test_publishable_key'] ) ? $this->settings['test_publishable_key'] : '';
+			$this->secret_key      = ! empty( $this->settings['test_secret_key'] ) ? $this->settings['test_secret_key'] : '';
+		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
 	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 *
+	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		// TODO: Revisit properly escaping this once showing payment fields is implemented.
-		echo $this->get_description(); // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		// Add JavaScript for the payment form.
+		$js_config = array(
+			'publishableKey' => $this->publishable_key,
+		);
+
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however.
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			array(),
+			'3.0',
+			true
+		);
+
+		wp_register_script(
+			'wc-payment-checkout',
+			plugins_url( 'assets/js/wc-payment-checkout.js', WCPAY_PLUGIN_FILE ),
+			array( 'stripe', 'wc-checkout' ),
+			filemtime( WCPAY_ABSPATH . 'assets/js/wc-payment-checkout.js' ),
+			true
+		);
+
+		wp_localize_script( 'wc-payment-checkout', 'wc_payment_config', $js_config );
+		wp_enqueue_script( 'wc-payment-checkout' );
+
+		// Output the form HTML.
+		// TODO: Style this up. Formatting, escaping double line breaks etc.
+		?>
+		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
+		<div id="wc-payment-card-element"></div>
+		<div id="wc-payment-errors" role="alert"></div>
+		<input id="wc-payment-token" type="hidden" name="wc-payment-token" />
+		<?php
 	}
 
 	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
+	 *
 	 * @return array|null
 	 */
 	public function process_payment( $order_id ) {
-		$order  = wc_get_order( $order_id );
-		$amount = $order->get_total();
+		$order = wc_get_order( $order_id );
 
-		if ( $amount > 0 ) {
-			// TODO: implement the actual payment (that's the easy part, right?).
-			try {
-				$charge = $this->payments_api_client->create_charge( $amount, 'dummy-source-id' );
+		try {
+			$amount = $order->get_total();
+
+			$transaction_id = '';
+
+			if ( $amount > 0 ) {
+				// Get the payment token from the request (generated when the user entered their card details).
+				$token = $this->get_token_from_request();
+
+				// Capture the payment.
+				$charge = $this->payments_api_client->create_charge( $amount, $token );
 
 				$transaction_id = $charge->get_id();
-				$order->add_order_note(
-					sprintf(
-						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #2%$s)', 'woocommerce-payments' ),
-						wc_price( $amount ),
-						$transaction_id
-					)
+
+				$note = sprintf(
+					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+					__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #%2$s)', 'woocommerce-payments' ),
+					wc_price( $amount ),
+					$transaction_id
 				);
-
-				$order->payment_complete( $transaction_id );
-			} catch ( Exception $e ) {
-				// TODO: Make this a less generic exception and handle a payment failing.
-				// TODO: There may be failure cases we need to handle that we wouldn't raise an exception for as well.
-				return null;
+				$order->add_order_note( $note );
 			}
-		} else {
-			$order->payment_complete();
+
+			$order->payment_complete( $transaction_id );
+
+			wc_reduce_stock_levels( $order_id );
+			WC()->cart->empty_cart();
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		} catch ( Exception $e ) {
+			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
+			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
+			wc_add_notice( $e->getMessage(), 'error' );
+
+			$order->update_status( 'failed' );
+
+			return array(
+				'result'   => 'fail',
+				'redirect' => '',
+			);
 		}
-
-		wc_reduce_stock_levels( $order_id );
-		WC()->cart->empty_cart();
-
-		return array(
-			'result'   => 'success',
-			'redirect' => $this->get_return_url( $order ),
-		);
 	}
 
+	/**
+	 * Extract the payment token from the request's POST variables
+	 *
+	 * @return string
+	 * @throws Exception - If no token is found.
+	 */
+	private function get_token_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		if ( ! isset( $_POST['wc-payment-token'] ) ) {
+			// If no payment token is set then stop here with an error.
+			throw new Exception( __( 'Payment token not found.', 'woocommerce-payments' ) );
+		}
+
+		$token = wc_clean( $_POST['wc-payment-token'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+
+		return $token;
+	}
 }
