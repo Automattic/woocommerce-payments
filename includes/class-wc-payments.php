@@ -182,7 +182,11 @@ class WC_Payments {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
 
-		$payments_api_client = new WC_Payments_API_Client();
+		// TODO: Don't hard code user agent string.
+		$payments_api_client = new WC_Payments_API_Client(
+			_wp_http_get_object(),
+			'WooCommerce Payments/0.1.0'
+		);
 
 		$gateway = new WC_Payment_Gateway_WCPay( $payments_api_client );
 

@@ -22,11 +22,36 @@ class WC_Payments_API_Client {
 	const PAYMENT_INTENTS_API = 'payment_intents';
 
 	/**
+	 * HTTP client for calling the Payments API.
+	 *
+	 * @var WP_Http
+	 */
+	private $http_client;
+
+	/**
+	 * User agent string to report in requests.
+	 *
+	 * @var string
+	 */
+	private $user_agent;
+
+	/**
 	 * The ID of the Stripe account this client will be used for.
 	 *
 	 * @var string
 	 */
 	private $account_id;
+
+	/**
+	 * WC_Payments_API_Client constructor.
+	 *
+	 * @param WP_Http $http_client - HTTP client for calling the Payments API.
+	 * @param string  $user_agent  - User agent string to report in requests.
+	 */
+	public function __construct( WP_Http $http_client, $user_agent ) {
+		$this->http_client = $http_client;
+		$this->user_agent  = $user_agent;
+	}
 
 	/**
 	 * Set the account ID to use for requests to the API.
@@ -111,22 +136,58 @@ class WC_Payments_API_Client {
 	 */
 	private function request( $request, $api, $method ) {
 
-		// TODO: Send the request to the API.
 		// Add account ID to the request.
 		if ( ! isset( $this->account_id ) ) {
 			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
 		}
 		$request['account_id'] = $this->account_id;
 
-		// Mock up a response for now.
-		$response            = array();
-		$response['id']      = wp_generate_uuid4();
-		$response['amount']  = $request['amount'];
-		$response['created'] = time();
-		$response['status']  = 'success';
+		// Build the URL we want to send the URL to.
+		$url = self::ENDPOINT . '/' . $api;
 
-		// TODO: Handle error responses by throwing exceptions.
-		return $response;
+		// Encode the request body as JSON.
+		$body = wp_json_encode( $request );
+		if ( ! $body ) {
+			throw new Exception(
+				__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
+			);
+		}
+
+		// Create standard headers.
+		$headers                 = array();
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+
+		// Make request to the API.
+		$response = $this->http_client->request(
+			$url,
+			array(
+				'method'      => $method,
+				'redirection' => 0,
+				'headers'     => $headers,
+				'body'        => $body,
+				'compress'    => true,
+			)
+		);
+
+		// Extract the response body and decode it from JSON into an array.
+		$response_body_json = wp_remote_retrieve_body( $response );
+
+		$response_body = json_decode( $response_body_json, true );
+		if ( null === $response_body ) {
+			throw new Exception(
+				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' )
+			);
+		}
+
+		// Check the response code and handle any errors.
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $response_code ) {
+			// TODO: Handle non-200 codes better.
+			throw new Exception( __( 'Server Error.', 'woocommerce-payments' ) );
+		}
+
+		return $response_body;
 	}
 
 	/**
