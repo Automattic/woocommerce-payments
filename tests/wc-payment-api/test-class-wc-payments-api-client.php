@@ -53,22 +53,24 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->mock_http_client
 			->expects( $this->any() )
 			->method( 'request' )
-			->willReturn(
-				array(
-					'headers'  => array(),
-					'body'     => wp_json_encode(
-						array(
-							'id'      => 'test_transaction_id',
-							'amount'  => '123',
-							'created' => 1557224304,
-							'status'  => 'success',
-						)
-					),
-					'response' => array(
-						'code' => 200,
-					),
-					'cookies'  => array(),
-					'filename' => null,
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_transaction_id',
+								'amount'  => '123',
+								'created' => 1557224304,
+								'status'  => 'success',
+							)
+						),
+						'response' => array(
+							'code' => 200,
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
 				)
 			);
 
