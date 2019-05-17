@@ -158,17 +158,13 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		// Make request to the API.
-		$response = $this->http_client->request(
-			$url,
-			array(
-				'method'      => $method,
-				'redirection' => 0,
-				'headers'     => $headers,
-				'body'        => $body,
-				'compress'    => true,
-			)
-		);
+		$response = Jetpack_Client::remote_request( array(
+			'url'     => $url,
+			'method'  => $method,
+			'headers' => $headers,
+			'blog_id' => Jetpack_Options::get_option( 'id' ),
+			'user_id' => JETPACK_MASTER_USER,
+		), $body );
 
 		// Extract the response body and decode it from JSON into an array.
 		$response_body_json = wp_remote_retrieve_body( $response );
