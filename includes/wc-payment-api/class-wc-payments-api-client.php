@@ -158,6 +158,7 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
+		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected
 		$response = Jetpack_Client::remote_request( array(
 			'url'     => $url,
 			'method'  => $method,
