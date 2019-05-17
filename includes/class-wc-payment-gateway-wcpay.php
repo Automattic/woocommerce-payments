@@ -218,7 +218,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			$amount = $order->get_total();
+			$amount = intval( (float) $order->get_total() * 100 );
 
 			$transaction_id = '';
 

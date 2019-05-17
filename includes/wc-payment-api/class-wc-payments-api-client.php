@@ -12,14 +12,14 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_API_Client {
 
-	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay/';
+	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay';
 
 	const POST = 'POST';
 	const GET  = 'GET';
 
 	const CHARGES_API         = 'charges';
 	const SOURCES_API         = 'sources';
-	const PAYMENT_INTENTS_API = 'payment_intents';
+	const PAYMENT_INTENTS_API = 'intentions';
 
 	/**
 	 * HTTP client for calling the Payments API.
