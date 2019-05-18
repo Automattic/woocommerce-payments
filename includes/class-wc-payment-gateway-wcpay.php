@@ -204,7 +204,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<div id="wc-payment-card-element"></div>
 		<div id="wc-payment-errors" role="alert"></div>
-		<input id="wc-payment-token" type="hidden" name="wc-payment-token" />
+		<input id="wc-payment-source" type="hidden" name="wc-payment-source" />
 		<?php
 	}
 
@@ -270,21 +270,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the payment token from the request's POST variables
+	 * Extract the payment source from the request's POST variables
 	 *
 	 * @return string
-	 * @throws Exception - If no token is found.
+	 * @throws Exception - If no source is found.
 	 */
-	private function get_token_from_request() {
+	private function get_source_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		if ( ! isset( $_POST['wc-payment-token'] ) ) {
-			// If no payment token is set then stop here with an error.
-			throw new Exception( __( 'Payment token not found.', 'woocommerce-payments' ) );
+		if ( ! isset( $_POST['wc-payment-source'] ) ) {
+			// If no payment source is set then stop here with an error.
+			throw new Exception( __( 'Payment source not found.', 'woocommerce-payments' ) );
 		}
 
-		$token = wc_clean( $_POST['wc-payment-token'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$source = wc_clean( $_POST['wc-payment-source'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
-		return $token;
+		return $source;
 	}
 }
