@@ -57,3 +57,15 @@ before_script:
 script:
   - bash bin/phpunit.sh
   - bash bin/phpcs.sh
+
+jobs:
+  include:
+    - stage: deploy
+      if: type != pull_request AND ( branch IN ( experiment/automatic-deployment ) )
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: ./bin/deploy-to-test.sh
+          on:
+            branch: experiment/automatic-deployment
+
