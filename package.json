@@ -11,9 +11,12 @@
   },
   "scripts": {
     "build": "NODE_ENV=production webpack",
+    "test": "wp-scripts test-unit-js --config tests/js/jest.config.json",
     "watch": "webpack --watch"
   },
   "dependencies": {
+    "@wordpress/element": "^2.3.0",
+    "@wordpress/scripts": "3.1.0",
     "css-loader": "^2.1.1"
   },
   "devDependencies": {
@@ -21,6 +24,7 @@
     "@wordpress/dependency-extraction-webpack-plugin": "^1.0.1",
     "@wordpress/element": "^2.3.0",
     "babel-loader": "^8.0.5",
+    "@wordpress/jest-preset-default": "4.0.0",
     "mini-css-extract-plugin": "^0.6.0",
     "node-sass": "^4.11.0",
     "sass-loader": "^7.1.0",
