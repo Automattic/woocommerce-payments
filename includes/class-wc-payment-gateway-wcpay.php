@@ -173,6 +173,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add JavaScript for the payment form.
 		$js_config = array(
 			'publishableKey' => $this->publishable_key,
+			'accountId'      => $this->get_option( 'stripe_account_id' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
