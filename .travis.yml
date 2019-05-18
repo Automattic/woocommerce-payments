@@ -58,6 +58,8 @@ script:
   - bash bin/phpunit.sh
   - bash bin/phpcs.sh
 
+before_deploy:
+  - npm install
 
 deploy:
   skip_cleanup: true
