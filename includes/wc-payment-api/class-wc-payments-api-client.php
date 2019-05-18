@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_API_Client {
 
-	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay/';
+	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay';
 
 	const POST = 'POST';
 	const GET  = 'GET';
@@ -22,11 +22,27 @@ class WC_Payments_API_Client {
 	const INTENTIONS_API = 'intentions';
 
 	/**
+	 * User agent string to report in requests.
+	 *
+	 * @var string
+	 */
+	private $user_agent;
+
+	/**
 	 * The ID of the Stripe account this client will be used for.
 	 *
 	 * @var string
 	 */
 	private $account_id;
+
+	/**
+	 * WC_Payments_API_Client constructor.
+	 *
+	 * @param string $user_agent     - User agent string to report in requests.
+	 */
+	public function __construct( $user_agent ) {
+		$this->user_agent = $user_agent;
+	}
 
 	/**
 	 * Set the account ID to use for requests to the API.
@@ -107,17 +123,61 @@ class WC_Payments_API_Client {
 	 * @param string $method  - The HTTP method to make the request with.
 	 *
 	 * @return array
+	 * @throws Exception - If the account ID hasn't been set.
 	 */
 	private function request( $request, $api, $method ) {
+		// Add account ID to the request.
+		if ( ! isset( $this->account_id ) ) {
+			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
+		}
+		$request['account_id'] = $this->account_id;
 
-		// TODO: Send the request to the API.
-		// Mock up a response for now.
-		$response            = array();
-		$response['id']      = wp_generate_uuid4();
-		$response['amount']  = $request['amount'];
-		$response['created'] = time();
+		// Build the URL we want to send the URL to.
+		$url = self::ENDPOINT . '/' . $api;
 
-		return $response;
+		// Encode the request body as JSON.
+		$body = wp_json_encode( $request );
+		if ( ! $body ) {
+			throw new Exception(
+				__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
+			);
+		}
+
+		// Create standard headers.
+		$headers                 = array();
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+
+		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
+		$response = Jetpack_Client::remote_request(
+			array(
+				'url'     => $url,
+				'method'  => $method,
+				'headers' => $headers,
+				'blog_id' => Jetpack_Options::get_option( 'id' ),
+				'user_id' => JETPACK_MASTER_USER,
+			),
+			$body
+		);
+
+		// Extract the response body and decode it from JSON into an array.
+		$response_body_json = wp_remote_retrieve_body( $response );
+
+		$response_body = json_decode( $response_body_json, true );
+		if ( null === $response_body ) {
+			throw new Exception(
+				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' )
+			);
+		}
+
+		// Check the response code and handle any errors.
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $response_code ) {
+			// TODO: Handle non-200 codes better.
+			throw new Exception( __( 'Server Error.', 'woocommerce-payments' ) );
+		}
+
+		return $response_body;
 	}
 
 	/**
