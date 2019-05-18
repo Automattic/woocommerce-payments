@@ -23,17 +23,17 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a charge
 	 *
-	 * @param int    $amount - Amount to charge.
-	 * @param string $source - Source to associate with charge.
+	 * @param int    $amount    - Amount to charge.
+	 * @param string $source_id - ID of the source to associate with charge.
 	 *
 	 * @return WC_Payments_API_Charge
 	 * @throws Exception - Exception thrown on payment failure.
 	 */
-	public function create_charge( $amount, $source ) {
+	public function create_charge( $amount, $source_id ) {
 
 		$request           = array();
 		$request['amount'] = $amount;
-		$request['source'] = $source;
+		$request['source'] = $source_id;
 
 		$response_array = $this->request( $request, self::CHARGES_API, self::POST );
 
