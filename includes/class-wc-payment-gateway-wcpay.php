@@ -224,13 +224,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$transaction_id = '';
 
 			if ( $amount > 0 ) {
-				// Get the payment token from the request (generated when the user entered their card details).
-				$token = $this->get_token_from_request();
+				// Get the payment source from the request (generated when the user entered their card details).
+				$source = $this->get_source_from_request();
 
-				// Capture the payment.
-				$charge = $this->payments_api_client->create_charge( $amount, $token );
+				// Create intention.
+				$intent = $this->payments_api_client->create_intention( $amount, 'usd' );
 
-				$transaction_id = $charge->get_id();
+				// TODO: We could attempt to confirm the intention when creating it instead?
+				// Try to confirm the intention & capture the charge (if 3DS is not required).
+				$intent = $this->payments_api_client->confirm_intention( $intent, $source );
+
+				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
+				$transaction_id = $intent->get_id();
 
 				$note = sprintf(
 					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
