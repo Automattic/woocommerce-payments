@@ -61,14 +61,14 @@ script:
 before_deploy:
   - npm install
 
+addons:
+  apt:
+    packages:
+    - lftp
+
 deploy:
   skip_cleanup: true
   provider: script
   script: bash bin/deploy-to-test.sh
   on:
     branch: experiment/automatic-deployment
-
-addons:
-  apt:
-    packages:
-    - lftp
