@@ -190,7 +190,8 @@ class WC_Payments_API_Client {
 	 */
 	private function deserialize_charge_object_from_array( array $charge_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
-		$created = new DateTime( '@' . $charge_array['created'] );
+		$created = new DateTime();
+		$created->setTimestamp( $charge_array['created'] );
 
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
