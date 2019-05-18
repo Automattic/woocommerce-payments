@@ -71,3 +71,7 @@ deploy:
   script: bash bin/deploy-to-test.sh
   on:
     branch: master
+
+branches:
+  only:
+    - master
