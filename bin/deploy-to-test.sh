@@ -1,3 +1,5 @@
+echo "Starting the deployment script"
+
 TMP_DIR="tmp-plugin"
 NEEDED_FILES=( assets client dist includes woocommerce-payments.php )
 
