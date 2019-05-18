@@ -180,6 +180,7 @@ class WC_Payments {
 	 */
 	public static function create_gateway() {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
+		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
 
 		$payments_api_client = new WC_Payments_API_Client();
