@@ -95,6 +95,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => __( 'Pay with your credit card via WooCommerce Payments.', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
+			'stripe_account_id'    => array(
+				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Get your account ID from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
 			'testmode'             => array(
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable Test Mode', 'woocommerce-payments' ),
@@ -150,6 +157,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Add account ID to the payments.
+		$this->payments_api_client->set_account_id(
+			$this->get_option( 'stripe_account_id' )
+		);
 	}
 
 	/**
@@ -161,6 +173,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add JavaScript for the payment form.
 		$js_config = array(
 			'publishableKey' => $this->publishable_key,
+			'accountId'      => $this->get_option( 'stripe_account_id' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being

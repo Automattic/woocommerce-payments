@@ -21,6 +21,22 @@ class WC_Payments_API_Client {
 	const SOURCES_API = 'sources';
 
 	/**
+	 * The ID of the Stripe account this client will be used for.
+	 *
+	 * @var string
+	 */
+	private $account_id;
+
+	/**
+	 * Set the account ID to use for requests to the API.
+	 *
+	 * @param string $account_id - The ID of the Stripe account this client will be used for.
+	 */
+	public function set_account_id( $account_id ) {
+		$this->account_id = $account_id;
+	}
+
+	/**
 	 * Create a charge
 	 *
 	 * @param int    $amount    - Amount to charge.

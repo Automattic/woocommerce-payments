@@ -1,6 +1,8 @@
 // Setup the Stripe elements when the checkout page is updated.
 jQuery( document.body ).on( 'updated_checkout', function() {
-	var stripe   = new Stripe( wc_payment_config.publishableKey );
+	var stripe   = new Stripe( wc_payment_config.publishableKey, {
+		stripeAccount: wc_payment_config.accountId
+	} );
 	var elements = stripe.elements();
 
 	// Create a card element.
