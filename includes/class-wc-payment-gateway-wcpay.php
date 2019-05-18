@@ -228,7 +228,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$source = $this->get_source_from_request();
 
 				// Create intention.
-				$intent = $this->payments_api_client->create_intention( $amount, 'usd' );
+				$intent = $this->payments_api_client->create_intention( intval( (float) $amount * 100 ), 'usd' );
 
 				// TODO: We could attempt to confirm the intention when creating it instead?
 				// Try to confirm the intention & capture the charge (if 3DS is not required).
