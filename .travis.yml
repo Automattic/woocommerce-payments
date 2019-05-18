@@ -67,3 +67,8 @@ deploy:
   script: bash bin/deploy-to-test.sh
   on:
     branch: experiment/automatic-deployment
+
+addons:
+  apt:
+    packages:
+    - lftp
