@@ -58,7 +58,9 @@ script:
   - bash bin/phpunit.sh
   - bash bin/phpcs.sh
 
+
 deploy:
+  skip_cleanup: true
   provider: script
   script: bash bin/deploy-to-test.sh
   on:
