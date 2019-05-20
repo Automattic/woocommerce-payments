@@ -70,8 +70,8 @@ deploy:
   provider: script
   script: bash bin/deploy-to-test.sh
   on:
-    branch: master
+    branch: experiment/automatic-deployment
 
 branches:
   only:
-    - master
+    - experiment/automatic-deployment
