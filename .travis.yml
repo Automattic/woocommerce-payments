@@ -43,6 +43,9 @@ matrix:
   - name: "PHP 7.3 unit tests using WordPress nightly"
     php: 7.3
     env: WP_VERSION=nightly
+  - name: "Deploy"
+    php: 7.2
+    env: TEST_DEPLOY=deploy_to_pressable
 
 before_script:
   - |
@@ -70,9 +73,9 @@ deploy:
   provider: script
   script: bash bin/deploy-to-test.sh
   skip_cleanup: true
-  condition: $TRAVIS_PHP_VERSION == "7.3"
   on:
     branch: experiment/automatic-deployment
+    condition: $TEST_DEPLOY == "deploy_to_pressable"
 
 branches:
   only:
