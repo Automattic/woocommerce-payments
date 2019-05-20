@@ -37,10 +37,9 @@ matrix:
   - name: "Coding standard check"
     php: 7.2
     env: WP_VERSION=latest RUN_PHPCS=1
-    env: SHOULD_DEPLOY=yes
   - name: "PHP 7.3 unit tests"
     php: 7.3
-    env: WP_VERSION=latest
+    env: WP_VERSION=latest SHOULD_DEPLOY=yes
   - name: "PHP 7.3 unit tests using WordPress nightly"
     php: 7.3
     env: WP_VERSION=nightly
