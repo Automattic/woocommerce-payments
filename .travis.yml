@@ -37,15 +37,13 @@ matrix:
   - name: "Coding standard check"
     php: 7.2
     env: WP_VERSION=latest RUN_PHPCS=1
+    env: SHOULD_DEPLOY=yes
   - name: "PHP 7.3 unit tests"
     php: 7.3
     env: WP_VERSION=latest
   - name: "PHP 7.3 unit tests using WordPress nightly"
     php: 7.3
     env: WP_VERSION=nightly
-  - name: "Deploy"
-    php: 7.2
-    env: TEST_DEPLOY=deploy_to_pressable
 
 before_script:
   - |
@@ -75,7 +73,7 @@ deploy:
   skip_cleanup: true
   on:
     branch: experiment/automatic-deployment
-    condition: $TEST_DEPLOY == "deploy_to_pressable"
+    condition: $SHOULD_DEPLOY == "yes"
 
 branches:
   only:
