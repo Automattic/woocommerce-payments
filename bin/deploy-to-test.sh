@@ -5,7 +5,7 @@ NEEDED_FILES=( assets client dist includes woocommerce-payments.php )
 
 # Build all necessary scripts
 echo "Compiling"
-npm run build > /dev/null
+npm run build
 
 # Copy all important files to a temporary dir
 echo "Cleaning up and creating a temporary directory"
@@ -21,7 +21,7 @@ done
 
 # Send the temporary dir to the web server
 echo "Uploading"
-lftp sftp://qtie59gb3m6o04:co2jvor4gug89u@sftp.pressable.com -e "mirror --verbose=0 -R ./$TMP_DIR woocommerce-payments-demo/wp-content/plugins/woocommerce-payments; quit"
+lftp sftp://$PRESSABLE_USERNAME:$PRESSABLE_PASSWORD@sftp.pressable.com -e "mirror --verbose=0 -R ./$TMP_DIR $PRESSABLE_SITE_NAME/wp-content/plugins/woocommerce-payments; quit"
 
 # Cleanup
 echo "Cleaning up"
