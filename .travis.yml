@@ -69,6 +69,7 @@ addons:
 deploy:
   provider: script
   script: bash bin/deploy-to-test.sh
+  skip_cleanup: true
   on:
     branch: experiment/automatic-deployment
 
