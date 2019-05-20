@@ -31,9 +31,15 @@ class WC_Payments_Admin {
 			'manage_woocommerce',
 			'wc-payments',
 			array( $this, 'wc_payments_page' ),
-			// TODO: When merging into WooCommerce Core, add this icon to the WooCommerce.ttf icon font
-			'data:image/svg+xml;base64,' . base64_encode( file_get_contents( WCPAY_ABSPATH . 'assets/img/admin-icon.svg' ) ),
+			null,
 			56 // After WooCommerce & Product menu items.
+		);
+
+		wp_enqueue_style(
+			'wcpay-admin-css',
+			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
+			array(),
+			filemtime( WCPAY_ABSPATH . 'assets/css/admin.css' )
 		);
 	}
 
