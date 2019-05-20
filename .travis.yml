@@ -69,7 +69,6 @@ addons:
 deploy:
   provider: script
   script: bash bin/deploy-to-test.sh
-  # skip_cleanup: true
   condition: ${TRAVIS_PHP_VERSION:0:3} == "7.3"
   on:
     branch: experiment/automatic-deployment
