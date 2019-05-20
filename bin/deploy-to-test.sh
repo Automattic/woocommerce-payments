@@ -21,7 +21,7 @@ done
 
 # Send the temporary dir to the web server
 echo "Uploading"
-lftp sftp://$PRESSABLE_USERNAME:$PRESSABLE_PASSWORD@sftp.pressable.com -e "mirror --verbose=0 -R ./$TMP_DIR $PRESSABLE_SITE_NAME/wp-content/plugins/woocommerce-payments; quit"
+lftp sftp://$PRESSABLE_USERNAME:$PRESSABLE_PASSWORD@sftp.pressable.com -e "mirror --verbose=0 -R ./$TMP_DIR $PRESSABLE_SITE_NAME/wp-content/plugins/woocommerce-payments-$TRAVIS_PHP_VERSION; quit"
 
 # Cleanup
 echo "Cleaning up"
