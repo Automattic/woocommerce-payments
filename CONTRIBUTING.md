@@ -30,3 +30,26 @@ After cloning the repo, install dependencies using `npm install`. You can build 
 
 - `$ npm run build`: Build a production version
 - `$ npm run watch`: Build a development version, and watch for file changes
+
+When enqueuing the app JavaScript, `wordpress` and `woocommerce` dependencies are handled by `@wordpress/dependency-extraction-webpack-plugin`. WordPress dependencies don't need to be added manually anywhere, including the `$deps` parameter in `wp_enqueue_script` or in `webpack.config`.
+
+We add each package as a dev dependency in `package.json`, though, since it enables auto-completion in our IDEs.
+
+Dependencies not handled by `@wordpress/dependency-extraction-webpack-plugin` should be handled in `webpack.config` using the functions `requestToExternal` and `requestToDependency`, for example:
+
+```
+new WordPressExternalDependenciesPlugin( {
+    requestToExternal( request ) {
+        if (  request === '@woocommerce/components'  ) {
+            return [ 'wc', 'components' ];
+        }
+    },
+    requestToDependency( request ) {
+        if ( request === '@woocommerce/components' ) {
+            return 'wc-components';
+        }
+    },
+} ),
+```
+
+When running webpack `index.deps.json` will be created, listing all the needed dependencies. More info can be found here: https://wordpress.org/gutenberg/handbook/designers-developers/developers/packages/packages-dependency-extraction-webpack-plugin/.
