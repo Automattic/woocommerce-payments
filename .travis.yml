@@ -30,10 +30,10 @@ env:
 matrix:
   fast_finish: true
   include:
-  - php: 5.2
-    dist: precise
-  - php: 5.3
-    dist: precise
+  # - php: 5.2
+  #   dist: precise
+  # - php: 5.3
+  #   dist: precise
   - name: "Coding standard check"
     php: 7.2
     env: WP_VERSION=latest RUN_PHPCS=1
