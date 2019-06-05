@@ -17,8 +17,9 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
-	const CHARGES_API    = 'charges';
-	const INTENTIONS_API = 'intentions';
+	const CHARGES_API      = 'charges';
+	const INTENTIONS_API   = 'intentions';
+	const TRANSACTIONS_API = 'balance/history';
 
 	/**
 	 * User agent string to report in requests.
@@ -112,6 +113,16 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * List transactions
+	 *
+	 * @return array
+	 * @throws Exception - Exception thrown on request failure.
+	 */
+	public function list_transactions() {
+		return $this->request( array(), self::TRANSACTIONS_API, self::GET );
 	}
 
 	/**
