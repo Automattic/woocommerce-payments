@@ -133,13 +133,18 @@ class WC_Payments_API_Client {
 
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT . '/' . $api;
+		$body = null;
 
-		// Encode the request body as JSON.
-		$body = wp_json_encode( $request );
-		if ( ! $body ) {
-			throw new Exception(
-				__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
-			);
+		if ( self::GET === $method ) {
+			$url .= '?' . http_build_query( $request );
+		} else {
+			// Encode the request body as JSON.
+			$body = wp_json_encode( $request );
+			if ( ! $body ) {
+				throw new Exception(
+					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
+				);
+			}
 		}
 
 		// Create standard headers.
