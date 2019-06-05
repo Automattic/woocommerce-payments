@@ -134,11 +134,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-
-		// Add account ID to the payments.
-		$this->payments_api_client->set_account_id(
-			$this->get_option( 'stripe_account_id' )
-		);
 	}
 
 	/**
