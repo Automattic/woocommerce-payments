@@ -54,6 +54,8 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin();
 		}
+
+		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
 	}
 
 	/**
@@ -199,5 +201,14 @@ class WC_Payments {
 		$payments_api_client = new WC_Payments_API_Client( 'WooCommerce Payments/0.1.0' );
 
 		return $payments_api_client;
+	}
+
+	/**
+	 * Initialize the REST API controllers.
+	 */
+	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
+		$transactions_controller->register_routes();
 	}
 }
