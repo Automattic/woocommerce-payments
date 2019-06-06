@@ -1,12 +1,15 @@
 <?php
 /**
- * …
+ * Class WC_REST_Payments_Transactions_Controller
  *
  * @package WooCommerce\Payments\Admin
  */
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * REST controller for transactions.
+ */
 class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 
 	/**
@@ -30,18 +33,33 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	private $api_client;
 
+	/**
+	 * WC_REST_Payments_Transactions_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
+	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
 	}
 
+	/**
+	 * Configure REST API routes.
+	 */
 	public function register_routes() {
-		register_rest_route( $this->namespace, '/' . $this->rest_base, array(
-			'methods'             => WP_REST_Server::READABLE,
-			'callback'            => array( $this, 'get_transactions' ),
-			'permission_callback' => array( $this, 'check_permission' ),
-		) );
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_transactions' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 	}
 
+	/**
+	 * Retrieve transactions to respond with via API.
+	 */
 	public function get_transactions() {
 		return rest_ensure_response( $this->api_client->list_transactions() );
 	}

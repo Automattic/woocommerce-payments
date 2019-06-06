@@ -143,7 +143,7 @@ class WC_Payments_API_Client {
 		$request['account_id'] = $this->account_id;
 
 		// Build the URL we want to send the URL to.
-		$url = self::ENDPOINT . '/' . $api;
+		$url  = self::ENDPOINT . '/' . $api;
 		$body = null;
 
 		if ( self::GET === $method ) {
