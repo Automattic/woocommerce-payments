@@ -118,7 +118,7 @@ class WC_Payments_Admin {
 		wp_register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
-			array(),
+			array( 'wc-components' ),
 			filemtime( WCPAY_ABSPATH . 'dist/index.css' )
 		);
 	}

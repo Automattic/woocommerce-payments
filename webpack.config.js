@@ -42,13 +42,15 @@ const webpackConfig = {
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
-				if (  request === '@woocommerce/components'  ) {
-					return [ 'wc', 'components' ];
+				const match = request.match( /@woocommerce\/(.+)/ );
+				if ( match ) {
+					return [ 'wc', match[ 1 ] ];
 				}
 			},
 			requestToHandle( request ) {
-				if ( request === '@woocommerce/components' ) {
-					return 'wc-components';
+				const match = request.match( /@woocommerce\/(.+)/ );
+				if ( match ) {
+					return `wc-${ match[ 1 ] }`;
 				}
 			},
 		} ),
