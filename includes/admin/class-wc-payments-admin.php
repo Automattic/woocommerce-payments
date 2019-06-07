@@ -30,9 +30,16 @@ class WC_Payments_Admin {
 			__( 'Payments', 'woocommerce-payments' ),
 			'manage_woocommerce',
 			'wc-payments',
-			array( $this, 'wc_payments_page' ), // TODO: Use a real payments icon.
-			'dashicons-palmtree',
+			array( $this, 'wc_payments_page' ),
+			null,
 			56 // After WooCommerce & Product menu items.
+		);
+
+		wp_enqueue_style(
+			'wcpay-admin-css',
+			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
+			array(),
+			filemtime( WCPAY_ABSPATH . 'assets/css/admin.css' )
 		);
 	}
 
