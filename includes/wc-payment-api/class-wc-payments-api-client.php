@@ -120,9 +120,11 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 * @throws Exception - Exception thrown on request failure.
+	 *
+	 * @param array $params - Details of the retrieval request.
 	 */
-	public function list_transactions() {
-		return $this->request( array(), self::TRANSACTIONS_API, self::GET );
+	public function list_transactions( $params = array() ) {
+		return $this->request( $params, self::TRANSACTIONS_API, self::GET );
 	}
 
 	/**

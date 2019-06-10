@@ -5,6 +5,7 @@ import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import jQuery from 'jquery';
 import { formatCurrency } from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
@@ -27,10 +28,11 @@ const headers = [
 export default () => {
 	const [ transactions, setTransactions ] = useState( [] );
 	const [ loading, setLoading ] = useState( false );
+	const [ query, setQuery ] = useState( { page: 1, per_page: 25 } );
 
 	useEffect( () => {
 		setLoading( true );
-		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( ( response ) => {
+		apiFetch( { path: `/wc/v3/payments/transactions?${ jQuery.param( query ) }` } ).then( ( response ) => {
 			const { data } = response;
 			if ( data ) {
 				setTransactions( data );
@@ -40,7 +42,7 @@ export default () => {
 
 			setLoading( false );
 		} );
-	}, [] );
+	}, [ query ] );
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
@@ -67,10 +69,34 @@ export default () => {
 		<TableCard
 			title="Transactions"
 			isLoading={ loading }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
 			headers={ headers }
 			rows={ rows }
+			rowsPerPage={ query.per_page }
+			totalRows={ Infinity } // TODO set to number of total transactions.
+			query={ { page: query.page, per_page: query.per_page } }
+			onQueryChange={ param => value => {
+				if ( param === 'page' ) {
+					if ( value === 1 ) {
+						setQuery( { ...query, page: 1, before: null, after: null } );
+					} else if ( value < query.page ) {
+						setQuery( {
+							...query,
+							page: query.page - 1,
+							before: transactions[ 0 ].id,
+							after: null,
+						} );
+					} else if ( value > query.page ) {
+						setQuery( {
+							...query,
+							page: query.page + 1,
+							before: null,
+							after: transactions.slice( -1 )[ 0 ].id,
+						} );
+					}
+				} else {
+					setQuery( { ...query, [ param ]: value } );
+				}
+			} }
 		/>
 	);
 };

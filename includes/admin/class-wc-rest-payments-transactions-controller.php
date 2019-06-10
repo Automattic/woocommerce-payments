@@ -59,9 +59,17 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 
 	/**
 	 * Retrieve transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request The current matched request object.
 	 */
-	public function get_transactions() {
-		return rest_ensure_response( $this->api_client->list_transactions() );
+	public function get_transactions( $request ) {
+		$params = array(
+			'limit'          => $request['per_page'],
+			'ending_before'  => $request['before'],
+			'starting_after' => $request['after'],
+		);
+
+		return rest_ensure_response( $this->api_client->list_transactions( $params ) );
 	}
 
 	/**
