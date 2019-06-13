@@ -19,13 +19,18 @@ const headers = [
 ];
 
 export default () => {
-	const [ response, setResponse ] = useState( null );
+	const [ transactions, setTransactions ] = useState( [] );
+	const [ loading, setLoading ] = useState( false );
 
 	useEffect( () => {
-		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( setResponse );
+		setLoading( true );
+		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( ( { data } ) => {
+			setTransactions( data );
+			setLoading( false );
+		} );
 	}, [] );
 
-	const rows = response && response.data.map( ( { type, status, description, amount, fee, created, available_on } ) => [
+	const rows = transactions.map( ( { type, status, description, amount, fee, created, available_on } ) => [
 		{ value: created * 1000, display: dateI18n( 'Y-m-d H:i', moment( created * 1000 ) ) },
 		{ value: type, display: type[ 0 ].toUpperCase() + type.slice( 1 ) },
 		{ value: status, display: status[ 0 ].toUpperCase() + status.slice( 1 ) },
@@ -38,11 +43,11 @@ export default () => {
 	return (
 		<TableCard
 			title="Transactions"
-			isLoading={ ! response }
+			isLoading={ loading }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
 			headers={ headers }
-			rows={ rows || [] }
+			rows={ rows }
 		/>
 	);
 };
