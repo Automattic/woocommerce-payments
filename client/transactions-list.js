@@ -24,8 +24,14 @@ export default () => {
 
 	useEffect( () => {
 		setLoading( true );
-		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( ( { data } ) => {
-			setTransactions( data );
+		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( ( response ) => {
+			const { data } = response;
+			if ( data ) {
+				setTransactions( data );
+			} else {
+				console.error( response );
+			}
+
 			setLoading( false );
 		} );
 	}, [] );
