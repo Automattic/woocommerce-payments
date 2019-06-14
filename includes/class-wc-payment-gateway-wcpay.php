@@ -36,13 +36,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public $testmode;
 
 	/**
-	 * API access secret key
-	 *
-	 * @var string
-	 */
-	public $secret_key;
-
-	/**
 	 * API access publishable key
 	 *
 	 * @var string
@@ -117,22 +110,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			'test_secret_key'      => array(
-				'title'       => __( 'Test Secret Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
 			'publishable_key'      => array(
 				'title'       => __( 'Live Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'secret_key'           => array(
-				'title'       => __( 'Live Secret Key', 'woocommerce-payments' ),
 				'type'        => 'password',
 				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
 				'default'     => '',
@@ -149,11 +128,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->testmode        = ( ! empty( $this->settings['testmode'] ) && 'yes' === $this->settings['testmode'] ) ? true : false;
 		$this->publishable_key = ! empty( $this->settings['publishable_key'] ) ? $this->settings['publishable_key'] : '';
-		$this->secret_key      = ! empty( $this->settings['secret_key'] ) ? $this->settings['secret_key'] : '';
 
 		if ( $this->testmode ) {
 			$this->publishable_key = ! empty( $this->settings['test_publishable_key'] ) ? $this->settings['test_publishable_key'] : '';
-			$this->secret_key      = ! empty( $this->settings['test_secret_key'] ) ? $this->settings['test_secret_key'] : '';
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
