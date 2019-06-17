@@ -25,14 +25,58 @@ class WC_Payments_Admin {
 	 * Add payments menu items.
 	 */
 	public function add_payments_menu() {
-		add_menu_page(
-			__( 'WooCommerce Payments', 'woocommerce-payments' ),
-			__( 'Payments', 'woocommerce-payments' ),
+		global $submenu;
+
+		wc_admin_register_page( array(
+			'id'         => 'wc-payments',
+			'title'      => __( 'Payments', 'woocommerce-payments' ),
+			'capability' => 'manage_woocommerce',
+			'path'       => '/payments/deposits',
+			'position'   => '55.7', // After WooCommerce & Product menu items.
+		) );
+
+		wc_admin_register_page( array(
+			'id'     => 'wc-payments-deposits',
+			'title'  => __( 'Deposits', 'woocommerce-payments' ),
+			'parent' => 'wc-payments',
+			'path'   => '/payments/deposits',
+		) );
+
+		wc_admin_register_page( array(
+			'id'     => 'wc-payments-transactions',
+			'title'  => __( 'Transactions', 'woocommerce-payments' ),
+			'parent' => 'wc-payments',
+			'path'   => '/payments/transactions',
+		) );
+
+		wc_admin_register_page( array(
+			'id'     => 'wc-payments-disputes',
+			'title'  => __( 'Disputes', 'woocommerce-payments' ),
+			'parent' => 'wc-payments',
+			'path'   => '/payments/disputes',
+		) );
+
+		wc_admin_connect_page(
+			array(
+				'id'        => 'woocommerce-settings-payments-woocommerce-payments',
+				'parent'    => 'woocommerce-settings-payments',
+				'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
+				'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+			)
+		);
+		// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL
+		$submenu[ array_key_last( $submenu ) ][] = array(
+			__( 'Settings', 'woocommerce' ), // Use the built-in WooCommerce translation for this word
 			'manage_woocommerce',
-			'wc-payments',
-			array( $this, 'wc_payments_page' ),
-			null,
-			56 // After WooCommerce & Product menu items.
+			admin_url(
+				add_query_arg(
+					array(
+						'page'    => 'wc-settings',
+						'tab'     => 'checkout',
+						'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+					), 'admin.php'
+				)
+			)
 		);
 
 		wp_enqueue_style(
@@ -41,17 +85,6 @@ class WC_Payments_Admin {
 			array(),
 			filemtime( WCPAY_ABSPATH . 'assets/css/admin.css' )
 		);
-	}
-
-	/**
-	 * Set up a div for the app to render into.
-	 */
-	public function wc_payments_page() {
-		?>
-		<div class="wrap">
-			<div id="woocommerce-payments__root"></div>
-		</div>
-		<?php
 	}
 
 	/**
@@ -81,13 +114,9 @@ class WC_Payments_Admin {
 
 	/**
 	 * Load the assets
-	 *
-	 * @param string $hook fdfd.
 	 */
-	public function enqueue_payments_scripts( $hook ) {
-		if ( 'toplevel_page_wc-payments' !== $hook ) {
-			return;
-		}
+	public function enqueue_payments_scripts() {
+		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin)
 		wp_enqueue_script( 'WCPAY_DASH_APP' );
 		wp_enqueue_style( 'WCPAY_DASH_APP' );
 	}
