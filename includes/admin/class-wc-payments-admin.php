@@ -117,7 +117,9 @@ class WC_Payments_Admin {
 	 */
 	public function enqueue_payments_scripts() {
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin)
-		wp_enqueue_script( 'WCPAY_DASH_APP' );
-		wp_enqueue_style( 'WCPAY_DASH_APP' );
+		if ( wc_admin_is_registered_page() ) {
+			wp_enqueue_script( 'WCPAY_DASH_APP' );
+			wp_enqueue_style( 'WCPAY_DASH_APP' );
+		}
 	}
 }
