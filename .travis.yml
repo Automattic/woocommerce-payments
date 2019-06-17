@@ -71,9 +71,9 @@ deploy:
   script: bash bin/deploy-to-test.sh
   skip_cleanup: true
   on:
-    branch: master
+    branch: experiment/automatic-deployment
     condition: $SHOULD_DEPLOY = 1
 
 branches:
   only:
-    - master
+    - experiment/automatic-deployment
