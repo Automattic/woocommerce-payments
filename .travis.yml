@@ -67,7 +67,7 @@ before_deploy:
 
 deploy:
   provider: script
-  script: bash bin/deploy-to-test.sh
+  script: bash bin/deploy-to-test-site.sh
   skip_cleanup: true
   on:
     branch: experiment/automatic-deployment
