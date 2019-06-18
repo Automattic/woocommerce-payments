@@ -23,9 +23,9 @@ php:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
- - deploy
+  - name: deploy
     if: branch = experiment/automatic-deployment
- - test
+  - test
 
 env:
   - WP_VERSION=latest WC_VERSION=latest
