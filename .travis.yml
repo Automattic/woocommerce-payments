@@ -90,7 +90,3 @@ deploy:
   on:
     branch: master
     condition: $SHOULD_DEPLOY = 1
-
-branches:
-  only:
-    - master
