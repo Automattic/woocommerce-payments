@@ -23,9 +23,9 @@ php:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
-  - name: deploy
-    if: branch = experiment/automatic-deployment
   - test
+  - name: deploy
+    if: branch = master
 
 env:
   - WP_VERSION=latest WC_VERSION=latest
@@ -88,9 +88,9 @@ deploy:
   script: bash bin/deploy-to-test-site.sh
   skip_cleanup: true
   on:
-    branch: experiment/automatic-deployment
+    branch: master
     condition: $SHOULD_DEPLOY = 1
 
 branches:
   only:
-    - experiment/automatic-deployment
+    - master
