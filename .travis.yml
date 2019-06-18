@@ -40,6 +40,10 @@ matrix:
   - name: "PHP 7.3 unit tests and deployment to Pressable"
     php: 7.3
     env: WP_VERSION=latest SHOULD_DEPLOY=1
+    addons:
+      apt:
+        packages:
+        - lftp
   - name: "PHP 7.3 unit tests using WordPress nightly"
     php: 7.3
     env: WP_VERSION=nightly
@@ -60,11 +64,6 @@ script:
 
 before_deploy:
   - npm install
-
-addons:
-  apt:
-    packages:
-    - lftp
 
 deploy:
   provider: script
