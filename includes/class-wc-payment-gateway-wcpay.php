@@ -36,13 +36,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public $testmode;
 
 	/**
-	 * API access secret key
-	 *
-	 * @var string
-	 */
-	public $secret_key;
-
-	/**
 	 * API access publishable key
 	 *
 	 * @var string
@@ -95,6 +88,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => __( 'Pay with your credit card via WooCommerce Payments.', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
+			'stripe_account_id'    => array(
+				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Get your account ID from your Stripe account.', 'woocommerce-payments' ),
+				'default'     => '',
+				'desc_tip'    => true,
+			),
 			'testmode'             => array(
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable Test Mode', 'woocommerce-payments' ),
@@ -110,22 +110,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			'test_secret_key'      => array(
-				'title'       => __( 'Test Secret Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
 			'publishable_key'      => array(
 				'title'       => __( 'Live Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'secret_key'           => array(
-				'title'       => __( 'Live Secret Key', 'woocommerce-payments' ),
 				'type'        => 'password',
 				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
 				'default'     => '',
@@ -142,14 +128,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->testmode        = ( ! empty( $this->settings['testmode'] ) && 'yes' === $this->settings['testmode'] ) ? true : false;
 		$this->publishable_key = ! empty( $this->settings['publishable_key'] ) ? $this->settings['publishable_key'] : '';
-		$this->secret_key      = ! empty( $this->settings['secret_key'] ) ? $this->settings['secret_key'] : '';
 
 		if ( $this->testmode ) {
 			$this->publishable_key = ! empty( $this->settings['test_publishable_key'] ) ? $this->settings['test_publishable_key'] : '';
-			$this->secret_key      = ! empty( $this->settings['test_secret_key'] ) ? $this->settings['test_secret_key'] : '';
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Add account ID to the payments.
+		$this->payments_api_client->set_account_id(
+			$this->get_option( 'stripe_account_id' )
+		);
 	}
 
 	/**
@@ -161,6 +150,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add JavaScript for the payment form.
 		$js_config = array(
 			'publishableKey' => $this->publishable_key,
+			'accountId'      => $this->get_option( 'stripe_account_id' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
@@ -191,7 +181,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<div id="wc-payment-card-element"></div>
 		<div id="wc-payment-errors" role="alert"></div>
-		<input id="wc-payment-token" type="hidden" name="wc-payment-token" />
+		<input id="wc-payment-source" type="hidden" name="wc-payment-source" />
 		<?php
 	}
 
@@ -211,13 +201,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$transaction_id = '';
 
 			if ( $amount > 0 ) {
-				// Get the payment token from the request (generated when the user entered their card details).
-				$token = $this->get_token_from_request();
+				// Get the payment source from the request (generated when the user entered their card details).
+				$source = $this->get_source_from_request();
 
-				// Capture the payment.
-				$charge = $this->payments_api_client->create_charge( $amount, $token );
+				// Create intention.
+				$intent = $this->payments_api_client->create_intention( round( (float) $amount * 100 ), 'usd' );
 
-				$transaction_id = $charge->get_id();
+				// TODO: We could attempt to confirm the intention when creating it instead?
+				// Try to confirm the intention & capture the charge (if 3DS is not required).
+				$intent = $this->payments_api_client->confirm_intention( $intent, $source );
+
+				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
+				$transaction_id = $intent->get_id();
 
 				$note = sprintf(
 					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
@@ -252,21 +247,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the payment token from the request's POST variables
+	 * Extract the payment source from the request's POST variables
 	 *
 	 * @return string
-	 * @throws Exception - If no token is found.
+	 * @throws Exception - If no source is found.
 	 */
-	private function get_token_from_request() {
+	private function get_source_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		if ( ! isset( $_POST['wc-payment-token'] ) ) {
-			// If no payment token is set then stop here with an error.
-			throw new Exception( __( 'Payment token not found.', 'woocommerce-payments' ) );
+		if ( ! isset( $_POST['wc-payment-source'] ) ) {
+			// If no payment source is set then stop here with an error.
+			throw new Exception( __( 'Payment source not found.', 'woocommerce-payments' ) );
 		}
 
-		$token = wc_clean( $_POST['wc-payment-token'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$source = wc_clean( $_POST['wc-payment-source'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
-		return $token;
+		return $source;
 	}
 }

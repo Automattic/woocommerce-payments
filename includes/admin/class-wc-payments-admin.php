@@ -30,9 +30,16 @@ class WC_Payments_Admin {
 			__( 'Payments', 'woocommerce-payments' ),
 			'manage_woocommerce',
 			'wc-payments',
-			array( $this, 'wc_payments_page' ), // TODO: Use a real payments icon.
-			'dashicons-palmtree',
+			array( $this, 'wc_payments_page' ),
+			null,
 			56 // After WooCommerce & Product menu items.
+		);
+
+		wp_enqueue_style(
+			'wcpay-admin-css',
+			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
+			array(),
+			filemtime( WCPAY_ABSPATH . 'assets/css/admin.css' )
 		);
 	}
 
@@ -51,13 +58,19 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
+		$script_src_url = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
+		$script_deps_path = WCPAY_ABSPATH . 'dist/index.deps.json';
+		$script_dependencies = file_exists( $script_deps_path )
+			? json_decode( file_get_contents( $script_deps_path ) )
+			: array();
 		wp_register_script(
 			'WCPAY_DASH_APP',
-			plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE ),
-			array( 'wp-element' ),
+			$script_src_url,
+			$script_dependencies,
 			filemtime( WCPAY_ABSPATH . 'dist/index.js' ),
 			true
 		);
+
 		wp_register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),

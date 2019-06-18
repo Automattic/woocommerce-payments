@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  wordpress:
+    build: ./docker/wordpress_xdebug
+    image: wordpress-xdebug
+    container_name: woocommerce_payments_wordpress
+    restart: always
+    depends_on:
+      - db
+    links:
+      - db:mysql
+    ports:
+      - "8082:80"
+    env_file:
+      - default.env
+    volumes:
+      - ./docker/wordpress:/var/www/html/
+      - .:/var/www/html/wp-content/plugins/woocommerce-payments
+  db:
+    container_name: woocommerce_payments_mysql
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    env_file:
+      - default.env
+    volumes:
+      - ./docker/data:/var/lib/mysql
