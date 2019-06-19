@@ -64,6 +64,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
+		$this->supports = array(
+			'products',
+			'refunds',
+		);
 
 		// Define setting fields.
 		$this->form_fields = array(
@@ -261,5 +265,53 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
 		return $payment_method;
+	}
+
+	/**
+	 * Can the order be refunded?
+	 *
+	 * @param  WC_Order $order Order object.
+	 * @return bool
+	 */
+	public function can_refund_order( $order ) {
+		return $order && $order->get_meta( '_charge_id', true );
+	}
+
+	/**
+	 * Refund a charge.
+	 *
+	 * @return bool - Whether refund went through.
+	 */
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		$order     = wc_get_order( $order_id );
+		$charge_id = $order->get_meta( '_charge_id', true );
+
+		if ( is_null( $amount ) ) {
+			$refund = $this->payments_api_client->refund_charge( $charge_id );
+		} else {
+			$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
+		}
+
+		if ( ! empty( $refund['error'] ) ) {
+			// TODO log error.
+
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount */
+				__( 'A refund of %1$s failed to complete.', 'woocommerce-payments' ),
+				wc_price( $amount )
+			);
+			$order->add_order_note( $note );
+
+			return false;
+		}
+
+		$note = sprintf(
+			/* translators: %1: the successfully charged amount */
+			__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
+			wc_price( $amount )
+		);
+		$order->add_order_note( $note );
+
+		return true;
 	}
 }
