@@ -115,8 +115,48 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
-		$this->assertEquals( $expected_amount, $result->get_amount() );
-		$this->assertEquals( $expected_status, $result->get_status() );
+			$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
+			$this->assertEquals( $expected_amount, $result->get_amount() );
+			$this->assertEquals( $expected_status, $result->get_status() );
+		}
+
+
+	/**
+	 * Test a successful call to refund_charge.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_refund_success() {
+		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
+
+		// Mock up a test response from WP_Http.
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'request' )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_refund_id',
+								'amount'  => '123',
+								'status'  => 'succeeded',
+							)
+						),
+						'response' => array(
+							'code' => 200,
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		// Attempt to create a refund.
+		$refund = $this->payments_api_client->refund_charge( 'test_intention_id', 123 );
+
+		// Assert amount returned is correct (ignoring other properties for now since this is a stub implementation).
+		$this->assertEquals( 123, $refund['amount'] );
 	}
 }
