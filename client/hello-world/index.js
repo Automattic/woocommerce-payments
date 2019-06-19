@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { cloneElement, Component } from '@wordpress/element';
+import { Component } from '@wordpress/element';
 
 /**
  * Internal dependencies
