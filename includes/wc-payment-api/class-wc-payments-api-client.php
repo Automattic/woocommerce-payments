@@ -318,14 +318,14 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge_id = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] )['id'] : null;
+		$charge = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$created,
 			$intention_array['status'],
-			$charge_id
+			$charge ? $charge['id'] : null
 		);
 
 		return $intent;

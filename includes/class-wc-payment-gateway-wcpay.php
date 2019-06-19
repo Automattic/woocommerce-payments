@@ -64,7 +64,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
-		$this->supports = array(
+		$this->supports           = array(
 			'products',
 			'refunds',
 		);
@@ -280,6 +280,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Refund a charge.
 	 *
+	 * @param  int    $order_id - the Order ID to process the refund for.
+	 * @param  float  $amount   - the amount to refund.
+	 * @param  string $reason   - the reason for refunding.
+	 *
 	 * @return bool - Whether refund went through.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
@@ -294,7 +298,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( ! empty( $refund['error'] ) ) {
 			// TODO log error.
-
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s failed to complete.', 'woocommerce-payments' ),
