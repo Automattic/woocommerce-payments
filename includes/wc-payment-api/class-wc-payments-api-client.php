@@ -19,6 +19,7 @@ class WC_Payments_API_Client {
 
 	const CHARGES_API      = 'charges';
 	const INTENTIONS_API   = 'intentions';
+	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
 
 	/**
@@ -125,6 +126,23 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Refund a charge
+	 *
+	 * @param string $charge_id - The charge to refund.
+	 * @param int    $amount    - Amount to charge.
+	 *
+	 * @return array
+	 * @throws Exception - Exception thrown on refund creation failure.
+	 */
+	public function refund_charge( $charge_id, $amount = null ) {
+		$request           = array();
+		$request['charge'] = $charge_id;
+		$request['amount'] = $amount;
+
+		return $this->request( $request, self::REFUNDS_API, self::POST );
 	}
 
 	/**
@@ -300,11 +318,14 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
+		$charge_id = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] )['id'] : null;
+
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$created,
-			$intention_array['status']
+			$intention_array['status'],
+			$charge_id
 		);
 
 		return $intent;

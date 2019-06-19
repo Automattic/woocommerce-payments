@@ -216,6 +216,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$transaction_id
 				);
 				$order->add_order_note( $note );
+
+				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+				$order->save();
 			}
 
 			$order->payment_complete( $transaction_id );
