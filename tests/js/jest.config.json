@@ -1,0 +1,13 @@
+{
+	"rootDir": "../../",
+	"moduleDirectories": ["node_modules", "<rootDir>/client"],
+	"moduleNameMapper": {
+	},
+	"preset": "@wordpress/jest-preset-default",
+	"testPathIgnorePatterns": [
+	  "/node_modules/",
+	  "<rootDir>/.*/build/",
+	  "<rootDir>/.*/build-module/"
+	],
+	"verbose": true
+}

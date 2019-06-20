@@ -3,10 +3,9 @@
  */
 import './style.scss';
 import { render } from '@wordpress/element';
+import { HelloWorld } from 'hello-world';
 
 render(
-	<div className="woocommerce-payments__section">
-        Hello, world.
-    </div>,
+	<HelloWorld/>,
 	document.getElementById( 'woocommerce-payments__root' )
 );
