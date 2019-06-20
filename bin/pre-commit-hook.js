@@ -42,7 +42,7 @@ files.forEach( file => {
 	}
 
 	try {
-		execSync( `./vendor/bin/phpcs --standard=phpcs.xml.dist --colors ${ file }` );
+		execSync( `./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors ${ file }` );
 	} catch( err ) {
 		console.log( err.stdout.toString( 'utf8' ) );
 		foundErrors = true;
