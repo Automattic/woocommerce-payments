@@ -156,6 +156,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
 
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
+		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
+		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
 	}
 
 	/**
@@ -513,5 +515,60 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		return array_merge( $new_actions, $actions );
+	}
+
+	/**
+	 * Capture previously authorized charge.
+	 *
+	 * @param WC_Order $order - Order to capture charge on.
+	 */
+	public function capture_charge( $order ) {
+		$amount = $order->get_total();
+		$intent = $this->payments_api_client->capture_intention( $order->get_transaction_id(), round( (float) $amount * 100 ) );
+		$status = $intent->get_status();
+
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
+
+		if ( 'succeeded' === $status ) {
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount */
+				__( 'A payment of %1$s was successfully captured using WooCommerce Payments.', 'woocommerce-payments' ),
+				wc_price( $amount )
+			);
+			$order->add_order_note( $note );
+			$order->payment_complete();
+		} else {
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount */
+				__( 'A capture of %1$s failed to complete.', 'woocommerce-payments' ),
+				wc_price( $amount )
+			);
+			$order->add_order_note( $note );
+		}
+	}
+
+	/**
+	 * Cancel previously authorized charge.
+	 *
+	 * @param WC_Order $order - Order to cancel authorization on.
+	 */
+	public function cancel_authorization( $order ) {
+		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
+		$status = $intent->get_status();
+
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
+
+		if ( 'canceled' === $status ) {
+			$order->update_status( 'cancelled', __( 'Payment authorization was successfully cancelled.', 'woocommerce-payments' ) );
+		} else {
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount */
+				__( 'Canceling authorization failed to complete.', 'woocommerce-payments' ),
+				wc_price( $amount )
+			);
+			$order->add_order_note( $note );
+		}
 	}
 }
