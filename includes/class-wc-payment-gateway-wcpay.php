@@ -154,6 +154,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
+
+		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 	}
 
 	/**
@@ -265,6 +267,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+				$order->update_meta_data( '_intention_status', $status );
 				$order->save();
 			} else {
 				$order->payment_complete();
@@ -484,5 +487,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
 			exit;
 		}
+	}
+
+	/*
+	 * Add capture and cancel actions for orders with an authorized charge.
+	 *
+	 * @param array $actions - Actions to make available in order actions metabox.
+	 */
+	public function add_order_actions( $actions ) {
+		global $post;
+
+		$order = wc_get_order( $post->ID );
+
+		if ( $this->id !== $order->get_payment_method() ) {
+			return $actions;
+		}
+
+		if ( 'requires_capture' !== $order->get_meta( '_intention_status', true ) ) {
+			return $actions;
+		}
+
+		$new_actions = array(
+			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
+			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
+		);
+
+		return array_merge( $new_actions, $actions );
 	}
 }
