@@ -251,7 +251,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( 'requires_capture' === $status ) {
 					$note = sprintf(
 						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was authorized using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 						wc_price( $amount ),
 						$transaction_id
 					);
@@ -260,7 +260,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				} else {
 					$note = sprintf(
 						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 						wc_price( $amount ),
 						$transaction_id
 					);
@@ -533,7 +533,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
-				__( 'A payment of %1$s was successfully captured using WooCommerce Payments.', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
@@ -541,7 +541,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
-				__( 'A capture of %1$s failed to complete.', 'woocommerce-payments' ),
+				__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
@@ -561,11 +561,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->save();
 
 		if ( 'canceled' === $status ) {
-			$order->update_status( 'cancelled', __( 'Payment authorization was successfully cancelled.', 'woocommerce-payments' ) );
+			$order->update_status( 'cancelled', __( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ) );
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
-				__( 'Canceling authorization failed to complete.', 'woocommerce-payments' ),
+				__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
