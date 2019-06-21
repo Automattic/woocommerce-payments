@@ -103,8 +103,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'desc_tip'    => true,
 			),
 			'testmode'             => array(
-				'title'       => __( 'Test mode', 'woocommerce-payments' ),
-				'label'       => __( 'Enable Test Mode', 'woocommerce-payments' ),
+				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
 				'default'     => 'yes',
@@ -122,6 +122,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type'        => 'password',
 				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
 				'default'     => '',
+				'desc_tip'    => true,
+			),
+			'manual_capture'       => array(
+				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
+				'label'       => __( 'Separate authorization and capture', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
+				'default'     => 'no',
 				'desc_tip'    => true,
 			),
 		);
@@ -384,7 +392,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Payment details', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Payment Details', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<?php echo wp_kses_post( $description ); ?>
