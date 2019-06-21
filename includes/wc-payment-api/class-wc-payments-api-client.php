@@ -149,6 +149,46 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Capture an intention
+	 *
+	 * @param string $intention_id - The ID of the intention to capture.
+	 * @param int    $amount       - Amount to capture.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws Exception - Exception thrown on intention capture failure.
+	 */
+	public function capture_intention( $intention_id, $amount ) {
+		$request                      = array();
+		$request['amount_to_capture'] = $amount;
+
+		$response_array = $this->request(
+			$request,
+			self::INTENTIONS_API . '/' . $intention_id . '/capture',
+			self::POST
+		);
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Cancel an intention
+	 *
+	 * @param string $intention_id - The ID of the intention to cancel.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws Exception - Exception thrown on intention cancellation failure.
+	 */
+	public function cancel_intention( $intention_id ) {
+		$response_array = $this->request(
+			array(),
+			self::INTENTIONS_API . '/' . $intention_id . '/cancel',
+			self::POST
+		);
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Retrive an order ID from the DB using a corresponding Stripe charge ID.
 	 *
 	 * @param string $charge_id Charge ID corresponding to an order ID.
