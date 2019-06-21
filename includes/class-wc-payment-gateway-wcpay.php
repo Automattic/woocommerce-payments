@@ -242,20 +242,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$transaction_id = $intent->get_id();
+				$status         = $intent->get_status();
 
-				$note = sprintf(
-					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-					__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #%2$s)', 'woocommerce-payments' ),
-					wc_price( $amount ),
-					$transaction_id
-				);
-				$order->add_order_note( $note );
+				if ( 'requires_capture' === $status ) {
+					$note = sprintf(
+						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was authorized using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						wc_price( $amount ),
+						$transaction_id
+					);
+					$order->update_status( 'on-hold', $note );
+					$order->set_transaction_id( $transaction_id );
+				} else {
+					$note = sprintf(
+						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						wc_price( $amount ),
+						$transaction_id
+					);
+					$order->add_order_note( $note );
+					$order->payment_complete( $transaction_id );
+				}
 
 				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
 				$order->save();
+			} else {
+				$order->payment_complete();
 			}
-
-			$order->payment_complete( $transaction_id );
 
 			wc_reduce_stock_levels( $order_id );
 			WC()->cart->empty_cart();
