@@ -1,14 +1,48 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { addFilter } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
-import { render } from '@wordpress/element';
 import { HelloWorld } from 'hello-world';
 
-const rootElem = document.getElementById( 'woocommerce-payments__root' );
-const viewType = rootElem.className;
+const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
+const TransactionsPage = () => <HelloWorld>Hello from the transactions page</HelloWorld>;
+const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
 
-render(
-	<HelloWorld/>,
-	document.getElementById( 'woocommerce-payments__root' )
-);
+addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
+    const menuID = 'toplevel_page_wc-admin--payments-deposits';
+    const rootLink = [ '/payments/deposits', __( 'Payments', 'woocommerce-payments' ) ];
+    pages.push( {
+        container: DepositsPage,
+        path: '/payments/deposits',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            __( 'Deposits', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: TransactionsPage,
+        path: '/payments/transactions',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            __( 'Transactions', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: DisputesPage,
+        path: '/payments/disputes',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            __( 'Disputes', 'woocommerce-payments' ),
+        ],
+    } );
+    return pages;
+} );
