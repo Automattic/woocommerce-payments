@@ -3,12 +3,10 @@
 	<description>WooCommerce dev PHP_CodeSniffer ruleset.</description>
 
     <!-- Exclude paths -->
-	<exclude-pattern>*/client/*</exclude-pattern>
-	<exclude-pattern>*/dist/*</exclude-pattern>
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<exclude-pattern>*/assets/*</exclude-pattern>
-	<exclude-pattern>*/webpack.config.js</exclude-pattern>
+	<exclude-pattern>./dist/*</exclude-pattern>
+	<exclude-pattern>./node_modules/*</exclude-pattern>
+	<exclude-pattern>./vendor/*</exclude-pattern>
+	<exclude-pattern>*\.(?!php$)</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="4.7" />

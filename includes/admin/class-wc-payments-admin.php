@@ -27,34 +27,42 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
-		wc_admin_register_page( array(
-			'id'         => 'wc-payments',
-			'title'      => __( 'Payments', 'woocommerce-payments' ),
-			'capability' => 'manage_woocommerce',
-			'path'       => '/payments/deposits',
-			'position'   => '55.7', // After WooCommerce & Product menu items.
-		) );
+		wc_admin_register_page(
+			array(
+				'id'         => 'wc-payments',
+				'title'      => __( 'Payments', 'woocommerce-payments' ),
+				'capability' => 'manage_woocommerce',
+				'path'       => '/payments/deposits',
+				'position'   => '55.7', // After WooCommerce & Product menu items.
+			)
+		);
 
-		wc_admin_register_page( array(
-			'id'     => 'wc-payments-deposits',
-			'title'  => __( 'Deposits', 'woocommerce-payments' ),
-			'parent' => 'wc-payments',
-			'path'   => '/payments/deposits',
-		) );
+		wc_admin_register_page(
+			array(
+				'id'     => 'wc-payments-deposits',
+				'title'  => __( 'Deposits', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/deposits',
+			)
+		);
 
-		wc_admin_register_page( array(
-			'id'     => 'wc-payments-transactions',
-			'title'  => __( 'Transactions', 'woocommerce-payments' ),
-			'parent' => 'wc-payments',
-			'path'   => '/payments/transactions',
-		) );
+		wc_admin_register_page(
+			array(
+				'id'     => 'wc-payments-transactions',
+				'title'  => __( 'Transactions', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/transactions',
+			)
+		);
 
-		wc_admin_register_page( array(
-			'id'     => 'wc-payments-disputes',
-			'title'  => __( 'Disputes', 'woocommerce-payments' ),
-			'parent' => 'wc-payments',
-			'path'   => '/payments/disputes',
-		) );
+		wc_admin_register_page(
+			array(
+				'id'     => 'wc-payments-disputes',
+				'title'  => __( 'Disputes', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/disputes',
+			)
+		);
 
 		wc_admin_connect_page(
 			array(
@@ -64,9 +72,11 @@ class WC_Payments_Admin {
 				'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 			)
 		);
-		// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL
-		$submenu[ array_key_last( $submenu ) ][] = array(
-			__( 'Settings', 'woocommerce' ), // Use the built-in WooCommerce translation for this word
+		// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
+		$submenu_keys                   = array_keys( $submenu );
+		$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
+		$submenu[ $last_submenu_key ][] = array( // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
+			__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 			'manage_woocommerce',
 			admin_url(
 				add_query_arg(
@@ -74,9 +84,10 @@ class WC_Payments_Admin {
 						'page'    => 'wc-settings',
 						'tab'     => 'checkout',
 						'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-					), 'admin.php'
+					),
+					'admin.php'
 				)
-			)
+			),
 		);
 
 		wp_enqueue_style(
@@ -94,7 +105,7 @@ class WC_Payments_Admin {
 		$script_src_url      = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_deps_path    = WCPAY_ABSPATH . 'dist/index.deps.json';
 		$script_dependencies = file_exists( $script_deps_path )
-			? json_decode( file_get_contents( $script_deps_path ) )
+			? json_decode( file_get_contents( $script_deps_path ) ) // PHPCS:Ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			: array();
 		wp_register_script(
 			'WCPAY_DASH_APP',
@@ -116,7 +127,7 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
-		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin)
+		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
