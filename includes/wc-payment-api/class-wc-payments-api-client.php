@@ -18,7 +18,6 @@ class WC_Payments_API_Client {
 	const GET  = 'GET';
 
 	const CHARGES_API    = 'charges';
-	const SOURCES_API    = 'sources';
 	const INTENTIONS_API = 'intentions';
 
 	/**
@@ -96,15 +95,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Confirm an intention
 	 *
-	 * @param WC_Payments_API_Intention $intent    - The intention to confirm.
-	 * @param string                    $source_id - ID of source to process charge with.
+	 * @param WC_Payments_API_Intention $intent            - The intention to confirm.
+	 * @param string                    $payment_method_id - ID of payment method to process charge with.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention confirmation failure.
 	 */
-	public function confirm_intention( WC_Payments_API_Intention $intent, $source_id ) {
-		$request           = array();
-		$request['source'] = $source_id;
+	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
+		$request                   = array();
+		$request['payment_method'] = $payment_method_id;
 
 		$response_array = $this->request(
 			$request,
