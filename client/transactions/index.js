@@ -8,6 +8,7 @@ import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
+import { EmptyTable } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -63,6 +64,16 @@ export const TransactionsList = ( props ) => {
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
+
+	// Display an empty table if API request is done loading, and no data was returned.
+	if ( ! loading && rows.length === 0 ) {
+		return (
+			<EmptyTable
+				children={ <p>No transactions to display</p> }
+				numberOfRows={ 10 }
+			/>
+		);
+	}
 
 	return (
 		<TableCard
