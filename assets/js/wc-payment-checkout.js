@@ -21,42 +21,42 @@ jQuery( document.body ).on( 'updated_checkout', function() {
 		}
 	} );
 
-	// Create payment source on submission.
-	var sourceGenerated;
+	// Create payment method on submission.
+	var paymentMethodGenerated;
 	jQuery( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
-		// We'll resubmit the form after populating our source, so if this is the second time this event is firing we
-		// should let the form submission happen.
-		if ( sourceGenerated ) {
+		// We'll resubmit the form after populating our payment method, so if this is the second time this event
+		// is firing we should let the form submission happen.
+		if ( paymentMethodGenerated ) {
 			return;
 		}
 
-		stripe.createSource( cardElement )
+		stripe.createPaymentMethod( 'card', cardElement )
 			.then( function( result ) {
-				var source = result.source;
+				var paymentMethod = result.paymentMethod;
 				var error = result.error;
 
 				if ( error ) {
 					throw error;
 				}
 
-				return source;
+				return paymentMethod;
 			} )
-			.then( function( source ) {
-				var id = source.id;
+			.then( function( paymentMethod ) {
+				var id = paymentMethod.id;
 
-				// Flag that the source has been successfully generated so that we can allow the form submission next
-				// time.
-				sourceGenerated = true;
+				// Flag that the payment method has been successfully generated so that we can allow the form
+				// submission next time.
+				paymentMethodGenerated = true;
 
-				// Populate form with the source.
-				var paymentSourceInput   = document.getElementById( 'wc-payment-source' );
-				paymentSourceInput.value = id;
+				// Populate form with the payment method.
+				var paymentMethodInput   = document.getElementById( 'wc-payment-method' );
+				paymentMethodInput.value = id;
 
 				// Re-submit the form.
 				jQuery( '.woocommerce-checkout' ).submit();
 			} );
 
-		// Prevent form submission so that we can fire it once a source has been generated.
+		// Prevent form submission so that we can fire it once a payment method has been generated.
 		return false;
 	} );
 } );

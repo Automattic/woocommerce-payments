@@ -181,7 +181,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<div id="wc-payment-card-element"></div>
 		<div id="wc-payment-errors" role="alert"></div>
-		<input id="wc-payment-source" type="hidden" name="wc-payment-source" />
+		<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
 		<?php
 	}
 
@@ -201,15 +201,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$transaction_id = '';
 
 			if ( $amount > 0 ) {
-				// Get the payment source from the request (generated when the user entered their card details).
-				$source = $this->get_source_from_request();
+				// Get the payment method from the request (generated when the user entered their card details).
+				$payment_method = $this->get_payment_method_from_request();
 
 				// Create intention.
 				$intent = $this->payments_api_client->create_intention( round( (float) $amount * 100 ), 'usd' );
 
 				// TODO: We could attempt to confirm the intention when creating it instead?
 				// Try to confirm the intention & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->confirm_intention( $intent, $source );
+				$intent = $this->payments_api_client->confirm_intention( $intent, $payment_method );
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$transaction_id = $intent->get_id();
@@ -247,21 +247,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the payment source from the request's POST variables
+	 * Extract the payment method from the request's POST variables
 	 *
 	 * @return string
-	 * @throws Exception - If no source is found.
+	 * @throws Exception - If no payment method is found.
 	 */
-	private function get_source_from_request() {
+	private function get_payment_method_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		if ( ! isset( $_POST['wc-payment-source'] ) ) {
-			// If no payment source is set then stop here with an error.
-			throw new Exception( __( 'Payment source not found.', 'woocommerce-payments' ) );
+		if ( ! isset( $_POST['wc-payment-method'] ) ) {
+			// If no payment method is set then stop here with an error.
+			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
-		$source = wc_clean( $_POST['wc-payment-source'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$payment_method = wc_clean( $_POST['wc-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
-		return $source;
+		return $payment_method;
 	}
 }
