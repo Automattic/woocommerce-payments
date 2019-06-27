@@ -19,7 +19,7 @@ class WC_Payments_API_Client {
 
 	const CHARGES_API      = 'charges';
 	const INTENTIONS_API   = 'intentions';
-	const TRANSACTIONS_API = 'balance/history';
+	const TRANSACTIONS_API = 'transactions';
 
 	/**
 	 * User agent string to report in requests.
