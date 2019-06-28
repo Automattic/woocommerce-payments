@@ -22,6 +22,13 @@ class WC_Payments {
 	private static $gateway;
 
 	/**
+	 * Instance of WC_Payments_API_Client, created in init function.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private static $api_client;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -30,11 +37,16 @@ class WC_Payments {
 			return;
 		}
 
-		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
-
-		self::$gateway = self::create_gateway();
-
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
+
+		self::$api_client = self::create_api_client();
+
+		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
+		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client );
+
+		// Add account ID to the payments.
+		self::$api_client->set_account_id( self::$gateway->get_option( 'stripe_account_id' ) );
+
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 
 		// Add admin screens.
@@ -42,6 +54,8 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin();
 		}
+
+		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
 	}
 
 	/**
@@ -174,11 +188,11 @@ class WC_Payments {
 	}
 
 	/**
-	 * Create the payment gateway instance
+	 * Create the API client.
 	 *
-	 * @return WC_Payment_Gateway_WCPay
+	 * @return WC_Payments_API_Client
 	 */
-	public static function create_gateway() {
+	public static function create_api_client() {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
@@ -186,8 +200,15 @@ class WC_Payments {
 		// TODO: Don't hard code user agent string.
 		$payments_api_client = new WC_Payments_API_Client( 'WooCommerce Payments/0.1.0' );
 
-		$gateway = new WC_Payment_Gateway_WCPay( $payments_api_client );
+		return $payments_api_client;
+	}
 
-		return $gateway;
+	/**
+	 * Initialize the REST API controllers.
+	 */
+	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
+		$transactions_controller->register_routes();
 	}
 }

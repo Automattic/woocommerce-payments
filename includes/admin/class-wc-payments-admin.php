@@ -58,8 +58,8 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		$script_src_url = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
-		$script_deps_path = WCPAY_ABSPATH . 'dist/index.deps.json';
+		$script_src_url      = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
+		$script_deps_path    = WCPAY_ABSPATH . 'dist/index.deps.json';
 		$script_dependencies = file_exists( $script_deps_path )
 			? json_decode( file_get_contents( $script_deps_path ) )
 			: array();

@@ -17,8 +17,9 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
-	const CHARGES_API    = 'charges';
-	const INTENTIONS_API = 'intentions';
+	const CHARGES_API      = 'charges';
+	const INTENTIONS_API   = 'intentions';
+	const TRANSACTIONS_API = 'transactions';
 
 	/**
 	 * User agent string to report in requests.
@@ -115,6 +116,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List transactions
+	 *
+	 * @return array
+	 * @throws Exception - Exception thrown on request failure.
+	 */
+	public function list_transactions() {
+		return $this->request( array(), self::TRANSACTIONS_API, self::GET );
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $request - Details of the request to make.
@@ -132,14 +143,19 @@ class WC_Payments_API_Client {
 		$request['account_id'] = $this->account_id;
 
 		// Build the URL we want to send the URL to.
-		$url = self::ENDPOINT . '/' . $api;
+		$url  = self::ENDPOINT . '/' . $api;
+		$body = null;
 
-		// Encode the request body as JSON.
-		$body = wp_json_encode( $request );
-		if ( ! $body ) {
-			throw new Exception(
-				__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
-			);
+		if ( self::GET === $method ) {
+			$url .= '?' . http_build_query( $request );
+		} else {
+			// Encode the request body as JSON.
+			$body = wp_json_encode( $request );
+			if ( ! $body ) {
+				throw new Exception(
+					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
+				);
+			}
 		}
 
 		// Create standard headers.
