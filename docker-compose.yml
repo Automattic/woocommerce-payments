@@ -21,7 +21,7 @@ services:
     container_name: woocommerce_payments_mysql
     image: mysql:5.7
     ports:
-      - "3306:3306"
+      - "5678:3306"
     env_file:
       - default.env
     volumes:
