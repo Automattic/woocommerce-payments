@@ -26,3 +26,10 @@ services:
       - default.env
     volumes:
       - ./docker/data:/var/lib/mysql
+  phpMyAdmin:
+    container_name: woocommerce_payments_phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8083:80"
+    env_file:
+      - default.env
