@@ -10,7 +10,7 @@ import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 
 const headers = [
-	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true },
+	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
 	{ key: 'type', label: 'Type', required: true },
 	{ key: 'source', label: 'Source' },
 	// { key: 'order', label: 'Order #', required: true },
@@ -46,7 +46,7 @@ export default () => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 
 		const data = {
-			created: { value: txn.created * 1000, display: dateI18n( 'Y-m-d H:i', moment( txn.created * 1000 ) ) },
+			created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
 			source: charge && { value: charge.payment_method_details.card.brand, display: <code>{ charge.payment_method_details.card.brand }</code> },
 			// TODO order: {},
