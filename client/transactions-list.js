@@ -7,15 +7,21 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
+import { capitalize } from 'lodash';
 
 const headers = [
-	{ key: 'created', label: 'Date / Time', isLeftAligned: true },
-	{ key: 'type', label: 'Type' },
-	{ key: 'status', label: 'Status', hiddenByDefault: true },
-	{ key: 'description', label: 'Description', hiddenByDefault: true, isLeftAligned: true },
+	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true },
+	{ key: 'type', label: 'Type', required: true },
+	{ key: 'source', label: 'Source' },
+	// { key: 'order', label: 'Order #', required: true },
+	{ key: 'customer', label: 'Customer' },
+	{ key: 'email', label: 'Email', hiddenByDefault: true },
+	{ key: 'country', label: 'Country', hiddenByDefault: true },
 	{ key: 'amount', label: 'Amount' },
-	{ key: 'fee', label: 'Fee' },
-	{ key: 'available_on', label: 'Available on' },
+	{ key: 'fee', label: 'Fees' },
+	{ key: 'net', label: 'Net', required: true },
+	// TODO { key: 'deposit', label: 'Deposit', required: true },
+	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
 export default () => {
@@ -36,15 +42,26 @@ export default () => {
 		} );
 	}, [] );
 
-	const rows = transactions.map( ( { type, status, description, amount, fee, created, available_on } ) => [
-		{ value: created * 1000, display: dateI18n( 'Y-m-d H:i', moment( created * 1000 ) ) },
-		{ value: type, display: type[ 0 ].toUpperCase() + type.slice( 1 ) },
-		{ value: status, display: status[ 0 ].toUpperCase() + status.slice( 1 ) },
-		{ value: description, display: description },
-		{ value: amount / 100, display: formatCurrency( amount / 100 ) },
-		{ value: fee / 100, display: formatCurrency( fee / 100 ) },
-		{ value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-	] );
+	const rows = transactions.map( ( txn ) => {
+		const charge = txn.source.object === 'charge' ? txn.source : null;
+
+		const data = {
+			created: { value: txn.created * 1000, display: dateI18n( 'Y-m-d H:i', moment( txn.created * 1000 ) ) },
+			type: { value: txn.type, display: capitalize( txn.type ) },
+			source: charge && { value: charge.payment_method_details.card.brand, display: <code>{ charge.payment_method_details.card.brand }</code> },
+			// TODO order: {},
+			customer: charge && { value: charge.billing_details.name, display: charge.billing_details.name },
+			email: charge && { value: charge.billing_details.email, display: charge.billing_details.email },
+			country: charge && { value: charge.billing_details.address.country, display: charge.billing_details.address.country },
+			amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
+			fee: { value: txn.fee / 100, display: formatCurrency( txn.fee / 100 ) },
+			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
+			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
+			risk_level: charge && { value: charge.outcome.risk_level, display: capitalize( charge.outcome.risk_level ) },
+		};
+
+		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+	} );
 
 	return (
 		<TableCard
