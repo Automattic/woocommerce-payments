@@ -17,9 +17,9 @@ const headers = [
 	{ key: 'customer', label: 'Customer' },
 	{ key: 'email', label: 'Email', hiddenByDefault: true },
 	{ key: 'country', label: 'Country', hiddenByDefault: true },
-	{ key: 'amount', label: 'Amount' },
-	{ key: 'fee', label: 'Fees' },
-	{ key: 'net', label: 'Net', required: true },
+	{ key: 'amount', label: 'Amount', isNumeric: true },
+	{ key: 'fee', label: 'Fees', isNumeric: true },
+	{ key: 'net', label: 'Net', isNumeric: true, required: true },
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
