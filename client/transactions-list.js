@@ -27,6 +27,7 @@ const headers = [
 
 export default () => {
 	const [ transactions, setTransactions ] = useState( [] );
+	const [ totalRows, setTotalRows ] = useState( 0 );
 	const [ loading, setLoading ] = useState( false );
 	const [ query, setQuery ] = useState( { page: 1, per_page: 25 } );
 
@@ -36,6 +37,7 @@ export default () => {
 			const { data } = response;
 			if ( data ) {
 				setTransactions( data );
+				setTotalRows( response.total_count );
 			} else {
 				console.error( response );
 			}
@@ -72,7 +74,7 @@ export default () => {
 			headers={ headers }
 			rows={ rows }
 			rowsPerPage={ query.per_page }
-			totalRows={ Infinity } // TODO set to number of total transactions.
+			totalRows={ totalRows }
 			query={ { page: query.page, per_page: query.per_page } }
 			onQueryChange={ param => value => {
 				if ( param === 'page' ) {
