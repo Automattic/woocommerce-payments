@@ -76,17 +76,20 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention
 	 *
-	 * @param int    $amount        - Amount to charge.
-	 * @param string $currency_code - Currency to charge in.
+	 * @param int    $amount            - Amount to charge.
+	 * @param string $currency_code     - Currency to charge in.
+	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_intention( $amount, $currency_code ) {
+	public function create_intention( $amount, $currency_code, $payment_method_id ) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request             = array();
-		$request['amount']   = $amount;
-		$request['currency'] = $currency_code;
+		$request                   = array();
+		$request['amount']         = $amount;
+		$request['currency']       = $currency_code;
+		$request['confirm']        = 'true';
+		$request['payment_method'] = $payment_method_id;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
