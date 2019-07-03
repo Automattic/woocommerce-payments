@@ -4,7 +4,7 @@
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
-  "repository": "",
+  "repository": "github:Automattic/woocommerce-payments",
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=6.0.0"
