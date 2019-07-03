@@ -15,7 +15,7 @@ const TransactionsPage = () => <HelloWorld>Hello from the transactions page</Hel
 const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
-    const menuID = 'toplevel_page_wc-admin--payments-deposits';
+    const menuID = 'toplevel_page_wc-admin-path--payments-deposits';
     const rootLink = [ '/payments/deposits', __( 'Payments', 'woocommerce-payments' ) ];
     pages.push( {
         container: DepositsPage,
