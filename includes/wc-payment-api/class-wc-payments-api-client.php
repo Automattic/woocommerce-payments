@@ -164,32 +164,17 @@ class WC_Payments_API_Client {
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				global $wpdb;
-
-				// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
 				$charge_id = $transaction['source']['id'];
-				$order_id  = $wpdb->get_var(
-					$wpdb->prepare(
-						"SELECT DISTINCT ID FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_value = %s AND meta.meta_key = %s",
-						$charge_id,
-						'_charge_id'
-					)
-				);
+				$order     = $this->order_from_charge_id( $charge_id );
 
 				// Add order information to the `$transaction`.
 				// If the order couldn't be retrieved, return an empty order.
-				// TODO: Throw exception when order information can't be retrieved?
 				$transaction['order'] = null;
-				if ( $order_id ) {
-					$order = wc_get_order( $order_id );
-
-					// Note: if order couldn't be retrieved, `$transaction['order']` retains a value of `null`.
-					if ( $order ) {
-						$transaction['order'] = array(
-							'number' => $order->get_order_number(),
-							'url'    => $order->get_edit_order_url(),
-						);
-					}
+				if ( $order ) {
+					$transaction['order'] = array(
+						'number' => $order->get_order_number(),
+						'url'    => $order->get_edit_order_url(),
+					);
 				}
 			}
 		}
