@@ -74,7 +74,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create an intention
+	 * Create an intention, and automatically confirm it.
 	 *
 	 * @param int    $amount            - Amount to charge.
 	 * @param string $currency_code     - Currency to charge in.
@@ -83,7 +83,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_intention( $amount, $currency_code, $payment_method_id ) {
+	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id ) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
 		$request['amount']         = $amount;

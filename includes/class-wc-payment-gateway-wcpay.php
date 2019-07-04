@@ -200,7 +200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method = $this->get_payment_method_from_request();
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->create_intention(
+				$intent = $this->payments_api_client->create_and_confirm_intention(
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method
