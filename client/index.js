@@ -9,9 +9,9 @@ import { addFilter } from '@wordpress/hooks';
  */
 import './style.scss';
 import { HelloWorld } from 'hello-world';
+import TransactionsPage from './transactions-list';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
-const TransactionsPage = () => <HelloWorld>Hello from the transactions page</HelloWorld>;
 const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {

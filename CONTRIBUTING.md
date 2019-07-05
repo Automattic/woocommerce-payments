@@ -35,7 +35,7 @@ When enqueuing the app JavaScript, `wordpress` and `woocommerce` dependencies ar
 
 We add each package as a dev dependency in `package.json`, though, since it enables auto-completion in our IDEs.
 
-Dependencies not handled by `@wordpress/dependency-extraction-webpack-plugin` should be handled in `webpack.config` using the functions `requestToExternal` and `requestToDependency`, for example:
+Dependencies not handled by `@wordpress/dependency-extraction-webpack-plugin` should be handled in `webpack.config` using the functions `requestToExternal` and `requestToHandle`, for example:
 
 ```
 new WordPressExternalDependenciesPlugin( {
@@ -44,7 +44,7 @@ new WordPressExternalDependenciesPlugin( {
             return [ 'wc', 'components' ];
         }
     },
-    requestToDependency( request ) {
+    requestToHandle( request ) {
         if ( request === '@woocommerce/components' ) {
             return 'wc-components';
         }

@@ -42,13 +42,19 @@ const webpackConfig = {
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
-				if (  request === '@woocommerce/components'  ) {
-					return [ 'wc', 'components' ];
+				switch ( request ) {
+					case '@woocommerce/components':
+						return [ 'wc', 'components' ];
+					case '@woocommerce/currency':
+						return [ 'wc', 'currency' ];
 				}
 			},
 			requestToHandle( request ) {
-				if ( request === '@woocommerce/components' ) {
-					return 'wc-components';
+				switch ( request ) {
+					case '@woocommerce/components':
+						return 'wc-components';
+					case '@woocommerce/currency':
+						return 'wc-currency';
 				}
 			},
 		} ),
