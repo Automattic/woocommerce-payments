@@ -9,8 +9,8 @@
 	<exclude-pattern>*\.(?!php$)</exclude-pattern>
 
 	<!-- Configs -->
-	<config name="minimum_supported_wp_version" value="4.7" />
-	<config name="testVersion" value="5.2-" />
+	<config name="minimum_supported_wp_version" value="5.0" />
+	<config name="testVersion" value="5.3-" />
 
 	<!-- Rules -->
 	<rule ref="WooCommerce-Core" >
