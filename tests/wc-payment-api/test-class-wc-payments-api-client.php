@@ -20,7 +20,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Mock HTTP client
 	 *
-	 * @var WP_Http|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Http|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_http_client;
 
@@ -30,14 +30,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_http_client = $this->getMockBuilder( 'WP_Http' )
+		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'request' ) )
+			->setMethods( array( 'remote_request' ) )
 			->getMock();
 
 		$this->payments_api_client = new WC_Payments_API_Client(
-			$this->mock_http_client,
-			'Unit Test Agent/0.1.0'
+			'Unit Test Agent/0.1.0',
+			$this->mock_http_client
 		);
 
 		$this->payments_api_client->set_account_id( 'test_acc_id_12345' );
@@ -49,12 +49,10 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_charge_success() {
-		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
-
 		// Mock up a test response from WP_Http.
 		$this->mock_http_client
 			->expects( $this->any() )
-			->method( 'request' )
+			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
 					array(
