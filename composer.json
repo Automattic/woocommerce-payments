@@ -9,7 +9,6 @@
     "require": {
       "composer/installers": "1.6.0",
       "automattic/jetpack-connection": "@dev",
-      "automattic/jetpack-constants": "@dev",
       "automattic/jetpack-options": "@dev"
     },
     "require-dev": {

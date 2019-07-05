@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6934398511205543d8dbddf66101fac9",
+    "content-hash": "f27b21b3abdf3d0be3c72506b3574579",
     "packages": [
         {
             "name": "automattic/jetpack-connection",
@@ -2101,7 +2101,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "automattic/jetpack-connection": 20,
-        "automattic/jetpack-constants": 20,
         "automattic/jetpack-options": 20
     },
     "prefer-stable": true,

@@ -170,7 +170,7 @@ class WC_Payments_API_Client {
 				'method'  => $method,
 				'headers' => $headers,
 				'blog_id' => Jetpack_Options::get_option( 'id' ),
-				'user_id' => true, // Automattic\Jetpack\Constants::get_constant( 'JETPACK_MASTER_USER' ),
+				'user_id' => Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER,
 			),
 			$body
 		);
