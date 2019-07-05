@@ -9,7 +9,7 @@ import { addFilter } from '@wordpress/hooks';
  */
 import './style.scss';
 import { HelloWorld } from 'hello-world';
-import TransactionsPage from './transactions-list';
+import TransactionsPage from 'transactions';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;

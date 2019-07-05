@@ -10,25 +10,47 @@ jest.mock( '@wordpress/api-fetch' );
 /**
  * Internal dependencies
  */
-import { TransactionsList } from '../';
+import { TransactionsPage } from '../';
 
-describe( 'Transactions list', () => {
+describe( 'Transactions page', () => {
 	test( 'renders correctly', () => {
         apiFetch.mockResolvedValue( {
             data: [
                 {
+                    created: 1572590800,
+                    type: 'refund',
+                    amount: 1000,
+                    fee: 50,
+                    // available_on: 1573199200,
+                },
+                {
+                    created: 1572580800,
                     type: 'charge',
-                    status: 'pending',
-                    description: 'Test description',
+                    source: {
+                        payment_method_details: {
+                            card: {
+                                brand: 'visa',
+                            },
+                        },
+                        billing_details: {
+                            name: 'My name',
+                            email: 'a@b.com',
+                            address: {
+                                country: 'US',
+                            },
+                        },
+                        outcome: {
+                            risk_level: 'normal',
+                        },
+                    },
                     amount: 1500,
                     fee: 50,
-                    created: 1572580800,
-                    available_on: 1573189200,
+                    // available_on: 1573189200,
                 },
             ],
         } );
 
-		const tree = renderer.create( <TransactionsList /> ).toJSON();
+		const tree = renderer.create( <TransactionsPage /> ).toJSON();
 		expect( tree ).toMatchSnapshot();
 	} );
 } );
