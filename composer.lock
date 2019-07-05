@@ -4,8 +4,98 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0025eb557d1cde6be826cf8f1aa2cc1",
+    "content-hash": "6934398511205543d8dbddf66101fac9",
     "packages": [
+        {
+            "name": "automattic/jetpack-connection",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "/Users/daniel/Projects/jetpack/packages/connection",
+                "reference": "0a0e293d73c17d59376590d56e5667b169d26877"
+            },
+            "require": {
+                "automattic/jetpack-constants": "@dev",
+                "automattic/jetpack-options": "@dev"
+            },
+            "require-dev": {
+                "php-mock/php-mock": "^2.1",
+                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Automattic\\Jetpack\\Connection\\": "src"
+                },
+                "classmap": [
+                    "legacy"
+                ]
+            },
+            "scripts": {
+                "phpunit": [
+                    "@composer install",
+                    "./vendor/phpunit/phpunit/phpunit --colors=always"
+                ]
+            },
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Everything needed to connect to the Jetpack infrastructure"
+        },
+        {
+            "name": "automattic/jetpack-constants",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "/Users/daniel/Projects/jetpack/packages/constants",
+                "reference": "a6ab6360f4b48962ec7d62b06b39d1470b1dbe95"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Automattic\\Jetpack\\": "src/"
+                }
+            },
+            "scripts": {
+                "phpunit": [
+                    "@composer install",
+                    "./vendor/phpunit/phpunit/phpunit --colors=always"
+                ]
+            },
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "A wrapper for defining constants in a more testable way."
+        },
+        {
+            "name": "automattic/jetpack-options",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "/Users/daniel/Projects/jetpack/packages/options",
+                "reference": "78220bf7d3c1a3a5ed4edb77462e84982b3c408f"
+            },
+            "require": {
+                "automattic/jetpack-constants": "@dev"
+            },
+            "require-dev": {
+                "10up/wp_mock": "0.4.2",
+                "phpunit/phpunit": "7.*.*"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "legacy"
+                ]
+            },
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "A wrapper for wp-options to manage specific Jetpack options."
+        },
         {
             "name": "composer/installers",
             "version": "v1.6.0",
@@ -1968,12 +2058,12 @@
             "version": "1.2.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
+                "url": "https://github.com/WordPress/WordPress-Coding-Standards.git",
                 "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
+                "url": "https://api.github.com/repos/WordPress/WordPress-Coding-Standards/zipball/f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
                 "reference": "f328bcafd97377e8e5e5d7b244d5ddbf301a3a5c",
                 "shasum": ""
             },
@@ -2009,7 +2099,11 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "automattic/jetpack-connection": 20,
+        "automattic/jetpack-constants": 20,
+        "automattic/jetpack-options": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],

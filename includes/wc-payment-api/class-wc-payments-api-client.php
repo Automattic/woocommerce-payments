@@ -164,13 +164,13 @@ class WC_Payments_API_Client {
 		$headers['User-Agent']   = $this->user_agent;
 
 		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		$response = Jetpack_Client::remote_request(
+		$response = Automattic\Jetpack\Connection\Client::remote_request(
 			array(
 				'url'     => $url,
 				'method'  => $method,
 				'headers' => $headers,
 				'blog_id' => Jetpack_Options::get_option( 'id' ),
-				'user_id' => JETPACK_MASTER_USER,
+				'user_id' => true, // Automattic\Jetpack\Constants::get_constant( 'JETPACK_MASTER_USER' ),
 			),
 			$body
 		);

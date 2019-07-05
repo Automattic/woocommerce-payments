@@ -56,6 +56,9 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
+
+		$jetpack_connection = new Automattic\Jetpack\Connection\Manager();
+		$jetpack_connection->init();
 	}
 
 	/**
