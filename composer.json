@@ -36,7 +36,10 @@
     "repositories": [
       {
         "type": "path",
-        "url": "/Users/daniel/Projects/jetpack/packages/*"
+        "url": "/Users/daniel/Projects/jetpack/packages/*",
+        "options": {
+            "symlink": false
+        }
       }
     ]
 }
