@@ -13,7 +13,7 @@ const headers = [
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
 	{ key: 'type', label: 'Type', required: true },
 	{ key: 'source', label: 'Source' },
-	// { key: 'order', label: 'Order #', required: true },
+	{ key: 'order', label: 'Order #', required: true },
 	{ key: 'customer', label: 'Customer' },
 	{ key: 'email', label: 'Email', hiddenByDefault: true },
 	{ key: 'country', label: 'Country', hiddenByDefault: true },
@@ -44,12 +44,13 @@ export default () => {
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
+		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
 
 		const data = {
 			created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
 			source: charge && { value: charge.payment_method_details.card.brand, display: <code>{ charge.payment_method_details.card.brand }</code> },
-			// TODO order: {},
+			order: { value: txn.order, display: order_url },
 			customer: charge && { value: charge.billing_details.name, display: charge.billing_details.name },
 			email: charge && { value: charge.billing_details.email, display: charge.billing_details.email },
 			country: charge && { value: charge.billing_details.address.country, display: charge.billing_details.address.country },
