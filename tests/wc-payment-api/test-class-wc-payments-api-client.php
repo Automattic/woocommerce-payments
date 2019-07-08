@@ -82,4 +82,42 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		// Assert amount returned is correct (ignoring other properties for now since this is a stub implementation).
 		$this->assertEquals( 123, $result->get_amount() );
 	}
+
+	/**
+	 * Test a successful call to create_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_intention_success() {
+		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
+
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_transaction_id',
+								'amount'  => 123,
+								'created' => 1557224304,
+								'status'  => 'succeeded',
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		$result = $this->payments_api_client->create_intention( 123, 'usd', 'cash', 'pm_123456789' );
+		$this->assertEquals( 'succeeded', $result->get_status() );
+		$this->assertEquals( '123', $result->get_amount() );
+	}
 }
