@@ -51,18 +51,19 @@ jQuery( function() {
 				return paymentMethod;
 			} )
 			.then( function( paymentMethod ) {
-				var id = paymentMethod.id;
+				var paymentMethodId = paymentMethod.id;
 
 				// Flag that the payment method has been successfully generated so that we can allow the form
 				// submission next time.
 				paymentMethodGenerated = true;
 
-				// Populate form with the payment method.
-				var paymentMethodInput   = document.getElementById( 'wc-payment-method' );
-				paymentMethodInput.value = id;
-
-				// Re-submit the form.
-				jQuery( '.woocommerce-checkout' ).submit();
+				return jQuery.post(
+					wc_payment_config.ajaxurl,
+					{
+						action: 'create_payment_intention',
+						wc_payment_method_id: paymentMethodId,
+					}
+				);
 			} );
 
 		// Prevent form submission so that we can fire it once a payment method has been generated.
