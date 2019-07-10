@@ -134,6 +134,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'wc_ajax_create_payment_intention', array( $this, 'create_payment_intention' ) );
 	}
 
 	/**
@@ -146,6 +147,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$js_config = array(
 			'publishableKey' => $this->publishable_key,
 			'accountId'      => $this->get_option( 'stripe_account_id' ),
+			'ajaxurl'        => WC_AJAX::get_endpoint( 'create_payment_intention' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
@@ -176,8 +178,51 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<div id="wc-payment-card-element"></div>
 		<div id="wc-payment-errors" role="alert"></div>
-		<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
 		<?php
+	}
+
+	/**
+	 * Handle AJAX request to create payment intention.
+	 * Once the payment intention is created, respond with
+	 * whether or not it requires further user action (i.e. 3DS) and
+	 * the payment intention ID.
+	 */
+	public function create_payment_intention() {
+		try {
+			$payment_method_id = $this->get_payment_method_id_from_request();
+			$amount            = WC()->cart->total;
+
+			if ( $amount > 0 ) {
+				$intention = $this->payments_api_client->create_and_confirm_intention(
+					round( (float) $amount * 100 ),
+					'usd',
+					$payment_method_id
+				);
+
+				if ( 'requires_action' === $intention->get_status() ) {
+					wp_send_json_success(
+						array(
+							'requires_action' => true,
+							'payment_intention_client_secret' => $intention->get_client_secret(),
+						)
+					);
+				} else {
+					wp_send_json_success(
+						array(
+							'requires_action'      => false,
+							'payment_intention_id' => $intention->get_id(),
+						)
+					);
+				}
+			}
+			die();
+		} catch ( Exception $e ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'There was a problem with your payment.', 'woocommerce-payments' ),
+				)
+			);
+		}
 	}
 
 	/**
@@ -242,21 +287,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the payment method from the request's POST variables
+	 * Extract the payment method ID from the request's POST variables
 	 *
 	 * @return string
-	 * @throws Exception - If no payment method is found.
+	 * @throws Exception - If no payment method ID is found.
 	 */
-	private function get_payment_method_from_request() {
+	private function get_payment_method_id_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		if ( ! isset( $_POST['wc-payment-method'] ) ) {
-			// If no payment method is set then stop here with an error.
-			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
+		if ( ! isset( $_POST['wc_payment_method_id'] ) ) {
+			// If no payment method ID is set then stop here with an error.
+			throw new Exception( __( 'Payment method ID not found.', 'woocommerce-payments' ) );
 		}
 
-		$payment_method = wc_clean( $_POST['wc-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$payment_method_id = wc_clean( $_POST['wc_payment_method_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
-		return $payment_method;
+		return $payment_method_id;
 	}
 }
