@@ -87,8 +87,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_intention_success() {
-		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_amount        = 123;
+		$expected_status        = 'succeeded';
+		$expected_client_secret = 'test_client_secret';
 
 		$this->mock_http_client
 			->expects( $this->any() )
@@ -99,10 +100,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'headers'  => array(),
 						'body'     => wp_json_encode(
 							array(
-								'id'      => 'test_transaction_id',
-								'amount'  => $expected_amount,
-								'created' => 1557224304,
-								'status'  => $expected_status,
+								'id'            => 'test_transaction_id',
+								'amount'        => $expected_amount,
+								'created'       => 1557224304,
+								'status'        => $expected_status,
+								'client_secret' => $expected_client_secret,
 							)
 						),
 						'response' => array(
@@ -118,5 +120,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
+		$this->assertEquals( $expected_client_secret, $result->get_client_secret() );
 	}
 }

@@ -41,18 +41,27 @@ class WC_Payments_API_Intention {
 	private $status;
 
 	/**
+	 * The status of the intention
+	 *
+	 * @var string
+	 */
+	private $client_secret;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
-	 * @param string   $id      - ID of the charge.
-	 * @param integer  $amount  - Amount charged.
-	 * @param DateTime $created - Time charge created.
-	 * @param string   $status  - Intention status.
+	 * @param string   $id             - ID of the charge.
+	 * @param integer  $amount         - Amount charged.
+	 * @param DateTime $created        - Time charge created.
+	 * @param string   $status         - Intention status.
+	 * @param string   $client_secret  - Client secret.
 	 */
-	public function __construct( $id, $amount, DateTime $created, $status ) {
-		$this->id      = $id;
-		$this->amount  = $amount;
-		$this->created = $created;
-		$this->status  = $status;
+	public function __construct( $id, $amount, DateTime $created, $status, $client_secret ) {
+		$this->id            = $id;
+		$this->amount        = $amount;
+		$this->created       = $created;
+		$this->status        = $status;
+		$this->client_secret = $client_secret;
 	}
 
 	/**
@@ -89,5 +98,14 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_status() {
 		return $this->status;
+	}
+
+	/**
+	 * Gets client secret
+	 *
+	 * @return string
+	 */
+	public function get_client_secret() {
+		return $this->client_secret;
 	}
 }
