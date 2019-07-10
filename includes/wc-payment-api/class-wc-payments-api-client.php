@@ -94,11 +94,12 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id ) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request                   = array();
-		$request['amount']         = $amount;
-		$request['currency']       = $currency_code;
-		$request['confirm']        = 'true';
-		$request['payment_method'] = $payment_method_id;
+		$request                        = array();
+		$request['amount']              = $amount;
+		$request['currency']            = $currency_code;
+		$request['confirm']             = 'true';
+		$request['payment_method']      = $payment_method_id;
+		$request['confirmation_method'] = 'manual';
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
