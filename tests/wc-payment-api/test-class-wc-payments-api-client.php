@@ -87,8 +87,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_intention_success() {
-		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
-
 		$this->mock_http_client
 			->expects( $this->any() )
 			->method( 'remote_request' )
@@ -114,7 +112,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$result = $this->payments_api_client->create_intention( 123, 'usd', 'cash', 'pm_123456789' );
+		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'cash', 'pm_123456789' );
 		$this->assertEquals( 'succeeded', $result->get_status() );
 		$this->assertEquals( '123', $result->get_amount() );
 	}
