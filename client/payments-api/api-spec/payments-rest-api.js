@@ -1,10 +1,17 @@
 /** @format */
 
+/**
+ * Internal dependencies.
+ */
+import transactions from './transactions';
+
 function createPaymentsApiSpec() {
 	return {
 		name: 'wcPaymentsApi',
 		mutations: {},
-		selectors: {},
+		selectors: {
+			...transactions.selectors,
+		},
 		operations: {
 			read( resourceNames ) {
 				if ( document.hidden ) {
