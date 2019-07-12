@@ -18,7 +18,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	private $payments_api_client;
 
 	/**
-	 * Mock HTTP client
+	 * Mock HTTP client.
 	 *
 	 * @var WC_Payments_Http|PHPUnit_Framework_MockObject_MockObject
 	 */

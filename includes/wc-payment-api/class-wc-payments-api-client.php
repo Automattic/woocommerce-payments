@@ -36,7 +36,7 @@ class WC_Payments_API_Client {
 	private $account_id;
 
 	/**
-	 * The HTTP request wrapper.
+	 * An HTTP client implementation used to send HTTP requests.
 	 *
 	 * @var WC_Payments_Http
 	 */
@@ -46,7 +46,7 @@ class WC_Payments_API_Client {
 	 * WC_Payments_API_Client constructor.
 	 *
 	 * @param string           $user_agent  - User agent string to report in requests.
-	 * @param WC_Payments_Http $http_client - Function used to send HTTP requests.
+	 * @param WC_Payments_Http $http_client - Used to send HTTP requests.
 	 */
 	public function __construct( $user_agent, $http_client ) {
 		$this->user_agent  = $user_agent;
@@ -232,7 +232,6 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
