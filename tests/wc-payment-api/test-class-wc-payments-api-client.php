@@ -18,9 +18,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	private $payments_api_client;
 
 	/**
-	 * Mock HTTP client
+	 * Mock HTTP client.
 	 *
-	 * @var WP_Http|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Http|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_http_client;
 
@@ -30,14 +30,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->mock_http_client = $this->getMockBuilder( 'WP_Http' )
+		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'request' ) )
+			->setMethods( array( 'remote_request' ) )
 			->getMock();
 
 		$this->payments_api_client = new WC_Payments_API_Client(
-			$this->mock_http_client,
-			'Unit Test Agent/0.1.0'
+			'Unit Test Agent/0.1.0',
+			$this->mock_http_client
 		);
 
 		$this->payments_api_client->set_account_id( 'test_acc_id_12345' );
@@ -49,12 +49,10 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_charge_success() {
-		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
-
 		// Mock up a test response from WP_Http.
 		$this->mock_http_client
 			->expects( $this->any() )
-			->method( 'request' )
+			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
 					array(
@@ -89,7 +87,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_intention_success() {
-		$this->markTestSkipped( 'Revisit once Jetpack Client dependency has been abstracted out of API client' );
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
 
 		$this->mock_http_client
 			->expects( $this->any() )
@@ -101,9 +100,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'body'     => wp_json_encode(
 							array(
 								'id'      => 'test_transaction_id',
-								'amount'  => 123,
+								'amount'  => $expected_amount,
 								'created' => 1557224304,
-								'status'  => 'succeeded',
+								'status'  => $expected_status,
 							)
 						),
 						'response' => array(
@@ -116,8 +115,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$result = $this->payments_api_client->create_intention( 123, 'usd', 'cash', 'pm_123456789' );
-		$this->assertEquals( 'succeeded', $result->get_status() );
-		$this->assertEquals( '123', $result->get_amount() );
+		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 }
