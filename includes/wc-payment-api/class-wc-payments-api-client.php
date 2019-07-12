@@ -36,12 +36,21 @@ class WC_Payments_API_Client {
 	private $account_id;
 
 	/**
+	 * An HTTP client implementation used to send HTTP requests.
+	 *
+	 * @var WC_Payments_Http
+	 */
+	private $http_client;
+
+	/**
 	 * WC_Payments_API_Client constructor.
 	 *
-	 * @param string $user_agent     - User agent string to report in requests.
+	 * @param string           $user_agent  - User agent string to report in requests.
+	 * @param WC_Payments_Http $http_client - Used to send HTTP requests.
 	 */
-	public function __construct( $user_agent ) {
-		$this->user_agent = $user_agent;
+	public function __construct( $user_agent, $http_client ) {
+		$this->user_agent  = $user_agent;
+		$this->http_client = $http_client;
 	}
 
 	/**
@@ -74,19 +83,22 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create an intention
+	 * Create an intention, and automatically confirm it.
 	 *
-	 * @param int    $amount        - Amount to charge.
-	 * @param string $currency_code - Currency to charge in.
+	 * @param int    $amount            - Amount to charge.
+	 * @param string $currency_code     - Currency to charge in.
+	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_intention( $amount, $currency_code ) {
+	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id ) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request             = array();
-		$request['amount']   = $amount;
-		$request['currency'] = $currency_code;
+		$request                   = array();
+		$request['amount']         = $amount;
+		$request['currency']       = $currency_code;
+		$request['confirm']        = 'true';
+		$request['payment_method'] = $payment_method_id;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -116,13 +128,70 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrive an order ID from the DB using a corresponding Stripe charge ID.
+	 *
+	 * @param string $charge_id Charge ID corresponding to an order ID.
+	 *
+	 * @return null|string
+	 */
+	private function order_id_from_charge_id( $charge_id ) {
+		global $wpdb;
+
+		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
+		$order_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT DISTINCT ID FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_value = %s AND meta.meta_key = '_charge_id'",
+				$charge_id
+			)
+		);
+		return $order_id;
+	}
+
+	/**
+	 * Retrieve an order from the DB using a corresponding Stripe charge ID.
+	 *
+	 * @param string $charge_id Charge ID corresponding to an order ID.
+	 *
+	 * @return boolean|WC_Order|WC_Order_Refund
+	 */
+	private function order_from_charge_id( $charge_id ) {
+		$order_id = $this->order_id_from_charge_id( $charge_id );
+
+		if ( $order_id ) {
+			return wc_get_order( $order_id );
+		}
+		return false;
+	}
+
+	/**
 	 * List transactions
 	 *
 	 * @return array
 	 * @throws Exception - Exception thrown on request failure.
 	 */
 	public function list_transactions() {
-		return $this->request( array(), self::TRANSACTIONS_API, self::GET );
+		$transactions = $this->request( array(), self::TRANSACTIONS_API, self::GET );
+
+		// Add order information to each transaction available.
+		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
+		if ( isset( $transactions['data'] ) ) {
+			foreach ( $transactions['data'] as &$transaction ) {
+				$charge_id = $transaction['source']['id'];
+				$order     = $this->order_from_charge_id( $charge_id );
+
+				// Add order information to the `$transaction`.
+				// If the order couldn't be retrieved, return an empty order.
+				$transaction['order'] = null;
+				if ( $order ) {
+					$transaction['order'] = array(
+						'number' => $order->get_order_number(),
+						'url'    => $order->get_edit_order_url(),
+					);
+				}
+			}
+		}
+
+		return $transactions;
 	}
 
 	/**
@@ -163,14 +232,11 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		$response = Automattic\Jetpack\Connection\Client::remote_request(
+		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
 				'method'  => $method,
 				'headers' => $headers,
-				'blog_id' => Jetpack_Options::get_option( 'id' ),
-				'user_id' => Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER,
 			),
 			$body
 		);
