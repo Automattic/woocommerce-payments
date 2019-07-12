@@ -55,6 +55,16 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/payments/token',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'create_terminal_connection_token' ),
+				//'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 	}
 
 	/**
@@ -62,6 +72,10 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	public function get_transactions() {
 		return rest_ensure_response( $this->api_client->list_transactions() );
+	}
+
+	public function create_terminal_connection_token() {
+		return rest_ensure_response( $this->api_client->create_terminal_connection_token() );
 	}
 
 	/**

@@ -160,15 +160,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		wp_register_script(
+			'stripe-terminal',
+			'https://js.stripe.com/terminal/v1/',
+			//array( 'stripe' ),
+			array(),
+			'1.0',
+			true
+		);
+
+		wp_register_script(
 			'wc-payment-checkout',
 			plugins_url( 'assets/js/wc-payment-checkout.js', WCPAY_PLUGIN_FILE ),
-			array( 'stripe', 'wc-checkout' ),
+			//array( 'stripe', 'wc-checkout' ),
+			array( 'wc-checkout' ),
 			filemtime( WCPAY_ABSPATH . 'assets/js/wc-payment-checkout.js' ),
 			true
 		);
 
 		wp_localize_script( 'wc-payment-checkout', 'wc_payment_config', $js_config );
 		wp_enqueue_script( 'wc-payment-checkout' );
+		wp_enqueue_script( 'stripe-terminal' );
 
 		// Output the form HTML.
 		// TODO: Style this up. Formatting, escaping double line breaks etc.

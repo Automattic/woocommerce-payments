@@ -1,5 +1,8 @@
 // Setup the Stripe elements when the checkout page is updated.
+window.document.title = 'Temp';
+
 jQuery( document.body ).on( 'updated_checkout', function() {
+	/*
 	var stripe   = new Stripe( wc_payment_config.publishableKey, {
 		stripeAccount: wc_payment_config.accountId
 	} );
@@ -59,4 +62,69 @@ jQuery( document.body ).on( 'updated_checkout', function() {
 		// Prevent form submission so that we can fire it once a payment method has been generated.
 		return false;
 	} );
+	 */
+
+	const terminal = StripeTerminal.create({
+		onFetchConnectionToken: fetchConnectionToken,
+		onUnexpectedReaderDisconnect: ( e ) => console.log( e ),
+		onConnectionStatusChange: ( e ) => console.log( e ),
+		onPaymentStatusChange: ( e ) => console.log( e ),
+	});
+
+	console.log( terminal.getConnectionStatus() );
+	const config = {
+		simulated: false,
+		location: "tml_DQW4IAKSsG3TJ9"
+	};
+	terminal.discoverReaders(config).then(function(discoverResult) {
+
+		console.log(discoverResult);
+
+		if (discoverResult.error) {
+			console.log('Failed to discover: ', discoverResult.error);
+		} else if (discoverResult.discoveredReaders.length === 0) {
+			console.log('No available readers.');
+		} else {
+			// Just select the first reader here.
+			var selectedReader = discoverResult.discoveredReaders[0];
+
+			terminal.connectReader(selectedReader).then(function(connectResult) {
+				if (connectResult.error) {
+					console.log('Failed to connect: ', connectResult.error);
+				} else {
+					console.log('Connected to reader: ', connectResult.reader.label);
+
+					terminal.setReaderDisplay({
+						type: 'cart',
+						cart: {
+							line_items: [
+								{
+									description: "Beanie with Logo",
+									amount: 1800,
+									quantity: 1,
+								},
+								{
+									description: "Cap",
+									amount: 3200,
+									quantity: 2,
+								},
+							],
+							//tax: 100,
+							total: 5000,
+							currency: 'usd',
+						},
+					});
+				}
+			});
+		}
+	});
+
+	function fetchConnectionToken() {
+		// Your backend should call /v1/terminal/connection_tokens and return the JSON response from Stripe
+		return fetch('index.php?rest_route=/wc/v3/payments/token', { method: 'GET' })
+			.then(response => response.json())
+			.then(data => data.secret );
+	}
 } );
+
+

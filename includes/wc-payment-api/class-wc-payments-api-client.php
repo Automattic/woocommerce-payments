@@ -185,6 +185,24 @@ class WC_Payments_API_Client {
 		return $transactions;
 	}
 
+	public function create_terminal_connection_token() {
+
+		$args = array(
+			'method' => 'POST',
+			'headers'   => array(
+				'Authorization' => 'Basic ' . base64_encode('sk_test_7wKI14pmEI1jMJad8KZQzEyM:'),
+			),
+		);
+
+		$response = wp_remote_post( 'https://api.stripe.com/v1/terminal/connection_tokens', $args );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return json_decode( $response['body'], true );
+	}
+
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
