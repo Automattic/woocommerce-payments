@@ -59,3 +59,4 @@ contributors.md
 # Volumes mounted by Docker containers
 docker/data
 docker/wordpress
+docker/logs

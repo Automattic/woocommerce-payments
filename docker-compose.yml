@@ -16,6 +16,7 @@ services:
       - default.env
     volumes:
       - ./docker/wordpress:/var/www/html/
+      - ./docker/logs/apache2/:/var/log/apache2
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
   db:
     container_name: woocommerce_payments_mysql
