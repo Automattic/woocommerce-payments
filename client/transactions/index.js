@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { Component } from '@wordpress/element';
+import { compose } from '@wordpress/compose';
 import { TableCard } from '@woocommerce/components';
+
+/**
+ * Internal dependencies.
+ */
+import withSelect from 'payments-api/with-select';
 
 const headers = [
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
@@ -34,4 +40,6 @@ class TransactionsList extends Component {
 	}
 };
 
-export default TransactionsList;
+export default compose(
+	withSelect( select => {} )
+)( TransactionsList );
