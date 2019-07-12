@@ -317,7 +317,7 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$intent = new WC_Payments_API_Intention(
+		$intention = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$created,
@@ -325,6 +325,6 @@ class WC_Payments_API_Client {
 			$intention_array['client_secret']
 		);
 
-		return $intent;
+		return $intention;
 	}
 }
