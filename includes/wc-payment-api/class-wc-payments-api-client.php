@@ -109,22 +109,38 @@ class WC_Payments_API_Client {
 	/**
 	 * Confirm an intention
 	 *
-	 * @param WC_Payments_API_Intention $intent            - The intention to confirm.
-	 * @param string                    $payment_method_id - ID of payment method to process charge with.
+	 * @param WC_Payments_API_Intention $intention - The intention ID to confirm.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention confirmation failure.
 	 */
-	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
-		$request                   = array();
-		$request['payment_method'] = $payment_method_id;
+	public function confirm_intention( WC_Payments_API_Intention $intention ) {
+		$request = array();
 
 		$response_array = $this->request(
 			$request,
-			self::INTENTIONS_API . '/' . $intent->get_id() . '/confirm',
+			self::INTENTIONS_API . '/' . $intention->get_id() . '/confirm',
 			self::POST
 		);
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
 
+	/**
+	 * Retrieve an intention
+	 *
+	 * @param string $payment_intention_id - The intention ID to retrieve.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws Exception - Exception thrown on intention confirmation failure.
+	 */
+	public function retrieve_intention( $payment_intention_id ) {
+		$request = array();
+
+		$response_array = $this->request(
+			$request,
+			self::INTENTIONS_API . '/' . $payment_intention_id,
+			self::GET
+		);
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
 
