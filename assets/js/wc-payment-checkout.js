@@ -39,6 +39,18 @@ jQuery( function() {
 			return;
 		}
 
+		// Block the checkout form while we process the payment
+		var $checkout_form = jQuery('form.checkout.woocommerce-checkout');
+		if ( 1 !== $checkout_form.data('blockUI.isBlocked') ) {
+			$checkout_form.block( {
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			} );
+		}
+
 		stripe.createPaymentMethod( 'card', cardElement )
 			.then( function( result ) {
 				var paymentMethod = result.paymentMethod;
@@ -113,6 +125,8 @@ jQuery( function() {
 				displayError.textContent = error.message;
 
 				console.log('Error processing payment:', error);
+
+				$checkout_form.unblock();
 			} );
 
 		// Prevent form submission so that we can fire it once a payment method has been generated.
