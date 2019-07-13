@@ -178,6 +178,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<div id="wc-payment-card-element"></div>
 		<div id="wc-payment-errors" role="alert"></div>
+		<input id="wc-payment-intention-id" type="hidden" name="wc-payment-intention-id" />
 		<?php
 	}
 
@@ -233,45 +234,45 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null
 	 */
 	public function process_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
-
 		try {
+			$order                = wc_get_order( $order_id );
+			$payment_intention_id = $this->get_payment_intention_id_from_request();
+
 			$amount = $order->get_total();
 
 			$transaction_id = '';
 
 			if ( $amount > 0 ) {
-				// Get the payment method from the request (generated when the user entered their card details).
-				$payment_method = $this->get_payment_method_from_request();
+				// Retrieve intention.
+				$intention = $this->payments_api_client->retrieve_intention( $payment_intention_id );
 
-				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->create_and_confirm_intention(
-					round( (float) $amount * 100 ),
-					'usd',
-					$payment_method
-				);
+				if ( 'requires_confirmation' === $intention->get_status() ) {
+					$intention = $this->payments_api_client->confirm_intention( $intention );
+				}
 
-				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
-				$transaction_id = $intent->get_id();
+				if ( 'succeeded' === $intention->get_status() ) {
+					$transaction_id = $intention->get_id();
 
-				$note = sprintf(
-					/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-					__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #%2$s)', 'woocommerce-payments' ),
-					wc_price( $amount ),
-					$transaction_id
-				);
-				$order->add_order_note( $note );
+					$note = sprintf(
+						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was successfully charged using WooCommerce Payments (Transaction #%2$s)', 'woocommerce-payments' ),
+						wc_price( $amount ),
+						$transaction_id
+					);
+						$order->add_order_note( $note );
+
+					$order->payment_complete( $transaction_id );
+
+					wc_reduce_stock_levels( $order_id );
+					WC()->cart->empty_cart();
+
+					return array(
+						'result'   => 'success',
+						'redirect' => $this->get_return_url( $order ),
+					);
+				}
+				return;
 			}
-
-			$order->payment_complete( $transaction_id );
-
-			wc_reduce_stock_levels( $order_id );
-			WC()->cart->empty_cart();
-
-			return array(
-				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
-			);
 		} catch ( Exception $e ) {
 			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
@@ -303,5 +304,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
 		return $payment_method_id;
+	}
+
+	/**
+	 * Extract the payment intention ID from the request's POST variables
+	 *
+	 * @return string
+	 * @throws Exception - If no payment intention ID is found.
+	 */
+	private function get_payment_intention_id_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		if ( ! isset( $_POST['wc-payment-intention-id'] ) ) {
+			// If no payment intention ID is set then stop here with an error.
+			throw new Exception( __( 'Payment intention ID not found.', 'woocommerce-payments' ) );
+		}
+
+		$payment_intention_id = wc_clean( $_POST['wc-payment-intention-id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+
+		return $payment_intention_id;
 	}
 }

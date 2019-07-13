@@ -30,12 +30,12 @@ jQuery( function() {
 		}
 	} );
 
-	// Create payment method on submission.
-	var paymentMethodGenerated;
+	// Create payment intention on submission.
+	var paymentIntentionGenerated;
 	jQuery( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
-		if ( paymentMethodGenerated ) {
+		if ( paymentIntentionGenerated ) {
 			return;
 		}
 
@@ -53,10 +53,6 @@ jQuery( function() {
 			.then( function( paymentMethod ) {
 				var paymentMethodId = paymentMethod.id;
 
-				// Flag that the payment method has been successfully generated so that we can allow the form
-				// submission next time.
-				paymentMethodGenerated = true;
-
 				return jQuery.post(
 					wc_payment_config.ajaxurl,
 					{
@@ -64,6 +60,59 @@ jQuery( function() {
 						wc_payment_method_id: paymentMethodId,
 					}
 				);
+			} )
+			.then( function( paymentIntentionResult ) {
+				if ( ! paymentIntentionResult.success ) {
+					var error = paymentIntentionResult.data;
+					throw error;
+				}
+
+				var paymentIntention = paymentIntentionResult.data;
+
+				if ( false === paymentIntention.requires_action ) {
+					// Populate form with the payment intention ID
+					var paymentIntentionInput   = document.getElementById( 'wc-payment-intention-id' );
+					paymentIntentionInput.value = paymentIntention.payment_intention_id;
+
+					// Flag that the payment method has been successfully generated so that we can allow the form
+					// submission next time.
+					paymentIntentionGenerated = true;
+
+					// Re-submit the form.
+					jQuery( '.woocommerce-checkout' ).submit();
+				} else {
+					return stripe.handleCardAction(
+						paymentIntention.payment_intention_client_secret
+					);
+				}
+			} )
+			.then( function( handleCardActionResult ) {
+				if ( ! handleCardActionResult ) {
+					// No card action needs to be handled.
+					return;
+				}
+
+				var error = handleCardActionResult.error;
+				if ( error ) {
+					throw error;
+				}
+
+				// Populate form with the payment intention ID
+				var paymentIntentionInput = document.getElementById( 'wc-payment-intention-id' );
+				paymentIntentionInput.value = handleCardActionResult.paymentIntent.id;
+
+				// Flag that the payment method has been successfully generated so that we can allow the form
+				// submission next time.
+				paymentIntentionGenerated = true;
+
+				// Re-submit the form.
+				jQuery( '.woocommerce-checkout' ).submit();
+			} )
+			.catch( function( error ) {
+				var displayError = document.getElementById( 'wc-payment-errors' );
+				displayError.textContent = error.message;
+
+				console.log('Error processing payment:', error);
 			} );
 
 		// Prevent form submission so that we can fire it once a payment method has been generated.
