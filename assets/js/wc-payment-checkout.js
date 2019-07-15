@@ -70,6 +70,7 @@ jQuery( function() {
 					{
 						action: 'create_payment_intention',
 						wc_payment_method_id: paymentMethodId,
+						_ajax_nonce: wc_payment_config.create_payment_intention_nonce,
 					}
 				);
 			} )

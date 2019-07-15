@@ -145,9 +145,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function payment_fields() {
 		// Add JavaScript for the payment form.
 		$js_config = array(
-			'publishableKey' => $this->publishable_key,
-			'accountId'      => $this->get_option( 'stripe_account_id' ),
-			'ajaxurl'        => WC_AJAX::get_endpoint( 'create_payment_intention' ),
+			'publishableKey'                 => $this->publishable_key,
+			'accountId'                      => $this->get_option( 'stripe_account_id' ),
+			'ajaxurl'                        => WC_AJAX::get_endpoint( 'create_payment_intention' ),
+			'create_payment_intention_nonce' => wp_create_nonce( 'woocommerce-payments-create-payment-intention' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
@@ -294,14 +295,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - If no payment method ID is found.
 	 */
 	private function get_payment_method_id_from_request() {
-		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		check_ajax_referer( 'woocommerce-payments-create-payment-intention' );
+
 		if ( ! isset( $_POST['wc_payment_method_id'] ) ) {
 			// If no payment method ID is set then stop here with an error.
 			throw new Exception( __( 'Payment method ID not found.', 'woocommerce-payments' ) );
 		}
 
 		$payment_method_id = wc_clean( $_POST['wc_payment_method_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
 		return $payment_method_id;
 	}
