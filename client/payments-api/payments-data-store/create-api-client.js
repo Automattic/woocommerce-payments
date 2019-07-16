@@ -24,7 +24,7 @@ function createDataHandlers( store ) {
 				time: new Date(),
 			} );
 		},
-		dataReceived: resourceNames => {
+		dataReceived: resources => {
 			store.dispatch( {
 				type: 'FRESH_DATA_RECEIVED',
 				resources,
