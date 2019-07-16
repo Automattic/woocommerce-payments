@@ -3,6 +3,7 @@
  * External dependencies
  */
 import renderer from 'react-test-renderer';
+import { mount, shallow } from 'enzyme';
 import apiFetch from '@wordpress/api-fetch';
 
 jest.mock( '@wordpress/api-fetch' );
@@ -10,7 +11,7 @@ jest.mock( '@wordpress/api-fetch' );
 /**
  * Internal dependencies
  */
-import { TransactionsPage } from '../';
+import TransactionsPage from '../';
 
 describe( 'Transactions page', () => {
 	test( 'renders correctly', () => {
@@ -50,7 +51,7 @@ describe( 'Transactions page', () => {
             ],
         } );
 
-		const tree = renderer.create( <TransactionsPage /> ).toJSON();
+		const tree = shallow( <TransactionsPage /> );
 		expect( tree ).toMatchSnapshot();
 	} );
 } );

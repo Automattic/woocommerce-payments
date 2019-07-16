@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transactions page renders correctly 1`] = `
+<TableCard
+  baseSearchQuery={Object {}}
+  compareParam="filter"
+  downloadable={false}
+  headers={
+    Array [
+      Object {
+        "defaultOrder": "desc",
+        "defaultSort": true,
+        "isLeftAligned": true,
+        "key": "created",
+        "label": "Date / Time",
+        "required": true,
+      },
+      Object {
+        "key": "type",
+        "label": "Type",
+        "required": true,
+      },
+      Object {
+        "key": "source",
+        "label": "Source",
+      },
+      Object {
+        "key": "customer",
+        "label": "Customer",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "email",
+        "label": "Email",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "country",
+        "label": "Country",
+      },
+      Object {
+        "isNumeric": true,
+        "key": "amount",
+        "label": "Amount",
+      },
+      Object {
+        "isNumeric": true,
+        "key": "fee",
+        "label": "Fees",
+      },
+      Object {
+        "isNumeric": true,
+        "key": "net",
+        "label": "Net",
+        "required": true,
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "risk_level",
+        "label": "Risk Level",
+      },
+    ]
+  }
+  isLoading={false}
+  onColumnsChange={[Function]}
+  onQueryChange={[Function]}
+  query={Object {}}
+  rowHeader={0}
+  rows={Array []}
+  rowsPerPage={10}
+  showMenu={true}
+  title="Transactions"
+  totalRows={10}
+/>
+`;
