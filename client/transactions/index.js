@@ -32,8 +32,9 @@ const headers = [
 class TransactionsList extends Component {
 	render() {
 		const { transactions } = this.props;
+		const transactionsData = transactions.data || [];
 
-		const rows = transactions.map( ( txn ) => {
+		const rows = transactionsData.map( ( txn ) => {
 			const charge = txn.source.object === 'charge' ? txn.source : null;
 			const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
 
