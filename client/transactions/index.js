@@ -31,8 +31,10 @@ const headers = [
 
 class TransactionsList extends Component {
 	render() {
-		const { transactions } = this.props;
+		const { transactions, isLoading } = this.props;
 		const transactionsData = transactions.data || [];
+		// Do not display table loading view if data is already available.
+		const loadingStatus = ( transactionsData.length <= 0 ) && isLoading;
 
 		const rows = transactionsData.map( ( txn ) => {
 			const charge = txn.source.object === 'charge' ? txn.source : null;
@@ -59,7 +61,7 @@ class TransactionsList extends Component {
 		return (
 			<TableCard
 				title="Transactions"
-				isLoading={ false }
+				isLoading={ loadingStatus }
 				rowsPerPage={ 10 }
 				totalRows={ 10 }
 				headers={ headers }
@@ -71,9 +73,10 @@ class TransactionsList extends Component {
 
 export default compose(
 	withSelect( select => {
-		const { getTransactions } = select( 'wc-payments-api' );
+		const { getTransactions, getTransactionsIsLoading } = select( 'wc-payments-api' );
 		const transactions = getTransactions();
+		const isLoading = getTransactionsIsLoading();
 
-		return { transactions };
+		return { transactions, isLoading };
 	} )
 )( TransactionsList );
