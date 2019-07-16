@@ -15,14 +15,15 @@ const getTransactionsIsLoading = ( getResource, requireResource ) => (
 	requirement = DEFAULT_REQUIREMENT
 ) => {
 	const resourceName = 'transactions-list';
-	const transactions = requireResource( requirement, resourceName ).data || {};
+	const transactionsResource = requireResource( requirement, resourceName );
+	const transactions = transactionsResource.data || {};
 
 	// If no transactions are available, assume the request is loading.
 	if ( ! transactions.data ) {
 		return true;
 	}
 
-	return transactions.lastRequested > transactions.lastReceived;
+	return transactionsResource.lastRequested > transactionsResource.lastReceived;
 }
 
 export default {
