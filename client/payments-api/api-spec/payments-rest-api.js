@@ -19,7 +19,9 @@ function createPaymentsApiSpec() {
 					return [];
 				}
 
-				return [];
+				return [
+					...transactions.operations.read( resourceNames ),
+				];
 			},
 			update( resourceNames, data ) {
 				return [];
