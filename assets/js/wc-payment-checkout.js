@@ -1,5 +1,7 @@
-// Setup the Stripe elements when the checkout page is updated.
-jQuery( document.body ).on( 'updated_checkout', function() {
+/* global jQuery, Stripe, wc_payment_config */
+jQuery( function() {
+	'use strict';
+
 	var stripe   = new Stripe( wc_payment_config.publishableKey, {
 		stripeAccount: wc_payment_config.accountId
 	} );
@@ -9,7 +11,14 @@ jQuery( document.body ).on( 'updated_checkout', function() {
 	var cardElement = elements.create( 'card', {
 		hidePostalCode: true
 	} );
-	cardElement.mount( '#wc-payment-card-element' );
+
+	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
+	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
+	// first to ensure the card element is re-mounted correctly.
+	jQuery( document.body ).on( 'updated_checkout', function() {
+		cardElement.unmount();
+		cardElement.mount( '#wc-payment-card-element' );
+	} );
 
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', function(event) {
