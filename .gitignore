@@ -13,6 +13,7 @@ project.properties
 
 # Bundle
 dist
+release
 
 # Grunt
 /node_modules/
