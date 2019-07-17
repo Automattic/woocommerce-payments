@@ -126,7 +126,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			),
 			'manual_capture'       => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
-				'label'       => __( 'Separate authorization and capture', 'woocommerce-payments' ),
+				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
 				'default'     => 'no',
