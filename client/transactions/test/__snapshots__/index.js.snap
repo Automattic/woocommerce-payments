@@ -25,6 +25,11 @@ exports[`Transactions page renders correctly 1`] = `
         "label": "Source",
       },
       Object {
+        "key": "order",
+        "label": "Order #",
+        "required": true,
+      },
+      Object {
         "key": "customer",
         "label": "Customer",
       },
