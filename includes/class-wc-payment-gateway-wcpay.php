@@ -497,15 +497,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array $actions - Actions to make available in order actions metabox.
 	 */
 	public function add_order_actions( $actions ) {
-		global $post;
+		global $theorder;
 
-		$order = wc_get_order( $post->ID );
-
-		if ( $this->id !== $order->get_payment_method() ) {
+		if ( $this->id !== $theorder->get_payment_method() ) {
 			return $actions;
 		}
 
-		if ( 'requires_capture' !== $order->get_meta( '_intention_status', true ) ) {
+		if ( 'requires_capture' !== $theorder->get_meta( '_intention_status', true ) ) {
 			return $actions;
 		}
 
