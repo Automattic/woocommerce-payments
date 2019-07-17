@@ -20,6 +20,8 @@ php:
   - 7.2
   - 7.3
 
+services:
+  - mysql
 
 # Different stages in order to only deploy when everything succeeds
 stages:
