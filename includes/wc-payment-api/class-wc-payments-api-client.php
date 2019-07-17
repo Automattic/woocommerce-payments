@@ -271,9 +271,10 @@ class WC_Payments_API_Client {
 
 		// Check the response code and handle any errors.
 		$response_code = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $response_code ) {
-			// TODO: Handle non-200 codes better.
-			throw new Exception( __( 'Server Error.', 'woocommerce-payments' ) );
+		if ( 500 <= $response_code ) {
+			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
+		} elseif ( 400 <= $response_code ) {
+			return new WP_Error( $response_body['code'], $response_body['message'] );
 		}
 
 		return $response_body;

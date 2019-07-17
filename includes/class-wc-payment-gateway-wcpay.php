@@ -296,16 +296,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
 		}
 
-		if ( ! empty( $refund['error'] ) ) {
+		if ( is_wp_error( $refund ) ) {
 			// TODO log error.
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount */
-				__( 'A refund of %1$s failed to complete.', 'woocommerce-payments' ),
-				wc_price( $amount )
+				/* translators: %1: the successfully charged amount, %2: error message */
+				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
+				wc_price( $amount ),
+				$refund->get_error_message()
 			);
 			$order->add_order_note( $note );
 
-			return false;
+			return $refund;
 		}
 
 		$note = sprintf(
