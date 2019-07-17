@@ -309,11 +309,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $refund;
 		}
 
-		$note = sprintf(
-			/* translators: %1: the successfully charged amount */
-			__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-			wc_price( $amount )
-		);
+		if ( empty( $reason ) ) {
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount */
+				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
+				wc_price( $amount )
+			);
+		} else {
+			$note = sprintf(
+				/* translators: %1: the successfully charged amount, %2: reason */
+				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
+				wc_price( $amount ),
+				$reason
+			);
+		}
 		$order->add_order_note( $note );
 
 		return true;
