@@ -15,15 +15,13 @@ function read( resourceNames, fetch = apiFetch ) {
 	return readTransactions( resourceNames, fetch );
 }
 
-function readTransactions( resourceNames, fetch ) {
-	const resourceName = 'transactions-list';
-
-	if ( includes( resourceNames, resourceName ) ) {
+export function readTransactions( resourceNames, fetch, dataToResources = transactionsToResources ) {
+	if ( includes( resourceNames, 'transactions-list' ) ) {
 		const url = `${ NAMESPACE }/payments/transactions`;
 
 		return [
 			fetch( { path: url } )
-				.then( transactionsToResources )
+				.then( dataToResources )
 				.catch( error => {
 					return { [ resourceName ]: { error } };
 				} )
@@ -33,7 +31,7 @@ function readTransactions( resourceNames, fetch ) {
 	return [];
 }
 
-function transactionsToResources( transactions ) {
+export function transactionsToResources( transactions ) {
 	return {
 		[ 'transactions-list' ]: {
 			data: transactions,
