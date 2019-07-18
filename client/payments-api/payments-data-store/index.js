@@ -17,25 +17,16 @@ if ( 'development' === process.env.NODE_ENV ) {
 function createPaymentsApiStore() {
 	const apiClient = createApiClient( 'wc-payments-api', paymentsApiSpec );
 
-	function getComponentSelectors( component ) {
-		const componentRequirements = [];
-
-		return {
-			selectors: apiClient.getSelectors( ),
-		};
-	}
-
 	return {
 		// The wrapped function for getSelectors is temporary code.
 		//
 		// @todo Remove the `() =>` after the `@wordpress/data` PR is merged:
 		// https://github.com/WordPress/gutenberg/pull/11460
 		//
-		getSelectors: () => context => {
-			const component = context && context.component ? context.component : context;
-			return getComponentSelectors( component );
+		getSelectors: () => {
+			return apiClient.getSelectors();
 		},
-		getActions() {
+		getActions: () => {
 			return apiClient.getMutations();
 		},
 		subscribe: apiClient.subscribe,
