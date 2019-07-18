@@ -287,7 +287,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through, or an error.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order     = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return false;
+		}
+
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		if ( is_null( $amount ) ) {
