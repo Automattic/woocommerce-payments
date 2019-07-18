@@ -75,7 +75,7 @@ export default compose(
 	withSelect( select => {
 		const { getTransactions, getTransactionsIsLoading } = select( 'wc-payments-api' );
 		const transactions = getTransactions();
-		const isLoading = getTransactionsIsLoading();
+		const isLoading = getTransactionsIsLoading;
 
 		return { transactions, isLoading };
 	} )

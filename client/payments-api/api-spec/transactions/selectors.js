@@ -11,11 +11,9 @@ const getTransactions = ( getResource, requireResource ) => (
 	return requireResource( requirement, resourceName ).data || {};
 }
 
-const getTransactionsIsLoading = ( getResource, requireResource ) => (
-	requirement = DEFAULT_REQUIREMENT
-) => {
+const getTransactionsIsLoading = ( getResource ) => {
 	const resourceName = 'transactions-list';
-	const transactionsResource = requireResource( requirement, resourceName );
+	const transactionsResource = getResource( resourceName );
 	const transactions = transactionsResource.data || {};
 
 	// If no transactions are available, assume the request is loading.
