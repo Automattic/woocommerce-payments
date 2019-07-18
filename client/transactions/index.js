@@ -40,19 +40,27 @@ class TransactionsList extends Component {
 			const charge = txn.source.object === 'charge' ? txn.source : null;
 			const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
 
+			// Extract nested properties from the charge.
+			const billing_details = charge ? charge.billing_details : null;
+			const outcome = charge ? charge.outcome : null;
+			const payment_method_details = charge ? charge.payment_method_details : null;
+			const address = billing_details ? billing_details.address : null;
+			const card = payment_method_details ?  payment_method_details.card : null;
+
+			// Map transaction into table row.
 			const data = {
 				created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
 				type: { value: txn.type, display: capitalize( txn.type ) },
-				source: charge && { value: charge.payment_method_details.card.brand, display: <code>{ charge.payment_method_details.card.brand }</code> },
+				source: card && { value: card.brand, display: <code>{ card.brand }</code> },
 				order: { value: txn.order, display: order_url },
-				customer: charge && { value: charge.billing_details.name, display: charge.billing_details.name },
-				email: charge && { value: charge.billing_details.email, display: charge.billing_details.email },
-				country: charge && { value: charge.billing_details.address.country, display: charge.billing_details.address.country },
+				customer: billing_details && { value: billing_details.name, display: billing_details.name },
+				email: billing_details && { value: billing_details.email, display: billing_details.email },
+				country: address && { value: address.country, display: address.country },
 				amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
 				fee: { value: txn.fee / 100, display: formatCurrency( txn.fee / 100 ) },
 				net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 				// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-				risk_level: charge && { value: charge.outcome.risk_level, display: capitalize( charge.outcome.risk_level ) },
+				risk_level: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
 			};
 
 			return headers.map( ( { key } ) => data[ key ] || { display: null } );
