@@ -11,11 +11,11 @@ import { includes } from 'lodash';
  */
 import { NAMESPACE } from '../../constants';
 
-function read( resourceNames, fetch = apiFetch ) {
-	return readTransactions( resourceNames, fetch );
+function read( resourceNames, fetch = apiFetch, dataToResources = transactionsToResources ) {
+	return readTransactions( resourceNames, fetch, dataToResources );
 }
 
-export function readTransactions( resourceNames, fetch, dataToResources = transactionsToResources ) {
+export function readTransactions( resourceNames, fetch, dataToResources ) {
 	if ( includes( resourceNames, 'transactions-list' ) ) {
 		const url = `${ NAMESPACE }/payments/transactions`;
 
