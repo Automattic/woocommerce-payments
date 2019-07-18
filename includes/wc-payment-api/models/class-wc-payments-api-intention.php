@@ -94,7 +94,7 @@ class WC_Payments_API_Intention {
 	}
 
 	/**
-	 * Gets intention status
+	 * Returns the charge ID associated with this intention
 	 *
 	 * @return string
 	 */

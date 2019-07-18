@@ -284,7 +284,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  float  $amount   - the amount to refund.
 	 * @param  string $reason   - the reason for refunding.
 	 *
-	 * @return bool - Whether refund went through.
+	 * @return bool|WP_Error - Whether the refund went through, or an error.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order     = wc_get_order( $order_id );
