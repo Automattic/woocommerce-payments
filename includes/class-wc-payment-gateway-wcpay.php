@@ -241,7 +241,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
-					$capture_method
+					$manual_capture
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
