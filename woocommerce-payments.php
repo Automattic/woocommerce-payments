@@ -7,13 +7,16 @@
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 3.5
+ * WC requires at least: 3.6
  * WC tested up to: 3.6.4
- * Requires WP: 5.0
  * Version: 0.2.0
  *
  * @package WooCommerce\Payments
  */
+
+define( 'WCPAY_WC_ADMIN_VERSION_REQUIRED', '0.15' );
+// When a WooCommerce version that bundles WC-Admin is released, set it here if it satisfies our requirements.
+define( 'WCPAY_WC_MIN_VERSION_WITH_WC_ADMIN', false );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.

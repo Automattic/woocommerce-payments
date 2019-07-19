@@ -41,6 +41,7 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+	require_once dirname( __FILE__ ) . '/../includes/class-wc-payments-dependencies-validator.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
