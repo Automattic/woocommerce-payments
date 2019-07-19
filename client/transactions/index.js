@@ -24,7 +24,7 @@ const headers = [
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-export default () => {
+const TransactionsPage = () => {
 	const [ transactions, setTransactions ] = useState( [] );
 	const [ loading, setLoading ] = useState( false );
 
@@ -84,3 +84,5 @@ export default () => {
 		/>
 	);
 };
+
+export default TransactionsPage;
