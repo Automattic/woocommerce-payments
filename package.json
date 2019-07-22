@@ -29,6 +29,7 @@
     "redux": "^4.0.4"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
     "@woocommerce/components": "^3.1.0",
     "@woocommerce/currency": "^1.1.2",
     "@woocommerce/date": "^1.2.0",
