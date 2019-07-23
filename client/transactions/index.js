@@ -29,7 +29,7 @@ const headers = [
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-class TransactionsList extends Component {
+export class TransactionsList extends Component {
 	render() {
 		const { transactions, isLoading } = this.props;
 		const transactionsData = transactions.data || [];
