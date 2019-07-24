@@ -16,6 +16,11 @@ jQuery( function() {
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
 	jQuery( document.body ).on( 'updated_checkout', function() {
+		// Don't re-mount if already mounted in DOM.
+		if ( jQuery( '#wc-payment-card-element' ).children().length ) {
+			return;
+		}
+
 		cardElement.unmount();
 		cardElement.mount( '#wc-payment-card-element' );
 	} );
