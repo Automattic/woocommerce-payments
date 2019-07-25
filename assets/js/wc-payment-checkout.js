@@ -3,13 +3,13 @@ jQuery( function( $ ) {
 	'use strict';
 
 	var stripe   = new Stripe( wc_payment_config.publishableKey, {
-		stripeAccount: wc_payment_config.accountId
+		stripeAccount: wc_payment_config.accountId,
 	} );
 	var elements = stripe.elements();
 
 	// Create a card element.
 	var cardElement = elements.create( 'card', {
-		hidePostalCode: true
+		hidePostalCode: true,
 	} );
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
