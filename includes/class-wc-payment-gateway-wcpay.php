@@ -174,13 +174,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wp_localize_script( 'wc-payment-checkout', 'wc_payment_config', $js_config );
 		wp_enqueue_script( 'wc-payment-checkout' );
 
+		wp_enqueue_style(
+			'wc-payment-checkout',
+			plugins_url( 'assets/css/wc-payment-checkout.css', WCPAY_PLUGIN_FILE ),
+			array(),
+			filemtime( WCPAY_ABSPATH . 'assets/css/wc-payment-checkout.css' )
+		);
+
 		// Output the form HTML.
-		// TODO: Style this up. Formatting, escaping double line breaks etc.
 		?>
 		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
-		<div id="wc-payment-card-element"></div>
-		<div id="wc-payment-errors" role="alert"></div>
-		<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
+		<fieldset>
+			<div id="wc-payment-card-element" class="form-row"></div>
+			<div id="wc-payment-errors" role="alert"></div>
+			<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
+		</fieldset>
 		<?php
 	}
 
