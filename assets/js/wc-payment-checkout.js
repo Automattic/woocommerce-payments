@@ -3,13 +3,14 @@ jQuery( function() {
 	'use strict';
 
 	var stripe   = new Stripe( wc_payment_config.publishableKey, {
-		stripeAccount: wc_payment_config.accountId
+		stripeAccount: wc_payment_config.accountId,
 	} );
 	var elements = stripe.elements();
 
 	// Create a card element.
 	var cardElement = elements.create( 'card', {
-		hidePostalCode: true
+		hidePostalCode: true,
+		classes: { base: 'wc-payment-card-mounted' },
 	} );
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -21,12 +22,13 @@ jQuery( function() {
 	} );
 
 	// Update the validation state based on the element's state.
-	cardElement.addEventListener( 'change', function(event) {
-		var displayError = document.getElementById( 'wc-payment-errors' );
-		if (event.error) {
-			displayError.textContent = event.error.message;
+	cardElement.addEventListener( 'change', function( event ) {
+		var displayError = jQuery( '#wc-payment-errors' );
+		if ( event.error ) {
+			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
+				.find( 'li' ).text( event.error.message );
 		} else {
-			displayError.textContent = '';
+			displayError.html( '' );
 		}
 	} );
 
