@@ -14,11 +14,6 @@ function createPaymentsApiSpec() {
 		},
 		operations: {
 			read( resourceNames ) {
-				if ( document.hidden ) {
-					// Don't do any read updates while the tab isn't active.
-					return [];
-				}
-
 				return [
 					...transactions.operations.read( resourceNames ),
 				];
