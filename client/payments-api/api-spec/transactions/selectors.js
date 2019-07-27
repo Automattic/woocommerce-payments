@@ -13,8 +13,7 @@ import { DEFAULT_REQUIREMENT } from '../../constants';
 const getTransactions = ( getResource, requireResource ) => (
 	requirement = DEFAULT_REQUIREMENT
 ) => {
-	const resourceName = 'transactions-list';
-	return requireResource( requirement, resourceName ).data || {};
+	return requireResource( requirement, 'transactions-list' ).data || {};
 }
 
 const isWaitingForInitialLoad = ( getResource ) => () => {
