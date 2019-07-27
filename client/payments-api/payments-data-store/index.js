@@ -18,11 +18,6 @@ function createPaymentsApiStore() {
 	const apiClient = createApiClient( 'wc-payments-api', paymentsApiSpec );
 
 	return {
-		// The wrapped function for getSelectors is temporary code.
-		//
-		// @todo Remove the `() =>` after the `@wordpress/data` PR is merged:
-		// https://github.com/WordPress/gutenberg/pull/11460
-		//
 		getSelectors: () => {
 			return apiClient.getSelectors();
 		},
