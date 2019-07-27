@@ -29,7 +29,7 @@ const headers = [
 ];
 
 const TransactionsList = ( props ) => {
-	const { transactions, isLoading } = props;
+	const { transactions, showPlaceholder } = props;
 	const transactionsData = transactions.data || [];
 	// Do not display table loading view if data is already available.
 
@@ -66,7 +66,7 @@ const TransactionsList = ( props ) => {
 	return (
 		<TableCard
 			title="Transactions"
-			isLoading={ isLoading }
+			isLoading={ showPlaceholder }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
 			headers={ headers }
@@ -79,8 +79,8 @@ export default compose(
 	withSelect( select => {
 		const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
 		const transactions = getTransactions();
-		const isLoading = showTransactionsPlaceholder();
+		const showPlaceholder = showTransactionsPlaceholder();
 
-		return { transactions, isLoading };
+		return { transactions, showPlaceholder };
 	} )
 )( TransactionsList );
