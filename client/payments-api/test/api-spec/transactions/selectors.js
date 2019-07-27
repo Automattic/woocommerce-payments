@@ -9,9 +9,11 @@ import { DEFAULT_REQUIREMENT } from '../../../constants';
 
 describe( 'Transactions selectors', () => {
 	const expectedResourceName = 'transactions-list';
+	const now = Date.now();
+	const second_before_now = now - 1000;
 
 	describe( 'getTransactions()', () => {
-		it( 'getTransactions before a read operation returns empty list', () => {
+		it( 'Returns empty list before a read operation', () => {
 			const expected = {};
 
 			const mockGetResource = jest.fn();
@@ -26,7 +28,7 @@ describe( 'Transactions selectors', () => {
 			expect( transactions ).toStrictEqual( expected );
 		} );
 
-		it( 'getTransactions after a read operation returns the expected transactions list', () => {
+		it( 'Returns the expected transactions list after a read operation', () => {
 			const expected = { data: [ {}, {}, {} ] };
 
 			const mockGetResource = jest.fn();
@@ -43,14 +45,14 @@ describe( 'Transactions selectors', () => {
 	} );
 
 	describe( 'getTransactionsIsLoading()', () => {
-		it( "getTransactionsIsLoading returns false when a read operation isn't in flight", () => {
+		it( "Returns false when a read operation isn't in flight", () => {
 			const expected = false;
 
 			const mockGetResource = jest.fn();
 
 			mockGetResource.mockReturnValue( {
-				lastRequested: 0,
-				lastReceived: 1,
+				lastRequested: second_before_now,
+				lastReceived: now,
 			} );
 			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
 
@@ -59,14 +61,14 @@ describe( 'Transactions selectors', () => {
 			expect( isLoading ).toStrictEqual( expected );
 		} );
 
-		it( 'getTransactionsIsLoading returns true when a read operation is in flight', () => {
+		it( 'Returns true when a read operation is in flight', () => {
 			const expected = true;
 
 			const mockGetResource = jest.fn();
 
 			mockGetResource.mockReturnValue( {
-				lastRequested: 1,
-				lastReceived: 0,
+				lastRequested: now,
+				lastReceived: second_before_now,
 			} );
 			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
 
@@ -76,17 +78,17 @@ describe( 'Transactions selectors', () => {
 		} );
 	} );
 
-	describe( 'transactionsInitStatus()', () => {
-		it( 'Returns true when transactions are initialized', () => {
-			const expected = true;
+	describe( 'isWaitingForInitialLoad()', () => {
+		it( 'Returns false when transactions are initialized', () => {
+			const expected = false;
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: 0,
-				lastReceived: 1,
+				lastRequested: second_before_now,
+				lastReceived: now,
 			} );
 
-			const initStatus = transactionsSelectors.transactionsInitStatus( mockGetResource )();
+			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -115,8 +117,8 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: 0,
-				lastReceived: 1,
+				lastRequested: second_before_now,
+				lastReceived: now,
 			} );
 
 			const showPlaceholder = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();

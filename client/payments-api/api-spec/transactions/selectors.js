@@ -17,11 +17,11 @@ const getTransactions = ( getResource, requireResource ) => (
 	return requireResource( requirement, resourceName ).data || {};
 }
 
-const transactionsInitStatus = ( getResource ) => () => {
+const isWaitingForInitialLoad = ( getResource ) => () => {
 	const resourceName = 'transactions-list';
 	const transactionsResource = getResource( resourceName );
 
-	return ! ( isNil( transactionsResource.lastRequested ) || isNil( transactionsResource.lastReceived ) );
+	return transactionsResource.lastReceived === undefined;
 }
 
 const getTransactionsIsLoading = ( getResource ) => () => {
@@ -32,14 +32,12 @@ const getTransactionsIsLoading = ( getResource ) => () => {
 }
 
 const showTransactionsPlaceholder = ( getResource ) => () => {
-	const isInitialized = transactionsInitStatus( getResource )();
-
-	return ! isInitialized;
+	return isWaitingForInitialLoad( getResource )();
 }
 
 export default {
 	getTransactions,
 	getTransactionsIsLoading,
-	transactionsInitStatus,
+	isWaitingForInitialLoad,
 	showTransactionsPlaceholder,
 };
