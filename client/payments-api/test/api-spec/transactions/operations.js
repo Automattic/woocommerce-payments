@@ -10,7 +10,7 @@ describe( 'Transactions operations', () => {
 	describe( 'readTransactions()', () => {
 		const expectedUrl = `${ NAMESPACE }/payments/transactions`;
 
-		it( 'Transactions read operation returns a list with one promise when correct resource names are supplied', () => {
+		it( 'Returns a list with one promise when correct resource names are supplied', () => {
 			const mockData = [ {}, {}, {} ];
 			const expectedResolvedPromise = {
 				[ "transactions-list" ]: {
@@ -40,7 +40,7 @@ describe( 'Transactions operations', () => {
 			} );
 		} );
 
-		it( 'Transactions read operation returns an empty list when wrong resource names are supplied', () => {
+		it( 'Returns an empty list when wrong resource names are supplied', () => {
 			const expected = [];
 
 			const mockFetch = jest.fn();
