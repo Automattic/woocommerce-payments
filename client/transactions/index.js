@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { compose } from '@wordpress/compose';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
@@ -75,12 +74,10 @@ const TransactionsList = ( props ) => {
 	);
 };
 
-export default compose(
-	withSelect( select => {
-		const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
-		const transactions = getTransactions();
-		const showPlaceholder = showTransactionsPlaceholder();
+export default withSelect( select => {
+	const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
+	const transactions = getTransactions();
+	const showPlaceholder = showTransactionsPlaceholder();
 
-		return { transactions, showPlaceholder };
-	} )
-)( TransactionsList );
+	return { transactions, showPlaceholder };
+} )( TransactionsList );
