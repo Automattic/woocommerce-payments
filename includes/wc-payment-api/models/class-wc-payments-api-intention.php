@@ -43,16 +43,18 @@ class WC_Payments_API_Intention {
 	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
-	 * @param string   $id      - ID of the charge.
-	 * @param integer  $amount  - Amount charged.
-	 * @param DateTime $created - Time charge created.
-	 * @param string   $status  - Intention status.
+	 * @param string   $id        - ID of the intention.
+	 * @param integer  $amount    - Amount charged.
+	 * @param DateTime $created   - Time charge created.
+	 * @param string   $status    - Intention status.
+	 * @param string   $charge_id - ID of charge associated with intention.
 	 */
-	public function __construct( $id, $amount, DateTime $created, $status ) {
-		$this->id      = $id;
-		$this->amount  = $amount;
-		$this->created = $created;
-		$this->status  = $status;
+	public function __construct( $id, $amount, DateTime $created, $status, $charge_id ) {
+		$this->id        = $id;
+		$this->amount    = $amount;
+		$this->created   = $created;
+		$this->status    = $status;
+		$this->charge_id = $charge_id;
 	}
 
 	/**
@@ -89,5 +91,14 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_status() {
 		return $this->status;
+	}
+
+	/**
+	 * Returns the charge ID associated with this intention
+	 *
+	 * @return string
+	 */
+	public function get_charge_id() {
+		return $this->charge_id;
 	}
 }
