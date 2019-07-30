@@ -33,7 +33,7 @@ jQuery( function( $ ) {
 			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
 				.find( 'li' ).text( event.error.message );
 		} else {
-			displayError.html( '' );
+			displayError.empty();
 		}
 	} );
 

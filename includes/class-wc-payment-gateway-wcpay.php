@@ -63,7 +63,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Accept payments via a WooCommerce-branded payment gateway', 'woocommerce-payments' );
+		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -82,14 +82,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Title', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => __( 'Credit Card (WooCommerce Payments)', 'woocommerce-payments' ),
+				'default'     => __( 'Credit Card', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
 			'description'          => array(
 				'title'       => __( 'Description', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => __( 'Pay with your credit card via WooCommerce Payments.', 'woocommerce-payments' ),
+				'default'     => '',
 				'desc_tip'    => true,
 			),
 			'stripe_account_id'    => array(
@@ -183,9 +183,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Output the form HTML.
 		?>
-		<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 		<fieldset>
-			<div id="wc-payment-card-element" class="form-row"></div>
+			<?php if ( ! empty( $this->get_description() ) ) : ?>
+				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
+			<?php endif; ?>
+
+			<div id="wc-payment-card-element"></div>
 			<div id="wc-payment-errors" role="alert"></div>
 			<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
 		</fieldset>
