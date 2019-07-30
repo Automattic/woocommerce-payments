@@ -182,14 +182,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		// Output the form HTML.
-		$description = $this->get_description();
 		?>
 		<fieldset>
-			<?php if ( ! empty( $description ) ) : ?>
-				<legend><?php echo wp_kses_post( $description ); ?></legend>
+			<?php if ( ! empty( $this->get_description() ) ) : ?>
+				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 			<?php endif; ?>
 
-			<div id="wc-payment-card-element" class="form-row"></div>
+			<div id="wc-payment-card-element"></div>
 			<div id="wc-payment-errors" role="alert"></div>
 			<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
 		</fieldset>
