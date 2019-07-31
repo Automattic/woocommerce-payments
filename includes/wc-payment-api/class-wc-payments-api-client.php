@@ -220,6 +220,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 * @throws Exception - If the account ID hasn't been set.
+	 * @throws WC_Payments_API_Exception - If the response status is not 2xx.
 	 */
 	private function request( $request, $api, $method ) {
 		// Add account ID to the request.
@@ -271,8 +272,7 @@ class WC_Payments_API_Client {
 		// Check the response code and handle any errors.
 		$response_code = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $response_code ) {
-			// TODO: Handle non-200 codes better.
-			throw new Exception( __( 'Server Error.', 'woocommerce-payments' ) );
+			throw WC_Payments_API_Exception::build_from_api_response( $response_body, $response_code );
 		}
 
 		return $response_body;

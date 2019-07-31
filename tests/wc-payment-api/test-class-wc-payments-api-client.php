@@ -122,4 +122,45 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_status, $result->get_status() );
 		$this->assertEquals( $expected_client_secret, $result->get_client_secret() );
 	}
+
+	/**
+	 * Test a call to create_and_confirm_intention with a 400 response
+	 *
+	 * For example, for a credit card with insuffient funds.
+	 * Test credit card number for insufficient funds: 4000000000009995
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_400_response() {
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'error' => array(
+									'code'         => 'card_declined',
+									'decline_code' => 'insufficient_funds',
+									'message'      => 'Your card has insufficient funds.',
+									'type'         => 'card_error',
+								),
+							)
+						),
+						'response' => array(
+							'code'    => 400,
+							'message' => 'Bad Request',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		$this->expectException( WC_Payments_API_Exception::class );
+
+		$this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
+	}
 }

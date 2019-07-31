@@ -218,6 +218,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 			die();
+		} catch ( WC_Payments_API_Exception $e ) {
+			wp_send_json_error(
+				array(
+					'message' => $e->getMessage(),
+				)
+			);
 		} catch ( Exception $e ) {
 			wp_send_json_error(
 				array(
