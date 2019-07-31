@@ -109,8 +109,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 										[
 											'id'      => 'test_charge_id',
 											'amount'  => $expected_amount,
-											'created' => 1557224304,
-											'status'  => $expected_status,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
 										],
 									],
 								],
@@ -191,6 +191,17 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 								'amount'  => $expected_amount,
 								'created' => 1557224304,
 								'status'  => $expected_status,
+								'charges' => [
+									'total_count' => 1,
+									'data'        => [
+										[
+											'id'      => 'test_charge_id',
+											'amount'  => $expected_amount,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
+										],
+									],
+								],
 							)
 						),
 						'response' => array(
