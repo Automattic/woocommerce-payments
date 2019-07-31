@@ -90,7 +90,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount            - Amount to charge.
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
-	 * @param string $manual_capture    - Whether to capture funds via manual action.
+	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
