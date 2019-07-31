@@ -220,6 +220,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 * @throws Exception - If the account ID hasn't been set.
+	 * @throws Exception - If unable to encode body for request.
+	 * @throws Exception - If unable to decode response.
 	 * @throws WC_Payments_API_Exception - If the response status is not 2xx.
 	 */
 	private function request( $request, $api, $method ) {
