@@ -167,4 +167,44 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		// Assert amount returned is correct (ignoring other properties for now since this is a stub implementation).
 		$this->assertEquals( 123, $refund['amount'] );
 	}
+
+	/**
+	 * Test a successful call to create_intention with manual capture.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_intention_authorization_success() {
+		$expected_amount = 123;
+		$expected_status = 'requires_capture';
+
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->with( $this->anything(), $this->stringContains( '"manual"' ) )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_transaction_id',
+								'amount'  => $expected_amount,
+								'created' => 1557224304,
+								'status'  => $expected_status,
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+ 
+		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789', true );
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
 }
