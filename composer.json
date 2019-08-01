@@ -11,7 +11,8 @@
     },
     "require-dev": {
       "phpunit/phpunit": "6.5.13",
-      "woocommerce/woocommerce-sniffs": "0.0.6"
+      "woocommerce/woocommerce-sniffs": "0.0.6",
+      "woocommerce/woocommerce": "3.5.8"
     },
     "scripts": {
       "test": [
@@ -29,6 +30,7 @@
         "test": "Run unit tests",
         "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
         "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
-      }
+      },
+      "installer-disable": true
     }
   }

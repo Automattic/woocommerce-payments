@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0025eb557d1cde6be826cf8f1aa2cc1",
+    "content-hash": "8c7b0e2b31dd637d4c003d6d9f8414c0",
     "packages": [
         {
             "name": "composer/installers",
@@ -1922,6 +1922,50 @@
                 "validate"
             ],
             "time": "2018-12-25T11:19:39+00:00"
+        },
+        {
+            "name": "woocommerce/woocommerce",
+            "version": "3.5.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/woocommerce/woocommerce.git",
+                "reference": "67fa99743e5bbbb1ad496bf85c1731be9e69f709"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/woocommerce/woocommerce/zipball/67fa99743e5bbbb1ad496bf85c1731be9e69f709",
+                "reference": "67fa99743e5bbbb1ad496bf85c1731be9e69f709",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "~1.2"
+            },
+            "require-dev": {
+                "apigen/apigen": "^4",
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3",
+                "nette/utils": "~2.3.0",
+                "phpunit/phpunit": "6.*",
+                "squizlabs/php_codesniffer": "*",
+                "wimg/php-compatibility": "^8.0",
+                "woocommerce/woocommerce-git-hooks": "*",
+                "woocommerce/woocommerce-sniffs": "*",
+                "wp-coding-standards/wpcs": "^0.14"
+            },
+            "type": "wordpress-plugin",
+            "extra": {
+                "scripts-description": {
+                    "test": "Run unit tests",
+                    "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
+                    "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "description": "An eCommerce toolkit that helps you sell anything. Beautifully.",
+            "homepage": "https://woocommerce.com/",
+            "time": "2019-04-16T12:14:44+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
