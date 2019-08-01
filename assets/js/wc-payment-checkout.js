@@ -122,8 +122,10 @@ jQuery( function() {
 				jQuery( '.woocommerce-checkout' ).submit();
 			} )
 			.catch( function( error ) {
+				var errorMessage = error.userMessage || wc_payment_config.default_payment_error_message;
+
 				var displayError = document.getElementById( 'wc-payment-errors' );
-				displayError.textContent = error.message;
+				displayError.textContent = errorMessage;
 
 				console.log('Error processing payment:', error);
 

@@ -149,6 +149,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'accountId'                      => $this->get_option( 'stripe_account_id' ),
 			'ajaxurl'                        => WC_AJAX::get_endpoint( 'create_payment_intention' ),
 			'create_payment_intention_nonce' => wp_create_nonce( 'woocommerce-payments-create-payment-intention' ),
+			'default_payment_error_message'  => __( 'There was a problem with your payment.', 'woocommerce-services' ),
 		);
 
 		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
@@ -221,7 +222,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'There was a problem with your payment.', 'woocommerce-payments' ),
+					'userMessage' => __( 'There was a problem with your payment.', 'woocommerce-payments' ),
 				)
 			);
 		}
