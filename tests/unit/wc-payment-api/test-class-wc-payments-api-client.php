@@ -30,6 +30,8 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 	public function setUp() {
 		parent::setUp();
 
+		WP_Mock::setUp();
+
 		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
 			->setMethods( array( 'remote_request' ) )
@@ -41,6 +43,21 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 		);
 
 		$this->payments_api_client->set_account_id( 'test_acc_id_12345' );
+
+		WP_Mock::userFunction(
+			'wp_json_encode',
+			array(
+				'return' => function ( $value ) {
+					return json_encode( $value );
+				}
+			)
+		);
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		WP_Mock::tearDown();
 	}
 
 	/**
