@@ -27,7 +27,7 @@ define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_init() {
-	include_once dirname( __FILE__ ) . '/includes/class-wc-payments.php';
+	include_once dirname( __FILE__ ) . '/vendor/autoload.php';
 	WC_Payments::init();
 }
 

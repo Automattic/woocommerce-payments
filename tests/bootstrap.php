@@ -19,21 +19,8 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-// Include the Composer autoloader so that we can load WooCommerce classes.
+// Include the Composer autoloader so that we can load WooCommerce classes and classes from this project.
 require_once dirname( __FILE__ ) . '/../vendor/autoload.php';
-
-/**
- * Manually load the plugin being tested.
- */
-function _manually_load_plugin() {
-	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
-
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
-}
-tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
