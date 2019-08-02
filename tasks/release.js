@@ -37,6 +37,8 @@ confirm( colors.cyan( 'Howdy! This script is going to create a release folder wi
 	cp( 'woocommerce-payments.php', targetFolder );
 	cp( 'readme.txt', targetFolder );
 
+	// copy the autoloader
+
 	// copy the directories to the release folder
 	cp( '-Rf', dirsToCopy, targetFolder );
 
