@@ -19,6 +19,9 @@
       "woocommerce/woocommerce": "3.9.3",
       "woocommerce/woocommerce-sniffs": "0.0.6"
     },
+    "autoload": {
+      "classmap": ["includes/"]
+    },
     "scripts": {
       "test": [
         "phpunit"
