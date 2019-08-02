@@ -19,22 +19,13 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-/**
- * Returns WooCommerce main directory.
- *
- * @return string
- */
-function wc_dir() {
-	return dirname( dirname( dirname( __FILE__ ) ) ) . '/woocommerce';
-}
+// Include the Composer autoloader so that we can load WooCommerce classes.
+require_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 
 /**
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
-	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
-	require_once wc_dir() . '/woocommerce.php';
-
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
