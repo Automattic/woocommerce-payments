@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Communicates with WooCommerce Payments API.
  */

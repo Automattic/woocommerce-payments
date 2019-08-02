@@ -5,10 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
-
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
  */

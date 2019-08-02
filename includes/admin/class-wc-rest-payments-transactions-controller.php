@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * REST controller for transactions.
  */

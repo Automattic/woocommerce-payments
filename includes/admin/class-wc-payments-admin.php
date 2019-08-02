@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * WC_Payments_Admin Class.
  */

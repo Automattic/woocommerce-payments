@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * A charge object used by the WooCommerce Payments API.
  */

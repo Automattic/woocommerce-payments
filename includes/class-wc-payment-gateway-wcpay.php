@@ -5,10 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
-
 /**
  * Gateway class for WooCommerce Payments
  */
