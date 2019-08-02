@@ -258,9 +258,7 @@ class WC_Payments_API_Client {
 		);
 
 		// Extract the response body and decode it from JSON into an array.
-		$response_body_json = wp_remote_retrieve_body( $response );
-
-		$response_body = json_decode( $response_body_json, true );
+		$response_body = json_decode( $response->get_body(), true );
 		if ( null === $response_body ) {
 			throw new Exception(
 				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' )
@@ -268,10 +266,9 @@ class WC_Payments_API_Client {
 		}
 
 		// Check the response code and handle any errors.
-		$response_code = wp_remote_retrieve_response_code( $response );
-		if ( 500 <= $response_code ) {
+		if ( 500 <= $response->get_code() ) {
 			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
-		} elseif ( 400 <= $response_code ) {
+		} elseif ( 400 <= $response->get_code() ) {
 			return new WP_Error( $response_body['code'], $response_body['message'] );
 		}
 

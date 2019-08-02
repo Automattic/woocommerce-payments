@@ -72,21 +72,16 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => json_encode(
+					new WC_Payments_Http_Response(
+						200,
+						json_encode(
 							array(
 								'id'      => 'test_charge_id',
 								'amount'  => 123,
 								'created' => 1557224304,
 								'status'  => 'success',
 							)
-						),
-						'response' => array(
-							'code' => 200,
-						),
-						'cookies'  => array(),
-						'filename' => null,
+						)
 					)
 				)
 			);
@@ -112,9 +107,9 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => json_encode(
+					new WC_Payments_Http_Response(
+						200,
+						json_encode(
 							array(
 								'id'      => 'test_intention_id',
 								'amount'  => $expected_amount,
@@ -132,13 +127,7 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 									],
 								],
 							)
-						),
-						'response' => array(
-							'code'    => 200,
-							'message' => 'OK',
-						),
-						'cookies'  => array(),
-						'filename' => null,
+						)
 					)
 				)
 			);
@@ -160,20 +149,15 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => json_encode(
+					new WC_Payments_Http_Response(
+						200,
+						json_encode(
 							array(
 								'id'     => 'test_refund_id',
 								'amount' => 123,
 								'status' => 'succeeded',
 							)
-						),
-						'response' => array(
-							'code' => 200,
-						),
-						'cookies'  => array(),
-						'filename' => null,
+						)
 					)
 				)
 			);
