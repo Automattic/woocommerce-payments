@@ -57,7 +57,7 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 				$this->returnValue(
 					array(
 						'headers'  => array(),
-						'body'     => wp_json_encode(
+						'body'     => json_encode(
 							array(
 								'id'      => 'test_charge_id',
 								'amount'  => 123,
@@ -97,7 +97,7 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 				$this->returnValue(
 					array(
 						'headers'  => array(),
-						'body'     => wp_json_encode(
+						'body'     => json_encode(
 							array(
 								'id'      => 'test_intention_id',
 								'amount'  => $expected_amount,
@@ -145,7 +145,7 @@ class WC_Payments_API_Client_Test extends PHPUnit\Framework\TestCase {
 				$this->returnValue(
 					array(
 						'headers'  => array(),
-						'body'     => wp_json_encode(
+						'body'     => json_encode(
 							array(
 								'id'     => 'test_refund_id',
 								'amount' => 123,
