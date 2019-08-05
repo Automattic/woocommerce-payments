@@ -1,9 +1,9 @@
 
-const defualtState = {
+const defaultState = {
 	resources: {},
 };
 
-export default function reducer( state = defualtState, action ) {
+export default function reducer( state = defaultState, action ) {
 	switch ( action.type ) {
 		case 'FRESH_DATA_REQUESTED':
 			return reduceRequested( state, action );
