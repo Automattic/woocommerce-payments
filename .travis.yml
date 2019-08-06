@@ -60,6 +60,7 @@ matrix:
     stage: deploy
     env: SHOULD_DEPLOY=1
     addons:
+      ssh_known_hosts: sftp.pressable.com
       apt:
         packages:
         - lftp
