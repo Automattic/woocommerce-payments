@@ -491,7 +491,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 	}
 
-	/*
+	/**
 	 * Add capture and cancel actions for orders with an authorized charge.
 	 *
 	 * @param array $actions - Actions to make available in order actions metabox.
