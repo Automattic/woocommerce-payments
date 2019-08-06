@@ -235,10 +235,12 @@ class WC_Payments_API_Client {
 	/**
 	 * Get one-time dashboard login url
 	 *
+	 * @param string $redirect_url - URL to navigate back to from the dashboard.
+	 *
 	 * @return array An array containing the url field
 	 */
-	public function get_login_data() {
-		return $this->request( array(), self::OAUTH_API . '/login', self::POST );
+	public function get_login_data( $redirect_url ) {
+		return $this->request( array( 'redirect_url' => $redirect_url ), self::OAUTH_API . '/login', self::POST );
 	}
 
 	/**
