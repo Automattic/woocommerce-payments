@@ -412,7 +412,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			// retrieve the one-time login url and redirect to it.
-			$login_data = $this->payments_api_client->get_login_data();
+			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url() );
 			wp_safe_redirect( $login_data['url'] );
 			exit;
 		}
