@@ -355,18 +355,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		parent::admin_options();
 
 		?>
-		<a
-			href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' ) ); ?>"
-			style="padding: 4px 16px; background-color: #95588a; font-weight: bold; color: #fff; border-radius: 3px; text-decoration: none; margin: 0 5px;" >
-			Connect new account
-		</a>
-		<a
-			target="_blank"
-			href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' ) ); ?>"
-			style="padding: 4px 16px; background-color: #95588a; font-weight: bold; color: #fff; border-radius: 3px; text-decoration: none; margin: 0 5px;" >
-			Open account dashboard
-			<span class="dashicons dashicons-external"></span>
-		</a>
+		<div class="wcpay-actions">
+			<a
+				class="button"
+				href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' ) ); ?>" >
+				Connect new account
+			</a>
+			<a
+				target="_blank"
+				class="button button-primary"
+				href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' ) ); ?> ">
+				Open account dashboard
+				<span class="dashicons dashicons-external"></span>
+			</a>
+		</div>
 		<?php
 	}
 
