@@ -138,6 +138,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// TODO: move somewhere else?
+		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
+		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
 	}
 
 	/**
@@ -342,5 +346,101 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->add_order_note( $note );
 
 		return true;
+	}
+
+	/**
+	 * Render the admin options, overrides a parent method
+	 */
+	public function admin_options() {
+		parent::admin_options();
+
+		?>
+		<a
+			href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' ) ); ?>"
+			style="padding: 4px 16px; background-color: #95588a; font-weight: bold; color: #fff; border-radius: 3px; text-decoration: none; margin: 0 5px;" >
+			Connect new account
+		</a>
+		<a
+			target="_blank"
+			href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' ) ); ?>"
+			style="padding: 4px 16px; background-color: #95588a; font-weight: bold; color: #fff; border-radius: 3px; text-decoration: none; margin: 0 5px;" >
+			Open account dashboard
+			<span class="dashicons dashicons-external"></span>
+		</a>
+		<?php
+	}
+
+	/**
+	 * Filter function to add Stripe to the list of allowed redirect hosts
+	 *
+	 * @param array $hosts - array of allowed hosts.
+	 *
+	 * @return array allowed hosts
+	 */
+	public function allowed_redirect_hosts( $hosts ) {
+		$hosts[] = 'connect.stripe.com';
+		return $hosts;
+	}
+
+	/**
+	 * Handle OAuth (login/init/redirect) routes
+	 */
+	public function maybe_handle_oauth() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			// initialize the connection flow and redirect the user.
+			$wc_countries = WC()->countries;
+			$current_user = wp_get_current_user();
+
+			$oauth_data = $this->payments_api_client->get_oauth_data(
+				$this->get_settings_url(),
+				array(
+					'email'         => $current_user->user_email,
+					'url'           => get_site_url(),
+					'business_name' => get_bloginfo( 'name' ),
+				)
+			);
+
+			set_transient( 'wcpay_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
+
+			wp_safe_redirect( $oauth_data['url'] );
+			exit;
+		}
+
+		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
+			// retrieve the one-time login url and redirect to it.
+			$login_data = $this->payments_api_client->get_login_data();
+			wp_safe_redirect( $login_data['url'] );
+			exit;
+		}
+
+		if ( isset( $_GET['wcpay-state'] )
+			&& isset( $_GET['wcpay-account-id'] )
+			&& isset( $_GET['wcpay-publishable-key'] )
+			&& isset( $_GET['wcpay-mode'] ) ) {
+			// finish the connection flow and save the settings.
+			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
+			if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
+				return;
+			}
+			delete_transient( 'wcpay_oauth_state' );
+
+			$account_id      = sanitize_text_field( wp_unslash( $_GET['wcpay-account-id'] ) );
+			$publishable_key = sanitize_text_field( wp_unslash( $_GET['wcpay-publishable-key'] ) );
+			$mode            = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
+
+			$this->update_option( 'stripe_account_id', $account_id );
+			if ( 'live' === $mode ) {
+				$this->update_option( 'publishable_key', $publishable_key );
+			} else {
+				$this->update_option( 'test_publishable_key', $publishable_key );
+			}
+
+			wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
+			exit;
+		}
 	}
 }
