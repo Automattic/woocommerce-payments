@@ -92,6 +92,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
+			'account_actions'      => array(
+				'type'        => 'title',
+				'description' => $this->settings_account_actions(),
+			),
 			'stripe_account_id'    => array(
 				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
 				'type'        => 'text',
@@ -349,11 +353,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Render the admin options, overrides a parent method
+	 * Generate markup for account actions
 	 */
-	public function admin_options() {
-		parent::admin_options();
-
+	public function settings_account_actions() {
+		ob_start();
 		?>
 		<div class="wcpay-actions">
 			<a
@@ -370,6 +373,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</a>
 		</div>
 		<?php
+		return ob_get_clean();
 	}
 
 	/**
