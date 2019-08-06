@@ -21,6 +21,7 @@ class WC_Payments_API_Client {
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
+	const OAUTH_API        = 'oauth';
 
 	/**
 	 * User agent string to report in requests.
@@ -210,6 +211,34 @@ class WC_Payments_API_Client {
 		}
 
 		return $transactions;
+	}
+
+	/**
+	 * Get data needed to initialize the OAuth flow
+	 *
+	 * @param string $return_url    - URL to redirect to at the end of the flow.
+	 * @param array  $business_data - data to prefill the form.
+	 *
+	 * @return array An array containing the url and state fields
+	 */
+	public function get_oauth_data( $return_url, $business_data = array() ) {
+		return $this->request(
+			array(
+				'return_url'    => $return_url,
+				'business_data' => $business_data,
+			),
+			self::OAUTH_API . '/init',
+			self::POST
+		);
+	}
+
+	/**
+	 * Get one-time dashboard login url
+	 *
+	 * @return array An array containing the url field
+	 */
+	public function get_login_data() {
+		return $this->request( array(), self::OAUTH_API . '/login', self::POST );
 	}
 
 	/**
