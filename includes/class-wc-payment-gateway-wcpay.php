@@ -365,11 +365,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				Connect new account
 			</a>
 			<a
-				target="_blank"
 				class="button button-primary"
 				href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' ) ); ?> ">
 				Open account dashboard
-				<span class="dashicons dashicons-external"></span>
 			</a>
 		</div>
 		<?php
