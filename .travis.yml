@@ -90,6 +90,7 @@ script:
   - bash bin/phpunit.sh
   - bash bin/phpcs.sh
   - npm run lint
+  - npm test client/
 
 before_deploy:
   - npm ci
