@@ -69,6 +69,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		);
 
+		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
+		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+
 		// Define setting fields.
 		$this->form_fields = array(
 			'enabled'              => array(
@@ -92,9 +95,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			'account_actions'      => array(
+			'payment_details'      => array(
 				'type'        => 'title',
-				'description' => $this->settings_account_actions(),
+				/* translators: 1) dashboard login URL 2) oauth entry point URL */
+				'description' => sprintf( __( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>. (Or connect to a new Stripe account <a href="%2$s">here</a>.)', 'woocommerce-payments' ), $login_url, $connect_url ),
 			),
 			'stripe_account_id'    => array(
 				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
@@ -350,28 +354,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->add_order_note( $note );
 
 		return true;
-	}
-
-	/**
-	 * Generate markup for account actions
-	 */
-	public function settings_account_actions() {
-		ob_start();
-		?>
-		<div class="wcpay-actions">
-			<a
-				class="button"
-				href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' ) ); ?>" >
-				Connect new account
-			</a>
-			<a
-				class="button button-primary"
-				href="<?php echo esc_attr( wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' ) ); ?> ">
-				Open account dashboard
-			</a>
-		</div>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**
