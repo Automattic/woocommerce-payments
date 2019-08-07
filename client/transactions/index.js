@@ -1,13 +1,16 @@
 /**
  * External dependencies
  */
-import { useState, useEffect } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
+
+/**
+ * Internal dependencies.
+ */
+import withSelect from 'payments-api/with-select';
 
 const headers = [
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
@@ -24,25 +27,12 @@ const headers = [
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-const TransactionsPage = () => {
-	const [ transactions, setTransactions ] = useState( [] );
-	const [ loading, setLoading ] = useState( false );
+const TransactionsList = ( props ) => {
+	const { transactions, showPlaceholder } = props;
+	const transactionsData = transactions.data || [];
+	// Do not display table loading view if data is already available.
 
-	useEffect( () => {
-		setLoading( true );
-		apiFetch( { path: '/wc/v3/payments/transactions' } ).then( ( response ) => {
-			const { data } = response;
-			if ( data ) {
-				setTransactions( data );
-			} else {
-				console.error( response );
-			}
-
-			setLoading( false );
-		} );
-	}, [] );
-
-	const rows = transactions.map( ( txn ) => {
+	const rows = transactionsData.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
 
@@ -50,7 +40,6 @@ const TransactionsPage = () => {
 		const billing_details = charge ? charge.billing_details : null;
 		const outcome = charge ? charge.outcome : null;
 		const payment_method_details = charge ? charge.payment_method_details : null;
-
 		const address = billing_details ? billing_details.address : null;
 		const card = payment_method_details ?  payment_method_details.card : null;
 
@@ -76,7 +65,7 @@ const TransactionsPage = () => {
 	return (
 		<TableCard
 			title="Transactions"
-			isLoading={ loading }
+			isLoading={ showPlaceholder }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
 			headers={ headers }
@@ -85,4 +74,10 @@ const TransactionsPage = () => {
 	);
 };
 
-export default TransactionsPage;
+export default withSelect( select => {
+	const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
+	const transactions = getTransactions();
+	const showPlaceholder = showTransactionsPlaceholder();
+
+	return { transactions, showPlaceholder };
+} )( TransactionsList );

@@ -10,6 +10,7 @@ import { addFilter } from '@wordpress/hooks';
 import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
+import 'payments-api/payments-data-store';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
