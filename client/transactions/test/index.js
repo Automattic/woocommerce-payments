@@ -7,7 +7,7 @@ import { shallow } from 'enzyme';
 /**
  * Internal dependencies
  */
-import { TransactionsList } from '../';
+import TransactionsPage from '../';
 
 describe( 'Transactions list', () => {
 	test( 'renders correctly', () => {
@@ -52,7 +52,7 @@ describe( 'Transactions list', () => {
 		};
 
 		const list = shallow(
-			<TransactionsList
+			<TransactionsPage
 				transactions={ transactions }
 				isLoading={ false }
 			/>
