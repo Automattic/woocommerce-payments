@@ -69,9 +69,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		);
 
-		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
-		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-
 		// Define setting fields.
 		$this->form_fields = array(
 			'enabled'              => array(
@@ -96,9 +93,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'desc_tip'    => true,
 			),
 			'payment_details'      => array(
-				'type'        => 'title',
-				/* translators: 1) dashboard login URL 2) oauth entry point URL */
-				'description' => sprintf( __( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>. (Or connect to a new Stripe account <a href="%2$s">here</a>.)', 'woocommerce-payments' ), $login_url, $connect_url ),
+				'type' => 'account_actions',
 			),
 			'stripe_account_id'    => array(
 				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
@@ -366,6 +361,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'connect.stripe.com';
 		return $hosts;
+	}
+
+	/**
+	 * Generate markup for account actions
+	 */
+	public function generate_account_actions_html() {
+		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
+		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+		$description = sprintf(
+			/* translators: 1) dashboard login URL 2) oauth entry point URL */
+			__( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>. (Or connect to a new Stripe account <a href="%2$s">here</a>.)', 'woocommerce-payments' ),
+			$login_url,
+			$connect_url
+		);
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row">
+				<?php echo esc_html( __( 'Payment details', 'woocommerce-payments' ) ); ?>
+			</th>
+			<td>
+				<?php echo wp_kses_post( $description ); ?>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
