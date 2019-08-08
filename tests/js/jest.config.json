@@ -2,7 +2,8 @@
 	"rootDir": "../../",
 	"moduleDirectories": ["node_modules", "<rootDir>/client"],
 	"moduleNameMapper": {
-	},
+  },
+	"globalSetup": "<rootDir>/tests/js/global-setup-jest.js",
 	"setupFiles": [
 		"<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-globals.js",
 		"<rootDir>/tests/js/setup-globals"
