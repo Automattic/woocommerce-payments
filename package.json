@@ -18,7 +18,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lint:css": "stylelint '*/**.scss'",
     "lint:css-fix": "stylelint '*/**.scss' --fix",
-    "lint:js": "npm run -s install-if-deps-outdated && eslint client/ --ext=js,jsx",
+    "lint:js": "eslint client/ --ext=js,jsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)"
   },
