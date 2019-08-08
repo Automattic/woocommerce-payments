@@ -27,7 +27,7 @@ const headers = [
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-const TransactionsList = ( props ) => {
+export const TransactionsList = ( props ) => {
 	const { transactions, showPlaceholder } = props;
 	const transactionsData = transactions.data || [];
 	// Do not display table loading view if data is already available.
