@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import selectors from './selectors';
 import operations from './operations';

@@ -1,11 +1,10 @@
 /** @format */
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import transactionsSelectors from '../../../api-spec/transactions/selectors';
 import { DEFAULT_REQUIREMENT } from '../../../constants';
-
 
 describe( 'Transactions selectors', () => {
 	const expectedResourceName = 'transactions-list';
@@ -108,7 +107,7 @@ describe( 'Transactions selectors', () => {
 			expect( initStatus ).toBe( expected );
 		} );
 
-		it( "Returns true when first request in flight", () => {
+		it( 'Returns true when first request in flight', () => {
 			const expected = true;
 
 			const mockGetResource = jest.fn();
@@ -138,7 +137,7 @@ describe( 'Transactions selectors', () => {
 			expect( showPlaceholder ).toBe( expected );
 		} );
 
-		it( "Returns true when first request in flight", () => {
+		it( 'Returns true when first request in flight', () => {
 			const expected = true;
 
 			const mockGetResource = jest.fn();
@@ -153,7 +152,7 @@ describe( 'Transactions selectors', () => {
 			expect( initStatus ).toBe( expected );
 		} );
 
-		it( "Returns false when transactions are initialized", () => {
+		it( 'Returns false when transactions are initialized', () => {
 			const expected = false;
 
 			const mockGetResource = jest.fn();

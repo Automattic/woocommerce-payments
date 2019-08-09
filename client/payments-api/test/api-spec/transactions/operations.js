@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import { readTransactions, transactionsToResources } from '../../../api-spec/transactions/operations';
 import { NAMESPACE } from '../../../constants';
@@ -13,7 +13,7 @@ describe( 'Transactions operations', () => {
 		it( 'Returns a list with one promise when correct resource names are supplied', () => {
 			const mockData = [ {}, {}, {} ];
 			const expectedResolvedPromise = {
-				[ "transactions-list" ]: {
+				[ 'transactions-list' ]: {
 					data: mockData,
 				},
 			};
@@ -33,7 +33,7 @@ describe( 'Transactions operations', () => {
 			expect( mockFetch ).toHaveBeenCalledTimes( 1 );
 			expect( mockFetch ).toHaveBeenCalledWith( { path: expectedUrl } );
 			expect( promises ).toStrictEqual( expectedPromises );
-			promises[0].then( result => {
+			promises[ 0 ].then( result => {
 				expect( mockToResources ).toHaveBeenCalledTimes( 1 );
 				expect( mockToResources ).toHaveBeenCalledWith( mockData );
 				expect( result ).toBe( expectedResolvedPromise );

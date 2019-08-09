@@ -189,7 +189,7 @@ const withSelect = mapSelectToProps =>
 			<RegistryConsumer>
 				{ registry => <ComponentWithSelect ownProps={ ownProps } registry={ registry } /> }
 			</RegistryConsumer>
-		)
+		);
 	}, 'withSelect' );
 
 export default withSelect;

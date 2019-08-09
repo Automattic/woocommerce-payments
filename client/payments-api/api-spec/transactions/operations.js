@@ -1,13 +1,13 @@
 /** @format */
 
 /**
- * External dependencies.
+ * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
 import { includes } from 'lodash';
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import { NAMESPACE } from '../../constants';
 
@@ -23,8 +23,8 @@ export function readTransactions( resourceNames, fetch, dataToResources ) {
 			fetch( { path: url } )
 				.then( dataToResources )
 				.catch( error => {
-					return { [ resourceName ]: { error } };
-				} )
+					return { [ 'transactions-list' ]: { error } };
+				} ),
 		];
 	}
 
@@ -35,7 +35,7 @@ export function transactionsToResources( transactions ) {
 	return {
 		[ 'transactions-list' ]: {
 			data: transactions,
-		}
+		},
 	};
 }
 

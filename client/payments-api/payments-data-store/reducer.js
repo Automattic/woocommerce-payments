@@ -1,3 +1,4 @@
+/** @format **/
 
 const defaultState = {
 	resources: {},
