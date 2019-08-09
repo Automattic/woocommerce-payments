@@ -76,7 +76,7 @@ export const TransactionsList = ( props ) => {
 	 *                 The difference between 'undefined' and '[]' in this case is like the difference
 	 *                 between rendering _nothing_ vs. rendering _something that contains nothing_.
 	 */
-	const noData = [ { label: 'No transactions to display', value: '' } ];
+	const noData = [ { label: '', value: 'No transactions to display' } ];
 	const containsData = undefined;
 	const summary = isLoadedAndEmpty ? noData : containsData;
 
