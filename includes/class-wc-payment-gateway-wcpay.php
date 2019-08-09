@@ -143,6 +143,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
 		// TODO: move somewhere else?
+		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
 	}
@@ -411,6 +412,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'business_name' => get_bloginfo( 'name' ),
 				)
 			);
+			if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
+				$this->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
+				return;
+			}
 
 			set_transient( 'wcpay_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
 
@@ -421,6 +426,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			// retrieve the one-time login url and redirect to it.
 			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url() );
+			if ( is_wp_error( $login_data ) || ! isset( $login_data['url'] ) ) {
+				$this->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
+				return;
+			}
 			wp_safe_redirect( $login_data['url'] );
 			exit;
 		}
@@ -432,6 +441,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// finish the connection flow and save the settings.
 			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
 			if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
+				$this->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
 				return;
 			}
 			delete_transient( 'wcpay_oauth_state' );
