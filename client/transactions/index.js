@@ -8,7 +8,6 @@ import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
-import { EmptyTable } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -65,15 +64,21 @@ export const TransactionsList = ( props ) => {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	// Display an empty table if API request is done loading, and no data was returned.
-	if ( ! loading && rows.length === 0 ) {
-		return (
-			<EmptyTable
-				children={ <p>No transactions to display</p> }
-				numberOfRows={ 10 }
-			/>
-		);
-	}
+	const isEmpty = ( ! rows ) || ( rows.length === 0 );
+	const isLoadedAndEmpty = ( ! showPlaceholder ) && ( isEmpty );
+
+	/**
+	 * Create a table summary based on whether there's data available to populate the table or not.
+	 *
+	 *       No Data:  Show a summary explaining that there are no transactions to display.
+	 * Contains data:  No summary. 'undefined' used instead of '[]' to prevent rendering extra
+	 *                 whitespace below table.
+	 *                 The difference between 'undefined' and '[]' in this case is like the difference
+	 *                 between rendering _nothing_ vs. rendering _something that contains nothing_.
+	 */
+	const noData = [ { label: 'No transactions to display', value: '' } ];
+	const containsData = undefined;
+	const summary = isLoadedAndEmpty ? noData : containsData;
 
 	return (
 		<TableCard
@@ -83,6 +88,7 @@ export const TransactionsList = ( props ) => {
 			totalRows={ 10 }
 			headers={ headers }
 			rows={ rows }
+			summary={ summary }
 		/>
 	);
 };
