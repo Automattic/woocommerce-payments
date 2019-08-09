@@ -3,10 +3,10 @@
 	"moduleDirectories": ["node_modules", "<rootDir>/client"],
 	"moduleNameMapper": {
   },
-	"globalSetup": "<rootDir>/tests/js/global-setup-jest.js",
+	"globalSetup": "<rootDir>/tests/js/jest-global-setup.js",
 	"setupFiles": [
 		"<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-globals.js",
-		"<rootDir>/tests/js/setup-globals"
+		"<rootDir>/tests/js/jest-test-file-setup.js"
 	],
 	"preset": "@wordpress/jest-preset-default",
 	"testPathIgnorePatterns": [
