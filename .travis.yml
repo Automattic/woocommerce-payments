@@ -83,11 +83,13 @@ before_script:
       echo "downloading phpunit"
       wget https://phar.phpunit.de/phpunit-6.5.14.phar
     fi
+  - npm install
 
 
 script:
   - bash bin/phpunit.sh
   - bash bin/phpcs.sh
+  - npm run lint
 
 before_deploy:
   - npm install
