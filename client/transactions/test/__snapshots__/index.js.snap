@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Transactions page renders correctly 1`] = `
+exports[`Transactions list renders correctly 1`] = `
 <TableCard
   baseSearchQuery={Object {}}
   compareParam="filter"
@@ -71,7 +71,103 @@ exports[`Transactions page renders correctly 1`] = `
   onQueryChange={[Function]}
   query={Object {}}
   rowHeader={0}
-  rows={Array []}
+  rows={
+    Array [
+      Array [
+        Object {
+          "display": "Nov 1, 2019 / 2:46AM",
+          "value": 1572590800000,
+        },
+        Object {
+          "display": "Refund",
+          "value": "refund",
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": <span>
+            –
+          </span>,
+          "value": undefined,
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": "$10.00",
+          "value": 10,
+        },
+        Object {
+          "display": "$0.50",
+          "value": 0.5,
+        },
+        Object {
+          "display": "$9.50",
+          "value": 9.5,
+        },
+        Object {
+          "display": null,
+        },
+      ],
+      Array [
+        Object {
+          "display": "Nov 1, 2019 / 12:00AM",
+          "value": 1572580800000,
+        },
+        Object {
+          "display": "Charge",
+          "value": "charge",
+        },
+        Object {
+          "display": <code>
+            visa
+          </code>,
+          "value": "visa",
+        },
+        Object {
+          "display": <span>
+            –
+          </span>,
+          "value": undefined,
+        },
+        Object {
+          "display": "My name",
+          "value": "My name",
+        },
+        Object {
+          "display": "a@b.com",
+          "value": "a@b.com",
+        },
+        Object {
+          "display": "US",
+          "value": "US",
+        },
+        Object {
+          "display": "$15.00",
+          "value": 15,
+        },
+        Object {
+          "display": "$0.50",
+          "value": 0.5,
+        },
+        Object {
+          "display": "$14.50",
+          "value": 14.5,
+        },
+        Object {
+          "display": "Normal",
+          "value": "normal",
+        },
+      ],
+    ]
+  }
   rowsPerPage={10}
   showMenu={true}
   title="Transactions"
