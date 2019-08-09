@@ -1,3 +1,5 @@
+/** @format **/
+
 /**
  * External dependencies
  */
@@ -41,7 +43,7 @@ export const TransactionsList = ( props ) => {
 		const outcome = charge ? charge.outcome : null;
 		const payment_method_details = charge ? charge.payment_method_details : null;
 		const address = billing_details ? billing_details.address : null;
-		const card = payment_method_details ?  payment_method_details.card : null;
+		const card = payment_method_details ? payment_method_details.card : null;
 
 		// Map transaction into table row.
 		const data = {
