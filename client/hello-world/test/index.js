@@ -11,7 +11,7 @@ import { HelloWorld } from '../';
 
 describe( 'HelloWorld', () => {
 	test( 'it renders correctly', () => {
-		const tree = renderer.create( <HelloWorld/> ).toJSON();
+		const tree = renderer.create( <HelloWorld /> ).toJSON();
 		expect( tree ).toMatchSnapshot();
 	} );
 } );
