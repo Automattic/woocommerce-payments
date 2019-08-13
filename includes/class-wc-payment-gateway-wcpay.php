@@ -434,10 +434,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			exit;
 		}
 
-		if ( isset( $_GET['wcpay-state'] )
+		if (
+			isset( $_GET['wcpay-state'] )
 			&& isset( $_GET['wcpay-account-id'] )
 			&& isset( $_GET['wcpay-publishable-key'] )
-			&& isset( $_GET['wcpay-mode'] ) ) {
+			&& isset( $_GET['wcpay-mode'] )
+		) {
 			// finish the connection flow and save the settings.
 			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
 			if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
