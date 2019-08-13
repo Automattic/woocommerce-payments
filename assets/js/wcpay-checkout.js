@@ -1,9 +1,9 @@
-/* global jQuery, Stripe, wc_payment_config */
+/* global jQuery, Stripe, wcpay_config */
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe   = new Stripe( wc_payment_config.publishableKey, {
-		stripeAccount: wc_payment_config.accountId,
+	var stripe   = new Stripe( wcpay_config.publishableKey, {
+		stripeAccount: wcpay_config.accountId,
 	} );
 	var elements = stripe.elements();
 
