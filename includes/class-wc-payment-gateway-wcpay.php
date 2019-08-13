@@ -188,9 +188,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 			<?php endif; ?>
 
-			<div id="wc-payment-card-element"></div>
-			<div id="wc-payment-errors" role="alert"></div>
-			<input id="wc-payment-method" type="hidden" name="wc-payment-method" />
+			<div id="wcpay-card-element"></div>
+			<div id="wcpay-errors" role="alert"></div>
+			<input id="wcpay-method" type="hidden" name="wcpay-method" />
 		</fieldset>
 		<?php
 	}
@@ -267,12 +267,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		if ( ! isset( $_POST['wc-payment-method'] ) ) {
+		if ( ! isset( $_POST['wcpay-method'] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
-		$payment_method = wc_clean( $_POST['wc-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$payment_method = wc_clean( $_POST['wcpay-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
 		return $payment_method;
