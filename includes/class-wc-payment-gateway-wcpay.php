@@ -164,21 +164,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		wp_register_script(
-			'wc-payment-checkout',
-			plugins_url( 'assets/js/wc-payment-checkout.js', WCPAY_PLUGIN_FILE ),
+			'wcpay-checkout',
+			plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
 			array( 'stripe', 'wc-checkout' ),
-			filemtime( WCPAY_ABSPATH . 'assets/js/wc-payment-checkout.js' ),
+			filemtime( WCPAY_ABSPATH . 'assets/js/wcpay-checkout.js' ),
 			true
 		);
 
-		wp_localize_script( 'wc-payment-checkout', 'wc_payment_config', $js_config );
-		wp_enqueue_script( 'wc-payment-checkout' );
+		wp_localize_script( 'wcpay-checkout', 'wc_payment_config', $js_config );
+		wp_enqueue_script( 'wcpay-checkout' );
 
 		wp_enqueue_style(
-			'wc-payment-checkout',
-			plugins_url( 'assets/css/wc-payment-checkout.css', WCPAY_PLUGIN_FILE ),
+			'wcpay-checkout',
+			plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
 			array(),
-			filemtime( WCPAY_ABSPATH . 'assets/css/wc-payment-checkout.css' )
+			filemtime( WCPAY_ABSPATH . 'assets/css/wcpay-checkout.css' )
 		);
 
 		// Output the form HTML.
