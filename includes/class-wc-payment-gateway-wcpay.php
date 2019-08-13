@@ -401,14 +401,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			// initialize the connection flow and redirect the user.
-			$wc_countries = WC()->countries;
 			$current_user = wp_get_current_user();
 
 			$oauth_data = $this->payments_api_client->get_oauth_data(
 				$this->get_settings_url(),
 				array(
 					'email'         => $current_user->user_email,
-					'url'           => get_site_url(),
 					'business_name' => get_bloginfo( 'name' ),
 				)
 			);
