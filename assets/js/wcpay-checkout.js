@@ -1,16 +1,16 @@
-/* global jQuery, Stripe, wc_payment_config */
+/* global jQuery, Stripe, wcpay_config */
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe   = new Stripe( wc_payment_config.publishableKey, {
-		stripeAccount: wc_payment_config.accountId,
+	var stripe   = new Stripe( wcpay_config.publishableKey, {
+		stripeAccount: wcpay_config.accountId,
 	} );
 	var elements = stripe.elements();
 
 	// Create a card element.
 	var cardElement = elements.create( 'card', {
 		hidePostalCode: true,
-		classes: { base: 'wc-payment-card-mounted' },
+		classes: { base: 'wcpay-card-mounted' },
 	} );
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -18,17 +18,17 @@ jQuery( function( $ ) {
 	// first to ensure the card element is re-mounted correctly.
 	$( document.body ).on( 'updated_checkout', function() {
 		// Don't re-mount if already mounted in DOM.
-		if ( $( '#wc-payment-card-element' ).children().length ) {
+		if ( $( '#wcpay-card-element' ).children().length ) {
 			return;
 		}
 
 		cardElement.unmount();
-		cardElement.mount( '#wc-payment-card-element' );
+		cardElement.mount( '#wcpay-card-element' );
 	} );
 
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', function( event ) {
-		var displayError = jQuery( '#wc-payment-errors' );
+		var displayError = jQuery( '#wcpay-errors' );
 		if ( event.error ) {
 			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
 				.find( 'li' ).text( event.error.message );
@@ -65,7 +65,7 @@ jQuery( function( $ ) {
 				paymentMethodGenerated = true;
 
 				// Populate form with the payment method.
-				var paymentMethodInput   = document.getElementById( 'wc-payment-method' );
+				var paymentMethodInput   = document.getElementById( 'wcpay-payment-method' );
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
