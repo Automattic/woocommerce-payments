@@ -1,11 +1,12 @@
+/** @format **/
 
 /**
- * External dependencies.
+ * External dependencies
  */
 import { ApiClient } from '@fresh-data/framework';
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import createStore from './create-store';
 
@@ -36,7 +37,7 @@ function createApiClient( name, apiSpec ) {
 
 	const storeChanged = () => {
 		apiClient.setState( store.getState() );
-	}
+	};
 	store.subscribe( storeChanged );
 
 	return apiClient;

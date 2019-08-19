@@ -1,11 +1,12 @@
+/** @format **/
 
 /**
- * External dependencies.
+ * External dependencies
  */
 import { registerGenericStore } from '@wordpress/data';
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import createApiClient from './create-api-client';
 import paymentsApiSpec from '../api-spec/payments-rest-api';

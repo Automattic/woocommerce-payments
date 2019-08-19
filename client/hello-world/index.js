@@ -13,7 +13,7 @@ class HelloWorld extends Component {
 		return (
 			<div className="woocommerce-payments__section">
 				{ this.props.children || 'Hello, world.' }
-    		</div>
+			</div>
 		);
 	}
 }

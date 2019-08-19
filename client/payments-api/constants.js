@@ -1,6 +1,7 @@
+/** @format **/
 
 /**
- * External dependencies.
+ * External dependencies
  */
 import { MINUTE } from '@fresh-data/framework';
 

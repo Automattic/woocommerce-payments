@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
 import transactions from './transactions';
 
@@ -18,10 +18,14 @@ function createPaymentsApiSpec() {
 					...transactions.operations.read( resourceNames ),
 				];
 			},
+			/* eslint-disable */
 			update( resourceNames, data ) {
+				/* eslint-enable */
 				return [];
 			},
+			/* eslint-disable */
 			updateLocally( resourceNames, data ) {
+				/* eslint-enable */
 				return [];
 			},
 		},
