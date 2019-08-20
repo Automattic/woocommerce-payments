@@ -52,7 +52,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin();
+			new WC_Payments_Admin( self::$api_client );
 		}
 
 		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );

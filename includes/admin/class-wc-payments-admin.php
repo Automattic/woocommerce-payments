@@ -13,12 +13,17 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
 	 */
-	public function __construct() {
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		// Add menu items.
 		add_action( 'admin_menu', array( $this, 'add_payments_menu' ), 9 );
 		add_action( 'init', array( $this, 'register_payments_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_payments_scripts' ) );
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-edit-order.php';
+		new WC_Payments_Edit_Order( $payments_api_client );
 	}
 
 	/**
