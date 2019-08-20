@@ -15,48 +15,24 @@ const doOrderAction = ( actionId ) => {
 	$( '#actions select' ).val( actionId ).closest( 'form' ).submit();
 };
 
-const CaptureAction = () => {
+const ConfirmAction = ( { action, title, children } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ isBusy, setBusy ] = useState( false );
 
 	const doAction = () => {
 		setBusy( true );
-		doOrderAction( 'capture_charge' );
-	}
+		doOrderAction( action );
+	};
 
 	return (
 		<Fragment>
-			<Button isDefault onClick={ () => setOpen( true ) }>Capture Charge</Button>
+			<Button isDefault onClick={ () => setOpen( true ) }>{ title }</Button>
 			{ isOpen && (
-				<Modal title="Capture Charge" onRequestClose={ () => setOpen( false ) } className="authorized-charge-modal">
+				<Modal title={ title } onRequestClose={ () => setOpen( false ) } className="authorized-charge-modal">
+					{ children }
 					<div className="authorized-charge-modal-buttons">
-						<Button isDefault onClick={ () => setOpen( false ) }>Close</Button>
-						<Button isPrimary onClick={ doAction } isBusy={ isBusy }>Capture Charge</Button>
-					</div>
-				</Modal>
-			) }
-		</Fragment>
-	);
-};
-
-const VoidAction = () => {
-	const [ isOpen, setOpen ] = useState( false );
-	const [ isBusy, setBusy ] = useState( false );
-
-	const doAction = () => {
-		setBusy( true );
-		doOrderAction( 'void_authorization' );
-	}
-
-	return (
-		<Fragment>
-			<Button isDefault onClick={ () => setOpen( true ) }>Void Authorization</Button>
-			{ isOpen && (
-				<Modal title="Void Authorization" onRequestClose={ () => setOpen( false ) } className="authorized-charge-modal">
-					<div className="authorized-charge-modal-buttons">
-						<p>{ __( 'Voiding this authorization will cancel the order, and restock all items.' ) }</p>
-						<Button isDefault onClick={ () => setOpen( false ) }>Close</Button>
-						<Button isPrimary onClick={ doAction } isBusy={ isBusy }>Void Authorization</Button>
+						<Button isDefault onClick={ () => setOpen( false ) }>{ __( 'Close' ) }</Button>
+						<Button isPrimary onClick={ doAction } isBusy={ isBusy }>{ title }</Button>
 					</div>
 				</Modal>
 			) }
@@ -66,8 +42,10 @@ const VoidAction = () => {
 
 const AuthorizedChargeActions = () => (
 	<Fragment>
-		<VoidAction />
-		<CaptureAction />
+		<ConfirmAction action="void_authorization" title={ __( 'Void Authorization' ) }>
+			<p>{ __( 'Voiding this authorization will cancel the order.' ) }</p>
+		</ConfirmAction>
+		<ConfirmAction action="capture_charge" title={ __( 'Capture Charge' ) } />
 	</Fragment>
 );
 
