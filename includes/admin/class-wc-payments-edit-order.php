@@ -30,6 +30,9 @@ class WC_Payments_Edit_Order {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_void_authorization', array( $this, 'void_authorization' ) );
+
+		add_action( 'init', array( $this, 'register_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	/**
@@ -109,5 +112,35 @@ class WC_Payments_Edit_Order {
 			);
 			$order->add_order_note( $note );
 		}
+	}
+
+	/**
+	 * Register the CSS and JS scripts
+	 */
+	public function register_scripts() {
+		$script_src_url      = plugins_url( 'dist/edit-order.js', WCPAY_PLUGIN_FILE );
+		$script_deps_path    = WCPAY_ABSPATH . 'dist/edit-order.deps.json';
+		$script_dependencies = file_exists( $script_deps_path )
+			? json_decode( file_get_contents( $script_deps_path ) ) // PHPCS:Ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			: array();
+		wp_register_script(
+			'WCPAY_EDIT_ORDER',
+			$script_src_url,
+			$script_dependencies,
+			filemtime( WCPAY_ABSPATH . 'dist/edit-order.js' ),
+			true
+		);
+	}
+
+	/**
+	 * Load the assets
+	 */
+	public function enqueue_scripts() {
+		if ( 'shop_order' !== get_current_screen()->id ) {
+			return;
+		}
+
+		wp_enqueue_script( 'WCPAY_EDIT_ORDER' );
+		wp_enqueue_style( 'wc-components' );
 	}
 }

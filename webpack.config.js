@@ -8,6 +8,7 @@ const webpackConfig = {
 	mode: NODE_ENV,
 	entry: {
 		index: './client/index.js',
+		'edit-order': './client/edit-order.js',
 	},
 	output: {
 		filename: '[name].js',
