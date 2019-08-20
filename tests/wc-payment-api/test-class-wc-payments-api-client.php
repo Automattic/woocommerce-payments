@@ -109,8 +109,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 										[
 											'id'      => 'test_charge_id',
 											'amount'  => $expected_amount,
-											'created' => 1557224304,
-											'status'  => $expected_status,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
 										],
 									],
 								],
@@ -126,7 +126,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$result = $this->payments_api_client->create_and_confirm_intention( 123, 'usd', 'pm_123456789' );
+		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789' );
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
@@ -137,6 +137,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_create_refund_success() {
+		$expected_amount = 123;
+
 		// Mock up a test response from WP_Http.
 		$this->mock_http_client
 			->expects( $this->any() )
@@ -148,7 +150,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'body'     => wp_json_encode(
 							array(
 								'id'     => 'test_refund_id',
-								'amount' => 123,
+								'amount' => $expected_amount,
 								'status' => 'succeeded',
 							)
 						),
@@ -162,9 +164,158 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			);
 
 		// Attempt to create a refund.
-		$refund = $this->payments_api_client->refund_charge( 'test_charge_id', 123 );
+		$refund = $this->payments_api_client->refund_charge( 'test_charge_id', $expected_amount );
 
 		// Assert amount returned is correct (ignoring other properties for now since this is a stub implementation).
-		$this->assertEquals( 123, $refund['amount'] );
+		$this->assertEquals( $expected_amount, $refund['amount'] );
+	}
+
+	/**
+	 * Test a successful call to create_intention with manual capture.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_intention_authorization_success() {
+		$expected_amount = 123;
+		$expected_status = 'requires_capture';
+
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->with( $this->anything(), $this->stringContains( '"manual"' ) )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_intention_id',
+								'amount'  => $expected_amount,
+								'created' => 1557224304,
+								'status'  => $expected_status,
+								'charges' => [
+									'total_count' => 1,
+									'data'        => [
+										[
+											'id'      => 'test_charge_id',
+											'amount'  => $expected_amount,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
+										],
+									],
+								],
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789', true );
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to capture intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_capture_intention_success() {
+		$expected_amount = 103;
+		$expected_status = 'succeeded';
+
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'              => 'test_intention_id',
+								'amount'          => 123,
+								'amount_captured' => $expected_amount,
+								'created'         => 1557224304,
+								'status'          => $expected_status,
+								'charges'         => [
+									'total_count' => 1,
+									'data'        => [
+										[
+											'id'      => 'test_charge_id',
+											'amount'  => $expected_amount,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
+										],
+									],
+								],
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		$result = $this->payments_api_client->capture_intention( 'test_intention_id', $expected_amount );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to cancel intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_cancel_intention_success() {
+		$expected_status = 'canceled';
+
+		$this->mock_http_client
+			->expects( $this->any() )
+			->method( 'remote_request' )
+			->will(
+				$this->returnValue(
+					array(
+						'headers'  => array(),
+						'body'     => wp_json_encode(
+							array(
+								'id'      => 'test_intention_id',
+								'amount'  => 123,
+								'created' => 1557224304,
+								'status'  => $expected_status,
+								'charges' => [
+									'total_count' => 1,
+									'data'        => [
+										[
+											'id'      => 'test_charge_id',
+											'amount'  => 123,
+											'created' => 1557224305,
+											'status'  => 'succeeded',
+										],
+									],
+								],
+							)
+						),
+						'response' => array(
+							'code'    => 200,
+							'message' => 'OK',
+						),
+						'cookies'  => array(),
+						'filename' => null,
+					)
+				)
+			);
+
+		$result = $this->payments_api_client->cancel_intention( 'test_intention_id' );
+		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 }
