@@ -130,6 +130,13 @@ class WC_Payments_Edit_Order {
 			filemtime( WCPAY_ABSPATH . 'dist/edit-order.js' ),
 			true
 		);
+
+		wp_register_style(
+			'WCPAY_EDIT_ORDER',
+			plugins_url( 'dist/edit-order.css', WCPAY_PLUGIN_FILE ),
+			array( 'wc-components' ),
+			filemtime( WCPAY_ABSPATH . 'dist/edit-order.css' )
+		);
 	}
 
 	/**
@@ -141,6 +148,6 @@ class WC_Payments_Edit_Order {
 		}
 
 		wp_enqueue_script( 'WCPAY_EDIT_ORDER' );
-		wp_enqueue_style( 'wc-components' );
+		wp_enqueue_style( 'WCPAY_EDIT_ORDER' );
 	}
 }
