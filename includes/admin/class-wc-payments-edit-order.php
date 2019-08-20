@@ -29,11 +29,11 @@ class WC_Payments_Edit_Order {
 
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
-		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+		add_action( 'woocommerce_order_action_void_authorization', array( $this, 'void_authorization' ) );
 	}
 
 	/**
-	 * Add capture and cancel actions for orders with an authorized charge.
+	 * Add capture and void actions for orders with an authorized charge.
 	 *
 	 * @param array $actions - Actions to make available in order actions metabox.
 	 */
@@ -49,8 +49,8 @@ class WC_Payments_Edit_Order {
 		}
 
 		$new_actions = array(
-			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
-			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
+			'capture_charge'     => __( 'Capture charge', 'woocommerce-payments' ),
+			'void_authorization' => __( 'Void authorization', 'woocommerce-payments' ),
 		);
 
 		return array_merge( $new_actions, $actions );
@@ -88,11 +88,11 @@ class WC_Payments_Edit_Order {
 	}
 
 	/**
-	 * Cancel previously authorized charge.
+	 * Void previously authorized charge.
 	 *
-	 * @param WC_Order $order - Order to cancel authorization on.
+	 * @param WC_Order $order - Order to void authorization on.
 	 */
-	public function cancel_authorization( $order ) {
+	public function void_authorization( $order ) {
 		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
 		$status = $intent->get_status();
 
@@ -100,11 +100,11 @@ class WC_Payments_Edit_Order {
 		$order->save();
 
 		if ( 'canceled' === $status ) {
-			$order->update_status( 'cancelled', __( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ) );
+			$order->update_status( 'cancelled', __( 'Payment authorization was successfully <strong>voided</strong>.', 'woocommerce-payments' ) );
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
-				__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+				__( 'Voiding authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
