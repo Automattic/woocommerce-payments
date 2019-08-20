@@ -11,6 +11,10 @@ import $ from 'jquery';
  */
 import './style.scss';
 
+const hasOrderAction = ( actionId ) => {
+	return 0 < $( '#actions select' ).has( `[value=${ actionId }]` ).length;
+}
+
 const doOrderAction = ( actionId ) => {
 	$( '#actions select' ).val( actionId ).closest( 'form' ).submit();
 };
@@ -18,6 +22,10 @@ const doOrderAction = ( actionId ) => {
 const ConfirmAction = ( { action, title, children } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const [ isBusy, setBusy ] = useState( false );
+
+	if ( ! hasOrderAction( action ) ) {
+		return;
+	}
 
 	const doAction = () => {
 		setBusy( true );
