@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
-import { render, useState } from '@wordpress/element';
+import { Button, Modal } from '@wordpress/components';
+import { render, useState, Fragment } from '@wordpress/element';
 import $ from 'jquery';
 
 const doOrderAction = ( actionId ) => {
@@ -10,6 +10,7 @@ const doOrderAction = ( actionId ) => {
 };
 
 const CaptureAction = () => {
+	const [ isOpen, setOpen ] = useState( false );
 	const [ isBusy, setBusy ] = useState( false );
 
 	const doAction = () => {
@@ -18,11 +19,20 @@ const CaptureAction = () => {
 	}
 
 	return (
-		<Button isDefault onClick={ doAction } isBusy={ isBusy }>Capture Charge</Button>
+		<Fragment>
+			<Button isDefault onClick={ () => setOpen( true ) }>Capture Charge</Button>
+			{ isOpen && (
+				<Modal title="Capture Charge" onRequestClose={ () => setOpen( false ) }>
+					<Button isDefault onClick={ () => setOpen( false ) }>Close</Button>
+					<Button isPrimary onClick={ doAction } isBusy={ isBusy }>Capture Charge</Button>
+				</Modal>
+			) }
+		</Fragment>
 	);
 };
 
 const VoidAction = () => {
+	const [ isOpen, setOpen ] = useState( false );
 	const [ isBusy, setBusy ] = useState( false );
 
 	const doAction = () => {
@@ -31,7 +41,15 @@ const VoidAction = () => {
 	}
 
 	return (
-		<Button isDefault onClick={ doAction } isBusy={ isBusy }>Void Authorization</Button>
+		<Fragment>
+			<Button isDefault onClick={ () => setOpen( true ) }>Void Authorization</Button>
+			{ isOpen && (
+				<Modal title="Void Authorization" onRequestClose={ () => setOpen( false ) }>
+					<Button isDefault onClick={ () => setOpen( false ) }>Close</Button>
+					<Button isPrimary onClick={ doAction } isBusy={ isBusy }>Void Authorization</Button>
+				</Modal>
+			) }
+		</Fragment>
 	);
 };
 
