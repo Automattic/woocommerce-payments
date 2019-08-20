@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Button, Modal } from '@wordpress/components';
 import { render, useState, Fragment } from '@wordpress/element';
 import $ from 'jquery';
@@ -53,6 +54,7 @@ const VoidAction = () => {
 			{ isOpen && (
 				<Modal title="Void Authorization" onRequestClose={ () => setOpen( false ) } className="authorized-charge-modal">
 					<div className="authorized-charge-modal-buttons">
+						<p>{ __( 'Voiding this authorization will cancel the order, and restock all items.' ) }</p>
 						<Button isDefault onClick={ () => setOpen( false ) }>Close</Button>
 						<Button isPrimary onClick={ doAction } isBusy={ isBusy }>Void Authorization</Button>
 					</div>
