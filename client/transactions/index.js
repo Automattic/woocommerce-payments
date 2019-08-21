@@ -64,22 +64,6 @@ export const TransactionsList = ( props ) => {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	const isEmpty = ( ! rows ) || ( rows.length === 0 );
-	const isLoadedAndEmpty = ( ! showPlaceholder ) && ( isEmpty );
-
-	/**
-	 * Create a table summary based on whether there's data available to populate the table or not.
-	 *
-	 *       No Data:  Show a summary explaining that there are no transactions to display.
-	 * Contains data:  No summary. 'undefined' used instead of '[]' to prevent rendering extra
-	 *                 whitespace below table.
-	 *                 The difference between 'undefined' and '[]' in this case is like the difference
-	 *                 between rendering _nothing_ vs. rendering _something that contains nothing_.
-	 */
-	const noData = [ { label: '', value: 'No transactions to display' } ];
-	const containsData = undefined;
-	const summary = isLoadedAndEmpty ? noData : containsData;
-
 	return (
 		<TableCard
 			title="Transactions"
@@ -88,7 +72,6 @@ export const TransactionsList = ( props ) => {
 			totalRows={ 10 }
 			headers={ headers }
 			rows={ rows }
-			summary={ summary }
 		/>
 	);
 };
