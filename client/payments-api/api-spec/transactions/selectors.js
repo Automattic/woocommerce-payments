@@ -44,6 +44,27 @@ const getTransactionsPage = ( getResource, requireResource ) => (
 	return res;
 };
 
+const getNumberOfTransactions = ( getResource ) => () => {
+	const res = getResource( 'transactions-list' ).data;
+	if ( res ) {
+		const data = [
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+			...res.data,
+		];
+
+		return data.length;
+	}
+	return 0;
+};
+
 const isWaitingForInitialLoad = ( getResource ) => () => {
 	const resourceName = 'transactions-list';
 	const transactionsResource = getResource( resourceName );
@@ -67,5 +88,6 @@ export default {
 	getTransactionsIsLoading,
 	isWaitingForInitialLoad,
 	showTransactionsPlaceholder,
+	getNumberOfTransactions,
 	getTransactionsPage,
 };
