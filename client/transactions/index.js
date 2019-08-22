@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { Component } from 'react';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
@@ -29,12 +30,14 @@ const headers = [
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-export const TransactionsList = ( props ) => {
-	const { transactions, showPlaceholder } = props;
-	const transactionsData = transactions.data || [];
-	// Do not display table loading view if data is already available.
+export class TransactionsList extends Component {
+	constructor( props ) {
+		super( props );
+		this.props = props;
+		this.state = { currentPage: 1, rowsPerPage: 25 };
+	}
 
-	const rows = transactionsData.map( ( txn ) => {
+	transactionsToRows( txn ) {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
 
@@ -62,24 +65,82 @@ export const TransactionsList = ( props ) => {
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
-	} );
+	}
 
-	return (
-		<TableCard
-			title="Transactions"
-			isLoading={ showPlaceholder }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
-			headers={ headers }
-			rows={ rows }
-		/>
-	);
-};
+	render() {
+		const {
+			showPlaceholder,
+			getNumberOfTransactions,
+			getTransactionsPage,
+		} = this.props;
+
+		const transactionsData =
+				getTransactionsPage( this.state.currentPage, this.state.rowsPerPage ).data || [];
+		const rows = transactionsData.map( this.transactionsToRows );
+
+		// onPageChange defined like this since `const func = () => {}` not supported
+		// for class functions.
+		const onPageChange = ( ...params ) => {
+			this.setState( {
+				...this.state,
+				currentPage: params[ 0 ],
+			} );
+		};
+
+		// onQueryChange defined like this since `const func = () => {}` not supported
+		// for class functions.
+		const onQueryChange = ( ...params ) => {
+			if ( 'per_page' === params[ 0 ] ) {
+				return ( ...rowsPerPage ) => {
+					this.setState( {
+						...this.state,
+						rowsPerPage: rowsPerPage[ 0 ],
+					} );
+				};
+			}
+		};
+
+		const summary = () => {
+			if ( showPlaceholder ) {
+				return [];
+			}
+
+			return [ {
+				label: 'transactions',
+				value: getNumberOfTransactions(),
+			} ];
+		};
+
+		return (
+			<TableCard
+				title="Transactions"
+				isLoading={ showPlaceholder }
+				query={ { paged: this.state.currentPage, per_page: this.state.rowsPerPage } }
+				onPageChange={ onPageChange }
+				onQueryChange={ onQueryChange }
+				rowsPerPage={ this.state.rowsPerPage }
+				totalRows={ getNumberOfTransactions() }
+				downloadable={ true }
+				headers={ headers }
+				rows={ rows }
+				summary={ summary() }
+			/>
+		);
+	}
+}
 
 export default withSelect( select => {
-	const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
-	const transactions = getTransactions();
+	const {
+		showTransactionsPlaceholder,
+		getNumberOfTransactions,
+		getTransactionsPage,
+	} = select( 'wc-payments-api' );
+
 	const showPlaceholder = showTransactionsPlaceholder();
 
-	return { transactions, showPlaceholder };
+	return {
+		showPlaceholder,
+		getTransactionsPage,
+		getNumberOfTransactions,
+	};
 } )( TransactionsList );
