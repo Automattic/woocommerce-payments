@@ -21,6 +21,7 @@ const getTransactionsPage = ( getResource, requireResource ) => (
 	rowsPerPage,
 	requirement = DEFAULT_REQUIREMENT
 ) => {
+	// TODO: whole function is temporary; just used to mock data.
 	const res = requireResource( requirement, 'transactions-list' ).data || {};
 	if ( res && res.data ) {
 		const data = [
@@ -45,6 +46,7 @@ const getTransactionsPage = ( getResource, requireResource ) => (
 };
 
 const getNumberOfTransactions = ( getResource ) => () => {
+	// TODO: whole function is temporary; just used to mock data.
 	const res = getResource( 'transactions-list' ).data;
 	if ( res ) {
 		const data = [
