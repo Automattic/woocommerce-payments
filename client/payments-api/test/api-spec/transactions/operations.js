@@ -3,7 +3,11 @@
 /**
  * Internal dependencies
  */
-import { readTransactions, transactionsToResources } from '../../../api-spec/transactions/operations';
+import {
+	readTransactions,
+	transactionsToResources,
+	transactionsPageToResources,
+} from '../../../api-spec/transactions/operations';
 import { NAMESPACE } from '../../../constants';
 
 describe( 'Transactions operations', () => {
@@ -63,6 +67,26 @@ describe( 'Transactions operations', () => {
 			};
 
 			const resources = transactionsToResources( mockData );
+			expect( resources ).toStrictEqual( expected );
+		} );
+	} );
+
+	describe( 'transactionsPageToResources()', () => {
+		it( 'Transactions list is correctly converted to resources', () => {
+			const mockData = {
+				summary: {
+					page: 1,
+					per_page: 25,
+				},
+				transactions: [ {}, {}, {} ],
+			};
+			const expected = {
+				[ `transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }` ]: {
+					data: mockData,
+				},
+			};
+
+			const resources = transactionsPageToResources( mockData );
 			expect( resources ).toStrictEqual( expected );
 		} );
 	} );

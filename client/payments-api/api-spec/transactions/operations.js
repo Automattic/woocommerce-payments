@@ -31,6 +31,17 @@ export function readTransactions( resourceNames, fetch, dataToResources ) {
 	return [];
 }
 
+export function transactionsPageToResources( transactions ) {
+	const page = transactions.summary.page;
+	const per_page = transactions.summary.per_page;
+
+	return {
+		[ `transactions-list-page-${ page }-perpage-${ per_page }` ]: {
+			data: transactions,
+		},
+	};
+}
+
 export function transactionsToResources( transactions ) {
 	return {
 		[ 'transactions-list' ]: {
