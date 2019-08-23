@@ -71,7 +71,7 @@ const isWaitingForInitialLoad = ( getResource ) => () => {
 	const resourceName = 'transactions-list';
 	const transactionsResource = getResource( resourceName );
 
-	return transactionsResource.lastReceived === undefined;
+	return transactionsResource.data === undefined;
 };
 
 const getTransactionsIsLoading = ( getResource ) => () => {
