@@ -83,8 +83,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
-				lastReceived: now,
+				data: {},
 			} );
 
 			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
@@ -157,8 +156,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
-				lastReceived: now,
+				data: {},
 			} );
 
 			const showPlaceholder = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();
