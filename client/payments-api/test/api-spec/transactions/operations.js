@@ -10,6 +10,7 @@ import {
 	transactionsPageToResources,
 } from '../../../api-spec/transactions/operations';
 import { NAMESPACE } from '../../../constants';
+import { getResourceName } from '../../../utils';
 
 describe( 'Transactions operations', () => {
 	describe( 'readTransactions()', () => {
@@ -76,6 +77,7 @@ describe( 'Transactions operations', () => {
 		const expectedUrl = `${ NAMESPACE }/payments/transactions`;
 
 		it( 'Returns a list with 1 promise when list with only 1 correct resource name is supplied', () => {
+			// Prepare original mocked data.
 			const mockData = {
 				summary: {
 					page: 2,
@@ -83,15 +85,20 @@ describe( 'Transactions operations', () => {
 				},
 				transactions: [ {}, {}, {} ],
 			};
+			const resourceName = getResourceName( 'transactions-list-page-perpage', mockData.summary );
+
+			// Prepare expected results from resolved promises.
 			const expectedResolvedPromise = {
-				[ `transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }` ]: {
+				[ resourceName ]: {
 					data: mockData,
 				},
 			};
 
+			// Prepare mocked functions and their return values.
 			const mockToResources = jest.fn();
 			mockToResources.mockReturnValue( expectedResolvedPromise );
 
+			// Prepare returned promises from fetch function call.
 			const mockPromise = new Promise( () => mockData, () => {} );
 			const expectedPromises = [ mockPromise ];
 
@@ -100,14 +107,19 @@ describe( 'Transactions operations', () => {
 
 			// Perform read operation.
 			const promises = readTransactionsPage(
-				[ `transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }` ],
+				[ resourceName ],
 				mockFetch,
 				mockToResources,
 			);
 
+			// Ensure fetch is called appropriately.
 			expect( mockFetch ).toHaveBeenCalledTimes( 1 );
 			expect( mockFetch ).toHaveBeenCalledWith( { path: expectedUrl, data: mockData.summary } );
+
+			// Ensure the correct promises are returned.
 			expect( promises ).toStrictEqual( expectedPromises );
+
+			// Ensure promises resolve correctly.
 			promises[ 0 ].then( result => {
 				expect( mockToResources ).toHaveBeenCalledTimes( 1 );
 				expect( mockToResources ).toHaveBeenCalledWith( mockData );
@@ -116,6 +128,7 @@ describe( 'Transactions operations', () => {
 		} );
 
 		it( 'Returns a list with 1 promise when list with 1 correct and 1 incorrect resource name is supplied', () => {
+			// Prepare original mocked data.
 			const mockData = {
 				summary: {
 					page: 2,
@@ -123,15 +136,20 @@ describe( 'Transactions operations', () => {
 				},
 				transactions: [ {}, {}, {} ],
 			};
+			const resourceName = getResourceName( 'transactions-list-page-perpage', mockData.summary );
+
+			// Prepare expected results from resolved promises.
 			const expectedResolvedPromise = {
-				[ `transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }` ]: {
+				[ resourceName ]: {
 					data: mockData,
 				},
 			};
 
+			// Prepare mocked functions and their return values.
 			const mockToResources = jest.fn();
 			mockToResources.mockReturnValue( expectedResolvedPromise );
 
+			// Prepare returned promises from fetch function call.
 			const mockPromise = new Promise( () => mockData, () => {} );
 			const expectedPromises = [ mockPromise ];
 
@@ -141,16 +159,21 @@ describe( 'Transactions operations', () => {
 			// Perform read operation.
 			const promises = readTransactionsPage(
 				[
-					`transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }`,
+					resourceName,
 					'wrong-resource-name',
 				],
 				mockFetch,
 				mockToResources,
 			);
 
+			// Ensure fetch is called appropriately.
 			expect( mockFetch ).toHaveBeenCalledTimes( 1 );
 			expect( mockFetch ).toHaveBeenCalledWith( { path: expectedUrl, data: mockData.summary } );
+
+			// Ensure the correct promises are returned.
 			expect( promises ).toStrictEqual( expectedPromises );
+
+			// Ensure promises resolve correctly.
 			promises[ 0 ].then( result => {
 				expect( mockToResources ).toHaveBeenCalledTimes( 1 );
 				expect( mockToResources ).toHaveBeenCalledWith( mockData );
@@ -159,6 +182,7 @@ describe( 'Transactions operations', () => {
 		} );
 
 		it( 'Returns a list with 2 promises when list with 2 correct resource names is supplied', () => {
+			// Prepare original mocked data.
 			const pageOneMockData = {
 				summary: {
 					page: 1,
@@ -173,22 +197,28 @@ describe( 'Transactions operations', () => {
 				},
 				transactions: [ {}, {}, {} ],
 			};
+			const pageOneResourceName = getResourceName( 'transactions-list-page-perpage', pageOneMockData.summary );
+			const pageTwoResourceName = getResourceName( 'transactions-list-page-perpage', pageTwoMockData.summary );
+
+			// Prepare expected results from resolved promises.
 			const expectedPageOneResolvedPromise = {
-				[ `transactions-list-page-${ pageOneMockData.summary.page }-perpage-${ pageOneMockData.summary.per_page }` ]: {
+				[ pageOneResourceName ]: {
 					data: pageOneMockData,
 				},
 			};
 			const expectedPageTwoResolvedPromise = {
-				[ `transactions-list-page-${ pageTwoMockData.summary.page }-perpage-${ pageTwoMockData.summary.per_page }` ]: {
-					data: pageOneMockData,
+				[ pageTwoResourceName ]: {
+					data: pageTwoMockData,
 				},
 			};
 
+			// Prepare mocked functions and their return values.
 			const mockToResources = jest.fn();
 			mockToResources
 				.mockReturnValueOnce( expectedPageOneResolvedPromise )
 				.mockReturnValueOnce( expectedPageTwoResolvedPromise );
 
+			// Prepare returned promises from fetch function call.
 			const mockPageOnePromise = new Promise( () => pageOneMockData, () => {} );
 			const mockPageTwoPromise = new Promise( () => pageTwoMockData, () => {} );
 			const expectedPromises = [ mockPageOnePromise, mockPageTwoPromise ];
@@ -201,17 +231,22 @@ describe( 'Transactions operations', () => {
 			// Perform read operation.
 			const promises = readTransactionsPage(
 				[
-					`transactions-list-page-${ pageOneMockData.summary.page }-perpage-${ pageOneMockData.summary.per_page }`,
-					`transactions-list-page-${ pageTwoMockData.summary.page }-perpage-${ pageTwoMockData.summary.per_page }`,
+					pageOneResourceName,
+					pageTwoResourceName,
 				],
 				mockFetch,
 				mockToResources,
 			);
 
+			// Ensure fetch is called appropriately.
 			expect( mockFetch ).toHaveBeenCalledTimes( 2 );
 			expect( mockFetch ).toHaveBeenCalledWith( { path: expectedUrl, data: pageOneMockData.summary } );
 			expect( mockFetch ).toHaveBeenCalledWith( { path: expectedUrl, data: pageTwoMockData.summary } );
+
+			// Ensure the correct promises are returned.
 			expect( promises ).toStrictEqual( expectedPromises );
+
+			// Ensure promises resolve correctly.
 			promises[ 0 ].then( result => {
 				expect( mockToResources ).toHaveBeenCalledTimes( 1 );
 				expect( mockToResources ).toHaveBeenCalledWith( pageOneMockData );
@@ -247,8 +282,10 @@ describe( 'Transactions operations', () => {
 				},
 				transactions: [ {}, {}, {} ],
 			};
+			const resourceName = getResourceName( 'transactions-list-page-perpage', mockData.summary );
+
 			const expected = {
-				[ `transactions-list-page-${ mockData.summary.page }-perpage-${ mockData.summary.per_page }` ]: {
+				[ resourceName ]: {
 					data: mockData,
 				},
 			};
