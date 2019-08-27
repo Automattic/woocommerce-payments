@@ -187,7 +187,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'wcpay-checkout',
 			plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
 			array( 'stripe', 'wc-checkout' ),
-			filemtime( WCPAY_ABSPATH . 'assets/js/wcpay-checkout.js' ),
+			WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
 			true
 		);
 
@@ -198,7 +198,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'wcpay-checkout',
 			plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
 			array(),
-			filemtime( WCPAY_ABSPATH . 'assets/css/wcpay-checkout.css' )
+			WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
 		);
 
 		// Output the form HTML.

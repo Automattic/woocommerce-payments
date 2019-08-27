@@ -215,4 +215,18 @@ class WC_Payments {
 		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
 		$transactions_controller->register_routes();
 	}
+
+	/**
+	 * Gets the file modified time as a cache buster if we're in dev mode, or the plugin version otherwise.
+	 *
+	 * @param string $file Local path to the file.
+	 * @return string The cache buster value to use for the given file.
+	 */
+	public static function get_file_version( $file ) {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+			$file = trim( $file, '/' );
+			return filemtime( WCPAY_ABSPATH . $file );
+		}
+		return WCPAY_VERSION_NUMBER;
+	}
 }

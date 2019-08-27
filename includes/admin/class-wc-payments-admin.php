@@ -94,7 +94,7 @@ class WC_Payments_Admin {
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			array(),
-			filemtime( WCPAY_ABSPATH . 'assets/css/admin.css' )
+			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
 	}
 
@@ -111,7 +111,7 @@ class WC_Payments_Admin {
 			'WCPAY_DASH_APP',
 			$script_src_url,
 			$script_dependencies,
-			filemtime( WCPAY_ABSPATH . 'dist/index.js' ),
+			WC_Payments::get_file_version( 'dist/index.js' ),
 			true
 		);
 
@@ -119,7 +119,7 @@ class WC_Payments_Admin {
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
 			array( 'wc-components' ),
-			filemtime( WCPAY_ABSPATH . 'dist/index.css' )
+			WC_Payments::get_file_version( 'dist/index.css' )
 		);
 	}
 
