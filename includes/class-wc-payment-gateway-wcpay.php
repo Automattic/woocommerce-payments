@@ -204,6 +204,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 			<?php endif; ?>
 
+			<?php if ( $this->testmode ) : ?>
+				<p class="testmode-info">
+				<?php
+					/* translators: link to Stripe testing page */
+					echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+				?>
+				</p>
+			<?php endif; ?>
+
 			<div id="wcpay-card-element"></div>
 			<div id="wcpay-errors" role="alert"></div>
 			<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
