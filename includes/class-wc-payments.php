@@ -29,6 +29,13 @@ class WC_Payments {
 	private static $api_client;
 
 	/**
+	 * Cache for plugin headers to avoid multiple calls to get_file_data
+	 *
+	 * @var array
+	 */
+	private static $plugin_headers = null;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -72,6 +79,30 @@ class WC_Payments {
 	}
 
 	/**
+	 * Get plugin headers and cache the result to avoid reopening the file.
+	 * First call should execute get_file_data and fetch headers from plugin details comment.
+	 * Subsequent calls return the value stored in the variable $plugin_headers.
+	 *
+	 * @return array Array with plugin headers
+	 */
+	public static function get_plugin_headers() {
+		if ( null === self::$plugin_headers ) {
+			self::$plugin_headers = get_file_data(
+				WCPAY_PLUGIN_FILE,
+				array(
+					// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
+					'WCRequires' => 'WC requires at least',
+					// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
+					// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
+					'RequiresWP' => 'Requires WP',
+					'Version'    => 'Version',
+				)
+			);
+		}
+		return self::$plugin_headers;
+	}
+
+	/**
 	 * Checks if all the dependencies needed to run this plugin are present
 	 * TODO: Before public launch, revisit these dependencies. We may need to bump the WC dependency so we require one where WC-Admin is already in Core.
 	 *
@@ -79,16 +110,7 @@ class WC_Payments {
 	 * @return bool True if all dependencies are met, false otherwise
 	 */
 	public static function check_plugin_dependencies( $silent ) {
-		$plugin_headers = get_file_data(
-			WCPAY_PLUGIN_FILE,
-			array(
-				// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
-				'WCRequires' => 'WC requires at least',
-				// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
-				// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
-				'RequiresWP' => 'Requires WP',
-			)
-		);
+		$plugin_headers = self::get_plugin_headers();
 
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
