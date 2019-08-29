@@ -39,6 +39,8 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
+		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
+
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', array( __CLASS__, 'check_plugin_dependencies' ) );
 			return;
