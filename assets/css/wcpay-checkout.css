@@ -2,11 +2,15 @@
     padding: 0;
 }
 
-.payment_method_woocommerce_payments > fieldset > legend {
+#payment .payment_method_woocommerce_payments > fieldset > legend {
     padding-top: 0;
 }
 
-.payment_method_woocommerce_payments .woocommerce-error {
+#payment .payment_method_woocommerce_payments .testmode-info {
+    margin-bottom: 0.5em;
+}
+
+#payment .payment_method_woocommerce_payments .woocommerce-error {
     margin: 1em 0 0;
 }
 

@@ -141,12 +141,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->title       = $this->get_option( 'title' );
 		$this->description = $this->get_option( 'description' );
 
-		$this->testmode        = ( ! empty( $this->settings['testmode'] ) && 'yes' === $this->settings['testmode'] ) ? true : false;
-		$this->publishable_key = ! empty( $this->settings['publishable_key'] ) ? $this->settings['publishable_key'] : '';
-
-		if ( $this->testmode ) {
-			$this->publishable_key = ! empty( $this->settings['test_publishable_key'] ) ? $this->settings['test_publishable_key'] : '';
-		}
+		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
+		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -206,6 +202,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<fieldset>
 			<?php if ( ! empty( $this->get_description() ) ) : ?>
 				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
+			<?php endif; ?>
+
+			<?php if ( $this->testmode ) : ?>
+				<p class="testmode-info">
+				<?php
+					/* translators: link to Stripe testing page */
+					echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+				?>
+				</p>
 			<?php endif; ?>
 
 			<div id="wcpay-card-element"></div>
