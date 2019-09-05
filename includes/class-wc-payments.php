@@ -100,6 +100,19 @@ class WC_Payments {
 	}
 
 	/**
+	 * Prints a dismissible admin notice when Woo Multi-Currency is enabled.
+	 */
+	public static function multi_currency_enabled__error() {
+		$class   = 'notice notice-error is-dismissible';
+		$message = sprintf(
+			/* translators: %1: WooCommerce Payments version */
+			__( 'WooCommerce Payments %1$s does not support WooCommerce Multi-Currency and has not been loaded.', 'woocommerce-payments' ),
+			WCPAY_VERSION_NUMBER
+		);
+		return printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) );
+	}
+
+	/**
 	 * Get plugin headers and cache the result to avoid reopening the file.
 	 * First call should execute get_file_data and fetch headers from plugin details comment.
 	 * Subsequent calls return the value stored in the variable $plugin_headers.
@@ -264,13 +277,14 @@ class WC_Payments {
 	}
 
 	/**
-	 * Checks whether Woo Multi-Currency is disabled.
+	 * Checks whether Woo Multi-Currency is disabled and displays admin error message if enabled.
 	 * TODO: Once Multi-Currency support is implemented, remove this check.
 	 *
 	 * @return bool True if Woo Multi-Currency is not enabled, false otherwise.
 	 */
 	public static function check_multi_currency_disabled() {
 		if ( class_exists( 'WOOMC\MultiCurrency\App' ) ) {
+			add_action( 'admin_notices', array( __CLASS__, 'multi_currency_enabled__error' ) );
 			return false;
 		}
 
