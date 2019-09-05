@@ -29,12 +29,10 @@ This section describes how to install the plugin and get it working.
 = What merchant countries are supported? =
 
 * United States of America
-* Canada
 
 = What currencies are supported? =
 
 * US Dollars (USD)
-* Canadian Dollars (CAD)
 
 = This works with WooCommerce, right? =
 
