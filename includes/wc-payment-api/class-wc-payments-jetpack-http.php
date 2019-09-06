@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * the testability of WC_Payments_API_Client, and allow dependency
  * injection.
  */
-class WC_Payments_Http {
+class WC_Payments_Jetpack_Http implements WC_Payments_Http {
 
 	/**
 	 * Sends a remote request through Jetpack (?).
