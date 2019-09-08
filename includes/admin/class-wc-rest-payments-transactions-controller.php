@@ -55,6 +55,31 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/summary',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_transactions_summary' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
+	}
+
+	/**
+	 * Retrieve transactions summary to respond with via API.
+	 */
+	public function get_transactions_summary() {
+		// Temporary code returning mock data for now.
+		// Should be replaced with a real API call at a later date.
+		return rest_ensure_response(
+			array(
+				'number_of_transactions' => 123,
+				'total'                  => 124,
+				'fees'                   => 125,
+				'net'                    => 126,
+			)
+		);
 	}
 
 	/**
