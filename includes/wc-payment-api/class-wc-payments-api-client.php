@@ -250,6 +250,28 @@ class WC_Payments_API_Client {
 					);
 				}
 			}
+
+			// Temporary code to increase no. of transactions.
+			// TODO: remove.
+			for ( $i = 0; $i < 10; $i++ ) {
+				foreach ( $transactions['data'] as $transaction ) {
+					$transactions['data'][] = $transaction;
+				}
+			}
+
+			// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+			$page     = isset( $_GET['page'] ) ? intval( $_GET['page'] ) : 1;
+			$per_page = isset( $_GET['per_page'] ) ? intval( $_GET['per_page'] ) : 25;
+
+			$transactions['summary'] = array(
+				'page'     => $page > 0 ? $page : 1,
+				'per_page' => $per_page > 0 ? $per_page : 25,
+			);
+			// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+
+			$start_index          = ( $page - 1 ) * $per_page;
+			$transactions['data'] = array_slice( $transactions['data'], $start_index, $per_page );
+			// End temporary code.
 		}
 
 		return $transactions;

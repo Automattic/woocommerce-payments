@@ -85,41 +85,51 @@ export class TransactionsList extends Component {
 		}
 	};
 
-	summary = ( showPlaceholder, numberOfTransactions ) => {
-		if ( showPlaceholder ) {
+	summary = () => {
+		if ( this.isLoading() ) {
 			return [];
 		}
 
 		return [ {
 			label: 'transactions',
-			value: numberOfTransactions,
+			value: this.totalRows(),
 		} ];
 	};
 
-	render() {
-		const {
-			showPlaceholder,
-			getNumberOfTransactions,
-			getTransactionsPage,
-		} = this.props;
+	isLoading = () => {
+		const { showPlaceholder } = this.props;
+		const { currentPage, rowsPerPage } = this.state;
+		return showPlaceholder( currentPage, rowsPerPage );
+	}
 
-		const transactionsData =
-				getTransactionsPage( this.state.currentPage, this.state.rowsPerPage ).data || [];
+	totalRows = () => {
+		const { summary } = this.props;
+		if ( summary ) {
+			return summary.number_of_transactions ? summary.number_of_transactions : 0;
+		}
+		return 0;
+	}
+
+	render() {
+		const { getTransactionsPage } = this.props;
+		const { currentPage, rowsPerPage } = this.state;
+
+		const transactionsData = getTransactionsPage( currentPage, rowsPerPage ).data || [];
 		const rows = transactionsData.map( this.transactionsToRows );
 
 		return (
 			<TableCard
 				title="Transactions"
-				isLoading={ showPlaceholder }
-				query={ { paged: this.state.currentPage, per_page: this.state.rowsPerPage } }
+				isLoading={ this.isLoading() }
+				query={ { paged: currentPage, per_page: rowsPerPage } }
 				onPageChange={ this.onPageChange }
 				onQueryChange={ this.onQueryChange }
-				rowsPerPage={ this.state.rowsPerPage }
-				totalRows={ getNumberOfTransactions() }
+				rowsPerPage={ rowsPerPage }
+				totalRows={ this.totalRows() }
 				downloadable={ true }
 				headers={ headers }
 				rows={ rows }
-				summary={ this.summary( showPlaceholder, getNumberOfTransactions() ) }
+				summary={ this.summary() }
 			/>
 		);
 	}
@@ -127,16 +137,17 @@ export class TransactionsList extends Component {
 
 export default withSelect( select => {
 	const {
-		showTransactionsPlaceholder,
-		getNumberOfTransactions,
+		showTransactionsPagePlaceholder,
+		getTransactionsSummary,
 		getTransactionsPage,
 	} = select( 'wc-payments-api' );
 
-	const showPlaceholder = showTransactionsPlaceholder();
+	const showPlaceholder = showTransactionsPagePlaceholder;
+	const summary = getTransactionsSummary();
 
 	return {
 		showPlaceholder,
 		getTransactionsPage,
-		getNumberOfTransactions,
+		summary,
 	};
 } )( TransactionsList );

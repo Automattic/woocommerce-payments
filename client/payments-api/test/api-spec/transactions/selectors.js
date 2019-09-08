@@ -5,21 +5,30 @@
  */
 import transactionsSelectors from '../../../api-spec/transactions/selectors';
 import { DEFAULT_REQUIREMENT } from '../../../constants';
+import { resourcePrefixes } from '../../../api-spec/transactions/constants';
+import { getResourceName } from '../../../utils';
 
 describe( 'Transactions selectors', () => {
-	const expectedResourceName = 'transactions-list';
+	const identifier = {
+		page: 2,
+		per_page: 50,
+	};
 	const now = Date.now();
 	const second_before_now = now - 1000;
 
-	describe( 'getTransactions()', () => {
-		it( 'Returns empty list before a read operation', () => {
+	describe( 'getTransactionsPage()', () => {
+		const expectedResourceName = getResourceName( resourcePrefixes.list, identifier );
+
+		it( 'Returns empty object before a read operation', () => {
 			const expected = {};
 
 			const mockGetResource = jest.fn();
 			const mockRequireResource = jest.fn();
 
 			mockRequireResource.mockReturnValue( {} );
-			const transactions = transactionsSelectors.getTransactions( mockGetResource, mockRequireResource )();
+			const transactions = transactionsSelectors.getTransactionsPage( mockGetResource, mockRequireResource )(
+				identifier.page, identifier.per_page
+			);
 
 			expect( mockGetResource ).not.toHaveBeenCalled();
 			expect( mockRequireResource ).toHaveBeenCalledTimes( 1 );
@@ -34,7 +43,9 @@ describe( 'Transactions selectors', () => {
 			const mockRequireResource = jest.fn();
 
 			mockRequireResource.mockReturnValue( { data: expected } );
-			const transactions = transactionsSelectors.getTransactions( mockGetResource, mockRequireResource )();
+			const transactions = transactionsSelectors.getTransactionsPage( mockGetResource, mockRequireResource )(
+				identifier.page, identifier.per_page
+			);
 
 			expect( mockGetResource ).not.toHaveBeenCalled();
 			expect( mockRequireResource ).toHaveBeenCalledTimes( 1 );
@@ -43,7 +54,9 @@ describe( 'Transactions selectors', () => {
 		} );
 	} );
 
-	describe( 'getTransactionsIsLoading()', () => {
+	describe( 'getTransactionsPageIsLoading()', () => {
+		const expectedResourceName = getResourceName( resourcePrefixes.list, identifier );
+
 		it( "Returns false when a read operation isn't in flight", () => {
 			const expected = false;
 
@@ -53,7 +66,7 @@ describe( 'Transactions selectors', () => {
 				lastRequested: second_before_now,
 				lastReceived: now,
 			} );
-			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
+			const isLoading = transactionsSelectors.getTransactionsPageIsLoading( mockGetResource )( identifier.page, identifier.per_page );
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -69,7 +82,7 @@ describe( 'Transactions selectors', () => {
 				lastRequested: now,
 				lastReceived: second_before_now,
 			} );
-			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
+			const isLoading = transactionsSelectors.getTransactionsPageIsLoading( mockGetResource )( identifier.page, identifier.per_page );
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -77,7 +90,9 @@ describe( 'Transactions selectors', () => {
 		} );
 	} );
 
-	describe( 'isWaitingForInitialLoad()', () => {
+	describe( 'isWaitingForInitialPageLoad()', () => {
+		const expectedResourceName = getResourceName( resourcePrefixes.list, identifier );
+
 		it( 'Returns false when transactions are initialized', () => {
 			const expected = false;
 
@@ -86,7 +101,7 @@ describe( 'Transactions selectors', () => {
 				data: {},
 			} );
 
-			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
+			const initStatus = transactionsSelectors.isWaitingForInitialPageLoad( mockGetResource )( identifier.page, identifier.per_page );
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -99,7 +114,7 @@ describe( 'Transactions selectors', () => {
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {} );
 
-			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
+			const initStatus = transactionsSelectors.isWaitingForInitialPageLoad( mockGetResource )( identifier.page, identifier.per_page );
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -114,7 +129,7 @@ describe( 'Transactions selectors', () => {
 				lastRequested: second_before_now,
 			} );
 
-			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
+			const initStatus = transactionsSelectors.isWaitingForInitialPageLoad( mockGetResource )( identifier.page, identifier.per_page );
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -122,14 +137,18 @@ describe( 'Transactions selectors', () => {
 		} );
 	} );
 
-	describe( 'showTransactionsPlaceholder()', () => {
+	describe( 'showTransactionsPagePlaceholder()', () => {
+		const expectedResourceName = getResourceName( resourcePrefixes.list, identifier );
+
 		it( "Returns true when transactions aren't initialized", () => {
 			const expected = true;
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {} );
 
-			const showPlaceholder = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();
+			const showPlaceholder = transactionsSelectors.showTransactionsPagePlaceholder( mockGetResource )(
+				identifier.page, identifier.per_page
+			);
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
@@ -144,11 +163,13 @@ describe( 'Transactions selectors', () => {
 				lastRequested: second_before_now,
 			} );
 
-			const initStatus = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();
+			const showPlaceholder = transactionsSelectors.showTransactionsPagePlaceholder( mockGetResource )(
+				identifier.page, identifier.per_page
+			);
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
-			expect( initStatus ).toBe( expected );
+			expect( showPlaceholder ).toBe( expected );
 		} );
 
 		it( 'Returns false when transactions are initialized', () => {
@@ -159,11 +180,42 @@ describe( 'Transactions selectors', () => {
 				data: {},
 			} );
 
-			const showPlaceholder = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();
+			const showPlaceholder = transactionsSelectors.showTransactionsPagePlaceholder( mockGetResource )(
+				identifier.page, identifier.per_page
+			);
 
 			expect( mockGetResource ).toHaveBeenCalledTimes( 1 );
 			expect( mockGetResource ).toHaveBeenCalledWith( expectedResourceName );
 			expect( showPlaceholder ).toBe( expected );
+		} );
+	} );
+
+	describe( 'getTransactionsSummary()', () => {
+		it( 'Returns empty object before read operation', () => {
+			const expected = {};
+
+			const mockGetResource = jest.fn();
+			const mockRequireResource = jest.fn();
+			mockRequireResource.mockReturnValue( {} );
+
+			const summary = transactionsSelectors.getTransactionsSummary( mockGetResource, mockRequireResource )();
+
+			expect( mockRequireResource ).toHaveBeenCalledWith( DEFAULT_REQUIREMENT, resourcePrefixes.summary );
+			expect( mockRequireResource ).toHaveBeenCalledTimes( 1 );
+			expect( summary ).toStrictEqual( expected );
+		} );
+		it( 'Returns summary after read operation', () => {
+			const expected = { data: {} };
+
+			const mockGetResource = jest.fn();
+			const mockRequireResource = jest.fn();
+			mockRequireResource.mockReturnValue( { data: expected } );
+
+			const summary = transactionsSelectors.getTransactionsSummary( mockGetResource, mockRequireResource )();
+
+			expect( mockRequireResource ).toHaveBeenCalledWith( DEFAULT_REQUIREMENT, resourcePrefixes.summary );
+			expect( mockRequireResource ).toHaveBeenCalledTimes( 1 );
+			expect( summary ).toBe( expected );
 		} );
 	} );
 } );

@@ -3,18 +3,13 @@
 /**
  * External dependencies
  */
-import { slice } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { DEFAULT_REQUIREMENT } from '../../constants';
-
-const getTransactions = ( getResource, requireResource ) => (
-	requirement = DEFAULT_REQUIREMENT
-) => {
-	return requireResource( requirement, 'transactions-list' ).data || {};
-};
+import { getResourceName } from '../../utils';
+import { resourcePrefixes } from './constants';
 
 const getTransactionsPage = ( getResource, requireResource ) => (
 	page,
@@ -22,74 +17,55 @@ const getTransactionsPage = ( getResource, requireResource ) => (
 	requirement = DEFAULT_REQUIREMENT
 ) => {
 	// TODO: whole function is temporary; just used to mock data.
-	const res = requireResource( requirement, 'transactions-list' ).data || {};
-	if ( res && res.data ) {
-		const data = [
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-		];
+	const identifier = { page: page, per_page: rowsPerPage };
+	const resourceName = getResourceName( resourcePrefixes.list, identifier );
 
-		return {
-			...res,
-			data: slice( data, rowsPerPage * ( page - 1 ), rowsPerPage * page ),
-		};
-	}
+	const res = requireResource( requirement, resourceName ).data || {};
 	return res;
 };
 
-const getNumberOfTransactions = ( getResource ) => () => {
-	// TODO: whole function is temporary; just used to mock data.
-	const res = getResource( 'transactions-list' ).data;
-	if ( res ) {
-		const data = [
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-			...res.data,
-		];
-
-		return data.length;
-	}
-	return 0;
+const getTransactionsSummary = ( getResource, requireResource ) => (
+	requirement = DEFAULT_REQUIREMENT,
+) => {
+	return requireResource( requirement, resourcePrefixes.summary ).data || {};
 };
 
-const isWaitingForInitialLoad = ( getResource ) => () => {
-	const resourceName = 'transactions-list';
+const isWaitingForInitialPageLoad = ( getResource ) => (
+	page,
+	rowsPerPage,
+) => {
+	const identifier = { page: page, per_page: rowsPerPage };
+	const resourceName = getResourceName( resourcePrefixes.list, identifier );
 	const transactionsResource = getResource( resourceName );
 
 	return transactionsResource.data === undefined;
 };
 
-const getTransactionsIsLoading = ( getResource ) => () => {
-	const resourceName = 'transactions-list';
+const getTransactionsPageIsLoading = ( getResource ) => (
+	page,
+	rowsPerPage,
+) => {
+	const identifier = {
+		page: page,
+		per_page: rowsPerPage,
+	};
+	const resourceName = getResourceName( resourcePrefixes.list, identifier );
 	const transactionsResource = getResource( resourceName );
 
 	return transactionsResource.lastRequested > transactionsResource.lastReceived;
 };
 
-const showTransactionsPlaceholder = ( getResource ) => () => {
-	return isWaitingForInitialLoad( getResource )();
+const showTransactionsPagePlaceholder = ( getResource ) => (
+	page,
+	rowsPerPage,
+) => {
+	return isWaitingForInitialPageLoad( getResource )( page, rowsPerPage );
 };
 
 export default {
-	getTransactions,
-	getTransactionsIsLoading,
-	isWaitingForInitialLoad,
-	showTransactionsPlaceholder,
-	getNumberOfTransactions,
 	getTransactionsPage,
+	getTransactionsPageIsLoading,
+	getTransactionsSummary,
+	isWaitingForInitialPageLoad,
+	showTransactionsPagePlaceholder,
 };
