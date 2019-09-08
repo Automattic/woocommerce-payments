@@ -15,41 +15,34 @@ import {
 	getResourceIdentifier,
 	getResourceName,
 } from '../../utils';
+import { resourcePrefixes } from './constants';
 
-function read( resourceNames, fetch = apiFetch, dataToResources = transactionsToResources ) {
-	return readTransactions( resourceNames, fetch, dataToResources );
+function read( resourceNames, fetch = apiFetch ) {
+	return [
+		...readTransactionsPage( resourceNames, fetch, transactionsPageToResources ),
+		...readTransactionsSummary( resourceNames, fetch, transactionsSummaryToResources ),
+	];
 }
 
-export function readTransactions( resourceNames, fetch, dataToResources ) {
-	if ( includes( resourceNames, 'transactions-list' ) ) {
-		const url = `${ NAMESPACE }/payments/transactions`;
-
-		return [
-			fetch( { path: url } )
-				.then( dataToResources )
-				.catch( error => {
-					return { [ 'transactions-list' ]: { error } };
-				} ),
-		];
-	}
-
-	return [];
-}
-
-export function readTransactionsPage( resourceNames, fetch = apiFetch, dataToResources = transactionsPageToResources ) {
-	const prefix = 'transactions-list-page-perpage';
+export function readTransactionsPage(
+	resourceNames,
+	fetch,
+	dataToResources = transactionsPageToResources,
+) {
 	const resources = resourceNames.filter( resourceName => {
 		// Only process requests for transactions page resources.
-		return isResourcePrefix( resourceName, prefix );
+		return isResourcePrefix( resourceName, resourcePrefixes.list );
 	} ).map( resourceName => {
 		const data = getResourceIdentifier( resourceName );
-		const url = `${ NAMESPACE }/payments/transactions`;
+		// TODO: I feel like this might not be the best way to send parameters with the request.
+		//       Is there a better way to send the data with the request?
+		const url = `${ NAMESPACE }/payments/transactions?page=${ data.page }&per_page=${ data.per_page }`;
 
-		return fetch( { path: url, data: data } )
+		return fetch( { path: url } )
 			.then( dataToResources )
 			.catch( error => {
 				return {
-					[ getResourceName( prefix, data ) ]: {
+					[ resourceName ]: {
 						error,
 					},
 				};
@@ -59,23 +52,47 @@ export function readTransactionsPage( resourceNames, fetch = apiFetch, dataToRes
 	return resources;
 }
 
+export function readTransactionsSummary(
+	resourceNames,
+	fetch,
+	dataToResources = transactionsSummaryToResources,
+) {
+	if ( ! includes( resourceNames, resourcePrefixes.summary ) ) {
+		return [];
+	}
+
+	const url = `${ NAMESPACE }/payments/transactions/summary`;
+
+	return [
+		fetch( { path: url } )
+			.then( dataToResources )
+			.catch( error => {
+				return { [ resourcePrefixes.summary ]: { error } };
+			} ),
+	];
+}
+
 export function transactionsPageToResources( transactions ) {
+	// TODO: Make sure page and per_page are returned with the transactions.
+	// TODO: Maybe there's a better way to do this?
+	// - Kristófer R. // @reykjalin.
 	const identifier = {
 		page: transactions.summary.page,
 		per_page: transactions.summary.per_page,
 	};
+	const resourceName = getResourceName( resourcePrefixes.list, identifier );
 
 	return {
-		[ getResourceName( 'transactions-list-page-perpage', identifier ) ]: {
+		[ resourceName ]: {
 			data: transactions,
 		},
 	};
 }
 
-export function transactionsToResources( transactions ) {
+export function transactionsSummaryToResources( numberOfTransactions ) {
 	return {
-		[ 'transactions-list' ]: {
-			data: transactions,
+		[ resourcePrefixes.summary ]: {
+			data: numberOfTransactions,
 		},
 	};
 }
