@@ -12,6 +12,7 @@ import { addFilter } from '@wordpress/hooks';
 import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
+import TransactionDetailsPage from 'transaction-details';
 import 'payments-api/payments-data-store';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
@@ -36,6 +37,16 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         breadcrumbs: [
             rootLink,
             __( 'Transactions', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: TransactionDetailsPage,
+        path: '/payments/transactions/details',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            [ '/payments/transactions', __( 'Transactions', 'woocommerce-payments' ) ],
+            __( 'Payment Details', 'woocommerce-payments' ),
         ],
     } );
     pages.push( {
