@@ -6,8 +6,9 @@
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
@@ -27,6 +28,7 @@ const headers = [
 	{ key: 'net', label: 'Net', isNumeric: true, required: true },
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
+	{ key: 'details', label: '', required: true },
 ];
 
 export const TransactionsList = ( props ) => {
@@ -37,6 +39,12 @@ export const TransactionsList = ( props ) => {
 	const rows = transactionsData.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
+		const details_link = (
+			<Link 	href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` }
+					style={ { height: '18px' } }>
+				<Gridicon icon="info-outline" size={ 18 } style={ { fill: '#969CA1' } } />
+			</Link>
+		);
 
 		// Extract nested properties from the charge.
 		const billing_details = charge ? charge.billing_details : null;
@@ -59,6 +67,7 @@ export const TransactionsList = ( props ) => {
 			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
 			risk_level: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
+			details: { value: txn.id, display: details_link },
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );

@@ -64,6 +64,11 @@ exports[`Transactions list renders correctly 1`] = `
         "key": "risk_level",
         "label": "Risk Level",
       },
+      Object {
+        "key": "details",
+        "label": "",
+        "required": true,
+      },
     ]
   }
   isLoading={false}
@@ -116,6 +121,28 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": null,
         },
+        Object {
+          "display": <Link
+            href="admin.php?page=wc-admin&path=/payments/transactions/details&id=txn_j23jda9JJa"
+            style={
+              Object {
+                "height": "18px",
+              }
+            }
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+              style={
+                Object {
+                  "fill": "#969CA1",
+                }
+              }
+            />
+          </Link>,
+          "value": "txn_j23jda9JJa",
+        },
       ],
       Array [
         Object {
@@ -165,6 +192,28 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": "Normal",
           "value": "normal",
+        },
+        Object {
+          "display": <Link
+            href="admin.php?page=wc-admin&path=/payments/transactions/details&id=txn_oa9kaKaa8"
+            style={
+              Object {
+                "height": "18px",
+              }
+            }
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+              style={
+                Object {
+                  "fill": "#969CA1",
+                }
+              }
+            />
+          </Link>,
+          "value": "txn_oa9kaKaa8",
         },
       ],
     ]
