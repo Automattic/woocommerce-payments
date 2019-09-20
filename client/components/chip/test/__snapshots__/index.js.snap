@@ -1,0 +1,76 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Chip renders a primary chip 1`] = `
+<span
+  className="chip"
+  style={
+    Object {
+      "backgroundColor": "#DBE8FF",
+      "color": "#162566",
+    }
+  }
+>
+  <t
+    icon="checkmark"
+    size={18}
+    style={
+      Object {
+        "fill": "#162566",
+        "marginRight": "4px",
+        "verticalAlign": "text-top",
+      }
+    }
+  />
+  Primary message
+</span>
+`;
+
+exports[`Chip renders a primary chip by default 1`] = `
+<span
+  className="chip"
+  style={
+    Object {
+      "backgroundColor": "#DBE8FF",
+      "color": "#162566",
+    }
+  }
+>
+  <t
+    icon="checkmark"
+    size={18}
+    style={
+      Object {
+        "fill": "#162566",
+        "marginRight": "4px",
+        "verticalAlign": "text-top",
+      }
+    }
+  />
+  Message
+</span>
+`;
+
+exports[`Chip renders a warning chip 1`] = `
+<span
+  className="chip"
+  style={
+    Object {
+      "backgroundColor": "#F7E1AE",
+      "color": "#302800",
+    }
+  }
+>
+  <t
+    icon="notice"
+    size={18}
+    style={
+      Object {
+        "fill": "#302800",
+        "marginRight": "4px",
+        "verticalAlign": "text-top",
+      }
+    }
+  />
+  Warning message
+</span>
+`;
