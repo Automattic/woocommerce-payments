@@ -1,13 +1,71 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
-<Card
-  action="txn_38jdHA39KKA"
-  title="Summary"
->
-  Summary details for transaction 
-  txn_38jdHA39KKA
-  .
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $0.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          cur
+        </span>
+        <PaymentStatusChip
+          style={
+            Object {
+              "marginLeft": "1em",
+            }
+          }
+          transaction={
+            Object {
+              "billing_details": Object {
+                "name": "Customer Name",
+              },
+              "created": 1568928240,
+              "id": "txn_38jdHA39KKA",
+              "order": Object {
+                "number": 45981,
+                "url": "https://automattic.com/",
+              },
+              "source": Object {
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                },
+              },
+            }
+          }
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Fee: 
+          $0.00
+        </p>
+        <p>
+          Net: 
+          $0.00
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    />
+  </div>
   <hr
     style={
       Object {
@@ -59,11 +117,48 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
 `;
 
 exports[`TransactionSummaryDetails renders defaults if transaction object is empty 1`] = `
-<Card
-  title="Summary"
->
-  Summary details for transaction 
-  .
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $0.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          cur
+        </span>
+        <PaymentStatusChip
+          style={
+            Object {
+              "marginLeft": "1em",
+            }
+          }
+          transaction={Object {}}
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Fee: 
+          $0.00
+        </p>
+        <p>
+          Net: 
+          $0.00
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    />
+  </div>
   <hr
     style={
       Object {
