@@ -92,9 +92,7 @@ exports[`Transactions list renders correctly 1`] = `
           "display": null,
         },
         Object {
-          "display": <span>
-            –
-          </span>,
+          "display": <OrderLink />,
           "value": undefined,
         },
         Object {
@@ -160,9 +158,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "visa",
         },
         Object {
-          "display": <span>
-            –
-          </span>,
+          "display": <OrderLink />,
           "value": undefined,
         },
         Object {

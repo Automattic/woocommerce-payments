@@ -14,6 +14,7 @@ import Gridicon from 'gridicons';
  * Internal dependencies.
  */
 import withSelect from 'payments-api/with-select';
+import OrderLink from '../components/order-link';
 
 const headers = [
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
@@ -38,7 +39,7 @@ export const TransactionsList = ( props ) => {
 
 	const rows = transactionsData.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
-		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
+		const order_url = <OrderLink order={ txn.order } />;
 		const details_link = (
 			<Link 	href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` }
 					style={ { height: '18px' } }>
