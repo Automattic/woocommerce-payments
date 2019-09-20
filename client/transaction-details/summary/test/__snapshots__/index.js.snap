@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
+<Card
+  action="txn_38jdHA39KKA"
+  title="Summary"
+>
+  Summary details for transaction 
+  txn_38jdHA39KKA
+  .
+  <hr
+    style={
+      Object {
+        "margin": "0 -16px",
+      }
+    }
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "description": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "description": <OrderLink
+            order={
+              Object {
+                "number": 45981,
+                "url": "https://automattic.com/",
+              }
+            }
+          />,
+          "title": "Order No.",
+        },
+        Object {
+          "description": "Customer Name",
+          "title": "Customer",
+        },
+        Object {
+          "description": <CardSummary
+            card={
+              Object {
+                "brand": "visa",
+                "last4": "4242",
+              }
+            }
+          />,
+          "title": "Payment Method",
+        },
+        Object {
+          "description": "normal",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
+</Card>
+`;
+
+exports[`TransactionSummaryDetails renders defaults if transaction object is empty 1`] = `
+<Card
+  title="Summary"
+>
+  Summary details for transaction 
+  .
+  <hr
+    style={
+      Object {
+        "margin": "0 -16px",
+      }
+    }
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "description": "Dec 31, 1969, 7:00pm",
+          "title": "Date",
+        },
+        Object {
+          "description": <OrderLink />,
+          "title": "Order No.",
+        },
+        Object {
+          "description": "Sample customer",
+          "title": "Customer",
+        },
+        Object {
+          "description": <CardSummary />,
+          "title": "Payment Method",
+        },
+        Object {
+          "description": "–",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
+</Card>
+`;
