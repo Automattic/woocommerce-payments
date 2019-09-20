@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HorizontalList correctly renders a List element with horizontal class modifier 1`] = `
+<List
+  className="woocommerce-list--horizontal"
+  items={
+    Array [
+      Object {
+        "description": "Item 1 description",
+        "title": "Item 1",
+      },
+      Object {
+        "description": "Item 2 description",
+        "title": "Item 2",
+      },
+      Object {
+        "description": "Item 3 description",
+        "title": "Item 3",
+      },
+      Object {
+        "description": "Item 4 description",
+        "title": "Item 4",
+      },
+    ]
+  }
+/>
+`;
