@@ -224,10 +224,19 @@ class WC_Payments {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-jetpack-http.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-local-http.php';
 
+		$endpoint    = 'https://public-api.wordpress.com/wpcom/v2/wcpay';
+		$http_client = new WC_Payments_Jetpack_Http();
+
+		if ( defined( 'WCPAY_LOCAL_SERVER' ) ) {
+			$endpoint    = WCPAY_LOCAL_SERVER;
+			$http_client = new WC_Payments_Local_Http();
+		}
+
 		// TODO: Don't hard code user agent string.
 		$payments_api_client = new WC_Payments_API_Client(
+			$endpoint,
 			'WooCommerce Payments/0.1.0',
-			new WC_Payments_Http()
+			$http_client
 		);
 
 		return $payments_api_client;

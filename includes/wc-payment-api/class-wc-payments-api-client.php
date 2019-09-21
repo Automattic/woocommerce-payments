@@ -12,8 +12,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_API_Client {
 
-	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay';
-
 	const POST = 'POST';
 	const GET  = 'GET';
 
@@ -22,6 +20,13 @@ class WC_Payments_API_Client {
 	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
 	const OAUTH_API        = 'oauth';
+
+	/**
+	 * URL for the WooCommerce Payments API.
+	 *
+	 * @var string
+	 */
+	private $endpoint;
 
 	/**
 	 * User agent string to report in requests.
@@ -47,10 +52,12 @@ class WC_Payments_API_Client {
 	/**
 	 * WC_Payments_API_Client constructor.
 	 *
+	 * @param string           $endpoint    - URL for the WooCommerce Payments API.
 	 * @param string           $user_agent  - User agent string to report in requests.
 	 * @param WC_Payments_Http $http_client - Used to send HTTP requests.
 	 */
-	public function __construct( $user_agent, $http_client ) {
+	public function __construct( $endpoint, $user_agent, $http_client ) {
+		$this->endpoint    = $endpoint;
 		$this->user_agent  = $user_agent;
 		$this->http_client = $http_client;
 	}
@@ -303,11 +310,11 @@ class WC_Payments_API_Client {
 		$request['account_id'] = $this->account_id;
 
 		// Build the URL we want to send the URL to.
-		$url  = self::ENDPOINT . '/' . $api;
+		$url  = $this->endpoint . '/' . $api;
 		$body = null;
 
 		if ( self::GET === $method ) {
-			$url .= '?' . http_build_query( $request );
+			$url = add_query_arg( $request, $url );
 		} else {
 			// Encode the request body as JSON.
 			$body = wp_json_encode( $request );
