@@ -41,6 +41,13 @@ export class TransactionsList extends Component {
 		this.props = props;
 	}
 
+	/**
+	 * Takes each transaction object and parses the raw data to an object that can
+	 * be used by the {TableCard} component.
+	 *
+	 * @param {Array} txn Raw transaction data.
+	 * @returns {Array} Transactions ready for {TableCard}.
+	 */
 	transactionsToRows( txn ) {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const order_url = txn.order ? <a href={ txn.order.url }>#{ txn.order.number }</a> : <span>&ndash;</span>;
@@ -71,6 +78,11 @@ export class TransactionsList extends Component {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	}
 
+	/**
+	 * Returns an array with the summary values to display for the table.
+	 *
+	 * @returns {Array} List of summary values for the table.
+	 */
 	summary = () => {
 		const { isLoading } = this.props;
 
@@ -84,6 +96,11 @@ export class TransactionsList extends Component {
 		} ];
 	};
 
+	/**
+	 * Returns the total number of transactions across all pages.
+	 *
+	 * @returns {Number} The number of transactions.
+	 */
 	totalRows = () => {
 		const { summary } = this.props;
 
