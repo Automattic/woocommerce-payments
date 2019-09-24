@@ -39,7 +39,6 @@ export class TransactionsList extends Component {
 	constructor( props ) {
 		super( props );
 		this.props = props;
-		this.state = { currentPage: 1, rowsPerPage: 25 };
 	}
 
 	transactionsToRows( txn ) {
@@ -72,13 +71,6 @@ export class TransactionsList extends Component {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	}
 
-	onPageChange = ( ...params ) => {
-		this.setState( {
-			...this.state,
-			currentPage: params[ 0 ],
-		} );
-	};
-
 	summary = () => {
 		const { isLoading } = this.props;
 
@@ -94,8 +86,9 @@ export class TransactionsList extends Component {
 
 	totalRows = () => {
 		const { summary } = this.props;
-		if ( summary ) {
-			return summary.number_of_transactions ? summary.number_of_transactions : 0;
+
+		if ( summary && summary.number_of_transactions ) {
+			return summary.number_of_transactions;
 		}
 		return 0;
 	}
@@ -111,7 +104,6 @@ export class TransactionsList extends Component {
 				title="Transactions"
 				isLoading={ isLoading }
 				query={ query }
-				onPageChange={ this.onPageChange }
 				onQueryChange={ onQueryChange }
 				rowsPerPage={ query.per_page }
 				totalRows={ this.totalRows() }
@@ -131,6 +123,8 @@ export default withSelect( ( select ) => {
 		getTransactionsPage,
 	} = select( 'wc-payments-api' );
 
+	// Get the correct query parameters.
+	// TODO: figure out how to handle back/forward in browser.
 	const tableQuery = () => {
 		const query = getQuery();
 		if ( ! query ) {
@@ -146,6 +140,7 @@ export default withSelect( ( select ) => {
 		};
 	};
 
+	// Prepare props.
 	const { paged, per_page } = tableQuery();
 	const isLoading = showTransactionsPagePlaceholder( paged, per_page );
 	const transactions = getTransactionsPage( paged, per_page );
