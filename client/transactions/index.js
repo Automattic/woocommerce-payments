@@ -11,7 +11,12 @@ import { TableCard } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 
 /**
- * Internal dependencies.
+ * WooCommerce dependencies
+ */
+import { onQueryChange, getQuery } from '@woocommerce/navigation';
+
+/**
+ * Internal dependencies
  */
 import withSelect from 'payments-api/with-select';
 
@@ -74,19 +79,10 @@ export class TransactionsList extends Component {
 		} );
 	};
 
-	onQueryChange = ( ...params ) => {
-		if ( 'per_page' === params[ 0 ] ) {
-			return ( ...rowsPerPage ) => {
-				this.setState( {
-					...this.state,
-					rowsPerPage: rowsPerPage[ 0 ],
-				} );
-			};
-		}
-	};
-
 	summary = () => {
-		if ( this.isLoading() ) {
+		const { isLoading } = this.props;
+
+		if ( isLoading ) {
 			return [];
 		}
 
@@ -95,12 +91,6 @@ export class TransactionsList extends Component {
 			value: this.totalRows(),
 		} ];
 	};
-
-	isLoading = () => {
-		const { showPlaceholder } = this.props;
-		const { currentPage, rowsPerPage } = this.state;
-		return showPlaceholder( currentPage, rowsPerPage );
-	}
 
 	totalRows = () => {
 		const { summary } = this.props;
@@ -111,20 +101,19 @@ export class TransactionsList extends Component {
 	}
 
 	render() {
-		const { getTransactionsPage } = this.props;
-		const { currentPage, rowsPerPage } = this.state;
+		const { transactions, query, isLoading } = this.props;
 
-		const transactionsData = getTransactionsPage( currentPage, rowsPerPage ).data || [];
+		const transactionsData = transactions.data || [];
 		const rows = transactionsData.map( this.transactionsToRows );
 
 		return (
 			<TableCard
 				title="Transactions"
-				isLoading={ this.isLoading() }
-				query={ { paged: currentPage, per_page: rowsPerPage } }
+				isLoading={ isLoading }
+				query={ query }
 				onPageChange={ this.onPageChange }
-				onQueryChange={ this.onQueryChange }
-				rowsPerPage={ rowsPerPage }
+				onQueryChange={ onQueryChange }
+				rowsPerPage={ query.per_page }
 				totalRows={ this.totalRows() }
 				downloadable={ true }
 				headers={ headers }
@@ -135,19 +124,37 @@ export class TransactionsList extends Component {
 	}
 }
 
-export default withSelect( select => {
+export default withSelect( ( select ) => {
 	const {
 		showTransactionsPagePlaceholder,
 		getTransactionsSummary,
 		getTransactionsPage,
 	} = select( 'wc-payments-api' );
 
-	const showPlaceholder = showTransactionsPagePlaceholder;
+	const tableQuery = () => {
+		const query = getQuery();
+		if ( ! query ) {
+			return {
+				paged: 1,
+				per_page: 25,
+			};
+		}
+
+		return {
+			paged: query.paged ? query.paged : 1,
+			per_page: query.per_page ? query.per_page : 25,
+		};
+	};
+
+	const { paged, per_page } = tableQuery();
+	const isLoading = showTransactionsPagePlaceholder( paged, per_page );
+	const transactions = getTransactionsPage( paged, per_page );
 	const summary = getTransactionsSummary();
 
 	return {
-		showPlaceholder,
-		getTransactionsPage,
+		isLoading,
+		transactions,
 		summary,
+		query: tableQuery(),
 	};
 } )( TransactionsList );

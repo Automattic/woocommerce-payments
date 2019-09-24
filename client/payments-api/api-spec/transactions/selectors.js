@@ -16,8 +16,7 @@ const getTransactionsPage = ( getResource, requireResource ) => (
 	rowsPerPage,
 	requirement = DEFAULT_REQUIREMENT
 ) => {
-	// TODO: whole function is temporary; just used to mock data.
-	const identifier = { page: page, per_page: rowsPerPage };
+	const identifier = { page: parseInt( page ), per_page: parseInt( rowsPerPage ) };
 	const resourceName = getResourceName( resourcePrefixes.list, identifier );
 
 	const res = requireResource( requirement, resourceName ).data || {};
@@ -59,7 +58,7 @@ const showTransactionsPagePlaceholder = ( getResource ) => (
 	page,
 	rowsPerPage,
 ) => {
-	return isWaitingForInitialPageLoad( getResource )( page, rowsPerPage );
+	return isWaitingForInitialPageLoad( getResource )( parseInt( page ), parseInt( rowsPerPage ) );
 };
 
 export default {

@@ -46,6 +46,6 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
             rootLink,
             __( 'Disputes', 'woocommerce-payments' ),
         ],
-    } );
+	} );
     return pages;
 } );
