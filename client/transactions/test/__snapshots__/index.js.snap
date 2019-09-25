@@ -180,7 +180,19 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Object {
         "label": "transactions",
-        "value": 0,
+        "value": "0",
+      },
+      Object {
+        "label": "total",
+        "value": "$0.00",
+      },
+      Object {
+        "label": "fees",
+        "value": "$0.00",
+      },
+      Object {
+        "label": "net",
+        "value": "$0.00",
       },
     ]
   }
