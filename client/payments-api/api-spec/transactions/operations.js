@@ -10,13 +10,20 @@ import { includes } from 'lodash';
  * Internal dependencies
  */
 import { NAMESPACE } from '../../constants';
+import { resourcePrefixes } from './constants';
 import {
 	isResourcePrefix,
 	getResourceIdentifier,
 	getResourceName,
 } from '../../utils';
-import { resourcePrefixes } from './constants';
 
+/**
+ * Returns a list of promises that will resolve to the requested resources.
+ *
+ * @param {Array} resourceNames List of requested resources.
+ * @param {Function} fetch Function used to fetch data.
+ * @returns {Array} Promises that will resolve to the requested resources.
+ */
 function read( resourceNames, fetch = apiFetch ) {
 	return [
 		...readTransactionsPage( resourceNames, fetch, transactionsPageToResources ),
@@ -24,6 +31,15 @@ function read( resourceNames, fetch = apiFetch ) {
 	];
 }
 
+/**
+ * Provided the right resource names will send requests for a specific transactions pages
+ * and convert the data to resources.
+ *
+ * @param {Array} resourceNames List of requested resources.
+ * @param {Function} fetch Function used to fetch data.
+ * @param {Function} dataToResources Function used to convert requested data to resources.
+ * @returns {Array} Promises that will resolve to the requested transactions pages.
+ */
 export function readTransactionsPage(
 	resourceNames,
 	fetch,
@@ -52,6 +68,15 @@ export function readTransactionsPage(
 	return resources;
 }
 
+/**
+ * Provided the right resource name will send a request for a summary
+ * of all transactions and convert the data to resources.
+ *
+ * @param {Array} resourceNames List of requested resources.
+ * @param {Function} fetch Function used to fetch data.
+ * @param {Function} dataToResources Function used to convert requested data to resources.
+ * @returns {Array} Promises that will resolve to the requested transactions summary.
+ */
 export function readTransactionsSummary(
 	resourceNames,
 	fetch,
@@ -72,6 +97,12 @@ export function readTransactionsSummary(
 	];
 }
 
+/**
+ * Converts the raw transactions data from the API to resources.
+ *
+ * @param {Array} transactions Transactions returned from API.
+ * @returns {Object} The resources created using the data provided.
+ */
 export function transactionsPageToResources( transactions ) {
 	// TODO: Make sure page and per_page are returned with the transactions.
 	// TODO: Maybe there's a better way to do this?
@@ -89,10 +120,16 @@ export function transactionsPageToResources( transactions ) {
 	};
 }
 
-export function transactionsSummaryToResources( numberOfTransactions ) {
+/**
+ * Converts the raw summary data from the API to resources.
+ *
+ * @param {Array} summary Summary returned from API.
+ * @returns {Object} The resources created using the data provided.
+ */
+export function transactionsSummaryToResources( summary ) {
 	return {
 		[ resourcePrefixes.summary ]: {
-			data: numberOfTransactions,
+			data: summary,
 		},
 	};
 }
