@@ -350,8 +350,8 @@ describe( 'Transactions operations', () => {
 				expect( mockToResources ).toHaveBeenCalledWith( mockData );
 				expect( result ).toBe( expectedResolvedPromise );
 			} );
-
 		} );
+
 		it( 'Returns an empty list when wrong resource names are supplied', () => {
 			const expected = [];
 
