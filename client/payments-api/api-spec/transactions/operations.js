@@ -5,6 +5,7 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { includes } from 'lodash';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -52,7 +53,10 @@ export function readTransactionsPage(
 		const data = getResourceIdentifier( resourceName );
 		// TODO: I feel like this might not be the best way to send parameters with the request.
 		//       Is there a better way to send the data with the request?
-		const url = `${ NAMESPACE }/payments/transactions?page=${ data.page }&per_page=${ data.per_page }`;
+		const url = addQueryArgs(
+			`${ NAMESPACE }/payments/transactions`,
+			{ page: data.page, per_page: data.per_page },
+		);
 
 		return fetch( { path: url } )
 			.then( dataToResources )
