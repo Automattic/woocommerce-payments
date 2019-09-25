@@ -95,20 +95,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'payment_details' => array(
 				'type' => 'account_actions',
 			),
-			'testmode'        => array(
-				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
-				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'yes',
-				'desc_tip'    => true,
-			),
 			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
 				'default'     => 'no',
+				'desc_tip'    => true,
+			),
+			'testmode'        => array(
+				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'default'     => 'yes',
 				'desc_tip'    => true,
 			),
 		);
