@@ -71,38 +71,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = array(
-			'enabled'              => array(
+			'enabled'         => array(
 				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			),
-			'title'                => array(
+			'title'           => array(
 				'title'       => __( 'Title', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
 				'default'     => __( 'Credit Card', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
-			'description'          => array(
+			'description'     => array(
 				'title'       => __( 'Description', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
 				'default'     => '',
 				'desc_tip'    => true,
 			),
-			'payment_details'      => array(
+			'payment_details' => array(
 				'type' => 'account_actions',
 			),
-			'stripe_account_id'    => array(
-				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'Get your account ID from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'testmode'             => array(
+			'testmode'        => array(
 				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -110,21 +103,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'yes',
 				'desc_tip'    => true,
 			),
-			'test_publishable_key' => array(
-				'title'       => __( 'Test Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'publishable_key'      => array(
-				'title'       => __( 'Live Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'manual_capture'       => array(
+			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
