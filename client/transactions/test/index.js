@@ -55,6 +55,7 @@ describe( 'Transactions list', () => {
 			<TransactionsList
 				transactions={ transactions }
 				isLoading={ false }
+				tableQuery={ { paged: 1, per_page: 25 } }
 			/>
 		);
 		expect( list ).toMatchSnapshot();

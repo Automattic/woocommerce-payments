@@ -111,7 +111,7 @@ export class TransactionsList extends Component {
 	}
 
 	render() {
-		const { transactions, query, isLoading } = this.props;
+		const { transactions, tableQuery, isLoading } = this.props;
 
 		const transactionsData = transactions.data || [];
 		const rows = transactionsData.map( this.transactionsToRows );
@@ -120,9 +120,9 @@ export class TransactionsList extends Component {
 			<TableCard
 				title="Transactions"
 				isLoading={ isLoading }
-				query={ query }
+				query={ tableQuery }
 				onQueryChange={ onQueryChange }
-				rowsPerPage={ query.per_page }
+				rowsPerPage={ tableQuery.per_page }
 				totalRows={ this.totalRows() }
 				downloadable={ true }
 				headers={ headers }
@@ -167,6 +167,6 @@ export default withSelect( ( select ) => {
 		isLoading,
 		transactions,
 		summary,
-		query: tableQuery(),
+		tableQuery: tableQuery(),
 	};
 } )( TransactionsList );

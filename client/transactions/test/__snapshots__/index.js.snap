@@ -4,7 +4,7 @@ exports[`Transactions list renders correctly 1`] = `
 <TableCard
   baseSearchQuery={Object {}}
   compareParam="filter"
-  downloadable={false}
+  downloadable={true}
   headers={
     Array [
       Object {
@@ -69,7 +69,13 @@ exports[`Transactions list renders correctly 1`] = `
   isLoading={false}
   onColumnsChange={[Function]}
   onQueryChange={[Function]}
-  query={Object {}}
+  onSearch={[Function]}
+  query={
+    Object {
+      "paged": 1,
+      "per_page": 25,
+    }
+  }
   rowHeader={0}
   rows={
     Array [
@@ -168,9 +174,17 @@ exports[`Transactions list renders correctly 1`] = `
       ],
     ]
   }
-  rowsPerPage={10}
+  rowsPerPage={25}
   showMenu={true}
+  summary={
+    Array [
+      Object {
+        "label": "transactions",
+        "value": 0,
+      },
+    ]
+  }
   title="Transactions"
-  totalRows={10}
+  totalRows={0}
 />
 `;
