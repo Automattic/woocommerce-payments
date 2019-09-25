@@ -89,7 +89,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Description', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => '',
+				'default'     => __( 'Enter your card details', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
 			'payment_details' => array(
