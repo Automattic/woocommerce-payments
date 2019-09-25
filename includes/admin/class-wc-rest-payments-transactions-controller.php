@@ -71,13 +71,14 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	public function get_transactions_summary() {
 		// Temporary code returning mock data for now.
-		// Should be replaced with a real API call at a later date.
+		// TODO: Should be replaced with a real API call at a later date.
+		// Note: monetary value is currently in US cents to avoid floating point numbers.
 		return rest_ensure_response(
 			array(
 				'number_of_transactions' => 123,
-				'total'                  => 124,
-				'fees'                   => 125,
-				'net'                    => 126,
+				'total'                  => 12400,
+				'fees'                   => 12500,
+				'net'                    => 12600,
 			)
 		);
 	}

@@ -90,11 +90,32 @@ export class TransactionsList extends Component {
 			return [];
 		}
 
-		return [ {
-			label: 'transactions',
-			value: this.totalRows(),
-		} ];
+		const { summary = {} } = this.props;
+		const {
+			number_of_transactions = 0,
+			total = 0,
+			fees = 0,
+			net = 0,
+		} = summary;
+
+		return [
+			{ label: 'transactions', value: `${ number_of_transactions }` },
+			{ label: 'total', value: `$${ this.moneyValue( total ) }` },
+			{ label: 'fees', value: `$${ this.moneyValue( fees ) }` },
+			{ label: 'net', value: `$${ this.moneyValue( net ) }` },
+		];
 	};
+
+	/**
+	 * Given cents return the USD value with the right monetary amount, including
+	 * the right number of decimal points.
+	 *
+	 * @param {Number} cents The monetary value in cents.
+	 * @returns {Number} The monetary value in USD.
+	 */
+	moneyValue = ( cents ) => {
+		return ( cents / 100 ).toFixed( 2 );
+	}
 
 	/**
 	 * Returns the total number of transactions across all pages.
@@ -102,12 +123,9 @@ export class TransactionsList extends Component {
 	 * @returns {Number} The number of transactions.
 	 */
 	totalRows = () => {
-		const { summary } = this.props;
-
-		if ( summary && summary.number_of_transactions ) {
-			return summary.number_of_transactions;
-		}
-		return 0;
+		const { summary = {} } = this.props;
+		const { number_of_transactions = 0 } = summary;
+		return number_of_transactions;
 	}
 
 	render() {
