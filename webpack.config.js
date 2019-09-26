@@ -7,9 +7,6 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 const webpackConfig = {
 	mode: NODE_ENV,
 	devtool: 'source-map',
-	externals: {
-		'@woocommerce/navigation': { this: [ 'wc', 'navigation' ] },
-	},
 	entry: {
 		index: './client/index.js',
 	},
@@ -51,6 +48,8 @@ const webpackConfig = {
 						return [ 'wc', 'components' ];
 					case '@woocommerce/currency':
 						return [ 'wc', 'currency' ];
+					case '@woocommerce/navigation':
+						return [ 'wc', 'navigation' ];
 				}
 			},
 			requestToHandle( request ) {
@@ -59,6 +58,8 @@ const webpackConfig = {
 						return 'wc-components';
 					case '@woocommerce/currency':
 						return 'wc-currency';
+					case '@woocommerce/navigation':
+						return 'wc-navigation';
 				}
 			},
 		} ),
