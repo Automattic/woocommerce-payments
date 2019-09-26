@@ -64,6 +64,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
+		$this->title              = __( 'Credit Card', 'woocommerce-payments' );
+		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -77,20 +79,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
-			),
-			'title'           => array(
-				'title'       => __( 'Title', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => __( 'Credit Card', 'woocommerce-payments' ),
-				'desc_tip'    => true,
-			),
-			'description'     => array(
-				'title'       => __( 'Description', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => __( 'Enter your card details', 'woocommerce-payments' ),
-				'desc_tip'    => true,
 			),
 			'account_details' => array(
 				'type' => 'account_actions',
@@ -137,9 +125,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Extracts values to be used in this class from the settings
 	 */
 	public function extract_settings_values() {
-		$this->title       = $this->get_option( 'title' );
-		$this->description = $this->get_option( 'description' );
-
 		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
 		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
 	}
