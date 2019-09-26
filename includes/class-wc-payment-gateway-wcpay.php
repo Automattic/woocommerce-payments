@@ -92,7 +92,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => __( 'Enter your card details', 'woocommerce-payments' ),
 				'desc_tip'    => true,
 			),
-			'payment_details' => array(
+			'account_details' => array(
 				'type' => 'account_actions',
 			),
 			'manual_capture'  => array(
@@ -405,7 +405,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->is_stripe_connected() ) {
 			$description = sprintf(
 				/* translators: 1) dashboard login URL */
-				__( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>', 'woocommerce-payments' ),
+				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
 				$login_url
 			);
 		} else {
@@ -420,7 +420,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Payment Details', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Account', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<?php echo wp_kses_post( $description ); ?>
