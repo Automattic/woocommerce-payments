@@ -116,14 +116,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
-		// Extract values we want to use in this class from the settings.
-		$this->title       = $this->get_option( 'title' );
-		$this->description = $this->get_option( 'description' );
-
-		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
-		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
-
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Extract values we want to use in this class from the settings.
+		$this->extract_settings_values();
+		// Update values in case settings are updated.
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'extract_settings_values' ) );
 
 		// TODO: move somewhere else?
 		add_action( 'admin_notices', array( $this, 'display_errors' ) );
@@ -133,6 +131,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	}
+
+	/**
+	 * Extracts values to be used in this class from the settings
+	 */
+	public function extract_settings_values() {
+		$this->title       = $this->get_option( 'title' );
+		$this->description = $this->get_option( 'description' );
+
+		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
+		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
 	}
 
 	/**
