@@ -7,6 +7,9 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 const webpackConfig = {
 	mode: NODE_ENV,
 	devtool: 'source-map',
+	externals: {
+		'@woocommerce/navigation': { this: [ 'wc', 'navigation' ] },
+	},
 	entry: {
 		index: './client/index.js',
 	},
