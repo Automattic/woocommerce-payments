@@ -378,17 +378,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the user has a Stripe account already connected
+	 *
+	 * @return boolean if true stripe is connected
+	 */
+	public function is_stripe_connected() {
+		return $this->get_option( 'stripe_account_id' ) && $this->publishable_key;
+	}
+
+	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
 		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
 		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-		$description = sprintf(
-			/* translators: 1) dashboard login URL 2) oauth entry point URL */
-			__( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>. (Or connect to a new Stripe account <a href="%2$s">here</a>.)', 'woocommerce-payments' ),
-			$login_url,
-			$connect_url
-		);
+
+		if ( $this->is_stripe_connected() ) {
+			$description = sprintf(
+				/* translators: 1) dashboard login URL */
+				__( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>', 'woocommerce-payments' ),
+				$login_url
+			);
+		} else {
+			$description = sprintf(
+				/* translators: 1) oauth entry point URL */
+				__( 'Connect to a new Stripe account <a href="%1$s">here</a>', 'woocommerce-payments' ),
+				$connect_url
+			);
+		}
 
 		ob_start();
 		?>
