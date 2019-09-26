@@ -17,6 +17,7 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
+	const ACCOUNTS_API     = 'accounts';
 	const CHARGES_API      = 'charges';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
@@ -253,6 +254,15 @@ class WC_Payments_API_Client {
 		}
 
 		return $transactions;
+	}
+
+	/**
+	 * Get current account data
+	 *
+	 * @return array An array describing an account object.
+	 */
+	public function get_account_data() {
+		return $this->request( array(), self::ACCOUNTS_API . '/' . $this->account_id, self::GET );
 	}
 
 	/**
