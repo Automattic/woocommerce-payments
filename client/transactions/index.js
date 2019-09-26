@@ -92,14 +92,13 @@ export class TransactionsList extends Component {
 
 		const { summary = {} } = this.props;
 		const {
-			number_of_transactions = 0,
 			total = 0,
 			fees = 0,
 			net = 0,
 		} = summary;
 
 		return [
-			{ label: 'transactions', value: `${ number_of_transactions }` },
+			{ label: 'transactions', value: `${ this.totalRows() }` },
 			{ label: 'total', value: `$${ this.moneyValue( total ) }` },
 			{ label: 'fees', value: `$${ this.moneyValue( fees ) }` },
 			{ label: 'net', value: `$${ this.moneyValue( net ) }` },
@@ -124,8 +123,7 @@ export class TransactionsList extends Component {
 	 */
 	totalRows = () => {
 		const { summary = {} } = this.props;
-		const { number_of_transactions = 0 } = summary;
-		return number_of_transactions;
+		return summary.number_of_transactions || 0;
 	}
 
 	render() {
