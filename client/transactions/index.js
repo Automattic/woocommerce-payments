@@ -158,33 +158,20 @@ export default withSelect( ( select ) => {
 		getTransactionsPage,
 	} = select( 'wc-payments-api' );
 
-	// Get the correct query parameters.
-	// TODO: figure out how to handle back/forward in browser.
-	const tableQuery = () => {
-		const query = getQuery();
-		if ( ! query ) {
-			return {
-				paged: 1,
-				per_page: 25,
-			};
-		}
-
-		return {
-			paged: query.paged ? query.paged : 1,
-			per_page: query.per_page ? query.per_page : 25,
-		};
-	};
-
 	// Prepare props.
-	const { paged, per_page } = tableQuery();
-	const isLoading = showTransactionsPagePlaceholder( paged, per_page );
-	const transactions = getTransactionsPage( paged, per_page );
+	const query = getQuery();
+	const tableQuery = {
+		paged: query.paged || 1,
+		per_page: query.per_page || 25,
+	};
+	const isLoading = showTransactionsPagePlaceholder( tableQuery.paged, tableQuery.per_page );
+	const transactions = getTransactionsPage( tableQuery.paged, tableQuery.per_page );
 	const summary = getTransactionsSummary();
 
 	return {
 		isLoading,
 		transactions,
 		summary,
-		tableQuery: tableQuery(),
+		tableQuery,
 	};
 } )( TransactionsList );
