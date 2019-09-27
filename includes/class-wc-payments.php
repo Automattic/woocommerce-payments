@@ -214,12 +214,9 @@ class WC_Payments {
 			add_filter(
 				'admin_notices',
 				function () {
-					self::display_admin_error(
-						sprintf(
-							/* translators: 1) oauth entry point URL */
-							__( 'WooCommerce Payments is not connected to Stripe. Please click <a href="%1$s">here</a> to connect.', 'woocommerce-payments' ),
-							self::$gateway->get_connect_url()
-						)
+					self::display_admin_notice(
+						self::$gateway->get_connect_message(),
+						'notice-success'
 					);
 				}
 			);
@@ -232,11 +229,7 @@ class WC_Payments {
 				'admin_notices',
 				function () {
 					self::display_admin_error(
-						sprintf(
-							/* translators: 1) dashboard login URL */
-							__( 'Your Stripe account has pending requirements. Please go to the <a href="%1$s">Stripe dashboard</a> to address them.', 'woocommerce-payments' ),
-							self::$gateway->get_login_url()
-						)
+						self::$gateway->get_verify_requirements_message( $account['requirements']['current_deadline'] )
 					);
 				}
 			);
