@@ -73,13 +73,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = array(
-			'enabled'         => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			),
 			'account_details' => array(
 				'type' => 'account_actions',
 			),
@@ -98,6 +91,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
 				'default'     => 'yes',
 				'desc_tip'    => true,
+			),
+			'enabled'         => array(
+				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
 			),
 		);
 
