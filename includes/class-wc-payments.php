@@ -226,7 +226,8 @@ class WC_Payments {
 			return false;
 		}
 
-		if ( self::$gateway->account_has_pending_requirements() ) {
+		$account = self::$api_client->get_account_data();
+		if ( self::$gateway->account_has_pending_requirements( $account ) ) {
 			add_filter(
 				'admin_notices',
 				function () {

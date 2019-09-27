@@ -383,11 +383,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether there are pending requirements for the Stripe account
 	 *
+	 * @param array $account Account to verify requirements.
 	 * @return boolean True if there are pending requirements, false otherwise.
 	 */
-	public function account_has_pending_requirements() {
-		$account = $this->payments_api_client->get_account_data();
-
+	public function account_has_pending_requirements( $account ) {
 		$currently_due  = isset( $account['requirements']['currently_due'] ) ? $account['requirements']['currently_due'] : array();
 		$past_due       = isset( $account['requirements']['past_due'] ) ? $account['requirements']['past_due'] : array();
 		$eventually_due = isset( $account['requirements']['eventually_due'] ) ? $account['requirements']['eventually_due'] : array();
