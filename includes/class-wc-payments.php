@@ -62,6 +62,10 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin();
+
+			// Only check stripe account requirements if user is in an admin page
+			// as regular users would not be able to take any action.
+			self::check_stripe_account_status();
 		}
 
 		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
@@ -178,6 +182,52 @@ class WC_Payments {
 				}
 				self::display_admin_error( $message );
 			}
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Checks if Stripe account is connected and displays admin notices if it is not.
+	 *
+	 * @return boolean True if the account is registered and has no pending requirements.
+	 * @throws Exception - If self::$gateway is not defined.
+	 */
+	public static function check_stripe_account_status() {
+		if ( ! isset( self::$gateway ) ) {
+			throw new Exception( __( 'Payment Gateway class was not initialized.', 'woocommerce-payments' ) );
+		}
+
+		if ( ! self::$gateway->is_stripe_connected() ) {
+			add_filter(
+				'admin_notices',
+				function () {
+					self::display_admin_error(
+						sprintf(
+							/* translators: 1) oauth entry point URL */
+							__( 'WooCommerce Payments is not connected to Stripe. Please click <a href="%1$s">here</a> to connect.', 'woocommerce-payments' ),
+							self::$gateway->get_connect_url()
+						)
+					);
+				}
+			);
+			return false;
+		}
+
+		if ( self::$gateway->account_has_pending_requirements() ) {
+			add_filter(
+				'admin_notices',
+				function () {
+					self::display_admin_error(
+						sprintf(
+							/* translators: 1) dashboard login URL */
+							__( 'Your Stripe account has pending requirements. Please go to the <a href="%1$s">Stripe dashboard</a> to address them.', 'woocommerce-payments' ),
+							self::$gateway->get_login_url()
+						)
+					);
+				}
+			);
 			return false;
 		}
 
