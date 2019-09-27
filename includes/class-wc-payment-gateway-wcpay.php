@@ -396,7 +396,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			$description = sprintf(
 				/* translators: 1) oauth entry point URL */
-				__( 'Connect to a new Stripe account <a href="%1$s">here</a>', 'woocommerce-payments' ),
+				__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">[get started]</a>', 'woocommerce-payments' ),
 				$connect_url
 			);
 		}
