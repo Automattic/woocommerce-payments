@@ -77,8 +77,19 @@ class WC_Payments {
 	 * @param string $message Message to print. Can contain HTML.
 	 */
 	private static function display_admin_error( $message ) {
+		self::display_admin_notice( $message, 'notice-error' );
+	}
+
+	/**
+	 * Prints the given message in an "admin notice" wrapper with provided classes.
+	 *
+	 * @param string $message Message to print. Can contain HTML.
+	 * @param string $classes Space separated list of classes to be applied to notice element.
+	 */
+	private static function display_admin_notice( $message, $classes ) {
 		?>
-		<div class="notice notice-error">
+		<div class="notice <?php echo esc_attr( $classes ); ?>">
+			<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
 			<p><?php echo $message; // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		</div>
 		<?php
