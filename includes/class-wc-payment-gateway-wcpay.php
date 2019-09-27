@@ -374,7 +374,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether the user has a Stripe account already connected
 	 *
-	 * @return boolean if true stripe is connected
+	 * @return boolean True if a Stripe account is registered, false otherwise.
 	 */
 	public function is_stripe_connected() {
 		return $this->get_option( 'stripe_account_id' ) && $this->publishable_key;
@@ -404,23 +404,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get Stripe login url
+	 *
+	 * @return string Stripe account login url.
+	 */
+	public function get_login_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
+	}
+
+	/**
+	 * Get Stripe connect url
+	 *
+	 * @return string Stripe account login url.
+	 */
+	public function get_connect_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+	}
+
+	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
-		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
-		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-
 		if ( $this->is_stripe_connected() ) {
 			$description = sprintf(
 				/* translators: 1) dashboard login URL */
 				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
-				$login_url
+				$this->get_login_url()
 			);
 		} else {
 			$description = sprintf(
 				/* translators: 1) oauth entry point URL */
 				__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">[get started]</a>', 'woocommerce-payments' ),
-				$connect_url
+				$this->get_connect_url()
 			);
 		}
 
