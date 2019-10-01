@@ -13,7 +13,7 @@ import TransactionPaymentDetails from './payment';
 import TransactionPaymentMethodDetails from './payment-method';
 import TransactionSessionDetails from './session';
 
- const TransactionDetails = ( props ) => {
+const TransactionDetails = ( props ) => {
 	const { transaction } = props;
 	return (
 		<div>
@@ -24,9 +24,9 @@ import TransactionSessionDetails from './session';
 			<TransactionSessionDetails transaction={ transaction }></TransactionSessionDetails>
 		</div>
 	);
- };
+};
 
- export default withSelect( ( select, ownProps ) => {
+export default withSelect( ( select, ownProps ) => {
 	const { getTransactions } = select( 'wc-payments-api' );
 	// TODO: Create selector for fetching a single transaction and use it here, instead of
 	// using getTransactions() and then filtering the result
