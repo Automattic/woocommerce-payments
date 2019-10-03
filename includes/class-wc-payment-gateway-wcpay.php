@@ -29,18 +29,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $payments_api_client;
 
 	/**
-	 * Is test mode active?
+	 * Returns whether test_mode is active for the gateway
 	 *
-	 * @var bool
+	 * @return boolean Test mode enable if true, disabled if false
 	 */
-	public $testmode;
+	public function get_test_mode() {
+		return 'yes' === $this->get_option( 'test_mode' );
+	}
 
 	/**
-	 * API access publishable key
+	 * Returns the gateway publishable key based on test mode
 	 *
-	 * @var string
+	 * @return string Stripe's publishable key
 	 */
-	public $publishable_key;
+	public function get_publishable_key() {
+		return $this->get_test_mode()
+			? $this->get_option( 'test_publishable_key' )
+			: $this->get_option( 'publishable_key' );
+	}
 
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
@@ -84,7 +90,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
-			'testmode'        => array(
+			'test_mode'       => array(
 				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -106,11 +112,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
-		// Extract values we want to use in this class from the settings.
-		$this->extract_settings_values();
-		// Update values in case settings are updated.
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'extract_settings_values' ) );
-
 		// TODO: move somewhere else?
 		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
@@ -122,14 +123,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extracts values to be used in this class from the settings
-	 */
-	public function extract_settings_values() {
-		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
-		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
-	}
-
-	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -137,7 +130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function payment_fields() {
 		// Add JavaScript for the payment form.
 		$js_config = array(
-			'publishableKey' => $this->publishable_key,
+			'publishableKey' => $this->get_publishable_key(),
 			'accountId'      => $this->get_option( 'stripe_account_id' ),
 		);
 
@@ -177,7 +170,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 			<?php endif; ?>
 
-			<?php if ( $this->testmode ) : ?>
+			<?php if ( $this->get_test_mode() ) : ?>
 				<p class="testmode-info">
 				<?php
 					/* translators: link to Stripe testing page */
@@ -377,7 +370,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean if true stripe is connected
 	 */
 	public function is_stripe_connected() {
-		return $this->get_option( 'stripe_account_id' ) && $this->publishable_key;
+		return $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
 	}
 
 	/**
