@@ -26,6 +26,10 @@ class WC_Payments_Http {
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
 		$args['user_id'] = JETPACK_MASTER_USER;
 		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		return Jetpack_Client::remote_request( $args, $body );
+		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
+			return Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
+		} else {
+			return Jetpack_Client::remote_request( $args, $body );
+		}
 	}
 }
