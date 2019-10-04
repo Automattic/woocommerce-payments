@@ -210,6 +210,10 @@ class WC_Payments {
 			throw new Exception( __( 'Payment Gateway class was not initialized.', 'woocommerce-payments' ) );
 		}
 
+		if ( ! isset( self::$api_client ) ) {
+			throw new Exception( __( 'API Client class was not initialized.', 'woocommerce-payments' ) );
+		}
+
 		if ( ! self::$gateway->is_stripe_connected() ) {
 			add_filter(
 				'admin_notices',
