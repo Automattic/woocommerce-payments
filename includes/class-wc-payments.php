@@ -228,6 +228,22 @@ class WC_Payments {
 		}
 
 		$account = self::$api_client->get_account_data();
+
+		if ( is_wp_error( $account ) ) {
+			$message = sprintf(
+				/* translators: %1: error message */
+				__( 'Could not fetch data for your account: "%1$s"', 'woocommerce-payments' ),
+				$account->get_error_message()
+			);
+			add_filter(
+				'admin_notices',
+				function () use ( $message ) {
+					self::display_admin_error( $message );
+				}
+			);
+			return false;
+		}
+
 		if ( self::$gateway->account_has_pending_requirements( $account ) ) {
 			add_filter(
 				'admin_notices',
