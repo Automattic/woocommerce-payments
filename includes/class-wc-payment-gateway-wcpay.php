@@ -29,18 +29,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $payments_api_client;
 
 	/**
-	 * Is test mode active?
+	 * Returns whether test_mode is active for the gateway
 	 *
-	 * @var bool
+	 * @return boolean Test mode enable if true, disabled if false
 	 */
-	public $testmode;
+	public function get_test_mode() {
+		return 'yes' === $this->get_option( 'test_mode' );
+	}
 
 	/**
-	 * API access publishable key
+	 * Returns the gateway publishable key based on test mode
 	 *
-	 * @var string
+	 * @return string Stripe's publishable key
 	 */
-	public $publishable_key;
+	public function get_publishable_key() {
+		return $this->get_test_mode()
+			? $this->get_option( 'test_publishable_key' )
+			: $this->get_option( 'publishable_key' );
+	}
 
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
@@ -64,6 +70,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
+		$this->title              = __( 'Credit Card', 'woocommerce-payments' );
+		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -71,60 +79,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = array(
-			'enabled'              => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			),
-			'title'                => array(
-				'title'       => __( 'Title', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => __( 'Credit Card', 'woocommerce-payments' ),
-				'desc_tip'    => true,
-			),
-			'description'          => array(
-				'title'       => __( 'Description', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'payment_details'      => array(
+			'account_details' => array(
 				'type' => 'account_actions',
 			),
-			'stripe_account_id'    => array(
-				'title'       => __( 'Stripe Account ID', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'Get your account ID from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'testmode'             => array(
-				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
-				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'yes',
-				'desc_tip'    => true,
-			),
-			'test_publishable_key' => array(
-				'title'       => __( 'Test Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'publishable_key'      => array(
-				'title'       => __( 'Live Publishable Key', 'woocommerce-payments' ),
-				'type'        => 'password',
-				'description' => __( 'Get your API keys from your Stripe account.', 'woocommerce-payments' ),
-				'default'     => '',
-				'desc_tip'    => true,
-			),
-			'manual_capture'       => array(
+			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -132,17 +90,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
+			'test_mode'       => array(
+				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			),
+			'enabled'         => array(
+				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
 		);
 
 		// Load the settings.
 		$this->init_settings();
-
-		// Extract values we want to use in this class from the settings.
-		$this->title       = $this->get_option( 'title' );
-		$this->description = $this->get_option( 'description' );
-
-		$this->testmode        = 'yes' === $this->get_option( 'testmode' );
-		$this->publishable_key = $this->testmode ? $this->get_option( 'test_publishable_key' ) : $this->get_option( 'publishable_key' );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -164,7 +130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function payment_fields() {
 		// Add JavaScript for the payment form.
 		$js_config = array(
-			'publishableKey' => $this->publishable_key,
+			'publishableKey' => $this->get_publishable_key(),
 			'accountId'      => $this->get_option( 'stripe_account_id' ),
 		);
 
@@ -204,7 +170,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 			<?php endif; ?>
 
-			<?php if ( $this->testmode ) : ?>
+			<?php if ( $this->get_test_mode() ) : ?>
 				<p class="testmode-info">
 				<?php
 					/* translators: link to Stripe testing page */
@@ -399,23 +365,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the user has a Stripe account already connected
+	 *
+	 * @return boolean if true stripe is connected
+	 */
+	public function is_stripe_connected() {
+		return $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
+	}
+
+	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
 		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
 		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-		$description = sprintf(
-			/* translators: 1) dashboard login URL 2) oauth entry point URL */
-			__( 'View and update your bank deposit, company, or personal details <a href="%1$s">over at Stripe</a>. (Or connect to a new Stripe account <a href="%2$s">here</a>.)', 'woocommerce-payments' ),
-			$login_url,
-			$connect_url
-		);
+
+		if ( $this->is_stripe_connected() ) {
+			$description = sprintf(
+				/* translators: 1) dashboard login URL */
+				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
+				$login_url
+			);
+		} else {
+			$description = sprintf(
+				/* translators: 1) oauth entry point URL */
+				__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">[get started]</a>', 'woocommerce-payments' ),
+				$connect_url
+			);
+		}
 
 		ob_start();
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Payment Details', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Account', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<?php echo wp_kses_post( $description ); ?>
