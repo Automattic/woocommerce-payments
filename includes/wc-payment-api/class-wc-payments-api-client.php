@@ -12,7 +12,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_API_Client {
 
-	const ENDPOINT = 'https://public-api.wordpress.com/wpcom/v2/wcpay';
+	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
+	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
+	const ENDPOINT_REST_BASE     = 'wcpay';
 
 	const POST = 'POST';
 	const GET  = 'GET';
@@ -288,14 +290,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
-	 * @param array  $request - Details of the request to make.
-	 * @param string $api     - The API endpoint to call.
-	 * @param string $method  - The HTTP method to make the request with.
+	 * @param array  $request          - Details of the request to make.
+	 * @param string $api              - The API endpoint to call.
+	 * @param string $method           - The HTTP method to make the request with.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
 	 *
 	 * @return array
 	 * @throws Exception - If the account ID hasn't been set.
 	 */
-	private function request( $request, $api, $method ) {
+	private function request( $request, $api, $method, $is_site_specific = true ) {
 		// Add account ID to the request.
 		if ( ! isset( $this->account_id ) ) {
 			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
@@ -303,7 +306,12 @@ class WC_Payments_API_Client {
 		$request['account_id'] = $this->account_id;
 
 		// Build the URL we want to send the URL to.
-		$url  = self::ENDPOINT . '/' . $api;
+		$url = self::ENDPOINT_BASE;
+		if ( $is_site_specific ) {
+			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
+		}
+		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
+
 		$body = null;
 
 		if ( self::GET === $method ) {
@@ -329,7 +337,8 @@ class WC_Payments_API_Client {
 				'method'  => $method,
 				'headers' => $headers,
 			),
-			$body
+			$body,
+			$is_site_specific
 		);
 
 		// Extract the response body and decode it from JSON into an array.
