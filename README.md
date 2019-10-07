@@ -20,3 +20,5 @@ Install The following plugins
 - WooCommerce Admin
 
 Connect using jetpack. You will need a externally accessible url. You can use ngrok for this.
+
+See: https://github.com/Automattic/woocommerce-payments/blob/master/CONTRIBUTING.md (possibly move contents here for visibility sake)
