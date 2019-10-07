@@ -367,31 +367,103 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether the user has a Stripe account already connected
 	 *
-	 * @return boolean if true stripe is connected
+	 * @return boolean True if a Stripe account is registered, false otherwise.
 	 */
 	public function is_stripe_connected() {
 		return $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
 	}
 
 	/**
+	 * Checks whether there are pending requirements for the Stripe account
+	 *
+	 * @param array $account Account to verify requirements.
+	 * @return boolean True if there are pending requirements, false otherwise.
+	 */
+	public function account_has_pending_requirements( $account ) {
+		$currently_due  = isset( $account['requirements']['currently_due'] ) ? $account['requirements']['currently_due'] : array();
+		$past_due       = isset( $account['requirements']['past_due'] ) ? $account['requirements']['past_due'] : array();
+		$eventually_due = isset( $account['requirements']['eventually_due'] ) ? $account['requirements']['eventually_due'] : array();
+
+		if (
+			! empty( $currently_due ) ||
+			! empty( $past_due ) ||
+			! empty( $eventually_due )
+		) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get Stripe login url
+	 *
+	 * @return string Stripe account login url.
+	 */
+	public function get_login_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
+	}
+
+	/**
+	 * Get Stripe connect url
+	 *
+	 * @return string Stripe account login url.
+	 */
+	public function get_connect_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+	}
+
+	/**
+	 * Get Stripe connect message with connect link
+	 */
+	public function get_connect_message() {
+		return sprintf(
+			/* translators: 1) oauth entry point URL */
+			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a>', 'woocommerce-payments' ),
+			$this->get_connect_url()
+		);
+	}
+
+	/**
+	 * Get Stripe pending requirements message with dashboard link, based on current deadline.
+	 *
+	 * If $current_deadline is null, it means that the requirements are already past due.
+	 *
+	 * TODO: Payouts is a Stripe dashboard terminology and it's being used here to avoid confusion.
+	 * Once we have our custom dashboard running, Payouts should be renamed to Deposits.
+	 *
+	 * @param int $current_deadline Timestamp for when the requirements are due.
+	 */
+	public function get_verify_requirements_message( $current_deadline = null ) {
+		if ( null !== $current_deadline ) {
+			return sprintf(
+				/* translators: 1) formatted requirements current deadline 2) dashboard login URL */
+				__( 'We require additional details about your business. Please provide the required information by %1$s to avoid an interruption in your scheduled payouts. <a href="%2$s">Update now</a>', 'woocommerce-payments' ),
+				/* translators: date time format to display deadline in "...provide the required information by %1$s to avoid an..."*/
+				date_i18n( __( 'ga M j, Y', 'woocommerce-payments' ), $current_deadline ),
+				$this->get_login_url()
+			);
+		}
+
+		return sprintf(
+			/* translators: 1) dashboard login URL */
+			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
+			$this->get_login_url()
+		);
+	}
+
+	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
-		$login_url   = wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
-		$connect_url = wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-
 		if ( $this->is_stripe_connected() ) {
 			$description = sprintf(
 				/* translators: 1) dashboard login URL */
 				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
-				$login_url
+				$this->get_login_url()
 			);
 		} else {
-			$description = sprintf(
-				/* translators: 1) oauth entry point URL */
-				__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">[get started]</a>', 'woocommerce-payments' ),
-				$connect_url
-			);
+			$description = $this->get_connect_message();
 		}
 
 		ob_start();
