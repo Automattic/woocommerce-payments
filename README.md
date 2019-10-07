@@ -12,3 +12,11 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 
 - `npm install`
 - `npm run build`
+
+## Setup
+Install The following plugins
+- Jetpack
+- WooCommerce
+- WooCommerce Admin
+
+Connect using jetpack. You will need a externally accessible url. You can use ngrok for this.
