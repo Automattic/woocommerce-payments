@@ -340,7 +340,7 @@ class WC_Payments_API_Client {
 			array(
 				'url'     => $url,
 				'method'  => $method,
-				'headers' => $headers,
+				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
 			),
 			$body,
 			$is_site_specific
