@@ -19,6 +19,7 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
+	const ACCOUNTS_API     = 'accounts';
 	const CHARGES_API      = 'charges';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
@@ -284,7 +285,11 @@ class WC_Payments_API_Client {
 	 * @return array An array containing the url field
 	 */
 	public function get_login_data( $redirect_url ) {
-		return $this->request( array( 'redirect_url' => $redirect_url ), self::OAUTH_API . '/login', self::POST );
+		return $this->request(
+			array( 'redirect_url' => $redirect_url ),
+			self::ACCOUNTS_API . '/' . $this->account_id . '/login_links',
+			self::POST
+		);
 	}
 
 	/**
