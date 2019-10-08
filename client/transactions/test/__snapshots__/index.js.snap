@@ -121,22 +121,13 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <Link
+            className="transaction-details-button"
             href="admin.php?page=wc-admin&path=/payments/transactions/details&id=txn_j23jda9JJa"
-            style={
-              Object {
-                "height": "18px",
-              }
-            }
             type="wc-admin"
           >
             <t
               icon="info-outline"
               size={18}
-              style={
-                Object {
-                  "fill": "#969CA1",
-                }
-              }
             />
           </Link>,
           "value": "txn_j23jda9JJa",
@@ -191,22 +182,13 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <Link
+            className="transaction-details-button"
             href="admin.php?page=wc-admin&path=/payments/transactions/details&id=txn_oa9kaKaa8"
-            style={
-              Object {
-                "height": "18px",
-              }
-            }
             type="wc-admin"
           >
             <t
               icon="info-outline"
               size={18}
-              style={
-                Object {
-                  "fill": "#969CA1",
-                }
-              }
             />
           </Link>,
           "value": "txn_oa9kaKaa8",

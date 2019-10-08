@@ -15,6 +15,7 @@ import Gridicon from 'gridicons';
  */
 import withSelect from 'payments-api/with-select';
 import OrderLink from '../components/order-link';
+import './style.scss';
 
 const headers = [
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
@@ -42,9 +43,10 @@ export const TransactionsList = ( props ) => {
 		const order_url = <OrderLink order={ txn.order } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const details_link = (
-			<Link 	href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` }
-					style={ { height: '18px' } }>
-				<Gridicon icon="info-outline" size={ 18 } style={ { fill: '#969CA1' } } />
+			<Link
+				className="transaction-details-button"
+				href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` } >
+				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
 		);
 
