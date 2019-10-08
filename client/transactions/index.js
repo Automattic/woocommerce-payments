@@ -55,7 +55,7 @@ export const TransactionsList = ( props ) => {
 			email: billing_details && { value: billing_details.email, display: billing_details.email },
 			country: address && { value: address.country, display: address.country },
 			amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
-			fee: { value: txn.fee / 100, display: '-' + formatCurrency( txn.fee / 100 ) },
+			fee: { value: txn.fee / 100, display: '-' + formatCurrency( Math.abs( txn.fee / 100 ) ) },
 			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
 			risk_level: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
