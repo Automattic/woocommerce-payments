@@ -138,6 +138,12 @@ class WC_Payments_Admin {
 			true
 		);
 
+		wp_localize_script(
+			'WCPAY_DASH_APP',
+			'wcpaySettings',
+			array( 'connectUrl' => $this->$wcpay_gateway->get_connect_url() )
+		);
+
 		wp_register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),

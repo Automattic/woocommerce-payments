@@ -13,6 +13,9 @@ import Gridicon from 'gridicons';
 import './style.scss';
 
 const ConnectAccountPage = () => {
+	const onClick = () => {
+		window.location.assign( wcpaySettings.connectUrl );
+	};
 	return (
 		<div className="connect-account">
 			<Card className="connect-account__card" >
@@ -23,7 +26,7 @@ const ConnectAccountPage = () => {
 						'woocommmerce-payments'
 					) }
 				</h2>
-				<p><Button isPrimary isLarge>Get started</Button></p>
+				<p><Button isPrimary isLarge onClick={ onClick }>Get started</Button></p>
 				<p>
 					{ __( 'By clicking \'Get started\' you agree to WooCommerce Payments', 'woocommmerce-payments' ) }
 					&nbsp;

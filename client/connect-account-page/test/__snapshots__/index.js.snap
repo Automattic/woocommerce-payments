@@ -20,6 +20,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       <ForwardRef(Button)
         isLarge={true}
         isPrimary={true}
+        onClick={[Function]}
       >
         Get started
       </ForwardRef(Button)>
