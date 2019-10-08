@@ -40,6 +40,7 @@ export const TransactionsList = ( props ) => {
 	const rows = transactionsData.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const order_url = <OrderLink order={ txn.order } />;
+		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const details_link = (
 			<Link 	href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` }
 					style={ { height: '18px' } }>
