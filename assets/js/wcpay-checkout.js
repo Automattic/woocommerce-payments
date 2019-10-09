@@ -1,14 +1,18 @@
 /* global jQuery, Stripe, wcpay_config */
 jQuery( function( $ ) {
+	// TODO: eslint says this isn't necessary, is that true?
+	// eslint-disable-next-line strict
 	'use strict';
 
-	var stripe   = new Stripe( wcpay_config.publishableKey, {
+	// eslint-disable-next-line camelcase
+	const stripe = new Stripe( wcpay_config.publishableKey, {
+		// eslint-disable-next-line camelcase
 		stripeAccount: wcpay_config.accountId,
 	} );
-	var elements = stripe.elements();
+	const elements = stripe.elements();
 
 	// Create a card element.
-	var cardElement = elements.create( 'card', {
+	const cardElement = elements.create( 'card', {
 		hidePostalCode: true,
 		classes: { base: 'wcpay-card-mounted' },
 	} );
@@ -28,7 +32,7 @@ jQuery( function( $ ) {
 
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', function( event ) {
-		var displayError = jQuery( '#wcpay-errors' );
+		const displayError = jQuery( '#wcpay-errors' );
 		if ( event.error ) {
 			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
 				.find( 'li' ).text( event.error.message );
@@ -38,7 +42,7 @@ jQuery( function( $ ) {
 	} );
 
 	// Create payment method on submission.
-	var paymentMethodGenerated;
+	let paymentMethodGenerated;
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
@@ -48,8 +52,8 @@ jQuery( function( $ ) {
 
 		stripe.createPaymentMethod( 'card', cardElement )
 			.then( function( result ) {
-				var paymentMethod = result.paymentMethod;
-				var error = result.error;
+				const paymentMethod = result.paymentMethod;
+				const error = result.error;
 
 				if ( error ) {
 					throw error;
@@ -58,14 +62,14 @@ jQuery( function( $ ) {
 				return paymentMethod;
 			} )
 			.then( function( paymentMethod ) {
-				var id = paymentMethod.id;
+				const id = paymentMethod.id;
 
 				// Flag that the payment method has been successfully generated so that we can allow the form
 				// submission next time.
 				paymentMethodGenerated = true;
 
 				// Populate form with the payment method.
-				var paymentMethodInput   = document.getElementById( 'wcpay-payment-method' );
+				const paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
