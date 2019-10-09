@@ -57,6 +57,15 @@ class WC_Payments_Admin {
 
 		wc_admin_register_page(
 			array(
+				'id'     => 'wc-payments-transaction-details',
+				'title'  => __( 'Payment Details', 'woocommerce-payments' ),
+				'parent' => 'wc-payments-transactions',
+				'path'   => '/payments/transactions/details',
+			)
+		);
+
+		wc_admin_register_page(
+			array(
 				'id'     => 'wc-payments-disputes',
 				'title'  => __( 'Disputes', 'woocommerce-payments' ),
 				'parent' => 'wc-payments',

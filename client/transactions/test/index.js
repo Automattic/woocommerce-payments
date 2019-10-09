@@ -14,6 +14,7 @@ describe( 'Transactions list', () => {
 		const transactions = {
 			data: [
 				{
+					id: 'txn_j23jda9JJa',
 					created: 1572590800,
 					type: 'refund',
 					source: {
@@ -24,6 +25,7 @@ describe( 'Transactions list', () => {
 					// available_on: 1573199200,
 				},
 				{
+					id: 'txn_oa9kaKaa8',
 					created: 1572580800,
 					type: 'charge',
 					source: {

@@ -64,6 +64,11 @@ exports[`Transactions list renders correctly 1`] = `
         "key": "risk_level",
         "label": "Risk Level",
       },
+      Object {
+        "key": "details",
+        "label": "",
+        "required": true,
+      },
     ]
   }
   isLoading={false}
@@ -87,9 +92,7 @@ exports[`Transactions list renders correctly 1`] = `
           "display": null,
         },
         Object {
-          "display": <span>
-            –
-          </span>,
+          "display": <OrderLink />,
           "value": undefined,
         },
         Object {
@@ -116,6 +119,19 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": null,
         },
+        Object {
+          "display": <Link
+            className="transaction-details-button"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_j23jda9JJa"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
+          "value": "txn_j23jda9JJa",
+        },
       ],
       Array [
         Object {
@@ -133,9 +149,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "visa",
         },
         Object {
-          "display": <span>
-            –
-          </span>,
+          "display": <OrderLink />,
           "value": undefined,
         },
         Object {
@@ -165,6 +179,19 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": "Normal",
           "value": "normal",
+        },
+        Object {
+          "display": <Link
+            className="transaction-details-button"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_oa9kaKaa8"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
+          "value": "txn_oa9kaKaa8",
         },
       ],
     ]
