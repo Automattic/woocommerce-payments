@@ -58,9 +58,9 @@ export const TransactionsList = ( props ) => {
 		);
 
 		// Extract nested properties from the charge.
-		const billingDetails = charge ? charge.billingDetails : null;
+		const billingDetails = charge ? charge.billing_details : null;
 		const outcome = charge ? charge.outcome : null;
-		const paymentMethodDetails = charge ? charge.paymentMethodDetails : null;
+		const paymentMethodDetails = charge ? charge.payment_method_details : null;
 		const address = billingDetails ? billingDetails.address : null;
 		const card = paymentMethodDetails ? paymentMethodDetails.card : null;
 

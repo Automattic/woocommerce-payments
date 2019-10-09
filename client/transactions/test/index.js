@@ -30,12 +30,14 @@ describe( 'Transactions list', () => {
 					type: 'charge',
 					source: {
 						object: 'charge',
-						paymentMethodDetails: {
+						// eslint-disable-next-line camelcase
+						payment_method_details: {
 							card: {
 								brand: 'visa',
 							},
 						},
-						billingDetails: {
+						// eslint-disable-next-line camelcase
+						billing_details: {
 							name: 'My name',
 							email: 'a@b.com',
 							address: {
@@ -43,7 +45,8 @@ describe( 'Transactions list', () => {
 							},
 						},
 						outcome: {
-							riskLevel: 'normal',
+							// eslint-disable-next-line camelcase
+							risk_level: 'normal',
 						},
 					},
 					amount: 1500,
