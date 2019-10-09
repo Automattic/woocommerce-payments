@@ -69,6 +69,7 @@ exports[`Transactions list renders correctly 1`] = `
   isLoading={false}
   onColumnsChange={[Function]}
   onQueryChange={[Function]}
+  onSearch={[Function]}
   query={Object {}}
   rowHeader={0}
   rows={
