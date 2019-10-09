@@ -9,6 +9,7 @@ import { formatCurrency } from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -42,10 +43,16 @@ export const TransactionsList = ( props ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : null;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
+		const detailsUrl = addQueryArgs(
+			'admin.php',
+			{
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: txn.id,
+			}
+		);
 		const detailsLink = (
-			<Link
-				className="transaction-details-button"
-				href={ `admin.php?page=wc-admin&path=/payments/transactions/details&id=${ txn.id }` } >
+			<Link className="transaction-details-button" href={ detailsUrl } >
 				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
 		);
