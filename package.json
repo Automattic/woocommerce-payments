@@ -13,7 +13,7 @@
     "build": "NODE_ENV=production webpack",
     "release": "node tasks/release.js",
     "test": "wp-scripts test-unit-js --config tests/js/jest.config.json",
-    "test:update-snapshots": "wp-scripts test-unit-js --config tests/js/jest.config.json -u",
+    "test:update-snapshots": "npm test -- --updateSnapshot",
     "watch": "webpack --watch",
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css",
