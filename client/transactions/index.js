@@ -19,19 +19,19 @@ import OrderLink from '../components/order-link';
 import './style.scss';
 
 const headers = [
+	{ key: 'details', label: '', required: true },
 	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
 	{ key: 'type', label: 'Type', required: true },
-	{ key: 'source', label: 'Source' },
-	{ key: 'order', label: 'Order #', required: true },
-	{ key: 'customer', label: 'Customer' },
-	{ key: 'email', label: 'Email', hiddenByDefault: true },
-	{ key: 'country', label: 'Country', hiddenByDefault: true },
 	{ key: 'amount', label: 'Amount', isNumeric: true },
 	{ key: 'fee', label: 'Fees', isNumeric: true },
 	{ key: 'net', label: 'Net', isNumeric: true, required: true },
+	{ key: 'order', label: 'Order #', required: true },
+	{ key: 'source', label: 'Source' },
+	{ key: 'customer', label: 'Customer' },
+	{ key: 'email', label: 'Email', hiddenByDefault: true },
+	{ key: 'country', label: 'Country', hiddenByDefault: true },
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
 	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
-	{ key: 'details', label: '', required: true },
 ];
 
 export const TransactionsList = ( props ) => {
