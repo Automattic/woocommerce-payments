@@ -1,2 +1,9 @@
+# node_modules/* is ignored by default
+
 bin/*
 !bin/generate-docs
+
+dist/*
+docker/*
+includes/*
+vendor/*
