@@ -8,17 +8,17 @@
 	"env": {
 		"browser": true,
 		"jest/globals": true,
-		"node": true,
+		"node": true
 	},
 	"globals": {
 		"wp": true,
 		"wpApiSettings": true,
-		"wcSettings": true,
+		"wcSettings": true
 	},
 	"settings": {
 		"react": {
-			"version": "detect",
-		},
+			"version": "detect"
+		}
 	},
 	"rules": {
 		"camelcase": [ "error", { "properties": "always" } ],
@@ -33,5 +33,5 @@
 		"jsx-a11y/label-has-for": [ "error", {
 			"required": "id"
 		} ]
-	},
+	}
 }
