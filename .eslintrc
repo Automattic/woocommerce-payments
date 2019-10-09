@@ -21,7 +21,7 @@
 		},
 	},
 	"rules": {
-		"camelcase": 0,
+		"camelcase": [ 2, { "properties": "always" } ],
 		"indent": 0,
 		"max-len": [ 2, { "code": 140 } ],
 		"no-console": 1,
