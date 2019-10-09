@@ -30,12 +30,12 @@ describe( 'Transactions list', () => {
 					type: 'charge',
 					source: {
 						object: 'charge',
-						payment_method_details: {
+						paymentMethodDetails: {
 							card: {
 								brand: 'visa',
 							},
 						},
-						billing_details: {
+						billingDetails: {
 							name: 'My name',
 							email: 'a@b.com',
 							address: {
@@ -43,7 +43,7 @@ describe( 'Transactions list', () => {
 							},
 						},
 						outcome: {
-							risk_level: 'normal',
+							riskLevel: 'normal',
 						},
 					},
 					amount: 1500,

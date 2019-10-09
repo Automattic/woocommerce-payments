@@ -9,7 +9,7 @@ import { DEFAULT_REQUIREMENT } from '../../../constants';
 describe( 'Transactions selectors', () => {
 	const expectedResourceName = 'transactions-list';
 	const now = Date.now();
-	const second_before_now = now - 1000;
+	const secondBeforeNow = now - 1000;
 
 	describe( 'getTransactions()', () => {
 		it( 'Returns empty list before a read operation', () => {
@@ -50,7 +50,7 @@ describe( 'Transactions selectors', () => {
 			const mockGetResource = jest.fn();
 
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
+				lastRequested: secondBeforeNow,
 				lastReceived: now,
 			} );
 			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
@@ -67,7 +67,7 @@ describe( 'Transactions selectors', () => {
 
 			mockGetResource.mockReturnValue( {
 				lastRequested: now,
-				lastReceived: second_before_now,
+				lastReceived: secondBeforeNow,
 			} );
 			const isLoading = transactionsSelectors.getTransactionsIsLoading( mockGetResource )();
 
@@ -83,7 +83,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
+				lastRequested: secondBeforeNow,
 				lastReceived: now,
 			} );
 
@@ -112,7 +112,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
+				lastRequested: secondBeforeNow,
 			} );
 
 			const initStatus = transactionsSelectors.isWaitingForInitialLoad( mockGetResource )();
@@ -142,7 +142,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
+				lastRequested: secondBeforeNow,
 			} );
 
 			const initStatus = transactionsSelectors.showTransactionsPlaceholder( mockGetResource )();
@@ -157,7 +157,7 @@ describe( 'Transactions selectors', () => {
 
 			const mockGetResource = jest.fn();
 			mockGetResource.mockReturnValue( {
-				lastRequested: second_before_now,
+				lastRequested: secondBeforeNow,
 				lastReceived: now,
 			} );
 
