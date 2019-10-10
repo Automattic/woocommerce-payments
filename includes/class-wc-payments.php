@@ -251,7 +251,7 @@ class WC_Payments {
 		if ( self::$gateway->account_has_pending_requirements( $account ) ) {
 			add_filter(
 				'admin_notices',
-				function () {
+				function () use ( $account ) {
 					self::display_admin_error(
 						self::$gateway->get_verify_requirements_message( $account['requirements']['current_deadline'] )
 					);
