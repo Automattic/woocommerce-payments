@@ -25,7 +25,7 @@ class WC_Payments_Admin {
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 */
 	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
-		$this->$wcpay_gateway = $gateway;
+		$this->wcpay_gateway = $gateway;
 
 		// Add menu items.
 		add_action( 'admin_menu', array( $this, 'add_payments_menu' ), 9 );
@@ -39,7 +39,7 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
-		$top_level_link = $this->$wcpay_gateway->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
+		$top_level_link = $this->wcpay_gateway->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			array(
@@ -141,7 +141,7 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
-			array( 'connectUrl' => $this->$wcpay_gateway->get_connect_url() )
+			array( 'connectUrl' => $this->wcpay_gateway->get_connect_url() )
 		);
 
 		wp_register_style(
