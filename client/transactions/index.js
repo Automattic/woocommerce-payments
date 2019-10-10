@@ -18,20 +18,21 @@ import withSelect from 'payments-api/with-select';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
+// TODO make date / time, amount, fee, and net sortable - when date time is sortable, the background of the info buttons should match
 const headers = [
-	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
+	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultOrder: 'desc', cellClassName: 'date-time' },
 	{ key: 'type', label: 'Type', required: true },
-	{ key: 'source', label: 'Source' },
-	{ key: 'order', label: 'Order #', required: true },
-	{ key: 'customer', label: 'Customer' },
-	{ key: 'email', label: 'Email', hiddenByDefault: true },
-	{ key: 'country', label: 'Country', hiddenByDefault: true },
 	{ key: 'amount', label: 'Amount', isNumeric: true },
 	{ key: 'fee', label: 'Fees', isNumeric: true },
 	{ key: 'net', label: 'Net', isNumeric: true, required: true },
+	{ key: 'order', label: 'Order #', required: true },
+	{ key: 'source', label: 'Source' },
+	{ key: 'customer', label: 'Customer' },
+	{ key: 'email', label: 'Email', hiddenByDefault: true },
+	{ key: 'country', label: 'Country', hiddenByDefault: true },
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
-	{ key: 'details', label: '', required: true },
 ];
 
 export const TransactionsList = ( props ) => {
@@ -77,7 +78,7 @@ export const TransactionsList = ( props ) => {
 			fee: { value: txn.fee / 100, display: formatCurrency( txn.fee / 100 ) },
 			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-			riskLevel: outcome && { value: outcome.riskLevel, display: capitalize( outcome.riskLevel ) },
+			riskLevel: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
 			details: { value: txn.id, display: detailsLink },
 		};
 
