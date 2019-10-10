@@ -41,7 +41,8 @@ export const TransactionsList = ( props ) => {
 	// Do not display table loading view if data is already available.
 
 	const rows = transactionsData.map( ( txn ) => {
-		const charge = txn.source.object === 'charge' ? txn.source : null;
+		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
+
 		const orderUrl = <OrderLink order={ txn.order } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const detailsUrl = addQueryArgs(
