@@ -239,7 +239,12 @@ class WC_Payments_API_Client {
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
 				$charge_id = $transaction['source']['id'];
-				$order     = $this->order_from_charge_id( $charge_id );
+
+				if ( 'refund' === $transaction['type'] ) {
+					$charge_id = $transaction['source']['charge']['id'];
+				}
+
+				$order = $this->order_from_charge_id( $charge_id );
 
 				// Add order information to the `$transaction`.
 				// If the order couldn't be retrieved, return an empty order.
