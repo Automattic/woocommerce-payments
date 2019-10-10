@@ -18,9 +18,10 @@ import withSelect from 'payments-api/with-select';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
+// TODO make date / time, amount, fee, and net sortable - when date time is sortable, the background of the info buttons should match
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
-	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc', cellClassName: 'date-time' },
+	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultOrder: 'desc', cellClassName: 'date-time' },
 	{ key: 'type', label: 'Type', required: true },
 	{ key: 'amount', label: 'Amount', isNumeric: true },
 	{ key: 'fee', label: 'Fees', isNumeric: true },
