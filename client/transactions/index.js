@@ -19,8 +19,8 @@ import OrderLink from '../components/order-link';
 import './style.scss';
 
 const headers = [
-	{ key: 'details', label: '', required: true },
-	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc' },
+	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultSort: true, defaultOrder: 'desc', cellClassName: 'date-time' },
 	{ key: 'type', label: 'Type', required: true },
 	{ key: 'amount', label: 'Amount', isNumeric: true },
 	{ key: 'fee', label: 'Fees', isNumeric: true },
