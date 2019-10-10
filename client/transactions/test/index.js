@@ -19,6 +19,27 @@ describe( 'Transactions list', () => {
 					type: 'refund',
 					source: {
 						object: 'refund',
+						charge: {
+							object: 'charge',
+							// eslint-disable-next-line camelcase
+							payment_method_details: {
+								card: {
+									brand: 'visa',
+								},
+							},
+							// eslint-disable-next-line camelcase
+							billing_details: {
+								name: 'Another customer',
+								email: 'another@customer.com',
+								address: {
+									country: 'US',
+								},
+							},
+							outcome: {
+								// eslint-disable-next-line camelcase
+								risk_level: 'high',
+							},
+						},
 					},
 					amount: 1000,
 					fee: 50,

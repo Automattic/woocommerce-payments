@@ -119,19 +119,26 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": null,
+          "display": <code>
+            visa
+          </code>,
+          "value": "visa",
         },
         Object {
-          "display": null,
+          "display": "Another customer",
+          "value": "Another customer",
         },
         Object {
-          "display": null,
+          "display": "another@customer.com",
+          "value": "another@customer.com",
         },
         Object {
-          "display": null,
+          "display": "US",
+          "value": "US",
         },
         Object {
-          "display": null,
+          "display": "High",
+          "value": "high",
         },
       ],
       Array [
