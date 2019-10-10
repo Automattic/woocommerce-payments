@@ -30,7 +30,7 @@ const headers = [
 	{ key: 'fee', label: 'Fees', isNumeric: true },
 	{ key: 'net', label: 'Net', isNumeric: true, required: true },
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
-	{ key: 'risk_level', label: 'Risk Level', hiddenByDefault: true },
+	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 	{ key: 'details', label: '', required: true },
 ];
 
@@ -58,11 +58,11 @@ export const TransactionsList = ( props ) => {
 		);
 
 		// Extract nested properties from the charge.
-		const billing_details = charge ? charge.billing_details : null;
+		const billingDetails = charge ? charge.billing_details : null;
 		const outcome = charge ? charge.outcome : null;
-		const payment_method_details = charge ? charge.payment_method_details : null;
-		const address = billing_details ? billing_details.address : null;
-		const card = payment_method_details ? payment_method_details.card : null;
+		const paymentMethodDetails = charge ? charge.payment_method_details : null;
+		const address = billingDetails ? billingDetails.address : null;
+		const card = paymentMethodDetails ? paymentMethodDetails.card : null;
 
 		// Map transaction into table row.
 		const data = {
@@ -70,14 +70,14 @@ export const TransactionsList = ( props ) => {
 			type: { value: txn.type, display: capitalize( txn.type ) },
 			source: card && { value: card.brand, display: <code>{ card.brand }</code> },
 			order: { value: txn.order, display: orderUrl },
-			customer: billing_details && { value: billing_details.name, display: billing_details.name },
-			email: billing_details && { value: billing_details.email, display: billing_details.email },
+			customer: billingDetails && { value: billingDetails.name, display: billingDetails.name },
+			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },
 			country: address && { value: address.country, display: address.country },
 			amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
 			fee: { value: txn.fee / 100, display: formatCurrency( txn.fee / 100 ) },
 			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-			risk_level: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
+			riskLevel: outcome && { value: outcome.riskLevel, display: capitalize( outcome.riskLevel ) },
 			details: { value: txn.id, display: detailsLink },
 		};
 

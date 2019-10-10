@@ -61,7 +61,7 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "hiddenByDefault": true,
-        "key": "risk_level",
+        "key": "riskLevel",
         "label": "Risk Level",
       },
       Object {
@@ -177,8 +177,8 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 14.5,
         },
         Object {
-          "display": "Normal",
-          "value": "normal",
+          "display": "",
+          "value": undefined,
         },
         Object {
           "display": <Link

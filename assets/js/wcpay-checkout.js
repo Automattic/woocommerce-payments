@@ -1,8 +1,11 @@
+/* eslint-disable strict, no-var */
 /* global jQuery, Stripe, wcpay_config */
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe   = new Stripe( wcpay_config.publishableKey, {
+	/* eslint-disable-next-line camelcase */
+	var stripe = new Stripe( wcpay_config.publishableKey, {
+		/* eslint-disable-next-line camelcase */
 		stripeAccount: wcpay_config.accountId,
 	} );
 	var elements = stripe.elements();
@@ -65,7 +68,7 @@ jQuery( function( $ ) {
 				paymentMethodGenerated = true;
 
 				// Populate form with the payment method.
-				var paymentMethodInput   = document.getElementById( 'wcpay-payment-method' );
+				var paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
