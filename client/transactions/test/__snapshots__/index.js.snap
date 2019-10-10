@@ -8,8 +8,14 @@ exports[`Transactions list renders correctly 1`] = `
   headers={
     Array [
       Object {
+        "cellClassName": "info-button",
+        "key": "details",
+        "label": "",
+        "required": true,
+      },
+      Object {
+        "cellClassName": "date-time",
         "defaultOrder": "desc",
-        "defaultSort": true,
         "isLeftAligned": true,
         "key": "created",
         "label": "Date / Time",
@@ -19,29 +25,6 @@ exports[`Transactions list renders correctly 1`] = `
         "key": "type",
         "label": "Type",
         "required": true,
-      },
-      Object {
-        "key": "source",
-        "label": "Source",
-      },
-      Object {
-        "key": "order",
-        "label": "Order #",
-        "required": true,
-      },
-      Object {
-        "key": "customer",
-        "label": "Customer",
-      },
-      Object {
-        "hiddenByDefault": true,
-        "key": "email",
-        "label": "Email",
-      },
-      Object {
-        "hiddenByDefault": true,
-        "key": "country",
-        "label": "Country",
       },
       Object {
         "isNumeric": true,
@@ -60,14 +43,32 @@ exports[`Transactions list renders correctly 1`] = `
         "required": true,
       },
       Object {
+        "key": "order",
+        "label": "Order #",
+        "required": true,
+      },
+      Object {
+        "key": "source",
+        "label": "Source",
+      },
+      Object {
+        "key": "customer",
+        "label": "Customer",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "email",
+        "label": "Email",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "country",
+        "label": "Country",
+      },
+      Object {
         "hiddenByDefault": true,
         "key": "risk_level",
         "label": "Risk Level",
-      },
-      Object {
-        "key": "details",
-        "label": "",
-        "required": true,
       },
     ]
   }
@@ -81,28 +82,25 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
+          "display": <Link
+            className="transaction-details-button"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_j23jda9JJa"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
+          "value": "txn_j23jda9JJa",
+        },
+        Object {
           "display": "Nov 1, 2019 / 2:46AM",
           "value": 1572590800000,
         },
         Object {
           "display": "Refund",
           "value": "refund",
-        },
-        Object {
-          "display": null,
-        },
-        Object {
-          "display": <OrderLink />,
-          "value": undefined,
-        },
-        Object {
-          "display": null,
-        },
-        Object {
-          "display": null,
-        },
-        Object {
-          "display": null,
         },
         Object {
           "display": "$10.00",
@@ -117,12 +115,30 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 9.5,
         },
         Object {
+          "display": <OrderLink />,
+          "value": undefined,
+        },
+        Object {
           "display": null,
         },
         Object {
+          "display": null,
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": null,
+        },
+        Object {
+          "display": null,
+        },
+      ],
+      Array [
+        Object {
           "display": <Link
             className="transaction-details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_j23jda9JJa"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_oa9kaKaa8"
             type="wc-admin"
           >
             <t
@@ -130,10 +146,8 @@ exports[`Transactions list renders correctly 1`] = `
               size={18}
             />
           </Link>,
-          "value": "txn_j23jda9JJa",
+          "value": "txn_oa9kaKaa8",
         },
-      ],
-      Array [
         Object {
           "display": "Nov 1, 2019 / 12:00AM",
           "value": 1572580800000,
@@ -141,28 +155,6 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": "Charge",
           "value": "charge",
-        },
-        Object {
-          "display": <code>
-            visa
-          </code>,
-          "value": "visa",
-        },
-        Object {
-          "display": <OrderLink />,
-          "value": undefined,
-        },
-        Object {
-          "display": "My name",
-          "value": "My name",
-        },
-        Object {
-          "display": "a@b.com",
-          "value": "a@b.com",
-        },
-        Object {
-          "display": "US",
-          "value": "US",
         },
         Object {
           "display": "$15.00",
@@ -177,21 +169,30 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 14.5,
         },
         Object {
-          "display": "Normal",
-          "value": "normal",
+          "display": <OrderLink />,
+          "value": undefined,
         },
         Object {
-          "display": <Link
-            className="transaction-details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_oa9kaKaa8"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
-          "value": "txn_oa9kaKaa8",
+          "display": <code>
+            visa
+          </code>,
+          "value": "visa",
+        },
+        Object {
+          "display": "My name",
+          "value": "My name",
+        },
+        Object {
+          "display": "a@b.com",
+          "value": "a@b.com",
+        },
+        Object {
+          "display": "US",
+          "value": "US",
+        },
+        Object {
+          "display": "Normal",
+          "value": "normal",
         },
       ],
     ]
