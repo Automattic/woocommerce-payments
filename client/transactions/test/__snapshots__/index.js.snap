@@ -67,7 +67,7 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "hiddenByDefault": true,
-        "key": "risk_level",
+        "key": "riskLevel",
         "label": "Risk Level",
       },
     ]
