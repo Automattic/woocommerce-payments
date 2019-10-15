@@ -212,7 +212,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
-					$manual_capture
+					$manual_capture,
+					$this->get_test_mode()
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
@@ -315,9 +316,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		if ( is_null( $amount ) ) {
-			$refund = $this->payments_api_client->refund_charge( $charge_id );
+			$refund = $this->payments_api_client->refund_charge( $charge_id, $this->get_test_mode() );
 		} else {
-			$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
+			$refund = $this->payments_api_client->refund_charge(
+				$charge_id,
+				$this->get_test_mode(),
+				round( (float) $amount * 100 )
+			);
 		}
 
 		if ( is_wp_error( $refund ) ) {
@@ -582,7 +587,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function capture_charge( $order ) {
 		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention( $order->get_transaction_id(), round( (float) $amount * 100 ) );
+		$intent = $this->payments_api_client->capture_intention(
+			$order->get_transaction_id(),
+			round( (float) $amount * 100 ),
+			$this->get_test_mode()
+		);
 		$status = $intent->get_status();
 
 		$order->update_meta_data( '_intention_status', $status );
@@ -612,7 +621,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
-		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
+		$intent = $this->payments_api_client->cancel_intention(
+			$order->get_transaction_id(),
+			$this->get_test_mode()
+		);
 		$status = $intent->get_status();
 
 		$order->update_meta_data( '_intention_status', $status );

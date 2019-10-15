@@ -72,15 +72,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param int    $amount    - Amount to charge.
 	 * @param string $source_id - ID of the source to associate with charge.
+	 * @param bool   $test_mode - Indicates whether test mode is enabled or not.
 	 *
 	 * @return WC_Payments_API_Charge
 	 * @throws Exception - Exception thrown on payment failure.
 	 */
-	public function create_charge( $amount, $source_id ) {
+	public function create_charge( $amount, $source_id, $test_mode = false ) {
 
-		$request           = array();
-		$request['amount'] = $amount;
-		$request['source'] = $source_id;
+		$request              = array();
+		$request['amount']    = $amount;
+		$request['source']    = $source_id;
+		$request['test_mode'] = $test_mode;
 
 		$response_array = $this->request( $request, self::CHARGES_API, self::POST );
 
@@ -94,11 +96,18 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
+	 * @param bool   $test_mode         - Whether test mode is enabled or not.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id, $manual_capture = false ) {
+	public function create_and_confirm_intention(
+		$amount,
+		$currency_code,
+		$payment_method_id,
+		$manual_capture = false,
+		$test_mode = false
+	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
 		$request['amount']         = $amount;
@@ -106,6 +115,7 @@ class WC_Payments_API_Client {
 		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
+		$request['test_mode']      = $test_mode;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -117,13 +127,19 @@ class WC_Payments_API_Client {
 	 *
 	 * @param WC_Payments_API_Intention $intent            - The intention to confirm.
 	 * @param string                    $payment_method_id - ID of payment method to process charge with.
+	 * @param bool                      $test_mode         - Indicates whether test mode is enabled or not.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention confirmation failure.
 	 */
-	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
+	public function confirm_intention(
+		WC_Payments_API_Intention $intent,
+		$payment_method_id,
+		$test_mode = false
+	) {
 		$request                   = array();
 		$request['payment_method'] = $payment_method_id;
+		$request['test_mode']      = $test_mode;
 
 		$response_array = $this->request(
 			$request,
@@ -138,15 +154,17 @@ class WC_Payments_API_Client {
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
+	 * @param bool   $test_mode - Indicates whether test mode is enabled or not.
 	 * @param int    $amount    - Amount to charge.
 	 *
 	 * @return array
 	 * @throws Exception - Exception thrown on refund creation failure.
 	 */
-	public function refund_charge( $charge_id, $amount = null ) {
-		$request           = array();
-		$request['charge'] = $charge_id;
-		$request['amount'] = $amount;
+	public function refund_charge( $charge_id, $test_mode = false, $amount = null ) {
+		$request              = array();
+		$request['charge']    = $charge_id;
+		$request['amount']    = $amount;
+		$request['test_mode'] = $test_mode;
 
 		return $this->request( $request, self::REFUNDS_API, self::POST );
 	}
@@ -156,13 +174,15 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
 	 * @param int    $amount       - Amount to capture.
+	 * @param bool   $test_mode    - Indicates wheter test mode is enabled or not.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount ) {
+	public function capture_intention( $intention_id, $amount, $test_mode = false ) {
 		$request                      = array();
 		$request['amount_to_capture'] = $amount;
+		$request['test_mode']         = $test_mode;
 
 		$response_array = $this->request(
 			$request,
@@ -177,13 +197,16 @@ class WC_Payments_API_Client {
 	 * Cancel an intention
 	 *
 	 * @param string $intention_id - The ID of the intention to cancel.
+	 * @param bool   $test_mode    - Indicates whether test mode is enabled or not.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention cancellation failure.
 	 */
-	public function cancel_intention( $intention_id ) {
+	public function cancel_intention( $intention_id, $test_mode = false ) {
 		$response_array = $this->request(
-			array(),
+			array(
+				'test_mode' => $test_mode,
+			),
 			self::INTENTIONS_API . '/' . $intention_id . '/cancel',
 			self::POST
 		);
@@ -230,11 +253,17 @@ class WC_Payments_API_Client {
 	/**
 	 * List transactions
 	 *
+	 * @param bool $test_mode - Indicates whether test mode is enabled or not.
+	 *
 	 * @return array
 	 * @throws Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions() {
-		$transactions = $this->request( array(), self::TRANSACTIONS_API, self::GET );
+	public function list_transactions( $test_mode = false ) {
+		$transactions = $this->request(
+			array( 'test_mode' => $test_mode ),
+			self::TRANSACTIONS_API,
+			self::GET
+		);
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
