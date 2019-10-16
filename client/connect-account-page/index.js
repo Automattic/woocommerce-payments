@@ -26,7 +26,7 @@ const ConnectAccountPage = () => {
 						'woocommmerce-payments'
 					) }
 				</h2>
-				<p><Button isPrimary isLarge onClick={ onClick }>Get started</Button></p>
+				<p><Button isPrimary isLarge onClick={ onClick }>{ __( 'Get started', 'woocommerce-payments' ) }</Button></p>
 				<p>
 					{ __( 'By clicking \'Get started\' you agree to WooCommerce Payments', 'woocommmerce-payments' ) }
 					&nbsp;
