@@ -23,11 +23,4 @@ describe( 'ConnectAccountPage', () => {
 		const page = shallow( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
-
-	test( 'should redirect to Stripe when clicking on Get started button', () => {
-		const page = shallow( <ConnectAccountPage /> );
-		const getStartedButton = page.find( Button );
-		getStartedButton.simulate( 'click' );
-		expect( window.location.assign ).toHaveBeenCalledWith( wcpayConnectUrl );
-	} );
 } );

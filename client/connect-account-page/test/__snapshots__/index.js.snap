@@ -18,9 +18,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
     </h2>
     <p>
       <ForwardRef(Button)
+        href="/wcpay-connect-url"
         isLarge={true}
         isPrimary={true}
-        onClick={[Function]}
       >
         Get started
       </ForwardRef(Button)>
