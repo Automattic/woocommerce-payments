@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConnectAccountPage should render correctly 1`] = `
+<div
+  className="connect-account"
+>
+  <Card
+    className="connect-account__card"
+  >
+    <p>
+      <t
+        icon="credit-card"
+        size={72}
+      />
+    </p>
+    <h2>
+      Accept credit cards online using WooCommerce Payments. Verify your business details to begin receiving payments.
+    </h2>
+    <p>
+      <ForwardRef(Button)
+        href="/wcpay-connect-url"
+        isLarge={true}
+        isPrimary={true}
+      >
+        Get started
+      </ForwardRef(Button)>
+    </p>
+    <p>
+      By clicking 'Get started' you agree to WooCommerce Payments
+       
+      <a
+        href="#"
+      >
+        terms of service
+      </a>
+      .
+    </p>
+    <p>
+      <Link
+        href="admin.php?page=wc-settings&tab=checkout"
+        type="wp-admin"
+      >
+        Additional payment methods
+      </Link>
+    </p>
+  </Card>
+</div>
+`;

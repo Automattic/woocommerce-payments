@@ -13,7 +13,8 @@
 	"globals": {
 		"wp": true,
 		"wpApiSettings": true,
-		"wcSettings": true
+		"wcSettings": true,
+		"wcpaySettings": true
 	},
 	"settings": {
 		"react": {
