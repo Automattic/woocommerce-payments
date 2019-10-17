@@ -51,67 +51,69 @@ class WC_Payments_Admin {
 			)
 		);
 
-		wc_admin_register_page(
-			array(
-				'id'     => 'wc-payments-deposits',
-				'title'  => __( 'Deposits', 'woocommerce-payments' ),
-				'parent' => 'wc-payments',
-				'path'   => '/payments/deposits',
-			)
-		);
-
-		wc_admin_register_page(
-			array(
-				'id'     => 'wc-payments-transactions',
-				'title'  => __( 'Transactions', 'woocommerce-payments' ),
-				'parent' => 'wc-payments',
-				'path'   => '/payments/transactions',
-			)
-		);
-
-		wc_admin_register_page(
-			array(
-				'id'     => 'wc-payments-transaction-details',
-				'title'  => __( 'Payment Details', 'woocommerce-payments' ),
-				'parent' => 'wc-payments-transactions',
-				'path'   => '/payments/transactions/details',
-			)
-		);
-
-		wc_admin_register_page(
-			array(
-				'id'     => 'wc-payments-disputes',
-				'title'  => __( 'Disputes', 'woocommerce-payments' ),
-				'parent' => 'wc-payments',
-				'path'   => '/payments/disputes',
-			)
-		);
-
-		wc_admin_connect_page(
-			array(
-				'id'        => 'woocommerce-settings-payments-woocommerce-payments',
-				'parent'    => 'woocommerce-settings-payments',
-				'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
-				'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
-			)
-		);
-		// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
-		$submenu_keys                   = array_keys( $submenu );
-		$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
-		$submenu[ $last_submenu_key ][] = array( // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
-			__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
-			'manage_woocommerce',
-			admin_url(
-				add_query_arg(
-					array(
-						'page'    => 'wc-settings',
-						'tab'     => 'checkout',
-						'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-					),
-					'admin.php'
+		if ( $this->wcpay_gateway->is_stripe_connected() ) {
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-deposits',
+					'title'  => __( 'Deposits', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/deposits',
 				)
-			),
-		);
+			);
+
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-transactions',
+					'title'  => __( 'Transactions', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/transactions',
+				)
+			);
+
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				)
+			);
+
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-disputes',
+					'title'  => __( 'Disputes', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/disputes',
+				)
+			);
+
+			wc_admin_connect_page(
+				array(
+					'id'        => 'woocommerce-settings-payments-woocommerce-payments',
+					'parent'    => 'woocommerce-settings-payments',
+					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
+					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+				)
+			);
+			// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
+			$submenu_keys                   = array_keys( $submenu );
+			$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
+			$submenu[ $last_submenu_key ][] = array( // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
+				__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
+				'manage_woocommerce',
+				admin_url(
+					add_query_arg(
+						array(
+							'page'    => 'wc-settings',
+							'tab'     => 'checkout',
+							'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+						),
+						'admin.php'
+					)
+				),
+			);
+		}
 
 		wp_enqueue_style(
 			'wcpay-admin-css',
