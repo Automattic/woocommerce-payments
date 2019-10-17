@@ -3,7 +3,6 @@
  * External dependencies
  */
 import { shallow } from 'enzyme';
-import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies

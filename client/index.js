@@ -20,7 +20,7 @@ const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>
 const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
-	const { menuID, rootLink } = get_menu_settings();
+	const { menuID, rootLink } = getMenuSettings();
 
     pages.push( {
         container: ConnectAccountPage,
@@ -76,7 +76,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
  *
  * @returns { { menuID, rootLink } }  Object containing menuID and rootLink
  */
-function get_menu_settings() {
+function getMenuSettings() {
 	const connectPage = document.querySelector( '#toplevel_page_wc-admin-path--payments-connect' );
 	const topLevelPage = connectPage ? 'connect' : 'deposits';
 
