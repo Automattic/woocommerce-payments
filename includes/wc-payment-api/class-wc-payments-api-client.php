@@ -77,7 +77,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Charge
 	 * @throws Exception - Exception thrown on payment failure.
 	 */
-	public function create_charge( $amount, $source_id, $test_mode = false ) {
+	public function create_charge( $amount, $source_id, $test_mode = true ) {
 
 		$request              = array();
 		$request['amount']    = $amount;
@@ -106,7 +106,7 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$payment_method_id,
 		$manual_capture = false,
-		$test_mode = false
+		$test_mode = true
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -135,7 +135,7 @@ class WC_Payments_API_Client {
 	public function confirm_intention(
 		WC_Payments_API_Intention $intent,
 		$payment_method_id,
-		$test_mode = false
+		$test_mode = true
 	) {
 		$request                   = array();
 		$request['payment_method'] = $payment_method_id;
@@ -160,7 +160,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws Exception - Exception thrown on refund creation failure.
 	 */
-	public function refund_charge( $charge_id, $test_mode = false, $amount = null ) {
+	public function refund_charge( $charge_id, $test_mode = true, $amount = null ) {
 		$request              = array();
 		$request['charge']    = $charge_id;
 		$request['amount']    = $amount;
@@ -179,7 +179,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount, $test_mode = false ) {
+	public function capture_intention( $intention_id, $amount, $test_mode = true ) {
 		$request                      = array();
 		$request['amount_to_capture'] = $amount;
 		$request['test_mode']         = $test_mode;
@@ -202,7 +202,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention cancellation failure.
 	 */
-	public function cancel_intention( $intention_id, $test_mode = false ) {
+	public function cancel_intention( $intention_id, $test_mode = true ) {
 		$response_array = $this->request(
 			array(
 				'test_mode' => $test_mode,
@@ -258,7 +258,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions( $test_mode = false ) {
+	public function list_transactions( $test_mode = true ) {
 		$transactions = $this->request(
 			array( 'test_mode' => $test_mode ),
 			self::TRANSACTIONS_API,
