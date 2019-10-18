@@ -61,7 +61,6 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 * Retrieve transactions to respond with via API.
 	 */
 	public function get_transactions() {
-		// TODO: Figure out how to pass the correct `$test_mode` parameter to `list_transactions`.
 		return rest_ensure_response( $this->api_client->list_transactions() );
 	}
 
