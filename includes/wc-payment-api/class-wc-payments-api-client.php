@@ -306,14 +306,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $return_url    - URL to redirect to at the end of the flow.
 	 * @param array  $business_data - data to prefill the form.
+	 * @param bool   $test_mode     - Indicates whether test mode is enabled or not.
 	 *
 	 * @return array An array containing the url and state fields
 	 */
-	public function get_oauth_data( $return_url, $business_data = array() ) {
+	public function get_oauth_data( $return_url, $business_data = array(), $test_mode = true ) {
 		return $this->request(
 			array(
 				'return_url'    => $return_url,
 				'business_data' => $business_data,
+				'test_mode'     => $test_mode,
 			),
 			self::OAUTH_API . '/init',
 			self::POST
@@ -324,12 +326,16 @@ class WC_Payments_API_Client {
 	 * Get one-time dashboard login url
 	 *
 	 * @param string $redirect_url - URL to navigate back to from the dashboard.
+	 * @param bool   $test_mode    - Indicates whether test mode is enabled or not.
 	 *
 	 * @return array An array containing the url field
 	 */
-	public function get_login_data( $redirect_url ) {
+	public function get_login_data( $redirect_url, $test_mode = true ) {
 		return $this->request(
-			array( 'redirect_url' => $redirect_url ),
+			array(
+				'redirect_url' => $redirect_url,
+				'test_mode'    => $test_mode,
+			),
 			self::ACCOUNTS_API . '/' . $this->account_id . '/login_links',
 			self::POST
 		);

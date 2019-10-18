@@ -502,7 +502,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				array(
 					'email'         => $current_user->user_email,
 					'business_name' => get_bloginfo( 'name' ),
-				)
+				),
+				$this->get_test_mode()
 			);
 			if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
 				$this->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
@@ -517,7 +518,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			// retrieve the one-time login url and redirect to it.
-			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url() );
+			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url(), $this->get_test_mode() );
 			if ( is_wp_error( $login_data ) || ! isset( $login_data['url'] ) ) {
 				$this->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
 				return;
