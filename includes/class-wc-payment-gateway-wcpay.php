@@ -212,8 +212,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
-					$manual_capture,
-					$this->get_test_mode()
+					$manual_capture
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
@@ -316,11 +315,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		if ( is_null( $amount ) ) {
-			$refund = $this->payments_api_client->refund_charge( $charge_id, $this->get_test_mode() );
+			$refund = $this->payments_api_client->refund_charge( $charge_id );
 		} else {
 			$refund = $this->payments_api_client->refund_charge(
 				$charge_id,
-				$this->get_test_mode(),
 				round( (float) $amount * 100 )
 			);
 		}
@@ -502,8 +500,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				array(
 					'email'         => $current_user->user_email,
 					'business_name' => get_bloginfo( 'name' ),
-				),
-				$this->get_test_mode()
+				)
 			);
 			if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
 				$this->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
@@ -518,7 +515,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			// retrieve the one-time login url and redirect to it.
-			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url(), $this->get_test_mode() );
+			$login_data = $this->payments_api_client->get_login_data( $this->get_settings_url() );
 			if ( is_wp_error( $login_data ) || ! isset( $login_data['url'] ) ) {
 				$this->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
 				return;
@@ -590,8 +587,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount = $order->get_total();
 		$intent = $this->payments_api_client->capture_intention(
 			$order->get_transaction_id(),
-			round( (float) $amount * 100 ),
-			$this->get_test_mode()
+			round( (float) $amount * 100 )
 		);
 		$status = $intent->get_status();
 
@@ -622,10 +618,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
-		$intent = $this->payments_api_client->cancel_intention(
-			$order->get_transaction_id(),
-			$this->get_test_mode()
-		);
+		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
 		$status = $intent->get_status();
 
 		$order->update_meta_data( '_intention_status', $status );
