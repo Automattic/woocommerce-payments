@@ -11,10 +11,22 @@ defined( 'ABSPATH' ) || exit;
  * WC_Payments_Admin Class.
  */
 class WC_Payments_Admin {
+
+	/**
+	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
 	/**
 	 * Hook in admin menu items.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 */
-	public function __construct() {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
+		$this->wcpay_gateway = $gateway;
+
 		// Add menu items.
 		add_action( 'admin_menu', array( $this, 'add_payments_menu' ), 9 );
 		add_action( 'init', array( $this, 'register_payments_scripts' ) );
@@ -27,12 +39,14 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
+		$top_level_link = $this->wcpay_gateway->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
+
 		wc_admin_register_page(
 			array(
 				'id'         => 'wc-payments',
 				'title'      => __( 'Payments', 'woocommerce-payments' ),
 				'capability' => 'manage_woocommerce',
-				'path'       => '/payments/deposits',
+				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 			)
 		);
@@ -52,6 +66,15 @@ class WC_Payments_Admin {
 				'title'  => __( 'Transactions', 'woocommerce-payments' ),
 				'parent' => 'wc-payments',
 				'path'   => '/payments/transactions',
+			)
+		);
+
+		wc_admin_register_page(
+			array(
+				'id'     => 'wc-payments-transaction-details',
+				'title'  => __( 'Payment Details', 'woocommerce-payments' ),
+				'parent' => 'wc-payments-transactions',
+				'path'   => '/payments/transactions/details',
 			)
 		);
 
@@ -113,6 +136,12 @@ class WC_Payments_Admin {
 			$script_dependencies,
 			WC_Payments::get_file_version( 'dist/index.js' ),
 			true
+		);
+
+		wp_localize_script(
+			'WCPAY_DASH_APP',
+			'wcpaySettings',
+			array( 'connectUrl' => $this->wcpay_gateway->get_connect_url() )
 		);
 
 		wp_register_style(

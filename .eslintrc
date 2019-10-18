@@ -8,30 +8,31 @@
 	"env": {
 		"browser": true,
 		"jest/globals": true,
-		"node": true,
+		"node": true
 	},
 	"globals": {
 		"wp": true,
 		"wpApiSettings": true,
 		"wcSettings": true,
+		"wcpaySettings": true
 	},
 	"settings": {
 		"react": {
-			"version": "detect",
-		},
+			"version": "detect"
+		}
 	},
 	"rules": {
-		"camelcase": 0,
-		"indent": 0,
-		"max-len": [ 2, { "code": 140 } ],
-		"no-console": 1,
-		"react/no-danger": 0,
-		"react/react-in-jsx-scope": 0,
-		"wpcalypso/import-no-redux-combine-reducers": 0,
-		"wpcalypso/jsx-classname-namespace": 0,
-		"wpcalypso/redux-no-bound-selectors": 1,
+		"camelcase": [ "error", { "properties": "always" } ],
+		"indent": "off",
+		"max-len": [ "error", { "code": 140 } ],
+		"no-console": "warn",
+		"react/no-danger": "off",
+		"react/react-in-jsx-scope": "off",
+		"wpcalypso/import-no-redux-combine-reducers": "off",
+		"wpcalypso/jsx-classname-namespace": "off",
+		"wpcalypso/redux-no-bound-selectors": "warn",
 		"jsx-a11y/label-has-for": [ "error", {
 			"required": "id"
 		} ]
-	},
+	}
 }

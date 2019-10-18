@@ -14,6 +14,7 @@ describe( 'Transactions list', () => {
 		const transactions = {
 			data: [
 				{
+					id: 'txn_j23jda9JJa',
 					created: 1572590800,
 					type: 'refund',
 					source: {
@@ -24,15 +25,18 @@ describe( 'Transactions list', () => {
 					// available_on: 1573199200,
 				},
 				{
+					id: 'txn_oa9kaKaa8',
 					created: 1572580800,
 					type: 'charge',
 					source: {
 						object: 'charge',
+						// eslint-disable-next-line camelcase
 						payment_method_details: {
 							card: {
 								brand: 'visa',
 							},
 						},
+						// eslint-disable-next-line camelcase
 						billing_details: {
 							name: 'My name',
 							email: 'a@b.com',
@@ -41,6 +45,7 @@ describe( 'Transactions list', () => {
 							},
 						},
 						outcome: {
+							// eslint-disable-next-line camelcase
 							risk_level: 'normal',
 						},
 					},

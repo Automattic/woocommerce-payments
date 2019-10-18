@@ -1,0 +1,20 @@
+.connect-account {
+	@media screen and (max-width: 782px) {
+		padding-top: 16px;
+		padding-bottom: 16px;
+	}
+	.connect-account__card {
+		max-width: 620px;
+		margin: 0 auto;
+		.woocommerce-card__body {
+			p, h2 {
+				text-align: center;
+			}
+			.gridicons-credit-card {
+				height: 144px;
+				width: 144px;
+				fill: #969CA1;
+			}
+		}
+	}
+}

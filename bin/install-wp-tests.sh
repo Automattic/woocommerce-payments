@@ -172,6 +172,7 @@ install_woocommerce() {
 	fi
 
 	git checkout $WC_VERSION
+	composer install
 	cd -
 }
 
