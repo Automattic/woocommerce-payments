@@ -72,15 +72,6 @@ class WC_Payments_Admin {
 
 			wc_admin_register_page(
 				array(
-					'id'     => 'wc-payments-transaction-details',
-					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
-					'parent' => 'wc-payments-transactions',
-					'path'   => '/payments/transactions/details',
-				)
-			);
-
-			wc_admin_register_page(
-				array(
 					'id'     => 'wc-payments-disputes',
 					'title'  => __( 'Disputes', 'woocommerce-payments' ),
 					'parent' => 'wc-payments',
@@ -112,6 +103,17 @@ class WC_Payments_Admin {
 						'admin.php'
 					)
 				),
+			);
+
+			// Temporary fix to settings menu disappearance is to register the page after settings menu has been manually added.
+			// TODO: More robust solution is to be implemented by https://github.com/Automattic/woocommerce-payments/issues/231.
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				)
 			);
 		}
 
