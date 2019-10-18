@@ -231,7 +231,7 @@ class WC_Payments {
 			return false;
 		}
 
-		$account = self::$api_client->get_account_data();
+		$account = self::$api_client->get_account_data( self::$gateway->get_test_mode() );
 
 		if ( is_wp_error( $account ) ) {
 			$message = sprintf(

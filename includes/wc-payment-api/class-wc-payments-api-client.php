@@ -295,10 +295,12 @@ class WC_Payments_API_Client {
 	/**
 	 * Get current account data
 	 *
+	 * @param bool $test_mode - Indicates whether test mode is enabled or not.
+	 *
 	 * @return array An array describing an account object.
 	 */
-	public function get_account_data() {
-		return $this->request( array(), self::ACCOUNTS_API . '/' . $this->account_id, self::GET );
+	public function get_account_data( $test_mode = true ) {
+		return $this->request( array( 'test_mode' => $test_mode ), self::ACCOUNTS_API . '/' . $this->account_id, self::GET );
 	}
 
 	/**
