@@ -317,10 +317,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( is_null( $amount ) ) {
 			$refund = $this->payments_api_client->refund_charge( $charge_id );
 		} else {
-			$refund = $this->payments_api_client->refund_charge(
-				$charge_id,
-				round( (float) $amount * 100 )
-			);
+			$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
 		}
 
 		if ( is_wp_error( $refund ) ) {

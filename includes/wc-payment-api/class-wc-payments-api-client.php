@@ -126,10 +126,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention confirmation failure.
 	 */
-	public function confirm_intention(
-		WC_Payments_API_Intention $intent,
-		$payment_method_id
-	) {
+	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
 		$request                   = array();
 		$request['payment_method'] = $payment_method_id;
 
@@ -242,11 +239,7 @@ class WC_Payments_API_Client {
 	 * @throws Exception - Exception thrown on request failure.
 	 */
 	public function list_transactions() {
-		$transactions = $this->request(
-			array(),
-			self::TRANSACTIONS_API,
-			self::GET
-		);
+		$transactions = $this->request( array(), self::TRANSACTIONS_API, self::GET );
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
@@ -312,9 +305,7 @@ class WC_Payments_API_Client {
 	 */
 	public function get_login_data( $redirect_url ) {
 		return $this->request(
-			array(
-				'redirect_url' => $redirect_url,
-			),
+			array( 'redirect_url' => $redirect_url ),
 			self::ACCOUNTS_API . '/' . $this->account_id . '/login_links',
 			self::POST
 		);
