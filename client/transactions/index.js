@@ -76,7 +76,8 @@ export const TransactionsList = ( props ) => {
 			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },
 			country: address && { value: address.country, display: address.country },
 			amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
-			fee: { value: txn.fee / 100, display: formatCurrency( txn.fee / 100 ) },
+			// fees should display as negative. The format $-9.99 is determined by WC-Admin
+			fee: { value: txn.fee / 100, display: formatCurrency( ( txn.fee / 100 ) * -1 ) },
 			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
 			riskLevel: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },

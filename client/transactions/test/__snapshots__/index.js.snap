@@ -107,7 +107,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 10,
         },
         Object {
-          "display": "$0.50",
+          "display": "$-0.50",
           "value": 0.5,
         },
         Object {
@@ -168,7 +168,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 15,
         },
         Object {
-          "display": "$0.50",
+          "display": "$-0.50",
           "value": 0.5,
         },
         Object {
