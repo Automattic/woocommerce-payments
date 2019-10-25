@@ -504,6 +504,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return;
 			}
 
+			if ( false === $oauth_data['url'] ) {
+				$account_id           = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
+				$live_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['live_publishable_key'] ) );
+				$test_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['test_publishable_key'] ) );
+				$this->update_option( 'stripe_account_id', $account_id );
+				$this->update_option( 'publishable_key', $live_publishable_key );
+				$this->update_option( 'test_publishable_key', $test_publishable_key );
+				wp_safe_redirect( $this->get_settings_url() );
+				exit;
+			}
+
 			set_transient( 'wcpay_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
 
 			wp_safe_redirect( $oauth_data['url'] );
