@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ $# -lt 3 ]; then
-	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation] [wc-version]"
+	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
 	exit 1
 fi
 
@@ -11,7 +11,6 @@ DB_PASS=$3
 DB_HOST=${4-localhost}
 WP_VERSION=${5-latest}
 SKIP_DB_CREATE=${6-false}
-WC_VERSION=${7-latest}
 
 TMPDIR=${TMPDIR-/tmp}
 TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
@@ -157,26 +156,6 @@ get_latest_release() {
 	sed -E 's/.*"([^"]+)".*/\1/'
 }
 
-install_woocommerce() {
-	if [ "$TRAVIS_BUILD_DIR" !== "" ]; then
-		cd $TRAVIS_BUILD_DIR
-	fi
-	cd ..
-	git clone https://github.com/woocommerce/woocommerce.git
-	cd woocommerce
-
-	if [ $WC_VERSION == 'latest' ]; then
-		local WC_VERSION=$(get_latest_release)
-	else
-		local WC_VERSION=$WC_VERSION
-	fi
-
-	git checkout $WC_VERSION
-	composer install
-	cd -
-}
-
 install_wp
 install_test_suite
 install_db
-install_woocommerce
