@@ -275,7 +275,10 @@ class WC_Payments_API_Client {
 
 		if ( false === $account ) {
 			$account = $this->request( array(), self::ACCOUNTS_API . '/' . $this->account_id, self::GET );
-			set_transient( self::STRIPE_ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+
+			if ( ! empty( $account ) && ! is_wp_error( $account ) ) {
+				set_transient( self::STRIPE_ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+			}
 		}
 
 		return $account;
