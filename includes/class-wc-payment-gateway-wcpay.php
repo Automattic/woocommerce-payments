@@ -133,6 +133,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Add notice to WooCommerce Payments settings page explaining test mode when it's enabled.
+	 */
+	public function admin_options() {
+		if ( $this->get_test_mode() ) {
+			?>
+			<div class="notice notice-warning">
+				<p><b>Test Mode Active:</b> All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.</p>
+			</div>
+			<?php
+		}
+
+		parent::admin_options();
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
