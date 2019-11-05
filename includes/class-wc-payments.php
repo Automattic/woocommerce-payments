@@ -167,13 +167,13 @@ class WC_Payments {
 					);
 
 					if ( current_user_can( 'install_plugins' ) ) {
-						if ( validate_plugin( $plugin_data['file'] ) ) {
-							// The plugin is installed, so it just needs to be enabled.
+						if ( is_wp_error( validate_plugin( $plugin_data['file'] ) ) ) {
+							// The plugin is not installed.
 							$activate_url  = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $plugin_data['slug'] ), 'install-plugin_' . $plugin_data['slug'] );
 							/* translators: %1: plugin name */
 							$activate_text = sprintf( __( 'Install %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
 						} else {
-							// The plugin is not installed.
+							// The plugin is installed, so it just needs to be enabled.
 							$activate_url  = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $plugin_data['file'] ), 'activate-plugin_' . $plugin_data['file'] );
 							/* translators: %1: plugin name */
 							$activate_text = sprintf( __( 'Activate %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
