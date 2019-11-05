@@ -131,6 +131,10 @@ class WC_Payments {
 	 * @return bool True if all dependencies are met, false otherwise
 	 */
 	public static function check_plugin_dependencies( $silent ) {
+		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
+			return true;
+		}
+
 		$plugin_headers = self::get_plugin_headers();
 
 		$wc_version = $plugin_headers['WCRequires'];
