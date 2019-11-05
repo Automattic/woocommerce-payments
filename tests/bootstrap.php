@@ -32,6 +32,8 @@ function wc_dir() {
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
+	define( 'WCPAY_TEST_ENV', true );
+
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once wc_dir() . '/woocommerce.php';
 
