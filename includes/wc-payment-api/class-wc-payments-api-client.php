@@ -324,7 +324,7 @@ class WC_Payments_API_Client {
 	private function is_in_test_mode() {
 		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
 		if ( ! isset( $options['test_mode'] ) ) {
-			return true;
+			return false; // TODO: temporary fix to force fresh installs to go through live mode, we should use true while we develop.
 		}
 
 		if ( ! is_bool( $options['test_mode'] ) ) {
