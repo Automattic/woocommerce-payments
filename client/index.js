@@ -66,7 +66,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: withTestModeNotice( TransactionsPage ),
+        container: TransactionsPage,
         path: '/payments/transactions',
         wpOpenMenu: menuID,
         breadcrumbs: [
