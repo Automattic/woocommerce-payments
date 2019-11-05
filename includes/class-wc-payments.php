@@ -136,32 +136,51 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
-		// Check if WooCommerce is installed and active.
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			if ( ! $silent ) {
-				$message = sprintf(
-					/* translators: %1: WooCommerce plugin URL */
-					__( 'WooCommerce Payments requires <a href="%1$s">WooCommerce</a> to be installed and active.', 'woocommerce-payments' ),
-					'https://wordpress.org/plugins/woocommerce/'
-				);
+		$plugin_dependencies = array(
+			array(
+				'name'  => 'WooCommerce',
+				'class' => 'WooCommerce',
+				'slug'  => 'woocommerce',
+				'file'  => 'woocommerce/woocommerce.php',
+			),
+			array(
+				'name'  => 'WooCommerce Admin',
+				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
+				'slug'  => 'woocommerce-admin',
+				'file'  => 'woocommerce-admin/woocommerce-admin.php',
+			),
+		);
 
-				if ( current_user_can( 'install_plugins' ) ) {
-					$wc_plugin_name = 'woocommerce/woocommerce.php';
-					$wc_plugin_slug = 'woocommerce';
-					if ( validate_plugin( $wc_plugin_name ) ) {
-						// The plugin is installed, so it just needs to be enabled.
-						$activate_url = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $wc_plugin_slug ), 'install-plugin_' . $wc_plugin_slug );
-						$message     .= ' <a href="' . $activate_url . '">' . __( 'Install WooCommerce', 'woocommerce-payments' ) . '</a>';
-					} else {
-						// The plugin is not installed.
-						$activate_url = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $wc_plugin_name ), 'activate-plugin_' . $wc_plugin_name );
-						$message     .= ' <a href="' . $activate_url . '">' . __( 'Activate WooCommerce', 'woocommerce-payments' ) . '</a>';
+		// Check if WooCommerce and other dependencies are  installed and active.
+		foreach ( $plugin_dependencies as $plugin_data ) {
+			if ( ! class_exists( $plugin_data['class'] ) ) {
+				if ( ! $silent ) {
+					$message = sprintf(
+						/* translators: %1: WordPress.org plugin URL, %2: plugin name */
+						__( 'WooCommerce Payments requires <a href="%1$s">%2$s</a> to be installed and active.', 'woocommerce-payments' ),
+						'https://wordpress.org/plugins/' . trailingslashit( $plugin_data['slug'] ),
+						$plugin_data['name']
+					);
+
+					if ( current_user_can( 'install_plugins' ) ) {
+						if ( validate_plugin( $plugin_data['file'] ) ) {
+							// The plugin is installed, so it just needs to be enabled.
+							$activate_url  = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $plugin_data['slug'] ), 'install-plugin_' . $plugin_data['slug'] );
+							/* translators: %1: plugin name */
+							$activate_text = sprintf( __( 'Install %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
+						} else {
+							// The plugin is not installed.
+							$activate_url  = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $plugin_data['file'] ), 'activate-plugin_' . $plugin_data['file'] );
+							/* translators: %1: plugin name */
+							$activate_text = sprintf( __( 'Activate %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
+						}
+						$message .= ' <a href="' . $activate_url . '">' . $activate_text . '</a>';
 					}
-				}
 
-				self::display_admin_error( $message );
+					self::display_admin_error( $message );
+				}
+				return false;
 			}
-			return false;
 		}
 
 		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
