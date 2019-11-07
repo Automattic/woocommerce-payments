@@ -95,7 +95,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'no', // TODO: temporary fix to force fresh installs to go through live mode, we should use 'yes' while we develop.
+				'default'     => 'no',
 				'desc_tip'    => true,
 			),
 			'enabled'         => array(
