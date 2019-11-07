@@ -250,6 +250,22 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch a single transaction with provided id.
+	 *
+	 * @param string $transaction_id id of requested transaction.
+	 * @return array transaction object.
+	 */
+	public function get_transaction( $transaction_id ) {
+		$transaction = $this->request( array(), self::TRANSACTIONS_API . '/' . $transaction_id, self::GET );
+
+		if ( is_wp_error( $transaction ) ) {
+			return $transaction;
+		}
+
+		return $this->add_order_info_to_transaction( $transaction );
+	}
+
+	/**
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.

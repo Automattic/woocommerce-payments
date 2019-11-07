@@ -55,6 +55,15 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_transaction' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 	}
 
 	/**
@@ -62,6 +71,16 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	public function get_transactions() {
 		return rest_ensure_response( $this->api_client->list_transactions() );
+	}
+
+	/**
+	 * Retrieve transaction to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_transaction( $request ) {
+		$transaction_id = $request->get_params()['transaction_id'];
+		return rest_ensure_response( $this->api_client->get_transaction( $transaction_id ) );
 	}
 
 	/**
