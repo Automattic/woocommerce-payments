@@ -57,9 +57,6 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client );
 
-		// Add account ID to the payments.
-		self::$api_client->set_account_id( self::$gateway->get_option( 'stripe_account_id' ) );
-
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 3 );
