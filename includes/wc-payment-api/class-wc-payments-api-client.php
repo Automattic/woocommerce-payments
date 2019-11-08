@@ -36,13 +36,6 @@ class WC_Payments_API_Client {
 	private $user_agent;
 
 	/**
-	 * The ID of the Stripe account this client will be used for.
-	 *
-	 * @var string
-	 */
-	private $account_id;
-
-	/**
 	 * An HTTP client implementation used to send HTTP requests.
 	 *
 	 * @var WC_Payments_Http
@@ -58,15 +51,6 @@ class WC_Payments_API_Client {
 	public function __construct( $user_agent, $http_client ) {
 		$this->user_agent  = $user_agent;
 		$this->http_client = $http_client;
-	}
-
-	/**
-	 * Set the account ID to use for requests to the API.
-	 *
-	 * @param string $account_id - The ID of the Stripe account this client will be used for.
-	 */
-	public function set_account_id( $account_id ) {
-		$this->account_id = $account_id;
 	}
 
 	/**
@@ -279,7 +263,7 @@ class WC_Payments_API_Client {
 		$account = get_transient( self::STRIPE_ACCOUNT_TRANSIENT );
 
 		if ( false === $account ) {
-			$account = $this->request( array(), self::ACCOUNTS_API . '/' . $this->account_id, self::GET );
+			$account = $this->request( array(), self::ACCOUNTS_API, self::GET );
 
 			if ( ! empty( $account ) && ! is_wp_error( $account ) ) {
 				set_transient( self::STRIPE_ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
@@ -324,7 +308,7 @@ class WC_Payments_API_Client {
 
 		return $this->request(
 			array( 'redirect_url' => $redirect_url ),
-			self::ACCOUNTS_API . '/' . $this->account_id . '/login_links',
+			self::ACCOUNTS_API . '/login_links',
 			self::POST
 		);
 	}
@@ -367,13 +351,7 @@ class WC_Payments_API_Client {
 	 * @throws Exception - If the account ID hasn't been set.
 	 */
 	private function request( $request, $api, $method, $is_site_specific = true ) {
-		// Add account ID to the request.
-		if ( ! isset( $this->account_id ) ) {
-			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
-		}
-		$request['account_id'] = $this->account_id;
-		$request['test_mode']  = $this->is_in_test_mode();
-
+		$request['test_mode'] = $this->is_in_test_mode();
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {

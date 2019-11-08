@@ -39,8 +39,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			'Unit Test Agent/0.1.0',
 			$this->mock_http_client
 		);
-
-		$this->payments_api_client->set_account_id( 'test_acc_id_12345' );
 	}
 
 	/**
