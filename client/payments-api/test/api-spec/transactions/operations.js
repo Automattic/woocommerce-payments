@@ -55,11 +55,12 @@ describe( 'Transactions operations', () => {
 
 	describe( 'transactionsToResources()', () => {
 		it( 'Transactions list is correctly converted to resources', () => {
-			const mockData = [ {}, {}, {} ];
+			const mockData = { data: [ { id: 'txn_1' }, { id: 'txn_2' }, { id: 'txn_3' } ] };
 			const expected = {
-				[ 'transactions-list' ]: {
-					data: mockData,
-				},
+				[ 'transactions-list' ]: { data: mockData },
+				[ 'txn_1' ]: { data: { id: 'txn_1' } },
+				[ 'txn_2' ]: { data: { id: 'txn_2' } },
+				[ 'txn_3' ]: { data: { id: 'txn_3' } },
 			};
 
 			const resources = transactionsToResources( mockData );

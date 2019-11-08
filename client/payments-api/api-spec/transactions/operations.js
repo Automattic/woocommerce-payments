@@ -32,11 +32,11 @@ export function readTransactions( resourceNames, fetch, dataToResources ) {
 }
 
 export function transactionsToResources( transactions ) {
-	return {
-		[ 'transactions-list' ]: {
-			data: transactions,
-		},
-	};
+	const resources = {	[ 'transactions-list' ]: { data: transactions } };
+	transactions.data.forEach( transaction => {
+		resources[ transaction.id ] = { data: transaction };
+	} );
+	return resources;
 }
 
 export default {
