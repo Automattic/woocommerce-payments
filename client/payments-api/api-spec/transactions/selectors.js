@@ -5,6 +5,22 @@
  */
 import { DEFAULT_REQUIREMENT } from '../../constants';
 
+const getTransaction = ( getResource, requireResource ) => (
+	transactionId,
+	requirement = DEFAULT_REQUIREMENT
+) => {
+	return requireResource( requirement, transactionId ).data || {};
+};
+
+const getTransactionInitialLoad = ( getResource ) => ( transactionId ) => {
+	return ! getResource( transactionId ).lastReceived;
+};
+
+const getTransactionIsLoading = ( getResource ) => ( transactionId ) => {
+	const transaction = getResource( transactionId );
+	return ( ! transaction.lastReceived ) || ( transaction.lastRequested > transaction.lastReceived );
+};
+
 const getTransactions = ( getResource, requireResource ) => (
 	requirement = DEFAULT_REQUIREMENT
 ) => {
@@ -30,6 +46,9 @@ const showTransactionsPlaceholder = ( getResource ) => () => {
 };
 
 export default {
+	getTransaction,
+	getTransactionInitialLoad,
+	getTransactionIsLoading,
 	getTransactions,
 	getTransactionsIsLoading,
 	isWaitingForInitialLoad,
