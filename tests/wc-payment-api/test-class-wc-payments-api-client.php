@@ -245,6 +245,53 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_transaction_success() {
+		$transaction_id = 'txn_231mdaism';
+
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'     => $transaction_id,
+				'type'   => 'charge',
+				'source' => array( 'id' => 'ch_ji3djhabvh23' ),
+			)
+		);
+
+		$transaction = $this->payments_api_client->get_transaction( $transaction_id );
+		$this->assertEquals( $transaction_id, $transaction['id'] );
+	}
+
+	/**
+	 * Test fetching of non existing transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_transaction_not_found() {
+		$transaction_id = 'txn_231mdaism';
+		$error_code     = 'resource_missing';
+		$error_message  = 'No such balance transaction';
+
+		$this->set_http_mock_response(
+			404,
+			array(
+				'error' => array(
+					'code'    => $error_code,
+					'message' => $error_message,
+				),
+			)
+		);
+
+		$response = $this->payments_api_client->get_transaction( $transaction_id );
+		$this->assertTrue( is_wp_error( $response ) );
+		$this->assertEquals( $error_code, $response->get_error_code() );
+		$this->assertEquals( $error_message, $response->get_error_message() );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.
