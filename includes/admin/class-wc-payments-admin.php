@@ -129,15 +129,13 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		$script_src_url      = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
-		$script_deps_path    = WCPAY_ABSPATH . 'dist/index.deps.json';
-		$script_dependencies = file_exists( $script_deps_path )
-			? json_decode( file_get_contents( $script_deps_path ) ) // PHPCS:Ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			: array();
+		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : null;
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
-			$script_dependencies,
+			$script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/index.js' ),
 			true
 		);
