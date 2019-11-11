@@ -103,11 +103,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
-				'default'     => 'no',
+				'default'     => 'yes',
 			),
 		);
 
 		// Load the settings.
+		add_action( 'option_woocommerce_' . $this->id . '_settings', array( $this, 'enable_by_default' ), 2 );
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -120,6 +121,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	}
+
+	/**
+	 * Normally, payment gateways are considered "disabled by default" until the merchant enables them. We want
+	 * WooCommerce Payments to be as easy to configure as possible, so it will be enabled by default.
+	 *
+	 * @param array $settings Existing settings array, taken from the database.
+	 * @return array Modified settings array
+	 */
+	public function enable_by_default( $settings ) {
+		if ( ! isset( $settings['enabled'] ) ) {
+			$settings['enabled'] = 'yes';
+		}
+		return $settings;
 	}
 
 	/**
