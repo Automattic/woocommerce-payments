@@ -62,6 +62,7 @@ class WC_Payments {
 
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 3 );
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -349,6 +350,7 @@ class WC_Payments {
 	 * @return array Modified ordering.
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
+		$ordering        = (array) $ordering;
 		$id              = self::$gateway->id;
 		$target_position = 0;
 		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
