@@ -242,27 +242,27 @@ class WC_Payments_API_Client {
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$charge_id = $transaction['source']['id'];
-
-				if ( 'refund' === $transaction['type'] ) {
-					$charge_id = $transaction['source']['charge']['id'];
-				}
-
-				$order = $this->order_from_charge_id( $charge_id );
-
-				// Add order information to the `$transaction`.
-				// If the order couldn't be retrieved, return an empty order.
-				$transaction['order'] = null;
-				if ( $order ) {
-					$transaction['order'] = array(
-						'number' => $order->get_order_number(),
-						'url'    => $order->get_edit_order_url(),
-					);
-				}
+				$transaction = $this->add_order_info_to_transaction( $transaction );
 			}
 		}
 
 		return $transactions;
+	}
+
+	/**
+	 * Fetch a single transaction with provided id.
+	 *
+	 * @param string $transaction_id id of requested transaction.
+	 * @return array transaction object.
+	 */
+	public function get_transaction( $transaction_id ) {
+		$transaction = $this->request( array(), self::TRANSACTIONS_API . '/' . $transaction_id, self::GET );
+
+		if ( is_wp_error( $transaction ) ) {
+			return $transaction;
+		}
+
+		return $this->add_order_info_to_transaction( $transaction );
 	}
 
 	/**
@@ -393,10 +393,47 @@ class WC_Payments_API_Client {
 		if ( 500 <= $response_code ) {
 			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
 		} elseif ( 400 <= $response_code ) {
-			return new WP_Error( $response_body['code'], $response_body['message'] );
+			if ( $response_body['error'] ) {
+				return new WP_Error( $response_body['error']['code'], $response_body['error']['message'], array( 'status' => $response_code ) );
+			};
+			return new WP_Error( $response_body['code'], $response_body['message'], array( 'status' => $response_code ) );
 		}
 
 		return $response_body;
+	}
+
+	/**
+	 * Returns a transaction with order information when it exists.
+	 *
+	 * @param array $transaction transaction.
+	 * @return array new transaction object with order information.
+	 */
+	private function add_order_info_to_transaction( $transaction ) {
+		$order = $this->order_from_charge_id( $this->get_charge_id_from_transaction( $transaction ) );
+
+		// Add order information to the `$transaction`.
+		// If the order couldn't be retrieved, return an empty order.
+		$transaction['order'] = null;
+		if ( $order ) {
+			$transaction['order'] = array(
+				'number' => $order->get_order_number(),
+				'url'    => $order->get_edit_order_url(),
+			);
+		}
+
+		return $transaction;
+	}
+
+	/**
+	 * Gets charge id for a given transaction.
+	 *
+	 * @param array $transaction transaction.
+	 */
+	private function get_charge_id_from_transaction( $transaction ) {
+		if ( 'refund' === $transaction['type'] ) {
+			return $transaction['source']['charge']['id'];
+		}
+		return $transaction['source']['id'];
 	}
 
 	/**

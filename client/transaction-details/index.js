@@ -27,9 +27,9 @@ const TransactionDetails = ( props ) => {
 };
 
 export default withSelect( ( select, ownProps ) => {
-	// TODO: Create selector for fetching a single transaction and use it here, instead of
-	// creating an empty transaction object
-	const transaction = { id: ownProps.query.id };
+	const { getTransaction, isTransactionWaitingForInitialLoad } = select( 'wc-payments-api' );
+	const transaction = getTransaction( ownProps.query.id );
+	const showPlaceholder = isTransactionWaitingForInitialLoad( ownProps.query.id );
 
-	return { transaction };
+	return { transaction, showPlaceholder };
 } )( TransactionDetails );

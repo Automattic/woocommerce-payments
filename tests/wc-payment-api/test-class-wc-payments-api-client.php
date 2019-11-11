@@ -50,29 +50,15 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 */
 	public function test_create_charge_success() {
 		// Mock up a test response from WP_Http.
-		$this->mock_http_client
-			->expects( $this->any() )
-			->method( 'remote_request' )
-			->will(
-				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => wp_json_encode(
-							array(
-								'id'      => 'test_charge_id',
-								'amount'  => 123,
-								'created' => 1557224304,
-								'status'  => 'success',
-							)
-						),
-						'response' => array(
-							'code' => 200,
-						),
-						'cookies'  => array(),
-						'filename' => null,
-					)
-				)
-			);
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'      => 'test_charge_id',
+				'amount'  => 123,
+				'created' => 1557224304,
+				'status'  => 'success',
+			)
+		);
 
 		// Attempt to create a charge.
 		$result = $this->payments_api_client->create_charge( 123, 'test_source' );
@@ -90,41 +76,26 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$expected_amount = 123;
 		$expected_status = 'succeeded';
 
-		$this->mock_http_client
-			->expects( $this->any() )
-			->method( 'remote_request' )
-			->will(
-				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => wp_json_encode(
-							array(
-								'id'      => 'test_intention_id',
-								'amount'  => $expected_amount,
-								'created' => 1557224304,
-								'status'  => $expected_status,
-								'charges' => [
-									'total_count' => 1,
-									'data'        => [
-										[
-											'id'      => 'test_charge_id',
-											'amount'  => $expected_amount,
-											'created' => 1557224305,
-											'status'  => 'succeeded',
-										],
-									],
-								],
-							)
-						),
-						'response' => array(
-							'code'    => 200,
-							'message' => 'OK',
-						),
-						'cookies'  => array(),
-						'filename' => null,
-					)
-				)
-			);
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'      => 'test_intention_id',
+				'amount'  => $expected_amount,
+				'created' => 1557224304,
+				'status'  => $expected_status,
+				'charges' => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'      => 'test_charge_id',
+							'amount'  => $expected_amount,
+							'created' => 1557224305,
+							'status'  => 'succeeded',
+						],
+					],
+				],
+			)
+		);
 
 		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789' );
 		$this->assertEquals( $expected_amount, $result->get_amount() );
@@ -179,42 +150,26 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$expected_amount = 123;
 		$expected_status = 'requires_capture';
 
-		$this->mock_http_client
-			->expects( $this->any() )
-			->method( 'remote_request' )
-			->with( $this->anything(), $this->stringContains( '"manual"' ) )
-			->will(
-				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => wp_json_encode(
-							array(
-								'id'      => 'test_intention_id',
-								'amount'  => $expected_amount,
-								'created' => 1557224304,
-								'status'  => $expected_status,
-								'charges' => [
-									'total_count' => 1,
-									'data'        => [
-										[
-											'id'      => 'test_charge_id',
-											'amount'  => $expected_amount,
-											'created' => 1557224305,
-											'status'  => 'succeeded',
-										],
-									],
-								],
-							)
-						),
-						'response' => array(
-							'code'    => 200,
-							'message' => 'OK',
-						),
-						'cookies'  => array(),
-						'filename' => null,
-					)
-				)
-			);
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'      => 'test_intention_id',
+				'amount'  => $expected_amount,
+				'created' => 1557224304,
+				'status'  => $expected_status,
+				'charges' => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'      => 'test_charge_id',
+							'amount'  => $expected_amount,
+							'created' => 1557224305,
+							'status'  => 'succeeded',
+						],
+					],
+				],
+			)
+		);
 
 		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789', true );
 		$this->assertEquals( $expected_amount, $result->get_amount() );
@@ -230,42 +185,27 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$expected_amount = 103;
 		$expected_status = 'succeeded';
 
-		$this->mock_http_client
-			->expects( $this->any() )
-			->method( 'remote_request' )
-			->will(
-				$this->returnValue(
-					array(
-						'headers'  => array(),
-						'body'     => wp_json_encode(
-							array(
-								'id'              => 'test_intention_id',
-								'amount'          => 123,
-								'amount_captured' => $expected_amount,
-								'created'         => 1557224304,
-								'status'          => $expected_status,
-								'charges'         => [
-									'total_count' => 1,
-									'data'        => [
-										[
-											'id'      => 'test_charge_id',
-											'amount'  => $expected_amount,
-											'created' => 1557224305,
-											'status'  => 'succeeded',
-										],
-									],
-								],
-							)
-						),
-						'response' => array(
-							'code'    => 200,
-							'message' => 'OK',
-						),
-						'cookies'  => array(),
-						'filename' => null,
-					)
-				)
-			);
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'              => 'test_intention_id',
+				'amount'          => 123,
+				'amount_captured' => $expected_amount,
+				'created'         => 1557224304,
+				'status'          => $expected_status,
+				'charges'         => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'      => 'test_charge_id',
+							'amount'  => $expected_amount,
+							'created' => 1557224305,
+							'status'  => 'succeeded',
+						],
+					],
+				],
+			)
+		);
 
 		$result = $this->payments_api_client->capture_intention( 'test_intention_id', $expected_amount );
 		$this->assertEquals( $expected_status, $result->get_status() );
@@ -279,43 +219,103 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	public function test_cancel_intention_success() {
 		$expected_status = 'canceled';
 
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'      => 'test_intention_id',
+				'amount'  => 123,
+				'created' => 1557224304,
+				'status'  => $expected_status,
+				'charges' => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'      => 'test_charge_id',
+							'amount'  => 123,
+							'created' => 1557224305,
+							'status'  => 'succeeded',
+						],
+					],
+				],
+			)
+		);
+
+		$result = $this->payments_api_client->cancel_intention( 'test_intention_id' );
+		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful fetch of a single transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_transaction_success() {
+		$transaction_id = 'txn_231mdaism';
+
+		$this->set_http_mock_response(
+			200,
+			array(
+				'id'     => $transaction_id,
+				'type'   => 'charge',
+				'source' => array( 'id' => 'ch_ji3djhabvh23' ),
+			)
+		);
+
+		$transaction = $this->payments_api_client->get_transaction( $transaction_id );
+		$this->assertEquals( $transaction_id, $transaction['id'] );
+	}
+
+	/**
+	 * Test fetching of non existing transaction.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_transaction_not_found() {
+		$transaction_id = 'txn_231mdaism';
+		$error_code     = 'resource_missing';
+		$error_message  = 'No such balance transaction';
+
+		$this->set_http_mock_response(
+			404,
+			array(
+				'error' => array(
+					'code'    => $error_code,
+					'message' => $error_message,
+				),
+			)
+		);
+
+		$response = $this->payments_api_client->get_transaction( $transaction_id );
+		$this->assertTrue( is_wp_error( $response ) );
+		$this->assertEquals( $error_code, $response->get_error_code() );
+		$this->assertEquals( $error_message, $response->get_error_message() );
+	}
+
+	/**
+	 * Set up http mock response.
+	 *
+	 * @param int   $status_code status code for the mocked response.
+	 * @param array $body body for the mocked response.
+	 * @param array $headers headers for the mocked response.
+	 * @param array $cookies cookies to be used in the mocked response.
+	 */
+	private function set_http_mock_response( $status_code, $body = array(), $headers = array(), $cookies = array() ) {
 		$this->mock_http_client
 			->expects( $this->any() )
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
 					array(
-						'headers'  => array(),
-						'body'     => wp_json_encode(
-							array(
-								'id'      => 'test_intention_id',
-								'amount'  => 123,
-								'created' => 1557224304,
-								'status'  => $expected_status,
-								'charges' => [
-									'total_count' => 1,
-									'data'        => [
-										[
-											'id'      => 'test_charge_id',
-											'amount'  => 123,
-											'created' => 1557224305,
-											'status'  => 'succeeded',
-										],
-									],
-								],
-							)
-						),
+						'headers'  => $headers,
+						'body'     => wp_json_encode( $body ),
 						'response' => array(
-							'code'    => 200,
+							'code'    => $status_code,
 							'message' => 'OK',
 						),
-						'cookies'  => array(),
+						'cookies'  => $cookies,
 						'filename' => null,
 					)
 				)
 			);
-
-		$result = $this->payments_api_client->cancel_intention( 'test_intention_id' );
-		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 }
