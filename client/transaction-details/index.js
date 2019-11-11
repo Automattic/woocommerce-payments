@@ -27,9 +27,9 @@ const TransactionDetails = ( props ) => {
 };
 
 export default withSelect( ( select, ownProps ) => {
-	const { getTransaction, getTransactionInitialLoad } = select( 'wc-payments-api' );
+	const { getTransaction, isTransactionWaitingForInitialLoad } = select( 'wc-payments-api' );
 	const transaction = getTransaction( ownProps.query.id );
-	const showPlaceholder = getTransactionInitialLoad( ownProps.query.id );
+	const showPlaceholder = isTransactionWaitingForInitialLoad( ownProps.query.id );
 
 	return { transaction, showPlaceholder };
 } )( TransactionDetails );

@@ -12,11 +12,11 @@ const getTransaction = ( getResource, requireResource ) => (
 	return requireResource( requirement, transactionId ).data || {};
 };
 
-const getTransactionInitialLoad = ( getResource ) => ( transactionId ) => {
+const isTransactionWaitingForInitialLoad = ( getResource ) => ( transactionId ) => {
 	return ! getResource( transactionId ).lastReceived;
 };
 
-const getTransactionIsLoading = ( getResource ) => ( transactionId ) => {
+const isTransactionLoading = ( getResource ) => ( transactionId ) => {
 	const transaction = getResource( transactionId );
 	return ( ! transaction.lastReceived ) || ( transaction.lastRequested > transaction.lastReceived );
 };
@@ -27,14 +27,14 @@ const getTransactions = ( getResource, requireResource ) => (
 	return requireResource( requirement, 'transactions-list' ).data || {};
 };
 
-const isWaitingForInitialLoad = ( getResource ) => () => {
+const isTransactionListWaitingForInitialLoad = ( getResource ) => () => {
 	const resourceName = 'transactions-list';
 	const transactionsResource = getResource( resourceName );
 
 	return transactionsResource.lastReceived === undefined;
 };
 
-const getTransactionsIsLoading = ( getResource ) => () => {
+const isTransactionListLoading = ( getResource ) => () => {
 	const resourceName = 'transactions-list';
 	const transactionsResource = getResource( resourceName );
 
@@ -42,15 +42,15 @@ const getTransactionsIsLoading = ( getResource ) => () => {
 };
 
 const showTransactionsPlaceholder = ( getResource ) => () => {
-	return isWaitingForInitialLoad( getResource )();
+	return isTransactionListWaitingForInitialLoad( getResource )();
 };
 
 export default {
 	getTransaction,
-	getTransactionInitialLoad,
-	getTransactionIsLoading,
+	isTransactionWaitingForInitialLoad,
+	isTransactionLoading,
 	getTransactions,
-	getTransactionsIsLoading,
-	isWaitingForInitialLoad,
+	isTransactionListLoading,
+	isTransactionListWaitingForInitialLoad,
 	showTransactionsPlaceholder,
 };
