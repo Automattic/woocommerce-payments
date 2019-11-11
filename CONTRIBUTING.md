@@ -52,7 +52,7 @@ new WordPressExternalDependenciesPlugin( {
 } ),
 ```
 
-When running webpack `index.deps.json` will be created, listing all the needed dependencies. More info can be found here: https://wordpress.org/gutenberg/handbook/designers-developers/developers/packages/packages-dependency-extraction-webpack-plugin/.
+When running webpack `index.asset.php` will be created, listing all the needed dependencies. More info can be found here: https://wordpress.org/gutenberg/handbook/designers-developers/developers/packages/packages-dependency-extraction-webpack-plugin/.
 
 ## Docker Local Setup
 
