@@ -187,6 +187,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Use parent method value alongside other business rules to determine
+	 * if this gateway is available to store customers.
+	 *
+	 * @return bool
+	 */
+	public function is_available() {
+		if ( 'USD' !== get_woocommerce_currency() ) {
+			return false;
+		}
+
+		return parent::is_available();
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
