@@ -350,21 +350,11 @@ class WC_Payments {
 	 * @return array Modified ordering.
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
-		$ordering        = (array) $ordering;
-		$id              = self::$gateway->id;
-		$target_position = 0;
+		$ordering = (array) $ordering;
+		$id       = self::$gateway->id;
 		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
 		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
-			while ( 1 ) {
-				$key             = array_search( $target_position, $ordering, true );
-				$ordering[ $id ] = $target_position;
-				// Keep moving the rest of the gateways 1 position down until there are no clashes.
-				if ( ! $key ) {
-					break;
-				}
-				$id = $key;
-				$target_position++;
-			}
+			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
 		}
 		return $ordering;
 	}
