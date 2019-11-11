@@ -123,6 +123,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
+	 *
+	 * @return bool Whether the gateway is enabled and ready to accept payments.
+	 */
+	public function is_available() {
+		return parent::is_available() && $this->is_stripe_connected();
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
