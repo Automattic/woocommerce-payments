@@ -61,6 +61,8 @@ class WC_Payments {
 		self::$api_client->set_account_id( self::$gateway->get_option( 'stripe_account_id' ) );
 
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
+		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 3 );
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -337,6 +339,24 @@ class WC_Payments {
 		$gateways[] = self::$gateway;
 
 		return $gateways;
+	}
+
+	/**
+	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
+	 * For visibility, we want WooCommerce Payments to be at the top of the list.
+	 *
+	 * @param array $ordering Existing ordering of the payment gateways.
+	 *
+	 * @return array Modified ordering.
+	 */
+	public static function set_gateway_top_of_list( $ordering ) {
+		$ordering = (array) $ordering;
+		$id       = self::$gateway->id;
+		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
+		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
+			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
+		}
+		return $ordering;
 	}
 
 	/**
