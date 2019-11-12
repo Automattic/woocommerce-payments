@@ -103,7 +103,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
-				'default'     => 'yes',
+				'default'     => 'no',
 			),
 		);
 
@@ -511,6 +511,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->update_option( 'stripe_account_id', $account_id );
 				$this->update_option( 'publishable_key', $live_publishable_key );
 				$this->update_option( 'test_publishable_key', $test_publishable_key );
+				$this->update_option( 'enabled', 'yes' );
 				wp_safe_redirect( $this->get_settings_url() );
 				exit;
 			}
