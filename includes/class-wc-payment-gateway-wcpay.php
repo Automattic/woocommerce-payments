@@ -95,7 +95,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'yes',
+				'default'     => 'no',
 				'desc_tip'    => true,
 			),
 			'enabled'         => array(
@@ -593,7 +593,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function capture_charge( $order ) {
 		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention( $order->get_transaction_id(), round( (float) $amount * 100 ) );
+		$intent = $this->payments_api_client->capture_intention(
+			$order->get_transaction_id(),
+			round( (float) $amount * 100 )
+		);
 		$status = $intent->get_status();
 
 		$order->update_meta_data( '_intention_status', $status );

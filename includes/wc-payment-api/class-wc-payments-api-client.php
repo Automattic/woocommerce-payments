@@ -100,7 +100,12 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id, $manual_capture = false ) {
+	public function create_and_confirm_intention(
+		$amount,
+		$currency_code,
+		$payment_method_id,
+		$manual_capture = false
+	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
 		$request['amount']         = $amount;
@@ -325,6 +330,32 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Check if test mode is enabled or not.
+	 *
+	 * TODO: We should probably refactor this somewhat, since this is basically doing the
+	 * exact same thing as the `get_test_mode` function in the WCPay Gateway class. We
+	 * might even want to rethink the whole architecture to figure out the best location
+	 * for this function.
+	 *
+	 * @return bool - True if test mode is enabled, false otherwise.
+	 */
+	private function is_in_test_mode() {
+		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
+
+		// Default to live mode if option not available.
+		if ( ! isset( $options['test_mode'] ) ) {
+			return false;
+		}
+
+		if ( ! is_bool( $options['test_mode'] ) ) {
+			// Evaluates to true if the `test_mode` option contains "1", "true", "yes", or "on".
+			return filter_var( $options['test_mode'], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		return $options['test_mode'];
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $request          - Details of the request to make.
@@ -341,6 +372,7 @@ class WC_Payments_API_Client {
 			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
 		}
 		$request['account_id'] = $this->account_id;
+		$request['test_mode']  = $this->is_in_test_mode();
 
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
