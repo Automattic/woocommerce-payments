@@ -245,7 +245,7 @@ class WC_Payments_Account {
 		delete_transient( 'wcpay_oauth_state' );
 
 		$this->gateway->update_option( 'stripe_account_id', $account_id );
-		$this->gateway->update_option( 'test_mode', 'test' === $mode );
+		$this->gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
