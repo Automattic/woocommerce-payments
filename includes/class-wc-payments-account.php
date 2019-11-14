@@ -80,6 +80,10 @@ class WC_Payments_Account {
 			return;
 		}
 
+		if ( ! is_array( $account ) ) {
+			return;
+		}
+
 		if ( $account['has_pending_requirements'] ) {
 			$message = $this->get_verify_requirements_message( $account['current_deadline'] );
 			add_filter(
@@ -88,8 +92,9 @@ class WC_Payments_Account {
 					WC_Payments::display_admin_error( $message );
 				}
 			);
-			return;
 		}
+
+		$this->update_public_keys( $account['live_publishable_key'], $account['test_publishable_key'] );
 	}
 
 	/**
@@ -240,9 +245,8 @@ class WC_Payments_Account {
 		delete_transient( 'wcpay_oauth_state' );
 
 		$this->gateway->update_option( 'stripe_account_id', $account_id );
-		$this->gateway->update_option( 'publishable_key', $live_publishable_key );
-		$this->gateway->update_option( 'test_publishable_key', $test_publishable_key );
 		$this->gateway->update_option( 'test_mode', 'test' === $mode );
+		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
 		exit;
@@ -293,5 +297,21 @@ class WC_Payments_Account {
 			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
 			self::get_login_url()
 		);
+	}
+
+	/**
+	 * Updates the publishable key settings on the gateway.
+	 *
+	 * @param string $live_key Live publishable key.
+	 * @param string $test_key Test publishable key.
+	 */
+	private function update_public_keys( $live_key, $test_key ) {
+		if ( ! empty( $live_key ) ) {
+			$this->gateway->update_option( 'publishable_key', $live_key );
+		}
+
+		if ( ! empty( $test_key ) ) {
+			$this->gateway->update_option( 'test_publishable_key', $test_key );
+		}
 	}
 }
