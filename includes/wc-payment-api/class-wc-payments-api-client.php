@@ -16,8 +16,6 @@ class WC_Payments_API_Client {
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
-	const STRIPE_ACCOUNT_TRANSIENT = 'wcpay_stripe_account';
-
 	const POST = 'POST';
 	const GET  = 'GET';
 
@@ -260,17 +258,7 @@ class WC_Payments_API_Client {
 	 * @return array An array describing an account object.
 	 */
 	public function get_account_data() {
-		$account = get_transient( self::STRIPE_ACCOUNT_TRANSIENT );
-
-		if ( false === $account ) {
-			$account = $this->request( array(), self::ACCOUNTS_API, self::GET );
-
-			if ( ! empty( $account ) && ! is_wp_error( $account ) ) {
-				set_transient( self::STRIPE_ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
-			}
-		}
-
-		return $account;
+		return $this->request( array(), self::ACCOUNTS_API, self::GET );
 	}
 
 	/**
@@ -282,9 +270,6 @@ class WC_Payments_API_Client {
 	 * @return array An array containing the url and state fields
 	 */
 	public function get_oauth_data( $return_url, $business_data = array() ) {
-		// Clear account transient when generating Stripe's oauth data.
-		delete_transient( self::STRIPE_ACCOUNT_TRANSIENT );
-
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
@@ -304,9 +289,6 @@ class WC_Payments_API_Client {
 	 * @return array An array containing the url field
 	 */
 	public function get_login_data( $redirect_url ) {
-		// Clear account transient when generating Stripe dashboard's login link.
-		delete_transient( self::STRIPE_ACCOUNT_TRANSIENT );
-
 		return $this->request(
 			array( 'redirect_url' => $redirect_url ),
 			self::ACCOUNTS_API . '/login_links',

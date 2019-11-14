@@ -143,7 +143,7 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
-			array( 'connectUrl' => $this->wcpay_gateway->get_connect_url() )
+			array( 'connectUrl' => WC_Payments_Account::get_connect_url() )
 		);
 
 		wp_register_style(

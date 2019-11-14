@@ -29,6 +29,13 @@ class WC_Payments {
 	private static $api_client;
 
 	/**
+	 * Instance of WC_Payments_Account, created in init function.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private static $account;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -54,8 +61,10 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client );
+		self::$account = new WC_Payments_Account( self::$api_client, self::$gateway );
 
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
@@ -65,10 +74,6 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway );
-
-			// Only check stripe account requirements if user is in an admin page
-			// as regular users would not be able to take any action.
-			self::check_stripe_account_status();
 		}
 
 		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
@@ -79,7 +84,7 @@ class WC_Payments {
 	 *
 	 * @param string $message Message to print. Can contain HTML.
 	 */
-	private static function display_admin_error( $message ) {
+	public static function display_admin_error( $message ) {
 		self::display_admin_notice( $message, 'notice-error' );
 	}
 
@@ -89,7 +94,7 @@ class WC_Payments {
 	 * @param string $message Message to print. Can contain HTML.
 	 * @param string $classes Space separated list of classes to be applied to notice element.
 	 */
-	private static function display_admin_notice( $message, $classes ) {
+	public static function display_admin_notice( $message, $classes ) {
 		?>
 		<div class="notice <?php echo esc_attr( $classes ); ?>">
 			<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
@@ -219,66 +224,6 @@ class WC_Payments {
 				}
 				self::display_admin_error( $message );
 			}
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Checks if Stripe account is connected and displays admin notices if it is not.
-	 *
-	 * @return boolean True if the account is registered and has no pending requirements.
-	 * @throws Exception - If self::$gateway is not defined.
-	 */
-	public static function check_stripe_account_status() {
-		if ( ! isset( self::$gateway ) ) {
-			throw new Exception( __( 'Payment Gateway class was not initialized.', 'woocommerce-payments' ) );
-		}
-
-		if ( ! isset( self::$api_client ) ) {
-			throw new Exception( __( 'API Client class was not initialized.', 'woocommerce-payments' ) );
-		}
-
-		if ( ! self::$gateway->is_stripe_connected() ) {
-			add_filter(
-				'admin_notices',
-				function () {
-					self::display_admin_notice(
-						self::$gateway->get_connect_message(),
-						'notice-success'
-					);
-				}
-			);
-			return false;
-		}
-
-		$account = self::$api_client->get_account_data();
-
-		if ( is_wp_error( $account ) ) {
-			$message = sprintf(
-				/* translators: %1: error message */
-				__( 'Could not fetch data for your account: "%1$s"', 'woocommerce-payments' ),
-				$account->get_error_message()
-			);
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					self::display_admin_error( $message );
-				}
-			);
-			return false;
-		}
-
-		if ( self::$gateway->account_has_pending_requirements( $account ) ) {
-			add_filter(
-				'admin_notices',
-				function () use ( $account ) {
-					self::display_admin_error(
-						self::$gateway->get_verify_requirements_message( $account['requirements']['current_deadline'] )
-					);
-				}
-			);
 			return false;
 		}
 
