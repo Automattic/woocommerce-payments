@@ -47,6 +47,8 @@ class WC_Payments_Account {
 
 	/**
 	 * Checks if Stripe account is connected and displays admin notices if it is not.
+	 *
+	 * @return bool True if the account is connected properly.
 	 */
 	public function check_stripe_account_status() {
 		if ( ! $this->gateway->is_stripe_connected() ) {
@@ -60,7 +62,7 @@ class WC_Payments_Account {
 					);
 				}
 			);
-			return;
+			return false;
 		}
 
 		$account = $this->get_cached_account_data();
@@ -77,11 +79,11 @@ class WC_Payments_Account {
 					WC_Payments::display_admin_error( $message );
 				}
 			);
-			return;
+			return false;
 		}
 
 		if ( ! is_array( $account ) ) {
-			return;
+			return false;
 		}
 
 		if ( $account['has_pending_requirements'] ) {
@@ -95,6 +97,7 @@ class WC_Payments_Account {
 		}
 
 		$this->update_public_keys( $account['live_publishable_key'], $account['test_publishable_key'] );
+		return true;
 	}
 
 	/**
