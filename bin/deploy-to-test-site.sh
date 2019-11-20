@@ -1,7 +1,7 @@
 echo "Starting the deployment script"
 
 TMP_DIR="tmp-plugin"
-NEEDED_FILES=( assets client dist includes woocommerce-payments.php )
+NEEDED_FILES=( assets dist includes woocommerce-payments.php )
 
 # Build all necessary scripts
 echo "Compiling"
