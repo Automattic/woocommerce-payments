@@ -6,11 +6,17 @@
     "license": "GPL-3.0-or-later",
     "prefer-stable": true,
     "minimum-stability": "dev",
+    "config": {
+      "platform": {
+        "php": "7.0"
+      }
+    },
     "require": {
       "composer/installers": "1.6.0"
     },
     "require-dev": {
-      "phpunit/phpunit": "6.5.13",
+      "phpunit/phpunit": "5.7.27",
+      "woocommerce/woocommerce": "3.7.1",
       "woocommerce/woocommerce-sniffs": "0.0.6"
     },
     "scripts": {
@@ -29,6 +35,7 @@
         "test": "Run unit tests",
         "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
         "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
-      }
+      },
+      "installer-disable": true
     }
   }

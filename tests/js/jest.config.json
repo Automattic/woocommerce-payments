@@ -11,6 +11,7 @@
 	"preset": "@wordpress/jest-preset-default",
 	"testPathIgnorePatterns": [
 	  "/node_modules/",
+      "/vendor/",
 	  "<rootDir>/.*/build/",
     "<rootDir>/.*/build-module/",
     "<rootDir>/docker/"

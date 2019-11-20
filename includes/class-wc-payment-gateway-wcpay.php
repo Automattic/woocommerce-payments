@@ -95,7 +95,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'yes',
+				'default'     => 'no',
 				'desc_tip'    => true,
 			),
 			'enabled'         => array(
@@ -125,9 +125,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
+	 * Use parent method value alongside other business rules to make the decision.
+	 *
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( 'USD' !== get_woocommerce_currency() ) {
+			return false;
+		}
+
 		return parent::is_available() && $this->is_stripe_connected();
 	}
 
@@ -602,7 +608,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function capture_charge( $order ) {
 		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention( $order->get_transaction_id(), round( (float) $amount * 100 ) );
+		$intent = $this->payments_api_client->capture_intention(
+			$order->get_transaction_id(),
+			round( (float) $amount * 100 )
+		);
 		$status = $intent->get_status();
 
 		$order->update_meta_data( '_intention_status', $status );

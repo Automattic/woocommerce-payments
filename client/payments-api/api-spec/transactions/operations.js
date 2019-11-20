@@ -4,7 +4,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { includes } from 'lodash';
+import { compact, concat, includes, startsWith } from 'lodash';
 
 /**
  * Internal dependencies
@@ -12,7 +12,26 @@ import { includes } from 'lodash';
 import { NAMESPACE } from '../../constants';
 
 function read( resourceNames, fetch = apiFetch, dataToResources = transactionsToResources ) {
-	return readTransactions( resourceNames, fetch, dataToResources );
+	return concat(
+		readTransaction( resourceNames, fetch ),
+		readTransactions( resourceNames, fetch, dataToResources ),
+	);
+}
+
+export function readTransaction( resourceNames, fetch, dataToResources = transactionToResources ) {
+	return compact(
+		resourceNames.map( resourceName => {
+			if ( startsWith( resourceName, 'txn_' ) ) {
+				const url = `${ NAMESPACE }/payments/transactions/${ resourceName }`;
+
+				return fetch( { path: url } )
+						.then( dataToResources )
+						.catch( error => {
+							return { [ resourceName ]: { data: error } };
+						} );
+			}
+		} )
+	);
 }
 
 export function readTransactions( resourceNames, fetch, dataToResources ) {
@@ -32,11 +51,15 @@ export function readTransactions( resourceNames, fetch, dataToResources ) {
 }
 
 export function transactionsToResources( transactions ) {
-	return {
-		[ 'transactions-list' ]: {
-			data: transactions,
-		},
-	};
+	const resources = {	[ 'transactions-list' ]: { data: transactions } };
+	transactions.data.forEach( transaction => {
+		resources[ transaction.id ] = { data: transaction };
+	} );
+	return resources;
+}
+
+export function transactionToResources( transaction ) {
+	return { [ transaction.id ]: { data: transaction } };
 }
 
 export default {

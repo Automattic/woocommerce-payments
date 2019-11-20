@@ -100,7 +100,12 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_and_confirm_intention( $amount, $currency_code, $payment_method_id, $manual_capture = false ) {
+	public function create_and_confirm_intention(
+		$amount,
+		$currency_code,
+		$payment_method_id,
+		$manual_capture = false
+	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
 		$request['amount']         = $amount;
@@ -242,27 +247,27 @@ class WC_Payments_API_Client {
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$charge_id = $transaction['source']['id'];
-
-				if ( 'refund' === $transaction['type'] ) {
-					$charge_id = $transaction['source']['charge']['id'];
-				}
-
-				$order = $this->order_from_charge_id( $charge_id );
-
-				// Add order information to the `$transaction`.
-				// If the order couldn't be retrieved, return an empty order.
-				$transaction['order'] = null;
-				if ( $order ) {
-					$transaction['order'] = array(
-						'number' => $order->get_order_number(),
-						'url'    => $order->get_edit_order_url(),
-					);
-				}
+				$transaction = $this->add_order_info_to_transaction( $transaction );
 			}
 		}
 
 		return $transactions;
+	}
+
+	/**
+	 * Fetch a single transaction with provided id.
+	 *
+	 * @param string $transaction_id id of requested transaction.
+	 * @return array transaction object.
+	 */
+	public function get_transaction( $transaction_id ) {
+		$transaction = $this->request( array(), self::TRANSACTIONS_API . '/' . $transaction_id, self::GET );
+
+		if ( is_wp_error( $transaction ) ) {
+			return $transaction;
+		}
+
+		return $this->add_order_info_to_transaction( $transaction );
 	}
 
 	/**
@@ -325,6 +330,32 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Check if test mode is enabled or not.
+	 *
+	 * TODO: We should probably refactor this somewhat, since this is basically doing the
+	 * exact same thing as the `get_test_mode` function in the WCPay Gateway class. We
+	 * might even want to rethink the whole architecture to figure out the best location
+	 * for this function.
+	 *
+	 * @return bool - True if test mode is enabled, false otherwise.
+	 */
+	private function is_in_test_mode() {
+		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
+
+		// Default to live mode if option not available.
+		if ( ! isset( $options['test_mode'] ) ) {
+			return false;
+		}
+
+		if ( ! is_bool( $options['test_mode'] ) ) {
+			// Evaluates to true if the `test_mode` option contains "1", "true", "yes", or "on".
+			return filter_var( $options['test_mode'], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		return $options['test_mode'];
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $request          - Details of the request to make.
@@ -341,6 +372,7 @@ class WC_Payments_API_Client {
 			throw new Exception( __( 'Account ID must be set', 'woocommerce-payments' ) );
 		}
 		$request['account_id'] = $this->account_id;
+		$request['test_mode']  = $this->is_in_test_mode();
 
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
@@ -393,10 +425,47 @@ class WC_Payments_API_Client {
 		if ( 500 <= $response_code ) {
 			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
 		} elseif ( 400 <= $response_code ) {
-			return new WP_Error( $response_body['code'], $response_body['message'] );
+			if ( $response_body['error'] ) {
+				return new WP_Error( $response_body['error']['code'], $response_body['error']['message'], array( 'status' => $response_code ) );
+			};
+			return new WP_Error( $response_body['code'], $response_body['message'], array( 'status' => $response_code ) );
 		}
 
 		return $response_body;
+	}
+
+	/**
+	 * Returns a transaction with order information when it exists.
+	 *
+	 * @param array $transaction transaction.
+	 * @return array new transaction object with order information.
+	 */
+	private function add_order_info_to_transaction( $transaction ) {
+		$order = $this->order_from_charge_id( $this->get_charge_id_from_transaction( $transaction ) );
+
+		// Add order information to the `$transaction`.
+		// If the order couldn't be retrieved, return an empty order.
+		$transaction['order'] = null;
+		if ( $order ) {
+			$transaction['order'] = array(
+				'number' => $order->get_order_number(),
+				'url'    => $order->get_edit_order_url(),
+			);
+		}
+
+		return $transaction;
+	}
+
+	/**
+	 * Gets charge id for a given transaction.
+	 *
+	 * @param array $transaction transaction.
+	 */
+	private function get_charge_id_from_transaction( $transaction ) {
+		if ( 'refund' === $transaction['type'] ) {
+			return $transaction['source']['charge']['id'];
+		}
+		return $transaction['source']['id'];
 	}
 
 	/**
