@@ -125,9 +125,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
+	 * Use parent method value alongside other business rules to make the decision.
+	 *
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( 'USD' !== get_woocommerce_currency() ) {
+			return false;
+		}
+
 		return parent::is_available() && $this->is_stripe_connected();
 	}
 
@@ -193,20 +199,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 		</fieldset>
 		<?php
-	}
-
-	/**
-	 * Use parent method value alongside other business rules to determine
-	 * if this gateway is available to store customers.
-	 *
-	 * @return bool
-	 */
-	public function is_available() {
-		if ( 'USD' !== get_woocommerce_currency() ) {
-			return false;
-		}
-
-		return parent::is_available();
 	}
 
 	/**
