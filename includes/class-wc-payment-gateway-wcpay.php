@@ -481,6 +481,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$description = $this->get_connect_message();
 		}
 
+		// Allow the description text to be altered by filters.
+		$description = apply_filters(
+			'wc_payments_account_actions',
+			$description,
+			$this->is_stripe_connected(),
+			$this->get_login_url(),
+			$this->get_connect_url()
+		);
+
 		ob_start();
 		?>
 		<tr valign="top">
