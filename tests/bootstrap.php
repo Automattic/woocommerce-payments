@@ -19,14 +19,6 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
-/**
- * Returns WooCommerce main directory.
- *
- * @return string
- */
-function wc_dir() {
-	return dirname( dirname( dirname( __FILE__ ) ) ) . '/woocommerce';
-}
 
 /**
  * Manually load the plugin being tested.
@@ -37,7 +29,7 @@ function _manually_load_plugin() {
 	define( 'WCPAY_TEST_ENV', true );
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
-	require_once wc_dir() . '/woocommerce.php';
+	require_once dirname( __FILE__ ) . '/../vendor/woocommerce/woocommerce/woocommerce.php';
 
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 
