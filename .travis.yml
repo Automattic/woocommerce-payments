@@ -89,7 +89,7 @@ deploy:
   script: bash bin/deploy-to-test-site.sh
   skip_cleanup: true
   on:
-    branch: master
+    branch: fix/test-site-deployment-timing-out
     condition: $SHOULD_DEPLOY = 1
 
 branches:
