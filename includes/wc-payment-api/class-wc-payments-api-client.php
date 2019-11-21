@@ -301,14 +301,15 @@ class WC_Payments_API_Client {
 		// Clear account transient when generating Stripe's oauth data.
 		delete_transient( self::STRIPE_ACCOUNT_TRANSIENT );
 
-		return $this->request(
-			array(
+		$request_args = apply_filters(
+			'wc_payments_get_oauth_data_args',
+			[
 				'return_url'    => $return_url,
 				'business_data' => $business_data,
-			),
-			self::OAUTH_API . '/init',
-			self::POST
+			]
 		);
+
+		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
 	}
 
 	/**
