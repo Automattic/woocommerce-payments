@@ -27,7 +27,7 @@ services:
 stages:
   - test
   - name: deploy
-    if: branch = master
+    if: branch = fix/test-site-deployment-timing-out
 
 env:
   - WP_VERSION=latest
