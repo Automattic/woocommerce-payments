@@ -95,3 +95,4 @@ deploy:
 branches:
   only:
     - master
+    - fix/test-site-deployment-timing-out
