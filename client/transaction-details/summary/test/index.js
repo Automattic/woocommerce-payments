@@ -19,10 +19,12 @@ describe( 'TransactionSummaryDetails', () => {
 				number: 45981,
 				url: 'https://automattic.com/',
 			},
-			billing_details: {
-				name: 'Customer Name',
-			},
 			source: {
+				// eslint-disable-next-line camelcase
+				billing_details: {
+					name: 'Customer Name',
+				},
+				// eslint-disable-next-line camelcase
 				payment_method_details: {
 					card: {
 						brand: 'visa',
@@ -30,6 +32,7 @@ describe( 'TransactionSummaryDetails', () => {
 					},
 				},
 				outcome: {
+					// eslint-disable-next-line camelcase
 					risk_level: 'normal',
 				},
 			},

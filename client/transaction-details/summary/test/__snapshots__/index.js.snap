@@ -25,9 +25,6 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           }
           transaction={
             Object {
-              "billing_details": Object {
-                "name": "Customer Name",
-              },
               "created": 1568928240,
               "id": "txn_38jdHA39KKA",
               "order": Object {
@@ -35,6 +32,9 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
                 "url": "https://automattic.com/",
               },
               "source": Object {
+                "billing_details": Object {
+                  "name": "Customer Name",
+                },
                 "outcome": Object {
                   "risk_level": "normal",
                 },
@@ -77,11 +77,11 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
     items={
       Array [
         Object {
-          "description": "Sep 19, 2019, 5:24pm",
+          "content": "Sep 19, 2019, 5:24pm",
           "title": "Date",
         },
         Object {
-          "description": <OrderLink
+          "content": <OrderLink
             order={
               Object {
                 "number": 45981,
@@ -92,11 +92,11 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           "title": "Order No.",
         },
         Object {
-          "description": "Customer Name",
+          "content": "Customer Name",
           "title": "Customer",
         },
         Object {
-          "description": <CardSummary
+          "content": <CardSummary
             card={
               Object {
                 "brand": "visa",
@@ -107,7 +107,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           "title": "Payment Method",
         },
         Object {
-          "description": "normal",
+          "content": "normal",
           "title": "Risk Evaluation",
         },
       ]
@@ -170,23 +170,23 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     items={
       Array [
         Object {
-          "description": "Dec 31, 1969, 7:00pm",
+          "content": "Dec 31, 1969, 7:00pm",
           "title": "Date",
         },
         Object {
-          "description": <OrderLink />,
+          "content": <OrderLink />,
           "title": "Order No.",
         },
         Object {
-          "description": "Sample customer",
+          "content": "–",
           "title": "Customer",
         },
         Object {
-          "description": <CardSummary />,
+          "content": <CardSummary />,
           "title": "Payment Method",
         },
         Object {
-          "description": "–",
+          "content": "–",
           "title": "Risk Evaluation",
         },
       ]

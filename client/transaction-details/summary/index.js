@@ -20,7 +20,6 @@ import './style.scss';
 
 const TransactionSummaryDetails = ( props ) => {
 	const { transaction } = props;
-	// TODO: this is a placeholder card and does not require translation
 	return (
 		<Card>
 			<div className="transaction-summary">
@@ -45,11 +44,11 @@ const TransactionSummaryDetails = ( props ) => {
 			</div>
 			<hr style={ { margin: '0 -16px' /* Accounting for woocommerce-card__body padding */ } } />
 			<HorizontalList items={ [
-				{ title: 'Date', description: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ) },
-				{ title: 'Order No.', description: <OrderLink order={ transaction.order } /> },
-				{ title: 'Customer', description: get( transaction, 'billing_details.name' ) || 'Sample customer' },
-				{ title: 'Payment Method', description: <CardSummary card={ get( transaction, 'source.payment_method_details.card' ) } /> },
-				{ title: 'Risk Evaluation', description: get( transaction, 'source.outcome.risk_level' ) || '–' },
+				{ title: 'Date', content: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ) },
+				{ title: 'Order No.', content: <OrderLink order={ transaction.order } /> },
+				{ title: 'Customer', content: get( transaction, 'source.billing_details.name' ) || '–' },
+				{ title: 'Payment Method', content: <CardSummary card={ get( transaction, 'source.payment_method_details.card' ) } /> },
+				{ title: 'Risk Evaluation', content: get( transaction, 'source.outcome.risk_level' ) || '–' },
 			] } />
 		</Card>
 	);
