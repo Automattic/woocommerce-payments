@@ -30,8 +30,8 @@ const TransactionSummaryDetails = ( props ) => {
 						<PaymentStatusChip transaction={ transaction } style={ { marginLeft: '1em' } } />
 					</h1>
 					<div className="transaction-summary__breakdown">
-						{ transaction.dispute
-							? <p>Dispute: { formatCurrency( ( get( transaction, 'dispute.amount' ) || 0 ) / 100 ) }</p>
+						{ get( transaction, 'source.refunded' )
+							? <p>Refunded: { formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }</p>
 							: '' }
 						<p>Fee: { formatCurrency( ( -transaction.fee || 0 ) / 100 ) }</p>
 						<p>Net: { formatCurrency( ( transaction.net || 0 ) / 100 ) }</p>
