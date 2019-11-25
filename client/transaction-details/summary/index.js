@@ -3,11 +3,12 @@
 /**
  * External dependencies
  */
+import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
+import { formatCurrency } from '@woocommerce/currency';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { get } from 'lodash';
-import { formatCurrency } from '@woocommerce/currency';
 
 /**
  * Internal dependencies.
@@ -16,6 +17,7 @@ import PaymentStatusChip from '../../components/payment-status-chip';
 import OrderLink from '../../components/order-link';
 import CardSummary from '../../components/card-summary';
 import HorizontalList from '../../components/horizontal-list';
+import { isTransactionFullyRefunded, isTransactionPartiallyRefunded, isTransactionRefunded } from '../../utils/transaction';
 import './style.scss';
 
 const TransactionSummaryDetails = ( props ) => {
@@ -30,7 +32,7 @@ const TransactionSummaryDetails = ( props ) => {
 						<PaymentStatusChip transaction={ transaction } style={ { marginLeft: '1em' } } />
 					</h1>
 					<div className="transaction-summary__breakdown">
-						{ get( transaction, 'source.refunded' )
+						{ isTransactionRefunded( transaction )
 							? <p>Refunded: { formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }</p>
 							: '' }
 						<p>Fee: { formatCurrency( ( -transaction.fee || 0 ) / 100 ) }</p>
@@ -40,6 +42,16 @@ const TransactionSummaryDetails = ( props ) => {
 				<div className="transaction-summary__section">
 					{ /* TODO: implement control buttons depending on the transaction status */ }
 					{ /* E.g. if transaction is under dispute display Accept Dispute and Respond to Dispute buttons */ }
+					<div className="transaction-summary__actions">
+						<Button isDefault
+							isLarge
+							disabled={ isTransactionRefunded( transaction ) && isTransactionFullyRefunded( transaction ) }
+							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
+							{ ( isTransactionPartiallyRefunded( transaction ) )
+								? 'Refund more'
+								: 'Refund' }
+						</Button>
+					</div>
 				</div>
 			</div>
 			<hr style={ { margin: '0 -16px' /* Accounting for woocommerce-card__body padding */ } } />

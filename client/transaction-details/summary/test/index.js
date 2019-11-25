@@ -36,6 +36,7 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 				// eslint-disable-next-line camelcase
 				risk_level: 'normal',
 			},
+			refunded: false,
 		},
 	},
 	...transaction,
@@ -47,9 +48,15 @@ describe( 'TransactionSummaryDetails', () => {
         expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 
-	test( 'renders refunded information for a transaction', () => {
+	test( 'renders partially refunded information for a transaction', () => {
 		// eslint-disable-next-line camelcase
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: true, amount_refunded: 1200 } } ) );
+        expect( transactionSummaryDetails ).toMatchSnapshot();
+	} );
+
+	test( 'renders fully refunded information for a transaction', () => {
+		// eslint-disable-next-line camelcase
+		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: true, amount_refunded: 1500 } } ) );
         expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 

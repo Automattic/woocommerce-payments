@@ -46,6 +46,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
                     "last4": "4242",
                   },
                 },
+                "refunded": false,
               },
             }
           }
@@ -66,7 +67,20 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          disabled={false}
+          href="https://automattic.com/#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
   <hr
     style={
@@ -159,7 +173,19 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          href="undefined#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
   <hr
     style={
@@ -197,7 +223,125 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
 </Card>
 `;
 
-exports[`TransactionSummaryDetails renders refunded information for a transaction 1`] = `
+exports[`TransactionSummaryDetails renders fully refunded information for a transaction 1`] = `
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $15.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          cur
+        </span>
+        <PaymentStatusChip
+          style={
+            Object {
+              "marginLeft": "1em",
+            }
+          }
+          transaction={
+            Object {
+              "amount": 1500,
+              "created": 1568928240,
+              "fee": 74,
+              "id": "txn_38jdHA39KKA",
+              "order": Object {
+                "number": 45981,
+                "url": "https://automattic.com/",
+              },
+              "source": Object {
+                "amount_refunded": 1500,
+                "refunded": true,
+              },
+            }
+          }
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Refunded: 
+          $-15.00
+        </p>
+        <p>
+          Fee: 
+          $-0.74
+        </p>
+        <p>
+          Net: 
+          $0.00
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          disabled={true}
+          href="https://automattic.com/#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
+  </div>
+  <hr
+    style={
+      Object {
+        "margin": "0 -16px",
+      }
+    }
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "content": <OrderLink
+            order={
+              Object {
+                "number": 45981,
+                "url": "https://automattic.com/",
+              }
+            }
+          />,
+          "title": "Order No.",
+        },
+        Object {
+          "content": "–",
+          "title": "Customer",
+        },
+        Object {
+          "content": <CardSummary />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "–",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
+</Card>
+`;
+
+exports[`TransactionSummaryDetails renders partially refunded information for a transaction 1`] = `
 <Card>
   <div
     className="transaction-summary"
@@ -257,7 +401,20 @@ exports[`TransactionSummaryDetails renders refunded information for a transactio
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          disabled={false}
+          href="https://automattic.com/#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund more
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
   <hr
     style={

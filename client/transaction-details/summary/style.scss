@@ -2,6 +2,7 @@
 $break-width: 480px;
 
 .transaction-summary {
+	margin-bottom: 1em;
 	display: flex;
 	@media screen and ( max-width: $break-width ) {
 		flex-direction: column;
@@ -31,10 +32,18 @@ $break-width: 480px;
             font-size: 14px;
             color: #555D66;
             display: inline-block;
-            margin: 0.5em 0 1em 0.75em;
+            margin: 0.5em 0 0 0.75rem;
         }
         p:first-child {
             margin-left: 0;
         }
-    }
+	}
+
+	.transaction-summary__actions {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		text-align: right;
+	}
 }
