@@ -39,6 +39,7 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 			},
 			refunded: false,
 		},
+		type: 'charge',
 	},
 	...transaction,
 } );
@@ -51,7 +52,7 @@ describe( 'TransactionSummaryDetails', () => {
 
 	test( 'renders partially refunded information for a transaction', () => {
 		// eslint-disable-next-line camelcase
-		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: true, amount_refunded: 1200 } } ) );
+		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: false, amount_refunded: 1200 } } ) );
         expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 

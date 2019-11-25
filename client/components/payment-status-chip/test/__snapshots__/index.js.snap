@@ -1,15 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentStatusChip renders a primary chip with paid message if there's no dispute 1`] = `
+exports[`PaymentStatusChip renders a default light chip with no message if status does not match 1`] = `
+<Chip
+  message=""
+  type="light"
+/>
+`;
+
+exports[`PaymentStatusChip renders a light chip with fully refunded message if there's a full refund 1`] = `
+<Chip
+  message="Fully Refunded"
+  type="light"
+/>
+`;
+
+exports[`PaymentStatusChip renders a light chip with paid message if it is paid 1`] = `
 <Chip
   message="Paid"
+  type="light"
+/>
+`;
+
+exports[`PaymentStatusChip renders a light chip with partially refunded message if there's a partial refund 1`] = `
+<Chip
+  message="Partially Refunded"
+  type="light"
+/>
+`;
+
+exports[`PaymentStatusChip renders a primary chip with authorized message if payment was not captured 1`] = `
+<Chip
+  message="Payment Authorized"
   type="primary"
 />
 `;
 
-exports[`PaymentStatusChip renders a warning chip with dispute message if there's a dispute 1`] = `
+exports[`PaymentStatusChip renders a primary chip with dispute message if there's a dispute 1`] = `
 <Chip
-  message="Disputed: Needs Response"
-  type="warning"
+  message="Disputed"
+  type="primary"
+/>
+`;
+
+exports[`PaymentStatusChip renders an alert chip with failed message if payment status is failed 1`] = `
+<Chip
+  message="Blocked"
+  type="alert"
 />
 `;

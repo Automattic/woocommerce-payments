@@ -44,6 +44,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
                 },
                 "refunded": false,
               },
+              "type": "charge",
             }
           }
         />
@@ -242,6 +243,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
                 "amount_refunded": 1500,
                 "refunded": true,
               },
+              "type": "charge",
             }
           }
         />
@@ -349,8 +351,9 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
               },
               "source": Object {
                 "amount_refunded": 1200,
-                "refunded": true,
+                "refunded": false,
               },
+              "type": "charge",
             }
           }
         />
