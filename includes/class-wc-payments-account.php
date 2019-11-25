@@ -247,8 +247,13 @@ class WC_Payments_Account {
 		}
 		delete_transient( 'wcpay_oauth_state' );
 
+		$test_mode = 'test' === $mode;
+		if ( $test_mode ) {
+			update_option( 'wcpay_test_only', true );
+		}
+
 		$this->gateway->update_option( 'stripe_account_id', $account_id );
-		$this->gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+		$this->gateway->update_option( 'test_mode', $test_mode ? 'yes' : 'no' );
 		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
@@ -310,7 +315,11 @@ class WC_Payments_Account {
 	 */
 	private function update_public_keys( $live_key, $test_key ) {
 		if ( ! empty( $live_key ) ) {
-			$this->gateway->update_option( 'publishable_key', $live_key );
+			if ( get_option( 'wcpay_test_only', false ) ) {
+				$this->gateway->update_option( 'publishable_key', $test_key );
+			} else {
+				$this->gateway->update_option( 'publishable_key', $live_key );
+			}
 		}
 
 		if ( ! empty( $test_key ) ) {

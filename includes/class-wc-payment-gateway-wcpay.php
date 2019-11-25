@@ -97,6 +97,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
+				'disabled'    => get_option( 'wcpay_test_only', false ),
 			),
 			'enabled'         => array(
 				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
