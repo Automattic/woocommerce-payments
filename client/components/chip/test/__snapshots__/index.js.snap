@@ -1,76 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Chip renders a light chip 1`] = `
+<span
+  className="chip chip-light"
+>
+  Light message
+</span>
+`;
+
 exports[`Chip renders a primary chip 1`] = `
 <span
-  className="chip"
-  style={
-    Object {
-      "backgroundColor": "#DBE8FF",
-      "color": "#162566",
-    }
-  }
+  className="chip chip-primary"
 >
-  <t
-    icon="checkmark"
-    size={18}
-    style={
-      Object {
-        "fill": "#162566",
-        "marginRight": "4px",
-        "verticalAlign": "text-top",
-      }
-    }
-  />
   Primary message
 </span>
 `;
 
 exports[`Chip renders a primary chip by default 1`] = `
 <span
-  className="chip"
-  style={
-    Object {
-      "backgroundColor": "#DBE8FF",
-      "color": "#162566",
-    }
-  }
+  className="chip chip-primary"
 >
-  <t
-    icon="checkmark"
-    size={18}
-    style={
-      Object {
-        "fill": "#162566",
-        "marginRight": "4px",
-        "verticalAlign": "text-top",
-      }
-    }
-  />
   Message
 </span>
 `;
 
-exports[`Chip renders a warning chip 1`] = `
+exports[`Chip renders an alert chip 1`] = `
 <span
-  className="chip"
-  style={
-    Object {
-      "backgroundColor": "#F7E1AE",
-      "color": "#302800",
-    }
-  }
+  className="chip chip-alert"
 >
-  <t
-    icon="notice"
-    size={18}
-    style={
-      Object {
-        "fill": "#302800",
-        "marginRight": "4px",
-        "verticalAlign": "text-top",
-      }
-    }
-  />
-  Warning message
+  Alert message
+</span>
+`;
+
+exports[`Chip renders default if type is invalid 1`] = `
+<span
+  className="chip chip-primary"
+>
+  Message
 </span>
 `;
