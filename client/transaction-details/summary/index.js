@@ -29,7 +29,7 @@ const TransactionSummaryDetails = ( props ) => {
 					<h1 className="transaction-summary__amount">
 						{ formatCurrency( ( transaction.amount || 0 ) / 100 ) }
 						<span className="transaction-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
-						<PaymentStatusChip transaction={ transaction } style={ { marginLeft: '1em' } } />
+						<PaymentStatusChip transaction={ transaction } />
 					</h1>
 					<div className="transaction-summary__breakdown">
 						{ isTransactionRefunded( transaction )
@@ -54,7 +54,7 @@ const TransactionSummaryDetails = ( props ) => {
 					</div>
 				</div>
 			</div>
-			<hr style={ { margin: '0 -16px' /* Accounting for woocommerce-card__body padding */ } } />
+			<hr className="full-width" />
 			<HorizontalList items={ [
 				{ title: 'Date', content: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ) },
 				{ title: 'Order No.', content: <OrderLink order={ transaction.order } /> },

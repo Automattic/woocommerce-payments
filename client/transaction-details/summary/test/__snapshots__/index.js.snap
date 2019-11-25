@@ -18,11 +18,6 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           cur
         </span>
         <PaymentStatusChip
-          style={
-            Object {
-              "marginLeft": "1em",
-            }
-          }
           transaction={
             Object {
               "amount": 1500,
@@ -83,11 +78,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
     </div>
   </div>
   <hr
-    style={
-      Object {
-        "margin": "0 -16px",
-      }
-    }
+    className="full-width"
   />
   <HorizontalList
     items={
@@ -150,11 +141,6 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
           cur
         </span>
         <PaymentStatusChip
-          style={
-            Object {
-              "marginLeft": "1em",
-            }
-          }
           transaction={Object {}}
         />
       </h1>
@@ -188,11 +174,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     </div>
   </div>
   <hr
-    style={
-      Object {
-        "margin": "0 -16px",
-      }
-    }
+    className="full-width"
   />
   <HorizontalList
     items={
@@ -241,11 +223,6 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
           cur
         </span>
         <PaymentStatusChip
-          style={
-            Object {
-              "marginLeft": "1em",
-            }
-          }
           transaction={
             Object {
               "amount": 1500,
@@ -299,11 +276,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
     </div>
   </div>
   <hr
-    style={
-      Object {
-        "margin": "0 -16px",
-      }
-    }
+    className="full-width"
   />
   <HorizontalList
     items={
@@ -359,11 +332,6 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
           cur
         </span>
         <PaymentStatusChip
-          style={
-            Object {
-              "marginLeft": "1em",
-            }
-          }
           transaction={
             Object {
               "amount": 1500,
@@ -417,11 +385,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
     </div>
   </div>
   <hr
-    style={
-      Object {
-        "margin": "0 -16px",
-      }
-    }
+    className="full-width"
   />
   <HorizontalList
     items={

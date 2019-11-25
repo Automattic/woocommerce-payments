@@ -1,2 +1,9 @@
 /* stylelint-disable */
 /* stylelint-enable */
+
+.woocommerce-card__body {
+	hr.full-width {
+		/* Accounting for woocommerce-card__body padding */
+		margin: 0 -16px;
+	}
+}
