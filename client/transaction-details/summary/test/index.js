@@ -31,6 +31,7 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 					brand: 'visa',
 					last4: '4242',
 				},
+				type: 'card',
 			},
 			outcome: {
 				// eslint-disable-next-line camelcase

@@ -15,7 +15,7 @@ import { get } from 'lodash';
  */
 import PaymentStatusChip from '../../components/payment-status-chip';
 import OrderLink from '../../components/order-link';
-import CardSummary from '../../components/card-summary';
+import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
 import { isTransactionFullyRefunded, isTransactionPartiallyRefunded, isTransactionRefunded } from '../../utils/transaction';
 import './style.scss';
@@ -56,11 +56,26 @@ const TransactionSummaryDetails = ( props ) => {
 			</div>
 			<hr className="full-width" />
 			<HorizontalList items={ [
-				{ title: 'Date', content: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ) },
-				{ title: 'Order No.', content: <OrderLink order={ transaction.order } /> },
-				{ title: 'Customer', content: get( transaction, 'source.billing_details.name' ) || '–' },
-				{ title: 'Payment Method', content: <CardSummary card={ get( transaction, 'source.payment_method_details.card' ) } /> },
-				{ title: 'Risk Evaluation', content: get( transaction, 'source.outcome.risk_level' ) || '–' },
+				{
+					title: 'Date',
+					content: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ),
+				},
+				{
+					title: 'Order No.',
+					content: <OrderLink order={ transaction.order } />,
+				},
+				{
+					title: 'Customer',
+					content: get( transaction, 'source.billing_details.name' ) || '–',
+				},
+				{
+					title: 'Payment Method',
+					content: <PaymentMethodDetails payment={ get( transaction, 'source.payment_method_details' ) } />,
+				},
+				{
+					title: 'Risk Evaluation',
+					content: get( transaction, 'source.outcome.risk_level' ) || '–',
+				},
 			] } />
 		</Card>
 	);

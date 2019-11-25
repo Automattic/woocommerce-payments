@@ -40,6 +40,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
                     "brand": "visa",
                     "last4": "4242",
                   },
+                  "type": "card",
                 },
                 "refunded": false,
               },
@@ -103,11 +104,14 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           "title": "Customer",
         },
         Object {
-          "content": <CardSummary
-            card={
+          "content": <PaymentMethodDetails
+            payment={
               Object {
-                "brand": "visa",
-                "last4": "4242",
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
               }
             }
           />,
@@ -192,7 +196,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
           "title": "Customer",
         },
         Object {
-          "content": <CardSummary />,
+          "content": <PaymentMethodDetails />,
           "title": "Payment Method",
         },
         Object {
@@ -301,7 +305,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
           "title": "Customer",
         },
         Object {
-          "content": <CardSummary />,
+          "content": <PaymentMethodDetails />,
           "title": "Payment Method",
         },
         Object {
@@ -410,7 +414,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
           "title": "Customer",
         },
         Object {
-          "content": <CardSummary />,
+          "content": <PaymentMethodDetails />,
           "title": "Payment Method",
         },
         Object {
