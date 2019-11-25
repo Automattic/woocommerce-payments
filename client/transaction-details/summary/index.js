@@ -4,9 +4,10 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
+import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { formatCurrency } from '@woocommerce/currency';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -33,10 +34,19 @@ const TransactionSummaryDetails = ( props ) => {
 					</h1>
 					<div className="transaction-summary__breakdown">
 						{ isTransactionRefunded( transaction )
-							? <p>Refunded: { formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }</p>
+							? <p>
+								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
+								{ formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
+							</p>
 							: '' }
-						<p>Fee: { formatCurrency( ( -transaction.fee || 0 ) / 100 ) }</p>
-						<p>Net: { formatCurrency( ( transaction.net || 0 ) / 100 ) }</p>
+						<p>
+							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
+							{ formatCurrency( ( -transaction.fee || 0 ) / 100 ) }
+						</p>
+						<p>
+							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
+							{ formatCurrency( ( transaction.net || 0 ) / 100 ) }
+						</p>
 					</div>
 				</div>
 				<div className="transaction-summary__section">
@@ -45,11 +55,14 @@ const TransactionSummaryDetails = ( props ) => {
 					<div className="transaction-summary__actions">
 						<Button isDefault
 							isLarge
-							disabled={ isTransactionRefunded( transaction ) && isTransactionFullyRefunded( transaction ) }
+							disabled={
+								! get( transaction, 'order.url' ) ||
+								isTransactionRefunded( transaction ) && isTransactionFullyRefunded( transaction )
+							}
 							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
 							{ ( isTransactionPartiallyRefunded( transaction ) )
-								? 'Refund more'
-								: 'Refund' }
+								? __( 'Refund more', 'woocommerce-payments' )
+								: __( 'Refund', 'woocommerce-payments' ) }
 						</Button>
 					</div>
 				</div>
@@ -57,23 +70,23 @@ const TransactionSummaryDetails = ( props ) => {
 			<hr className="full-width" />
 			<HorizontalList items={ [
 				{
-					title: 'Date',
-					content: dateI18n( 'M j, Y, g:ia', moment( ( transaction.created || 0 ) * 1000 ) ),
+					title: __( 'Date', 'woocommerce-payments' ),
+					content: transaction.created ? dateI18n( 'M j, Y, g:ia', moment( transaction.created * 1000 ) ) : '–',
 				},
 				{
-					title: 'Order No.',
+					title: __( 'Order No.', 'woocommerce-payments' ),
 					content: <OrderLink order={ transaction.order } />,
 				},
 				{
-					title: 'Customer',
+					title: __( 'Customer', 'woocommerce-payments' ),
 					content: get( transaction, 'source.billing_details.name' ) || '–',
 				},
 				{
-					title: 'Payment Method',
+					title: __( 'Payment Method', 'woocommerce-payments' ),
 					content: <PaymentMethodDetails payment={ get( transaction, 'source.payment_method_details' ) } />,
 				},
 				{
-					title: 'Risk Evaluation',
+					title: __( 'Risk Evaluation', 'woocommerce-payments' ),
 					content: get( transaction, 'source.outcome.risk_level' ) || '–',
 				},
 			] } />

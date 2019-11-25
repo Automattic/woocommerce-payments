@@ -168,6 +168,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
         className="transaction-summary__actions"
       >
         <ForwardRef(Button)
+          disabled={true}
           href="undefined#woocommerce-order-items"
           isDefault={true}
           isLarge={true}
@@ -184,7 +185,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     items={
       Array [
         Object {
-          "content": "Dec 31, 1969, 7:00pm",
+          "content": "–",
           "title": "Date",
         },
         Object {
