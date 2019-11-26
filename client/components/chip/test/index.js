@@ -31,7 +31,7 @@ describe( 'Chip', () => {
 	} );
 
 	test( 'renders default if type is invalid', () => {
-		const chip = renderChip( undefined, 'Message' );
+		const chip = renderChip( 'invalidtype', 'Message' );
 		expect( chip ).toMatchSnapshot();
 	} );
 
