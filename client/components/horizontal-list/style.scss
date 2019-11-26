@@ -3,13 +3,13 @@ $break-width: 760px;
 
 .woocommerce-list--horizontal {
 	text-transform: capitalize;
-    display: flex;
+	display: flex;
 	margin: 1em 0 0 0;
 	@media screen and ( max-width: $break-width ) {
 		flex-direction: column;
 		margin: 0;
 	}
-    .woocommerce-list__item-inner {
+	.woocommerce-list__item-inner {
 		padding: 0 1.25em 0 1.25em;
 		border-left: 1px solid #DCDCDE;
 		@media screen and ( max-width: $break-width ) {
@@ -17,22 +17,21 @@ $break-width: 760px;
 			border-left: 0;
 			border-bottom: 1px solid #DCDCDE;
 		}
-        .woocommerce-list__item-title,
-        .woocommerce-list__item-description {
+		.woocommerce-list__item-title,
+		.woocommerce-list__item-content {
 			color: #50575E;
-            font-size: 14px;
-            margin-top: 0;
-        }
-    }
-    .woocommerce-list__item:first-child {
+			margin-top: 0;
+		}
+	}
+	.woocommerce-list__item:first-child {
 		.woocommerce-list__item-inner {
 			@media screen and ( min-width: $break-width + 1 ) {
 				border-left: 0;
 				padding-left: 0;
 			}
-        }
-    }
-    .woocommerce-list__item:last-child {
+		}
+	}
+	.woocommerce-list__item:last-child {
 		.woocommerce-list__item-inner {
 			@media screen and ( max-width: $break-width ) {
 				border-bottom: 0;
@@ -41,8 +40,8 @@ $break-width: 760px;
 			@media screen and ( min-width: $break-width + 1 ) {
 				padding-right: 0;
 			}
-        }
-    }
+		}
+	}
 }
 
 .woocommerce-card__body {

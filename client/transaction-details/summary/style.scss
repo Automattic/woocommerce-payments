@@ -12,31 +12,31 @@ $break-width: 480px;
 		flex-grow: 1;
 	}
 
-    .transaction-summary__amount {
-        font-size: 32px;
-        font-weight: 300;
-        padding: 0;
-        display: flex;
-        align-items: center;
+	.transaction-summary__amount {
+		font-size: 32px;
+		font-weight: 300;
+		padding: 0;
+		display: flex;
+		align-items: center;
 
-        .transaction-summary__amount-currency {
-            text-transform: uppercase;
-            font-size: 16px;
-            margin: 0 1em 0 0.25em;
-            color: #50575E;
-        }
-    }
+		.transaction-summary__amount-currency {
+			text-transform: uppercase;
+			font-size: 16px;
+			margin: 0 1em 0 0.25em;
+			color: #50575E;
+		}
+	}
 
-    .transaction-summary__breakdown {
-        p {
-            font-size: 14px;
-            color: #555D66;
-            display: inline-block;
-            margin: 0.5em 0 0 0.75rem;
-        }
-        p:first-child {
-            margin-left: 0;
-        }
+	.transaction-summary__breakdown {
+		p {
+			font-size: 14px;
+			color: #555D66;
+			display: inline-block;
+			margin: 0.5em 0 0 0.75rem;
+		}
+		p:first-child {
+			margin-left: 0;
+		}
 	}
 
 	.transaction-summary__actions {
@@ -46,4 +46,8 @@ $break-width: 480px;
 		justify-content: flex-end;
 		text-align: right;
 	}
+}
+
+.woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-title {
+	font-size: 14px;
 }

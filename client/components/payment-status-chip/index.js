@@ -47,7 +47,7 @@ const statuses = {
 const PaymentStatusChip = ( props ) => {
 	const { transaction } = props;
 	const status = statuses[ getTransactionStatus( transaction ) ] || statuses.default;
-    return (
+	return (
 		<Chip message={ status.message } type={ status.type } />
 	);
 };

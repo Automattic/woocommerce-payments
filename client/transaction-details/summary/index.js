@@ -55,10 +55,7 @@ const TransactionSummaryDetails = ( props ) => {
 					<div className="transaction-summary__actions">
 						<Button isDefault
 							isLarge
-							disabled={
-								! get( transaction, 'order.url' ) ||
-								isTransactionRefunded( transaction ) && isTransactionFullyRefunded( transaction )
-							}
+							disabled={ ! get( transaction, 'order.url' ) ||	isTransactionFullyRefunded( transaction ) }
 							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
 							{ ( isTransactionPartiallyRefunded( transaction ) )
 								? __( 'Refund more', 'woocommerce-payments' )

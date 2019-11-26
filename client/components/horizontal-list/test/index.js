@@ -21,12 +21,12 @@ describe( 'HorizontalList', () => {
 		horizontalList = renderHorizontalList( items );
 	} );
 
-    test( 'correctly renders a List element with horizontal class modifier', () => {
-        expect( horizontalList ).toMatchSnapshot();
+	test( 'correctly renders a List element with horizontal class modifier', () => {
+		expect( horizontalList ).toMatchSnapshot();
 	} );
 
-    function renderHorizontalList( items ) {
-        return shallow( <HorizontalList items={ items } /> );
-    }
+	function renderHorizontalList( items ) {
+		return shallow( <HorizontalList items={ items } /> );
+	}
 } );
 

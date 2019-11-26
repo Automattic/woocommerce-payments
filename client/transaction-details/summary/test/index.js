@@ -45,30 +45,30 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 } );
 
 describe( 'TransactionSummaryDetails', () => {
-    test( 'correctly renders a transaction', () => {
-        const transactionSummaryDetails = renderTransaction( getBaseTransaction() );
-        expect( transactionSummaryDetails ).toMatchSnapshot();
+	test( 'correctly renders a transaction', () => {
+		const transactionSummaryDetails = renderTransaction( getBaseTransaction() );
+		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 
 	test( 'renders partially refunded information for a transaction', () => {
 		// eslint-disable-next-line camelcase
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: false, amount_refunded: 1200 } } ) );
-        expect( transactionSummaryDetails ).toMatchSnapshot();
+		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 
 	test( 'renders fully refunded information for a transaction', () => {
 		// eslint-disable-next-line camelcase
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: true, amount_refunded: 1500 } } ) );
-        expect( transactionSummaryDetails ).toMatchSnapshot();
+		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 
-    test( 'renders defaults if transaction object is empty', () => {
-        const transactionSummaryDetails = renderTransaction( {} );
-        expect( transactionSummaryDetails ).toMatchSnapshot();
-    } );
+	test( 'renders defaults if transaction object is empty', () => {
+		const transactionSummaryDetails = renderTransaction( {} );
+		expect( transactionSummaryDetails ).toMatchSnapshot();
+	} );
 
-    function renderTransaction( transaction ) {
-        return shallow( <TransactionSummaryDetails transaction={ transaction } /> );
-    }
+	function renderTransaction( transaction ) {
+		return shallow( <TransactionSummaryDetails transaction={ transaction } /> );
+	}
 } );
 
