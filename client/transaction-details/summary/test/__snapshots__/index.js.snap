@@ -2,8 +2,90 @@
 
 exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
 <Card>
-  <PaymentStatusChip
-    transaction={Object {}}
-  />
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $15.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          usd
+        </span>
+        <PaymentStatusChip
+          transaction={
+            Object {
+              "amount": 1500,
+              "currency": "usd",
+              "fee": 74,
+              "id": "txn_38jdHA39KKA",
+              "net": 1426,
+            }
+          }
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Fee: 
+          $-0.74
+        </p>
+        <p>
+          Net: 
+          $14.26
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    />
+  </div>
+</Card>
+`;
+
+exports[`TransactionSummaryDetails renders defaults if transaction object is empty 1`] = `
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $0.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          cur
+        </span>
+        <PaymentStatusChip
+          transaction={Object {}}
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Fee: 
+          $0.00
+        </p>
+        <p>
+          Net: 
+          $0.00
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    />
+  </div>
 </Card>
 `;

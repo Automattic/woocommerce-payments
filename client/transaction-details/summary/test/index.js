@@ -10,12 +10,24 @@ import { shallow } from 'enzyme';
 import TransactionSummaryDetails from '../';
 
 const getBaseTransaction = ( transaction = {} ) => ( {
+	...{
+		id: 'txn_38jdHA39KKA',
+		amount: 1500,
+		fee: 74,
+		net: 1426,
+		currency: 'usd',
+	},
 	...transaction,
 } );
 
 describe( 'TransactionSummaryDetails', () => {
 	test( 'correctly renders a transaction', () => {
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction() );
+		expect( transactionSummaryDetails ).toMatchSnapshot();
+	} );
+
+	test( 'renders defaults if transaction object is empty', () => {
+		const transactionSummaryDetails = renderTransaction( {} );
 		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 

@@ -1,0 +1,41 @@
+/** @format */
+$break-width: 30rem;
+
+.transaction-summary {
+	display: flex;
+	flex-direction: column;
+	@media screen and ( min-width: $break-width + 1 ) {
+		flex-direction: initial;
+	}
+
+	.transaction-summary__section {
+		flex-grow: 1;
+	}
+
+	.transaction-summary__amount {
+		font-size: 2rem;
+		font-weight: 300;
+		padding: 0;
+		display: flex;
+		align-items: center;
+
+		.transaction-summary__amount-currency {
+			text-transform: uppercase;
+			font-size: 1rem;
+			margin: 0 1rem 0 0.25rem;
+			color: #50575E;
+		}
+	}
+
+	.transaction-summary__breakdown {
+		p {
+			font-size: 0.875rem;
+			color: #555D66;
+			display: inline-block;
+			margin: 0.5rem 0 0 0.75rem;
+		}
+		p:first-child {
+			margin-left: 0;
+		}
+	}
+}
