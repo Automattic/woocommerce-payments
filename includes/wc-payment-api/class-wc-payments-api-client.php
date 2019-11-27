@@ -26,6 +26,7 @@ class WC_Payments_API_Client {
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
+	const DISPUTES_API     = 'disputes';
 	const OAUTH_API        = 'oauth';
 
 	/**
@@ -268,6 +269,16 @@ class WC_Payments_API_Client {
 		}
 
 		return $this->add_order_info_to_transaction( $transaction );
+	}
+
+	/**
+	 * Fetch a single dispute with provided id.
+	 *
+	 * @param string $dispute_id id of requested dispute.
+	 * @return array dispute object.
+	 */
+	public function get_dispute( $dispute_id ) {
+		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
 	}
 
 	/**
