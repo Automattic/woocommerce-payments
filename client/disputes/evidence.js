@@ -15,7 +15,7 @@ import { Section, Card } from '@woocommerce/components';
 import './style.scss';
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, showPlaceholder } = props;
+	const { evidence, showPlaceholder, onChange, onSave } = props;
 
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
@@ -30,12 +30,12 @@ export const DisputeEvidenceForm = props => {
 					key={ key }
 					label="Additional Details"
 					value={ evidence[ key ] || '' }
-					disabled
+					onChange={ value => onChange( key, value ) }
 				/>
 			</Card>
 			<Card>
-				<Button isPrimary isLarge>{ __( 'Submit Evidence' ) }</Button>
-				<Button isDefault isLarge>{ __( 'Save For Later' ) }</Button>
+				<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
+				<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
 			</Card>
 		</Section>
 	);
@@ -47,6 +47,7 @@ export default ( { query } ) => {
 
 	const [ dispute, setDispute ] = useState( null );
 	const [ loading, setLoading ] = useState( false );
+	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -55,10 +56,19 @@ export default ( { query } ) => {
 	};
 	useEffect( () => { fetchDispute() }, [] );
 
+	const doSave = async ( submit ) => {
+		setLoading( true );
+		setDispute( await apiFetch( { path, method: 'post', data: { evidence, submit } } ) );
+		setLoading( false );
+		setEvidence( {} );
+	};
+
 	return (
 		<DisputeEvidenceForm
 			showPlaceholder={ loading }
-			evidence={ dispute ? dispute.evidence : {} }
+			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
+			onChange={ ( key, value ) => setEvidence( { ...evidence, [ key ]: value } ) }
+			onSave={ doSave }
 		/>
 	);
 };

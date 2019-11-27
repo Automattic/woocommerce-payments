@@ -282,6 +282,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update dispute with provided id.
+	 *
+	 * @param string $dispute_id id of dispute to update.
+	 * @param array  $evidence   evidence to upload.
+	 * @param bool   $submit     whether to submit (rather than stage) evidence.
+	 * @return array dispute object.
+	 */
+	public function update_dispute( $dispute_id, $evidence, $submit ) {
+		$request = array(
+			'evidence' => $evidence,
+			'submit'   => $submit,
+		);
+
+		return $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
+	}
+
+	/**
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
