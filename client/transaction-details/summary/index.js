@@ -6,10 +6,12 @@
 import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { formatCurrency } from '@woocommerce/currency';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies.
  */
+import { isTransactionRefunded } from '../../utils/transaction';
 import PaymentStatusChip from '../../components/payment-status-chip';
 import './style.scss';
 
@@ -25,6 +27,12 @@ const TransactionSummaryDetails = ( props ) => {
 						<PaymentStatusChip transaction={ transaction } />
 					</h1>
 					<div className="transaction-summary__breakdown">
+						{ isTransactionRefunded( transaction )
+							? <p>
+								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
+								{ formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
+							</p>
+							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
 							{ formatCurrency( ( -transaction.fee || 0 ) / 100 ) }

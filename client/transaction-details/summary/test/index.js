@@ -16,6 +16,7 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 		fee: 74,
 		net: 1426,
 		currency: 'usd',
+		type: 'charge',
 	},
 	...transaction,
 } );
@@ -23,6 +24,12 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 describe( 'TransactionSummaryDetails', () => {
 	test( 'correctly renders a transaction', () => {
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction() );
+		expect( transactionSummaryDetails ).toMatchSnapshot();
+	} );
+
+	test( 'renders refund information for a transaction', () => {
+		// eslint-disable-next-line camelcase
+		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: false, amount_refunded: 1200 } } ) );
 		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 

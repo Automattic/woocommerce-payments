@@ -25,6 +25,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
               "fee": 74,
               "id": "txn_38jdHA39KKA",
               "net": 1426,
+              "type": "charge",
             }
           }
         />
@@ -80,6 +81,64 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
         <p>
           Net: 
           $0.00
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    />
+  </div>
+</Card>
+`;
+
+exports[`TransactionSummaryDetails renders refund information for a transaction 1`] = `
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $15.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          usd
+        </span>
+        <PaymentStatusChip
+          transaction={
+            Object {
+              "amount": 1500,
+              "currency": "usd",
+              "fee": 74,
+              "id": "txn_38jdHA39KKA",
+              "net": 1426,
+              "source": Object {
+                "amount_refunded": 1200,
+                "refunded": false,
+              },
+              "type": "charge",
+            }
+          }
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Refunded: 
+          $-12.00
+        </p>
+        <p>
+          Fee: 
+          $-0.74
+        </p>
+        <p>
+          Net: 
+          $14.26
         </p>
       </div>
     </div>
