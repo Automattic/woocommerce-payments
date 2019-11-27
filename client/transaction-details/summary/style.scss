@@ -38,4 +38,20 @@ $break-width: 30rem;
 			margin-left: 0;
 		}
 	}
+
+	.transaction-summary__actions {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: initial;
+		@media screen and ( min-width: $break-width + 1 ) {
+			justify-content: flex-end;
+		}
+		.transaction-summary__actions-item {
+			margin-top: 1rem;
+			@media screen and ( min-width: $break-width + 1 ) {
+				margin-top: 0;
+			}
+		}
+	}
 }

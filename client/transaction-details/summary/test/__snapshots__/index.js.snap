@@ -25,6 +25,10 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
               "fee": 74,
               "id": "txn_38jdHA39KKA",
               "net": 1426,
+              "order": Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              },
               "type": "charge",
             }
           }
@@ -45,7 +49,21 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          className="transaction-summary__actions-item"
+          disabled={false}
+          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
 </Card>
 `;
@@ -86,12 +104,26 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          className="transaction-summary__actions-item"
+          disabled={true}
+          href="undefined#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
 </Card>
 `;
 
-exports[`TransactionSummaryDetails renders refund information for a transaction 1`] = `
+exports[`TransactionSummaryDetails renders fully refunded information for a transaction 1`] = `
 <Card>
   <div
     className="transaction-summary"
@@ -116,6 +148,86 @@ exports[`TransactionSummaryDetails renders refund information for a transaction 
               "fee": 74,
               "id": "txn_38jdHA39KKA",
               "net": 1426,
+              "order": Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              },
+              "source": Object {
+                "amount_refunded": 1500,
+                "refunded": true,
+              },
+              "type": "charge",
+            }
+          }
+        />
+      </h1>
+      <div
+        className="transaction-summary__breakdown"
+      >
+        <p>
+          Refunded: 
+          $-15.00
+        </p>
+        <p>
+          Fee: 
+          $-0.74
+        </p>
+        <p>
+          Net: 
+          $14.26
+        </p>
+      </div>
+    </div>
+    <div
+      className="transaction-summary__section"
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          className="transaction-summary__actions-item"
+          disabled={true}
+          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund
+        </ForwardRef(Button)>
+      </div>
+    </div>
+  </div>
+</Card>
+`;
+
+exports[`TransactionSummaryDetails renders partially refunded information for a transaction 1`] = `
+<Card>
+  <div
+    className="transaction-summary"
+  >
+    <div
+      className="transaction-summary__section"
+    >
+      <h1
+        className="transaction-summary__amount"
+      >
+        $15.00
+        <span
+          className="transaction-summary__amount-currency"
+        >
+          usd
+        </span>
+        <PaymentStatusChip
+          transaction={
+            Object {
+              "amount": 1500,
+              "currency": "usd",
+              "fee": 74,
+              "id": "txn_38jdHA39KKA",
+              "net": 1426,
+              "order": Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              },
               "source": Object {
                 "amount_refunded": 1200,
                 "refunded": false,
@@ -144,7 +256,21 @@ exports[`TransactionSummaryDetails renders refund information for a transaction 
     </div>
     <div
       className="transaction-summary__section"
-    />
+    >
+      <div
+        className="transaction-summary__actions"
+      >
+        <ForwardRef(Button)
+          className="transaction-summary__actions-item"
+          disabled={false}
+          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          isDefault={true}
+          isLarge={true}
+        >
+          Refund more
+        </ForwardRef(Button)>
+      </div>
+    </div>
   </div>
 </Card>
 `;

@@ -17,6 +17,10 @@ const getBaseTransaction = ( transaction = {} ) => ( {
 		net: 1426,
 		currency: 'usd',
 		type: 'charge',
+		order: {
+			number: 45981,
+			url: 'https://somerandomorderurl.com/?edit_order=45981',
+		},
 	},
 	...transaction,
 } );
@@ -27,9 +31,15 @@ describe( 'TransactionSummaryDetails', () => {
 		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 
-	test( 'renders refund information for a transaction', () => {
+	test( 'renders partially refunded information for a transaction', () => {
 		// eslint-disable-next-line camelcase
 		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: false, amount_refunded: 1200 } } ) );
+		expect( transactionSummaryDetails ).toMatchSnapshot();
+	} );
+
+	test( 'renders fully refunded information for a transaction', () => {
+		// eslint-disable-next-line camelcase
+		const transactionSummaryDetails = renderTransaction( getBaseTransaction( { source: { refunded: true, amount_refunded: 1500 } } ) );
 		expect( transactionSummaryDetails ).toMatchSnapshot();
 	} );
 

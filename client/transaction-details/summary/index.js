@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
 import { formatCurrency } from '@woocommerce/currency';
 import { get } from 'lodash';
@@ -11,7 +12,11 @@ import { get } from 'lodash';
 /**
  * Internal dependencies.
  */
-import { isTransactionRefunded } from '../../utils/transaction';
+import {
+	isTransactionRefunded,
+	isTransactionPartiallyRefunded,
+	isTransactionFullyRefunded,
+} from '../../utils/transaction';
 import PaymentStatusChip from '../../components/payment-status-chip';
 import './style.scss';
 
@@ -46,6 +51,17 @@ const TransactionSummaryDetails = ( props ) => {
 				<div className="transaction-summary__section">
 					{ /* TODO: implement control buttons depending on the transaction status */ }
 					{ /* E.g. if transaction is under dispute display Accept Dispute and Respond to Dispute buttons */ }
+					<div className="transaction-summary__actions">
+						<Button className="transaction-summary__actions-item"
+							isDefault
+							isLarge
+							disabled={ ! get( transaction, 'order.url' ) ||	isTransactionFullyRefunded( transaction ) }
+							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
+							{ ( isTransactionPartiallyRefunded( transaction ) )
+								? __( 'Refund more', 'woocommerce-payments' )
+								: __( 'Refund', 'woocommerce-payments' ) }
+						</Button>
+					</div>
 				</div>
 			</div>
 		</Card>
