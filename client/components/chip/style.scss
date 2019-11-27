@@ -1,0 +1,22 @@
+/** @format */
+
+.chip {
+	font-size: 14px;
+	border-radius: 12px;
+	padding: 2px 12px;
+
+	&.chip-primary {
+		background: #E5F5FA;
+		color: #00669B;
+	}
+
+	&.chip-light {
+		background: #E2E4E7;
+		color: #32373C;
+	}
+
+	&.chip-alert {
+		background: #FAEAEA;
+		color: #D94F4F;
+	}
+}
