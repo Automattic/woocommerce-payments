@@ -28,7 +28,7 @@ import './style.scss';
 const TransactionSummaryDetails = ( props ) => {
 	const { transaction } = props;
 	return (
-		<Card>
+		<Card className="transaction-summary-details">
 			<div className="transaction-summary">
 				<div className="transaction-summary__section">
 					<p className="transaction-summary__amount">

@@ -1,12 +1,10 @@
 /** @format */
-$break-width: 32rem;
 
 .transaction-summary {
 	display: flex;
-	flex-direction: column;
 	margin-bottom: 1rem;
-	@media screen and ( min-width: $break-width ) {
-		flex-direction: initial;
+	@include breakpoint( '<660px' ) {
+		flex-direction: column;
 	}
 
 	.transaction-summary__section {
@@ -14,7 +12,7 @@ $break-width: 32rem;
 	}
 
 	.transaction-summary__amount {
-		font-size: 2rem;
+		@include font-size( 32 );
 		font-weight: 300;
 		padding: 0;
 		margin: 0;
@@ -22,17 +20,17 @@ $break-width: 32rem;
 		align-items: center;
 
 		.transaction-summary__amount-currency {
+			@include font-size( 16 );
 			text-transform: uppercase;
-			font-size: 1rem;
 			margin: 0 1rem 0 0.25rem;
-			color: #50575E;
+			color: $gray-60;
 		}
 	}
 
 	.transaction-summary__breakdown {
 		p {
-			font-size: 0.875rem;
-			color: #555D66;
+			@include font-size( 14 );
+			color: $dark-gray-500;
 			display: inline-block;
 			margin: 0.5rem 0.75rem 0 0;
 		}
@@ -46,19 +44,19 @@ $break-width: 32rem;
 		display: flex;
 		align-items: center;
 		justify-content: initial;
-		@media screen and ( min-width: $break-width ) {
+		@include breakpoint( '>660px' ) {
 			justify-content: flex-end;
 		}
 		.transaction-summary__actions-item {
 			margin-top: 1rem;
-			@media screen and ( min-width: $break-width ) {
+			@include breakpoint( '>660px' ) {
 				margin-top: 0;
 			}
 		}
 	}
 }
 
-.woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-title,
-.woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-content {
-	font-size: 0.875rem;
+.transaction-summary-details .woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-title,
+.transaction-summary-details .woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-content {
+	@include font-size( 14 );
 }

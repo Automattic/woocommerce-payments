@@ -1,9 +1,4 @@
 /** @format */
-$break-width: 42rem;
-
-.woocommerce-list--horizontal {
-	margin: 0;
-}
 
 .woocommerce-card__body {
 	.woocommerce-list--horizontal {
@@ -16,19 +11,19 @@ $break-width: 42rem;
 .woocommerce-list--horizontal {
 	text-transform: capitalize;
 	display: flex;
+	align-items: stretch;
 	flex-direction: column;
-	@media screen and ( min-width: $break-width ) {
+	@include breakpoint( '>800px' ) {
 		flex-direction: initial;
-		align-items: stretch;
 		margin: 1rem 0 0 0;
 	}
 	.woocommerce-list__item {
 		padding: 0.75rem 1rem;
 		border-left: 0;
-		border-bottom: 1px solid #DCDCDE;
-		@media screen and ( min-width: $break-width ) {
+		border-bottom: 1px solid $studio-gray-5;
+		@include breakpoint( '>800px' ) {
 			padding: 0 1rem;
-			border-left: 1px solid #DCDCDE;
+			border-left: 1px solid $studio-gray-5;
 			border-bottom: 0;
 		}
 
@@ -39,12 +34,12 @@ $break-width: 42rem;
 
 		.woocommerce-list__item-title,
 		.woocommerce-list__item-content {
-			color: #50575E;
+			color: $dark-gray-500;
 			margin-top: 0;
 		}
 	}
 	.woocommerce-list__item:first-child {
-		@media screen and ( min-width: $break-width ) {
+		@include breakpoint( '>800px' ) {
 			border-left: 0;
 			padding-left: 0;
 		}
@@ -52,7 +47,7 @@ $break-width: 42rem;
 	.woocommerce-list__item:last-child {
 		border-bottom: 0;
 		padding-bottom: 0;
-		@media screen and ( min-width: $break-width ) {
+		@include breakpoint( '>800px' ) {
 			padding-right: 0;
 		}
 	}

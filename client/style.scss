@@ -1,6 +1,18 @@
 /* stylelint-disable */
 /* stylelint-enable */
 
+@import './stylesheets/abstracts/colors';
+@import './stylesheets/abstracts/mixins';
+@import './stylesheets/abstracts/breakpoints';
+
+/* Fix top padding when layout breaks at 782px */
+.woocommerce-layout .woocommerce-layout__main {
+	@media screen and (max-width: 782px) {
+		padding-top: 16px;
+		padding-bottom: 16px;
+	}
+}
+
 .woocommerce-card__body {
 	hr.full-width {
 		/* Accounting for woocommerce-card__body padding */
