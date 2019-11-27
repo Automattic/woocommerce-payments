@@ -115,6 +115,14 @@ class WC_Payments_Admin {
 					'path'   => '/payments/transactions/details',
 				)
 			);
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-disputes-evidence',
+					'title'  => __( 'Evidence', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes',
+					'path'   => '/payments/disputes/evidence',
+				)
+			);
 		}
 
 		wp_enqueue_style(

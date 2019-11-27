@@ -13,6 +13,7 @@ import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
 import TransactionDetailsPage from 'transaction-details';
+import DisputeEvidencePage from 'disputes/evidence';
 import ConnectAccountPage from 'connect-account-page';
 import 'payments-api/payments-data-store';
 
@@ -66,6 +67,16 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         breadcrumbs: [
             rootLink,
             __( 'Disputes', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: DisputeEvidencePage,
+        path: '/payments/disputes/evidence',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            [ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
+            __( 'Evidence', 'woocommerce-payments' ),
         ],
     } );
     return pages;
