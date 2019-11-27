@@ -1,9 +1,10 @@
 /** @format */
 
 .chip {
-	font-size: 14px;
-	border-radius: 12px;
-	padding: 2px 12px;
+	display: inline-block;
+	font-size: 0.875rem;
+	padding: 0.25rem 0.75rem;
+	border-radius: 1rem;
 
 	&.chip-primary {
 		background: #E5F5FA;
