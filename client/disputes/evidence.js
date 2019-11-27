@@ -6,8 +6,51 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, TextareaControl } from '@wordpress/components';
+import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Section, Card } from '@woocommerce/components';
+
+const evidenceFields = [
+	{
+		key: 'general',
+		title: __( 'General evidence' ),
+		description: '',
+		fields: [
+			{
+				key: 'product_description',
+				display: 'Product Description',
+				control: 'textarea',
+			},
+			{
+				key: 'customer_name',
+				display: 'Customer Name',
+				control: 'text',
+			},
+			{
+				key: 'customer_email_address',
+				display: 'Customer Email',
+				control: 'text',
+			},
+			// …
+			{
+				key: 'customer_purchase_ip',
+				display: 'Customer IP Address',
+				control: 'text',
+			},
+			// …
+		],
+	},
+	{
+		key: 'uncategorized',
+		title: __( 'Additional details' ),
+		fields: [
+			{
+				key: 'uncategorized_text',
+				display: 'Additional Details',
+				control: 'textarea',
+			}
+		],
+	},
+];
 
 /**
  * Internal dependencies.
@@ -21,18 +64,29 @@ export const DisputeEvidenceForm = props => {
 		return <div>Loading…</div>;
 	}
 
-	const key = 'uncategorized_text';
+	const evidenceSections = evidenceFields.map( section => {
+		return (
+			<Card key={ section.key } title={ section.title }>
+				{
+					section.fields.map( field => {
+						const Control = field.control === 'text' ? TextControl : TextareaControl;
+						return (
+							<Control
+								key={ field.key }
+								label={ field.display }
+								value={ evidence[ field.key ] || '' }
+								onChange={ value => onChange( field.key, value ) }
+							/>
+						);
+					} )
+				}
+			</Card>
+		);
+	} );
 
 	return (
 		<Section>
-			<Card title={ __( 'Additional details' ) }>
-				<TextareaControl
-					key={ key }
-					label="Additional Details"
-					value={ evidence[ key ] || '' }
-					onChange={ value => onChange( key, value ) }
-				/>
-			</Card>
+			{ evidenceSections }
 			<Card>
 				<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
 				<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
