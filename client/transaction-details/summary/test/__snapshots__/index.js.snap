@@ -8,7 +8,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
     <div
       className="transaction-summary__section"
     >
-      <h1
+      <p
         className="transaction-summary__amount"
       >
         $15.00
@@ -33,7 +33,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
             }
           }
         />
-      </h1>
+      </p>
       <div
         className="transaction-summary__breakdown"
       >
@@ -76,7 +76,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
     <div
       className="transaction-summary__section"
     >
-      <h1
+      <p
         className="transaction-summary__amount"
       >
         $0.00
@@ -88,7 +88,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
         <PaymentStatusChip
           transaction={Object {}}
         />
-      </h1>
+      </p>
       <div
         className="transaction-summary__breakdown"
       >
@@ -131,7 +131,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
     <div
       className="transaction-summary__section"
     >
-      <h1
+      <p
         className="transaction-summary__amount"
       >
         $15.00
@@ -160,7 +160,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
             }
           }
         />
-      </h1>
+      </p>
       <div
         className="transaction-summary__breakdown"
       >
@@ -207,7 +207,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
     <div
       className="transaction-summary__section"
     >
-      <h1
+      <p
         className="transaction-summary__amount"
       >
         $15.00
@@ -236,7 +236,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
             }
           }
         />
-      </h1>
+      </p>
       <div
         className="transaction-summary__breakdown"
       >

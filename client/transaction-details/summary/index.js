@@ -26,11 +26,11 @@ const TransactionSummaryDetails = ( props ) => {
 		<Card>
 			<div className="transaction-summary">
 				<div className="transaction-summary__section">
-					<h1 className="transaction-summary__amount">
+					<p className="transaction-summary__amount">
 						{ formatCurrency( ( transaction.amount || 0 ) / 100 ) }
 						<span className="transaction-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
 						<PaymentStatusChip transaction={ transaction } />
-					</h1>
+					</p>
 					<div className="transaction-summary__breakdown">
 						{ isTransactionRefunded( transaction )
 							? <p>

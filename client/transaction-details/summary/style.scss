@@ -1,10 +1,10 @@
 /** @format */
-$break-width: 30rem;
+$break-width: 32rem;
 
 .transaction-summary {
 	display: flex;
 	flex-direction: column;
-	@media screen and ( min-width: $break-width + 1 ) {
+	@media screen and ( min-width: $break-width ) {
 		flex-direction: initial;
 	}
 
@@ -16,6 +16,7 @@ $break-width: 30rem;
 		font-size: 2rem;
 		font-weight: 300;
 		padding: 0;
+		margin: 0;
 		display: flex;
 		align-items: center;
 
@@ -32,10 +33,10 @@ $break-width: 30rem;
 			font-size: 0.875rem;
 			color: #555D66;
 			display: inline-block;
-			margin: 0.5rem 0 0 0.75rem;
+			margin: 0.5rem 0.75rem 0 0;
 		}
-		p:first-child {
-			margin-left: 0;
+		p:last-child {
+			margin-right: 0;
 		}
 	}
 
@@ -44,12 +45,12 @@ $break-width: 30rem;
 		display: flex;
 		align-items: center;
 		justify-content: initial;
-		@media screen and ( min-width: $break-width + 1 ) {
+		@media screen and ( min-width: $break-width ) {
 			justify-content: flex-end;
 		}
 		.transaction-summary__actions-item {
 			margin-top: 1rem;
-			@media screen and ( min-width: $break-width + 1 ) {
+			@media screen and ( min-width: $break-width ) {
 				margin-top: 0;
 			}
 		}
