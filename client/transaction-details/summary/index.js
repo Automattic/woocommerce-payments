@@ -64,6 +64,7 @@ const TransactionSummaryDetails = ( props ) => {
 					</div>
 				</div>
 			</div>
+			<hr className="full-width" />
 		</Card>
 	);
 };

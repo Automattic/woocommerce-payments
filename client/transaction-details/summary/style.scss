@@ -4,6 +4,7 @@ $break-width: 32rem;
 .transaction-summary {
 	display: flex;
 	flex-direction: column;
+	margin-bottom: 1rem;
 	@media screen and ( min-width: $break-width ) {
 		flex-direction: initial;
 	}

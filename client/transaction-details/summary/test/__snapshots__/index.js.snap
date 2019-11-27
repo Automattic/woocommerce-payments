@@ -65,6 +65,9 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
 </Card>
 `;
 
@@ -120,6 +123,9 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
 </Card>
 `;
 
@@ -196,6 +202,9 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
 </Card>
 `;
 
@@ -272,5 +281,8 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
 </Card>
 `;
