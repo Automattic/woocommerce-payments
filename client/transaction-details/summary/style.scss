@@ -57,3 +57,8 @@ $break-width: 32rem;
 		}
 	}
 }
+
+.woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-title,
+.woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-content {
+	font-size: 0.875rem;
+}
