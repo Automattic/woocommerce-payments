@@ -33,6 +33,7 @@ export default [
 			// …
 		],
 	},
+	// …
 	{
 		key: 'uncategorized',
 		title: __( 'Additional details' ),
@@ -41,7 +42,7 @@ export default [
 				key: 'uncategorized_text',
 				display: 'Additional Details',
 				control: 'textarea',
-			}
+			},
 		],
 	},
 ];

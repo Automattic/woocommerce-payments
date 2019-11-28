@@ -17,7 +17,7 @@ const headers = [
 	{ key: 'status', label: 'Status' },
 	{ key: 'reason', label: 'Reason' },
 	{ key: 'created', label: 'Disputed On' },
-	{ key: 'due_by', label: 'Respond By' },
+	{ key: 'dueBy', label: 'Respond By' },
 ];
 
 export const DisputesList = ( props ) => {
@@ -33,10 +33,16 @@ export const DisputesList = ( props ) => {
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: formatCurrency( dispute.amount / 100 ) },
-			status: { value: dispute.status, display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></> },
+			status: {
+				value: dispute.status,
+				display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></>,
+			},
 			reason: { value: dispute.reason, display: capitalize( dispute.reason.replace( /_/g, ' ' ) ) },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
-			due_by: { value: dispute.evidence_details.due_by * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ) },
+			dueBy: {
+				value: dispute.evidence_details.due_by * 1000,
+				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
+			},
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
@@ -63,8 +69,10 @@ export default () => {
 		setLoading( true );
 		setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
 		setLoading( false );
-	}
-	useEffect( () => { fetchDisputes() }, [] );
+	};
+	useEffect( () => {
+		fetchDisputes();
+	}, [] );
 
 	return (
 		<DisputesList

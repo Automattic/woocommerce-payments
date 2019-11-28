@@ -69,7 +69,9 @@ export default ( { query } ) => {
 		setDispute( await apiFetch( { path } ) );
 		setLoading( false );
 	};
-	useEffect( () => { fetchDispute() }, [] );
+	useEffect( () => {
+		fetchDispute();
+	}, [] );
 
 	const doSave = async ( submit ) => {
 		setLoading( true );
