@@ -1,0 +1,110 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Disputes list renders correctly 1`] = `
+<TableCard
+  baseSearchQuery={Object {}}
+  compareParam="filter"
+  downloadable={false}
+  headers={
+    Array [
+      Object {
+        "key": "amount",
+        "label": "Amount",
+      },
+      Object {
+        "key": "status",
+        "label": "Status",
+      },
+      Object {
+        "key": "reason",
+        "label": "Reason",
+      },
+      Object {
+        "key": "created",
+        "label": "Disputed On",
+      },
+      Object {
+        "key": "dueBy",
+        "label": "Respond By",
+      },
+    ]
+  }
+  isLoading={false}
+  onColumnsChange={[Function]}
+  onQueryChange={[Function]}
+  onSearch={[Function]}
+  query={Object {}}
+  rowHeader={0}
+  rows={
+    Array [
+      Array [
+        Object {
+          "display": "$10.00",
+          "value": 10,
+        },
+        Object {
+          "display": <React.Fragment>
+            <Link
+              href="?page=wc-admin&path=/payments/disputes/evidence&id=dp_asdfghjkl"
+              type="wc-admin"
+            >
+              <t
+                icon="reply"
+                size={18}
+              />
+            </Link>
+             
+            <code>
+              Needs response
+            </code>
+          </React.Fragment>,
+          "value": "needs_response",
+        },
+        Object {
+          "display": "Fraudulent",
+          "value": "fraudulent",
+        },
+        Object {
+          "display": "Nov 1, 2019 / 2:46AM",
+          "value": 1572590800000,
+        },
+        Object {
+          "display": "Nov 8, 2019 / 2:46AM",
+          "value": 1573199200000,
+        },
+      ],
+      Array [
+        Object {
+          "display": "$10.50",
+          "value": 10.5,
+        },
+        Object {
+          "display": <React.Fragment>
+             
+            <code>
+              Under review
+            </code>
+          </React.Fragment>,
+          "value": "under_review",
+        },
+        Object {
+          "display": "General",
+          "value": "general",
+        },
+        Object {
+          "display": "Oct 30, 2019 / 8:13PM",
+          "value": 1572480800000,
+        },
+        Object {
+          "display": "Nov 6, 2019 / 11:00PM",
+          "value": 1573099200000,
+        },
+      ],
+    ]
+  }
+  rowsPerPage={10}
+  showMenu={true}
+  title="Disputes"
+  totalRows={10}
+/>
+`;
