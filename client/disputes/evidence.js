@@ -9,53 +9,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Section, Card } from '@woocommerce/components';
 
-const evidenceFields = [
-	{
-		key: 'general',
-		title: __( 'General evidence' ),
-		description: '',
-		fields: [
-			{
-				key: 'product_description',
-				display: 'Product Description',
-				control: 'textarea',
-			},
-			{
-				key: 'customer_name',
-				display: 'Customer Name',
-				control: 'text',
-			},
-			{
-				key: 'customer_email_address',
-				display: 'Customer Email',
-				control: 'text',
-			},
-			// …
-			{
-				key: 'customer_purchase_ip',
-				display: 'Customer IP Address',
-				control: 'text',
-			},
-			// …
-		],
-	},
-	{
-		key: 'uncategorized',
-		title: __( 'Additional details' ),
-		fields: [
-			{
-				key: 'uncategorized_text',
-				display: 'Additional Details',
-				control: 'textarea',
-			}
-		],
-	},
-];
-
 /**
  * Internal dependencies.
  */
 import './style.scss';
+import evidenceFields from './evidence-fields';
 
 export const DisputeEvidenceForm = props => {
 	const { evidence, showPlaceholder, onChange, onSave } = props;
