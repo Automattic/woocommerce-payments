@@ -29,6 +29,10 @@ jQuery( function( $ ) {
 		cardElement.mount( '#wcpay-card-element' );
 	} );
 
+	if ( $( 'form#add_payment_method' ).length || $( 'form#order_review' ).length ) {
+		cardElement.mount( '#wcpay-card-element' );
+	}
+
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', function( event ) {
 		var displayError = jQuery( '#wcpay-errors' );
