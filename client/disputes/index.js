@@ -8,7 +8,8 @@ import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatCurrency } from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
+import Gridicon from 'gridicons';
 import { capitalize } from 'lodash';
 
 const headers = [
@@ -17,7 +18,6 @@ const headers = [
 	{ key: 'reason', label: 'Reason' },
 	{ key: 'created', label: 'Disputed On' },
 	{ key: 'due_by', label: 'Respond By' },
-	{ key: 'id', label: 'ID' }, // TODO remove
 ];
 
 export const DisputesList = ( props ) => {
@@ -25,14 +25,22 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
-		// Map dispute into table row.
+		let statusDisplay = <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code>;
+		if ( dispute.status.indexOf( 'needs_response' ) != -1 ) {
+			const evidenceLink = (
+				<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
+					<Gridicon icon="reply" size={ 18 } />
+				</Link>
+			);
+			statusDisplay = <span>{ evidenceLink }{ statusDisplay }</span>;
+		}
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: formatCurrency( dispute.amount / 100 ) },
-			status: { value: dispute.status, display: <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code> },
+			status: { value: dispute.status, display: statusDisplay },
 			reason: { value: dispute.reason, display: capitalize( dispute.reason.replace( /_/g, ' ' ) ) },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			due_by: { value: dispute.evidence_details.due_by * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ) },
-			id: { value: dispute.id, display: dispute.id, hiddenByDefault: true }, // TODO remove
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
