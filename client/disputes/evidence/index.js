@@ -13,7 +13,7 @@ import { Section, Card } from '@woocommerce/components';
  * Internal dependencies.
  */
 import './style.scss';
-import evidenceFields from './evidence-fields';
+import evidenceFields from './fields';
 
 export const DisputeEvidenceForm = props => {
 	const { evidence, showPlaceholder, onChange, onSave } = props;
