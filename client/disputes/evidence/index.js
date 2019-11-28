@@ -16,7 +16,7 @@ import './style.scss';
 import evidenceFields from './fields';
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, showPlaceholder, onChange, onSave } = props;
+	const { evidence, showPlaceholder, onChange, onSave, readOnly } = props;
 
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
@@ -34,6 +34,7 @@ export const DisputeEvidenceForm = props => {
 								label={ field.display }
 								value={ evidence[ field.key ] || '' }
 								onChange={ value => onChange( field.key, value ) }
+								disabled={ readOnly }
 							/>
 						);
 					} )
@@ -45,10 +46,12 @@ export const DisputeEvidenceForm = props => {
 	return (
 		<Section>
 			{ evidenceSections }
-			<Card>
-				<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
-				<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
-			</Card>
+			{ readOnly ? null : (
+				<Card>
+					<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
+					<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
+				</Card>
+			) }
 		</Section>
 	);
 };
@@ -81,6 +84,7 @@ export default ( { query } ) => {
 			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
 			onChange={ ( key, value ) => setEvidence( { ...evidence, [ key ]: value } ) }
 			onSave={ doSave }
+			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
 		/>
 	);
 };
