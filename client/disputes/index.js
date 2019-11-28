@@ -25,19 +25,15 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
-		let statusDisplay = <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code>;
-		if ( dispute.status.indexOf( 'needs_response' ) != -1 ) {
-			const evidenceLink = (
-				<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
-					<Gridicon icon="reply" size={ 18 } />
-				</Link>
-			);
-			statusDisplay = <span>{ evidenceLink }{ statusDisplay }</span>;
-		}
+		const evidenceLink = dispute.status.indexOf( 'needs_response' ) === -1 ? null : (
+			<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
+				<Gridicon icon="reply" size={ 18 } />
+			</Link>
+		);
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: formatCurrency( dispute.amount / 100 ) },
-			status: { value: dispute.status, display: statusDisplay },
+			status: { value: dispute.status, display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></> },
 			reason: { value: dispute.reason, display: capitalize( dispute.reason.replace( /_/g, ' ' ) ) },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			due_by: { value: dispute.evidence_details.due_by * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ) },
