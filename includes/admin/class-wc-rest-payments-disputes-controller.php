@@ -48,6 +48,15 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_disputes' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -64,6 +73,13 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+	}
+
+	/**
+	 * Retrieve disputes to respond with via API.
+	 */
+	public function get_disputes() {
+		return rest_ensure_response( $this->api_client->list_disputes() );
 	}
 
 	/**

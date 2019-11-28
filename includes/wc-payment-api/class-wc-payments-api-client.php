@@ -272,6 +272,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List disputes
+	 *
+	 * @return array
+	 * @throws Exception - Exception thrown on request failure.
+	 */
+	public function list_disputes() {
+		return $this->request( array(), self::DISPUTES_API, self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
