@@ -34,8 +34,6 @@ describe( 'Dispute evidence form', () => {
 			<DisputeEvidenceForm
                 evidence={ dispute.evidence }
                 showPlaceholder={ false }
-                // onChange
-                // onSave
                 readOnly={ false }
 			/>
 		);
@@ -66,8 +64,6 @@ describe( 'Dispute evidence form', () => {
 			<DisputeEvidenceForm
                 evidence={ dispute.evidence }
                 showPlaceholder={ false }
-                // onChange
-                // onSave
                 readOnly={ false }
 			/>
 		);
