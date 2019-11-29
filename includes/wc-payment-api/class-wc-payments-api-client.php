@@ -426,7 +426,7 @@ class WC_Payments_API_Client {
 		if ( 500 <= $response_code ) {
 			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
 		} elseif ( 400 <= $response_code ) {
-			if ( $response_body['error'] ) {
+			if ( ! empty( $response_body['error'] ) ) {
 				return new WP_Error( $response_body['error']['code'], $response_body['error']['message'], array( 'status' => $response_code ) );
 			};
 			return new WP_Error( $response_body['code'], $response_body['message'], array( 'status' => $response_code ) );

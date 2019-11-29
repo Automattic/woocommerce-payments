@@ -77,36 +77,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		);
 
-		// Define setting fields.
-		$this->form_fields = array(
-			'account_details' => array(
-				'type' => 'account_actions',
-			),
-			'manual_capture'  => array(
-				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
-				'default'     => 'no',
-				'desc_tip'    => true,
-			),
-			'test_mode'       => array(
-				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
-				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
-				'default'     => 'no',
-				'desc_tip'    => true,
-			),
-			'enabled'         => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			),
-		);
-
 		// Load the settings.
 		$this->init_settings();
 
@@ -135,6 +105,55 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return parent::is_available() && $this->is_stripe_connected();
+	}
+
+	/**
+	 * Get the form fields after they are initialized.
+	 *
+	 * @return array of options
+	 */
+	public function get_form_fields() {
+		// Ensure that the `woocommerce_payments_allow_test_mode` option exists.
+		if ( ! get_option( 'woocommerce_payments_allow_test_mode' ) ) {
+			update_option( 'woocommerce_payments_allow_test_mode', 'no' );
+		}
+
+		// Define setting fields.
+		$this->form_fields = array();
+
+		$this->form_fields['account_details'] = array(
+			'type' => 'account_actions',
+		);
+
+		$this->form_fields['manual_capture'] = array(
+			'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
+			'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
+			'default'     => 'no',
+			'desc_tip'    => true,
+		);
+
+		if ( 'yes' === get_option( 'woocommerce_payments_allow_test_mode' ) ) {
+			$this->form_fields['test_mode'] = array(
+				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			);
+		}
+
+		$this->form_fields['enabled'] = array(
+			'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
+			'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+			'type'        => 'checkbox',
+			'description' => '',
+			'default'     => 'no',
+		);
+
+		return parent::get_form_fields();
 	}
 
 	/**
@@ -523,6 +542,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'business_name' => get_bloginfo( 'name' ),
 				)
 			);
+
+			if ( is_wp_error( $oauth_data ) && 'wcpay_test_mode_unavailable' === $oauth_data->get_error_code() ) {
+				update_option( 'woocommerce_payments_allow_test_mode', 'no' );
+				$this->update_option( 'test_mode', 'no' );
+
+				// Translators: %1$s is replaced with an error code.
+				$error_message = __( 'Test mode is not available for your account. %1$s', 'woocommerce-payments' );
+				$error_message = sprintf( $error_message, 'paJDYF-qU-p2' );
+				$this->add_error( $error_message );
+				return;
+			}
+
 			if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
 				$this->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
 				return;
