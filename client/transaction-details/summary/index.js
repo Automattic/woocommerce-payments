@@ -91,6 +91,9 @@ const TransactionSummaryDetails = ( props ) => {
 					title: __( 'Risk Evaluation', 'woocommerce-payments' ),
 					content: get( transaction, 'source.outcome.risk_level' ) || '–',
 				},
+				{
+					content: transaction.id || '–',
+				},
 			] } />
 		</Card>
 	);
