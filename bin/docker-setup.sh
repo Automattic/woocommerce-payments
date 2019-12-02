@@ -26,6 +26,11 @@ cli wp core update --quiet
 echo "Updating the WordPress database..."
 cli wp core update-db --quiet
 
+echo "Configuring paths to work with ngrok...";
+cli config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . ( ! empty( \$_SERVER['HTTP_HOST'] ) ? \$_SERVER['HTTP_HOST'] : 'localhost' )" --raw
+cli config set WP_SITEURL DOCKER_REQUEST_URL --raw
+cli config set WP_HOME DOCKER_REQUEST_URL --raw
+
 echo "Installing and activating WooCommerce..."
 cli wp plugin install woocommerce --activate
 
