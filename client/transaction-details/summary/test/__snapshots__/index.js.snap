@@ -21,6 +21,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           transaction={
             Object {
               "amount": 1500,
+              "created": 1568928240,
               "currency": "usd",
               "fee": 74,
               "id": "txn_38jdHA39KKA",
@@ -28,6 +29,21 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
               "order": Object {
                 "number": 45981,
                 "url": "https://somerandomorderurl.com/?edit_order=45981",
+              },
+              "source": Object {
+                "billing_details": Object {
+                  "name": "Customer Name",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
               },
               "type": "charge",
             }
@@ -65,6 +81,52 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "content": <OrderLink
+            order={
+              Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              }
+            }
+          />,
+          "title": "Order No.",
+        },
+        Object {
+          "content": "Customer Name",
+          "title": "Customer",
+        },
+        Object {
+          "content": <PaymentMethodDetails
+            payment={
+              Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              }
+            }
+          />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "normal",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
 </Card>
 `;
 
@@ -120,6 +182,35 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "–",
+          "title": "Date",
+        },
+        Object {
+          "content": <OrderLink />,
+          "title": "Order No.",
+        },
+        Object {
+          "content": "–",
+          "title": "Customer",
+        },
+        Object {
+          "content": <PaymentMethodDetails />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "–",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
 </Card>
 `;
 
@@ -144,6 +235,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
           transaction={
             Object {
               "amount": 1500,
+              "created": 1568928240,
               "currency": "usd",
               "fee": 74,
               "id": "txn_38jdHA39KKA",
@@ -154,6 +246,19 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
               },
               "source": Object {
                 "amount_refunded": 1500,
+                "billing_details": Object {
+                  "name": "Customer Name",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
                 "refunded": true,
               },
               "type": "charge",
@@ -196,6 +301,52 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "content": <OrderLink
+            order={
+              Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              }
+            }
+          />,
+          "title": "Order No.",
+        },
+        Object {
+          "content": "Customer Name",
+          "title": "Customer",
+        },
+        Object {
+          "content": <PaymentMethodDetails
+            payment={
+              Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              }
+            }
+          />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "normal",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
 </Card>
 `;
 
@@ -220,6 +371,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
           transaction={
             Object {
               "amount": 1500,
+              "created": 1568928240,
               "currency": "usd",
               "fee": 74,
               "id": "txn_38jdHA39KKA",
@@ -230,6 +382,19 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
               },
               "source": Object {
                 "amount_refunded": 1200,
+                "billing_details": Object {
+                  "name": "Customer Name",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
                 "refunded": false,
               },
               "type": "charge",
@@ -272,5 +437,51 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
       </div>
     </div>
   </div>
+  <hr
+    className="full-width"
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "content": <OrderLink
+            order={
+              Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              }
+            }
+          />,
+          "title": "Order No.",
+        },
+        Object {
+          "content": "Customer Name",
+          "title": "Customer",
+        },
+        Object {
+          "content": <PaymentMethodDetails
+            payment={
+              Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              }
+            }
+          />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "normal",
+          "title": "Risk Evaluation",
+        },
+      ]
+    }
+  />
 </Card>
 `;

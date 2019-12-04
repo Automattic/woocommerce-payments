@@ -1,23 +1,23 @@
 /** @format */
 
 .chip {
+	@include font-size( 14 );
 	display: inline-block;
-	font-size: 0.875rem;
 	padding: 0.25rem 0.75rem;
 	border-radius: 1rem;
 
 	&.chip-primary {
-		background: #E5F5FA;
-		color: #00669B;
+		background: $blue-medium-100;
+		color: $blue-wordpress-700;
 	}
 
 	&.chip-light {
-		background: #E2E4E7;
-		color: #32373C;
+		background: $light-gray-500;
+		color: $dark-gray-700;
 	}
 
 	&.chip-alert {
-		background: #FAEAEA;
-		color: #D94F4F;
+		background: rgba( $alert-red, 0.12 );
+		color: $alert-red;
 	}
 }

@@ -1,0 +1,54 @@
+/** @format */
+
+.woocommerce-card__body {
+	.woocommerce-list--horizontal {
+		/* Account for Card margin when applying borders between lines */
+		margin: 0 -16px 0 -16px;
+	}
+}
+
+.woocommerce-card__body .woocommerce-list--horizontal,
+.woocommerce-list--horizontal {
+	text-transform: capitalize;
+	display: flex;
+	align-items: stretch;
+	flex-direction: column;
+	@include breakpoint( '>800px' ) {
+		flex-direction: initial;
+		margin: 1rem 0 0 0;
+	}
+	.woocommerce-list__item {
+		padding: 0.75rem 1rem;
+		border-left: 0;
+		border-bottom: 1px solid $studio-gray-5;
+		@include breakpoint( '>800px' ) {
+			padding: 0 1rem;
+			border-left: 1px solid $studio-gray-5;
+			border-bottom: 0;
+		}
+
+		.woocommerce-list__item-inner {
+			margin: 0;
+			padding: 0;
+		}
+
+		.woocommerce-list__item-title,
+		.woocommerce-list__item-content {
+			color: $dark-gray-500;
+			margin-top: 0;
+		}
+	}
+	.woocommerce-list__item:first-child {
+		@include breakpoint( '>800px' ) {
+			border-left: 0;
+			padding-left: 0;
+		}
+	}
+	.woocommerce-list__item:last-child {
+		border-bottom: 0;
+		padding-bottom: 0;
+		@include breakpoint( '>800px' ) {
+			padding-right: 0;
+		}
+	}
+}
