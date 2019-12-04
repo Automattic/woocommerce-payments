@@ -21,13 +21,13 @@ describe( 'Transaction utilities', () => {
 	test( 'should get the charge object for charge transactions', () => {
 		const charge = { id: 'ch_281' };
 		const transaction = { type: 'charge', source: charge };
-		expect( utils.getCharge( transaction ) ).toStrictEqual( charge );
+		expect( utils.getTransactionSourceCharge( transaction ) ).toStrictEqual( charge );
 	} );
 
 	test( 'should get the charge object for refund transactions', () => {
 		const charge = { id: 'ch_281' };
 		const transaction = { type: 'refund', source: { charge } };
-		expect( utils.getCharge( transaction ) ).toStrictEqual( charge );
+		expect( utils.getTransactionSourceCharge( transaction ) ).toStrictEqual( charge );
 	} );
 
 	test( 'should identify a captured successful transaction as successful', () => {

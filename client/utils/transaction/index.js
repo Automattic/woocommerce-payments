@@ -9,22 +9,22 @@ import { get } from 'lodash';
  * Internal dependencies.
  */
 
-export const getCharge = ( transaction ) => get( transaction, 'type' ) === 'refund'
+export const getTransactionSourceCharge = ( transaction ) => get( transaction, 'type' ) === 'refund'
 	? get( transaction, 'source.charge' ) || {}
 	: get( transaction, 'source' ) || {};
 
 export const isTransactionSuccessful = ( transaction ) =>
-	getCharge( transaction ).status === 'succeeded' && getCharge( transaction ).paid === true;
+	getTransactionSourceCharge( transaction ).status === 'succeeded' && getTransactionSourceCharge( transaction ).paid === true;
 
-export const isTransactionFailed = ( transaction ) => getCharge( transaction ).status === 'failed';
+export const isTransactionFailed = ( transaction ) => getTransactionSourceCharge( transaction ).status === 'failed';
 
-export const isTransactionCaptured = ( transaction ) => getCharge( transaction ).captured === true;
+export const isTransactionCaptured = ( transaction ) => getTransactionSourceCharge( transaction ).captured === true;
 
-export const isTransactionDisputed = ( transaction ) => getCharge( transaction ).disputed === true;
+export const isTransactionDisputed = ( transaction ) => getTransactionSourceCharge( transaction ).disputed === true;
 
-export const isTransactionRefunded = ( transaction ) => getCharge( transaction ).amount_refunded > 0;
+export const isTransactionRefunded = ( transaction ) => getTransactionSourceCharge( transaction ).amount_refunded > 0;
 
-export const isTransactionFullyRefunded = ( transaction ) => getCharge( transaction ).refunded === true;
+export const isTransactionFullyRefunded = ( transaction ) => getTransactionSourceCharge( transaction ).refunded === true;
 
 export const isTransactionPartiallyRefunded = ( transaction ) =>
 	isTransactionRefunded( transaction ) && ! isTransactionFullyRefunded( transaction );
