@@ -250,6 +250,8 @@ class WC_Payments_Account {
 		$test_mode = 'test' === $mode;
 		if ( $test_mode ) {
 			update_option( 'wcpay_test_only', true );
+		} else {
+			delete_option( 'wcpay_test_only' );
 		}
 
 		$this->gateway->update_option( 'stripe_account_id', $account_id );
