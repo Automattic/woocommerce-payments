@@ -230,7 +230,7 @@ class WC_Payments_API_Client {
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$transaction = $this->add_order_info_to_transaction( $transaction );
+				$transaction = $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
 			}
 		}
 
@@ -250,7 +250,23 @@ class WC_Payments_API_Client {
 			return $transaction;
 		}
 
-		return $this->add_order_info_to_transaction( $transaction );
+		return $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
+	}
+
+	/**
+	 * Fetch a single charge with provided id.
+	 *
+	 * @param string $charge_id id of requested charge.
+	 * @return array charge object.
+	 */
+	public function get_charge( $charge_id ) {
+		$charge = $this->request( array(), self::CHARGES_API . '/' . $charge_id, self::GET );
+
+		if ( is_wp_error( $charge ) ) {
+			return $charge;
+		}
+
+		return $this->add_order_info_to_object( $charge['id'], $charge );
 	}
 
 	/**
@@ -436,23 +452,24 @@ class WC_Payments_API_Client {
 	/**
 	 * Returns a transaction with order information when it exists.
 	 *
-	 * @param array $transaction transaction.
-	 * @return array new transaction object with order information.
+	 * @param  string $charge_id related charge id.
+	 * @param  array  $object object to add order information.
+	 * @return array  new object with order information.
 	 */
-	private function add_order_info_to_transaction( $transaction ) {
-		$order = $this->order_from_charge_id( $this->get_charge_id_from_transaction( $transaction ) );
+	private function add_order_info_to_object( $charge_id, $object ) {
+		$order = $this->order_from_charge_id( $charge_id );
 
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$transaction['order'] = null;
+		$object['order'] = null;
 		if ( $order ) {
-			$transaction['order'] = array(
+			$object['order'] = array(
 				'number' => $order->get_order_number(),
 				'url'    => $order->get_edit_order_url(),
 			);
 		}
 
-		return $transaction;
+		return $object;
 	}
 
 	/**
