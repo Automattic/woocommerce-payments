@@ -14,22 +14,22 @@ import PaymentDetailsPaymentMethod from './payment-method';
 import PaymentDetailsSession from './session';
 
 const PaymentDetails = ( props ) => {
-	const { transaction } = props;
+	const { charge } = props;
 	return (
 		<div>
-			<PaymentDetailsSummary transaction={ transaction }></PaymentDetailsSummary>
-			<PaymentDetailsTimeline transaction={ transaction }></PaymentDetailsTimeline>
-			<PaymentDetailsPayment transaction={ transaction }></PaymentDetailsPayment>
-			<PaymentDetailsPaymentMethod transaction={ transaction }></PaymentDetailsPaymentMethod>
-			<PaymentDetailsSession transaction={ transaction }></PaymentDetailsSession>
+			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>
+			<PaymentDetailsTimeline charge={ charge }></PaymentDetailsTimeline>
+			<PaymentDetailsPayment charge={ charge }></PaymentDetailsPayment>
+			<PaymentDetailsPaymentMethod charge={ charge }></PaymentDetailsPaymentMethod>
+			<PaymentDetailsSession charge={ charge }></PaymentDetailsSession>
 		</div>
 	);
 };
 
 export default withSelect( ( select, ownProps ) => {
 	const { getCharge, isChargeWaitingForInitialLoad } = select( 'wc-payments-api' );
-	const transaction = getCharge( ownProps.query.id );
+	const charge = getCharge( ownProps.query.id );
 	const showPlaceholder = isChargeWaitingForInitialLoad( ownProps.query.id );
 
-	return { transaction, showPlaceholder };
+	return { charge, showPlaceholder };
 } )( PaymentDetails );

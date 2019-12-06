@@ -15,10 +15,10 @@ import { get } from 'lodash';
  * Internal dependencies.
  */
 import {
-	isTransactionRefunded,
-	isTransactionPartiallyRefunded,
-	isTransactionFullyRefunded,
-} from '../../utils/transaction';
+	isChargeRefunded,
+	isChargePartiallyRefunded,
+	isChargeFullyRefunded,
+} from '../../utils/charge';
 import PaymentStatusChip from '../../components/payment-status-chip';
 import OrderLink from '../../components/order-link';
 import PaymentMethodDetails from '../../components/payment-method-details';
@@ -26,30 +26,31 @@ import HorizontalList from '../../components/horizontal-list';
 import './style.scss';
 
 const PaymentDetailsSummary = ( props ) => {
-	const { transaction } = props;
+	let { charge } = props;
+	charge = charge || {};
 	return (
 		<Card className="payment-details-summary-details">
 			<div className="payment-details-summary">
 				<div className="payment-details-summary__section">
 					<p className="payment-details-summary__amount">
-						{ formatCurrency( ( transaction.amount || 0 ) / 100 ) }
-						<span className="payment-details-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
-						<PaymentStatusChip transaction={ transaction } />
+						{ formatCurrency( ( charge.amount || 0 ) / 100 ) }
+						<span className="payment-details-summary__amount-currency">{ ( charge.currency || 'cur' ) }</span>
+						<PaymentStatusChip charge={ charge } />
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ isTransactionRefunded( transaction )
+						{ isChargeRefunded( charge )
 							? <p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
+								{ formatCurrency( -( charge.amount_refunded || 0 ) / 100 ) }
 							</p>
 							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ formatCurrency( ( -transaction.fee || 0 ) / 100 ) }
+							{ formatCurrency( ( -charge.fee || 0 ) / 100 ) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ formatCurrency( ( transaction.net || 0 ) / 100 ) }
+							{ formatCurrency( ( charge.net || 0 ) / 100 ) }
 						</p>
 					</div>
 				</div>
@@ -60,9 +61,9 @@ const PaymentDetailsSummary = ( props ) => {
 						<Button className="payment-details-summary__actions-item"
 							isDefault
 							isLarge
-							disabled={ ! get( transaction, 'order.url' ) ||	isTransactionFullyRefunded( transaction ) }
-							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
-							{ ( isTransactionPartiallyRefunded( transaction ) )
+							disabled={ ! get( charge, 'order.url' ) ||	isChargeFullyRefunded( charge ) }
+							href={ `${ get( charge, 'order.url' ) }#woocommerce-order-items` }>
+							{ ( isChargePartiallyRefunded( charge ) )
 								? __( 'Refund more', 'woocommerce-payments' )
 								: __( 'Refund', 'woocommerce-payments' ) }
 						</Button>
@@ -73,26 +74,26 @@ const PaymentDetailsSummary = ( props ) => {
 			<HorizontalList items={ [
 				{
 					title: __( 'Date', 'woocommerce-payments' ),
-					content: transaction.created ? dateI18n( 'M j, Y, g:ia', moment( transaction.created * 1000 ) ) : '–',
+					content: charge.created ? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) ) : '–',
 				},
 				{
 					title: __( 'Order No.', 'woocommerce-payments' ),
-					content: <OrderLink order={ transaction.order } />,
+					content: <OrderLink order={ charge.order } />,
 				},
 				{
 					title: __( 'Customer', 'woocommerce-payments' ),
-					content: get( transaction, 'source.billing_details.name' ) || '–',
+					content: get( charge, 'billing_details.name' ) || '–',
 				},
 				{
 					title: __( 'Payment Method', 'woocommerce-payments' ),
-					content: <PaymentMethodDetails payment={ get( transaction, 'source.payment_method_details' ) } />,
+					content: <PaymentMethodDetails payment={ charge.payment_method_details } />,
 				},
 				{
 					title: __( 'Risk Evaluation', 'woocommerce-payments' ),
-					content: get( transaction, 'source.outcome.risk_level' ) || '–',
+					content: get( charge, 'outcome.risk_level' ) || '–',
 				},
 				{
-					content: transaction.id || '–',
+					content: charge.id || '–',
 				},
 			] } />
 		</Card>

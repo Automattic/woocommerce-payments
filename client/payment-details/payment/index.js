@@ -10,11 +10,11 @@ import { Card } from '@woocommerce/components';
  */
 
 const PaymentDetailsPayment = ( props ) => {
-	const { transaction } = props;
+	const { charge } = props;
 	// TODO: this is a placeholder card and does not require translation
 	return (
 		<Card title="Payment">
-			Payment details for transaction { transaction.id }.
+			Payment details for charge { charge.id }.
 		</Card>
 	);
 };

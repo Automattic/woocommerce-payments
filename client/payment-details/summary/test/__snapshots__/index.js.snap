@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentDetailsSummary correctly renders a transaction 1`] = `
+exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 <Card
   className="payment-details-summary-details"
 >
@@ -20,32 +20,30 @@ exports[`PaymentDetailsSummary correctly renders a transaction 1`] = `
           usd
         </span>
         <PaymentStatusChip
-          transaction={
+          charge={
             Object {
               "amount": 1500,
+              "billing_details": Object {
+                "name": "Customer Name",
+              },
               "created": 1568928240,
               "currency": "usd",
               "fee": 74,
-              "id": "txn_38jdHA39KKA",
+              "id": "ch_38jdHA39KKA",
               "net": 1426,
               "order": Object {
                 "number": 45981,
                 "url": "https://somerandomorderurl.com/?edit_order=45981",
               },
-              "source": Object {
-                "billing_details": Object {
-                  "name": "Customer Name",
+              "outcome": Object {
+                "risk_level": "normal",
+              },
+              "payment_method_details": Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
                 },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
+                "type": "card",
               },
               "type": "charge",
             }
@@ -127,7 +125,7 @@ exports[`PaymentDetailsSummary correctly renders a transaction 1`] = `
           "title": "Risk Evaluation",
         },
         Object {
-          "content": "txn_38jdHA39KKA",
+          "content": "ch_38jdHA39KKA",
         },
       ]
     }
@@ -135,7 +133,7 @@ exports[`PaymentDetailsSummary correctly renders a transaction 1`] = `
 </Card>
 `;
 
-exports[`PaymentDetailsSummary renders defaults if transaction object is empty 1`] = `
+exports[`PaymentDetailsSummary renders defaults if charge object is empty 1`] = `
 <Card
   className="payment-details-summary-details"
 >
@@ -155,7 +153,7 @@ exports[`PaymentDetailsSummary renders defaults if transaction object is empty 1
           cur
         </span>
         <PaymentStatusChip
-          transaction={Object {}}
+          charge={Object {}}
         />
       </p>
       <div
@@ -224,7 +222,7 @@ exports[`PaymentDetailsSummary renders defaults if transaction object is empty 1
 </Card>
 `;
 
-exports[`PaymentDetailsSummary renders fully refunded information for a transaction 1`] = `
+exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
 <Card
   className="payment-details-summary-details"
 >
@@ -244,35 +242,33 @@ exports[`PaymentDetailsSummary renders fully refunded information for a transact
           usd
         </span>
         <PaymentStatusChip
-          transaction={
+          charge={
             Object {
               "amount": 1500,
+              "amount_refunded": 1500,
+              "billing_details": Object {
+                "name": "Customer Name",
+              },
               "created": 1568928240,
               "currency": "usd",
               "fee": 74,
-              "id": "txn_38jdHA39KKA",
+              "id": "ch_38jdHA39KKA",
               "net": 1426,
               "order": Object {
                 "number": 45981,
                 "url": "https://somerandomorderurl.com/?edit_order=45981",
               },
-              "source": Object {
-                "amount_refunded": 1500,
-                "billing_details": Object {
-                  "name": "Customer Name",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "refunded": true,
+              "outcome": Object {
+                "risk_level": "normal",
               },
+              "payment_method_details": Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              },
+              "refunded": true,
               "type": "charge",
             }
           }
@@ -357,7 +353,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a transact
           "title": "Risk Evaluation",
         },
         Object {
-          "content": "txn_38jdHA39KKA",
+          "content": "ch_38jdHA39KKA",
         },
       ]
     }
@@ -365,7 +361,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a transact
 </Card>
 `;
 
-exports[`PaymentDetailsSummary renders partially refunded information for a transaction 1`] = `
+exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
 <Card
   className="payment-details-summary-details"
 >
@@ -385,35 +381,33 @@ exports[`PaymentDetailsSummary renders partially refunded information for a tran
           usd
         </span>
         <PaymentStatusChip
-          transaction={
+          charge={
             Object {
               "amount": 1500,
+              "amount_refunded": 1200,
+              "billing_details": Object {
+                "name": "Customer Name",
+              },
               "created": 1568928240,
               "currency": "usd",
               "fee": 74,
-              "id": "txn_38jdHA39KKA",
+              "id": "ch_38jdHA39KKA",
               "net": 1426,
               "order": Object {
                 "number": 45981,
                 "url": "https://somerandomorderurl.com/?edit_order=45981",
               },
-              "source": Object {
-                "amount_refunded": 1200,
-                "billing_details": Object {
-                  "name": "Customer Name",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "refunded": false,
+              "outcome": Object {
+                "risk_level": "normal",
               },
+              "payment_method_details": Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              },
+              "refunded": false,
               "type": "charge",
             }
           }
@@ -498,7 +492,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a tran
           "title": "Risk Evaluation",
         },
         Object {
-          "content": "txn_38jdHA39KKA",
+          "content": "ch_38jdHA39KKA",
         },
       ]
     }
