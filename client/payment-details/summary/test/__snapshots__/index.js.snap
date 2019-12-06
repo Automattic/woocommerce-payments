@@ -1,21 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
+exports[`PaymentDetailsSummary correctly renders a transaction 1`] = `
 <Card
-  className="transaction-summary-details"
+  className="payment-details-summary-details"
 >
   <div
-    className="transaction-summary"
+    className="payment-details-summary"
   >
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <p
-        className="transaction-summary__amount"
+        className="payment-details-summary__amount"
       >
         $15.00
         <span
-          className="transaction-summary__amount-currency"
+          className="payment-details-summary__amount-currency"
         >
           usd
         </span>
@@ -53,7 +53,7 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
         />
       </p>
       <div
-        className="transaction-summary__breakdown"
+        className="payment-details-summary__breakdown"
       >
         <p>
           Fee: 
@@ -66,13 +66,13 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
       </div>
     </div>
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <div
-        className="transaction-summary__actions"
+        className="payment-details-summary__actions"
       >
         <ForwardRef(Button)
-          className="transaction-summary__actions-item"
+          className="payment-details-summary__actions-item"
           disabled={false}
           href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
           isDefault={true}
@@ -135,22 +135,22 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
 </Card>
 `;
 
-exports[`TransactionSummaryDetails renders defaults if transaction object is empty 1`] = `
+exports[`PaymentDetailsSummary renders defaults if transaction object is empty 1`] = `
 <Card
-  className="transaction-summary-details"
+  className="payment-details-summary-details"
 >
   <div
-    className="transaction-summary"
+    className="payment-details-summary"
   >
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <p
-        className="transaction-summary__amount"
+        className="payment-details-summary__amount"
       >
         $0.00
         <span
-          className="transaction-summary__amount-currency"
+          className="payment-details-summary__amount-currency"
         >
           cur
         </span>
@@ -159,7 +159,7 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
         />
       </p>
       <div
-        className="transaction-summary__breakdown"
+        className="payment-details-summary__breakdown"
       >
         <p>
           Fee: 
@@ -172,13 +172,13 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
       </div>
     </div>
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <div
-        className="transaction-summary__actions"
+        className="payment-details-summary__actions"
       >
         <ForwardRef(Button)
-          className="transaction-summary__actions-item"
+          className="payment-details-summary__actions-item"
           disabled={true}
           href="undefined#woocommerce-order-items"
           isDefault={true}
@@ -224,22 +224,22 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
 </Card>
 `;
 
-exports[`TransactionSummaryDetails renders fully refunded information for a transaction 1`] = `
+exports[`PaymentDetailsSummary renders fully refunded information for a transaction 1`] = `
 <Card
-  className="transaction-summary-details"
+  className="payment-details-summary-details"
 >
   <div
-    className="transaction-summary"
+    className="payment-details-summary"
   >
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <p
-        className="transaction-summary__amount"
+        className="payment-details-summary__amount"
       >
         $15.00
         <span
-          className="transaction-summary__amount-currency"
+          className="payment-details-summary__amount-currency"
         >
           usd
         </span>
@@ -279,7 +279,7 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
         />
       </p>
       <div
-        className="transaction-summary__breakdown"
+        className="payment-details-summary__breakdown"
       >
         <p>
           Refunded: 
@@ -296,13 +296,13 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
       </div>
     </div>
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <div
-        className="transaction-summary__actions"
+        className="payment-details-summary__actions"
       >
         <ForwardRef(Button)
-          className="transaction-summary__actions-item"
+          className="payment-details-summary__actions-item"
           disabled={true}
           href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
           isDefault={true}
@@ -365,22 +365,22 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
 </Card>
 `;
 
-exports[`TransactionSummaryDetails renders partially refunded information for a transaction 1`] = `
+exports[`PaymentDetailsSummary renders partially refunded information for a transaction 1`] = `
 <Card
-  className="transaction-summary-details"
+  className="payment-details-summary-details"
 >
   <div
-    className="transaction-summary"
+    className="payment-details-summary"
   >
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <p
-        className="transaction-summary__amount"
+        className="payment-details-summary__amount"
       >
         $15.00
         <span
-          className="transaction-summary__amount-currency"
+          className="payment-details-summary__amount-currency"
         >
           usd
         </span>
@@ -420,7 +420,7 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
         />
       </p>
       <div
-        className="transaction-summary__breakdown"
+        className="payment-details-summary__breakdown"
       >
         <p>
           Refunded: 
@@ -437,13 +437,13 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
       </div>
     </div>
     <div
-      className="transaction-summary__section"
+      className="payment-details-summary__section"
     >
       <div
-        className="transaction-summary__actions"
+        className="payment-details-summary__actions"
       >
         <ForwardRef(Button)
-          className="transaction-summary__actions-item"
+          className="payment-details-summary__actions-item"
           disabled={false}
           href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
           isDefault={true}

@@ -25,18 +25,18 @@ import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
 import './style.scss';
 
-const TransactionSummaryDetails = ( props ) => {
+const PaymentDetailsSummary = ( props ) => {
 	const { transaction } = props;
 	return (
-		<Card className="transaction-summary-details">
-			<div className="transaction-summary">
-				<div className="transaction-summary__section">
-					<p className="transaction-summary__amount">
+		<Card className="payment-details-summary-details">
+			<div className="payment-details-summary">
+				<div className="payment-details-summary__section">
+					<p className="payment-details-summary__amount">
 						{ formatCurrency( ( transaction.amount || 0 ) / 100 ) }
-						<span className="transaction-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
+						<span className="payment-details-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
 						<PaymentStatusChip transaction={ transaction } />
 					</p>
-					<div className="transaction-summary__breakdown">
+					<div className="payment-details-summary__breakdown">
 						{ isTransactionRefunded( transaction )
 							? <p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
@@ -53,11 +53,11 @@ const TransactionSummaryDetails = ( props ) => {
 						</p>
 					</div>
 				</div>
-				<div className="transaction-summary__section">
+				<div className="payment-details-summary__section">
 					{ /* TODO: implement control buttons depending on the transaction status */ }
 					{ /* E.g. if transaction is under dispute display Accept Dispute and Respond to Dispute buttons */ }
-					<div className="transaction-summary__actions">
-						<Button className="transaction-summary__actions-item"
+					<div className="payment-details-summary__actions">
+						<Button className="payment-details-summary__actions-item"
 							isDefault
 							isLarge
 							disabled={ ! get( transaction, 'order.url' ) ||	isTransactionFullyRefunded( transaction ) }
@@ -99,4 +99,4 @@ const TransactionSummaryDetails = ( props ) => {
 	);
 };
 
-export default TransactionSummaryDetails;
+export default PaymentDetailsSummary;

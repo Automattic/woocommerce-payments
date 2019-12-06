@@ -7,7 +7,7 @@ import { shallow } from 'enzyme';
 /**
  * Internal dependencies
  */
-import TransactionSummaryDetails from '../';
+import PaymentDetailsSummary from '../';
 
 const getBaseTransaction = () => ( {
 	id: 'txn_38jdHA39KKA',
@@ -42,10 +42,10 @@ const getBaseTransaction = () => ( {
 	},
 } );
 
-describe( 'TransactionSummaryDetails', () => {
+describe( 'PaymentDetailsSummary', () => {
 	test( 'correctly renders a transaction', () => {
-		const transactionSummaryDetails = renderTransaction( getBaseTransaction() );
-		expect( transactionSummaryDetails ).toMatchSnapshot();
+		const paymentDetailsSummary = renderTransaction( getBaseTransaction() );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
 	test( 'renders partially refunded information for a transaction', () => {
@@ -54,8 +54,8 @@ describe( 'TransactionSummaryDetails', () => {
 		// eslint-disable-next-line camelcase
 		transaction.source.amount_refunded = 1200;
 
-		const transactionSummaryDetails = renderTransaction( transaction );
-		expect( transactionSummaryDetails ).toMatchSnapshot();
+		const paymentDetailsSummary = renderTransaction( transaction );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
 	test( 'renders fully refunded information for a transaction', () => {
@@ -64,17 +64,17 @@ describe( 'TransactionSummaryDetails', () => {
 		// eslint-disable-next-line camelcase
 		transaction.source.amount_refunded = 1500;
 
-		const transactionSummaryDetails = renderTransaction( transaction );
-		expect( transactionSummaryDetails ).toMatchSnapshot();
+		const paymentDetailsSummary = renderTransaction( transaction );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
 	test( 'renders defaults if transaction object is empty', () => {
-		const transactionSummaryDetails = renderTransaction( {} );
-		expect( transactionSummaryDetails ).toMatchSnapshot();
+		const paymentDetailsSummary = renderTransaction( {} );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
 	function renderTransaction( transaction ) {
-		return shallow( <TransactionSummaryDetails transaction={ transaction } /> );
+		return shallow( <PaymentDetailsSummary transaction={ transaction } /> );
 	}
 } );
 

@@ -9,14 +9,14 @@ import { Card } from '@woocommerce/components';
  * Internal dependencies.
  */
 
-const TransactionPaymentDetails = ( props ) => {
+const PaymentDetailsPaymentMethod = ( props ) => {
 	const { transaction } = props;
 	// TODO: this is a placeholder card and does not require translation
 	return (
-		<Card title="Payment">
-			Payment details for transaction { transaction.id }.
+		<Card title="Payment method">
+			Payment method details for transaction { transaction.id }.
 		</Card>
 	);
 };
 
-export default TransactionPaymentDetails;
+export default PaymentDetailsPaymentMethod;
