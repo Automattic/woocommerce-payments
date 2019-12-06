@@ -20,6 +20,7 @@ describe( 'Transactions list', () => {
 					source: {
 						object: 'refund',
 						charge: {
+							id: 'ch_j23w39dsajda',
 							object: 'charge',
 							// eslint-disable-next-line camelcase
 							payment_method_details: {
@@ -50,6 +51,7 @@ describe( 'Transactions list', () => {
 					created: 1572580800,
 					type: 'charge',
 					source: {
+						id: 'ch_j239jda',
 						object: 'charge',
 						// eslint-disable-next-line camelcase
 						payment_method_details: {
