@@ -13,11 +13,12 @@ import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
 import TransactionDetailsPage from 'transaction-details';
+import DisputesPage from 'disputes';
+import DisputeEvidencePage from 'disputes/evidence';
 import ConnectAccountPage from 'connect-account-page';
 import 'payments-api/payments-data-store';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
-const DisputesPage = () => <HelloWorld>Hello from the disputes page</HelloWorld>;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 	const { menuID, rootLink } = getMenuSettings();
@@ -66,6 +67,16 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         breadcrumbs: [
             rootLink,
             __( 'Disputes', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: DisputeEvidencePage,
+        path: '/payments/disputes/evidence',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            [ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
+            __( 'Evidence', 'woocommerce-payments' ),
         ],
     } );
     return pages;

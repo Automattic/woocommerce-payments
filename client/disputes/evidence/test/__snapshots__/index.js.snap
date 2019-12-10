@@ -1,0 +1,133 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dispute evidence form needing response, renders correctly 1`] = `
+<Section>
+  <Card
+    key="general"
+    title="General evidence"
+  >
+    <WithInstanceId(TextareaControl)
+      disabled={false}
+      key="product_description"
+      label="Product Description"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_name"
+      label="Customer Name"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_email_address"
+      label="Customer Email"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_purchase_ip"
+      label="Customer IP Address"
+      onChange={[Function]}
+      value="127.0.0.1"
+    />
+  </Card>
+  <Card
+    key="uncategorized"
+    title="Additional details"
+  >
+    <WithInstanceId(TextareaControl)
+      disabled={false}
+      key="uncategorized_text"
+      label="Additional Details"
+      onChange={[Function]}
+      value=""
+    />
+  </Card>
+  <Card>
+    <ForwardRef(Button)
+      isLarge={true}
+      isPrimary={true}
+      onClick={[Function]}
+    >
+      Submit Evidence
+    </ForwardRef(Button)>
+    <ForwardRef(Button)
+      isDefault={true}
+      isLarge={true}
+      onClick={[Function]}
+    >
+      Save For Later
+    </ForwardRef(Button)>
+  </Card>
+</Section>
+`;
+
+exports[`Dispute evidence form not needing response, renders correctly 1`] = `
+<Section>
+  <Card
+    key="general"
+    title="General evidence"
+  >
+    <WithInstanceId(TextareaControl)
+      disabled={false}
+      key="product_description"
+      label="Product Description"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_name"
+      label="Customer Name"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_email_address"
+      label="Customer Email"
+      onChange={[Function]}
+      value=""
+    />
+    <WithInstanceId(TextControl)
+      disabled={false}
+      key="customer_purchase_ip"
+      label="Customer IP Address"
+      onChange={[Function]}
+      value="127.0.0.1"
+    />
+  </Card>
+  <Card
+    key="uncategorized"
+    title="Additional details"
+  >
+    <WithInstanceId(TextareaControl)
+      disabled={false}
+      key="uncategorized_text"
+      label="Additional Details"
+      onChange={[Function]}
+      value="winning_evidence"
+    />
+  </Card>
+  <Card>
+    <ForwardRef(Button)
+      isLarge={true}
+      isPrimary={true}
+      onClick={[Function]}
+    >
+      Submit Evidence
+    </ForwardRef(Button)>
+    <ForwardRef(Button)
+      isDefault={true}
+      isLarge={true}
+      onClick={[Function]}
+    >
+      Save For Later
+    </ForwardRef(Button)>
+  </Card>
+</Section>
+`;

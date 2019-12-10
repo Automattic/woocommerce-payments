@@ -24,6 +24,7 @@ class WC_Payments_API_Client {
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
+	const DISPUTES_API     = 'disputes';
 	const OAUTH_API        = 'oauth';
 
 	/**
@@ -250,6 +251,43 @@ class WC_Payments_API_Client {
 		}
 
 		return $this->add_order_info_to_transaction( $transaction );
+	}
+
+	/**
+	 * List disputes
+	 *
+	 * @return array
+	 * @throws Exception - Exception thrown on request failure.
+	 */
+	public function list_disputes() {
+		return $this->request( array(), self::DISPUTES_API, self::GET );
+	}
+
+	/**
+	 * Fetch a single dispute with provided id.
+	 *
+	 * @param string $dispute_id id of requested dispute.
+	 * @return array dispute object.
+	 */
+	public function get_dispute( $dispute_id ) {
+		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
+	}
+
+	/**
+	 * Update dispute with provided id.
+	 *
+	 * @param string $dispute_id id of dispute to update.
+	 * @param array  $evidence   evidence to upload.
+	 * @param bool   $submit     whether to submit (rather than stage) evidence.
+	 * @return array dispute object.
+	 */
+	public function update_dispute( $dispute_id, $evidence, $submit ) {
+		$request = array(
+			'evidence' => $evidence,
+			'submit'   => $submit,
+		);
+
+		return $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
 	}
 
 	/**

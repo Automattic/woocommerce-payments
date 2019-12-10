@@ -80,7 +80,7 @@ describe( 'Transactions list', () => {
 		const list = shallow(
 			<TransactionsList
 				transactions={ transactions }
-				isLoading={ false }
+				showPlaceholder={ false }
 			/>
 		);
 		expect( list ).toMatchSnapshot();
