@@ -1,6 +1,13 @@
-.transaction-details-button {
-	height: 18px;
-	fill: $gray-30;
+.transactions-list {
+	.payment-method__brand {
+		display: block;
+		margin: 0 auto;
+	}
+
+	.transactions-list__details-button {
+		height: 18px;
+		fill: $gray-30;
+	}
 }
 
 .info-button {

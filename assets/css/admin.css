@@ -22,8 +22,9 @@
 .payment-method__brand {
 	display: inline-block;
 	height: 20px;
+	height: 1.25rem;
 	width: 32px;
-	margin-bottom: -3px;
+	width: 2rem;
 }
 
 .payment-method__brand--amex {
