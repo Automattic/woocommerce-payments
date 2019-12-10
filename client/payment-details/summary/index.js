@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { formatCurrency } from '@woocommerce/currency';
+import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -25,6 +25,8 @@ import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
 import './style.scss';
 
+const currency = new Currency();
+
 const PaymentDetailsSummary = ( props ) => {
 	let { charge } = props;
 	charge = charge || {};
@@ -33,7 +35,7 @@ const PaymentDetailsSummary = ( props ) => {
 			<div className="payment-details-summary">
 				<div className="payment-details-summary__section">
 					<p className="payment-details-summary__amount">
-						{ formatCurrency( ( charge.amount || 0 ) / 100 ) }
+						{ currency.formatCurrency( ( charge.amount || 0 ) / 100 ) }
 						<span className="payment-details-summary__amount-currency">{ ( charge.currency || 'cur' ) }</span>
 						<PaymentStatusChip charge={ charge } />
 					</p>
@@ -41,16 +43,16 @@ const PaymentDetailsSummary = ( props ) => {
 						{ isChargeRefunded( charge )
 							? <p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ formatCurrency( -( charge.amount_refunded || 0 ) / 100 ) }
+								{ currency.formatCurrency( -( charge.amount_refunded || 0 ) / 100 ) }
 							</p>
 							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ formatCurrency( ( -charge.fee || 0 ) / 100 ) }
+							{ currency.formatCurrency( ( -charge.fee || 0 ) / 100 ) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ formatCurrency( ( charge.net || 0 ) / 100 ) }
+							{ currency.formatCurrency( ( charge.net || 0 ) / 100 ) }
 						</p>
 					</div>
 				</div>

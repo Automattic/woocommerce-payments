@@ -7,10 +7,12 @@ import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { formatCurrency } from '@woocommerce/currency';
+import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 import { capitalize } from 'lodash';
+
+const currency = new Currency();
 
 const headers = [
 	{ key: 'amount', label: 'Amount' },
@@ -32,7 +34,7 @@ export const DisputesList = ( props ) => {
 		);
 
 		const data = {
-			amount: { value: dispute.amount / 100, display: formatCurrency( dispute.amount / 100 ) },
+			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: {
 				value: dispute.status,
 				display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></>,
