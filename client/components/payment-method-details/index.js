@@ -6,15 +6,15 @@
 /**
  * Internal dependencies.
  */
+import './style.scss';
 
 const PaymentMethodDetails = ( props ) => {
 	const { payment } = props;
 	const paymentMethod = ( payment ) ? payment[ payment.type ] : null;
 	return paymentMethod
-		? <span>
+		? <span className="payment-method-details">
 			{ /* TODO: deal with other payment methods. Currently this assumes payment type is card */ }
-			{ /* TODO: use paymentMethod brand image instead of wrapping its name in a code tag*/ }
-			<code>{ paymentMethod.brand }</code>
+			<span className={ `payment-method__brand payment-method__brand--${ paymentMethod.brand }` }></span>
 			{ ' •••• ' }
 			{ paymentMethod.last4 }
 		</span>

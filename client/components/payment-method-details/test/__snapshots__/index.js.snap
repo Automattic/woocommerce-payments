@@ -7,10 +7,12 @@ exports[`PaymentMethodDetails renders a dash if no card was provided 1`] = `
 `;
 
 exports[`PaymentMethodDetails renders a valid card brand and last 4 digits 1`] = `
-<span>
-  <code>
-    visa
-  </code>
+<span
+  className="payment-method-details"
+>
+  <span
+    className="payment-method__brand payment-method__brand--visa"
+  />
    •••• 
   4242
 </span>
