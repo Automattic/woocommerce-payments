@@ -72,7 +72,7 @@ export const TransactionsList = ( props ) => {
 		const data = {
 			created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
-			source: card && { value: card.brand, display: <code>{ card.brand }</code> },
+			source: card && { value: card.brand, display: <span className={ `payment-method__brand payment-method__brand--${ card.brand }` }></span> },
 			order: { value: txn.order, display: orderUrl },
 			customer: billingDetails && { value: billingDetails.name, display: billingDetails.name },
 			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },

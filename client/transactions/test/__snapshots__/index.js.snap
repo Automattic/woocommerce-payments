@@ -119,9 +119,9 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <code>
-            visa
-          </code>,
+          "display": <span
+            className="payment-method__brand payment-method__brand--visa"
+          />,
           "value": "visa",
         },
         Object {
@@ -180,10 +180,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <code>
-            visa
-          </code>,
-          "value": "visa",
+          "display": <span
+            className="payment-method__brand payment-method__brand--mastercard"
+          />,
+          "value": "mastercard",
         },
         Object {
           "display": "My name",
