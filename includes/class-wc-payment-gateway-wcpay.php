@@ -390,8 +390,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'wc_payments_account_actions',
 			$description,
 			$this->is_stripe_connected(),
-			$this->get_login_url(),
-			$this->get_connect_url()
+			WC_Payments_Account::get_login_url(),
+			WC_Payments_Account::get_connect_url()
 		);
 
 		ob_start();
