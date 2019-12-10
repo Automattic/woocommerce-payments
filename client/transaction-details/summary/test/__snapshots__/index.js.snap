@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
-<Card>
+<Card
+  className="transaction-summary-details"
+>
   <div
     className="transaction-summary"
   >
@@ -124,6 +126,9 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
           "content": "normal",
           "title": "Risk Evaluation",
         },
+        Object {
+          "content": "txn_38jdHA39KKA",
+        },
       ]
     }
   />
@@ -131,7 +136,9 @@ exports[`TransactionSummaryDetails correctly renders a transaction 1`] = `
 `;
 
 exports[`TransactionSummaryDetails renders defaults if transaction object is empty 1`] = `
-<Card>
+<Card
+  className="transaction-summary-details"
+>
   <div
     className="transaction-summary"
   >
@@ -208,6 +215,9 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
           "content": "–",
           "title": "Risk Evaluation",
         },
+        Object {
+          "content": "–",
+        },
       ]
     }
   />
@@ -215,7 +225,9 @@ exports[`TransactionSummaryDetails renders defaults if transaction object is emp
 `;
 
 exports[`TransactionSummaryDetails renders fully refunded information for a transaction 1`] = `
-<Card>
+<Card
+  className="transaction-summary-details"
+>
   <div
     className="transaction-summary"
   >
@@ -344,6 +356,9 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
           "content": "normal",
           "title": "Risk Evaluation",
         },
+        Object {
+          "content": "txn_38jdHA39KKA",
+        },
       ]
     }
   />
@@ -351,7 +366,9 @@ exports[`TransactionSummaryDetails renders fully refunded information for a tran
 `;
 
 exports[`TransactionSummaryDetails renders partially refunded information for a transaction 1`] = `
-<Card>
+<Card
+  className="transaction-summary-details"
+>
   <div
     className="transaction-summary"
   >
@@ -479,6 +496,9 @@ exports[`TransactionSummaryDetails renders partially refunded information for a 
         Object {
           "content": "normal",
           "title": "Risk Evaluation",
+        },
+        Object {
+          "content": "txn_38jdHA39KKA",
         },
       ]
     }
