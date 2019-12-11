@@ -293,10 +293,14 @@ class WC_Payments_API_Client {
 	/**
 	 * Get current account data
 	 *
-	 * @return array An array describing an account object.
+	 * @return array|WP_Error An array describing an account object or WP_Error in case of failure.
 	 */
 	public function get_account_data() {
-		return $this->request( array(), self::ACCOUNTS_API, self::GET );
+		try {
+			return $this->request( array(), self::ACCOUNTS_API, self::GET );
+		} catch ( \Exception $e ) {
+			return new WP_Error( $e->getMessage() );
+		}
 	}
 
 	/**

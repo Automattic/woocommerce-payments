@@ -82,7 +82,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( ! is_array( $account ) ) {
+		if ( empty( $account ) || ! is_array( $account ) ) {
 			return false;
 		}
 
@@ -265,19 +265,22 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
-	 * @return array Account data.
+	 * @return array|WP_Error Account data or Error object if not found
 	 */
 	private function get_cached_account_data() {
 		$account = get_transient( self::ACCOUNT_TRANSIENT );
 
-		if ( false === $account ) {
-			$account = $this->payments_api_client->get_account_data();
-
-			if ( ! empty( $account ) && ! is_wp_error( $account ) ) {
-				set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
-			}
+		if ( false !== $account ) {
+			return $account;
 		}
 
+		$account = $this->payments_api_client->get_account_data();
+
+		if ( empty( $account ) || is_wp_error( $account ) ) {
+			return $account;
+		}
+
+		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
 	}
 
