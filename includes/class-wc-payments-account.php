@@ -208,6 +208,7 @@ class WC_Payments_Account {
 				'business_name' => get_bloginfo( 'name' ),
 			)
 		);
+
 		if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
 			$this->gateway->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
 			return;

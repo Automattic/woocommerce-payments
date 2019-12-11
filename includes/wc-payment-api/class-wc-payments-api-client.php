@@ -309,7 +309,7 @@ class WC_Payments_API_Client {
 	 * @param string $return_url    - URL to redirect to at the end of the flow.
 	 * @param array  $business_data - data to prefill the form.
 	 *
-	 * @return array An array containing the url and state fields
+	 * @return array|WP_Error  An array containing the url and state fields or WP_Error on failure
 	 */
 	public function get_oauth_data( $return_url, $business_data = array() ) {
 		$request_args = apply_filters(
@@ -320,7 +320,11 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
+		try {
+			return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
+		} catch ( \Exception $e ) {
+			return new WP_Error( $e->getMessage() );
+		}
 	}
 
 	/**
