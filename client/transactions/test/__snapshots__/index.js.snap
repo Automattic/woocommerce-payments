@@ -84,7 +84,7 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": <Link
             className="transaction-details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_j23jda9JJa"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
             type="wc-admin"
           >
             <t
@@ -145,7 +145,7 @@ exports[`Transactions list renders correctly 1`] = `
         Object {
           "display": <Link
             className="transaction-details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=txn_oa9kaKaa8"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
             type="wc-admin"
           >
             <t

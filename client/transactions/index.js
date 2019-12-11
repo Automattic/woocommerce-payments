@@ -50,14 +50,14 @@ export const TransactionsList = ( props ) => {
 			{
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: txn.id,
+				id: charge ? charge.id : '',
 			}
 		);
-		const detailsLink = (
+		const detailsLink = charge ? (
 			<Link className="transaction-details-button" href={ detailsUrl } >
 				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
-		);
+		) : '';
 
 		// Extract nested properties from the charge.
 		const billingDetails = charge ? charge.billing_details : null;

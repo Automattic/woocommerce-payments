@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import { getTransactionStatus } from '../../utils/transaction';
+import { getChargeStatus } from '../../utils/charge';
 import Chip from '../chip';
 
 /* TODO: implement other payment statuses */
@@ -45,8 +45,8 @@ const statuses = {
 };
 
 const PaymentStatusChip = ( props ) => {
-	const { transaction } = props;
-	const status = statuses[ getTransactionStatus( transaction ) ] || statuses.default;
+	const { charge } = props;
+	const status = statuses[ getChargeStatus( charge ) ] || statuses.default;
 	return (
 		<Chip message={ status.message } type={ status.type } />
 	);

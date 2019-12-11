@@ -12,9 +12,9 @@ import { addFilter } from '@wordpress/hooks';
 import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
-import TransactionDetailsPage from 'transaction-details';
 import DisputesPage from 'disputes';
 import DisputeEvidencePage from 'disputes/evidence';
+import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
 import 'payments-api/payments-data-store';
 
@@ -51,7 +51,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: TransactionDetailsPage,
+        container: PaymentDetailsPage,
         path: '/payments/transactions/details',
         wpOpenMenu: menuID,
         breadcrumbs: [
