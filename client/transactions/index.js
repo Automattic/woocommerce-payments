@@ -5,7 +5,7 @@
  */
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { formatCurrency } from '@woocommerce/currency';
+import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
@@ -17,6 +17,8 @@ import { addQueryArgs } from '@wordpress/url';
 import withSelect from 'payments-api/with-select';
 import OrderLink from '../components/order-link';
 import './style.scss';
+
+const currency = new Currency();
 
 // TODO make date / time, amount, fee, and net sortable - when date time is sortable, the background of the info buttons should match
 const headers = [
@@ -75,10 +77,10 @@ export const TransactionsList = ( props ) => {
 			customer: billingDetails && { value: billingDetails.name, display: billingDetails.name },
 			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },
 			country: address && { value: address.country, display: address.country },
-			amount: { value: txn.amount / 100, display: formatCurrency( txn.amount / 100 ) },
+			amount: { value: txn.amount / 100, display: currency.formatCurrency( txn.amount / 100 ) },
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fee: { value: txn.fee / 100, display: formatCurrency( ( txn.fee / 100 ) * -1 ) },
-			net: { value: ( txn.amount - txn.fee ) / 100, display: formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
+			fee: { value: txn.fee / 100, display: currency.formatCurrency( ( txn.fee / 100 ) * -1 ) },
+			net: { value: ( txn.amount - txn.fee ) / 100, display: currency.formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
 			riskLevel: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
 			details: { value: txn.id, display: detailsLink },
