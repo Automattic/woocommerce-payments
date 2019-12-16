@@ -14,13 +14,8 @@ import { get } from 'lodash';
 /**
  * Internal dependencies.
  */
-import {
-	isChargeRefunded,
-	isChargePartiallyRefunded,
-	isChargeFullyRefunded,
-} from '../../utils/charge';
+import { isChargeRefunded } from '../../utils/charge';
 import PaymentStatusChip from '../../components/payment-status-chip';
-import OrderLink from '../../components/order-link';
 import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
 import './style.scss';
@@ -58,16 +53,12 @@ const PaymentDetailsSummary = ( props ) => {
 				</div>
 				<div className="payment-details-summary__section">
 					{ /* TODO: implement control buttons depending on the transaction status */ }
-					{ /* E.g. if transaction is under dispute display Accept Dispute and Respond to Dispute buttons */ }
 					<div className="payment-details-summary__actions">
 						<Button className="payment-details-summary__actions-item"
 							isDefault
 							isLarge
-							disabled={ ! get( charge, 'order.url' ) ||	isChargeFullyRefunded( charge ) }
-							href={ `${ get( charge, 'order.url' ) }#woocommerce-order-items` }>
-							{ ( isChargePartiallyRefunded( charge ) )
-								? __( 'Refund more', 'woocommerce-payments' )
-								: __( 'Refund', 'woocommerce-payments' ) }
+							href={ get( charge, 'order.url' ) }>
+								{ `${ __( 'View order' ) } ${ get( charge, 'order.number' ) || '' }` }
 						</Button>
 					</div>
 				</div>
@@ -77,10 +68,6 @@ const PaymentDetailsSummary = ( props ) => {
 				{
 					title: __( 'Date', 'woocommerce-payments' ),
 					content: charge.created ? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) ) : '–',
-				},
-				{
-					title: __( 'Order No.', 'woocommerce-payments' ),
-					content: <OrderLink order={ charge.order } />,
 				},
 				{
 					title: __( 'Customer', 'woocommerce-payments' ),
