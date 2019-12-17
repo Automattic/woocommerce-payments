@@ -65,20 +65,22 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$account = $this->get_cached_account_data();
-
-		if ( is_wp_error( $account ) ) {
+		try {
+			$account = $this->get_cached_account_data();
+		} catch ( Exception $e ) {
 			$message = sprintf(
 				/* translators: %1: error message */
 				__( 'Could not fetch data for your account: "%1$s"', 'woocommerce-payments' ),
-				$account->get_error_message()
+				$e->getMessage()
 			);
+
 			add_filter(
 				'admin_notices',
 				function () use ( $message ) {
 					WC_Payments::display_admin_error( $message );
 				}
 			);
+
 			return false;
 		}
 
@@ -121,12 +123,19 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
-			$this->redirect_to_login();
-			return;
+			try {
+				$this->redirect_to_login();
+			} catch ( Exception $e ) {
+				$this->gateway->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
+			}
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$this->init_oauth();
+			try {
+				$this->init_oauth();
+			} catch ( Exception $e ) {
+				$this->gateway->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
+			}
 			return;
 		}
 
@@ -184,12 +193,9 @@ class WC_Payments_Account {
 		delete_transient( self::ACCOUNT_TRANSIENT );
 
 		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
-		if ( is_wp_error( $login_data ) || ! isset( $login_data['url'] ) ) {
-			$this->gateway->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
-			return;
-		}
 		wp_safe_redirect( $login_data['url'] );
 		exit;
+
 	}
 
 	/**
@@ -208,11 +214,6 @@ class WC_Payments_Account {
 				'business_name' => get_bloginfo( 'name' ),
 			)
 		);
-
-		if ( is_wp_error( $oauth_data ) || ! isset( $oauth_data['url'] ) ) {
-			$this->gateway->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
-			return;
-		}
 
 		if ( false === $oauth_data['url'] ) {
 			$account_id           = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
@@ -276,10 +277,6 @@ class WC_Payments_Account {
 		}
 
 		$account = $this->payments_api_client->get_account_data();
-
-		if ( empty( $account ) || is_wp_error( $account ) ) {
-			return $account;
-		}
 
 		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
