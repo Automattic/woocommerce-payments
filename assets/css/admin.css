@@ -18,3 +18,43 @@
 	font-size: 24px;
 	margin-top: -2px;
 }
+
+.payment-method__brand {
+	display: inline-block;
+	height: 20px;
+	height: 1.25rem;
+	width: 32px;
+	width: 2rem;
+}
+
+.payment-method__brand--amex {
+	background: no-repeat url('../images/cards/amex.svg');
+}
+
+.payment-method__brand--diners {
+	background: no-repeat url('../images/cards/diners.svg');
+}
+
+.payment-method__brand--discover {
+	background: no-repeat url('../images/cards/discover.svg');
+}
+
+.payment-method__brand--jcb {
+	background: no-repeat url('../images/cards/jcb.svg');
+}
+
+.payment-method__brand--mastercard {
+	background: no-repeat url('../images/cards/mastercard.svg');
+}
+
+.payment-method__brand--unionpay {
+	background: no-repeat url('../images/cards/unionpay.svg');
+}
+
+.payment-method__brand--visa {
+	background: no-repeat url('../images/cards/visa.svg');
+}
+
+.payment-method__brand--unknown {
+	background: no-repeat url('../images/cards/unknown.svg');
+}

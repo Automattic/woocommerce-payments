@@ -56,7 +56,7 @@ describe( 'Transactions list', () => {
 						// eslint-disable-next-line camelcase
 						payment_method_details: {
 							card: {
-								brand: 'visa',
+								brand: 'mastercard',
 							},
 						},
 						// eslint-disable-next-line camelcase
