@@ -1,119 +1,44 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Transactions list renders correctly 1`] = `
-<TableCard
-  baseSearchQuery={Object {}}
-  className="transactions-list"
-  compareParam="filter"
-  downloadable={false}
-  headers={
-    Array [
-      Object {
-        "cellClassName": "info-button",
-        "key": "details",
-        "label": "",
-        "required": true,
-      },
-      Object {
-        "cellClassName": "date-time",
-        "defaultOrder": "desc",
-        "isLeftAligned": true,
-        "key": "created",
-        "label": "Date / Time",
-        "required": true,
-      },
-      Object {
-        "key": "type",
-        "label": "Type",
-        "required": true,
-      },
-      Object {
-        "isNumeric": true,
-        "key": "amount",
-        "label": "Amount",
-      },
-      Object {
-        "isNumeric": true,
-        "key": "fee",
-        "label": "Fees",
-      },
-      Object {
-        "isNumeric": true,
-        "key": "net",
-        "label": "Net",
-        "required": true,
-      },
-      Object {
-        "key": "order",
-        "label": "Order #",
-        "required": true,
-      },
-      Object {
-        "key": "source",
-        "label": "Source",
-      },
-      Object {
-        "key": "customer",
-        "label": "Customer",
-      },
-      Object {
-        "hiddenByDefault": true,
-        "key": "email",
-        "label": "Email",
-      },
-      Object {
-        "hiddenByDefault": true,
-        "key": "country",
-        "label": "Country",
-      },
-      Object {
-        "hiddenByDefault": true,
-        "key": "riskLevel",
-        "label": "Risk Level",
-      },
-    ]
-  }
-  isLoading={false}
-  onColumnsChange={[Function]}
-  onQueryChange={[Function]}
-  onSearch={[Function]}
-  query={Object {}}
-  rowHeader={0}
-  rows={
-    Array [
+<div>
+  <TableCard
+    baseSearchQuery={Object {}}
+    className="transactions-list"
+    compareParam="filter"
+    downloadable={false}
+    headers={
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
-          "value": "txn_j23jda9JJa",
+          "cellClassName": "info-button",
+          "key": "details",
+          "label": "",
+          "required": true,
         },
         Object {
           "display": "Jan 2, 2020 / 12:46PM",
           "value": "2020-01-02 17:46:02",
         },
         Object {
-          "display": "Refund",
-          "value": "refund",
+          "key": "type",
+          "label": "Type",
+          "required": true,
         },
         Object {
-          "display": "$10.00",
-          "value": 10,
+          "isNumeric": true,
+          "key": "amount",
+          "label": "Amount",
         },
         Object {
-          "display": "$-0.50",
-          "value": 0.5,
+          "isNumeric": true,
+          "key": "fee",
+          "label": "Fees",
         },
         Object {
-          "display": "$9.50",
-          "value": 9.5,
+          "isNumeric": true,
+          "key": "net",
+          "label": "Net",
+          "required": true,
         },
         Object {
           "display": <OrderLink
@@ -127,22 +52,22 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--visa"
-          />,
-          "value": "visa",
+          "key": "source",
+          "label": "Source",
         },
         Object {
-          "display": "Another customer",
-          "value": "Another customer",
+          "key": "customer",
+          "label": "Customer",
         },
         Object {
-          "display": "another@customer.com",
-          "value": "another@customer.com",
+          "hiddenByDefault": true,
+          "key": "email",
+          "label": "Email",
         },
         Object {
-          "display": "US",
-          "value": "US",
+          "hiddenByDefault": true,
+          "key": "country",
+          "label": "Country",
         },
         Object {
           "display": <RiskLevel
@@ -150,7 +75,15 @@ exports[`Transactions list renders correctly 1`] = `
           />,
           "value": 0,
         },
-      ],
+      ]
+    }
+    isLoading={false}
+    onColumnsChange={[Function]}
+    onQueryChange={[Function]}
+    onSearch={[Function]}
+    query={Object {}}
+    rowHeader={0}
+    rows={
       Array [
         Object {
           "display": <Link
