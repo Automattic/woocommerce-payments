@@ -162,15 +162,7 @@ exports[`PaymentDetailsSummary renders defaults if charge object is empty 1`] = 
     >
       <div
         className="payment-details-summary__actions"
-      >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          isDefault={true}
-          isLarge={true}
-        >
-          View order 
-        </ForwardRef(Button)>
-      </div>
+      />
     </div>
   </div>
   <hr

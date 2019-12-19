@@ -54,12 +54,14 @@ const PaymentDetailsSummary = ( props ) => {
 				<div className="payment-details-summary__section">
 					{ /* TODO: implement control buttons depending on the transaction status */ }
 					<div className="payment-details-summary__actions">
-						<Button className="payment-details-summary__actions-item"
-							isDefault
-							isLarge
-							href={ get( charge, 'order.url' ) }>
-								{ `${ __( 'View order' ) } ${ get( charge, 'order.number' ) || '' }` }
-						</Button>
+						{ charge.order
+							? <Button className="payment-details-summary__actions-item"
+								isDefault
+								isLarge
+								href={ charge.order.url }>
+									{ `${ __( 'View order' ) } ${ charge.order.number }` }
+							</Button>
+							: '' }
 					</div>
 				</div>
 			</div>
