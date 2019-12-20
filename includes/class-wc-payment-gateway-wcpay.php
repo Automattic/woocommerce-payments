@@ -342,7 +342,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->add_order_note( $note );
 
-			return $refund;
+			return new WP_Error( $e->getMessage() );
 		}
 
 		if ( empty( $reason ) ) {
