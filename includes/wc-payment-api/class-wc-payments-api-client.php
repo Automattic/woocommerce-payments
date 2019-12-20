@@ -441,7 +441,7 @@ class WC_Payments_API_Client {
 					$response_body['error']['code'],
 					$response_body['error']['message']
 				);
-				throw  new Exception( $message );
+				throw new Exception( $message );
 			};
 
 			$message = sprintf(
@@ -450,7 +450,7 @@ class WC_Payments_API_Client {
 				$response_body['code'],
 				$response_body['message']
 			);
-			throw  new Exception( $message );
+			throw new Exception( $message );
 		}
 
 		return $response_body;
