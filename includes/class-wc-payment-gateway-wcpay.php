@@ -313,7 +313,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  float  $amount   - the amount to refund.
 	 * @param  string $reason   - the reason for refunding.
 	 *
-	 * @return bool|WP_Error - Whether the refund went through, or an error.
+	 * @return bool - Whether the refund went through.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order = wc_get_order( $order_id );
@@ -324,23 +324,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$charge_id = $order->get_meta( '_charge_id', true );
 
-		if ( is_null( $amount ) ) {
-			$refund = $this->payments_api_client->refund_charge( $charge_id );
-		} else {
-			$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
-		}
+		try {
+			if ( is_null( $amount ) ) {
+				$refund = $this->payments_api_client->refund_charge( $charge_id );
+			} else {
+				$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
+			}
+		} catch ( Exception $e ) {
 
-		if ( is_wp_error( $refund ) ) {
 			// TODO log error.
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
 				wc_price( $amount ),
-				$refund->get_error_message()
+				$e->getMessage()
 			);
+
 			$order->add_order_note( $note );
 
-			return $refund;
+			return new WP_Error( $e->getMessage() );
 		}
 
 		if ( empty( $reason ) ) {

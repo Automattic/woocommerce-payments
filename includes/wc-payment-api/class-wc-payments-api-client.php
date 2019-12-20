@@ -321,7 +321,7 @@ class WC_Payments_API_Client {
 	 * @param string $return_url    - URL to redirect to at the end of the flow.
 	 * @param array  $business_data - data to prefill the form.
 	 *
-	 * @return array An array containing the url and state fields
+	 * @return array An array containing the url and state fields.
 	 */
 	public function get_oauth_data( $return_url, $business_data = array() ) {
 		$request_args = apply_filters(
@@ -425,25 +425,48 @@ class WC_Payments_API_Client {
 			$is_site_specific
 		);
 
-		// Extract the response body and decode it from JSON into an array.
-		$response_body_json = wp_remote_retrieve_body( $response );
+		return $this->extract_response_body( $response );
+	}
 
-		$response_body = json_decode( $response_body_json, true );
+	/**
+	 * From a given response extract the body. Invalid HTTP codes will result in an error.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return array $response_body
+	 *
+	 * @throws Exception Standard exception in case we can't extract the body.
+	 */
+	protected function extract_response_body( $response ) {
+		$response_body_json = wp_remote_retrieve_body( $response );
+		$response_body      = json_decode( $response_body_json, true );
+
 		if ( null === $response_body ) {
-			throw new Exception(
-				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' )
-			);
+			throw new Exception( __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' ) );
 		}
 
-		// Check the response code and handle any errors.
+		// Check response error codes.
 		$response_code = wp_remote_retrieve_response_code( $response );
 		if ( 500 <= $response_code ) {
 			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
 		} elseif ( 400 <= $response_code ) {
 			if ( isset( $response_body['error'] ) ) {
-				return new WP_Error( $response_body['error']['code'], $response_body['error']['message'], array( 'status' => $response_code ) );
+				$message = sprintf(
+					// translators: This is an error from a 400 API response.
+					_x( 'Error: %1$s %2$s', '400 Error type message to throw as Exception', 'woocommerce-payments' ),
+					$response_body['error']['code'],
+					$response_body['error']['message']
+				);
+				throw new Exception( $message );
 			};
-			return new WP_Error( $response_body['code'], $response_body['message'], array( 'status' => $response_code ) );
+
+			$message = sprintf(
+				// translators: This is an error from a 400 API response.
+				_x( 'Error: %1$s %2$s', '400 Error type message to throw as Exception', 'woocommerce-payments' ),
+				$response_body['code'],
+				$response_body['message']
+			);
+			throw new Exception( $message );
 		}
 
 		return $response_body;
@@ -535,4 +558,5 @@ class WC_Payments_API_Client {
 
 		return $intent;
 	}
+
 }
