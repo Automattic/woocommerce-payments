@@ -84,7 +84,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( empty( $account ) || ! is_array( $account ) ) {
+		if ( ! is_array( $account ) ) {
 			return false;
 		}
 
