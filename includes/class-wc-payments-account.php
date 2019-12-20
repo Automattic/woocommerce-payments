@@ -266,7 +266,9 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
-	 * @return array|WP_Error Account data or Error object if not found
+	 * @return array Account data;
+	 *
+	 * @Throws Exception that bubbles up if get_account_data call fails.
 	 */
 	private function get_cached_account_data() {
 		$account = get_transient( self::ACCOUNT_TRANSIENT );
