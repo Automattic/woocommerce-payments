@@ -195,7 +195,6 @@ class WC_Payments_Account {
 		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
-
 	}
 
 	/**
