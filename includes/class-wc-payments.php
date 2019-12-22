@@ -59,6 +59,7 @@ class WC_Payments {
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
 
+
 		self::$api_client = self::create_api_client();
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';

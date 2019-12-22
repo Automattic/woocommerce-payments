@@ -22,13 +22,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
 
+require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
+
 /**
  * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_init() {
-	include_once dirname( __FILE__ ) . '/includes/class-wc-payments.php';
+	include_once WCPAY_ABSPATH . 'includes/class-wc-payments.php';
 	WC_Payments::init();
+
+	$manager = new Automattic\Jetpack\Connection\Manager();
+	$manager->init();
+	include_once WCPAY_ABSPATH . 'includes/class-jetpack-debug-notice.php';
+	Jetpack_Debug_Notice::init( $manager );
 }
 
 add_action( 'plugins_loaded', 'wcpay_init' );

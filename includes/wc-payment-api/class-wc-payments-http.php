@@ -25,17 +25,12 @@ class WC_Payments_Http {
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
-		$args['user_id'] = JETPACK_MASTER_USER;
+		$args['user_id'] = Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER;
 
 		if ( $is_site_specific ) {
 			$args['url'] = sprintf( $args['url'], $args['blog_id'] );
 		}
 
-		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
-			return Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
-		} else {
-			return Jetpack_Client::remote_request( $args, $body );
-		}
+		return Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
 	}
 }
