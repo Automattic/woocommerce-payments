@@ -361,7 +361,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Check if test mode is enabled or not. This function uses is_in_dev_mode, which overides
+	 * Check if test mode is enabled or not. This function uses is_in_dev_mode, which overrides
 	 * the function result.
 	 *
 	 * TODO: We should probably refactor this somewhat, since this is basically doing the
