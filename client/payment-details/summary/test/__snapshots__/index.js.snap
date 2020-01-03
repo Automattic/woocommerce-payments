@@ -71,12 +71,11 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       >
         <ForwardRef(Button)
           className="payment-details-summary__actions-item"
-          disabled={false}
-          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          href="https://somerandomorderurl.com/?edit_order=45981"
           isDefault={true}
           isLarge={true}
         >
-          Refund
+          View order 45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -90,17 +89,6 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
         Object {
           "content": "Sep 19, 2019, 5:24pm",
           "title": "Date",
-        },
-        Object {
-          "content": <OrderLink
-            order={
-              Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              }
-            }
-          />,
-          "title": "Order No.",
         },
         Object {
           "content": "Customer Name",
@@ -174,17 +162,7 @@ exports[`PaymentDetailsSummary renders defaults if charge object is empty 1`] = 
     >
       <div
         className="payment-details-summary__actions"
-      >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          disabled={true}
-          href="undefined#woocommerce-order-items"
-          isDefault={true}
-          isLarge={true}
-        >
-          Refund
-        </ForwardRef(Button)>
-      </div>
+      />
     </div>
   </div>
   <hr
@@ -196,10 +174,6 @@ exports[`PaymentDetailsSummary renders defaults if charge object is empty 1`] = 
         Object {
           "content": "–",
           "title": "Date",
-        },
-        Object {
-          "content": <OrderLink />,
-          "title": "Order No.",
         },
         Object {
           "content": "–",
@@ -299,12 +273,11 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       >
         <ForwardRef(Button)
           className="payment-details-summary__actions-item"
-          disabled={true}
-          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          href="https://somerandomorderurl.com/?edit_order=45981"
           isDefault={true}
           isLarge={true}
         >
-          Refund
+          View order 45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -318,17 +291,6 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         Object {
           "content": "Sep 19, 2019, 5:24pm",
           "title": "Date",
-        },
-        Object {
-          "content": <OrderLink
-            order={
-              Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              }
-            }
-          />,
-          "title": "Order No.",
         },
         Object {
           "content": "Customer Name",
@@ -438,12 +400,11 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       >
         <ForwardRef(Button)
           className="payment-details-summary__actions-item"
-          disabled={false}
-          href="https://somerandomorderurl.com/?edit_order=45981#woocommerce-order-items"
+          href="https://somerandomorderurl.com/?edit_order=45981"
           isDefault={true}
           isLarge={true}
         >
-          Refund more
+          View order 45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -457,17 +418,6 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         Object {
           "content": "Sep 19, 2019, 5:24pm",
           "title": "Date",
-        },
-        Object {
-          "content": <OrderLink
-            order={
-              Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              }
-            }
-          />,
-          "title": "Order No.",
         },
         Object {
           "content": "Customer Name",
