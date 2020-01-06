@@ -327,8 +327,9 @@ class WC_Payments_API_Client {
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
-				'return_url'    => $return_url,
-				'business_data' => $business_data,
+				'return_url'          => $return_url,
+				'business_data'       => $business_data,
+				'create_live_account' => $this->is_in_dev_mode() ? false : true,
 			]
 		);
 
@@ -351,7 +352,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Check if test mode is enabled or not.
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+	}
+
+	/**
+	 * Check if test mode is enabled or not. This function uses is_in_dev_mode, which overrides
+	 * the function result.
 	 *
 	 * TODO: We should probably refactor this somewhat, since this is basically doing the
 	 * exact same thing as the `get_test_mode` function in the WCPay Gateway class. We
@@ -361,6 +372,10 @@ class WC_Payments_API_Client {
 	 * @return bool - True if test mode is enabled, false otherwise.
 	 */
 	private function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
 		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
 
 		// Default to live mode if option not available.
