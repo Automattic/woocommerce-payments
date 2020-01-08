@@ -16,6 +16,7 @@ import DisputesPage from 'disputes';
 import DisputeEvidencePage from 'disputes/evidence';
 import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
+import { withTestNotice } from './util';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 
@@ -32,7 +33,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DepositsPage,
+		container: withTestNotice( DepositsPage, 'transactions' ),
         path: '/payments/deposits',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -41,7 +42,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: TransactionsPage,
+        container: withTestNotice( TransactionsPage, 'transactions' ),
         path: '/payments/transactions',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -50,7 +51,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: PaymentDetailsPage,
+        container: withTestNotice( PaymentDetailsPage, 'payment-details' ),
         path: '/payments/transactions/details',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -60,7 +61,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DisputesPage,
+        container: withTestNotice( DisputesPage, 'disputes' ),
         path: '/payments/disputes',
         wpOpenMenu: menuID,
         breadcrumbs: [
