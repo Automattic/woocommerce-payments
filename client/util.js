@@ -4,7 +4,7 @@
  */
 import { addQueryArgs } from '@wordpress/url';
 import { Notice } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -59,11 +59,20 @@ const getPaymentsSettingsUrlComponent = ( urlText ) => {
 const getNoticeMessage = ( topic ) => {
 	if ( topics.paymentDetails === topic ) {
 		return (
-			<span><b>Test payment:</b> WooCommerce Payments was in test mode when this order was placed.</span>
+			<span>
+				<b>{ __( 'Test payment: ', 'woocommerce-payments' ) }</b>
+				{ __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' ) }
+			</span>
 		);
 	}
-	return `Viewing test ${ topic }.` +
-		` To view live ${ topic }, disable test mode in WooCommerce Payments`;
+	return sprintf(
+		__(
+			'Viewing test %s. To view live %s, disable test mode in WooCommerce Payments',
+			'woocommerce-payments'
+		),
+		topic,
+		topic
+	);
 };
 
 /**
