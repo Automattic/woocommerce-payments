@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "@fresh-data/framework": "^0.7.0-beta",
+    "@wordpress/data": "^4.11.0",
+    "@wordpress/data-controls": "^1.5.0",
     "css-loader": "^2.1.1",
     "debug": "^4.1.1",
     "lodash": "^4.17.14",
