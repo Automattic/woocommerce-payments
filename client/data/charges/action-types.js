@@ -1,0 +1,8 @@
+/** @format */
+
+const TYPES = {
+	UPDATE_CHARGE: 'UPDATE_CHARGE',
+	UPDATE_ERROR_FOR_CHARGE: 'UPDATE_ERROR_FOR_CHARGE',
+};
+
+export default TYPES;
