@@ -3,10 +3,12 @@
 /**
  * External dependencies
  */
+import { withSelect } from '@wordpress/data';
+
 /**
  * Internal dependencies.
  */
-import withSelect from 'payments-api/with-select';
+import { CHARGES_STORE_NAME } from '../data';
 import PaymentDetailsSummary from './summary';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPayment from './payment';
@@ -27,9 +29,9 @@ const PaymentDetails = ( props ) => {
 };
 
 export default withSelect( ( select, ownProps ) => {
-	const { getCharge, isChargeWaitingForInitialLoad } = select( 'wc-payments-api' );
+	const { getCharge, isResolving } = select( CHARGES_STORE_NAME );
 	const charge = getCharge( ownProps.query.id );
-	const showPlaceholder = isChargeWaitingForInitialLoad( ownProps.query.id );
+	const showPlaceholder = isResolving( 'getCharge', [ ownProps.query.id ] );
 
 	return { charge, showPlaceholder };
 } )( PaymentDetails );
