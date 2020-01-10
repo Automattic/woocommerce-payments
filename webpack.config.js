@@ -61,6 +61,10 @@ const webpackConfig = {
 						return [ 'wc', 'components' ];
 					case '@woocommerce/currency':
 						return [ 'wc', 'currency' ];
+					// do not use bundled wp.data in order to use store's isResolving method
+					case '@wordpress/data':
+					case '@wordpress/data-controls':
+						return null;
 				}
 			},
 			requestToHandle( request ) {
@@ -69,6 +73,10 @@ const webpackConfig = {
 						return 'wc-components';
 					case '@woocommerce/currency':
 						return 'wc-currency';
+					// do not use bundled wp.data in order to use store's isResolving method
+					case '@wordpress/data':
+					case '@wordpress/data-controls':
+						return null;
 				}
 			},
 		} ),
