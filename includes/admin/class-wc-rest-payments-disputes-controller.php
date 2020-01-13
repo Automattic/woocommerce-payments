@@ -73,6 +73,16 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/payments/file',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'upload_evidence' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 	}
 
 	/**
@@ -105,6 +115,16 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 			$params['submit']
 		);
 
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Create file and respond with file object via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function upload_evidence( $request ) {
+		$response = $this->api_client->upload_evidence( $request );
 		return rest_ensure_response( $response );
 	}
 

@@ -25,6 +25,7 @@ class WC_Payments_API_Client {
 	const REFUNDS_API      = 'refunds';
 	const TRANSACTIONS_API = 'transactions';
 	const DISPUTES_API     = 'disputes';
+	const FILES_API        = 'files';
 	const OAUTH_API        = 'oauth';
 
 	/**
@@ -348,6 +349,30 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Upload evidence and return file object.
+	 *
+	 * @param string $request request object received.
+	 *
+	 * @return array file object.
+	 */
+	public function upload_evidence( $request ) {
+		$purpose     = $request->get_param( 'purpose' );
+		$file_params = $request->get_file_params();
+		$file_name   = $file_params['file']['name'];
+		$file_type   = $file_params['file']['type'];
+
+		$body = [
+			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
+			'file_name' => $file_name,
+			'file_type' => $file_type,
+			'purpose'   => $purpose,
+		];
+
+		$response = $this->request( $body, self::FILES_API, self::POST );
+		return $response;
+	}
+
+	/**
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
@@ -443,6 +468,7 @@ class WC_Payments_API_Client {
 			$is_site_specific
 		);
 
+		// Extract the response body and decode it from JSON into an array.
 		return $this->extract_response_body( $response );
 	}
 

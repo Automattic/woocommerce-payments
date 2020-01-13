@@ -24,13 +24,31 @@ export default [
 				display: 'Customer Email',
 				control: 'text',
 			},
-			// …
+			{
+				key: 'customer_signature',
+				display: 'Customer Signature',
+				control: 'file',
+			},
+			{
+				key: 'billing_address',
+				display: 'Customer Billing Address',
+				control: 'textarea',
+			},
 			{
 				key: 'customer_purchase_ip',
 				display: 'Customer IP Address',
 				control: 'text',
 			},
-			// …
+			{
+				key: 'receipt',
+				display: 'Receipt',
+				control: 'file',
+			},
+			{
+				key: 'customer_communication',
+				display: 'Customer Communication',
+				control: 'file',
+			},
 		],
 	},
 	// …
@@ -42,6 +60,10 @@ export default [
 				key: 'uncategorized_text',
 				display: 'Additional Details',
 				control: 'textarea',
+			},
+			{
+				key: 'uncategorized_file',
+				control: 'file',
 			},
 		],
 	},
