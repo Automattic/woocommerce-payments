@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
@@ -10,12 +11,11 @@ import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
-import { withSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies.
  */
-import { TRANSACTIONS_STORE_NAME } from '../data';
+import { useTransactionsPage } from '../data';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
@@ -38,9 +38,11 @@ const headers = [
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-export const TransactionsList = ( props ) => {
-	const { transactions, showPlaceholder } = props;
-	// Do not display table loading view if data is already available.
+export const TransactionsList = () => {
+	// TODO: add pagination support
+	// eslint-disable-next-line no-unused-vars
+	const [ currentPage, setCurrentPage ] = useState( 1 );
+	const { transactions, loading: showPlaceholder } = useTransactionsPage( currentPage );
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
@@ -105,10 +107,4 @@ export const TransactionsList = ( props ) => {
 	);
 };
 
-export default withSelect( select => {
-	const { getTransactionsPage, isResolving } = select( TRANSACTIONS_STORE_NAME );
-	const transactions = getTransactionsPage( 1 );
-	const showPlaceholder = isResolving( 'getTransactionsPage', [ 1 ] );
-
-	return { transactions, showPlaceholder };
-} )( TransactionsList );
+export default TransactionsList;

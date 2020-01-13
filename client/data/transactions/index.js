@@ -24,3 +24,5 @@ registerStore( STORE_NAME, {
 } );
 
 export const TRANSACTIONS_STORE_NAME = STORE_NAME;
+
+export { useTransactionsPage } from './hooks';

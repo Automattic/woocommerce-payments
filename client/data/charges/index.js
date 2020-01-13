@@ -24,3 +24,5 @@ registerStore( STORE_NAME, {
 } );
 
 export const CHARGES_STORE_NAME = STORE_NAME;
+
+export { useCharge } from './hooks';
