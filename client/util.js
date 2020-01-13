@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -13,4 +14,15 @@ export const isInTestMode = ( fallback = false ) => {
 		return fallback;
 	}
 	return '1' === wcpaySettings.testMode || fallback;
+};
+
+export const getPaymentSettingsUrl = () => {
+	return addQueryArgs(
+		'admin.php',
+		{
+			page: 'wc-settings',
+			tab: 'checkout',
+			section: 'woocommerce_payments',
+		}
+	);
 };

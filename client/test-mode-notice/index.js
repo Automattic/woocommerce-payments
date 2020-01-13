@@ -1,14 +1,13 @@
 /**
  * External dependencies
  */
-import { addQueryArgs } from '@wordpress/url';
 import { __, sprintf } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { isInTestMode } from '../util';
+import { isInTestMode, getPaymentSettingsUrl } from '../util';
 
 export const topics = {
 	paymentDetails: 'payment-details',
@@ -18,31 +17,42 @@ export const topics = {
 };
 
 /**
+ * Returns the text that should be used for the Payments settings url, based
+ * on what the provided topic is.
+ *
+ * @param {string} topic The notice message topic.
+ *
+ * @returns {string} The string to use for the Payments settings URL.
+ */
+const getPaymentsSettingsUrlContent = ( topic ) => {
+	if ( topics.paymentDetails === topic ) {
+		return __( 'View WooCommerce Payments settings.', 'woocommerce-payments' );
+	}
+
+	return __( 'settings.', 'woocommerce-payments' );
+};
+
+/**
  * Returns an <a> tag with the href attribute set to the Payments settings
  * page, and the provided text.
  *
- * @param {string} urlText The text to show in the link.
+ * @param {string} topic The notice message topic.
  *
  * @returns {*} An HTML <a> component with a link to wcpay settings page.
  */
-const getPaymentsSettingsUrlComponent = ( urlText ) => {
-	const settingsUrl = addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-settings',
-			tab: 'checkout',
-			section: 'woocommerce_payments',
-		}
-	);
+const getPaymentsSettingsUrlComponent = ( topic ) => {
 	return (
-		<a href={ settingsUrl }>
-			{ __( urlText, 'woocommerce-payments' ) }
+		<a href={ getPaymentSettingsUrl() }>
+			{ getPaymentsSettingsUrlContent( topic ) }
 		</a>
 	);
 };
 
 /**
- * Returns the correct notice message for a given topic.
+ * Returns the correct notice message wrapped in a span for a given topic.
+ *
+ * The message is wrapped in a span to make it easier to apply styling to
+ * different parts of the text, i.e. to include multiple HTML elements.
  *
  * @param {string} topic The notice message topic.
  *
@@ -53,17 +63,30 @@ const getNoticeMessage = ( topic ) => {
 		return (
 			<span>
 				<b>{ __( 'Test payment: ', 'woocommerce-payments' ) }</b>
-				{ __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' ) }
+				{
+					__( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' )
+				} {
+					getPaymentsSettingsUrlComponent( topic )
+				}
 			</span>
 		);
 	}
-	return sprintf(
-		__(
-			'Viewing test %s. To view live %s, disable test mode in WooCommerce Payments',
-			'woocommerce-payments'
-		),
-		topic,
-		topic
+
+	return (
+		<span>
+		{
+			sprintf(
+				__(
+					'Viewing test %s. To view live %s, disable test mode in WooCommerce Payments',
+					'woocommerce-payments'
+				),
+				topic,
+				topic
+			)
+		} {
+			getPaymentsSettingsUrlComponent( topic )
+		}
+		</span>
 	);
 };
 
@@ -75,10 +98,9 @@ const getNoticeMessage = ( topic ) => {
  * @returns {Notice} The notice element containing the appropriate message.
  */
 const getNotice = ( topic ) => {
-	const urlText = topics.paymentDetails === topic ? 'View WooPayments settings.' : 'settings.';
 	return (
 		<Notice status="warning" isDismissible={ false }>
-			<p>{ getNoticeMessage( topic ) } { getPaymentsSettingsUrlComponent( urlText ) }</p>
+			<p>{ getNoticeMessage( topic ) }</p>
 		</Notice>
 	);
 };
