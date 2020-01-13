@@ -1,6 +1,4 @@
-/**
- * @format
- */
+/** @format */
 
 /**
  * Internal dependencies
@@ -12,14 +10,12 @@ const receiveCharges = ( state = {}, { type, id, data, error } ) => {
 	switch ( type ) {
 		case TYPES.SET_CHARGE:
 			newState.charges[ id ] = data;
-			state = newState;
 			break;
 		case TYPES.SET_ERROR_FOR_CHARGE:
 			newState.charges[ id ] = error;
-			state = newState;
 			break;
 	}
-	return state;
+	return newState;
 };
 
 export default receiveCharges;

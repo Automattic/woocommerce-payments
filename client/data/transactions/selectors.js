@@ -5,6 +5,5 @@ export const getTransactionsPage = ( state, page = 1 ) => {
 	if ( transactionIds.length === 0 ) {
 		return [];
 	}
-	const transactions = transactionIds.map( id => state.transactions[ id ] );
-	return transactions;
+	return transactionIds.map( id => state.transactions[ id ] );
 };

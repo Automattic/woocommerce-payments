@@ -1,9 +1,8 @@
-/**
- * External dependencies
- *
- * @format
- */
+/** @format */
 
+/*
+ * External dependencies
+ */
 import { registerStore } from '@wordpress/data';
 import { controls } from '@wordpress/data-controls';
 

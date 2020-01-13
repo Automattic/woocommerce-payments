@@ -1,8 +1,6 @@
 /** @format */
 
-const TYPES = {
+export default {
 	SET_TRANSACTIONS_FOR_PAGE: 'SET_TRANSACTIONS_FOR_PAGE',
 	SET_ERROR_FOR_PAGE: 'SET_ERROR_FOR_PAGE',
 };
-
-export default TYPES;

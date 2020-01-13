@@ -1,6 +1,4 @@
-/**
- * @format
- */
+/** @format */
 
 /**
  * Internal dependencies
@@ -13,14 +11,12 @@ const receiveTransactions = ( state = {}, { type, page, data = [], error } ) => 
 		case TYPES.SET_TRANSACTIONS_FOR_PAGE:
 			newState.pages[ page ] = data.map( txn => txn.id );
 			data.forEach( txn => newState.transactions[ txn.id ] = txn );
-			state = newState;
 			break;
 		case TYPES.SET_ERROR_FOR_PAGE:
 			newState.pages[ page ] = error;
-			state = newState;
 			break;
 	}
-	return state;
+	return newState;
 };
 
 export default receiveTransactions;

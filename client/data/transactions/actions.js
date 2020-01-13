@@ -1,8 +1,4 @@
-/**
- * External Dependencies
- *
- * @format
- */
+/** @format */
 
 /**
  * Internal Dependencies
