@@ -372,7 +372,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if a Stripe account is registered, false otherwise.
 	 */
 	public function is_stripe_connected() {
-		return $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
+		$is_connected = $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
+
+		// If we have a dev account connected but we're not in the right mode for it
+		// force the user to re-connect in live mode.
+		if ( Utils::is_connected_account_type_dev() && Utils::not_in_dev_mode() ) {
+			$is_connected = false;
+		}
+
+		return $is_connected;
 	}
 
 	/**

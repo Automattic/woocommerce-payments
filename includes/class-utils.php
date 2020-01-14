@@ -21,4 +21,25 @@ class Utils {
 	public static function is_in_dev_mode() {
 		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
 	}
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public static function not_in_dev_mode() {
+		return ! self::is_in_dev_mode();
+	}
+
+	/**
+	 * Check the wcpay_test_only option to see which way the current account
+	 * is connected. False may also mean that nothing was set so this should
+	 * only be used to confirm a dev account and not to confirm a live account.
+	 *
+	 * @return bool
+	 */
+	public static function is_connected_account_type_dev() {
+		return get_option( 'wcpay_test_only', false );
+	}
+
 }
