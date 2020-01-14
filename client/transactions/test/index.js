@@ -8,13 +8,13 @@ import { shallow } from 'enzyme';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactionsForPage } from '../../data';
+import { useTransactions } from '../../data';
 
-jest.mock( '../../data', () => ( { useTransactionsForPage: jest.fn() } ) );
+jest.mock( '../../data', () => ( { useTransactions: jest.fn() } ) );
 
 describe( 'Transactions list', () => {
 	test( 'renders correctly', () => {
-		useTransactionsForPage.mockReturnValue( {
+		useTransactions.mockReturnValue( {
 			transactions: [
 				{
 					id: 'txn_j23jda9JJa',

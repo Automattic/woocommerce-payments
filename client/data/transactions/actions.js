@@ -5,18 +5,16 @@
  */
 import TYPES from './action-types';
 
-export function updateTransactionsForPage( page, data ) {
+export function updateTransactions( data ) {
 	return {
-		type: TYPES.SET_TRANSACTIONS_FOR_PAGE,
-		page,
+		type: TYPES.SET_TRANSACTIONS,
 		data,
 	};
 }
 
-export function updateErrorForPage( page, data, error ) {
+export function updateErrorForTransactions( data, error ) {
 	return {
-		type: TYPES.SET_ERROR_FOR_PAGE,
-		page,
+		type: TYPES.SET_ERROR_FOR_TRANSACTIONS,
 		data,
 		error,
 	};

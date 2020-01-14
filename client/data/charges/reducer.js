@@ -6,16 +6,22 @@
 import TYPES from './action-types';
 
 const receiveCharges = ( state = {}, { type, id, data, error } ) => {
-	const newState = { charges: { ...state.charges } };
 	switch ( type ) {
 		case TYPES.SET_CHARGE:
-			newState.charges[ id ] = data;
-			break;
+			return {
+				...state,
+				[ id ]: data,
+			};
 		case TYPES.SET_ERROR_FOR_CHARGE:
-			newState.charges[ id ] = error;
-			break;
+			return {
+				...state,
+				errors: {
+					...state.errors,
+					[ id ]: error,
+				},
+			};
 	}
-	return newState;
+	return state;
 };
 
 export default receiveCharges;

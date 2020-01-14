@@ -1,28 +1,12 @@
 /** @format */
 
-/*
- * External dependencies
- */
-import { registerStore } from '@wordpress/data';
-import { controls } from '@wordpress/data-controls';
-
 /**
  * Internal dependencies
  */
-import { STORE_NAME } from './constants';
+import reducer from './reducer';
 import * as selectors from './selectors';
 import * as actions from './actions';
 import * as resolvers from './resolvers';
-import reducer from './reducer';
 
-registerStore( STORE_NAME, {
-	reducer,
-	actions,
-	controls,
-	selectors,
-	resolvers,
-} );
-
-export const TRANSACTIONS_STORE_NAME = STORE_NAME;
-
-export { useTransactionsForPage } from './hooks';
+export { reducer, selectors, actions, resolvers };
+export * from './hooks';

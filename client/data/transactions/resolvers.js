@@ -9,13 +9,13 @@ import { apiFetch } from '@wordpress/data-controls';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateTransactionsForPage, updateErrorForPage } from './actions';
+import { updateTransactions, updateErrorForTransactions } from './actions';
 
-export function* getTransactionsForPage( page = 1 ) {
+export function* getTransactions() {
 	try {
 		const results = yield apiFetch( { path: `${ NAMESPACE }/transactions` } );
-		yield updateTransactionsForPage( page, results.data );
+		yield updateTransactions( results.data );
 	} catch ( e ) {
-		yield updateErrorForPage( page, null, e );
+		yield updateErrorForTransactions( null, e );
 	}
 }

@@ -15,7 +15,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import { useTransactionsForPage } from '../data';
+import { useTransactions } from '../data';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
@@ -39,8 +39,7 @@ const headers = [
 ];
 
 export const TransactionsList = () => {
-	const [ currentPage ] = useState( 1 );
-	const { transactions, isLoading } = useTransactionsForPage( currentPage );
+	const { transactions, isLoading } = useTransactions();
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
