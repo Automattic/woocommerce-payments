@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Utils;
+
 /**
  * Communicates with WooCommerce Payments API.
  */
@@ -329,7 +331,7 @@ class WC_Payments_API_Client {
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
-				'create_live_account' => $this->is_in_dev_mode() ? false : true,
+				'create_live_account' => Utils::is_in_dev_mode() ? false : true,
 			]
 		);
 
@@ -352,16 +354,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
-	}
-
-	/**
-	 * Check if test mode is enabled or not. This function uses is_in_dev_mode, which overrides
+	 * Check if test mode is enabled or not. This function uses Utils::is_in_dev_mode, which overrides
 	 * the function result.
 	 *
 	 * TODO: We should probably refactor this somewhat, since this is basically doing the
@@ -372,7 +365,7 @@ class WC_Payments_API_Client {
 	 * @return bool - True if test mode is enabled, false otherwise.
 	 */
 	private function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
+		if ( Utils::is_in_dev_mode() ) {
 			return true;
 		}
 

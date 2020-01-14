@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Utils;
+
 /**
  * Gateway class for WooCommerce Payments
  */
