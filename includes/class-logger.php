@@ -23,6 +23,8 @@ class Logger {
 	 */
 	private static $logger;
 
+	const LOG_FILENAME = 'woocommerce-payments';
+
 	/**
 	 * Add a log entry.
 	 *
@@ -44,10 +46,10 @@ class Logger {
 		}
 
 		if ( ! isset( self::$logger ) && ! is_object( self::$logger ) ) {
-			self::$logger = new \WC_Logger();
+			self::$logger = wc_get_logger();
 		}
 
-		self::$logger->log( $level, $message );
+		self::$logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
 	}
 
 	/**
@@ -59,6 +61,7 @@ class Logger {
 		if ( Utils::is_in_dev_mode() ) {
 			return true;
 		}
+
 		return 'yes' === WC_Payments::$gateway->get_option( 'enable_logging' );
 	}
 }
