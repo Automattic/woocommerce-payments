@@ -14,9 +14,7 @@ import PaymentDetailsSession from './session';
 
 const PaymentDetails = ( props ) => {
 	const chargeId = props.query.id;
-	// TODO: add placeholder view
-	// eslint-disable-next-line no-unused-vars
-	const { charge, loading: showPlaceholder } = useCharge( chargeId );
+	const { charge } = useCharge( chargeId );
 	return (
 		<div>
 			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>

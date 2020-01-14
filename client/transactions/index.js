@@ -15,7 +15,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import { useTransactionsPage } from '../data';
+import { useTransactionsForPage } from '../data';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
@@ -39,10 +39,8 @@ const headers = [
 ];
 
 export const TransactionsList = () => {
-	// TODO: add pagination support
-	// eslint-disable-next-line no-unused-vars
-	const [ currentPage, setCurrentPage ] = useState( 1 );
-	const { transactions, loading: showPlaceholder } = useTransactionsPage( currentPage );
+	const [ currentPage ] = useState( 1 );
+	const { transactions, isLoading } = useTransactionsForPage( currentPage );
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
@@ -98,7 +96,7 @@ export const TransactionsList = () => {
 		<TableCard
 			className="transactions-list"
 			title="Transactions"
-			isLoading={ showPlaceholder }
+			isLoading={ isLoading }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
 			headers={ headers }
