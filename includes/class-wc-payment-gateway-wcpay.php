@@ -109,6 +109,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			),
 		);
 
+		if ( Utils::is_in_dev_mode() ) {
+			$this->form_fields['test_mode']['custom_attributes']['disabled'] = 'disabled';
+			$this->form_fields['test_mode']['label']                         = __( 'Dev Mode is active so all transaction will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+		}
+
 		// Load the settings.
 		$this->init_settings();
 
