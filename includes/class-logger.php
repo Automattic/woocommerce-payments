@@ -8,6 +8,7 @@
 namespace WCPay;
 
 use WC_Payments;
+use WCPay\Utils;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -55,6 +56,9 @@ class Logger {
 	 * @return bool Depending on the enable_logging setting.
 	 */
 	public static function is_logging_enabled() {
+		if ( Utils::is_in_dev_mode() ) {
+			return true;
+		}
 		return 'yes' === WC_Payments::$gateway->get_option( 'enable_logging' );
 	}
 }
