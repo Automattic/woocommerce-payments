@@ -5,21 +5,20 @@
  */
 import TYPES from './action-types';
 
-const receiveTransactions = ( state = { objects: [] }, { type, data = [], error } ) => {
+const receiveTransactions = ( state = { data: [] }, { type, data = [], error } ) => {
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
-			return {
+			state = {
 				...state,
-				objects: state.objects.concat( data ),
+				data: state.data.concat( data ),
 			};
+			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS:
-			return {
+			state = {
 				...state,
-				errors: {
-					...state.errors,
-					transactions: error,
-				},
+				error: error,
 			};
+			break;
 	}
 	return state;
 };
