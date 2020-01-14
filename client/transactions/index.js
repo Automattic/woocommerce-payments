@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
