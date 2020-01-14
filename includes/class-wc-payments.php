@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
  */
@@ -19,7 +21,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $gateway;
+	public static $gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -63,6 +65,7 @@ class WC_Payments {
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
 		include_once dirname( __FILE__ ) . '/class-utils.php';
+		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client );
 		self::$account = new WC_Payments_Account( self::$api_client, self::$gateway );

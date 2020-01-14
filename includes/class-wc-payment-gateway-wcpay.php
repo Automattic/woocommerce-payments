@@ -107,6 +107,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			),
+			'enable_logging'  => array(
+				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
 		);
 
 		if ( Utils::is_in_dev_mode() ) {
