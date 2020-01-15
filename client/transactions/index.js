@@ -14,7 +14,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import withSelect from 'payments-api/with-select';
+import { useTransactions } from '../data';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
@@ -37,12 +37,10 @@ const headers = [
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-export const TransactionsList = ( props ) => {
-	const { transactions, showPlaceholder } = props;
-	const transactionsData = transactions.data || [];
-	// Do not display table loading view if data is already available.
+export const TransactionsList = () => {
+	const { transactions, isLoading } = useTransactions();
 
-	const rows = transactionsData.map( ( txn ) => {
+	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
 
 		const orderUrl = <OrderLink order={ txn.order } />;
@@ -96,7 +94,7 @@ export const TransactionsList = ( props ) => {
 		<TableCard
 			className="transactions-list"
 			title="Transactions"
-			isLoading={ showPlaceholder }
+			isLoading={ isLoading }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
 			headers={ headers }
@@ -105,10 +103,4 @@ export const TransactionsList = ( props ) => {
 	);
 };
 
-export default withSelect( select => {
-	const { getTransactions, showTransactionsPlaceholder } = select( 'wc-payments-api' );
-	const transactions = getTransactions();
-	const showPlaceholder = showTransactionsPlaceholder();
-
-	return { transactions, showPlaceholder };
-} )( TransactionsList );
+export default TransactionsList;

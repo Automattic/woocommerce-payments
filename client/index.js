@@ -16,7 +16,6 @@ import DisputesPage from 'disputes';
 import DisputeEvidencePage from 'disputes/evidence';
 import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
-import 'payments-api/payments-data-store';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 

@@ -8,11 +8,14 @@ import { shallow } from 'enzyme';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
+import { useTransactions } from '../../data';
+
+jest.mock( '../../data', () => ( { useTransactions: jest.fn() } ) );
 
 describe( 'Transactions list', () => {
 	test( 'renders correctly', () => {
-		const transactions = {
-			data: [
+		useTransactions.mockReturnValue( {
+			transactions: [
 				{
 					id: 'txn_j23jda9JJa',
 					created: 1572590800,
@@ -77,13 +80,11 @@ describe( 'Transactions list', () => {
 					// available_on: 1573189200,
 				},
 			],
-		};
+			loading: false,
+		} );
 
 		const list = shallow(
-			<TransactionsList
-				transactions={ transactions }
-				showPlaceholder={ false }
-			/>
+			<TransactionsList />
 		);
 		expect( list ).toMatchSnapshot();
 	} );

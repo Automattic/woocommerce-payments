@@ -1,12 +1,11 @@
 /** @format **/
-
 /**
  * External dependencies
  */
 /**
  * Internal dependencies.
  */
-import withSelect from 'payments-api/with-select';
+import { useCharge } from '../data';
 import PaymentDetailsSummary from './summary';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPayment from './payment';
@@ -14,7 +13,8 @@ import PaymentDetailsPaymentMethod from './payment-method';
 import PaymentDetailsSession from './session';
 
 const PaymentDetails = ( props ) => {
-	const { charge } = props;
+	const chargeId = props.query.id;
+	const { charge } = useCharge( chargeId );
 	return (
 		<div>
 			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>
@@ -26,10 +26,4 @@ const PaymentDetails = ( props ) => {
 	);
 };
 
-export default withSelect( ( select, ownProps ) => {
-	const { getCharge, isChargeWaitingForInitialLoad } = select( 'wc-payments-api' );
-	const charge = getCharge( ownProps.query.id );
-	const showPlaceholder = isChargeWaitingForInitialLoad( ownProps.query.id );
-
-	return { charge, showPlaceholder };
-} )( PaymentDetails );
+export default PaymentDetails;
