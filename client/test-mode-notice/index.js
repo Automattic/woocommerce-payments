@@ -9,6 +9,7 @@ import { Notice } from '@wordpress/components';
  */
 import { isInTestMode, getPaymentSettingsUrl } from '../util';
 
+// The topics (i.e. pages) that have test mode notices.
 export const topics = {
 	transactions: 'transactions',
 	paymentDetails: 'payment',
@@ -17,6 +18,13 @@ export const topics = {
 	disputes: 'disputes',
 	disputeEvidence: 'dispute',
 };
+
+// These are all the topics used for details pages where the notice is slightly different.
+const detailsTopics = [
+	topics.paymentDetails,
+	topics.disputeEvidence,
+	topics.depositDetails,
+];
 
 /**
  * Returns the text that should be used for the Payments settings url, based
@@ -27,7 +35,7 @@ export const topics = {
  * @returns {string} The string to use for the Payments settings URL.
  */
 const getPaymentsSettingsUrlContent = ( topic ) => {
-	if ( topics.paymentDetails === topic ) {
+	if ( detailsTopics.includes( topic ) ) {
 		return __( 'View WooCommerce Payments settings.', 'woocommerce-payments' );
 	}
 
@@ -61,13 +69,6 @@ const getPaymentsSettingsUrlComponent = ( topic ) => {
  * @returns {string} The correct notice message.
  */
 const getNoticeMessage = ( topic ) => {
-	// These are all the topics used for details pages where the notice is slightly different.
-	const detailsTopics = [
-		topics.paymentDetails,
-		topics.disputeEvidence,
-		topics.depositDetails,
-	];
-
 	if ( detailsTopics.includes( topic ) ) {
 		return (
 			<span>
