@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Utils;
+use WCPay\Logger;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -423,6 +424,7 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
+		Logger::log( "REQUEST $method $url" );
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
@@ -433,7 +435,10 @@ class WC_Payments_API_Client {
 			$is_site_specific
 		);
 
-		return $this->extract_response_body( $response );
+		$response_body = $this->extract_response_body( $response );
+		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+
+		return $response_body;
 	}
 
 	/**
