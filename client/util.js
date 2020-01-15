@@ -5,11 +5,6 @@
 import { addQueryArgs } from '@wordpress/url';
 
 /**
- * Internal dependencies
- */
-import 'payments-api/payments-data-store'; // For wcpaySettings.
-
-/**
  * Returns true if WooCommerce Payments is in test mode, false otherwise.
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
