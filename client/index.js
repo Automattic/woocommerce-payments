@@ -70,7 +70,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DisputeEvidencePage,
+        container: withTestNotice( DisputeEvidencePage, topics.disputeEvidence ),
         path: '/payments/disputes/evidence',
         wpOpenMenu: menuID,
         breadcrumbs: [

@@ -10,10 +10,12 @@ import { Notice } from '@wordpress/components';
 import { isInTestMode, getPaymentSettingsUrl } from '../util';
 
 export const topics = {
-	paymentDetails: 'payment-details',
 	transactions: 'transactions',
+	paymentDetails: 'payment',
 	deposits: 'deposits',
+	depositDetails: 'deposit',
 	disputes: 'disputes',
+	disputeEvidence: 'dispute',
 };
 
 /**
@@ -59,12 +61,23 @@ const getPaymentsSettingsUrlComponent = ( topic ) => {
  * @returns {string} The correct notice message.
  */
 const getNoticeMessage = ( topic ) => {
-	if ( topics.paymentDetails === topic ) {
+	// These are all the topics used for details pages where the notice is slightly different.
+	const detailsTopics = [
+		topics.paymentDetails,
+		topics.disputeEvidence,
+		topics.depositDetails,
+	];
+
+	if ( detailsTopics.includes( topic ) ) {
 		return (
 			<span>
-				<b>{ __( 'Test payment: ', 'woocommerce-payments' ) }</b>
-				{
-					__( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' )
+				<b>{
+					sprintf( __( 'Test %s:', 'woocommerce-payments' ), topic )
+				}</b> {
+					// If we introduce more differences, we may want to refactor this somewhat.
+					topics.depositDetails === topic
+						? __( 'WooCommerce Payments was in test mode when these orders were placed.', 'woocommerce-payments' )
+						: __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' )
 				} {
 					getPaymentsSettingsUrlComponent( topic )
 				}
