@@ -138,7 +138,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		if ( $this->get_test_mode() ) {
 			?>
-			<div id="test-important-notice" class="notice notice-warning">
+			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
 					<b><?php esc_html_e( 'Test Mode Active: ', 'woocommerce-payments' ); ?></b>
 					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
