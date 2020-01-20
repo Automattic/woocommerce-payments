@@ -43,7 +43,7 @@ export const TransactionsList = () => {
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
 
-		const orderUrl = <OrderLink order={ txn.order } />;
+		const orderUrl = <OrderLink order={ txn.order_id } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const detailsUrl = addQueryArgs(
 			'admin.php',
@@ -59,32 +59,25 @@ export const TransactionsList = () => {
 			</Link>
 		) : '';
 
-		// Extract nested properties from the charge.
-		const billingDetails = charge ? charge.billing_details : null;
-		const outcome = charge ? charge.outcome : null;
-		const paymentMethodDetails = charge ? charge.payment_method_details : null;
-		const address = billingDetails ? billingDetails.address : null;
-		const card = paymentMethodDetails ? paymentMethodDetails.card : null;
-
 		// Map transaction into table row.
 		const data = {
-			created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
+			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', txn.date ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
-			source: card && {
-				value: card.brand,
-				display: <span className={ `payment-method__brand payment-method__brand--${ card.brand }` }></span>,
+			source: {
+				value: txn.source,
+				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
 			},
-			order: { value: txn.order, display: orderUrl },
-			customer: billingDetails && { value: billingDetails.name, display: billingDetails.name },
-			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },
-			country: address && { value: address.country, display: address.country },
+			order: { value: txn.order_id, display: orderUrl },
+			customer: { value: txn.customer_name, display: txn.customer_name },
+			email: { value: txn.customer_email, display: txn.customer_email },
+			country: { value: txn.customer_country, display: txn.customer_country },
 			amount: { value: txn.amount / 100, display: currency.formatCurrency( txn.amount / 100 ) },
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fee: { value: txn.fee / 100, display: currency.formatCurrency( ( txn.fee / 100 ) * -1 ) },
-			net: { value: ( txn.amount - txn.fee ) / 100, display: currency.formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
+			fee: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
+			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-			riskLevel: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
-			details: { value: txn.id, display: detailsLink },
+			riskLevel: { value: txn.risk_level, display: capitalize( txn.risk_level ) },
+			details: { value: txn.transaction_id, display: detailsLink },
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );

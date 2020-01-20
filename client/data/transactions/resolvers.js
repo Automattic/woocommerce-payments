@@ -14,7 +14,7 @@ import { updateTransactions, updateErrorForTransactions } from './actions';
 export function* getTransactions() {
 	try {
 		const results = yield apiFetch( { path: `${ NAMESPACE }/transactions` } );
-		yield updateTransactions( results.data );
+		yield updateTransactions( results );
 	} catch ( e ) {
 		yield updateErrorForTransactions( null, e );
 	}
