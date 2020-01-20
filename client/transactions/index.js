@@ -13,7 +13,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import { useTransactions } from '../data';
+import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import './style.scss';
 
@@ -38,6 +38,7 @@ const headers = [
 
 export const TransactionsList = () => {
 	const { transactions, isLoading } = useTransactions();
+	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
 
 	const rows = transactions.map( ( txn ) => {
 		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
@@ -82,6 +83,13 @@ export const TransactionsList = () => {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
+	const summary = [
+		{ label: 'transactions', value: `${ transactionsSummary.count }` },
+		{ label: 'total', value: `${ currency.formatCurrency( transactionsSummary.total / 100 ) }` },
+		{ label: 'fees', value: `${ currency.formatCurrency( transactionsSummary.fees / 100 ) }` },
+		{ label: 'net', value: `${ currency.formatCurrency( transactionsSummary.net / 100 ) }` },
+	];
+
 	return (
 		<TableCard
 			className="transactions-list"
@@ -91,6 +99,7 @@ export const TransactionsList = () => {
 			totalRows={ 10 }
 			headers={ headers }
 			rows={ rows }
+			summary={ isSummaryLoading ? null : summary }
 		/>
 	);
 };

@@ -13,3 +13,15 @@ export const useTransactions = () => useSelect( select => {
 		isLoading: isResolving( 'getTransactions' ),
 	};
 } );
+
+export const useTransactionsSummary = () => useSelect( select => {
+	const {
+		getTransactionsSummary,
+		isResolving,
+	} = select( STORE_NAME );
+
+	return {
+		transactionsSummary: getTransactionsSummary(),
+		isLoading: isResolving( 'getTransactionsSummary' ),
+	};
+} );
