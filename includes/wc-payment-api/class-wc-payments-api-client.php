@@ -218,6 +218,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Returns summary for transactions.
+	 *
+	 * @return array     The transactions summary.
+	 * @throws Exception Exception thrown on request failure.
+	 */
+	public function get_transactions_summary() {
+		return $this->request( array(), self::TRANSACTIONS_API . '/summary', self::GET );
+	}
+
+	/**
 	 * List transactions
 	 *
 	 * @return array
