@@ -25,10 +25,8 @@ describe( 'Transactions list', () => {
 					date: '2020-01-02 17:46:02',
 					type: 'refund',
 					source: 'visa',
-					order: {
-						number: 123,
-						url: 'https://example.com/order/123',
-					},
+					// eslint-disable-next-line camelcase
+					order_id: 123,
 					// eslint-disable-next-line camelcase
 					customer_name: 'Another customer',
 					// eslint-disable-next-line camelcase
@@ -50,10 +48,8 @@ describe( 'Transactions list', () => {
 					date: '2020-01-05 04:22:59',
 					type: 'charge',
 					source: 'mastercard',
-					order: {
-						number: 125,
-						url: 'https://example.com/order/125',
-					},
+					// eslint-disable-next-line camelcase
+					order_id: 125,
 					// eslint-disable-next-line camelcase
 					customer_name: 'My name',
 					// eslint-disable-next-line camelcase
