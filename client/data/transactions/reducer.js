@@ -10,36 +10,40 @@ import { ID_PREFIX } from '../constants';
 const defaultState = { summary: {} };
 
 const receiveTransactions = ( state = defaultState, { type, query = {}, data = [], error } ) => {
+	const index = getResourceId( ID_PREFIX.transactions, query );
+
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
-			state = {
+			return {
 				...state,
-				[ getResourceId( ID_PREFIX.transactions, query ) ]: data,
+				[ index ]: {
+					data: data,
+				},
 			};
-			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS:
-			state = {
+			return {
 				...state,
-				error: error,
+				[ index ]: {
+					error: error,
+				},
 			};
-			break;
 		case TYPES.SET_TRANSACTIONS_SUMMARY:
-			state = {
+			return {
 				...state,
 				summary: {
 					data: data,
 				},
 			};
-			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY:
-			state = {
+			return {
 				...state,
 				summary: {
 					error: error,
 				},
 			};
-			break;
 	}
+
+	// Fallback to returning the same state.
 	return state;
 };
 

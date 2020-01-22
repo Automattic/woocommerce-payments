@@ -13,7 +13,7 @@ export const useTransactions = ( { paged = '1', per_page = '25' } ) => useSelect
 	const query = { paged, perPage: per_page };
 	return {
 		transactions: getTransactions( query ),
-		transactionsError: getTransactionsError(),
+		transactionsError: getTransactionsError( query ),
 		isLoading: isResolving( 'getTransactions', [ query ] ),
 	};
 // eslint-disable-next-line camelcase

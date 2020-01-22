@@ -14,12 +14,26 @@ const getTransactionsState = ( state ) => {
 	return state.transactions || {};
 };
 
-export const getTransactions = ( state, { paged = '1', perPage = '25' } ) => {
-	return state.transactions[ getResourceId( ID_PREFIX.transactions, { paged, perPage } ) ] || [];
+/**
+ * Retrieves the transactions corresponding to the provided query or a sane
+ * default if they don't exist.
+ *
+ * @param {object} state Current wp.data state.
+ * @param {object} query The transactions query.
+ *
+ * @returns {object} The list of transactions for the given query.
+ */
+const getTransactionsForQuery = ( state, query ) => {
+	const index = getResourceId( ID_PREFIX.transactions, query );
+	return state.transactions[ index ] || {};
 };
 
-export const getTransactionsError = ( state ) => {
-	return state.transactions.error || {};
+export const getTransactions = ( state, { paged = '1', perPage = '25' } ) => {
+	return getTransactionsForQuery( state, { paged, perPage } ).data || [];
+};
+
+export const getTransactionsError = ( state, { paged = '1', perPage = '25' } ) => {
+	return getTransactionsForQuery( state, { paged, perPage } ).error || {};
 };
 
 export const getTransactionsSummary = ( state ) => {

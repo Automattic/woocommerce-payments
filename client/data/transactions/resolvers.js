@@ -31,7 +31,7 @@ export function* getTransactions( { paged = '1', perPage = '25' } ) {
 		const results = yield apiFetch( { path: url } );
 		yield updateTransactions( { paged, perPage }, results.data || [] );
 	} catch ( e ) {
-		yield updateErrorForTransactions( null, e );
+		yield updateErrorForTransactions( { paged, perPage }, null, e );
 	}
 }
 
