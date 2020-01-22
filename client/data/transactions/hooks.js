@@ -5,14 +5,19 @@
 import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useTransactions = () => useSelect( select => {
+// eslint-disable-next-line camelcase
+export const useTransactions = ( { paged = '1', per_page = '25' } ) => useSelect( select => {
 	const { getTransactions, getTransactionsError, isResolving } = select( STORE_NAME );
+
+	// eslint-disable-next-line camelcase
+	const query = { paged, perPage: per_page };
 	return {
-		transactions: getTransactions(),
+		transactions: getTransactions( query ),
 		transactionsError: getTransactionsError(),
-		isLoading: isResolving( 'getTransactions' ),
+		isLoading: isResolving( 'getTransactions', [ query ] ),
 	};
-} );
+// eslint-disable-next-line camelcase
+}, [ { paged, per_page } ] );
 
 export const useTransactionsSummary = () => useSelect( select => {
 	const {

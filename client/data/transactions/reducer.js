@@ -4,15 +4,17 @@
  * Internal dependencies
  */
 import TYPES from './action-types';
+import { getResourceId } from '../util';
+import { ID_PREFIX } from '../constants';
 
-const defaultState = { data: [], summary: {} };
+const defaultState = { summary: {} };
 
-const receiveTransactions = ( state = defaultState, { type, data = [], error } ) => {
+const receiveTransactions = ( state = defaultState, { type, query = {}, data = [], error } ) => {
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
 			state = {
 				...state,
-				data: state.data.concat( data ),
+				[ getResourceId( ID_PREFIX.transactions, query ) ]: data,
 			};
 			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS:

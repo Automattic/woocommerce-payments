@@ -10,6 +10,7 @@ import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
+import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
@@ -39,7 +40,7 @@ const headers = [
 ];
 
 export const TransactionsList = () => {
-	const { transactions, isLoading } = useTransactions();
+	const { transactions, isLoading } = useTransactions( getQuery() );
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
 
 	const rows = transactions.map( ( txn ) => {
@@ -97,11 +98,13 @@ export const TransactionsList = () => {
 			className="transactions-list"
 			title="Transactions"
 			isLoading={ isLoading }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
+			rowsPerPage={ getQuery().per_page || 25 }
+			totalRows={ transactionsSummary.count || 0 }
 			headers={ headers }
 			rows={ rows }
 			summary={ isSummaryLoading ? null : summary }
+			query={ getQuery() }
+			onQueryChange={ onQueryChange }
 		/>
 	);
 };

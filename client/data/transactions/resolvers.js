@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -16,10 +17,19 @@ import {
 	updateErrorForTransactionsSummary,
 } from './actions';
 
-export function* getTransactions() {
+export function* getTransactions( { paged = '1', perPage = '25' } ) {
+	const url = addQueryArgs(
+		`${ NAMESPACE }/transactions`,
+		{
+			// `page` parameter is 0 indexed, whereas `paged` parameter is 1 indexed.
+			page: Number( paged ) - 1,
+			pagesize: perPage,
+		}
+	);
+
 	try {
-		const results = yield apiFetch( { path: `${ NAMESPACE }/transactions` } );
-		yield updateTransactions( results.data || [] );
+		const results = yield apiFetch( { path: url } );
+		yield updateTransactions( { paged, perPage }, results.data || [] );
 	} catch ( e ) {
 		yield updateErrorForTransactions( null, e );
 	}

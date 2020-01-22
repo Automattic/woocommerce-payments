@@ -230,11 +230,19 @@ class WC_Payments_API_Client {
 	/**
 	 * List transactions
 	 *
+	 * @param int $page      The requested page.
+	 * @param int $page_size The size of the requested page.
+	 *
 	 * @return array
 	 * @throws Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions() {
-		$transactions = $this->request( array(), self::TRANSACTIONS_API, self::GET );
+	public function list_transactions( $page = 0, $page_size = 25 ) {
+		$query = [
+			'page'     => $page,
+			'pagesize' => $page_size,
+		];
+
+		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
