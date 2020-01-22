@@ -27,8 +27,7 @@
  *
  * TODO: probably remove this later.
  */
-div.components-notice.is-warning {
-	margin-left: 0;
-	margin-right: 0;
-	background-color: #fef8ee;
+.wcpay-test-mode-notice.components-notice.is-warning {
+	margin: 24px 0;
+	background-color: $warning;
 }

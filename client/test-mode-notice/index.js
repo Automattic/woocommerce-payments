@@ -113,7 +113,7 @@ const getNoticeMessage = ( topic ) => {
  */
 const getNotice = ( topic ) => {
 	return (
-		<Notice status="warning" isDismissible={ false }>
+		<Notice className={ 'wcpay-test-mode-notice' } status="warning" isDismissible={ false }>
 			<p>{ getNoticeMessage( topic ) }</p>
 		</Notice>
 	);
@@ -131,7 +131,6 @@ export const withTestNotice = ( Component, pageTopic ) => {
 	return ( props, ownProps ) => (
 		<div>
 			{ isInTestMode() ? getNotice( pageTopic ) : null }
-			{ isInTestMode() ? <br /> : null }
 			{ Component( props, ownProps ) }
 		</div>
 	);
