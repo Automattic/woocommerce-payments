@@ -223,7 +223,7 @@ exports[`Transactions list renders correctly 1`] = `
       ],
     ]
   }
-  rowsPerPage={10}
+  rowsPerPage={25}
   showMenu={true}
   summary={
     Array [
