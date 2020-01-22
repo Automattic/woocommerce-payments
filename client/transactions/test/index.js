@@ -8,79 +8,75 @@ import { shallow } from 'enzyme';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions } from '../../data';
+import { useTransactions, useTransactionsSummary } from '../../data';
 
-jest.mock( '../../data', () => ( { useTransactions: jest.fn() } ) );
+jest.mock( '../../data', () => ( {
+	useTransactions: jest.fn(),
+	useTransactionsSummary: jest.fn(),
+} ) );
 
 describe( 'Transactions list', () => {
 	test( 'renders correctly', () => {
 		useTransactions.mockReturnValue( {
 			transactions: [
 				{
-					id: 'txn_j23jda9JJa',
-					created: 1572590800,
+					// eslint-disable-next-line camelcase
+					transaction_id: 'txn_j23jda9JJa',
+					date: '2020-01-02 17:46:02',
 					type: 'refund',
-					source: {
-						object: 'refund',
-						charge: {
-							id: 'ch_j23w39dsajda',
-							object: 'charge',
-							// eslint-disable-next-line camelcase
-							payment_method_details: {
-								card: {
-									brand: 'visa',
-								},
-							},
-							// eslint-disable-next-line camelcase
-							billing_details: {
-								name: 'Another customer',
-								email: 'another@customer.com',
-								address: {
-									country: 'US',
-								},
-							},
-							outcome: {
-								// eslint-disable-next-line camelcase
-								risk_level: 'high',
-							},
-						},
-					},
+					source: 'visa',
+					// eslint-disable-next-line camelcase
+					order_id: 123,
+					// eslint-disable-next-line camelcase
+					customer_name: 'Another customer',
+					// eslint-disable-next-line camelcase
+					customer_email: 'another@customer.com',
+					// eslint-disable-next-line camelcase
+					customer_country: 'US',
+					// eslint-disable-next-line camelcase
+					charge_id: 'ch_j23w39dsajda',
 					amount: 1000,
-					fee: 50,
-					// available_on: 1573199200,
+					fees: 50,
+					net: 950,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					risk_level: 'high',
 				},
 				{
-					id: 'txn_oa9kaKaa8',
-					created: 1572580800,
+					// eslint-disable-next-line camelcase
+					transaction_id: 'txn_oa9kaKaa8',
+					date: '2020-01-05 04:22:59',
 					type: 'charge',
-					source: {
-						id: 'ch_j239jda',
-						object: 'charge',
-						// eslint-disable-next-line camelcase
-						payment_method_details: {
-							card: {
-								brand: 'mastercard',
-							},
-						},
-						// eslint-disable-next-line camelcase
-						billing_details: {
-							name: 'My name',
-							email: 'a@b.com',
-							address: {
-								country: 'US',
-							},
-						},
-						outcome: {
-							// eslint-disable-next-line camelcase
-							risk_level: 'normal',
-						},
-					},
+					source: 'mastercard',
+					// eslint-disable-next-line camelcase
+					order_id: 125,
+					// eslint-disable-next-line camelcase
+					customer_name: 'My name',
+					// eslint-disable-next-line camelcase
+					customer_email: 'a@b.com',
+					// eslint-disable-next-line camelcase
+					customer_country: 'US',
+					// eslint-disable-next-line camelcase
+					charge_id: 'ch_j239jda',
 					amount: 1500,
-					fee: 50,
-					// available_on: 1573189200,
+					fees: 50,
+					net: 1450,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					risk_level: 'normal',
 				},
 			],
-			loading: false,
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
 		} );
 
 		const list = shallow(

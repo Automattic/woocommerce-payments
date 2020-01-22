@@ -83,21 +83,12 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": "",
           "value": "txn_j23jda9JJa",
         },
         Object {
-          "display": "Nov 1, 2019 / 2:46AM",
-          "value": 1572590800000,
+          "display": "Jan 2, 2020 / 5:46PM",
+          "value": "2020-01-02 17:46:02",
         },
         Object {
           "display": "Refund",
@@ -116,8 +107,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 9.5,
         },
         Object {
-          "display": <OrderLink />,
-          "value": undefined,
+          "display": <OrderLink
+            order={123}
+          />,
+          "value": 123,
         },
         Object {
           "display": <span
@@ -144,21 +137,12 @@ exports[`Transactions list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": "",
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Nov 1, 2019 / 12:00AM",
-          "value": 1572580800000,
+          "display": "Jan 5, 2020 / 4:22AM",
+          "value": "2020-01-05 04:22:59",
         },
         Object {
           "display": "Charge",
@@ -177,8 +161,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 14.5,
         },
         Object {
-          "display": <OrderLink />,
-          "value": undefined,
+          "display": <OrderLink
+            order={125}
+          />,
+          "value": 125,
         },
         Object {
           "display": <span
@@ -207,6 +193,26 @@ exports[`Transactions list renders correctly 1`] = `
   }
   rowsPerPage={10}
   showMenu={true}
+  summary={
+    Array [
+      Object {
+        "label": "transactions",
+        "value": "10",
+      },
+      Object {
+        "label": "total",
+        "value": "$10.00",
+      },
+      Object {
+        "label": "fees",
+        "value": "$1.00",
+      },
+      Object {
+        "label": "net",
+        "value": "$9.00",
+      },
+    ]
+  }
   title="Transactions"
   totalRows={10}
 />
