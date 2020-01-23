@@ -23,13 +23,26 @@ export const isChargeFullyRefunded = ( charge = {} ) => charge.refunded === true
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
+export const getChargeDisputeStatus = ( charge = {} ) => charge.dispute ? charge.dispute.status : null;
+
 /* TODO: implement other charge statuses */
 export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
 	}
 	if ( isChargeDisputed( charge ) ) {
-		return 'disputed';
+		switch ( getChargeDisputeStatus( charge ) ) {
+			case 'warning_needs_response':
+			case 'needs_response':
+				return 'disputed-needs-response';
+			case 'warning_under_review':
+			case 'under_review':
+				return 'disputed-under-review';
+			case 'won':
+				return 'disputed-won';
+			case 'lost':
+				return 'disputed-lost';
+		}
 	}
 	if ( isChargePartiallyRefunded( charge ) ) {
 		return 'partially-refunded';

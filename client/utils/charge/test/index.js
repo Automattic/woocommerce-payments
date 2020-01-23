@@ -11,7 +11,10 @@ import * as utils from '../';
 const paidCharge = { status: 'succeeded', paid: true, captured: true };
 const failedCharge = { status: 'failed', paid: false, captured: false };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
-const disputedCharge = { disputed: true };
+const disputedChargeNeedsResponse = { disputed: true, dispute: { status: 'needs_response' } };
+const disputedChargeUnderReview = { disputed: true, dispute: { status: 'under_review' } };
+const disputedChargeWon = { disputed: true, dispute: { status: 'won' } };
+const disputedChargeLost = { disputed: true, dispute: { status: 'lost' } };
 // eslint-disable-next-line camelcase
 const fullyRefundedCharge = { amount: 1500, refunded: true, amount_refunded: 1500 };
 // eslint-disable-next-line camelcase
@@ -47,7 +50,7 @@ describe( 'Charge utilities', () => {
 	} );
 
 	test( 'should identify a disputed charge as disputed', () => {
-		expect( utils.isChargeDisputed( disputedCharge ) ).toEqual( true );
+		expect( utils.isChargeDisputed( disputedChargeWon ) ).toEqual( true );
 	} );
 
 	test( 'should identify a fully refunded charge as fully refunded', () => {
@@ -86,8 +89,20 @@ describe( 'Charge utilities', () => {
 		expect( utils.getChargeStatus( failedCharge ) ).toEqual( 'failed' );
 	} );
 
-	test( 'should return status disputed for disputed charges', () => {
-		expect( utils.getChargeStatus( disputedCharge ) ).toEqual( 'disputed' );
+	test( 'should return status disputed-needs-response for disputed charges that needs response', () => {
+		expect( utils.getChargeStatus( disputedChargeNeedsResponse ) ).toEqual( 'disputed-needs-response' );
+	} );
+
+	test( 'should return status disputed-under-review for disputed charges in review', () => {
+		expect( utils.getChargeStatus( disputedChargeUnderReview ) ).toEqual( 'disputed-under-review' );
+	} );
+
+	test( 'should return status disputed-won for won disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeWon ) ).toEqual( 'disputed-won' );
+	} );
+
+	test( 'should return status disputed-lost for lost disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual( 'disputed-lost' );
 	} );
 
 	test( 'should return status fully-refunded for fully refunded charges', () => {

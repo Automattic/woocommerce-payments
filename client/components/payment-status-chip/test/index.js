@@ -49,8 +49,26 @@ describe( 'PaymentStatusChip', () => {
 		expect( paymentStatusChip ).toMatchSnapshot();
 	} );
 
-	test( 'renders a primary chip with dispute message if there\'s a dispute', () => {
-		getChargeStatus.mockReturnValue( 'disputed' );
+	test( 'renders a primary chip with dispute message if there\'s a dispute needing response', () => {
+		getChargeStatus.mockReturnValue( 'disputed-needs-response' );
+		const paymentStatusChip = renderPaymentStatus();
+		expect( paymentStatusChip ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a dispute in review', () => {
+		getChargeStatus.mockReturnValue( 'disputed-under-review' );
+		const paymentStatusChip = renderPaymentStatus();
+		expect( paymentStatusChip ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a won dispute', () => {
+		getChargeStatus.mockReturnValue( 'disputed-won' );
+		const paymentStatusChip = renderPaymentStatus();
+		expect( paymentStatusChip ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a lost dispute', () => {
+		getChargeStatus.mockReturnValue( 'disputed-lost' );
 		const paymentStatusChip = renderPaymentStatus();
 		expect( paymentStatusChip ).toMatchSnapshot();
 	} );

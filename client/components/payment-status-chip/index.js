@@ -12,7 +12,6 @@ import { getChargeStatus } from '../../utils/charge';
 import Chip from '../chip';
 
 /* TODO: implement other payment statuses */
-/* TODO: implement support for different dispute messages - check https://stripe.com/docs/api/disputes/object */
 const statuses = {
 	'partially-refunded': {
 		type: 'light',
@@ -34,9 +33,21 @@ const statuses = {
 		type: 'alert',
 		message: __( 'Payment failed', 'woocommerce-payments' ),
 	},
-	disputed: {
+	'disputed-needs-response': {
 		type: 'primary',
-		message: __( 'Disputed', 'woocommerce-payments' ),
+		message: __( 'Disputed: Needs response', 'woocommerce-payments' ),
+	},
+	'disputed-under-review': {
+		type: 'light',
+		message: __( 'Disputed: In review', 'woocommerce-payments' ),
+	},
+	'disputed-won': {
+		type: 'light',
+		message: __( 'Disputed: Won', 'woocommerce-payments' ),
+	},
+	'disputed-lost': {
+		type: 'light',
+		message: __( 'Disputed: Lost', 'woocommerce-payments' ),
 	},
 	default: {
 		type: 'light',
