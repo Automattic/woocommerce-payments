@@ -68,6 +68,27 @@ const getPaymentsSettingsUrlComponent = ( topic ) => {
 };
 
 /**
+ * Returns notice details depending on the topic provided.
+ *
+ * @param {string} topic The notice message topic.
+ *
+ * @returns {string} The specific details the notice is supposed to contain.
+ */
+export const getTopicDetails = ( topic ) => {
+	if ( topics.depositDetails === topic ) {
+		return __(
+			'WooCommerce Payments was in test mode when these orders were placed.',
+			'woocommerce-payments'
+		);
+	}
+
+	return __(
+		'WooCommerce Payments was in test mode when this order was placed.',
+		'woocommerce-payments'
+	);
+};
+
+/**
  * Returns the correct notice message wrapped in a span for a given topic.
  *
  * The message is wrapped in a span to make it easier to apply styling to
@@ -81,12 +102,8 @@ const getNoticeMessage = ( topic ) => {
 	const urlComponent = getPaymentsSettingsUrlComponent( topic );
 
 	if ( detailsTopics.includes( topic ) ) {
-		const topicDetails = topics.depositDetails === topic
-			? __( 'WooCommerce Payments was in test mode when these orders were placed.', 'woocommerce-payments' )
-			: __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' );
-
 		return (
-			<span><b>{ topic }</b> { topicDetails } { urlComponent }</span>
+			<span><b>{ topic }</b> { getTopicDetails( topic ) } { urlComponent }</span>
 		);
 	}
 
