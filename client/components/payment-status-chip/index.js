@@ -16,11 +16,11 @@ import Chip from '../chip';
 const statuses = {
 	'partially-refunded': {
 		type: 'light',
-		message: __( 'Partially Refunded', 'woocommerce-payments' ),
+		message: __( 'Partial refund', 'woocommerce-payments' ),
 	},
 	'fully-refunded': {
 		type: 'light',
-		message: __( 'Fully Refunded', 'woocommerce-payments' ),
+		message: __( 'Refunded', 'woocommerce-payments' ),
 	},
 	paid: {
 		type: 'light',
@@ -28,11 +28,11 @@ const statuses = {
 	},
 	authorized: {
 		type: 'primary',
-		message: __( 'Payment Authorized', 'woocommerce-payments' ),
+		message: __( 'Payment authorized', 'woocommerce-payments' ),
 	},
 	failed: {
 		type: 'alert',
-		message: __( 'Blocked', 'woocommerce-payments' ),
+		message: __( 'Payment failed', 'woocommerce-payments' ),
 	},
 	disputed: {
 		type: 'primary',

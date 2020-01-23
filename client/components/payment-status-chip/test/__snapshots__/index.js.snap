@@ -9,7 +9,7 @@ exports[`PaymentStatusChip renders a default light chip with no message if statu
 
 exports[`PaymentStatusChip renders a light chip with fully refunded message if there's a full refund 1`] = `
 <Chip
-  message="Fully Refunded"
+  message="Refunded"
   type="light"
 />
 `;
@@ -23,14 +23,14 @@ exports[`PaymentStatusChip renders a light chip with paid message if it is paid 
 
 exports[`PaymentStatusChip renders a light chip with partially refunded message if there's a partial refund 1`] = `
 <Chip
-  message="Partially Refunded"
+  message="Partial refund"
   type="light"
 />
 `;
 
 exports[`PaymentStatusChip renders a primary chip with authorized message if payment was not captured 1`] = `
 <Chip
-  message="Payment Authorized"
+  message="Payment authorized"
   type="primary"
 />
 `;
@@ -44,7 +44,7 @@ exports[`PaymentStatusChip renders a primary chip with dispute message if there'
 
 exports[`PaymentStatusChip renders an alert chip with failed message if payment status is failed 1`] = `
 <Chip
-  message="Blocked"
+  message="Payment failed"
   type="alert"
 />
 `;

@@ -37,11 +37,8 @@ export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeFullyRefunded( charge ) ) {
 		return 'fully-refunded';
 	}
-	if ( isChargeSuccessful( charge ) && isChargeCaptured( charge ) ) {
-		return 'paid';
-	}
-	if ( isChargeSuccessful( charge ) && ! isChargeCaptured( charge ) ) {
-		return 'authorized';
+	if ( isChargeSuccessful( charge ) ) {
+		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
 	}
 	return '';
 };
