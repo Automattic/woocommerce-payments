@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 
 /**
@@ -11,12 +11,21 @@ import { isInTestMode, getPaymentSettingsUrl } from '../util';
 
 // The topics (i.e. pages) that have test mode notices.
 export const topics = {
-	transactions: 'transactions',
-	paymentDetails: 'payment',
-	deposits: 'deposits',
-	depositDetails: 'deposit',
-	disputes: 'disputes',
-	disputeEvidence: 'dispute',
+	transactions: __(
+		'Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments',
+		'woocommerce-payments'
+	),
+	paymentDetails: __( 'Test payment:', 'woocommerce-payments' ),
+	deposits: __(
+		'Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments',
+		'woocommerce-payments'
+	),
+	depositDetails: __( 'Test deposit:', 'woocommerce-payments' ),
+	disputes: __(
+		'Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments',
+		'woocommerce-payments'
+	),
+	disputeEvidence: __( 'Test dispute:', 'woocommerce-payments' ),
 };
 
 // These are all the topics used for details pages where the notice is slightly different.
@@ -69,38 +78,20 @@ const getPaymentsSettingsUrlComponent = ( topic ) => {
  * @returns {string} The correct notice message.
  */
 const getNoticeMessage = ( topic ) => {
+	const urlComponent = getPaymentsSettingsUrlComponent( topic );
+
 	if ( detailsTopics.includes( topic ) ) {
+		const topicDetails = topics.depositDetails === topic
+			? __( 'WooCommerce Payments was in test mode when these orders were placed.', 'woocommerce-payments' )
+			: __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' );
+
 		return (
-			<span>
-				<b>{
-					sprintf( __( 'Test %s:', 'woocommerce-payments' ), topic )
-				}</b> {
-					// If we introduce more differences, we may want to refactor this somewhat.
-					topics.depositDetails === topic
-						? __( 'WooCommerce Payments was in test mode when these orders were placed.', 'woocommerce-payments' )
-						: __( 'WooCommerce Payments was in test mode when this order was placed.', 'woocommerce-payments' )
-				} {
-					getPaymentsSettingsUrlComponent( topic )
-				}
-			</span>
+			<span><b>{ topic }</b> { topicDetails } { urlComponent }</span>
 		);
 	}
 
 	return (
-		<span>
-		{
-			sprintf(
-				__(
-					'Viewing test %s. To view live %s, disable test mode in WooCommerce Payments',
-					'woocommerce-payments'
-				),
-				topic,
-				topic
-			)
-		} {
-			getPaymentsSettingsUrlComponent( topic )
-		}
-		</span>
+		<span>{ topic } { urlComponent }</span>
 	);
 };
 
