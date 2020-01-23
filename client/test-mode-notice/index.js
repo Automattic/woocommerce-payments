@@ -43,7 +43,7 @@ const detailsTopics = [
  *
  * @returns {string} The string to use for the Payments settings URL.
  */
-const getPaymentsSettingsUrlContent = ( topic ) => {
+export const getPaymentsSettingsUrlContent = ( topic ) => {
 	if ( detailsTopics.includes( topic ) ) {
 		return __( 'View WooCommerce Payments settings.', 'woocommerce-payments' );
 	}
@@ -59,7 +59,7 @@ const getPaymentsSettingsUrlContent = ( topic ) => {
  *
  * @returns {*} An HTML <a> component with a link to wcpay settings page.
  */
-const getPaymentsSettingsUrlComponent = ( topic ) => {
+export const getPaymentsSettingsUrlComponent = ( topic ) => {
 	return (
 		<a href={ getPaymentSettingsUrl() }>
 			{ getPaymentsSettingsUrlContent( topic ) }
@@ -98,7 +98,7 @@ export const getTopicDetails = ( topic ) => {
  *
  * @returns {string} The correct notice message.
  */
-const getNoticeMessage = ( topic ) => {
+export const getNoticeMessage = ( topic ) => {
 	const urlComponent = getPaymentsSettingsUrlComponent( topic );
 
 	if ( detailsTopics.includes( topic ) ) {
@@ -119,7 +119,7 @@ const getNoticeMessage = ( topic ) => {
  *
  * @returns {Notice} The notice element containing the appropriate message.
  */
-const getNotice = ( topic ) => {
+export const getNotice = ( topic ) => {
 	return (
 		<Notice className={ 'wcpay-test-mode-notice' } status="warning" isDismissible={ false }>
 			<p>{ getNoticeMessage( topic ) }</p>
