@@ -33,6 +33,10 @@ const statuses = {
 		type: 'alert',
 		message: __( 'Payment failed', 'woocommerce-payments' ),
 	},
+	blocked: {
+		type: 'alert',
+		message: __( 'Payment blocked', 'woocommerce-payments' ),
+	},
 	'disputed-needs-response': {
 		type: 'primary',
 		message: __( 'Disputed: Needs response', 'woocommerce-payments' ),

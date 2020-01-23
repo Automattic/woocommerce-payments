@@ -63,6 +63,20 @@ exports[`PaymentStatusChip renders a primary chip with dispute message if there'
 />
 `;
 
+exports[`PaymentStatusChip renders an alert chip with blocked message if payment status is blocked 1`] = `
+<Chip
+  message="Payment blocked"
+  type="alert"
+/>
+`;
+
+exports[`PaymentStatusChip renders an alert chip with failed message if payment status is blocked 1`] = `
+<Chip
+  message="Payment blocked"
+  type="alert"
+/>
+`;
+
 exports[`PaymentStatusChip renders an alert chip with failed message if payment status is failed 1`] = `
 <Chip
   message="Payment failed"

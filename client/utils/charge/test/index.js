@@ -9,7 +9,8 @@
 import * as utils from '../';
 
 const paidCharge = { status: 'succeeded', paid: true, captured: true };
-const failedCharge = { status: 'failed', paid: false, captured: false };
+const failedCharge = { status: 'failed', paid: false, captured: false, outcome: { type: 'issuer_declined' } };
+const blockedCharge = { status: 'failed', paid: false, captured: false, outcome: { type: 'blocked' } };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
 const disputedChargeNeedsResponse = { disputed: true, dispute: { status: 'needs_response' } };
 const disputedChargeUnderReview = { disputed: true, dispute: { status: 'under_review' } };
@@ -41,12 +42,24 @@ describe( 'Charge utilities', () => {
 		expect( utils.isChargeSuccessful( failedCharge ) ).toEqual( false );
 	} );
 
+	test( 'should not identify a blocked charge as successful', () => {
+		expect( utils.isChargeSuccessful( blockedCharge ) ).toEqual( false );
+	} );
+
 	test( 'should identify a failed charge as failed', () => {
 		expect( utils.isChargeFailed( failedCharge ) ).toEqual( true );
 	} );
 
+	test( 'should identify a blocked charge as blocked', () => {
+		expect( utils.isChargeBlocked( blockedCharge ) ).toEqual( true );
+	} );
+
 	test( 'should not identify a successful charge as failed', () => {
 		expect( utils.isChargeFailed( paidCharge ) ).toEqual( false );
+	} );
+
+	test( 'should not identify a successful charge as failed', () => {
+		expect( utils.isChargeBlocked( paidCharge ) ).toEqual( false );
 	} );
 
 	test( 'should identify a disputed charge as disputed', () => {

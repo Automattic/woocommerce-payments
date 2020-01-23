@@ -7,10 +7,21 @@
  * Internal dependencies.
  */
 
+const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
+const blockedOutcomeTypes = [ 'blocked' ];
+
+export const getChargeDisputeStatus = ( charge = {} ) => charge.dispute ? charge.dispute.status : null;
+
+export const getChargeOutcomeType = ( charge = {} ) => charge.outcome ? charge.outcome.type : null;
+
 export const isChargeSuccessful = ( charge = {} ) =>
 	charge.status === 'succeeded' && charge.paid === true;
 
-export const isChargeFailed = ( charge = {} ) => charge.status === 'failed';
+export const isChargeFailed = ( charge = {} ) =>
+	charge.status === 'failed' && failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
+
+export const isChargeBlocked = ( charge = {} ) =>
+	charge.status === 'failed' && blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
 export const isChargeCaptured = ( charge = {} ) => charge.captured === true;
 
@@ -23,12 +34,13 @@ export const isChargeFullyRefunded = ( charge = {} ) => charge.refunded === true
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
-export const getChargeDisputeStatus = ( charge = {} ) => charge.dispute ? charge.dispute.status : null;
-
 /* TODO: implement other charge statuses */
 export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
+	}
+	if ( isChargeBlocked( charge ) ) {
+		return 'blocked';
 	}
 	if ( isChargeDisputed( charge ) ) {
 		switch ( getChargeDisputeStatus( charge ) ) {
