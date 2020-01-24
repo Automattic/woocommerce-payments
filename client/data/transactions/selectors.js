@@ -6,6 +6,14 @@
 import { getResourceId } from '../util';
 import { ID_PREFIX } from '../constants';
 
+/**
+ * Retrieves the transactions state from the wp.data store if the state
+ * has been initialized, otherwise returns an empty state.
+ *
+ * @param {object} state Current wp.data state.
+ *
+ * @returns {object} The transactions state.
+ */
 const getTransactionsState = ( state ) => {
 	if ( ! state ) {
 		return {};
@@ -25,7 +33,7 @@ const getTransactionsState = ( state ) => {
  */
 const getTransactionsForQuery = ( state, query ) => {
 	const index = getResourceId( ID_PREFIX.transactions, query );
-	return state.transactions[ index ] || {};
+	return getTransactionsState( state )[ index ] || {};
 };
 
 export const getTransactions = ( state, { paged = '1', perPage = '25' } ) => {
