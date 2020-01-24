@@ -4,110 +4,127 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
+import { ID_PREFIX } from '../../constants';
+import { getResourceId } from '../../util';
 
 describe( 'Transactions reducer tests', () => {
-	test( 'Wrong action is ignored', () => {
-		let mockState = {};
-		expect( reducer( mockState, { type: 'WRONG-TYPE' } ) ).toBe( mockState );
+	const mockQuery = { paged: '2', perPage: '50' };
+	const mockTransactions = [
+		{
+			id: 1234,
+			amount: 1000,
+			fees: 50,
+			net: 950,
+		},
+		{
+			id: 1235,
+			amount: 2000,
+			fees: 100,
+			net: 1900,
+		},
+	];
+	const mockSummary = {
+		total: 1000,
+		fees: 50,
+		net: 950,
+	};
 
-		mockState = { data: [], summary: { net: 100 } };
-		expect( reducer( mockState, { type: 'WRONG-TYPE' } ) ).toBe( mockState );
+	const emptyState = {};
+	const filledState = {
+		[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			data: mockTransactions,
+		},
+		summary: {
+			data: mockSummary,
+		},
+	};
+
+	test( 'Unrelated action is ignored', () => {
+		expect( reducer( emptyState, { type: 'WRONG-TYPE' } ) ).toBe( emptyState );
+		expect( reducer( filledState, { type: 'WRONG-TYPE' } ) ).toBe( filledState );
 	} );
 
 	test( 'New transactions reduced correctly', () => {
 		// Set up mock data
-		const mockState = { data: [] };
-		const transactions = [
-			{
-				id: 1234,
-				amount: 1000,
-				fees: 50,
-				net: 950,
-			},
-			{
-				id: 1235,
-				amount: 2000,
-				fees: 100,
-				net: 1900,
-			},
-		];
-
 		const expected = {
-			data: transactions,
+			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				data: mockTransactions,
+			},
 		};
 
-		expect( reducer( mockState, { type: types.SET_TRANSACTIONS, data: transactions } ) )
-			.toStrictEqual( expected );
+		const reduced = reducer(
+			emptyState,
+			{
+				type: types.SET_TRANSACTIONS,
+				data: mockTransactions,
+				query: mockQuery,
+			}
+		);
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
 	test( 'Transactions updated correctly on updated info', () => {
-		// Set up mock data
-		const mockState = { data: [
-			{
-				id: 1234,
-				amount: 1000,
-				fees: 50,
-				net: 950,
-			},
-		] };
-		const transactions = [
-			{
-				id: 1235,
-				amount: 2000,
-				fees: 100,
-				net: 1900,
-			},
+		const newTransactions = [
+			...mockTransactions,
+			...mockTransactions,
 		];
 
 		const expected = {
-			data: [ ...mockState.data, ...transactions ],
+			...filledState,
+			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				data: newTransactions,
+			},
 		};
 
-		expect( reducer( mockState, { type: types.SET_TRANSACTIONS, data: transactions } ) )
-			.toStrictEqual( expected );
+		const reduced = reducer(
+			filledState,
+			{
+				type: types.SET_TRANSACTIONS,
+				data: newTransactions,
+				query: mockQuery,
+			}
+		);
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
 	test( 'New transactions summary reduced correctly', () => {
-		const mockState = {};
-		const summary = {
-			total: 1000,
-			fees: 50,
-			net: 950,
-		};
-
 		const expected = {
 			summary: {
-				data: summary,
+				data: mockSummary,
 			},
 		};
 
-		expect( reducer( mockState, { type: types.SET_TRANSACTIONS_SUMMARY, data: summary } ) )
-			.toStrictEqual( expected );
+		const reduced = reducer(
+			emptyState,
+			{
+				type: types.SET_TRANSACTIONS_SUMMARY,
+				data: mockSummary,
+			}
+		);
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
 	test( 'Transactions summary updated correctly on updated info', () => {
-		const mockState = {
-			summary: {
-				data: {
-					total: 500,
-					fees: 10,
-					net: 490,
-				},
-			},
-		};
-		const summary = {
-			total: 1000,
-			fees: 50,
-			net: 950,
+		const newSummary = {
+			total: 5000,
+			fees: 100,
+			net: 4900,
 		};
 
 		const expected = {
+			...filledState,
 			summary: {
-				data: summary,
+				data: newSummary,
 			},
 		};
 
-		expect( reducer( mockState, { type: types.SET_TRANSACTIONS_SUMMARY, data: summary } ) )
-			.toStrictEqual( expected );
+		const reduced = reducer(
+			filledState,
+			{
+				type: types.SET_TRANSACTIONS_SUMMARY,
+				data: newSummary,
+			}
+		);
+		expect( reduced ).toStrictEqual( expected );
 	} );
 } );
