@@ -1,5 +1,13 @@
 /** @format */
 
+const getTransactionsState = ( state ) => {
+	if ( ! state ) {
+		return {};
+	}
+
+	return state.transactions || {};
+}
+
 export const getTransactions = ( state ) => {
 	return state.transactions.data || [];
 };
@@ -9,9 +17,11 @@ export const getTransactionsError = ( state ) => {
 };
 
 export const getTransactionsSummary = ( state ) => {
-	return state.transactions.summary.data || {};
+	const summary = getTransactionsState( state ).summary || {};
+	return summary.data || {};
 };
 
 export const getTransactionsSummaryError = ( state ) => {
-	return state.transactions.summary.error || {};
+	const summary = getTransactionsState( state ).summary || {};
+	return summary.error || {};
 };
