@@ -12,17 +12,17 @@ import { isInTestMode, getPaymentSettingsUrl } from '../util';
 // The topics (i.e. pages) that have test mode notices.
 export const topics = {
 	transactions: __(
-		'Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments',
+		'Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
 	paymentDetails: __( 'Test payment:', 'woocommerce-payments' ),
 	deposits: __(
-		'Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments',
+		'Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
 	depositDetails: __( 'Test deposit:', 'woocommerce-payments' ),
 	disputes: __(
-		'Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments',
+		'Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
 	disputeEvidence: __( 'Test dispute:', 'woocommerce-payments' ),
@@ -36,22 +36,6 @@ const detailsTopics = [
 ];
 
 /**
- * Returns the text that should be used for the Payments settings url, based
- * on what the provided topic is.
- *
- * @param {string} topic The notice message topic.
- *
- * @returns {string} The string to use for the Payments settings URL.
- */
-export const getPaymentsSettingsUrlContent = ( topic ) => {
-	if ( detailsTopics.includes( topic ) ) {
-		return __( 'View WooCommerce Payments settings.', 'woocommerce-payments' );
-	}
-
-	return __( 'settings.', 'woocommerce-payments' );
-};
-
-/**
  * Returns an <a> tag with the href attribute set to the Payments settings
  * page, and the provided text.
  *
@@ -59,10 +43,10 @@ export const getPaymentsSettingsUrlContent = ( topic ) => {
  *
  * @returns {*} An HTML <a> component with a link to wcpay settings page.
  */
-export const getPaymentsSettingsUrlComponent = ( topic ) => {
+export const getPaymentsSettingsUrlComponent = () => {
 	return (
 		<a href={ getPaymentSettingsUrl() }>
-			{ getPaymentsSettingsUrlContent( topic ) }
+			{ __( 'View WooCommerce Payments settings.', 'woocommerce-payments' ) }
 		</a>
 	);
 };
@@ -99,7 +83,7 @@ export const getTopicDetails = ( topic ) => {
  * @returns {string} The correct notice message.
  */
 export const getNoticeMessage = ( topic ) => {
-	const urlComponent = getPaymentsSettingsUrlComponent( topic );
+	const urlComponent = getPaymentsSettingsUrlComponent();
 
 	if ( detailsTopics.includes( topic ) ) {
 		return (

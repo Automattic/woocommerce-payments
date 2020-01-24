@@ -12,7 +12,6 @@ import {
 } from '../../util';
 import {
 	topics,
-	getPaymentsSettingsUrlContent,
 	getPaymentsSettingsUrlComponent,
 	getTopicDetails,
 	getNoticeMessage,
@@ -44,24 +43,12 @@ describe( 'Test mode notification', () => {
 		...allTopics.map( ( topic ) => [ topic, false ] ),
 	];
 
-	test.each( listTopics )( 'Returns right URL content for list topics', ( topic ) => {
-		expect( getPaymentsSettingsUrlContent( topic ) ).toBe(
-			'settings.'
-		);
-	} );
-
-	test.each( detailsTopics )( 'Returns right URL content for details topics', ( topic ) => {
-		expect( getPaymentsSettingsUrlContent( topic ) ).toBe(
-			'View WooCommerce Payments settings.'
-		);
-	} );
-
-	test.each( allTopics )( 'Returns correct URL component', ( topic ) => {
+	test( 'Returns correct URL component', () => {
 		const expected = (
-			<a href={ getPaymentSettingsUrl() }>{ getPaymentsSettingsUrlContent( topic ) }</a>
+			<a href={ getPaymentSettingsUrl() }>{ 'View WooCommerce Payments settings.' }</a>
 		);
 
-		expect( getPaymentsSettingsUrlComponent( topic ) ).toStrictEqual( expected );
+		expect( getPaymentsSettingsUrlComponent() ).toStrictEqual( expected );
 	} );
 
 	test.each( listTopics )( 'Returns right notice message for list topics', ( topic ) => {
