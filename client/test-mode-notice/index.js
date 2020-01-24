@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
 
 /**
@@ -59,15 +59,10 @@ export const getPaymentsSettingsUrlComponent = () => {
  * @returns {string} The specific details the notice is supposed to contain.
  */
 export const getTopicDetails = ( topic ) => {
-	if ( topics.depositDetails === topic ) {
-		return __(
-			'WooCommerce Payments was in test mode when these orders were placed.',
-			'woocommerce-payments'
-		);
-	}
-
-	return __(
+	return _n(
 		'WooCommerce Payments was in test mode when this order was placed.',
+		'WooCommerce Payments was in test mode when these orders were placed.',
+		topics.depositDetails === topic ? 2 : 1,
 		'woocommerce-payments'
 	);
 };
