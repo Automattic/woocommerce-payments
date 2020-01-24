@@ -27,14 +27,12 @@ export function* getTransactions() {
 
 /**
  * Retrieves the transactions summary from the summary API.
- *
- * @returns {object} Action that updates the data store.
  */
 export function* getTransactionsSummary() {
 	try {
 		const summary = yield apiFetch( { path: `${ NAMESPACE }/transactions/summary` } );
 		yield updateTransactionsSummary( summary );
 	} catch ( e ) {
-		return updateErrorForTransactionsSummary( null, e );
+		yield updateErrorForTransactionsSummary( null, e );
 	}
 }
