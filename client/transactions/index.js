@@ -41,19 +41,17 @@ export const TransactionsList = () => {
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
 
 	const rows = transactions.map( ( txn ) => {
-		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
-
-		const orderUrl = <OrderLink order={ txn.order_id } />;
+		const orderUrl = <OrderLink order={ txn.order } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const detailsUrl = addQueryArgs(
 			'admin.php',
 			{
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: charge ? charge.id : '',
+				id: txn.charge_id,
 			}
 		);
-		const detailsLink = charge ? (
+		const detailsLink = txn.charge_id ? (
 			<Link className="transactions-list__details-button" href={ detailsUrl } >
 				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>

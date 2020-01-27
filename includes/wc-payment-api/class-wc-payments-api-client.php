@@ -526,10 +526,7 @@ class WC_Payments_API_Client {
 	 * @param array $transaction transaction.
 	 */
 	private function get_charge_id_from_transaction( $transaction ) {
-		if ( 'refund' === $transaction['type'] ) {
-			return $transaction['source']['charge']['id'];
-		}
-		return $transaction['source']['id'];
+		return $transaction['charge_id'];
 	}
 
 	/**

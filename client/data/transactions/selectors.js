@@ -6,7 +6,7 @@ const getTransactionsState = ( state ) => {
 	}
 
 	return state.transactions || {};
-}
+};
 
 export const getTransactions = ( state ) => {
 	return state.transactions.data || [];

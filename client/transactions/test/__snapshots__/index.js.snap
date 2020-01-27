@@ -83,7 +83,16 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": "",
+          "display": <Link
+            className="transactions-list__details-button"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
           "value": "txn_j23jda9JJa",
         },
         Object {
@@ -108,9 +117,14 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <OrderLink
-            order={123}
+            order={
+              Object {
+                "number": 123,
+                "url": "https://example.com/order/123",
+              }
+            }
           />,
-          "value": 123,
+          "value": undefined,
         },
         Object {
           "display": <span
@@ -137,7 +151,16 @@ exports[`Transactions list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": "",
+          "display": <Link
+            className="transactions-list__details-button"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
           "value": "txn_oa9kaKaa8",
         },
         Object {
@@ -162,9 +185,14 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <OrderLink
-            order={125}
+            order={
+              Object {
+                "number": 125,
+                "url": "https://example.com/order/125",
+              }
+            }
           />,
-          "value": 125,
+          "value": undefined,
         },
         Object {
           "display": <span
