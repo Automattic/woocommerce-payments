@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Utils;
+use WCPay\Logger;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -281,8 +282,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => $this->get_return_url( $order ),
 			);
 		} catch ( Exception $e ) {
-			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
+			Logger::log( $e->getMessage(), 'error' );
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			$order->update_status( 'failed' );
@@ -349,7 +350,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 
-			// TODO log error.
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
@@ -357,6 +357,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e->getMessage()
 			);
 
+			Logger::log( $note );
 			$order->add_order_note( $note );
 
 			return new WP_Error( $e->getMessage() );
