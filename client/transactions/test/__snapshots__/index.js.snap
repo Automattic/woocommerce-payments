@@ -96,7 +96,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_j23jda9JJa",
         },
         Object {
-          "display": "Jan 2, 2020 / 5:46PM",
+          "display": "Jan 2, 2020 / 12:46PM",
           "value": "2020-01-02 17:46:02",
         },
         Object {
@@ -166,7 +166,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Jan 5, 2020 / 4:22AM",
+          "display": "Jan 4, 2020 / 11:22PM",
           "value": "2020-01-05 04:22:59",
         },
         Object {

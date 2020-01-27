@@ -63,7 +63,7 @@ export const TransactionsList = () => {
 
 		// Map transaction into table row.
 		const data = {
-			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment( txn.date ) ) },
+			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
 			source: {
 				value: txn.source,
