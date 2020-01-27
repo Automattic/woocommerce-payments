@@ -145,8 +145,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "US",
         },
         Object {
-          "display": "High",
-          "value": "high",
+          "display": <RiskLevel
+            risk={0}
+          />,
+          "value": 0,
         },
       ],
       Array [
@@ -213,8 +215,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "US",
         },
         Object {
-          "display": "Normal",
-          "value": "normal",
+          "display": <RiskLevel
+            risk={2}
+          />,
+          "value": 2,
         },
       ],
     ]

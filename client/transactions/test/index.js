@@ -42,7 +42,7 @@ describe( 'Transactions list', () => {
 					net: 950,
 					currency: 'usd',
 					// eslint-disable-next-line camelcase
-					risk_level: 'high',
+					risk_level: 0,
 				},
 				{
 					// eslint-disable-next-line camelcase
@@ -67,7 +67,7 @@ describe( 'Transactions list', () => {
 					net: 1450,
 					currency: 'usd',
 					// eslint-disable-next-line camelcase
-					risk_level: 'normal',
+					risk_level: 2,
 				},
 			],
 			isLoading: false,

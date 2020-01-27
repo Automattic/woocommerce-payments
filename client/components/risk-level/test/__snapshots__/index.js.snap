@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RiskLevel Renders elevated risk correctly. 1`] = `
+<p
+  style={
+    Object {
+      "color": "orange",
+    }
+  }
+>
+  Elevated
+</p>
+`;
+
+exports[`RiskLevel Renders highest risk correctly. 1`] = `
+<p
+  style={
+    Object {
+      "color": "red",
+    }
+  }
+>
+  Highest
+</p>
+`;
+
+exports[`RiskLevel Renders normal risk correctly. 1`] = `
+<p
+  style={
+    Object {
+      "color": "green",
+    }
+  }
+>
+  Normal
+</p>
+`;

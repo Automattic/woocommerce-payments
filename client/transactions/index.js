@@ -16,6 +16,7 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
+import RiskLevel from '../components/risk-level';
 import './style.scss';
 
 const currency = new Currency();
@@ -58,6 +59,8 @@ export const TransactionsList = () => {
 			</Link>
 		) : '';
 
+		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
+
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment( txn.date ) ) },
@@ -75,7 +78,7 @@ export const TransactionsList = () => {
 			fee: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
 			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-			riskLevel: { value: txn.risk_level, display: capitalize( txn.risk_level ) },
+			riskLevel: { value: txn.risk_level, display: riskLevel },
 			details: { value: txn.transaction_id, display: detailsLink },
 		};
 
