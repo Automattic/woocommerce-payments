@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import { capitalize } from 'lodash';
@@ -59,7 +60,7 @@ export const TransactionsList = () => {
 
 		// Map transaction into table row.
 		const data = {
-			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', txn.date ) },
+			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment( txn.date ) ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
 			source: {
 				value: txn.source,
