@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { capitalize } from 'lodash';
 
 const riskMappings = [
 	__( 'Normal', 'woocommerce-payments' ),
@@ -22,7 +21,7 @@ const RiskLevel = ( props ) => {
 	const { risk } = props;
 
 	return (
-		<p style={ { color: colorMappings[ risk ] } }>{ capitalize( riskMappings[ risk ] ) }</p>
+		<p style={ { color: colorMappings[ risk ] } }>{ riskMappings[ risk ] }</p>
 	);
 };
 

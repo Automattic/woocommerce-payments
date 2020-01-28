@@ -5,13 +5,13 @@
 import reducer from '../reducer';
 import types from '../action-types';
 
-describe( 'Transactoins reducer tests', () => {
+describe( 'Transactions reducer tests', () => {
 	test( 'Wrong action is ignored', () => {
 		let mockState = {};
-		expect( reducer( mockState, { type: 'wrong-type' } ) ).toBe( mockState );
+		expect( reducer( mockState, { type: 'WRONG-TYPE' } ) ).toBe( mockState );
 
 		mockState = { data: [], summary: { net: 100 } };
-		expect( reducer( mockState, { type: 'wrong-type' } ) ).toBe( mockState );
+		expect( reducer( mockState, { type: 'WRONG-TYPE' } ) ).toBe( mockState );
 	} );
 
 	test( 'New transactions reduced correctly', () => {
