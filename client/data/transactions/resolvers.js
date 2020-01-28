@@ -21,8 +21,7 @@ export function* getTransactions( { paged = '1', perPage = '25' } ) {
 	const url = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
 		{
-			// `page` parameter is 0 indexed, whereas `paged` parameter is 1 indexed.
-			page: Number( paged ) - 1,
+			page: paged,
 			pagesize: perPage,
 		}
 	);
