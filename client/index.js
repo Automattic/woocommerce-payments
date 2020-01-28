@@ -16,7 +16,7 @@ import DisputesPage from 'disputes';
 import DisputeEvidencePage from 'disputes/evidence';
 import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
-import { withTestNotice, topics } from 'test-mode-notice';
+import { withTestNotice, topics } from 'components/test-mode-notice';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 

@@ -9,7 +9,7 @@ import { Notice } from '@wordpress/components';
 import {
 	getPaymentSettingsUrl,
 	isInTestMode,
-} from '../../util';
+} from '../../../util';
 import {
 	topics,
 	getPaymentsSettingsUrlComponent,
@@ -19,7 +19,7 @@ import {
 	withTestNotice,
 } from '../index';
 
-jest.mock( '../../util', () => ( {
+jest.mock( '../../../util', () => ( {
 	isInTestMode: jest.fn(),
 	getPaymentSettingsUrl: jest.fn().mockReturnValue( 'https://example.com/' ),
 } ) );
