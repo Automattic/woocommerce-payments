@@ -1,6 +1,3 @@
-/* stylelint-disable */
-/* stylelint-enable */
-
 @import './stylesheets/abstracts/colors';
 @import './stylesheets/abstracts/mixins';
 @import './stylesheets/abstracts/breakpoints';
@@ -18,4 +15,14 @@
 		/* Accounting for woocommerce-card__body padding */
 		margin: 0 -16px;
 	}
+}
+
+/**
+ * This styling changes the appearance of warning notices to match our designs.
+ * In particular it removes margins that aren't supposed to be present, and
+ * fixes the background color.
+ */
+.wcpay-test-mode-notice.components-notice.is-warning {
+	margin: 24px 0;
+	background-color: $warning;
 }

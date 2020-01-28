@@ -9,6 +9,7 @@ const webpackConfig = {
 	devtool: 'source-map',
 	entry: {
 		index: './client/index.js',
+		settings: './client/settings.js',
 	},
 	output: {
 		filename: '[name].js',

@@ -151,7 +151,10 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
-			array( 'connectUrl' => WC_Payments_Account::get_connect_url() )
+			array(
+				'connectUrl' => WC_Payments_Account::get_connect_url(),
+				'testMode'   => $this->wcpay_gateway->get_test_mode(),
+			)
 		);
 
 		wp_register_style(
@@ -160,12 +163,24 @@ class WC_Payments_Admin {
 			array( 'wc-components' ),
 			WC_Payments::get_file_version( 'dist/index.css' )
 		);
+
+		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
+		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
+		$settings_script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : null;
+		wp_register_script(
+			'WCPAY_ADMIN_SETTINGS',
+			$settings_script_src_url,
+			$settings_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/settings.js' ),
+			true
+		);
 	}
 
 	/**
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
+		wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );

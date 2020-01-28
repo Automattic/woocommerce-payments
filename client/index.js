@@ -16,6 +16,7 @@ import DisputesPage from 'disputes';
 import DisputeEvidencePage from 'disputes/evidence';
 import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
+import { withTestNotice, topics } from 'components/test-mode-notice';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 
@@ -32,7 +33,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DepositsPage,
+		container: withTestNotice( DepositsPage, topics.deposits ),
         path: '/payments/deposits',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -41,7 +42,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: TransactionsPage,
+        container: withTestNotice( TransactionsPage, topics.transactions ),
         path: '/payments/transactions',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -50,7 +51,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: PaymentDetailsPage,
+        container: withTestNotice( PaymentDetailsPage, topics.paymentDetails ),
         path: '/payments/transactions/details',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -60,7 +61,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DisputesPage,
+        container: withTestNotice( DisputesPage, topics.disputes ),
         path: '/payments/disputes',
         wpOpenMenu: menuID,
         breadcrumbs: [
@@ -69,7 +70,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: DisputeEvidencePage,
+        container: withTestNotice( DisputeEvidencePage, topics.disputeEvidence ),
         path: '/payments/disputes/evidence',
         wpOpenMenu: menuID,
         breadcrumbs: [
