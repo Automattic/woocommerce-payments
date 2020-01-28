@@ -240,7 +240,7 @@ class WC_Payments_API_Client {
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$transaction = $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
+				$transaction = $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
 			}
 		}
 
@@ -260,7 +260,7 @@ class WC_Payments_API_Client {
 			return $transaction;
 		}
 
-		return $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
+		return $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
 	}
 
 	/**
@@ -518,15 +518,6 @@ class WC_Payments_API_Client {
 		}
 
 		return $object;
-	}
-
-	/**
-	 * Gets charge id for a given transaction.
-	 *
-	 * @param array $transaction transaction.
-	 */
-	private function get_charge_id_from_transaction( $transaction ) {
-		return $transaction['charge_id'];
 	}
 
 	/**
