@@ -4,40 +4,46 @@
  * Internal dependencies
  */
 import TYPES from './action-types';
+import { getResourceId } from '../util';
+import { ID_PREFIX } from '../constants';
 
-const defaultState = { data: [], summary: {} };
+const defaultState = { summary: {} };
 
-const receiveTransactions = ( state = defaultState, { type, data = [], error } ) => {
+const receiveTransactions = ( state = defaultState, { type, query = {}, data = [], error } ) => {
+	const index = getResourceId( ID_PREFIX.transactions, query );
+
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
-			state = {
+			return {
 				...state,
-				data: state.data.concat( data ),
+				[ index ]: {
+					data: data,
+				},
 			};
-			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS:
-			state = {
+			return {
 				...state,
-				error: error,
+				[ index ]: {
+					error: error,
+				},
 			};
-			break;
 		case TYPES.SET_TRANSACTIONS_SUMMARY:
-			state = {
+			return {
 				...state,
 				summary: {
 					data: data,
 				},
 			};
-			break;
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY:
-			state = {
+			return {
 				...state,
 				summary: {
 					error: error,
 				},
 			};
-			break;
 	}
+
+	// Fallback to returning the same state.
 	return state;
 };
 

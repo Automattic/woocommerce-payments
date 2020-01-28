@@ -79,7 +79,12 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 * Retrieve transactions to respond with via API.
 	 */
 	public function get_transactions() {
-		return rest_ensure_response( $this->api_client->list_transactions() );
+		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		$page      = isset( $_GET['page'] ) ? intval( $_GET['page'] ) : 0;
+		$page_size = isset( $_GET['pagesize'] ) ? intval( $_GET['pagesize'] ) : 25;
+		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+
+		return rest_ensure_response( $this->api_client->list_transactions( $page, $page_size ) );
 	}
 
 	/**
