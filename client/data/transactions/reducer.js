@@ -5,7 +5,9 @@
  */
 import TYPES from './action-types';
 
-const receiveTransactions = ( state = { data: [] }, { type, data = [], error } ) => {
+const defaultState = { data: [], summary: {} };
+
+const receiveTransactions = ( state = defaultState, { type, data = [], error } ) => {
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
 			state = {
@@ -17,6 +19,22 @@ const receiveTransactions = ( state = { data: [] }, { type, data = [], error } )
 			state = {
 				...state,
 				error: error,
+			};
+			break;
+		case TYPES.SET_TRANSACTIONS_SUMMARY:
+			state = {
+				...state,
+				summary: {
+					data: data,
+				},
+			};
+			break;
+		case TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY:
+			state = {
+				...state,
+				summary: {
+					error: error,
+				},
 			};
 			break;
 	}

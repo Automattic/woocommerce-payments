@@ -96,8 +96,8 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_j23jda9JJa",
         },
         Object {
-          "display": "Nov 1, 2019 / 2:46AM",
-          "value": 1572590800000,
+          "display": "Jan 2, 2020 / 12:46PM",
+          "value": "2020-01-02 17:46:02",
         },
         Object {
           "display": "Refund",
@@ -116,7 +116,14 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 9.5,
         },
         Object {
-          "display": <OrderLink />,
+          "display": <OrderLink
+            order={
+              Object {
+                "number": 123,
+                "url": "https://example.com/order/123",
+              }
+            }
+          />,
           "value": undefined,
         },
         Object {
@@ -138,8 +145,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "US",
         },
         Object {
-          "display": "High",
-          "value": "high",
+          "display": <RiskLevel
+            risk={0}
+          />,
+          "value": 0,
         },
       ],
       Array [
@@ -157,8 +166,8 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Nov 1, 2019 / 12:00AM",
-          "value": 1572580800000,
+          "display": "Jan 4, 2020 / 11:22PM",
+          "value": "2020-01-05 04:22:59",
         },
         Object {
           "display": "Charge",
@@ -177,7 +186,14 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 14.5,
         },
         Object {
-          "display": <OrderLink />,
+          "display": <OrderLink
+            order={
+              Object {
+                "number": 125,
+                "url": "https://example.com/order/125",
+              }
+            }
+          />,
           "value": undefined,
         },
         Object {
@@ -199,14 +215,36 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "US",
         },
         Object {
-          "display": "Normal",
-          "value": "normal",
+          "display": <RiskLevel
+            risk={2}
+          />,
+          "value": 2,
         },
       ],
     ]
   }
   rowsPerPage={10}
   showMenu={true}
+  summary={
+    Array [
+      Object {
+        "label": "transactions",
+        "value": "10",
+      },
+      Object {
+        "label": "total",
+        "value": "$10.00",
+      },
+      Object {
+        "label": "fees",
+        "value": "$1.00",
+      },
+      Object {
+        "label": "net",
+        "value": "$9.00",
+      },
+    ]
+  }
   title="Transactions"
   totalRows={10}
 />

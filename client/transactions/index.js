@@ -14,8 +14,9 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import { useTransactions } from '../data';
+import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
+import RiskLevel from '../components/risk-level';
 import './style.scss';
 
 const currency = new Currency();
@@ -39,10 +40,9 @@ const headers = [
 
 export const TransactionsList = () => {
 	const { transactions, isLoading } = useTransactions();
+	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
 
 	const rows = transactions.map( ( txn ) => {
-		const charge = txn.source.object === 'charge' ? txn.source : ( txn.source.charge || null );
-
 		const orderUrl = <OrderLink order={ txn.order } />;
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const detailsUrl = addQueryArgs(
@@ -50,45 +50,47 @@ export const TransactionsList = () => {
 			{
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: charge ? charge.id : '',
+				id: txn.charge_id,
 			}
 		);
-		const detailsLink = charge ? (
+		const detailsLink = txn.charge_id ? (
 			<Link className="transactions-list__details-button" href={ detailsUrl } >
 				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
 		) : '';
 
-		// Extract nested properties from the charge.
-		const billingDetails = charge ? charge.billing_details : null;
-		const outcome = charge ? charge.outcome : null;
-		const paymentMethodDetails = charge ? charge.payment_method_details : null;
-		const address = billingDetails ? billingDetails.address : null;
-		const card = paymentMethodDetails ? paymentMethodDetails.card : null;
+		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
 		// Map transaction into table row.
 		const data = {
-			created: { value: txn.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( txn.created * 1000 ) ) },
+			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
 			type: { value: txn.type, display: capitalize( txn.type ) },
-			source: card && {
-				value: card.brand,
-				display: <span className={ `payment-method__brand payment-method__brand--${ card.brand }` }></span>,
+			source: {
+				value: txn.source,
+				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
 			},
-			order: { value: txn.order, display: orderUrl },
-			customer: billingDetails && { value: billingDetails.name, display: billingDetails.name },
-			email: billingDetails && { value: billingDetails.email, display: billingDetails.email },
-			country: address && { value: address.country, display: address.country },
+			order: { value: txn.order_id, display: orderUrl },
+			customer: { value: txn.customer_name, display: txn.customer_name },
+			email: { value: txn.customer_email, display: txn.customer_email },
+			country: { value: txn.customer_country, display: txn.customer_country },
 			amount: { value: txn.amount / 100, display: currency.formatCurrency( txn.amount / 100 ) },
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fee: { value: txn.fee / 100, display: currency.formatCurrency( ( txn.fee / 100 ) * -1 ) },
-			net: { value: ( txn.amount - txn.fee ) / 100, display: currency.formatCurrency( ( txn.amount - txn.fee ) / 100 ) },
+			fee: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
+			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
 			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
-			riskLevel: outcome && { value: outcome.risk_level, display: capitalize( outcome.risk_level ) },
-			details: { value: txn.id, display: detailsLink },
+			riskLevel: { value: txn.risk_level, display: riskLevel },
+			details: { value: txn.transaction_id, display: detailsLink },
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
+
+	const summary = [
+		{ label: 'transactions', value: `${ transactionsSummary.count }` },
+		{ label: 'total', value: `${ currency.formatCurrency( transactionsSummary.total / 100 ) }` },
+		{ label: 'fees', value: `${ currency.formatCurrency( transactionsSummary.fees / 100 ) }` },
+		{ label: 'net', value: `${ currency.formatCurrency( transactionsSummary.net / 100 ) }` },
+	];
 
 	return (
 		<TableCard
@@ -99,6 +101,7 @@ export const TransactionsList = () => {
 			totalRows={ 10 }
 			headers={ headers }
 			rows={ rows }
+			summary={ isSummaryLoading ? null : summary }
 		/>
 	);
 };
