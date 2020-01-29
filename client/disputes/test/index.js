@@ -24,6 +24,10 @@ describe( 'Disputes list', () => {
                     },
                     reason: 'fraudulent',
                     status: 'needs_response',
+					order: {
+						number: '1',
+						url: 'http://test.local/order/1',
+					},
 				},
 				{
 					id: 'dp_zxcvbnm',
@@ -36,6 +40,10 @@ describe( 'Disputes list', () => {
                     },
                     reason: 'general',
                     status: 'under_review',
+					order: {
+						number: '2',
+						url: 'http://test.local/order/2',
+					},
 				},
 			],
 		};

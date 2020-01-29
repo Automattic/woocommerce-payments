@@ -27,6 +27,10 @@ exports[`Disputes list renders correctly 1`] = `
         "key": "dueBy",
         "label": "Respond By",
       },
+      Object {
+        "key": "order",
+        "label": "Order #",
+      },
     ]
   }
   isLoading={false}
@@ -72,6 +76,17 @@ exports[`Disputes list renders correctly 1`] = `
           "display": "Nov 8, 2019 / 2:46AM",
           "value": 1573199200000,
         },
+        Object {
+          "display": <OrderLink
+            order={
+              Object {
+                "number": "1",
+                "url": "http://test.local/order/1",
+              }
+            }
+          />,
+          "value": "1",
+        },
       ],
       Array [
         Object {
@@ -98,6 +113,17 @@ exports[`Disputes list renders correctly 1`] = `
         Object {
           "display": "Nov 6, 2019 / 11:00PM",
           "value": 1573099200000,
+        },
+        Object {
+          "display": <OrderLink
+            order={
+              Object {
+                "number": "2",
+                "url": "http://test.local/order/2",
+              }
+            }
+          />,
+          "value": "2",
         },
       ],
     ]
