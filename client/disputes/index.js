@@ -23,9 +23,9 @@ const headers = [
 	{ key: 'amount', label: 'Amount' },
 	{ key: 'status', label: 'Status' },
 	{ key: 'reason', label: 'Reason' },
+	{ key: 'order', label: 'Order #' },
 	{ key: 'created', label: 'Disputed On' },
 	{ key: 'dueBy', label: 'Respond By' },
-	{ key: 'order', label: 'Order #' },
 ];
 
 export const DisputesList = ( props ) => {
