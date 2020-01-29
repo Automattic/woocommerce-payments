@@ -19,12 +19,12 @@ describe( 'PaymentStatusChip', () => {
 	} );
 
 	test( 'renders a light chip with partially refunded message if there\'s a partial refund', () => {
-		getChargeStatus.mockReturnValue( 'partially-refunded' );
+		getChargeStatus.mockReturnValue( 'refunded_partial' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with fully refunded message if there\'s a full refund', () => {
-		getChargeStatus.mockReturnValue( 'fully-refunded' );
+		getChargeStatus.mockReturnValue( 'refunded_full' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
@@ -50,22 +50,22 @@ describe( 'PaymentStatusChip', () => {
 	} );
 
 	test( 'renders a primary chip with dispute message if there\'s a dispute needing response', () => {
-		getChargeStatus.mockReturnValue( 'disputed-needs-response' );
+		getChargeStatus.mockReturnValue( 'disputed_needs_response' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with dispute message if there\'s a dispute in review', () => {
-		getChargeStatus.mockReturnValue( 'disputed-under-review' );
+		getChargeStatus.mockReturnValue( 'disputed_under_review' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with dispute message if there\'s a won dispute', () => {
-		getChargeStatus.mockReturnValue( 'disputed-won' );
+		getChargeStatus.mockReturnValue( 'disputed_won' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with dispute message if there\'s a lost dispute', () => {
-		getChargeStatus.mockReturnValue( 'disputed-lost' );
+		getChargeStatus.mockReturnValue( 'disputed_lost' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 

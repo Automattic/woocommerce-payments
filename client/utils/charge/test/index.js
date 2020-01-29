@@ -102,27 +102,27 @@ describe( 'Charge utilities', () => {
 		expect( utils.getChargeStatus( failedCharge ) ).toEqual( 'failed' );
 	} );
 
-	test( 'should return status disputed-needs-response for disputed charges that needs response', () => {
-		expect( utils.getChargeStatus( disputedChargeNeedsResponse ) ).toEqual( 'disputed-needs-response' );
+	test( 'should return status disputed_needs_response for disputed charges that needs response', () => {
+		expect( utils.getChargeStatus( disputedChargeNeedsResponse ) ).toEqual( 'disputed_needs_response' );
 	} );
 
-	test( 'should return status disputed-under-review for disputed charges in review', () => {
-		expect( utils.getChargeStatus( disputedChargeUnderReview ) ).toEqual( 'disputed-under-review' );
+	test( 'should return status disputed_under_review for disputed charges in review', () => {
+		expect( utils.getChargeStatus( disputedChargeUnderReview ) ).toEqual( 'disputed_under_review' );
 	} );
 
-	test( 'should return status disputed-won for won disputed charges', () => {
-		expect( utils.getChargeStatus( disputedChargeWon ) ).toEqual( 'disputed-won' );
+	test( 'should return status disputed_won for won disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeWon ) ).toEqual( 'disputed_won' );
 	} );
 
-	test( 'should return status disputed-lost for lost disputed charges', () => {
-		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual( 'disputed-lost' );
+	test( 'should return status disputed_lost for lost disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual( 'disputed_lost' );
 	} );
 
-	test( 'should return status fully-refunded for fully refunded charges', () => {
-		expect( utils.getChargeStatus( fullyRefundedCharge ) ).toEqual( 'fully-refunded' );
+	test( 'should return status refunded_full for fully refunded charges', () => {
+		expect( utils.getChargeStatus( fullyRefundedCharge ) ).toEqual( 'refunded_full' );
 	} );
 
-	test( 'should return status partially-refunded for partially refunded charges', () => {
-		expect( utils.getChargeStatus( partiallyRefundedCharge ) ).toEqual( 'partially-refunded' );
+	test( 'should return status refunded_partial for partially refunded charges', () => {
+		expect( utils.getChargeStatus( partiallyRefundedCharge ) ).toEqual( 'refunded_partial' );
 	} );
 } );

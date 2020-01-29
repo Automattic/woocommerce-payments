@@ -38,14 +38,14 @@ export const mapDisputeStatusToChargeStatus = ( status ) => {
 	switch ( status ) {
 		case 'warning_needs_response':
 		case 'needs_response':
-			return 'disputed-needs-response';
+			return 'disputed_needs_response';
 		case 'warning_under_review':
 		case 'under_review':
-			return 'disputed-under-review';
+			return 'disputed_under_review';
 		case 'won':
-			return 'disputed-won';
+			return 'disputed_won';
 		case 'lost':
-			return 'disputed-lost';
+			return 'disputed_lost';
 		default:
 			return 'disputed';
 	}
@@ -63,10 +63,10 @@ export const getChargeStatus = ( charge = {} ) => {
 		return mapDisputeStatusToChargeStatus( getDisputeStatus( charge.dispute ) );
 	}
 	if ( isChargePartiallyRefunded( charge ) ) {
-		return 'partially-refunded';
+		return 'refunded_partial';
 	}
 	if ( isChargeFullyRefunded( charge ) ) {
-		return 'fully-refunded';
+		return 'refunded_full';
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';

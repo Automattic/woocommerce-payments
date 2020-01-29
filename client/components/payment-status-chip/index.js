@@ -13,11 +13,13 @@ import Chip from '../chip';
 
 /* TODO: implement other payment statuses */
 const statuses = {
-	'partially-refunded': {
+	// eslint-disable-next-line camelcase
+	refunded_partial: {
 		type: 'light',
 		message: __( 'Partial refund', 'woocommerce-payments' ),
 	},
-	'fully-refunded': {
+	// eslint-disable-next-line camelcase
+	refunded_full: {
 		type: 'light',
 		message: __( 'Refunded', 'woocommerce-payments' ),
 	},
@@ -37,19 +39,23 @@ const statuses = {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
-	'disputed-needs-response': {
+	// eslint-disable-next-line camelcase
+	disputed_needs_response: {
 		type: 'primary',
 		message: __( 'Disputed: Needs response', 'woocommerce-payments' ),
 	},
-	'disputed-under-review': {
+	// eslint-disable-next-line camelcase
+	disputed_under_review: {
 		type: 'light',
 		message: __( 'Disputed: In review', 'woocommerce-payments' ),
 	},
-	'disputed-won': {
+	// eslint-disable-next-line camelcase
+	disputed_won: {
 		type: 'light',
 		message: __( 'Disputed: Won', 'woocommerce-payments' ),
 	},
-	'disputed-lost': {
+	// eslint-disable-next-line camelcase
+	disputed_lost: {
 		type: 'light',
 		message: __( 'Disputed: Lost', 'woocommerce-payments' ),
 	},
