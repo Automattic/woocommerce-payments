@@ -20,16 +20,16 @@ exports[`Disputes list renders correctly 1`] = `
         "label": "Reason",
       },
       Object {
+        "key": "order",
+        "label": "Order #",
+      },
+      Object {
         "key": "created",
         "label": "Disputed On",
       },
       Object {
         "key": "dueBy",
         "label": "Respond By",
-      },
-      Object {
-        "key": "order",
-        "label": "Order #",
       },
     ]
   }
@@ -69,14 +69,6 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "fraudulent",
         },
         Object {
-          "display": "Nov 1, 2019 / 2:46AM",
-          "value": 1572590800000,
-        },
-        Object {
-          "display": "Nov 8, 2019 / 2:46AM",
-          "value": 1573199200000,
-        },
-        Object {
           "display": <OrderLink
             order={
               Object {
@@ -86,6 +78,14 @@ exports[`Disputes list renders correctly 1`] = `
             }
           />,
           "value": "1",
+        },
+        Object {
+          "display": "Nov 1, 2019 / 2:46AM",
+          "value": 1572590800000,
+        },
+        Object {
+          "display": "Nov 8, 2019 / 2:46AM",
+          "value": 1573199200000,
         },
       ],
       Array [
@@ -107,15 +107,15 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "general",
         },
         Object {
+          "display": null,
+        },
+        Object {
           "display": "Oct 30, 2019 / 8:13PM",
           "value": 1572480800000,
         },
         Object {
           "display": "Nov 6, 2019 / 11:00PM",
           "value": 1573099200000,
-        },
-        Object {
-          "display": null,
         },
       ],
     ]
