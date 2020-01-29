@@ -298,9 +298,14 @@ class WC_Payments_API_Client {
 
 		// Add WooCommerce order information to each dispute.
 		if ( isset( $disputes['data'] ) ) {
-			// TODO: Wrap with try/catch to avoid failing whole request if sindgle dispute is corrupted.
 			foreach ( $disputes['data'] as &$dispute ) {
-				$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+				try {
+					// Wrap with try/catch to avoid failing whole request because of a single dispute.
+					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+				} catch ( Exception $e ) {
+					// TODO: Log the error once Logger PR (#326) is merged.
+					continue;
+				}
 			}
 		}
 

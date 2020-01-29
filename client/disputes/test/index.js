@@ -40,10 +40,7 @@ describe( 'Disputes list', () => {
                     },
                     reason: 'general',
                     status: 'under_review',
-					order: {
-						number: '2',
-						url: 'http://test.local/order/2',
-					},
+					// dispute without order information
 				},
 			],
 		};

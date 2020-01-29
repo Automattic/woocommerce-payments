@@ -115,15 +115,7 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 1573099200000,
         },
         Object {
-          "display": <OrderLink
-            order={
-              Object {
-                "number": "2",
-                "url": "http://test.local/order/2",
-              }
-            }
-          />,
-          "value": "2",
+          "display": null,
         },
       ],
     ]

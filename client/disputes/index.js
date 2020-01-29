@@ -39,6 +39,11 @@ export const DisputesList = ( props ) => {
 			</Link>
 		);
 
+		const order = dispute.order ? {
+				value: dispute.order.number,
+				display: <OrderLink order={ dispute.order } />,
+			} : null;
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: {
@@ -51,10 +56,7 @@ export const DisputesList = ( props ) => {
 				value: dispute.evidence_details.due_by * 1000,
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 			},
-			order: {
-				value: dispute.order.number,
-				display: <OrderLink order={ dispute.order } />,
-			},
+			order,
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
