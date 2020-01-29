@@ -294,7 +294,17 @@ class WC_Payments_API_Client {
 	 * @throws Exception - Exception thrown on request failure.
 	 */
 	public function list_disputes() {
-		return $this->request( array(), self::DISPUTES_API, self::GET );
+		$disputes = $this->request( array(), self::DISPUTES_API, self::GET );
+
+		// Add WooCommerce order information to each dispute.
+		if ( isset( $disputes['data'] ) ) {
+			// TODO: Wrap with try/catch to avoid failing whole request if sindgle dispute is corrupted.
+			foreach ( $disputes['data'] as &$dispute ) {
+				$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+			}
+		}
+
+		return $disputes;
 	}
 
 	/**
