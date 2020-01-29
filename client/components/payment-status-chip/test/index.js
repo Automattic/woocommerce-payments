@@ -44,11 +44,6 @@ describe( 'PaymentStatusChip', () => {
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
-	test( 'renders an alert chip with blocked message if payment status is blocked', () => {
-		getChargeStatus.mockReturnValue( 'blocked' );
-		expect( renderPaymentStatus() ).toMatchSnapshot();
-	} );
-
 	test( 'renders an alert chip with failed message if payment status is blocked', () => {
 		getChargeStatus.mockReturnValue( 'blocked' );
 		expect( renderPaymentStatus() ).toMatchSnapshot();
