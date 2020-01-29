@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`RiskLevel Renders elevated risk correctly. 1`] = `
-<p
+<span
   style={
     Object {
       "color": "orange",
@@ -9,11 +9,11 @@ exports[`RiskLevel Renders elevated risk correctly. 1`] = `
   }
 >
   Elevated
-</p>
+</span>
 `;
 
 exports[`RiskLevel Renders highest risk correctly. 1`] = `
-<p
+<span
   style={
     Object {
       "color": "red",
@@ -21,11 +21,11 @@ exports[`RiskLevel Renders highest risk correctly. 1`] = `
   }
 >
   Highest
-</p>
+</span>
 `;
 
 exports[`RiskLevel Renders normal risk correctly. 1`] = `
-<p
+<span
   style={
     Object {
       "color": "green",
@@ -33,5 +33,5 @@ exports[`RiskLevel Renders normal risk correctly. 1`] = `
   }
 >
   Normal
-</p>
+</span>
 `;
