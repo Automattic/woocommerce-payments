@@ -10,7 +10,7 @@
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 
-export const getChargeDisputeStatus = ( charge = {} ) => charge.dispute ? charge.dispute.status : null;
+export const getDisputeStatus = ( dispute = {} ) => dispute.status || null;
 
 export const getChargeOutcomeType = ( charge = {} ) => charge.outcome ? charge.outcome.type : null;
 
@@ -34,7 +34,24 @@ export const isChargeFullyRefunded = ( charge = {} ) => charge.refunded === true
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
-/* TODO: implement other charge statuses */
+export const mapDisputeStatusToChargeStatus = ( status ) => {
+	switch ( status ) {
+		case 'warning_needs_response':
+		case 'needs_response':
+			return 'disputed-needs-response';
+		case 'warning_under_review':
+		case 'under_review':
+			return 'disputed-under-review';
+		case 'won':
+			return 'disputed-won';
+		case 'lost':
+			return 'disputed-lost';
+		default:
+			return 'disputed';
+	}
+};
+
+/* TODO: implement authorization and SCA charge statuses */
 export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeFailed( charge ) ) {
 		return 'failed';
@@ -43,18 +60,7 @@ export const getChargeStatus = ( charge = {} ) => {
 		return 'blocked';
 	}
 	if ( isChargeDisputed( charge ) ) {
-		switch ( getChargeDisputeStatus( charge ) ) {
-			case 'warning_needs_response':
-			case 'needs_response':
-				return 'disputed-needs-response';
-			case 'warning_under_review':
-			case 'under_review':
-				return 'disputed-under-review';
-			case 'won':
-				return 'disputed-won';
-			case 'lost':
-				return 'disputed-lost';
-		}
+		return mapDisputeStatusToChargeStatus( getDisputeStatus( charge.dispute ) );
 	}
 	if ( isChargePartiallyRefunded( charge ) ) {
 		return 'partially-refunded';
