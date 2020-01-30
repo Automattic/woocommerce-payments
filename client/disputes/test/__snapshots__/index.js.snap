@@ -20,6 +20,10 @@ exports[`Disputes list renders correctly 1`] = `
         "label": "Reason",
       },
       Object {
+        "key": "order",
+        "label": "Order #",
+      },
+      Object {
         "key": "created",
         "label": "Disputed On",
       },
@@ -65,6 +69,17 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "fraudulent",
         },
         Object {
+          "display": <OrderLink
+            order={
+              Object {
+                "number": "1",
+                "url": "http://test.local/order/1",
+              }
+            }
+          />,
+          "value": "1",
+        },
+        Object {
           "display": "Nov 1, 2019 / 2:46AM",
           "value": 1572590800000,
         },
@@ -90,6 +105,9 @@ exports[`Disputes list renders correctly 1`] = `
         Object {
           "display": "General",
           "value": "general",
+        },
+        Object {
+          "display": null,
         },
         Object {
           "display": "Oct 30, 2019 / 8:13PM",

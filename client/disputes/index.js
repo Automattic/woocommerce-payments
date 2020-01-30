@@ -12,12 +12,18 @@ import { TableCard, Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 import { capitalize } from 'lodash';
 
+/**
+ * Internal dependencies.
+ */
+import OrderLink from '../components/order-link';
+
 const currency = new Currency();
 
 const headers = [
 	{ key: 'amount', label: 'Amount' },
 	{ key: 'status', label: 'Status' },
 	{ key: 'reason', label: 'Reason' },
+	{ key: 'order', label: 'Order #' },
 	{ key: 'created', label: 'Disputed On' },
 	{ key: 'dueBy', label: 'Respond By' },
 ];
@@ -33,6 +39,11 @@ export const DisputesList = ( props ) => {
 			</Link>
 		);
 
+		const order = dispute.order ? {
+				value: dispute.order.number,
+				display: <OrderLink order={ dispute.order } />,
+			} : null;
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: {
@@ -45,6 +56,7 @@ export const DisputesList = ( props ) => {
 				value: dispute.evidence_details.due_by * 1000,
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 			},
+			order,
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
