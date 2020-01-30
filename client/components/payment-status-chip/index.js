@@ -12,15 +12,16 @@ import { getChargeStatus } from '../../utils/charge';
 import Chip from '../chip';
 
 /* TODO: implement other payment statuses */
-/* TODO: implement support for different dispute messages - check https://stripe.com/docs/api/disputes/object */
 const statuses = {
-	'partially-refunded': {
+	// eslint-disable-next-line camelcase
+	refunded_partial: {
 		type: 'light',
-		message: __( 'Partially Refunded', 'woocommerce-payments' ),
+		message: __( 'Partial refund', 'woocommerce-payments' ),
 	},
-	'fully-refunded': {
+	// eslint-disable-next-line camelcase
+	refunded_full: {
 		type: 'light',
-		message: __( 'Fully Refunded', 'woocommerce-payments' ),
+		message: __( 'Refunded', 'woocommerce-payments' ),
 	},
 	paid: {
 		type: 'light',
@@ -28,15 +29,35 @@ const statuses = {
 	},
 	authorized: {
 		type: 'primary',
-		message: __( 'Payment Authorized', 'woocommerce-payments' ),
+		message: __( 'Payment authorized', 'woocommerce-payments' ),
 	},
 	failed: {
 		type: 'alert',
-		message: __( 'Blocked', 'woocommerce-payments' ),
+		message: __( 'Payment failed', 'woocommerce-payments' ),
 	},
-	disputed: {
+	blocked: {
+		type: 'alert',
+		message: __( 'Payment blocked', 'woocommerce-payments' ),
+	},
+	// eslint-disable-next-line camelcase
+	disputed_needs_response: {
 		type: 'primary',
-		message: __( 'Disputed', 'woocommerce-payments' ),
+		message: __( 'Disputed: Needs response', 'woocommerce-payments' ),
+	},
+	// eslint-disable-next-line camelcase
+	disputed_under_review: {
+		type: 'light',
+		message: __( 'Disputed: In review', 'woocommerce-payments' ),
+	},
+	// eslint-disable-next-line camelcase
+	disputed_won: {
+		type: 'light',
+		message: __( 'Disputed: Won', 'woocommerce-payments' ),
+	},
+	// eslint-disable-next-line camelcase
+	disputed_lost: {
+		type: 'light',
+		message: __( 'Disputed: Lost', 'woocommerce-payments' ),
 	},
 	default: {
 		type: 'light',
