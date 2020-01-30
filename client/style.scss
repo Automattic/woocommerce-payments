@@ -15,6 +15,11 @@
 		/* Accounting for woocommerce-card__body padding */
 		margin: 0 -16px;
 	}
+
+	label + textarea {
+		/* Mokes text area taking full width of the card */
+		width: 100%;
+	}
 }
 
 /**
