@@ -16,9 +16,10 @@
 		margin: 0 -16px;
 	}
 
-	label + textarea {
+	textarea {
 		/* Mokes text area taking full width of the card */
 		width: 100%;
+		padding: 6px 8px;
 	}
 }
 
