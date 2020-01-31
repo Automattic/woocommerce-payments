@@ -255,6 +255,7 @@ class WC_Payments_Account {
 			delete_option( 'wcpay_test_only' );
 		}
 
+		$this->gateway->update_option( 'enabled', 'yes' );
 		$this->gateway->update_option( 'stripe_account_id', $account_id );
 		$this->gateway->update_option( 'test_mode', $test_mode ? 'yes' : 'no' );
 		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
