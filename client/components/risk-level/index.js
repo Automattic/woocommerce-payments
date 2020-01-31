@@ -21,7 +21,7 @@ const RiskLevel = ( props ) => {
 	const { risk } = props;
 
 	return (
-		<p style={ { color: colorMappings[ risk ] } }>{ riskMappings[ risk ] }</p>
+		<span style={ { color: colorMappings[ risk ] } }>{ riskMappings[ risk ] }</span>
 	);
 };
 
