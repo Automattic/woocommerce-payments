@@ -144,6 +144,7 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
+		// TODO: Check if Jetpack  is installed at all.
 		$plugin_dependencies = array(
 			array(
 				'name'  => 'WooCommerce',
@@ -224,6 +225,21 @@ class WC_Payments {
 				}
 				self::display_admin_error( $message );
 			}
+			return false;
+		}
+
+		// TODO: Extract the check into static method of WC_Payments_Http.
+		// Check if Jetpack is connected.
+		if (
+			( class_exists( 'Automattic\Jetpack\Connection\Client' ) && ! ( new Automattic\Jetpack\Connection\Manager() )->get_access_token() )
+			|| ( class_exists( 'Jetpack_Client' ) && ! Jetpack_Data::get_access_token() )
+		) {
+			if ( ! $silent ) {
+				// TODO: Create better alert message.
+				$message = 'Jetpack is not connected!';
+				self::display_admin_error( $message );
+			}
+
 			return false;
 		}
 
