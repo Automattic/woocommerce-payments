@@ -57,19 +57,19 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
+			'/' . $this->rest_base . '/summary',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_transaction' ),
+				'callback'            => array( $this, 'get_transactions_summary' ),
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/summary',
+			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
-				'callbacks'           => array( $this, 'get_transactions_summary' ),
+				'callback'            => array( $this, 'get_transaction' ),
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
