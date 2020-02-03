@@ -21,6 +21,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Required functions.
+ */
+if ( ! function_exists( 'woothemes_queue_update' ) ) {
+	require_once 'woo-includes/woo-functions.php';
+}
+
+/**
+ * Plugin updates.
+ */
+woothemes_queue_update( plugin_basename( __FILE__ ), '8ed5c1451e548223478370a6b0652bd4', '5278104' );
+
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
 
