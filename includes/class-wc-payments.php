@@ -141,6 +141,16 @@ class WC_Payments {
 
 		// TODO - Remove/update when Jetpack Connection package is all we need.
 		if ( ! self::check_for_jetpack_layer() ) {
+			if ( ! $silent ) {
+				$message = sprintf(
+					/* translators: %1: WooCommerce Payments version */
+					__( 'WooCommerce Payments %1$s requires Jetpack. Please install, activate and connect Jetpack. This dependency will change in an upcoming release.', 'woocommerce-payments' ),
+					WCPAY_VERSION_NUMBER
+				);
+
+				self::display_admin_error( $message );
+			}
+
 			return false;
 		};
 
@@ -248,18 +258,6 @@ class WC_Payments {
 			return true;
 		}
 
-		$message = sprintf(
-			/* translators: %1: WooCommerce Payments version */
-			__( 'WooCommerce Payments %1$s requires Jetpack at this time. Please install, activate and connect Jetpack.', 'woocommerce-payments' ),
-			WCPAY_VERSION_NUMBER
-		);
-
-		add_filter(
-			'admin_notices',
-			function () use ( $message ) {
-				self::display_admin_error( $message );
-			}
-		);
 		return false;
 	}
 
