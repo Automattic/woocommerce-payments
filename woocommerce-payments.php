@@ -13,6 +13,8 @@
  * Version: 0.6.0
  *
  * @package WooCommerce\Payments
+ *
+ * Woo: 5278104:8ed5c1451e548223478370a6b0652bd4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
