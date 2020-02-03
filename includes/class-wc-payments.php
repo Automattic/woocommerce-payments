@@ -57,10 +57,6 @@ class WC_Payments {
 			return;
 		};
 
-		if ( ! self::check_for_jetpack_layer() ) {
-			return;
-		};
-
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
 
 		self::$api_client = self::create_api_client();
@@ -142,6 +138,11 @@ class WC_Payments {
 		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
 			return true;
 		}
+
+		// TODO - Remove/update when Jetpack Connection package is all we need.
+		if ( ! self::check_for_jetpack_layer() ) {
+			return false;
+		};
 
 		$plugin_headers = self::get_plugin_headers();
 
