@@ -144,7 +144,6 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
-		// TODO: Check if Jetpack  is installed at all.
 		$plugin_dependencies = array(
 			array(
 				'name'  => 'WooCommerce',
@@ -157,6 +156,12 @@ class WC_Payments {
 				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
 				'slug'  => 'woocommerce-admin',
 				'file'  => 'woocommerce-admin/woocommerce-admin.php',
+			),
+			array(
+				'name'  => 'Jetpack',
+				'class' => 'Jetpack',
+				'slug'  => 'jetpack',
+				'file'  => 'jetpack/jetpack.php',
 			),
 		);
 
