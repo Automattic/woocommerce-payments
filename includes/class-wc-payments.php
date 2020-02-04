@@ -144,7 +144,7 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = sprintf(
 					/* translators: %1: WooCommerce Payments version */
-					__( 'WooCommerce Payments %1$s requires Jetpack. Please install, activate and connect Jetpack. This dependency will change in an upcoming release.', 'woocommerce-payments' ),
+					__( 'WooCommerce Payments %1$s requires Jetpack. Please install, activate, and connect Jetpack. This dependency will change in an upcoming release.', 'woocommerce-payments' ),
 					WCPAY_VERSION_NUMBER
 				);
 
