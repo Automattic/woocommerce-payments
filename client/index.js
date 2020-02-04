@@ -20,6 +20,7 @@ import ConnectAccountPage from 'connect-account-page';
 import { withTestNotice, topics } from 'components/test-mode-notice';
 
 const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
+const DepositDetailsPage = ( { query } ) => <TransactionsPage depositId={ query.id } />;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 	const { menuID, rootLink } = getMenuSettings();
@@ -40,6 +41,16 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         breadcrumbs: [
             rootLink,
             __( 'Deposits', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: withTestNotice( DepositDetailsPage, topics.depositDetails ),
+        path: '/payments/deposits/details',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            [ '/payments/deposits', __( 'Deposits', 'woocommerce-payments' ) ],
+            __( 'Deposit Details', 'woocommerce-payments' ),
         ],
     } );
     pages.push( {

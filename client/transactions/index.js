@@ -41,9 +41,9 @@ const headers = [
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 ];
 
-export const TransactionsList = () => {
-	const { transactions, isLoading } = useTransactions( getQuery() );
-	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
+export const TransactionsList = ( props ) => {
+	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
+	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( props.depositId );
 
 	const rows = transactions.map( ( txn ) => {
 		const orderUrl = <OrderLink order={ txn.order } />;
