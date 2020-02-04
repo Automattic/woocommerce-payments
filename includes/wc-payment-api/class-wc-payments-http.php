@@ -38,4 +38,16 @@ class WC_Payments_Http {
 			return Jetpack_Client::remote_request( $args, $body );
 		}
 	}
+
+	/**
+	 * Checks if Jetpack is connected.
+	 *
+	 * Checks if connection is authenticated in the same way as Jetpack_Client or Jetpack Connection Client does.
+	 *
+	 * @return bool true if Jetpack connection has access token.
+	 */
+	public static function is_connected() {
+		return ( class_exists( 'Automattic\Jetpack\Connection\Client' ) && ( new Automattic\Jetpack\Connection\Manager() )->get_access_token() )
+			|| ( class_exists( 'Jetpack_Client' ) && Jetpack_Data::get_access_token() );
+	}
 }

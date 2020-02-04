@@ -233,12 +233,8 @@ class WC_Payments {
 			return false;
 		}
 
-		// TODO: Extract the check into static method of WC_Payments_Http.
 		// Check if Jetpack is connected.
-		if (
-			( class_exists( 'Automattic\Jetpack\Connection\Client' ) && ! ( new Automattic\Jetpack\Connection\Manager() )->get_access_token() )
-			|| ( class_exists( 'Jetpack_Client' ) && ! Jetpack_Data::get_access_token() )
-		) {
+		if ( ! self::is_jetpack_connected() ) {
 			if ( ! $silent ) {
 				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
 				$message    = sprintf(
@@ -252,6 +248,16 @@ class WC_Payments {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks if Jetpack is connected.
+	 *
+	 * @return bool true if Jetpack connection is available and authenticated.
+	 */
+	public static function is_jetpack_connected() {
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+		return WC_Payments_Http::is_connected();
 	}
 
 	/**
