@@ -35,7 +35,9 @@ describe( 'Transactions reducer tests', () => {
 			data: mockTransactions,
 		},
 		summary: {
-			data: mockSummary,
+			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				data: mockSummary,
+			},
 		},
 	};
 
@@ -90,7 +92,9 @@ describe( 'Transactions reducer tests', () => {
 	test( 'New transactions summary reduced correctly', () => {
 		const expected = {
 			summary: {
-				data: mockSummary,
+				[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+					data: mockSummary,
+				},
 			},
 		};
 
@@ -99,6 +103,7 @@ describe( 'Transactions reducer tests', () => {
 			{
 				type: types.SET_TRANSACTIONS_SUMMARY,
 				data: mockSummary,
+				query: mockQuery,
 			}
 		);
 		expect( reduced ).toStrictEqual( expected );
@@ -114,7 +119,9 @@ describe( 'Transactions reducer tests', () => {
 		const expected = {
 			...filledState,
 			summary: {
-				data: newSummary,
+				[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+					data: newSummary,
+				},
 			},
 		};
 
@@ -123,6 +130,7 @@ describe( 'Transactions reducer tests', () => {
 			{
 				type: types.SET_TRANSACTIONS_SUMMARY,
 				data: newSummary,
+				query: mockQuery,
 			}
 		);
 		expect( reduced ).toStrictEqual( expected );
