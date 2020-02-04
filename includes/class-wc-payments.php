@@ -240,8 +240,11 @@ class WC_Payments {
 			|| ( class_exists( 'Jetpack_Client' ) && ! Jetpack_Data::get_access_token() )
 		) {
 			if ( ! $silent ) {
-				// TODO: Create better alert message.
-				$message = 'Jetpack is not connected!';
+				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
+				$message    = sprintf(
+					'To use WooCommerce Payments you\'ll need to <a href="%1$s">set up</a> the Jetpack plugin. Don\'t worry this is temporary thing.',
+					$set_up_url
+				);
 				self::display_admin_error( $message );
 			}
 
