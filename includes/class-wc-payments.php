@@ -139,6 +139,21 @@ class WC_Payments {
 			return true;
 		}
 
+		// TODO - Remove/update when Jetpack Connection package is all we need.
+		if ( ! self::check_for_jetpack_layer() ) {
+			if ( ! $silent ) {
+				$message = sprintf(
+					/* translators: %1: WooCommerce Payments version */
+					__( 'WooCommerce Payments %1$s requires Jetpack. Please install, activate, and connect Jetpack. This dependency will change in an upcoming release.', 'woocommerce-payments' ),
+					WCPAY_VERSION_NUMBER
+				);
+
+				self::display_admin_error( $message );
+			}
+
+			return false;
+		};
+
 		$plugin_headers = self::get_plugin_headers();
 
 		$wc_version = $plugin_headers['WCRequires'];
@@ -228,6 +243,22 @@ class WC_Payments {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks whether either Jetpack transport is available and displays an admin error message if not.
+	 *
+	 * @return bool true if either Jetpack transport is available, false otherwise.
+	 */
+	public static function check_for_jetpack_layer() {
+		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
+			return true;
+		}
+		if ( class_exists( 'Jetpack_Client' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
