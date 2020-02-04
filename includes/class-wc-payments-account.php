@@ -235,8 +235,8 @@ class WC_Payments_Account {
 	 */
 	public static function get_connect_message() {
 		return sprintf(
-			/* translators: 1) oauth entry point URL */
-			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a>', 'woocommerce-payments' ),
+			/* translators: 1) oauth entry point URL - TODO: Update TOS with live link */
+			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a> <p>By clicking \'Get started\' you agree to WooCommerce Payments <a href="#">terms of service</a></p>', 'woocommerce-payments' ),
 			self::get_connect_url()
 		);
 	}
