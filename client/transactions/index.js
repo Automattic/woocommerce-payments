@@ -11,6 +11,7 @@ import { TableCard, Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -25,25 +26,34 @@ import './style.scss';
 const currency = new Currency();
 
 // TODO make date / time, amount, fee, and net sortable - when date time is sortable, the background of the info buttons should match
-const headers = [
+const columns = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
-	{ key: 'created', label: 'Date / Time', required: true, isLeftAligned: true, defaultOrder: 'desc', cellClassName: 'date-time' },
-	{ key: 'type', label: 'Type', required: true },
-	{ key: 'amount', label: 'Amount', isNumeric: true },
-	{ key: 'fee', label: 'Fees', isNumeric: true },
-	{ key: 'net', label: 'Net', isNumeric: true, required: true },
-	{ key: 'order', label: 'Order #', required: true },
-	{ key: 'source', label: 'Source' },
-	{ key: 'customer', label: 'Customer' },
-	{ key: 'email', label: 'Email', hiddenByDefault: true },
-	{ key: 'country', label: 'Country', hiddenByDefault: true },
-	// TODO { key: 'deposit', label: 'Deposit', required: true },
-	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
+	{
+		key: 'created',
+		label: __( 'Date / Time', 'woocommerce-payments' ),
+		required: true,
+		isLeftAligned: true,
+		defaultOrder: 'desc',
+		cellClassName: 'date-time',
+	},
+	{ key: 'type', label: __( 'Type', 'woocommerce-payments' ), required: true },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true },
+	{ key: 'fee', label: __( 'Fees', 'woocommerce-payments' ), isNumeric: true },
+	{ key: 'net', label: __( 'Net', 'woocommerce-payments' ), isNumeric: true, required: true },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ), required: true },
+	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
+	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
+	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), hiddenByDefault: true },
+	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), hiddenByDefault: true },
+	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), hiddenByDefault: true },
 ];
+const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ) };
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( props.depositId );
+
+	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
 		const orderUrl = <OrderLink order={ txn.order } />;
@@ -65,6 +75,19 @@ export const TransactionsList = ( props ) => {
 
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
+		const depositUrl = addQueryArgs(
+			'admin.php',
+			{
+				page: 'wc-admin',
+				path: '/payments/deposits/details',
+				id: txn.deposit_id,
+			}
+		);
+		const depositLink = txn.deposit_id ? (
+			// TODO link text: dateI18n( 'M j, Y / g:iA', moment.utc( txn.available_on ).local()
+			<Link href={ depositUrl }>{ __( 'Deposit', 'woocommerce-payments' ) }</Link>
+		) : '';
+
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
@@ -81,12 +104,12 @@ export const TransactionsList = ( props ) => {
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fee: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
 			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
-			// TODO deposit: { value: available_on * 1000, display: dateI18n( 'Y-m-d H:i', moment( available_on * 1000 ) ) },
 			riskLevel: { value: txn.risk_level, display: riskLevel },
+			deposit: { value: txn.deposit_id, display: depositLink },
 			details: { value: txn.transaction_id, display: detailsLink },
 		};
 
-		return headers.map( ( { key } ) => data[ key ] || { display: null } );
+		return columnsToDisplay.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
 	const summary = [
@@ -103,7 +126,7 @@ export const TransactionsList = ( props ) => {
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
 			totalRows={ transactionsSummary.count || 0 }
-			headers={ headers }
+			headers={ columnsToDisplay }
 			rows={ rows }
 			summary={ isSummaryLoading ? null : summary }
 			query={ getQuery() }
