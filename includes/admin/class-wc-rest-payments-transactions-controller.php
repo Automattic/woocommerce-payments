@@ -77,14 +77,18 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 
 	/**
 	 * Retrieve transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_transactions() {
+	public function get_transactions( $request ) {
 		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
 		$page      = isset( $_GET['page'] ) ? intval( $_GET['page'] ) : 0;
 		$page_size = isset( $_GET['pagesize'] ) ? intval( $_GET['pagesize'] ) : 25;
 		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
 
-		return rest_ensure_response( $this->api_client->list_transactions( $page, $page_size ) );
+		$deposit_id = $request->get_params()['deposit_id'];
+
+		return rest_ensure_response( $this->api_client->list_transactions( $page, $page_size, $deposit_id ) );
 	}
 
 	/**
@@ -99,9 +103,12 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 
 	/**
 	 * Retrieve transactions summary to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_transactions_summary() {
-		return rest_ensure_response( $this->api_client->get_transactions_summary() );
+	public function get_transactions_summary( $request ) {
+		$deposit_id = $request->get_params()['deposit_id'];
+		return rest_ensure_response( $this->api_client->get_transactions_summary( $deposit_id ) );
 	}
 
 	/**

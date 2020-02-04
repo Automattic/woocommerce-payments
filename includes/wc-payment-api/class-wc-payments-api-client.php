@@ -218,28 +218,36 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Returns summary for transactions.
+	 * Return summary for transactions.
+	 *
+	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array     The transactions summary.
 	 * @throws WC_Payments_API_Exception Exception thrown on request failure.
 	 */
-	public function get_transactions_summary() {
-		return $this->request( array(), self::TRANSACTIONS_API . '/summary', self::GET );
+	public function get_transactions_summary( $deposit_id ) {
+		$query = [
+			'deposit_id' => $deposit_id,
+		];
+
+		return $this->request( $query, self::TRANSACTIONS_API . '/summary', self::GET );
 	}
 
 	/**
 	 * List transactions
 	 *
-	 * @param int $page      The requested page.
-	 * @param int $page_size The size of the requested page.
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
+	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions( $page = 0, $page_size = 25 ) {
+	public function list_transactions( $page = 0, $page_size = 25, $deposit_id = null ) {
 		$query = [
-			'page'     => $page,
-			'pagesize' => $page_size,
+			'page'       => $page,
+			'pagesize'   => $page_size,
+			'deposit_id' => $deposit_id,
 		];
 
 		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
