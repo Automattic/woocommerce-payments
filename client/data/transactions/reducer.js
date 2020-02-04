@@ -31,14 +31,20 @@ const receiveTransactions = ( state = defaultState, { type, query = {}, data = [
 			return {
 				...state,
 				summary: {
-					data: data,
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
 				},
 			};
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY:
 			return {
 				...state,
 				summary: {
-					error: error,
+					...state.summary,
+					[ index ]: {
+						error: error,
+					},
 				},
 			};
 	}
