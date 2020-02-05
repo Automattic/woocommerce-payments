@@ -26,7 +26,13 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       </ForwardRef(Button)>
     </p>
     <p>
-      By clicking 'Get started' you agree to WooCommerce Payments &lt;a href="https://wordpress.com/tos/"&gt;terms of service&lt;/a&gt;.
+      <span
+        dangerouslySetInnerHTML={
+          Object {
+            "__html": "By clicking 'Get started' you agree to WooCommerce Payments <a href=\\"https://wordpress.com/tos/\\">terms of service</a>.",
+          }
+        }
+      />
     </p>
     <p>
       <Link
