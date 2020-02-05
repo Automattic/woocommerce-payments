@@ -33,8 +33,9 @@ confirm( colors.cyan( 'Howdy! This script is going to create a release folder wi
 	mkdir( releaseFolder );
 	mkdir( targetFolder );
 
-	// copy the main php file and readme.txt
+	// copy the main php file, changelog.txt, and readme.txt
 	cp( 'woocommerce-payments.php', targetFolder );
+	cp( 'changelog.txt', targetFolder );
 	cp( 'readme.txt', targetFolder );
 
 	// copy the directories to the release folder
