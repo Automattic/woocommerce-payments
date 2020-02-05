@@ -26,14 +26,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       </ForwardRef(Button)>
     </p>
     <p>
-      By clicking 'Get started' you agree to WooCommerce Payments
-       
-      <a
-        href="#"
-      >
-        terms of service
-      </a>
-      .
+      By clicking 'Get started' you agree to WooCommerce Payments &lt;a href="https://wordpress.com/tos/"&gt;terms of service&lt;/a&gt;.
     </p>
     <p>
       <Link
