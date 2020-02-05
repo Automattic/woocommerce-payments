@@ -238,7 +238,9 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
 				$message    = sprintf(
-					'To use WooCommerce Payments you\'ll need to <a href="%1$s">set up</a> the Jetpack plugin. Don\'t worry this is temporary thing.',
+					/* translators: %1: WooCommerce Payments version, %2: Jetpack setup url */
+					__( 'To use WooCommerce Payments %1$s you\'ll need to <a href="%2$s">set up</a> the Jetpack plugin. Don\'t worry this is temporary thing.', 'woocommerce-payments' ),
+					WCPAY_VERSION_NUMBER,
 					$set_up_url
 				);
 				self::display_admin_error( $message );

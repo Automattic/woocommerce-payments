@@ -84,7 +84,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			),
 			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
 				'default'     => 'no',
@@ -94,7 +94,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
@@ -398,7 +398,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->is_stripe_connected() ) {
 			$description = sprintf(
 				/* translators: 1) dashboard login URL */
-				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
+				__( '<a href="%1$s">View and edit account details</a>', 'woocommerce-payments' ),
 				WC_Payments_Account::get_login_url()
 			);
 		} else {
