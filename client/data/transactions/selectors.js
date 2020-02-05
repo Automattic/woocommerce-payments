@@ -4,7 +4,6 @@
  * Internal dependencies
  */
 import { getResourceId } from '../util';
-import { ID_PREFIX } from '../constants';
 
 /**
  * Retrieves the transactions state from the wp.data store if the state
@@ -32,7 +31,7 @@ const getTransactionsState = ( state ) => {
  * @returns {object} The list of transactions for the given query.
  */
 const getTransactionsForQuery = ( state, query ) => {
-	const index = getResourceId( ID_PREFIX.transactions, query );
+	const index = getResourceId( query );
 	return getTransactionsState( state )[ index ] || {};
 };
 
@@ -53,7 +52,7 @@ export const getTransactionsError = ( state, { paged = '1', perPage = '25', depo
  * @returns {object} The transaction summary for the given query.
  */
 const getTransactionsSummaryForQuery = ( state, query ) => {
-	const index = getResourceId( ID_PREFIX.transactions, query );
+	const index = getResourceId( query );
 	return getTransactionsState( state ).summary[ index ] || {};
 };
 

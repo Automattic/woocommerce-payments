@@ -4,7 +4,6 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { ID_PREFIX } from '../../constants';
 import { getResourceId } from '../../util';
 
 describe( 'Transactions reducer tests', () => {
@@ -31,11 +30,11 @@ describe( 'Transactions reducer tests', () => {
 
 	const emptyState = {};
 	const filledState = {
-		[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+		[ getResourceId( mockQuery ) ]: {
 			data: mockTransactions,
 		},
 		summary: {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				data: mockSummary,
 			},
 		},
@@ -49,7 +48,7 @@ describe( 'Transactions reducer tests', () => {
 	test( 'New transactions reduced correctly', () => {
 		// Set up mock data
 		const expected = {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				data: mockTransactions,
 			},
 		};
@@ -73,7 +72,7 @@ describe( 'Transactions reducer tests', () => {
 
 		const expected = {
 			...filledState,
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				data: newTransactions,
 			},
 		};
@@ -92,7 +91,7 @@ describe( 'Transactions reducer tests', () => {
 	test( 'New transactions summary reduced correctly', () => {
 		const expected = {
 			summary: {
-				[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				[ getResourceId( mockQuery ) ]: {
 					data: mockSummary,
 				},
 			},
@@ -119,7 +118,7 @@ describe( 'Transactions reducer tests', () => {
 		const expected = {
 			...filledState,
 			summary: {
-				[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				[ getResourceId( mockQuery ) ]: {
 					data: newSummary,
 				},
 			},

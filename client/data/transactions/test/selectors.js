@@ -3,7 +3,6 @@
  * Internal dependencies
  */
 import { getResourceId } from '../../util';
-import { ID_PREFIX } from '../../constants';
 import {
 	getTransactions,
 	getTransactionsError,
@@ -48,7 +47,7 @@ describe( 'Transactions selectors', () => {
 	const emptySummaryErrorState = {
 		transactions: {
 			summary: {
-				[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+				[ getResourceId( mockQuery ) ]: {
 					error: {},
 				},
 			},
@@ -58,11 +57,11 @@ describe( 'Transactions selectors', () => {
 	// State is populated.
 	const filledSuccessState = {
 		transactions: {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				data: mockTransactions,
 			},
 			summary: {
-				[ getResourceId( ID_PREFIX.transactions, mockSummaryQuery ) ]: {
+				[ getResourceId( mockSummaryQuery ) ]: {
 					data: mockSummary,
 				},
 			},
@@ -70,11 +69,11 @@ describe( 'Transactions selectors', () => {
 	};
 	const filledErrorState = {
 		transactions: {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				error: mockError,
 			},
 			summary: {
-				[ getResourceId( ID_PREFIX.transactions, mockSummaryQuery ) ]: {
+				[ getResourceId( mockSummaryQuery ) ]: {
 					error: mockError,
 				},
 			},
