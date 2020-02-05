@@ -20,12 +20,21 @@ class WC_Payments_Admin {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account Account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		$this->wcpay_gateway = $gateway;
+		$this->account       = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', array( $this, 'add_payments_menu' ), 9 );
@@ -39,7 +48,7 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
-		$top_level_link = $this->wcpay_gateway->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
+		$top_level_link = $this->account->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			array(
@@ -51,7 +60,7 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $this->wcpay_gateway->is_stripe_connected() ) {
+		if ( $this->account->is_stripe_connected() ) {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-deposits',

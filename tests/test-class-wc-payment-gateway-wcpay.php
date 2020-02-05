@@ -28,6 +28,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -38,7 +45,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->setMethods( array( 'get_account_data' ) )
 			->getMock();
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay( $this->mock_api_client );
+		$this->mock_account = $this->getMockBuilder( 'WC_Payments_Account' )
+			->disableOriginalConstructor()
+			->setMethods( array( 'get_publishable_key', 'get_stripe_account_id' ) )
+			->getMock();
+
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $this->mock_account );
 	}
 
 	/**
@@ -48,33 +60,27 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 	}
 
-	public function test_is_stripe_connected_returns_true_in_live_mode() {
-		$this->wcpay_gateway->update_option( 'stripe_account_id', 'acct_test' );
-		$this->wcpay_gateway->update_option( 'publishable_key', 'pk_live_aaa' );
-		$this->wcpay_gateway->update_option( 'test_mode', 'no' );
+	public function test_payment_fields_outputs_fields() {
+		$this->mock_account->expects( $this->once() )->method( 'get_stripe_account_id' )->will(
+			$this->returnValue( 'acct_test' )
+		);
 
-		$this->assertTrue( $this->wcpay_gateway->is_stripe_connected() );
+		$this->mock_account->expects( $this->once() )->method( 'get_publishable_key' )->will(
+			$this->returnValue( 'pk_test_' )
+		);
+
+		$this->wcpay_gateway->payment_fields();
+
+		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
 	}
 
-	public function test_is_stripe_connected_returns_true_in_test_mode() {
-		$this->wcpay_gateway->update_option( 'stripe_account_id', 'acct_test1' );
-		$this->wcpay_gateway->update_option( 'test_publishable_key', 'pk_test' );
-		$this->wcpay_gateway->update_option( 'test_mode', 'yes' );
+	public function test_payment_fields_outputs_error() {
+		$this->mock_account->expects( $this->once() )->method( 'get_publishable_key' )->will(
+			$this->throwException( new Exception() )
+		);
 
-		$this->assertTrue( $this->wcpay_gateway->is_stripe_connected() );
-	}
+		$this->wcpay_gateway->payment_fields();
 
-	public function test_is_stripe_connected_returns_false_when_no_account_id() {
-		$this->wcpay_gateway->update_option( 'test_publishable_key', 'pk_test' );
-		$this->wcpay_gateway->update_option( 'test_mode', 'yes' );
-
-		$this->assertFalse( $this->wcpay_gateway->is_stripe_connected() );
-	}
-
-	public function test_is_stripe_connected_returns_false_when_no_public_key() {
-		$this->wcpay_gateway->update_option( 'stripe_account_id', 'acct_test1' );
-		$this->wcpay_gateway->update_option( 'test_mode', 'yes' );
-
-		$this->assertFalse( $this->wcpay_gateway->is_stripe_connected() );
+		$this->expectOutputRegex( '/An error was encountered when preparing the payment form\. Please try again later\./' );
 	}
 }
