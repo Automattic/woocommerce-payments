@@ -27,9 +27,7 @@ const ConnectAccountPage = () => {
 				<p>
 					{ __( 'By clicking \'Get started\' you agree to WooCommerce Payments', 'woocommmerce-payments' ) }
 					&nbsp;
-					{ /* TODO: Update this once we have the TOS link */ }
-					{ /* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-					<a href="#">{ __( 'terms of service', 'woocommerce-payments' ) }</a>
+					<a href="https://wordpress.com/tos/">{ __( 'terms of service', 'woocommerce-payments' ) }</a>
 					.
 				</p>
 				<p>
