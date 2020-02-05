@@ -86,7 +86,7 @@ export const TransactionsList = ( props ) => {
 		const depositLink = txn.deposit_id ? (
 			// TODO link text: dateI18n( 'M j, Y / g:iA', moment.utc( txn.available_on ).local()
 			<Link href={ depositUrl }>{ __( 'Deposit', 'woocommerce-payments' ) }</Link>
-		) : '';
+		) : __( 'Pending', 'woocommerce-payments' );
 
 		// Map transaction into table row.
 		const data = {
