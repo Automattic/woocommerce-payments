@@ -13,14 +13,16 @@ import Gridicon from 'gridicons';
 import './style.scss';
 
 const ConnectAccountPage = () => {
-	const tosLabel = sprintf(
-		/* translators: %s: WordPress.com TOS URL */
-		__(
-			'By clicking \'Get started\' you agree to WooCommerce Payments <a href="%s">terms of service</a>.',
-			'woocommmerce-payments'
-		),
-		"https://wordpress.com/tos/"
-	);
+	const tosLabel = {
+		__html: sprintf(
+			/* translators: %s: WordPress.com TOS URL */
+			__(
+				'By clicking \'Get started\' you agree to WooCommerce Payments <a href="%s">terms of service</a>.',
+				'woocommmerce-payments'
+			),
+			"https://wordpress.com/tos/"
+		)
+	};
 	return (
 		<div className="connect-account">
 			<Card className="connect-account__card" >
@@ -33,7 +35,7 @@ const ConnectAccountPage = () => {
 				</h2>
 				<p><Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Get started', 'woocommerce-payments' ) }</Button></p>
 				<p>
-					{ tosLabel }
+					<span dangerouslySetInnerHTML={ tosLabel } />
 				</p>
 				<p>
 					<Link href="admin.php?page=wc-settings&tab=checkout" type="wp-admin">
