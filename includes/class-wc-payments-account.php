@@ -235,9 +235,10 @@ class WC_Payments_Account {
 	 */
 	public static function get_connect_message() {
 		return sprintf(
-			/* translators: 1) oauth entry point URL */
-			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a> <p>By clicking \'Get started\' you agree to WooCommerce Payments <a href="https://wordpress.com/tos/">terms of service</a></p>', 'woocommerce-payments' ),
-			self::get_connect_url()
+			/* translators: 1) oauth entry point URL, 2) WordPress.com TOS URL */
+			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a> <p>By clicking \'Get started\' you agree to WooCommerce Payments <a href="%2$s">terms of service</a>.</p>', 'woocommerce-payments' ),
+			self::get_connect_url(),
+			'https://wordpress.com/tos'
 		);
 	}
 
