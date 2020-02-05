@@ -81,13 +81,9 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
-		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-		$page      = isset( $_GET['page'] ) ? intval( $_GET['page'] ) : 0;
-		$page_size = isset( $_GET['pagesize'] ) ? intval( $_GET['pagesize'] ) : 25;
-		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
-
+		$page       = intval( $request->get_params()['page'] );
+		$page_size  = intval( $request->get_params()['pagesize'] );
 		$deposit_id = $request->get_params()['deposit_id'];
-
 		return rest_ensure_response( $this->api_client->list_transactions( $page, $page_size, $deposit_id ) );
 	}
 
