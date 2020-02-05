@@ -63,8 +63,8 @@ class WC_Payments {
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
-		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client );
-		self::$account = new WC_Payments_Account( self::$api_client, self::$gateway );
+		self::$account = new WC_Payments_Account( self::$api_client );
+		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
@@ -73,7 +73,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$gateway );
+			new WC_Payments_Admin( self::$gateway, self::$account );
 		}
 
 		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
@@ -341,6 +341,7 @@ class WC_Payments {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-exception.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
 
 		// TODO: Don't hard code user agent string.
@@ -381,5 +382,14 @@ class WC_Payments {
 			return filemtime( WCPAY_ABSPATH . $file );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns the WC_Payment_Gateway_WCPay instance
+	 *
+	 * @return WC_Payment_Gateway_WCPay gateway instance
+	 */
+	public static function get_gateway() {
+		return self::$gateway;
 	}
 }
