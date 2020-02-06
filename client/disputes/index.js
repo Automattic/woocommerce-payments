@@ -5,17 +5,18 @@
  */
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
  */
 import OrderLink from '../components/order-link';
+import Chip from '../components/chip';
 import { displayStatus, displayReason } from './strings';
 
 const currency = new Currency();
@@ -34,11 +35,19 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
-		const evidenceLink = dispute.status.indexOf( 'needs_response' ) === -1 ? null : (
-			<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
-				<Gridicon icon="reply" size={ 18 } />
-			</Link>
-		);
+		let status = displayStatus[ dispute.status ] || {};
+		status = <Chip message={ status.message } type={ status.type } />;
+		if ( dispute.status.indexOf( 'needs_response' ) >= 0 ) {
+			const detailsUrl = addQueryArgs(
+				'admin.php',
+				{
+					page: 'wc-admin',
+					path: '/payments/disputes/evidence',
+					id: dispute.id,
+				}
+			);
+			status = <Link href={ detailsUrl }>{ status }</Link>;
+		}
 
 		const order = dispute.order ? {
 				value: dispute.order.number,
@@ -47,10 +56,7 @@ export const DisputesList = ( props ) => {
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
-			status: {
-				value: dispute.status,
-				display: <>{ evidenceLink } <code>{ displayStatus[ dispute.status ] || dispute.status }</code></>,
-			},
+			status: { value: dispute.status, display: status },
 			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] || dispute.reason },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {

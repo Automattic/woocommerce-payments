@@ -47,21 +47,15 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10,
         },
         Object {
-          "display": <React.Fragment>
-            <Link
-              href="?page=wc-admin&path=/payments/disputes/evidence&id=dp_asdfghjkl"
-              type="wc-admin"
-            >
-              <t
-                icon="reply"
-                size={18}
-              />
-            </Link>
-             
-            <code>
-              Needs response
-            </code>
-          </React.Fragment>,
+          "display": <Link
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fevidence&id=dp_asdfghjkl"
+            type="wc-admin"
+          >
+            <Chip
+              message="Needs response"
+              type="primary"
+            />
+          </Link>,
           "value": "needs_response",
         },
         Object {
@@ -94,12 +88,10 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10.5,
         },
         Object {
-          "display": <React.Fragment>
-             
-            <code>
-              Under review
-            </code>
-          </React.Fragment>,
+          "display": <Chip
+            message="Under review"
+            type="light"
+          />,
           "value": "under_review",
         },
         Object {

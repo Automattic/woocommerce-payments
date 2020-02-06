@@ -6,16 +6,40 @@
  */
 import { __ } from '@wordpress/i18n';
 
-// Mapping of dispute status to display string.
+// Mapping of dispute status to display string and chip type.
 export const displayStatus = {
-	warning_needs_response: __( 'Inquiry: Needs response', 'woocommerce-payments' ),
-	warning_under_review: __( 'Inquiry: Under review', 'woocommerce-payments' ),
-	warning_closed: __( 'Inquiry: Closed', 'woocommerce-payments' ),
-	needs_response: __( 'Needs response', 'woocommerce-payments' ),
-	under_review: __( 'Under review', 'woocommerce-payments' ),
-	charge_refunded: __( 'Charge refunded', 'woocommerce-payments' ),
-	won: __( 'Won', 'woocommerce-payments' ),
-	lost: __( 'Lost', 'woocommerce-payments' ),
+	warning_needs_response: {
+		type: 'primary',
+		message: __( 'Inquiry: Needs response', 'woocommerce-payments' ),
+	},
+	warning_under_review: {
+		type: 'light',
+		message: __( 'Inquiry: Under review', 'woocommerce-payments' ),
+	},
+	warning_closed: {
+		type: 'light',
+		message: __( 'Inquiry: Closed', 'woocommerce-payments' ),
+	},
+	needs_response: {
+		type: 'primary',
+		message: __( 'Needs response', 'woocommerce-payments' ),
+	},
+	under_review: {
+		type: 'light',
+		message: __( 'Under review', 'woocommerce-payments' ),
+	},
+	charge_refunded: {
+		type: 'light',
+		message: __( 'Charge refunded', 'woocommerce-payments' ),
+	},
+	won: {
+		type: 'light',
+		message: __( 'Won', 'woocommerce-payments' ),
+	},
+	lost: {
+		type: 'light',
+		message: __( 'Lost', 'woocommerce-payments' ),
+	},
 };
 
 // Mapping of dispute reason to display string.
