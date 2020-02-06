@@ -6,6 +6,7 @@
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
@@ -64,7 +65,7 @@ export const DisputesList = ( props ) => {
 
 	return (
 		<TableCard
-			title="Disputes"
+			title={ __( 'Disputes', 'woocommerce-payments' ) }
 			isLoading={ showPlaceholder }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }

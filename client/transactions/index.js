@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
@@ -96,7 +97,7 @@ export const TransactionsList = () => {
 	return (
 		<TableCard
 			className="transactions-list"
-			title="Transactions"
+			title={ __( 'Transactions', 'woocommerce-payments' ) }
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
 			totalRows={ transactionsSummary.count || 0 }
