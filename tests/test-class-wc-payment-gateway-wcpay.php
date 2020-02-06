@@ -28,11 +28,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
-	 * Mock WC_Payments_Account.
+	 * WC_Payments_Account instance.
 	 *
-	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Account
 	 */
-	private $mock_account;
+	private $wcpay_account;
 
 	/**
 	 * Pre-test setup
@@ -45,12 +45,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->setMethods( array( 'get_account_data' ) )
 			->getMock();
 
-		$this->mock_account = $this->getMockBuilder( 'WC_Payments_Account' )
-			->disableOriginalConstructor()
-			->setMethods( array( 'get_publishable_key', 'get_stripe_account_id' ) )
-			->getMock();
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $this->mock_account );
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $this->wcpay_account );
 	}
 
 	/**
@@ -58,15 +55,19 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 */
 	public function tearDown() {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
+		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 	}
 
 	public function test_payment_fields_outputs_fields() {
-		$this->mock_account->expects( $this->once() )->method( 'get_stripe_account_id' )->will(
-			$this->returnValue( 'acct_test' )
-		);
-
-		$this->mock_account->expects( $this->once() )->method( 'get_publishable_key' )->will(
-			$this->returnValue( 'pk_test_' )
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				array(
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => false,
+				)
+			)
 		);
 
 		$this->wcpay_gateway->payment_fields();
@@ -75,8 +76,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_payment_fields_outputs_error() {
-		$this->mock_account->expects( $this->once() )->method( 'get_publishable_key' )->will(
-			$this->throwException( new Exception() )
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'test', 123 ) )
 		);
 
 		$this->wcpay_gateway->payment_fields();
