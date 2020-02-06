@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
-import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -40,6 +39,18 @@ const headers = [
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 ];
 
+// Mapping of transaction types to display string.
+const displayType = {
+	charge: __( 'Charge', 'woocommerce-payments' ),
+	payment: __( 'Payment', 'woocommerce-payments' ),
+	payment_failure_refund: __( 'Payment Failure Refund', 'woocommerce-payments' ),
+	payment_refund: __( 'Payment Refund', 'woocommerce-payments' ),
+	refund: __( 'Refund', 'woocommerce-payments' ),
+	refund_failure: __( 'Refund Failure', 'woocommerce-payments' ),
+	dispute: __( 'Dispute', 'woocommerce-payments' ),
+	dispute_reversal: __( 'Dispute Reversal', 'woocommerce-payments' ),
+};
+
 export const TransactionsList = () => {
 	const { transactions, isLoading } = useTransactions( getQuery() );
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary();
@@ -66,7 +77,7 @@ export const TransactionsList = () => {
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
-			type: { value: txn.type, display: capitalize( txn.type ) },
+			type: { value: txn.type, display: displayType[ txn.type ] },
 			source: {
 				value: txn.source,
 				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
