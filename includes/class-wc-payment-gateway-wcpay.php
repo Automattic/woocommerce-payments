@@ -127,7 +127,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return parent::is_available() && $this->account->is_stripe_connected();
+		try {
+			return parent::is_available() && $this->account->is_stripe_connected();
+		} catch ( Exception $e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -395,7 +399,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
-		if ( $this->account->is_stripe_connected() ) {
+		try {
+			$stripe_connected = $this->account->is_stripe_connected();
+		} catch ( Exception $e ) {
+			return '';
+		}
+
+		if ( $stripe_connected ) {
 			$description = sprintf(
 				/* translators: 1) dashboard login URL */
 				__( '<a href="%1$s">View and edit account details</a>', 'woocommerce-payments' ),
@@ -409,7 +419,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$description = apply_filters(
 			'wc_payments_account_actions',
 			$description,
-			$this->account->is_stripe_connected(),
+			$stripe_connected,
 			WC_Payments_Account::get_login_url(),
 			WC_Payments_Account::get_connect_url()
 		);
