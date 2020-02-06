@@ -18,6 +18,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
+import { displayType } from './strings';
 import './style.scss';
 
 const currency = new Currency();
@@ -38,18 +39,6 @@ const headers = [
 	// TODO { key: 'deposit', label: 'Deposit', required: true },
 	{ key: 'riskLevel', label: 'Risk Level', hiddenByDefault: true },
 ];
-
-// Mapping of transaction types to display string.
-const displayType = {
-	charge: __( 'Charge', 'woocommerce-payments' ),
-	payment: __( 'Payment', 'woocommerce-payments' ),
-	payment_failure_refund: __( 'Payment Failure Refund', 'woocommerce-payments' ),
-	payment_refund: __( 'Payment Refund', 'woocommerce-payments' ),
-	refund: __( 'Refund', 'woocommerce-payments' ),
-	refund_failure: __( 'Refund Failure', 'woocommerce-payments' ),
-	dispute: __( 'Dispute', 'woocommerce-payments' ),
-	dispute_reversal: __( 'Dispute Reversal', 'woocommerce-payments' ),
-};
 
 export const TransactionsList = () => {
 	const { transactions, isLoading } = useTransactions( getQuery() );

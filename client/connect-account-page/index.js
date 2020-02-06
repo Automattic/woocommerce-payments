@@ -32,7 +32,11 @@ const ConnectAccountPage = () => {
 					<a href="#">{ __( 'terms of service', 'woocommerce-payments' ) }</a>
 					.
 				</p>
-				<p><Link href="admin.php?page=wc-settings&tab=checkout" type="wp-admin">{ __( 'Additional payment methods', 'woocommerce-payments' ) }</Link></p>
+				<p>
+					<Link href="admin.php?page=wc-settings&tab=checkout" type="wp-admin">
+						{ __( 'Additional payment methods', 'woocommerce-payments' ) }
+					</Link>
+				</p>
 			</Card>
 		</div>
 	);
