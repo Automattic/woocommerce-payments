@@ -165,7 +165,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$this->expectException( WC_Payments_API_Exception::class );
 
-		$this->assertEquals( 'pk_test_', $this->wcpay_account->get_publishable_key( true ) );
+		$this->wcpay_account->get_publishable_key( true );
 	}
 
 	public function test_get_stripe_account_id() {
@@ -191,6 +191,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$this->expectException( WC_Payments_API_Exception::class );
 
-		$this->assertEquals( 'pk_test_', $this->wcpay_account->get_stripe_account_id() );
+		$this->wcpay_account->get_stripe_account_id();
 	}
 }
