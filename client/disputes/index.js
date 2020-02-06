@@ -78,9 +78,9 @@ export const DisputesList = ( props ) => {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: {
 				value: dispute.status,
-				display: <>{ evidenceLink } <code>{ displayStatus[ dispute.status ] }</code></>,
+				display: <>{ evidenceLink } <code>{ displayStatus[ dispute.status ] || dispute.status }</code></>,
 			},
-			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] },
+			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] || dispute.reason },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,

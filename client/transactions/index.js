@@ -77,7 +77,7 @@ export const TransactionsList = () => {
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
-			type: { value: txn.type, display: displayType[ txn.type ] },
+			type: { value: txn.type, display: displayType[ txn.type ] || txn.type },
 			source: {
 				value: txn.source,
 				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
