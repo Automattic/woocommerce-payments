@@ -48,7 +48,13 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
-		$top_level_link = $this->account->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
+		try {
+			$stripe_connected = $this->account->is_stripe_connected();
+		} catch ( Exception $e ) {
+			return;
+		}
+
+		$top_level_link = $stripe_connected ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			array(
@@ -60,7 +66,7 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $this->account->is_stripe_connected() ) {
+		if ( $stripe_connected ) {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-deposits',

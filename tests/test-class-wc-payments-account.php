@@ -110,12 +110,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->is_stripe_connected() );
 	}
 
-	public function test_is_stripe_connected_returns_true_when_errored() {
+	public function test_is_stripe_connected_throws() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new Exception() )
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
 		);
 
-		$this->assertTrue( $this->wcpay_account->is_stripe_connected() );
+		$this->expectException( WC_Payments_API_Exception::class );
+
+		$this->wcpay_account->is_stripe_connected();
 	}
 
 	public function test_is_stripe_connected_returns_false() {
