@@ -31,6 +31,13 @@ class WC_Payments {
 	private static $api_client;
 
 	/**
+	 * Instance of WC_Payments_DB.
+	 *
+	 * @var WC_Payments_DB
+	 */
+	private static $db_helper;
+
+	/**
 	 * Instance of WC_Payments_Account, created in init function.
 	 *
 	 * @var WC_Payments_Account
@@ -60,6 +67,9 @@ class WC_Payments {
 		};
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
+
+		include_once dirname( __FILE__ ) . '/class-wc-payments-db.php';
+		self::$db_helper = new WC_Payments_DB();
 
 		self::$api_client = self::create_api_client();
 
@@ -430,7 +440,8 @@ class WC_Payments {
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http()
+			new WC_Payments_Http(),
+			self::$db_helper
 		);
 
 		return $payments_api_client;

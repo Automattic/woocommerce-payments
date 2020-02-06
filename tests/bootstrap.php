@@ -33,6 +33,7 @@ function _manually_load_plugin() {
 
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 
+	require_once dirname( __FILE__ ) . '/../includes/class-wc-payments-db.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';

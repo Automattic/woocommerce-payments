@@ -25,6 +25,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	private $mock_http_client;
 
 	/**
+	 * Mock DB wrapper.
+	 *
+	 * @var WC_Payments_DB|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_db_wrapper;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -35,9 +42,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->setMethods( array( 'remote_request' ) )
 			->getMock();
 
+		$this->mock_db_wrapper = $this->getMockBuilder( 'WC_Payments_DB' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->payments_api_client = new WC_Payments_API_Client(
 			'Unit Test Agent/0.1.0',
-			$this->mock_http_client
+			$this->mock_http_client,
+			$this->mock_db_wrapper
 		);
 	}
 
