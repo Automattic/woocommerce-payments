@@ -48,22 +48,22 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <DisputeStatusChip
-            amount={1000}
-            created={1572590800}
-            evidence_details={
+            dispute={
               Object {
-                "due_by": 1573199200,
+                "amount": 1000,
+                "created": 1572590800,
+                "evidence_details": Object {
+                  "due_by": 1573199200,
+                },
+                "id": "dp_asdfghjkl",
+                "order": Object {
+                  "number": "1",
+                  "url": "http://test.local/order/1",
+                },
+                "reason": "fraudulent",
+                "status": "needs_response",
               }
             }
-            id="dp_asdfghjkl"
-            order={
-              Object {
-                "number": "1",
-                "url": "http://test.local/order/1",
-              }
-            }
-            reason="fraudulent"
-            status="needs_response"
           />,
           "value": "needs_response",
         },
@@ -98,16 +98,18 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <DisputeStatusChip
-            amount={1050}
-            created={1572480800}
-            evidence_details={
+            dispute={
               Object {
-                "due_by": 1573099200,
+                "amount": 1050,
+                "created": 1572480800,
+                "evidence_details": Object {
+                  "due_by": 1573099200,
+                },
+                "id": "dp_zxcvbnm",
+                "reason": "general",
+                "status": "under_review",
               }
             }
-            id="dp_zxcvbnm"
-            reason="general"
-            status="under_review"
           />,
           "value": "under_review",
         },

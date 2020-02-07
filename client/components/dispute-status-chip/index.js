@@ -13,7 +13,7 @@ import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from '../../util';
 
-const DisputeStatusChip = ( { status, id: disputeId } ) => {
+const DisputeStatusChip = ( { dispute: { status, id: disputeId } } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
 	const type    = mapping.type || 'light';

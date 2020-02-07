@@ -42,7 +42,7 @@ export const DisputesList = ( props ) => {
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
-			status: { value: dispute.status, display: <DisputeStatusChip { ...dispute } /> },
+			status: { value: dispute.status, display: <DisputeStatusChip dispute={ dispute } /> },
 			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] || formatStringValue( dispute.reason ) },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {

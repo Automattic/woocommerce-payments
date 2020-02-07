@@ -56,7 +56,7 @@ describe( 'DisputeStatusChip', () => {
 	} );
 
 	function renderDisputeStatus( dispute ) {
-		return shallow( <DisputeStatusChip { ...dispute } /> );
+		return shallow( <DisputeStatusChip dispute={ dispute } /> );
 	}
 } );
 
