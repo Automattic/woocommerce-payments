@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Section>
+<Section
+  className="dispute-evidence-form-container"
+>
   <Card
     key="general"
     title="General evidence"
@@ -81,7 +83,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Section>
+<Section
+  className="dispute-evidence-form-container"
+>
   <Card
     key="general"
     title="General evidence"

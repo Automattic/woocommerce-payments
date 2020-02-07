@@ -44,7 +44,7 @@ export const DisputeEvidenceForm = props => {
 	} );
 
 	return (
-		<Section>
+		<Section className="dispute-evidence-form-container">
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
