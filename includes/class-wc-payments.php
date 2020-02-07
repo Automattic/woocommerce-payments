@@ -141,6 +141,11 @@ class WC_Payments {
 
 		$plugin_headers = self::get_plugin_headers();
 
+		// Do not show alerts while installing plugins.
+		if ( ! $silent && self::is_at_plugin_install_page() ) {
+			return true;
+		}
+
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
@@ -235,7 +240,8 @@ class WC_Payments {
 
 		// Check if Jetpack is connected.
 		if ( ! self::is_jetpack_connected() ) {
-			if ( ! $silent ) {
+			// Do not show an alert on Jetpack admin pages.
+			if ( ! $silent && ! self::is_at_jetpack_admin_page() ) {
 				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
 				$message    = sprintf(
 					/* translators: %1: WooCommerce Payments version, %2: Jetpack setup url */
@@ -250,6 +256,26 @@ class WC_Payments {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks if current page is plugin installation process page.
+	 *
+	 * @return bool True when installing plugin.
+	 */
+	private static function is_at_plugin_install_page() {
+		$cur_screen = get_current_screen();
+		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
+	}
+
+	/**
+	 * Checks if current page is Jetpack admin page.
+	 *
+	 * @return bool True when current page is one of the Jetpack admin pages.
+	 */
+	private static function is_at_jetpack_admin_page() {
+		$cur_screen = get_current_screen();
+		return 'jetpack' === $cur_screen->parent_base;
 	}
 
 	/**
