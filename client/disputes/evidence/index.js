@@ -43,12 +43,15 @@ export const DisputeEvidenceForm = props => {
 		);
 	} );
 
+	const confirmMessage = __( "Are you sure you're ready to submit this evidence ?", 'woocommerce-payments' );
+	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
+
 	return (
 		<Section>
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
-					<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
+					<Button isPrimary isLarge onClick={ handleSubmit }>{ __( 'Submit Evidence' ) }</Button>
 					<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
 				</Card>
 			) }
