@@ -35,12 +35,12 @@ const getTransactionsForQuery = ( state, query ) => {
 	return getTransactionsState( state )[ index ] || {};
 };
 
-export const getTransactions = ( state, { paged = '1', perPage = '25', depositId = null } ) => {
-	return getTransactionsForQuery( state, { paged, perPage, depositId } ).data || [];
+export const getTransactions = ( state, query ) => {
+	return getTransactionsForQuery( state, query ).data || [];
 };
 
-export const getTransactionsError = ( state, { paged = '1', perPage = '25', depositId = null } ) => {
-	return getTransactionsForQuery( state, { paged, perPage, depositId } ).error || {};
+export const getTransactionsError = ( state, query ) => {
+	return getTransactionsForQuery( state, query ).error || {};
 };
 
 /**
