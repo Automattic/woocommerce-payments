@@ -10,6 +10,9 @@ jQuery( function( $ ) {
 	} );
 	var elements = stripe.elements();
 
+	// In the future this object will be loaded with customer information through `wp_localize_script`.
+	var preparedCustomerData = {};
+
 	// Create a card element.
 	var cardElement = elements.create( 'card', {
 		hidePostalCode: true,
@@ -44,6 +47,59 @@ jQuery( function( $ ) {
 		}
 	} );
 
+	/**
+	 * Adds a customer value to an object if the value exists and is non-empty.
+	 *
+	 * @param {object} customerObj The object that the value should be loaded to.
+	 * @param {string} prop        The name of the prop in the object.
+	 * @param {string} inputId     The ID of the input on the page (or the data, preloaded by th server.)
+	 */
+	var setCustomerValue = function( customerObj, prop, inputId ) {
+		var value;
+
+		if ( 'name' === inputId ) {
+			value = ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim()
+		} else {
+			// No need to check whether the element exists, `$.fn.val()` would return `undefined`.
+			value = $( '#' + inputId ).val();
+		}
+
+		if ( ( 'undefined' === typeof value ) || 0 === value.length ) {
+			value = preparedCustomerData[ inputId ]; // `undefined` if not set.
+		}
+
+		if ( ( 'undefined' !== typeof value ) && 0 < value.length ) {
+			customerObj[ prop ] = value;
+		}
+	}
+
+	/**
+	 * Loads all necessary billing details for payment methods.
+	 *
+	 * @return {object} An object, containing email, name, phone & an address.
+	 */
+	var loadBillingDetails = function() {
+		var billingDetails = {},
+			billingAddress = {};
+
+		// Populate billing details.
+		setCustomerValue( billingDetails, 'name', 'name' );
+		setCustomerValue( billingDetails, 'email', 'billing_email' );
+		setCustomerValue( billingDetails, 'phone', 'billing_phone' );
+
+
+		// Populate the billing address.
+		setCustomerValue( billingAddress, 'city', 'billing_city' );
+		setCustomerValue( billingAddress, 'country', 'billing_country' );
+		setCustomerValue( billingAddress, 'line1', 'billing_address_1' );
+		setCustomerValue( billingAddress, 'line2', 'billing_address_2' );
+		setCustomerValue( billingAddress, 'postal_code', 'billing_postcode' );
+		setCustomerValue( billingAddress, 'state', 'billing_state' );
+
+		billingDetails.address = billingAddress;
+		return billingDetails;
+	}
+
 	// Create payment method on submission.
 	var paymentMethodGenerated;
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
@@ -53,7 +109,14 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		stripe.createPaymentMethod( 'card', cardElement )
+		var paymentMethodArgs = {
+			type: 'card',
+			card: cardElement,
+			// eslint-disable-next-line camelcase
+			billing_details: loadBillingDetails(),
+		};
+
+		stripe.createPaymentMethod( paymentMethodArgs )
 			.then( function( result ) {
 				var paymentMethod = result.paymentMethod;
 				var error = result.error;
