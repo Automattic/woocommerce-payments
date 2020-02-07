@@ -22,12 +22,12 @@ import { formatStringValue } from '../util';
 const currency = new Currency();
 
 const headers = [
-	{ key: 'amount', label: 'Amount' },
-	{ key: 'status', label: 'Status' },
-	{ key: 'reason', label: 'Reason' },
-	{ key: 'order', label: 'Order #' },
-	{ key: 'created', label: 'Disputed On' },
-	{ key: 'dueBy', label: 'Respond By' },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
+	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
+	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
+	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
+	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
 ];
 
 export const DisputesList = ( props ) => {
