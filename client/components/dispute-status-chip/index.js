@@ -16,7 +16,7 @@ import { formatStringValue } from '../../util';
 const DisputeStatusChip = ( { dispute: { status, id: disputeId } } ) => {
 	const mapping = displayStatus[ status ] || {};
 	const message = mapping.message || formatStringValue( status );
-	const type    = mapping.type || 'light';
+	const type = mapping.type || 'light';
 
 	const chip = (
 		<Chip message={ message } type={ type } />
