@@ -47,15 +47,24 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10,
         },
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fevidence&id=dp_asdfghjkl"
-            type="wc-admin"
-          >
-            <Chip
-              message="Needs response"
-              type="primary"
-            />
-          </Link>,
+          "display": <DisputeStatusChip
+            amount={1000}
+            created={1572590800}
+            evidence_details={
+              Object {
+                "due_by": 1573199200,
+              }
+            }
+            id="dp_asdfghjkl"
+            order={
+              Object {
+                "number": "1",
+                "url": "http://test.local/order/1",
+              }
+            }
+            reason="fraudulent"
+            status="needs_response"
+          />,
           "value": "needs_response",
         },
         Object {
@@ -88,9 +97,17 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10.5,
         },
         Object {
-          "display": <Chip
-            message="Under review"
-            type="light"
+          "display": <DisputeStatusChip
+            amount={1050}
+            created={1572480800}
+            evidence_details={
+              Object {
+                "due_by": 1573099200,
+              }
+            }
+            id="dp_zxcvbnm"
+            reason="general"
+            status="under_review"
           />,
           "value": "under_review",
         },
