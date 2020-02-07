@@ -11,10 +11,11 @@ import { Link } from '@woocommerce/components';
  */
 import Chip from '../chip';
 import displayStatus from './mappings';
+import { formatStringValue } from '../../util';
 
 const DisputeStatusChip = ( { status, id: disputeId } ) => {
 	const mapping = displayStatus[ status ] || {};
-	const message = mapping.message || status;
+	const message = mapping.message || formatStringValue( status );
 	const type    = mapping.type || 'light';
 
 	const chip = (

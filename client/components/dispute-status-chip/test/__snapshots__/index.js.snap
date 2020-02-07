@@ -9,7 +9,7 @@ exports[`DisputeStatusChip renders charge_refunded status 1`] = `
 
 exports[`DisputeStatusChip renders default appearance if status is unrecognized 1`] = `
 <Chip
-  message="mock_status"
+  message="Mock status"
   type="light"
 />
 `;

@@ -19,6 +19,7 @@ import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
 import { displayType } from './strings';
+import { formatStringValue } from '../util';
 import './style.scss';
 
 const currency = new Currency();
@@ -66,7 +67,7 @@ export const TransactionsList = () => {
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
-			type: { value: txn.type, display: displayType[ txn.type ] || txn.type },
+			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
 			source: {
 				value: txn.source,
 				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
