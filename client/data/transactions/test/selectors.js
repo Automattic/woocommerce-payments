@@ -12,7 +12,7 @@ import {
 
 describe( 'Transactions selectors', () => {
 	// Mock objects.
-	const mockQuery = { paged: '2', perPage: 50, depositId: null };
+	const mockQuery = { paged: '2', perPage: '50', depositId: null };
 	const mockSummaryQuery = { depositId: null };
 	const mockTransactions = [
 		{

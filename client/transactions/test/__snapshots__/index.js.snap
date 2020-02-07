@@ -154,7 +154,7 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 0,
         },
         Object {
-          "display": "",
+          "display": "Pending",
           "value": null,
         },
       ],
