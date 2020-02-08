@@ -6,26 +6,28 @@
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard, Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
-import { capitalize } from 'lodash';
+import { TableCard } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
 import OrderLink from '../components/order-link';
+import DisputeStatusChip from '../components/dispute-status-chip';
+import { displayReason } from './strings';
+import { formatStringValue } from '../util';
 
 const currency = new Currency();
 
 const headers = [
-	{ key: 'amount', label: 'Amount' },
-	{ key: 'status', label: 'Status' },
-	{ key: 'reason', label: 'Reason' },
-	{ key: 'order', label: 'Order #' },
-	{ key: 'created', label: 'Disputed On' },
-	{ key: 'dueBy', label: 'Respond By' },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
+	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
+	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
+	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
+	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
 ];
 
 export const DisputesList = ( props ) => {
@@ -33,12 +35,6 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
-		const evidenceLink = dispute.status.indexOf( 'needs_response' ) === -1 ? null : (
-			<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
-				<Gridicon icon="reply" size={ 18 } />
-			</Link>
-		);
-
 		const order = dispute.order ? {
 				value: dispute.order.number,
 				display: <OrderLink order={ dispute.order } />,
@@ -46,11 +42,8 @@ export const DisputesList = ( props ) => {
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
-			status: {
-				value: dispute.status,
-				display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></>,
-			},
-			reason: { value: dispute.reason, display: capitalize( dispute.reason.replace( /_/g, ' ' ) ) },
+			status: { value: dispute.status, display: <DisputeStatusChip dispute={ dispute } /> },
+			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] || formatStringValue( dispute.reason ) },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
@@ -64,7 +57,7 @@ export const DisputesList = ( props ) => {
 
 	return (
 		<TableCard
-			title="Disputes"
+			title={ __( 'Disputes', 'woocommerce-payments' ) }
 			isLoading={ showPlaceholder }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }

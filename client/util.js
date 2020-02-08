@@ -3,6 +3,7 @@
  * External dependencies
  */
 import { addQueryArgs } from '@wordpress/url';
+import { capitalize } from 'lodash';
 
 /**
  * Returns true if WooCommerce Payments is in test mode, false otherwise.
@@ -33,3 +34,12 @@ export const getPaymentSettingsUrl = () => {
 		}
 	);
 };
+
+/**
+ * Basic formatting function to convert snake_case to display value.
+ *
+ * @param {string} value snake_case string to convert.
+ *
+ * @return {string} Display string for rendering.
+ */
+export const formatStringValue = ( value ) => capitalize( value ).replace( /_/g, ' ' );
