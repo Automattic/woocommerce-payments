@@ -11,7 +11,6 @@ import { TableCard, Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
