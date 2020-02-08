@@ -112,7 +112,8 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 		$response = $this->api_client->update_dispute(
 			$params['dispute_id'],
 			$params['evidence'],
-			$params['submit']
+			$params['submit'],
+			$params['metadata']
 		);
 
 		return rest_ensure_response( $response );

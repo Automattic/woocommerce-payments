@@ -1,0 +1,72 @@
+/*
+.is-button + .is-button {
+	margin-left: 10px;
+}
+
+.woocommerce-card > .woocommerce-card__header > .woocommerce-card__title-wrapper > .woocommerce-card__title {
+	padding: 3px 0;
+	font-size: 15px;
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+
+.woocommerce-card__header {
+	border-bottom: 1px solid #dcdcde;
+}
+*/
+
+$gray40: #787c82;
+$red50: #d63638;
+$red60: #b32d2e;
+$green50: #008a20;
+$green60: #007017;
+$pink50: #c9356e;
+$pink60: #ab235a;
+
+// Fix broken wc-admin style for buttons
+.file-upload {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	// Selector here is super specific to ensure styles are overwritten.
+	.components-icon-button.is-primary:not(:disabled):not([aria-disabled='true']) {
+		// Fix primary button hover.
+		&:hover {
+			background-color: $pink60;
+			border-color: $pink60;
+		}
+
+		// Set 'is-success' style.
+		&.is-success {
+			background-color: $green50;
+			border-color: $green50;
+
+			&:hover {
+				background-color: $green60;
+				border-color: $green60;
+			}
+		}
+
+		// Set 'is-destructive' style.
+		&.is-destructive {
+			background-color: $red50;
+			border-color: $red50;
+
+			&:hover {
+				background-color: $red60;
+				border-color: $red60;
+			}
+		}
+	}
+
+	// Set styles for file name text.
+	span {
+		padding-left: 24px;
+		color: $gray40;
+
+		&.is-destructive {
+			color: $red50;
+		}
+	}
+}

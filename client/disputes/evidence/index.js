@@ -18,6 +18,51 @@ import evidenceFields from './fields';
 import Page from '../../components/page';
 import CardFooter from '../../components/card-footer';
 
+const FileUploadControl = ( evidence, field, onFileChange ) => {
+	const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
+	const isDone = 0 !== fileName.length;
+	const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
+	const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
+
+	const getIcon = () => {
+		if ( isDone && ! hasError ) {
+			return <Gridicon icon="checkmark" size={ 18 } />;
+		}
+		return <Gridicon icon="add-outline" size={ 18 } />;
+	};
+
+	const message = hasError ? __( 'Upload failed.', 'woocommerce-payments' ) : fileName;
+	const messageClass = hasError ? 'is-destructive' : null;
+
+	return (
+		<BaseControl
+			key={ field.key }
+			id={ 'form-file-upload-base-control-' + field.key }
+			label={ field.display }
+			help={ field.description }
+		>
+			<div className={ 'file-upload' }>
+				<FormFileUpload
+					id={ 'form-file-upload-' + field.key }
+					className={ isDone && ! hasError ? 'is-success' : null }
+					isLarge
+					isPrimary
+					isDestructive={ hasError }
+					isBusy={ isLoading }
+					disabled={ isLoading }
+					icon={ getIcon() }
+					accept=".pdf, image/png, image/jpeg"
+					onChange={ ( event ) => onFileChange( field.key, event.target.files[ 0 ] ) }
+				>
+					{ __( 'Upload File', 'woocommerce-payments' ) }
+				</FormFileUpload>
+
+				<span className={ messageClass }>{ message }</span>
+			</div>
+		</BaseControl>
+	);
+};
+
 export const DisputeEvidenceForm = props => {
 	const { evidence, showPlaceholder, onChange, onFileChange, onSave, readOnly } = props;
 
@@ -31,25 +76,7 @@ export const DisputeEvidenceForm = props => {
 				{
 					section.fields.map( field => {
 						if ( field.control === 'file' ) {
-							return (
-								<BaseControl
-									key={ field.key }
-									id={ 'form-file-upload-' + field.key }
-									label={ field.display }
-									help={ field.description }
-								>
-									<FormFileUpload
-										id={ 'form-file-upload-' + field.key }
-										isLarge
-										isDefault
-										icon={ <Gridicon icon="add-outline" size={ 18 } /> }
-										accept=".pdf, image/png, image/jpeg"
-										onChange={ ( event ) => onFileChange( field.key, event.target.files[ 0 ] ) }
-									>
-										{ __( 'Upload File', 'woocommerce-payments' ) }
-									</FormFileUpload>
-								</BaseControl>
-							);
+							return FileUploadControl( evidence, field, onFileChange );
 						}
 
 						const Control = field.control === 'text' ? TextControl : TextareaControl;
@@ -133,34 +160,75 @@ export default ( { query } ) => {
 	}, [] );
 
 	const doUploadFile = async ( key, file ) => {
-		let fileId = null;
 		if ( file ) {
 			const body = new FormData();
 			body.append( 'file', file );
-			// body.append( 'purpose', 'dispute_evidence' );
-			// body.append( 'file_link_data.create', 'true' );
-			const response = await apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } );
-			fileId = response.id;
-		}
+			body.append( 'purpose', 'dispute_evidence' );
 
-		setEvidence( evidence => ( { ...evidence, [ key ]: fileId } ) )
-	}
+			// Set request status for UI.
+			dispute.isUploading = {
+				...dispute.isUploading,
+				[ key ]: true,
+			};
+			dispute.uploadingErrors = {
+				...dispute.uploadingErrors,
+				[ key ]: false,
+			};
+
+			// Force reload evidence components.
+			setEvidence( e => ( { ...e, [ key ]: null } ) );
+
+			apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } )
+				.then( r => {
+					dispute.metadata[ key ] = r.filename;
+					dispute.isUploading[ key ] = false;
+
+					setEvidence( e => ( { ...e, [ key ]: r.id } ) );
+				} )
+				.catch( () => {
+					dispute.isUploading[ key ] = false;
+					dispute.uploadingErrors[ key ] = true;
+
+					// Force reload evidence components.
+					setEvidence( e => ( { ...e, [ key ]: null } ) );
+				} );
+		}
+	};
 
 	const doSave = async ( submit ) => {
 		setLoading( true );
 		try {
-			setDispute( await apiFetch( { path, method: 'post', data: { evidence, submit } } ) );
+			const { metadata } = dispute;
+			setDispute( await apiFetch( {
+				path,
+				method: 'post',
+				data: {
+					evidence,
+					submit,
+					metadata,
+				},
+			} ) );
 		} finally {
 			setLoading( false );
 			setEvidence( {} );
 		}
 	};
 
+	// console.log( 'before load:', dispute );
 	return (
 		<DisputeEvidenceForm
 			showPlaceholder={ loading }
-			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
-			onChange={ ( key, value ) => setEvidence( evidence => ( { ...evidence, [ key ]: value } ) ) }
+			evidence={
+				dispute
+				? {
+					...dispute.evidence,
+					...evidence,
+					metadata: dispute.metadata || {},
+					isUploading: dispute.isUploading || {},
+					uploadingErrors: dispute.uploadingErrors || {} }
+				: {}
+			}
+			onChange={ ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) ) }
 			onFileChange={ doUploadFile }
 			onSave={ doSave }
 			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }

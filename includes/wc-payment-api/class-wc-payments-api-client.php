@@ -337,12 +337,15 @@ class WC_Payments_API_Client {
 	 * @param string $dispute_id id of dispute to update.
 	 * @param array  $evidence   evidence to upload.
 	 * @param bool   $submit     whether to submit (rather than stage) evidence.
+	 * @param array  $metadata   metadata associated with this dispute.
+	 *
 	 * @return array dispute object.
 	 */
-	public function update_dispute( $dispute_id, $evidence, $submit ) {
+	public function update_dispute( $dispute_id, $evidence, $submit, $metadata ) {
 		$request = array(
 			'evidence' => $evidence,
 			'submit'   => $submit,
+			'metadata' => $metadata,
 		);
 
 		return $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
@@ -362,7 +365,9 @@ class WC_Payments_API_Client {
 		$file_type   = $file_params['file']['type'];
 
 		$body = [
+			// phpcs:disable
 			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
+			// phpcs:enable
 			'file_name' => $file_name,
 			'file_type' => $file_type,
 			'purpose'   => $purpose,
