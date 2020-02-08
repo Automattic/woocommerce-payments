@@ -17,6 +17,11 @@ import {
 	updateErrorForTransactionsSummary,
 } from './actions';
 
+/**
+ * Retrieves a series of transactions from the transactions list API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
+ */
 export function* getTransactions( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
@@ -38,6 +43,8 @@ export function* getTransactions( query ) {
 
 /**
  * Retrieves the transactions summary from the summary API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
  */
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
