@@ -18,7 +18,7 @@ import Gridicon from 'gridicons';
  */
 import OrderLink from '../components/order-link';
 import DisputeStatusChip from '../components/dispute-status-chip';
-import { displayReason } from './strings';
+import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
 const currency = new Currency();
@@ -57,10 +57,13 @@ export const DisputesList = ( props ) => {
 			</Link>
 		);
 
+		const reasonMapping = reasons[ dispute.reason ];
+		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
-			reason: { value: dispute.reason, display: displayReason[ dispute.reason ] || formatStringValue( dispute.reason ) },
+			reason: { value: dispute.reason, display: reasonDisplay },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
