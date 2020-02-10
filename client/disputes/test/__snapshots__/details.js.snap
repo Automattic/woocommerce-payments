@@ -1,0 +1,80 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
+<Section>
+  <Card
+    title="Dispute Overview"
+  >
+    <Paragraphs>
+      If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+      If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
+    </Paragraphs>
+    <hr
+      className="full-width"
+    />
+    <Actions
+      id="dp_asdfghjkl"
+    />
+  </Card>
+  <Card
+    title="Fraudulent Dispute"
+  >
+    <Paragraphs>
+      This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
+    </Paragraphs>
+    <h3>
+      Required to overturn dispute
+    </h3>
+    <Paragraphs>
+      Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
+    </Paragraphs>
+    <h3>
+      How to respond
+    </h3>
+    <Paragraphs>
+      Try to get in touch with your customer. Sometimes people forget about payments they make or don’t recognize the way they appear on their card statement. If this is the case, ask them to contact their card issuer and let them know they no longer dispute the transaction.
+      Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
+      It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
+    </Paragraphs>
+    <hr
+      className="full-width"
+    />
+    <Actions
+      id="dp_asdfghjkl"
+    />
+  </Card>
+</Section>
+`;
+
+exports[`Dispute details screen renders correctly for general dispute 1`] = `
+<Section>
+  <Card
+    title="Dispute Overview"
+  >
+    <Paragraphs>
+      If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+    </Paragraphs>
+    <hr
+      className="full-width"
+    />
+    <Actions
+      id="dp_zxcvbnm"
+    />
+  </Card>
+  <Card
+    title="General Dispute"
+  >
+    <Paragraphs>
+      This is an uncategorized dispute, so you should contact the customer for additional details to find out why the payment was disputed.
+    </Paragraphs>
+    <Paragraphs />
+    <Paragraphs />
+    <hr
+      className="full-width"
+    />
+    <Actions
+      id="dp_zxcvbnm"
+    />
+  </Card>
+</Section>
+`;
