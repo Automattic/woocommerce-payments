@@ -1,9 +1,7 @@
 /** @format **/
+
 /**
- * External dependencies
- */
-/**
- * Internal dependencies.
+ * Internal dependencies
  */
 import { useCharge } from '../data';
 import PaymentDetailsSummary from './summary';

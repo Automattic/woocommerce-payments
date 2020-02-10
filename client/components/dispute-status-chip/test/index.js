@@ -14,36 +14,19 @@ describe( 'DisputeStatusChip', () => {
 		expect( renderDisputeStatus( 'mock_status' ) ).toMatchSnapshot();
 	} );
 
-	test( 'renders needs_response status', () => {
-		expect( renderDisputeStatus( 'needs_response' ) ).toMatchSnapshot();
-	} );
+	const statuses = [
+		'needs_response',
+		'under_review',
+		'charge_refunded',
+		'won',
+		'lost',
+		'warning_needs_response',
+		'warning_under_review',
+		'warning_closed',
+	];
 
-	test( 'renders under_review status', () => {
-		expect( renderDisputeStatus( 'under_review' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders charge_refunded status', () => {
-		expect( renderDisputeStatus( 'charge_refunded' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders won status', () => {
-		expect( renderDisputeStatus( 'won' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders lost status', () => {
-		expect( renderDisputeStatus( 'lost' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders warning_needs_response status', () => {
-		expect( renderDisputeStatus( 'warning_needs_response' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders warning_under_review status', () => {
-		expect( renderDisputeStatus( 'warning_under_review' ) ).toMatchSnapshot();
-	} );
-
-	test( 'renders warning_closed status', () => {
-		expect( renderDisputeStatus( 'warning_closed' ) ).toMatchSnapshot();
+	test.each( statuses )( 'renders %s status', ( status ) => {
+		expect( renderDisputeStatus( status ) ).toMatchSnapshot();
 	} );
 
 	function renderDisputeStatus( status ) {
