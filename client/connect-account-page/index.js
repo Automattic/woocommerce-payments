@@ -20,8 +20,8 @@ const ConnectAccountPage = () => {
 				'By clicking \'Get started\' you agree to WooCommerce Payments <a href="%s">terms of service</a>.',
 				'woocommmerce-payments'
 			),
-			'https://wordpress.com/tos/',
-		)
+			'https://wordpress.com/tos/'
+		),
 	};
 	return (
 		<div className="connect-account">
