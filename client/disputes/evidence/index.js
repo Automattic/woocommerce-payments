@@ -43,7 +43,10 @@ export const DisputeEvidenceForm = props => {
 		);
 	} );
 
-	const confirmMessage = __( "Are you sure you're ready to submit this evidence ?", 'woocommerce-payments' );
+	const confirmMessage = __(
+		"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+		'woocommerce-payments'
+	);
 	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
 
 	return (

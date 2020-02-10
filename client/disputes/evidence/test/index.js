@@ -103,7 +103,9 @@ describe( 'Dispute evidence form', () => {
 		const submitButton = form.find( 'button.is-primary' );
 		submitButton.simulate( 'click' );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
-		expect( window.confirm ).toHaveBeenCalledWith( "Are you sure you're ready to submit this evidence ?" );
+		expect( window.confirm ).toHaveBeenCalledWith(
+			"Are you sure you're ready to submit this evidence? Evidence submissions are final."
+		);
 	}
 	);
 
