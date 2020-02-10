@@ -47,6 +47,7 @@ export const TransactionsList = () => {
 
 	const rows = transactions.map( ( txn ) => {
 		const orderUrl = <OrderLink order={ txn.order } />;
+
 		// TODO: come up with a link generator utility (woocommerce-payments#229)
 		const detailsUrl = addQueryArgs(
 			'admin.php',
@@ -57,7 +58,7 @@ export const TransactionsList = () => {
 			}
 		);
 		const detailsLink = txn.charge_id ? (
-			<Link className="transactions-list__details-button" href={ detailsUrl } >
+			<Link href={ detailsUrl } >
 				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
 		) : '';
