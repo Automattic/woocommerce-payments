@@ -190,12 +190,9 @@ class WC_Payments_Account {
 			&& isset( $_GET['wcpay-test-publishable-key'] )
 			&& isset( $_GET['wcpay-mode'] )
 		) {
-			$state                = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
-			$account_id           = sanitize_text_field( wp_unslash( $_GET['wcpay-account-id'] ) );
-			$live_publishable_key = sanitize_text_field( wp_unslash( $_GET['wcpay-live-publishable-key'] ) );
-			$test_publishable_key = sanitize_text_field( wp_unslash( $_GET['wcpay-test-publishable-key'] ) );
-			$mode                 = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
-			$this->finalize_connection( $state, $account_id, $live_publishable_key, $test_publishable_key, $mode );
+			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
+			$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
+			$this->finalize_connection( $state, $mode );
 			return;
 		}
 	}
@@ -275,8 +272,9 @@ class WC_Payments_Account {
 	 * Once the API redirects back to the site after the OAuth flow, verifies the parameters and stores the data
 	 *
 	 * @param string $state Secret string.
+	 * @param string $mode Mode in which this account has been connected. Either 'test' or 'live'.
 	 */
-	private function finalize_connection( $state ) {
+	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
 			WC_Payments::get_gateway()->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
 			return;
@@ -284,6 +282,7 @@ class WC_Payments_Account {
 		delete_transient( 'wcpay_oauth_state' );
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
 		exit;
