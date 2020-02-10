@@ -50,7 +50,6 @@ exports[`Disputes list renders correctly 1`] = `
       Array [
         Object {
           "display": <Link
-            className="disputes-list__details-button"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
             type="wc-admin"
           >
@@ -98,7 +97,6 @@ exports[`Disputes list renders correctly 1`] = `
       Array [
         Object {
           "display": <Link
-            className="disputes-list__details-button"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
             type="wc-admin"
           >

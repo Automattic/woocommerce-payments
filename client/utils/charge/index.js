@@ -1,12 +1,5 @@
 /** @format **/
 
-/**
- * External dependencies
- */
-/**
- * Internal dependencies.
- */
-
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 

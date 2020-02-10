@@ -13,8 +13,7 @@ import { Section, Card, Link } from '@woocommerce/components';
  * Internal dependencies.
  */
 import { reasons } from './strings';
-
-const Paragraphs = ( { children = [] } ) => children.map( ( p, i ) => <p key={ i }>{ p }</p> );
+import Paragraphs from '../components/paragraphs';
 
 const Actions = ( { id } ) => {
 	const challengeUrl = addQueryArgs(
