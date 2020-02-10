@@ -36,11 +36,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $account;
 
 	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+	}
+
+	/**
 	 * Returns whether test_mode is active for the gateway
 	 *
 	 * @return boolean Test mode enable if true, disabled if false
 	 */
-	public function get_test_mode() {
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
 		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
@@ -138,7 +151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add notice to WooCommerce Payments settings page explaining test mode when it's enabled.
 	 */
 	public function admin_options() {
-		if ( $this->get_test_mode() ) {
+		if ( $this->is_in_test_mode() ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
@@ -161,7 +174,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			// Add JavaScript for the payment form.
 			$js_config = array(
-				'publishableKey' => $this->account->get_publishable_key( $this->get_test_mode() ),
+				'publishableKey' => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 			);
 
@@ -201,7 +214,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
 				<?php endif; ?>
 
-				<?php if ( $this->get_test_mode() ) : ?>
+				<?php if ( $this->is_in_test_mode() ) : ?>
 					<p class="testmode-info">
 					<?php
 						/* translators: link to Stripe testing page */

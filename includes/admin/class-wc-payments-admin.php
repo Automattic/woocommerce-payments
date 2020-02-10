@@ -168,7 +168,7 @@ class WC_Payments_Admin {
 			'wcpaySettings',
 			array(
 				'connectUrl' => WC_Payments_Account::get_connect_url(),
-				'testMode'   => $this->wcpay_gateway->get_test_mode(),
+				'testMode'   => $this->wcpay_gateway->is_in_test_mode(),
 			)
 		);
 

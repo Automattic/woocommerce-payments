@@ -362,7 +362,7 @@ class WC_Payments_API_Client {
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
-				'create_live_account' => $this->is_in_dev_mode() ? false : true,
+				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
 			]
 		);
 
@@ -385,46 +385,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
-	}
-
-	/**
-	 * Check if test mode is enabled or not. This function uses is_in_dev_mode, which overrides
-	 * the function result.
-	 *
-	 * TODO: We should probably refactor this somewhat, since this is basically doing the
-	 * exact same thing as the `get_test_mode` function in the WCPay Gateway class. We
-	 * might even want to rethink the whole architecture to figure out the best location
-	 * for this function.
-	 *
-	 * @return bool - True if test mode is enabled, false otherwise.
-	 */
-	private function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
-
-		// Default to live mode if option not available.
-		if ( ! isset( $options['test_mode'] ) ) {
-			return false;
-		}
-
-		if ( ! is_bool( $options['test_mode'] ) ) {
-			// Evaluates to true if the `test_mode` option contains "1", "true", "yes", or "on".
-			return filter_var( $options['test_mode'], FILTER_VALIDATE_BOOLEAN );
-		}
-
-		return $options['test_mode'];
-	}
-
-	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $request          - Details of the request to make.
@@ -436,7 +396,7 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $request, $api, $method, $is_site_specific = true ) {
-		$request['test_mode'] = $this->is_in_test_mode();
+		$request['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
