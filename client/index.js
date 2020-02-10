@@ -13,6 +13,7 @@ import './style.scss';
 import { HelloWorld } from 'hello-world';
 import TransactionsPage from 'transactions';
 import DisputesPage from 'disputes';
+import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
@@ -70,13 +71,23 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
         ],
     } );
     pages.push( {
-        container: withTestNotice( DisputeEvidencePage, topics.disputeEvidence ),
-        path: '/payments/disputes/evidence',
+        container: withTestNotice( DisputeDetailsPage, topics.disputeDetails ),
+        path: '/payments/disputes/details',
         wpOpenMenu: menuID,
         breadcrumbs: [
             rootLink,
             [ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
-            __( 'Evidence', 'woocommerce-payments' ),
+            __( 'Dispute Details', 'woocommerce-payments' ),
+        ],
+    } );
+    pages.push( {
+        container: withTestNotice( DisputeEvidencePage, topics.disputeDetails ),
+        path: '/payments/disputes/challenge',
+        wpOpenMenu: menuID,
+        breadcrumbs: [
+            rootLink,
+            [ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
+            __( 'Challenge Dispute', 'woocommerce-payments' ),
         ],
     } );
     return pages;

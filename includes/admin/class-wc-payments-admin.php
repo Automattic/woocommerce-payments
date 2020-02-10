@@ -133,10 +133,18 @@ class WC_Payments_Admin {
 			);
 			wc_admin_register_page(
 				array(
-					'id'     => 'wc-payments-disputes-evidence',
-					'title'  => __( 'Evidence', 'woocommerce-payments' ),
+					'id'     => 'wc-payments-disputes-details',
+					'title'  => __( 'Dispute Details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
-					'path'   => '/payments/disputes/evidence',
+					'path'   => '/payments/disputes/details',
+				)
+			);
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge Dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details',
+					'path'   => '/payments/disputes/challenge',
 				)
 			);
 		}
