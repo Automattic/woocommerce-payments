@@ -53,9 +53,9 @@ export const DisputeDetails = props => {
 			{/* translators: heading for dispute category information section */}
 			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
 				<Paragraphs>{ mapping.summary }</Paragraphs>
-				<h3>{ __( 'Required to overturn dispute', 'woocommerce-payments' ) }</h3>
+				{ mapping.required && <h3>{ __( 'Required to overturn dispute', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.required }</Paragraphs>
-				<h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3>
+				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.respond }</Paragraphs>
 				<hr className="full-width" />
 				<Actions id={ dispute.id } />
