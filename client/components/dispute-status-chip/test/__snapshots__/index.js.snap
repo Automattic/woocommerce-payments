@@ -22,15 +22,10 @@ exports[`DisputeStatusChip renders lost status 1`] = `
 `;
 
 exports[`DisputeStatusChip renders needs_response status 1`] = `
-<Link
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fevidence&id=dp_mock"
-  type="wc-admin"
->
-  <Chip
-    message="Needs response"
-    type="primary"
-  />
-</Link>
+<Chip
+  message="Needs response"
+  type="primary"
+/>
 `;
 
 exports[`DisputeStatusChip renders under_review status 1`] = `
@@ -48,15 +43,10 @@ exports[`DisputeStatusChip renders warning_closed status 1`] = `
 `;
 
 exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
-<Link
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fevidence&id=dp_mock"
-  type="wc-admin"
->
-  <Chip
-    message="Inquiry: Needs response"
-    type="primary"
-  />
-</Link>
+<Chip
+  message="Inquiry: Needs response"
+  type="primary"
+/>
 `;
 
 exports[`DisputeStatusChip renders warning_under_review status 1`] = `

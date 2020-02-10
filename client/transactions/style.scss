@@ -1,24 +1,10 @@
 .transactions-list {
+	.date-time {
+		min-width: 190px;
+	}
+
 	.payment-method__brand {
 		display: block;
 		margin: 0 auto;
 	}
-
-	.transactions-list__details-button {
-		height: 18px;
-		fill: $gray-30;
-	}
-}
-
-.info-button {
-	width: 40px;
-	padding-right:0px;
-}
-
-.date-time {
-	min-width: 190px;
-}
-
-th.date-time {
-	border-left:none !important;
 }
