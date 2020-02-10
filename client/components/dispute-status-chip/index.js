@@ -29,7 +29,7 @@ const DisputeStatusChip = ( { dispute: { status, id: disputeId } } ) => {
 			'admin.php',
 			{
 				page: 'wc-admin',
-				path: '/payments/disputes/evidence',
+				path: '/payments/disputes/challenge',
 				id: disputeId,
 			}
 		);
