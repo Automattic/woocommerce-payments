@@ -35,9 +35,7 @@ const Actions = ( { id } ) => {
 	);
 };
 
-export const DisputeDetails = props => {
-	const { dispute, showPlaceholder } = props;
-
+export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
 	}
