@@ -3,11 +3,18 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { Section, Card, Link } from '@woocommerce/components';
+
+/**
+ * Internal dependencies.
+ */
+import { reasons } from './strings';
+
+const Paragraphs = ( { children = [] } ) => children.map( ( p, i ) => <p key={ i }>{ p }</p> );
 
 const Actions = ( { id } ) => {
 	const challengeUrl = addQueryArgs(
@@ -35,9 +42,22 @@ export const DisputeDetails = props => {
 		return <div>Loading…</div>;
 	}
 
+	const mapping = reasons[ dispute.reason ] || {};
 	return (
 		<Section>
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
+				<Paragraphs>{ mapping.overview }</Paragraphs>
+				<hr className="full-width" />
+				<Actions id={ dispute.id } />
+			</Card>
+			{/* translators: heading for dispute category information section */}
+			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
+				<Paragraphs>{ mapping.summary }</Paragraphs>
+				<h3>{ __( 'Required to overturn dispute', 'woocommerce-payments' ) }</h3>
+				<Paragraphs>{ mapping.required }</Paragraphs>
+				<h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3>
+				<Paragraphs>{ mapping.respond }</Paragraphs>
+				<hr className="full-width" />
 				<Actions id={ dispute.id } />
 			</Card>
 		</Section>
