@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Section
-  className="dispute-evidence-form-container"
+<Page
+  isNarrow={true}
 >
   <Card
     key="general"
@@ -81,12 +81,12 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       </ForwardRef(Button)>
     </CardFooter>
   </Card>
-</Section>
+</Page>
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Section
-  className="dispute-evidence-form-container"
+<Page
+  isNarrow={true}
 >
   <Card
     key="general"
@@ -165,5 +165,5 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       </ForwardRef(Button)>
     </CardFooter>
   </Card>
-</Section>
+</Page>
 `;

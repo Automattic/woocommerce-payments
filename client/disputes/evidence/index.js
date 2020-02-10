@@ -7,13 +7,14 @@ import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
-import { Section, Card } from '@woocommerce/components';
+import { Card } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
 import './style.scss';
 import evidenceFields from './fields';
+import Page from '../../components/page';
 import CardFooter from '../../components/card-footer';
 
 export const DisputeEvidenceForm = props => {
@@ -45,7 +46,7 @@ export const DisputeEvidenceForm = props => {
 	} );
 
 	return (
-		<Section className="dispute-evidence-form-container">
+		<Page isNarrow>
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
@@ -77,7 +78,7 @@ export const DisputeEvidenceForm = props => {
 					</CardFooter>
 				</Card>
 			) }
-		</Section>
+		</Page>
 	);
 };
 
