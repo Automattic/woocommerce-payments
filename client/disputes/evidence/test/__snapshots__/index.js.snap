@@ -64,20 +64,22 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         We will automatically submit any saved evidence at the due date.
       </strong>
     </p>
-    <ForwardRef(Button)
-      isLarge={true}
-      isPrimary={true}
-      onClick={[Function]}
-    >
-      Submit Evidence
-    </ForwardRef(Button)>
-    <ForwardRef(Button)
-      isDefault={true}
-      isLarge={true}
-      onClick={[Function]}
-    >
-      Save For Later
-    </ForwardRef(Button)>
+    <CardFooter>
+      <ForwardRef(Button)
+        isLarge={true}
+        isPrimary={true}
+        onClick={[Function]}
+      >
+        Submit Evidence
+      </ForwardRef(Button)>
+      <ForwardRef(Button)
+        isDefault={true}
+        isLarge={true}
+        onClick={[Function]}
+      >
+        Save For Later
+      </ForwardRef(Button)>
+    </CardFooter>
   </Card>
 </Section>
 `;
@@ -146,20 +148,22 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         We will automatically submit any saved evidence at the due date.
       </strong>
     </p>
-    <ForwardRef(Button)
-      isLarge={true}
-      isPrimary={true}
-      onClick={[Function]}
-    >
-      Submit Evidence
-    </ForwardRef(Button)>
-    <ForwardRef(Button)
-      isDefault={true}
-      isLarge={true}
-      onClick={[Function]}
-    >
-      Save For Later
-    </ForwardRef(Button)>
+    <CardFooter>
+      <ForwardRef(Button)
+        isLarge={true}
+        isPrimary={true}
+        onClick={[Function]}
+      >
+        Submit Evidence
+      </ForwardRef(Button)>
+      <ForwardRef(Button)
+        isDefault={true}
+        isLarge={true}
+        onClick={[Function]}
+      >
+        Save For Later
+      </ForwardRef(Button)>
+    </CardFooter>
   </Card>
 </Section>
 `;

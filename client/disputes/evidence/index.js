@@ -14,6 +14,7 @@ import { Section, Card } from '@woocommerce/components';
  */
 import './style.scss';
 import evidenceFields from './fields';
+import CardFooter from '../../components/card-footer';
 
 export const DisputeEvidenceForm = props => {
 	const { evidence, showPlaceholder, onChange, onSave, readOnly } = props;
@@ -66,8 +67,14 @@ export const DisputeEvidenceForm = props => {
 						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
 					</p>
 
-					<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
-					<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
+					<CardFooter>
+						<Button isPrimary isLarge onClick={ () => onSave( true ) }>
+							{__( 'Submit Evidence' )}
+						</Button>
+						<Button isDefault isLarge onClick={ () => onSave( false ) }>
+							{__( 'Save For Later' )}
+						</Button>
+					</CardFooter>
 				</Card>
 			) }
 		</Section>
