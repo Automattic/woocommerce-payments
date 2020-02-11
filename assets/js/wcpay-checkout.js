@@ -57,13 +57,16 @@ jQuery( function( $ ) {
 	var setCustomerValue = function( customerObj, prop, inputId ) {
 		var value;
 
+		// Try to load the value from the fields on the page.
 		if ( 'name' === inputId ) {
-			value = ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim()
+			// If and whenever the first/last name fields do not exist on the page, this will be an empty string.
+			value = ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim();
 		} else {
 			// No need to check whether the element exists, `$.fn.val()` would return `undefined`.
 			value = $( '#' + inputId ).val();
 		}
 
+		// Fall back to the value in `preparedCustomerData`.
 		if ( ( 'undefined' === typeof value ) || 0 === value.length ) {
 			value = preparedCustomerData[ inputId ]; // `undefined` if not set.
 		}
@@ -71,7 +74,7 @@ jQuery( function( $ ) {
 		if ( ( 'undefined' !== typeof value ) && 0 < value.length ) {
 			customerObj[ prop ] = value;
 		}
-	}
+	};
 
 	/**
 	 * Loads all necessary billing details for payment methods.
@@ -87,7 +90,6 @@ jQuery( function( $ ) {
 		setCustomerValue( billingDetails, 'email', 'billing_email' );
 		setCustomerValue( billingDetails, 'phone', 'billing_phone' );
 
-
 		// Populate the billing address.
 		setCustomerValue( billingAddress, 'city', 'billing_city' );
 		setCustomerValue( billingAddress, 'country', 'billing_country' );
@@ -98,7 +100,7 @@ jQuery( function( $ ) {
 
 		billingDetails.address = billingAddress;
 		return billingDetails;
-	}
+	};
 
 	// Create payment method on submission.
 	var paymentMethodGenerated;
