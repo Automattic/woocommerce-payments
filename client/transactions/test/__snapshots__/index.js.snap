@@ -72,6 +72,7 @@ exports[`Transactions list renders correctly 1`] = `
         "label": "Risk Level",
       },
       Object {
+        "cellClassName": "deposit",
         "key": "deposit",
         "label": "Deposit",
       },
@@ -231,7 +232,7 @@ exports[`Transactions list renders correctly 1`] = `
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
             type="wc-admin"
           >
-            Deposit
+            Jan 7, 2020
           </Link>,
           "value": "po_mock",
         },
