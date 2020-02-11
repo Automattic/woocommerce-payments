@@ -92,8 +92,11 @@ export default ( { query } ) => {
 
 	const fetchDispute = async () => {
 		setLoading( true );
-		setDispute( await apiFetch( { path } ) );
-		setLoading( false );
+		try {
+			setDispute( await apiFetch( { path } ) );
+		} finally {
+			setLoading( false );
+		}
 	};
 	useEffect( () => {
 		fetchDispute();
@@ -101,9 +104,12 @@ export default ( { query } ) => {
 
 	const doSave = async ( submit ) => {
 		setLoading( true );
-		setDispute( await apiFetch( { path, method: 'post', data: { evidence, submit } } ) );
-		setLoading( false );
-		setEvidence( {} );
+		try {
+			setDispute( await apiFetch( { path, method: 'post', data: { evidence, submit } } ) );
+		} finally {
+			setLoading( false );
+			setEvidence( {} );
+		}
 	};
 
 	return (
