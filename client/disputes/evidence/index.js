@@ -52,16 +52,16 @@ export const DisputeEvidenceForm = props => {
 				<Card>
 					<p>
 						{ __(
-							'When you submit your evidence, we\'ll compile and send it to the cardholder\'s bank, ' +
-							'and then email you once the dispute has been decided.',
+							// eslint-disable-next-line max-len
+							"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
 							'woocommerce-payments'
 						) }
-						&nbsp;
-						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
 					</p>
 					<p>
+						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
+						&nbsp;
 						{ __(
-							'You can also save this evidence for later editing instead of submitting it immediately.',
+							'You can also save this evidence for later instead of submitting it immediately.',
 							'woocommerce-payments'
 						) }
 						&nbsp;
