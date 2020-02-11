@@ -2,11 +2,12 @@
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <Page
+  className="wcpay-dispute-evidence"
   isNarrow={true}
 >
   <Card
     key="general"
-    title="General evidence"
+    title="General Evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -39,7 +40,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
   </Card>
   <Card
     key="uncategorized"
-    title="Additional details"
+    title="Additional Details"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -86,11 +87,12 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <Page
+  className="wcpay-dispute-evidence"
   isNarrow={true}
 >
   <Card
     key="general"
-    title="General evidence"
+    title="General Evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -123,7 +125,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
   </Card>
   <Card
     key="uncategorized"
-    title="Additional details"
+    title="Additional Details"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}

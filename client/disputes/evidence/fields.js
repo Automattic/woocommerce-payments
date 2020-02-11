@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 export default [
 	{
 		key: 'general',
-		title: __( 'General evidence' ),
+		title: __( 'General Evidence' ),
 		description: '',
 		fields: [
 			{
@@ -36,7 +36,7 @@ export default [
 	// …
 	{
 		key: 'uncategorized',
-		title: __( 'Additional details' ),
+		title: __( 'Additional Details' ),
 		fields: [
 			{
 				key: 'uncategorized_text',
