@@ -95,8 +95,11 @@ export default () => {
 
 	const fetchDisputes = async () => {
 		setLoading( true );
-		setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
-		setLoading( false );
+		try {
+			setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
+		} finally {
+			setLoading( false );
+		}
 	};
 	useEffect( () => {
 		fetchDisputes();
