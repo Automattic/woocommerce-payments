@@ -70,10 +70,10 @@ export const DisputeEvidenceForm = props => {
 
 					<CardFooter>
 						<Button isPrimary isLarge onClick={ () => onSave( true ) }>
-							{__( 'Submit Evidence' )}
+							{__( 'Submit Evidence', 'woocommerce-payments' )}
 						</Button>
 						<Button isDefault isLarge onClick={ () => onSave( false ) }>
-							{__( 'Save For Later' )}
+							{__( 'Save For Later', 'woocommerce-payments' )}
 						</Button>
 					</CardFooter>
 				</Card>
