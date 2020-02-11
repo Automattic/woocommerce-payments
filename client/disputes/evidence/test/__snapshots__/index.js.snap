@@ -51,14 +51,14 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
   </Card>
   <Card>
     <p>
-      When you submit your evidence, we'll compile and send it to the cardholder's bank, and then email you once the dispute has been decided.
-       
+      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+    </p>
+    <p>
       <strong>
         Evidence submission is final.
       </strong>
-    </p>
-    <p>
-      You can also save this evidence for later editing instead of submitting it immediately.
+       
+      You can also save this evidence for later instead of submitting it immediately.
        
       <strong>
         We will automatically submit any saved evidence at the due date.
@@ -135,14 +135,14 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
   </Card>
   <Card>
     <p>
-      When you submit your evidence, we'll compile and send it to the cardholder's bank, and then email you once the dispute has been decided.
-       
+      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+    </p>
+    <p>
       <strong>
         Evidence submission is final.
       </strong>
-    </p>
-    <p>
-      You can also save this evidence for later editing instead of submitting it immediately.
+       
+      You can also save this evidence for later instead of submitting it immediately.
        
       <strong>
         We will automatically submit any saved evidence at the due date.
