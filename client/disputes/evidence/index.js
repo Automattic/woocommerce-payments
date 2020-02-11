@@ -12,7 +12,7 @@ import { Card } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import './style.scss';
+import '../style.scss';
 import evidenceFields from './fields';
 import Page from '../../components/page';
 import CardFooter from '../../components/card-footer';
@@ -46,7 +46,7 @@ export const DisputeEvidenceForm = props => {
 	} );
 
 	return (
-		<Page isNarrow>
+		<Page isNarrow className="wcpay-dispute-evidence">
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>

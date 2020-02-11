@@ -7,13 +7,16 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Section, Card, Link } from '@woocommerce/components';
+import { Card, Link } from '@woocommerce/components';
+import Page from '../components/page';
+import CardFooter from '../components/card-footer';
 
 /**
  * Internal dependencies.
  */
 import { reasons } from './strings';
 import Paragraphs from '../components/paragraphs';
+import './style.scss';
 
 const Actions = ( { id } ) => {
 	const challengeUrl = addQueryArgs(
@@ -26,11 +29,11 @@ const Actions = ( { id } ) => {
 	);
 
 	return (
-		<p>
+		<CardFooter>
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
 				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
 			</Link>
-		</p>
+		</CardFooter>
 	);
 };
 
@@ -41,10 +44,9 @@ export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 
 	const mapping = reasons[ dispute.reason ] || {};
 	return (
-		<Section>
+		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
 				<Paragraphs>{ mapping.overview }</Paragraphs>
-				<hr className="full-width" />
 				<Actions id={ dispute.id } />
 			</Card>
 			{/* translators: heading for dispute category information section */}
@@ -54,10 +56,9 @@ export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 				<Paragraphs>{ mapping.required }</Paragraphs>
 				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.respond }</Paragraphs>
-				<hr className="full-width" />
 				<Actions id={ dispute.id } />
 			</Card>
-		</Section>
+		</Page>
 	);
 };
 

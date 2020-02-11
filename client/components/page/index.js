@@ -3,9 +3,9 @@
  */
 import './style.scss';
 
-const Page = ( { children, maxWidth, isNarrow } ) => {
+const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 	const customStyle = maxWidth ? { maxWidth } : null;
-	const classNames = [ 'woocommerce-payments-page' ];
+	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {
 		classNames.push( 'is-narrow' );
 	}
