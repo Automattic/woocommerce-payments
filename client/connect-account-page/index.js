@@ -17,10 +17,11 @@ const ConnectAccountPage = () => {
 		__html: sprintf(
 			/* translators: %s: WordPress.com TOS URL */
 			__(
-				'By clicking \'Get started\' you agree to WooCommerce Payments <a href="%s">terms of service</a>.',
+				'By using WooCommerce Payments, you agree to our %sTerms of Service%s.',
 				'woocommmerce-payments'
 			),
-			'https://wordpress.com/tos/'
+			'<a href="https://wordpress.com/tos/">',
+			'</a>'
 		),
 	};
 	return (
