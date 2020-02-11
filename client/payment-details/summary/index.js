@@ -43,11 +43,11 @@ const PaymentDetailsSummary = ( props ) => {
 							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( -charge.fee || 0 ) / 100 ) }
+							{ currency.formatCurrency( ( -charge.application_fee_amount || 0 ) / 100 ) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( charge.net || 0 ) / 100 ) }
+							{ currency.formatCurrency( ( ( charge.amount - charge.application_fee_amount ) || 0 ) / 100 ) }
 						</p>
 					</div>
 				</div>
