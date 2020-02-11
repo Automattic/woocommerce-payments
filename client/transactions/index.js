@@ -46,7 +46,7 @@ const columns = [
 	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), hiddenByDefault: true },
 	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), hiddenByDefault: true },
 ];
-const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ) };
+const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
@@ -82,10 +82,10 @@ export const TransactionsList = ( props ) => {
 				id: txn.deposit_id,
 			}
 		);
+		const dateAvailable = txn.date_available != null && dateI18n( 'M j, Y', moment.utc( txn.date_available ) );
 		const depositLink = txn.deposit_id ? (
-			// TODO link text: dateI18n( 'M j, Y / g:iA', moment.utc( txn.available_on ).local()
-			<Link href={ depositUrl }>{ __( 'Deposit', 'woocommerce-payments' ) }</Link>
-		) : __( 'Pending', 'woocommerce-payments' );
+			<Link href={ depositUrl }>{ dateAvailable || __( 'Deposit', 'woocommerce-payments' ) }</Link>
+		) : ( dateAvailable || __( 'Pending', 'woocommerce-payments' ) );
 
 		// Map transaction into table row.
 		const data = {
