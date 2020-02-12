@@ -19,9 +19,11 @@ const PaymentDetails = ( props ) => {
 		<div>
 			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>
 			<PaymentDetailsTimeline charge={ charge }></PaymentDetailsTimeline>
-			<PaymentDetailsPayment charge={ charge }></PaymentDetailsPayment>
+			{ // Hidden for the beta.
+				false && <PaymentDetailsPayment charge={ charge }></PaymentDetailsPayment> }
 			<PaymentDetailsPaymentMethod charge={ charge }></PaymentDetailsPaymentMethod>
-			<PaymentDetailsSession charge={ charge }></PaymentDetailsSession>
+			{ // Hidden for the beta.
+				false && <PaymentDetailsSession charge={ charge }></PaymentDetailsSession> }
 		</div>
 	);
 };
