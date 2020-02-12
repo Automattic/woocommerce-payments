@@ -47,21 +47,24 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10,
         },
         Object {
-          "display": <React.Fragment>
-            <Link
-              href="?page=wc-admin&path=/payments/disputes/evidence&id=dp_asdfghjkl"
-              type="wc-admin"
-            >
-              <t
-                icon="reply"
-                size={18}
-              />
-            </Link>
-             
-            <code>
-              Needs response
-            </code>
-          </React.Fragment>,
+          "display": <DisputeStatusChip
+            dispute={
+              Object {
+                "amount": 1000,
+                "created": 1572590800,
+                "evidence_details": Object {
+                  "due_by": 1573199200,
+                },
+                "id": "dp_asdfghjkl",
+                "order": Object {
+                  "number": "1",
+                  "url": "http://test.local/order/1",
+                },
+                "reason": "fraudulent",
+                "status": "needs_response",
+              }
+            }
+          />,
           "value": "needs_response",
         },
         Object {
@@ -94,12 +97,20 @@ exports[`Disputes list renders correctly 1`] = `
           "value": 10.5,
         },
         Object {
-          "display": <React.Fragment>
-             
-            <code>
-              Under review
-            </code>
-          </React.Fragment>,
+          "display": <DisputeStatusChip
+            dispute={
+              Object {
+                "amount": 1050,
+                "created": 1572480800,
+                "evidence_details": Object {
+                  "due_by": 1573099200,
+                },
+                "id": "dp_zxcvbnm",
+                "reason": "general",
+                "status": "under_review",
+              }
+            }
+          />,
           "value": "under_review",
         },
         Object {

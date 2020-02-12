@@ -11,6 +11,14 @@
 }
 
 .woocommerce-card__body {
+	> :first-child {
+		margin-top: 0;
+	}
+
+	> :last-child {
+		margin-bottom: 0;
+	}
+
 	hr.full-width {
 		/* Accounting for woocommerce-card__body padding */
 		margin: 0 -16px;

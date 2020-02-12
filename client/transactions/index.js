@@ -4,10 +4,10 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
-import { capitalize } from 'lodash';
 import Gridicon from 'gridicons';
 import { addQueryArgs } from '@wordpress/url';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -18,6 +18,8 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
+import { displayType } from './strings';
+import { formatStringValue } from '../util';
 import './style.scss';
 
 const currency = new Currency();
@@ -65,7 +67,7 @@ export const TransactionsList = () => {
 		// Map transaction into table row.
 		const data = {
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
-			type: { value: txn.type, display: capitalize( txn.type ) },
+			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
 			source: {
 				value: txn.source,
 				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
@@ -96,7 +98,7 @@ export const TransactionsList = () => {
 	return (
 		<TableCard
 			className="transactions-list"
-			title="Transactions"
+			title={ __( 'Transactions', 'woocommerce-payments' ) }
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
 			totalRows={ transactionsSummary.count || 0 }
