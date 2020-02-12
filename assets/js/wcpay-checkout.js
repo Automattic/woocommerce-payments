@@ -52,7 +52,7 @@ jQuery( function( $ ) {
 	 *
 	 * @param {object} customerObj The object that the value should be loaded to.
 	 * @param {string} prop        The name of the prop in the object.
-	 * @param {string} inputId     The ID of the input on the page (or the data, preloaded by th server.)
+	 * @param {string} inputId     The ID of the input on the page (or the data, preloaded by the server.)
 	 */
 	var setCustomerValue = function( customerObj, prop, inputId ) {
 		var value;
