@@ -87,7 +87,7 @@ class WC_Payments_Account {
 		try {
 			return $this->try_is_stripe_connected();
 		} catch ( Exception $e ) {
-			return $default;
+			return $on_error;
 		}
 	}
 
