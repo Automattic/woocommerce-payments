@@ -57,9 +57,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       <strong>
         Evidence submission is final.
       </strong>
-       
+       
       You can also save this evidence for later instead of submitting it immediately.
-       
+       
       <strong>
         We will automatically submit any saved evidence at the due date.
       </strong>
@@ -141,9 +141,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       <strong>
         Evidence submission is final.
       </strong>
-       
+       
       You can also save this evidence for later instead of submitting it immediately.
-       
+       
       <strong>
         We will automatically submit any saved evidence at the due date.
       </strong>

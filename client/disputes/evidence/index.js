@@ -59,12 +59,12 @@ export const DisputeEvidenceForm = props => {
 					</p>
 					<p>
 						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
-						&nbsp;
+						{ ' ' }
 						{ __(
 							'You can also save this evidence for later instead of submitting it immediately.',
 							'woocommerce-payments'
 						) }
-						&nbsp;
+						{ ' ' }
 						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
 					</p>
 

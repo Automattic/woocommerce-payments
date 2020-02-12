@@ -1,11 +1,6 @@
 /**
- * External dependencies
+ * Internal dependencies
  */
-
-/**
- * Internal dependencies.
- */
-
 import './style.scss';
 
 const CardFooter = ( { children } ) => {
