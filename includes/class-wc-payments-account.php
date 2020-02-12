@@ -77,13 +77,28 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is connected, assumes true on server error
+	 * Checks if the account is connected, assumes the value of $on_error on server error
+	 *
+	 * @param bool $on_error Value to return on server error, defaults to false.
+	 *
+	 * @return bool True if the account is connected, false otherwise, $on_error on error.
+	 */
+	public function is_stripe_connected( $on_error = false ) {
+		try {
+			return $this->try_is_stripe_connected();
+		} catch ( Exception $e ) {
+			return $default;
+		}
+	}
+
+	/**
+	 * Checks if the account is connected, throws on server error
 	 *
 	 * @return bool True if the account is connected, false otherwise.
 	 *
 	 * @throws Exception Bubbles up if get_account_data call fails.
 	 */
-	public function is_stripe_connected() {
+	public function try_is_stripe_connected() {
 		$account = $this->get_cached_account_data();
 
 		if ( is_array( $account ) && empty( $account ) ) {

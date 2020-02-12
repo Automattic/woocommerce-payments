@@ -140,11 +140,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		try {
-			return parent::is_available() && $this->account->is_stripe_connected();
-		} catch ( Exception $e ) {
-			return false;
-		}
+		return parent::is_available() && $this->account->is_stripe_connected( false );
 	}
 
 	/**
@@ -413,19 +409,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function generate_account_actions_html() {
 		try {
-			$stripe_connected = $this->account->is_stripe_connected();
+			$stripe_connected = $this->account->try_is_stripe_connected();
+			if ( $stripe_connected ) {
+				$description = sprintf(
+					/* translators: 1) dashboard login URL */
+					__( '<a href="%1$s">View and edit account details</a>', 'woocommerce-payments' ),
+					WC_Payments_Account::get_login_url()
+				);
+			} else {
+				$description = WC_Payments_Account::get_connect_message();
+			}
 		} catch ( Exception $e ) {
-			return '';
-		}
-
-		if ( $stripe_connected ) {
-			$description = sprintf(
-				/* translators: 1) dashboard login URL */
-				__( '<a href="%1$s">View and edit account details</a>', 'woocommerce-payments' ),
-				WC_Payments_Account::get_login_url()
-			);
-		} else {
-			$description = WC_Payments_Account::get_connect_message();
+			// do not render the actions if the server is unreachable.
+			$description = __( 'Error determining the connection status.', 'woocommerce-payments' );
 		}
 
 		// Allow the description text to be altered by filters.
