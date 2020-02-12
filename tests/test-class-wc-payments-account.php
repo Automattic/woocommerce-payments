@@ -94,6 +94,40 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
 	}
 
+	public function test_try_is_stripe_connected_returns_true_when_connected() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue(
+				array(
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+				)
+			)
+		);
+
+		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
+	}
+
+	public function test_try_is_stripe_connected_throws() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
+		);
+
+		$this->expectException( WC_Payments_API_Exception::class );
+
+		$this->wcpay_account->try_is_stripe_connected();
+	}
+
+	public function test_try_is_stripe_connected_returns_false() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+		);
+
+		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
+	}
+
 	public function test_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
@@ -107,25 +141,23 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertTrue( $this->wcpay_account->is_stripe_connected() );
+		$this->assertTrue( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
-	public function test_is_stripe_connected_throws() {
+	public function test_is_stripe_connected_returns_false_on_error() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
 		);
 
-		$this->expectException( WC_Payments_API_Exception::class );
-
-		$this->wcpay_account->is_stripe_connected();
+		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
-	public function test_is_stripe_connected_returns_false() {
+	public function test_is_stripe_connected_returns_false_when_not_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
-		$this->assertFalse( $this->wcpay_account->is_stripe_connected() );
+		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
 	public function test_get_publishable_key_returns_for_live() {

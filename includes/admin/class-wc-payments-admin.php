@@ -49,8 +49,9 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$stripe_connected = $this->account->is_stripe_connected();
+			$stripe_connected = $this->account->try_is_stripe_connected();
 		} catch ( Exception $e ) {
+			// do not render the menu if the server is unreachable.
 			return;
 		}
 
