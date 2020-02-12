@@ -7,13 +7,15 @@ import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
-import { Section, Card } from '@woocommerce/components';
+import { Card } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
 import './style.scss';
 import evidenceFields from './fields';
+import Page from '../../components/page';
+import CardFooter from '../../components/card-footer';
 
 export const DisputeEvidenceForm = props => {
 	const { evidence, showPlaceholder, onChange, onSave, readOnly } = props;
@@ -44,15 +46,39 @@ export const DisputeEvidenceForm = props => {
 	} );
 
 	return (
-		<Section>
+		<Page isNarrow>
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
-					<Button isPrimary isLarge onClick={ () => onSave( true ) }>{ __( 'Submit Evidence' ) }</Button>
-					<Button isDefault isLarge onClick={ () => onSave( false ) }>{ __( 'Save For Later' ) }</Button>
+					<p>
+						{ __(
+							// eslint-disable-next-line max-len
+							"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
+							'woocommerce-payments'
+						) }
+					</p>
+					<p>
+						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
+						{ ' ' }
+						{ __(
+							'You can also save this evidence for later instead of submitting it immediately.',
+							'woocommerce-payments'
+						) }
+						{ ' ' }
+						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
+					</p>
+
+					<CardFooter>
+						<Button isPrimary isLarge onClick={ () => onSave( true ) }>
+							{__( 'Submit Evidence', 'woocommerce-payments' )}
+						</Button>
+						<Button isDefault isLarge onClick={ () => onSave( false ) }>
+							{__( 'Save For Later', 'woocommerce-payments' )}
+						</Button>
+					</CardFooter>
 				</Card>
 			) }
-		</Section>
+		</Page>
 	);
 };
 
