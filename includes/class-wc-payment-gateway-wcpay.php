@@ -432,6 +432,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Account::get_login_url()
 				);
 			} else {
+				$description  = '<p>';
+				$description .= __(
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+					'woocommerce-payments'
+				);
+				$description .= ' ';
+
+				/* translators: Link to WordPress.com TOS URL */
+				$terms_message = __(
+					'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+					'woocommerce-payments'
+				);
+				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+				$description  .= $terms_message;
+				$description  .= '</p>';
+
+				$description .= '<p>';
+				$description .= '<a href="' . WC_Payments_Account::get_connect_url() . '" class="button">';
+				$description .= __( ' Get started', 'woocommerce-payments' );
+				$description .= '</a>';
+				$description .= '</p>';
+
+				$description = wp_kses(
+					$description,
+					array(
+						'a' => array(
+							'class' => array(),
+							'href'  => array(),
+						),
+						'p' => array(),
+					)
+				);
 				$description = WC_Payments_Account::get_connect_message();
 			}
 
