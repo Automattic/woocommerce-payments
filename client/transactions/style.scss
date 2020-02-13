@@ -1,10 +1,14 @@
 .transactions-list {
 	.date-time {
-		min-width: 190px;
+		min-width: 195px;
 	}
 
 	.payment-method__brand {
 		display: block;
 		margin: 0 auto;
+	}
+
+	.deposit {
+		white-space: nowrap;
 	}
 }

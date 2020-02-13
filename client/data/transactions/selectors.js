@@ -4,7 +4,6 @@
  * Internal dependencies
  */
 import { getResourceId } from '../util';
-import { ID_PREFIX } from '../constants';
 
 /**
  * Retrieves the transactions state from the wp.data store if the state
@@ -32,24 +31,35 @@ const getTransactionsState = ( state ) => {
  * @returns {object} The list of transactions for the given query.
  */
 const getTransactionsForQuery = ( state, query ) => {
-	const index = getResourceId( ID_PREFIX.transactions, query );
+	const index = getResourceId( query );
 	return getTransactionsState( state )[ index ] || {};
 };
 
-export const getTransactions = ( state, { paged = '1', perPage = '25' } ) => {
-	return getTransactionsForQuery( state, { paged, perPage } ).data || [];
+export const getTransactions = ( state, query ) => {
+	return getTransactionsForQuery( state, query ).data || [];
 };
 
-export const getTransactionsError = ( state, { paged = '1', perPage = '25' } ) => {
-	return getTransactionsForQuery( state, { paged, perPage } ).error || {};
+export const getTransactionsError = ( state, query ) => {
+	return getTransactionsForQuery( state, query ).error || {};
 };
 
-export const getTransactionsSummary = ( state ) => {
-	const summary = getTransactionsState( state ).summary || {};
-	return summary.data || {};
+/**
+ * Retrieves the transaction summary corresponding to the provided query.
+ *
+ * @param {object} state Current wp.data state.
+ * @param {object} query The transactions summary query.
+ *
+ * @returns {object} The transaction summary for the given query.
+ */
+const getTransactionsSummaryForQuery = ( state, query ) => {
+	const index = getResourceId( query );
+	return getTransactionsState( state ).summary[ index ] || {};
 };
 
-export const getTransactionsSummaryError = ( state ) => {
-	const summary = getTransactionsState( state ).summary || {};
-	return summary.error || {};
+export const getTransactionsSummary = ( state, query ) => {
+	return getTransactionsSummaryForQuery( state, query ).data || {};
+};
+
+export const getTransactionsSummaryError = ( state, query ) => {
+	return getTransactionsSummaryForQuery( state, query ).error || {};
 };

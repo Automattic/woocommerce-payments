@@ -125,6 +125,14 @@ class WC_Payments_Admin {
 			// TODO: More robust solution is to be implemented by https://github.com/Automattic/woocommerce-payments/issues/231.
 			wc_admin_register_page(
 				array(
+					'id'     => 'wc-payments-deposit-details',
+					'title'  => __( 'Deposit Details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions', // Not (top level) deposits, as workaround for showing up as submenu page.
+					'path'   => '/payments/deposits/details',
+				)
+			);
+			wc_admin_register_page(
+				array(
 					'id'     => 'wc-payments-transaction-details',
 					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions',
