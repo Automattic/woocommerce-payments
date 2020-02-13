@@ -48,6 +48,38 @@ const columns = [
 ];
 const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
 
+export const DetailsLink = ( { chargeId } ) => {
+	// TODO: come up with a link generator utility (woocommerce-payments#229)
+	const detailsUrl = addQueryArgs(
+		'admin.php',
+		{
+			page: 'wc-admin',
+			path: '/payments/transactions/details',
+			id: chargeId,
+		}
+	);
+	return chargeId ? (
+		<Link className="transactions-list__details-button" href={ detailsUrl } >
+			<Gridicon icon="info-outline" size={ 18 } />
+		</Link>
+	) : '';
+}
+
+export const Deposit = ( { depositId, dateAvailable } ) => {
+	const depositUrl = addQueryArgs(
+		'admin.php',
+		{
+			page: 'wc-admin',
+			path: '/payments/deposits/details',
+			id: depositId,
+		}
+	);
+	const formattedDateAvailable = dateAvailable != null && dateI18n( 'M j, Y', moment.utc( txn.date_available ) );
+	return depositId ? (
+		<Link href={ depositUrl }>{ formattedDateAvailable || __( 'Deposit', 'woocommerce-payments' ) }</Link>
+	) : ( formattedDateAvailable || __( 'Pending', 'woocommerce-payments' ) );
+};
+
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( props.depositId );
@@ -55,40 +87,14 @@ export const TransactionsList = ( props ) => {
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
+		const detailsLink = <DetailsLink chargeId={ txn.charge_id } />;
 		const orderUrl = <OrderLink order={ txn.order } />;
-
-		// TODO: come up with a link generator utility (woocommerce-payments#229)
-		const detailsUrl = addQueryArgs(
-			'admin.php',
-			{
-				page: 'wc-admin',
-				path: '/payments/transactions/details',
-				id: txn.charge_id,
-			}
-		);
-		const detailsLink = txn.charge_id ? (
-			<Link href={ detailsUrl } >
-				<Gridicon icon="info-outline" size={ 18 } />
-			</Link>
-		) : '';
-
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
-
-		const depositUrl = addQueryArgs(
-			'admin.php',
-			{
-				page: 'wc-admin',
-				path: '/payments/deposits/details',
-				id: txn.deposit_id,
-			}
-		);
-		const dateAvailable = txn.date_available != null && dateI18n( 'M j, Y', moment.utc( txn.date_available ) );
-		const depositLink = txn.deposit_id ? (
-			<Link href={ depositUrl }>{ dateAvailable || __( 'Deposit', 'woocommerce-payments' ) }</Link>
-		) : ( dateAvailable || __( 'Pending', 'woocommerce-payments' ) );
+		const deposit = <Deposit depositId={ txn.deposit_id } dateAvailable={ txn.date_available } />;
 
 		// Map transaction into table row.
 		const data = {
+			details: { value: txn.transaction_id, display: detailsLink },
 			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
 			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
 			source: {
@@ -104,8 +110,7 @@ export const TransactionsList = ( props ) => {
 			fee: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
 			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
 			riskLevel: { value: txn.risk_level, display: riskLevel },
-			deposit: { value: txn.deposit_id, display: depositLink },
-			details: { value: txn.transaction_id, display: detailsLink },
+			deposit: { value: txn.deposit_id, display: deposit },
 		};
 
 		return columnsToDisplay.map( ( { key } ) => data[ key ] || { display: null } );
