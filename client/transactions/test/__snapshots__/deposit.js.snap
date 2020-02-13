@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Deposit renders with date and deposit available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Jan 7, 2020
+</Link>
+`;
+
+exports[`Deposit renders with date available but no deposit 1`] = `"Jan 7, 2020"`;
+
+exports[`Deposit renders with deposit but no date available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Deposit
+</Link>
+`;
+
+exports[`Deposit renders with no date or deposit available 1`] = `"Pending"`;

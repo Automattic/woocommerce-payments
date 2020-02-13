@@ -7,9 +7,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard, Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
-import { addQueryArgs } from '@wordpress/url';
+import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
@@ -20,6 +18,8 @@ import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
+import DetailsLink from './details-link';
+import Deposit from './deposit';
 import './style.scss';
 
 const currency = new Currency();
@@ -47,38 +47,6 @@ const columns = [
 	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), hiddenByDefault: true },
 ];
 const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
-
-export const DetailsLink = ( { chargeId } ) => {
-	// TODO: come up with a link generator utility (woocommerce-payments#229)
-	const detailsUrl = addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-admin',
-			path: '/payments/transactions/details',
-			id: chargeId,
-		}
-	);
-	return chargeId ? (
-		<Link className="transactions-list__details-button" href={ detailsUrl } >
-			<Gridicon icon="info-outline" size={ 18 } />
-		</Link>
-	) : '';
-};
-
-export const Deposit = ( { depositId, dateAvailable } ) => {
-	const depositUrl = addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-admin',
-			path: '/payments/deposits/details',
-			id: depositId,
-		}
-	);
-	const formattedDateAvailable = dateAvailable != null && dateI18n( 'M j, Y', moment.utc( dateAvailable ) );
-	return depositId ? (
-		<Link href={ depositUrl }>{ formattedDateAvailable || __( 'Deposit', 'woocommerce-payments' ) }</Link>
-	) : ( formattedDateAvailable || __( 'Pending', 'woocommerce-payments' ) );
-};
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );

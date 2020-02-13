@@ -1,4 +1,5 @@
 /** @format */
+
 /**
  * External dependencies
  */
@@ -7,7 +8,7 @@ import { shallow } from 'enzyme';
 /**
  * Internal dependencies
  */
-import { TransactionsList, DetailsLink, Deposit } from '../';
+import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from '../../data';
 
 jest.mock( '../../data', () => ( {
@@ -122,51 +123,5 @@ describe( 'Transactions list', () => {
 		);
 		expect( list ).toMatchSnapshot();
 		expect( useTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
-	} );
-} );
-
-describe( 'Details link', () => {
-	test( 'renders with charge ID', () => {
-		const link = shallow(
-			<DetailsLink chargeId="ch_mock" />
-		);
-		expect( link ).toMatchSnapshot();
-	} );
-
-	test( 'renders with no charge ID', () => {
-		const link = shallow(
-			<DetailsLink />
-		);
-		expect( link ).toMatchSnapshot();
-	} );
-} );
-
-describe( 'Deposit', () => {
-	test( 'renders with date and deposit available', () => {
-		const link = shallow(
-			<Deposit dateAvailable="2020-01-07 00:00:00" depositId="po_mock" />
-		);
-		expect( link ).toMatchSnapshot();
-	} );
-
-	test( 'renders with date available but no deposit', () => {
-		const link = shallow(
-			<Deposit dateAvailable="2020-01-07 00:00:00" />
-		);
-		expect( link ).toMatchSnapshot();
-	} );
-
-	test( 'renders with deposit but no date available', () => {
-		const link = shallow(
-			<Deposit depositId="po_mock" />
-		);
-		expect( link ).toMatchSnapshot();
-	} );
-
-	test( 'renders with no date or deposit available', () => {
-		const link = shallow(
-			<Deposit />
-		);
-		expect( link ).toMatchSnapshot();
 	} );
 } );
