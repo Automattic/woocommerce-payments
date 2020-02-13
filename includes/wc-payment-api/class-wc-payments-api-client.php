@@ -225,7 +225,7 @@ class WC_Payments_API_Client {
 	 * @return array     The transactions summary.
 	 * @throws WC_Payments_API_Exception Exception thrown on request failure.
 	 */
-	public function get_transactions_summary( $deposit_id ) {
+	public function get_transactions_summary( $deposit_id = null ) {
 		$query = [
 			'deposit_id' => $deposit_id,
 		];
