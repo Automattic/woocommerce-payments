@@ -45,6 +45,12 @@ export const DisputeEvidenceForm = props => {
 		);
 	} );
 
+	const confirmMessage = __(
+		"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+		'woocommerce-payments'
+	);
+	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
+
 	return (
 		<Page isNarrow>
 			{ evidenceSections }
@@ -55,7 +61,7 @@ export const DisputeEvidenceForm = props => {
 							// eslint-disable-next-line max-len
 							"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
 							'woocommerce-payments'
-						) }
+							) }
 					</p>
 					<p>
 						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
@@ -63,13 +69,13 @@ export const DisputeEvidenceForm = props => {
 						{ __(
 							'You can also save this evidence for later instead of submitting it immediately.',
 							'woocommerce-payments'
-						) }
+							) }
 						{ ' ' }
 						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
 					</p>
 
 					<CardFooter>
-						<Button isPrimary isLarge onClick={ () => onSave( true ) }>
+						<Button isPrimary isLarge onClick={ handleSubmit }>
 							{__( 'Submit Evidence', 'woocommerce-payments' )}
 						</Button>
 						<Button isDefault isLarge onClick={ () => onSave( false ) }>
