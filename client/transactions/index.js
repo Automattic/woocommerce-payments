@@ -63,7 +63,7 @@ export const DetailsLink = ( { chargeId } ) => {
 			<Gridicon icon="info-outline" size={ 18 } />
 		</Link>
 	) : '';
-}
+};
 
 export const Deposit = ( { depositId, dateAvailable } ) => {
 	const depositUrl = addQueryArgs(
@@ -74,7 +74,7 @@ export const Deposit = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		}
 	);
-	const formattedDateAvailable = dateAvailable != null && dateI18n( 'M j, Y', moment.utc( txn.date_available ) );
+	const formattedDateAvailable = dateAvailable != null && dateI18n( 'M j, Y', moment.utc( dateAvailable ) );
 	return depositId ? (
 		<Link href={ depositUrl }>{ formattedDateAvailable || __( 'Deposit', 'woocommerce-payments' ) }</Link>
 	) : ( formattedDateAvailable || __( 'Pending', 'woocommerce-payments' ) );

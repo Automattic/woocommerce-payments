@@ -88,15 +88,9 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            chargeId="ch_j23w39dsajda"
+          />,
           "value": "txn_j23jda9JJa",
         },
         Object {
@@ -155,21 +149,17 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 0,
         },
         Object {
-          "display": "Pending",
+          "display": <Deposit
+            depositId={null}
+          />,
           "value": null,
         },
       ],
       Array [
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            chargeId="ch_j239jda"
+          />,
           "value": "txn_oa9kaKaa8",
         },
         Object {
@@ -228,12 +218,10 @@ exports[`Transactions list renders correctly 1`] = `
           "value": 2,
         },
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
-            type="wc-admin"
-          >
-            Jan 7, 2020
-          </Link>,
+          "display": <Deposit
+            dateAvailable="2020-01-07 00:00:00"
+            depositId="po_mock"
+          />,
           "value": "po_mock",
         },
       ],
@@ -349,16 +337,9 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
     Array [
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            chargeId="ch_j239jda"
+          />,
           "value": "txn_oa9kaKaa8",
         },
         Object {
