@@ -26,7 +26,7 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 
 	return depositId ? (
 		<Link href={ depositUrl }>
-			{ formattedDateAvailable || __( 'Deposit', 'woocommerce-payments' ) }
+			{ formattedDateAvailable || __( 'Deposit details', 'woocommerce-payments' ) }
 		</Link>
 	) : ( formattedDateAvailable || __( 'Pending', 'woocommerce-payments' ) );
 };
