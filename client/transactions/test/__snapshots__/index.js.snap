@@ -1,5 +1,64 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Deposit renders with date and deposit available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Jan 7, 2020
+</Link>
+`;
+
+exports[`Deposit renders with date available but no deposit 1`] = `"Jan 7, 2020"`;
+
+exports[`Deposit renders with deposit but no date available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Deposit
+</Link>
+`;
+
+exports[`Deposit renders with no date or deposit available 1`] = `"Pending"`;
+
+exports[`Details link renders with charge ID 1`] = `
+<Link
+  className="transactions-list__details-button"
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
+  type="wc-admin"
+>
+  <t
+    icon="info-outline"
+    size={18}
+  />
+</Link>
+`;
+
+exports[`Details link renders with date and deposit available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Jan 7, 2020
+</Link>
+`;
+
+exports[`Details link renders with date available but no deposit 1`] = `"Jan 7, 2020"`;
+
+exports[`Details link renders with deposit but no date available 1`] = `
+<Link
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+  type="wc-admin"
+>
+  Deposit
+</Link>
+`;
+
+exports[`Details link renders with no charge ID 1`] = `""`;
+
+exports[`Details link renders with no date or deposit available 1`] = `"Pending"`;
+
 exports[`Transactions list renders correctly 1`] = `
 <TableCard
   baseSearchQuery={Object {}}
