@@ -16,7 +16,6 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useDeposits } from '../data';
 import { formatStringValue } from '../util';
 import DetailsLink from '../components/details-link';
-// import './style.scss';
 
 const currency = new Currency();
 
@@ -27,7 +26,7 @@ const columns = [
 	{ key: 'type', label: __( 'Type', 'woocommerce-payments' ), required: true },
 	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true, required: true },
 	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
-	{ key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
+	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{ key: 'bankAccount', label: __( 'Bank Account', 'woocommerce-payments' ) },
 ];
 
