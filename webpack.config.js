@@ -62,6 +62,8 @@ const webpackConfig = {
 						return [ 'wc', 'components' ];
 					case '@woocommerce/currency':
 						return [ 'wc', 'currency' ];
+					case '@woocommerce/navigation':
+						return [ 'wc', 'navigation' ];
 				}
 			},
 			requestToHandle( request ) {
@@ -70,6 +72,8 @@ const webpackConfig = {
 						return 'wc-components';
 					case '@woocommerce/currency':
 						return 'wc-currency';
+					case '@woocommerce/navigation':
+						return 'wc-navigation';
 				}
 			},
 		} ),
