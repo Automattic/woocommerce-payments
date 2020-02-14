@@ -6,6 +6,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { useState, useEffect } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { Card, Link } from '@woocommerce/components';
 import Page from '../components/page';
@@ -18,7 +19,7 @@ import { reasons } from './strings';
 import Paragraphs from '../components/paragraphs';
 import './style.scss';
 
-const Actions = ( { id } ) => {
+const Actions = ( { id, onAccept } ) => {
 	const challengeUrl = addQueryArgs(
 		'admin.php',
 		{
@@ -33,11 +34,14 @@ const Actions = ( { id } ) => {
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
 				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
 			</Link>
+			<Button isDefault isLarge onClick={ onAccept }>
+				{ __( 'Accept Dispute', 'woocommerce-payments' ) }
+			</Button>
 		</CardFooter>
 	);
 };
 
-export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
+export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
 	}
@@ -47,7 +51,7 @@ export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
 				<Paragraphs>{ mapping.overview }</Paragraphs>
-				<Actions id={ dispute.id } />
+				<Actions id={ dispute.id } onAccept={ onAccept } />
 			</Card>
 			{/* translators: heading for dispute category information section */}
 			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
@@ -56,7 +60,7 @@ export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 				<Paragraphs>{ mapping.required }</Paragraphs>
 				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.respond }</Paragraphs>
-				<Actions id={ dispute.id } />
+				<Actions id={ dispute.id } onAccept={ onAccept } />
 			</Card>
 		</Page>
 	);
@@ -81,10 +85,20 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
+	const doAccept = async () => {
+		setLoading( true );
+		try {
+			setDispute( await apiFetch( { path: `${ path }/close`, method: 'post' } ) );
+		} finally {
+			setLoading( false );
+		}
+	};
+
 	return (
 		<DisputeDetails
 			showPlaceholder={ loading }
 			dispute={ dispute }
+			onAccept={ doAccept }
 		/>
 	);
 };
