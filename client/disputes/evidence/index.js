@@ -120,7 +120,10 @@ export default ( { query } ) => {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
-		// We rely on WC-Admin Transient notices to display success message: https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+		/*
+			We rely on WC-Admin Transient notices to display success message.
+			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+		*/
 		createSuccessNotice( message );
 		getHistory().push( href );
 	};
