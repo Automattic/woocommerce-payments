@@ -6,7 +6,11 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, TextControl, TextareaControl, BaseControl, FormFileUpload } from '@wordpress/components';
+// This is all coming from a global '@wordpress/components' import, and will probably
+// cause issues down the line if the global scope is updated.
+// For example the 'IconButton' is deprecated in the latest version, and styles are
+// applied in a different way.
+import { Button, TextControl, TextareaControl, BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import { Section, Card } from '@woocommerce/components';
 import Gridicon from 'gridicons';
 
@@ -18,7 +22,7 @@ import evidenceFields from './fields';
 import Page from '../../components/page';
 import CardFooter from '../../components/card-footer';
 
-const FileUploadControl = ( evidence, field, onFileChange ) => {
+const FileUploadControl = ( evidence, field, onFileChange, onFileRemove ) => {
 	const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
 	const isDone = 0 !== fileName.length;
 	const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
@@ -58,13 +62,28 @@ const FileUploadControl = ( evidence, field, onFileChange ) => {
 				</FormFileUpload>
 
 				<span className={ messageClass }>{ message }</span>
+
+				{ isDone
+					? <IconButton
+						className={ 'delete-uploaded-file-button' }
+						icon={ <Gridicon icon="trash" size={ 18 } /> }
+						onClick={ () => onFileRemove( field.key ) } />
+					: null }
 			</div>
 		</BaseControl>
 	);
 };
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, showPlaceholder, onChange, onFileChange, onSave, readOnly } = props;
+	const {
+		evidence,
+		showPlaceholder,
+		onChange,
+		onFileChange,
+		onFileRemove,
+		onSave,
+		readOnly,
+	} = props;
 
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
@@ -76,7 +95,7 @@ export const DisputeEvidenceForm = props => {
 				{
 					section.fields.map( field => {
 						if ( field.control === 'file' ) {
-							return FileUploadControl( evidence, field, onFileChange );
+							return FileUploadControl( evidence, field, onFileChange, onFileRemove );
 						}
 
 						const Control = field.control === 'text' ? TextControl : TextareaControl;
@@ -159,6 +178,11 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
+	const doRemoveFile = async ( key ) => {
+		dispute.metadata[ key ] = '';
+		setEvidence( e => ( { ...e, [ key ]: '' } ) );
+	};
+
 	const doUploadFile = async ( key, file ) => {
 		if ( file ) {
 			const body = new FormData();
@@ -231,6 +255,7 @@ export default ( { query } ) => {
 			onChange={ ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) ) }
 			onFileChange={ doUploadFile }
 			onSave={ doSave }
+			onFileRemove={ doRemoveFile }
 			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
 		/>
 	);

@@ -16,6 +16,7 @@
 */
 
 $gray40: #787c82;
+$gray60: #50575e;
 $red50: #d63638;
 $red60: #b32d2e;
 $green50: #008a20;
@@ -57,6 +58,13 @@ $pink60: #ab235a;
 				background-color: $red60;
 				border-color: $red60;
 			}
+		}
+	}
+
+	.components-icon-button.delete-uploaded-file-button:not(:disabled):not([aria-disabled='true']) {
+		&:hover {
+			color: $red60;
+			box-shadow: none;
 		}
 	}
 
