@@ -419,19 +419,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$description = WC_Payments_Account::get_connect_message();
 			}
+
+			// Allow the description text to be altered by filters.
+			$description = apply_filters(
+				'wc_payments_account_actions',
+				$description,
+				$stripe_connected,
+				WC_Payments_Account::get_login_url(),
+				WC_Payments_Account::get_connect_url()
+			);
+
 		} catch ( Exception $e ) {
 			// do not render the actions if the server is unreachable.
 			$description = __( 'Error determining the connection status.', 'woocommerce-payments' );
 		}
-
-		// Allow the description text to be altered by filters.
-		$description = apply_filters(
-			'wc_payments_account_actions',
-			$description,
-			$stripe_connected,
-			WC_Payments_Account::get_login_url(),
-			WC_Payments_Account::get_connect_url()
-		);
 
 		ob_start();
 		?>
