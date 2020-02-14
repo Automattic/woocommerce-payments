@@ -67,9 +67,10 @@ export const DepositsList = () => {
 			// className="deposits-list"
 			title={ __( 'Deposit History', 'woocommerce-payments' ) }
 			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
+			// rowsPerPage={ getQuery().per_page || 25 }
 			// totalRows={ count || 0 }
-			totalRows={ 100 }
+			rowsPerPage={ 10 }
+			totalRows={ 10 }
 			headers={ columns }
 			rows={ rows }
 			query={ getQuery() }
