@@ -22,7 +22,14 @@ const currency = new Currency();
 // TODO make date, amount sortable - when date is sortable, the background of the info buttons should match
 const columns = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
-	{ key: 'date', label: __( 'Date', 'woocommerce-payments' ), required: true, isLeftAligned: true, defaultOrder: 'desc', cellClassName: 'date-time' },
+	{
+		key: 'date',
+		label: __( 'Date', 'woocommerce-payments' ),
+		required: true,
+		isLeftAligned: true,
+		defaultOrder: 'desc',
+		cellClassName: 'date-time',
+	},
 	{ key: 'type', label: __( 'Type', 'woocommerce-payments' ), required: true },
 	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true, required: true },
 	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
@@ -38,6 +45,7 @@ const displayType = {
 const displayStatus = {
 	paid: __( 'Paid', 'woocommerce-payments' ),
 	pending: __( 'Pending', 'woocommerce-payments' ),
+	// eslint-disable-next-line camelcase
 	in_transit: __( 'In Transit', 'woocommerce-payments' ),
 	canceled: __( 'Canceled', 'woocommerce-payments' ),
 	failed: __( 'Failed', 'woocommerce-payments' ),

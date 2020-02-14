@@ -6,12 +6,10 @@
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard, Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
+import { TableCard } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
