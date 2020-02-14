@@ -348,6 +348,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Close dispute with provided id.
+	 *
+	 * @param string $dispute_id id of dispute to close.
+	 * @return array dispute object.
+	 */
+	public function close_dispute( $dispute_id ) {
+		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+	}
+
+	/**
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.

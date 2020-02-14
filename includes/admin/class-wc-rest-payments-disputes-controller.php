@@ -73,6 +73,15 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'close_dispute' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
 	}
 
 	/**
@@ -106,6 +115,16 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 		);
 
 		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Close and respond with dispute via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function close_dispute( $request ) {
+		$dispute_id = $request->get_params()['dispute_id'];
+		return rest_ensure_response( $this->api_client->close_dispute( $dispute_id ) );
 	}
 
 	/**
