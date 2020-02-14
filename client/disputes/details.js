@@ -34,9 +34,11 @@ const Actions = ( { id, onAccept } ) => {
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
 				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
 			</Link>
-			<Button isDefault isLarge onClick={ onAccept }>
-				{ __( 'Accept Dispute', 'woocommerce-payments' ) }
-			</Button>
+			{ onAccept && (
+				<Button isDefault isLarge onClick={ onAccept }>
+					{ __( 'Accept Dispute', 'woocommerce-payments' ) }
+				</Button>
+			) }
 		</CardFooter>
 	);
 };
@@ -98,7 +100,7 @@ export default ( { query } ) => {
 		<DisputeDetails
 			showPlaceholder={ loading }
 			dispute={ dispute }
-			onAccept={ doAccept }
+			onAccept={ dispute && dispute.status.indexOf( 'needs_response' ) >= 0 && doAccept }
 		/>
 	);
 };
