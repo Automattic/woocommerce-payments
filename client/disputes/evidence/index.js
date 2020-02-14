@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 // For example the 'IconButton' is deprecated in the latest version, and styles are
 // applied in a different way.
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
-import { Section, Card } from '@woocommerce/components';
+import { Card } from '@woocommerce/components';
 
 import { FileUploadControl } from './file-upload';
 
