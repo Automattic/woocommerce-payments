@@ -9,46 +9,168 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     key="general"
     title="General Evidence"
   >
-    <WithInstanceId(TextareaControl)
+    <TextareaControl
       disabled={false}
       key="product_description"
       label="Product Description"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <TextControl
       disabled={false}
       key="customer_name"
       label="Customer Name"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <TextControl
       disabled={false}
       key="customer_email_address"
       label="Customer Email"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <BaseControl
+      id="form-file-upload-base-control-customer_signature"
+      key="customer_signature"
+      label="Customer Signature"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-customer_signature"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
+    <TextareaControl
+      disabled={false}
+      key="billing_address"
+      label="Customer Billing Address"
+      onChange={[Function]}
+      value=""
+    />
+    <TextControl
       disabled={false}
       key="customer_purchase_ip"
       label="Customer IP Address"
       onChange={[Function]}
       value="127.0.0.1"
     />
+    <BaseControl
+      id="form-file-upload-base-control-receipt"
+      key="receipt"
+      label="Receipt"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-receipt"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
+    <BaseControl
+      id="form-file-upload-base-control-customer_communication"
+      key="customer_communication"
+      label="Customer Communication"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-customer_communication"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
   </Card>
   <Card
     key="uncategorized"
     title="Additional Details"
   >
-    <WithInstanceId(TextareaControl)
+    <TextareaControl
       disabled={false}
       key="uncategorized_text"
       label="Additional Details"
       onChange={[Function]}
       value=""
     />
+    <BaseControl
+      id="form-file-upload-base-control-uncategorized_file"
+      key="uncategorized_file"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-uncategorized_file"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
   </Card>
   <Card>
     <p>
@@ -94,46 +216,168 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     key="general"
     title="General Evidence"
   >
-    <WithInstanceId(TextareaControl)
+    <TextareaControl
       disabled={false}
       key="product_description"
       label="Product Description"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <TextControl
       disabled={false}
       key="customer_name"
       label="Customer Name"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <TextControl
       disabled={false}
       key="customer_email_address"
       label="Customer Email"
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
+    <BaseControl
+      id="form-file-upload-base-control-customer_signature"
+      key="customer_signature"
+      label="Customer Signature"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-customer_signature"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
+    <TextareaControl
+      disabled={false}
+      key="billing_address"
+      label="Customer Billing Address"
+      onChange={[Function]}
+      value=""
+    />
+    <TextControl
       disabled={false}
       key="customer_purchase_ip"
       label="Customer IP Address"
       onChange={[Function]}
       value="127.0.0.1"
     />
+    <BaseControl
+      id="form-file-upload-base-control-receipt"
+      key="receipt"
+      label="Receipt"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-receipt"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
+    <BaseControl
+      id="form-file-upload-base-control-customer_communication"
+      key="customer_communication"
+      label="Customer Communication"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-customer_communication"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
   </Card>
   <Card
     key="uncategorized"
     title="Additional Details"
   >
-    <WithInstanceId(TextareaControl)
+    <TextareaControl
       disabled={false}
       key="uncategorized_text"
       label="Additional Details"
       onChange={[Function]}
       value="winning_evidence"
     />
+    <BaseControl
+      id="form-file-upload-base-control-uncategorized_file"
+      key="uncategorized_file"
+    >
+      <div
+        className="file-upload"
+      >
+        <FormFileUpload
+          accept=".pdf, image/png, image/jpeg"
+          className={null}
+          icon={
+            <t
+              icon="add-outline"
+              size={18}
+            />
+          }
+          id="form-file-upload-uncategorized_file"
+          isLarge={true}
+          isPrimary={true}
+          onChange={[Function]}
+        >
+          Upload File
+        </FormFileUpload>
+        <span
+          className={null}
+        />
+      </div>
+    </BaseControl>
   </Card>
   <Card>
     <p>

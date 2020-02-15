@@ -187,7 +187,6 @@ export default ( { query } ) => {
 		}
 	};
 
-	// console.log( 'before load:', dispute );
 	return (
 		<DisputeEvidenceForm
 			showPlaceholder={ loading }
