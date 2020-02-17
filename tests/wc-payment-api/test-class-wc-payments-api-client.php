@@ -253,9 +253,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->set_http_mock_response(
 			200,
 			array(
-				'id'     => $transaction_id,
-				'type'   => 'charge',
-				'source' => array( 'id' => 'ch_ji3djhabvh23' ),
+				'id'        => $transaction_id,
+				'type'      => 'charge',
+				'charge_id' => 'ch_ji3djhabvh23',
 			)
 		);
 

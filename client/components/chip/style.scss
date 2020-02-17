@@ -5,19 +5,20 @@
 	display: inline-block;
 	padding: 0.25rem 0.75rem;
 	border-radius: 1rem;
+	white-space: nowrap;
 
 	&.chip-primary {
-		background: $blue-medium-100;
-		color: $blue-wordpress-700;
+		background: $blue-5;
+		color: $blue-80;
 	}
 
 	&.chip-light {
-		background: $light-gray-500;
-		color: $dark-gray-700;
+		background: $gray-5;
+		color: $gray-80;
 	}
 
 	&.chip-alert {
-		background: rgba( $alert-red, 0.12 );
-		color: $alert-red;
+		background: $red-5;
+		color: $red-80;
 	}
 }
