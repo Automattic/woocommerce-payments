@@ -7,7 +7,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
@@ -15,7 +15,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  */
 import { useDeposits } from '../data';
 import { formatStringValue } from '../util';
-import DetailsLink from '../components/details-link';
+import DetailsLink, { getDetailsURL } from '../components/details-link';
 
 const currency = new Currency();
 
@@ -57,10 +57,16 @@ export const DepositsList = () => {
 	const rows = deposits.map( ( deposit ) => {
 		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
 
-		// Map deposit into table row.
+		const dateDisplay = (
+			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				{ dateI18n( 'M j, Y / g:iA', moment.utc( deposit.date ).local() ) }
+			</Link>
+		);
+
+		// Map deposit to table row.
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
-			date: { value: deposit.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( deposit.date ).local() ) },
+			date: { value: deposit.date, display: dateDisplay },
 			type: { value: deposit.type, display: displayType[ deposit.type ] },
 			amount: { value: deposit.amount / 100, display: currency.formatCurrency( deposit.amount / 100 ) },
 			status: { value: deposit.status, display: displayStatus[ deposit.status ] || formatStringValue( deposit.status ) },
