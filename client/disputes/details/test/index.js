@@ -7,7 +7,7 @@ import { shallow } from 'enzyme';
 /**
  * Internal dependencies
  */
-import { DisputeDetails } from '../details';
+import { DisputeDetails } from '../';
 
 describe( 'Dispute details screen', () => {
 	const reasons = [

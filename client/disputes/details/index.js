@@ -9,15 +9,15 @@ import { useState, useEffect } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { Card, Link } from '@woocommerce/components';
-import Page from '../components/page';
-import CardFooter from '../components/card-footer';
+import Page from 'components/page';
+import CardFooter from 'components/card-footer';
 
 /**
  * Internal dependencies.
  */
-import { reasons } from './strings';
-import Paragraphs from '../components/paragraphs';
-import './style.scss';
+import { reasons } from '../strings';
+import Paragraphs from 'components/paragraphs';
+import '../style.scss';
 
 const Actions = ( { id, onAccept } ) => {
 	const challengeUrl = addQueryArgs(
