@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Utils;
 use WCPay\Logger;
 
 /**
