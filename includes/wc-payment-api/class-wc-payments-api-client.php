@@ -61,7 +61,7 @@ class WC_Payments_API_Client {
 	 * @param string $source_id - ID of the source to associate with charge.
 	 *
 	 * @return WC_Payments_API_Charge
-	 * @throws Exception - Exception thrown on payment failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on payment failure.
 	 */
 	public function create_charge( $amount, $source_id ) {
 
@@ -83,7 +83,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 *
 	 * @return WC_Payments_API_Intention
-	 * @throws Exception - Exception thrown on intention creation failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
 	 */
 	public function create_and_confirm_intention(
 		$amount,
@@ -111,7 +111,7 @@ class WC_Payments_API_Client {
 	 * @param string                    $payment_method_id - ID of payment method to process charge with.
 	 *
 	 * @return WC_Payments_API_Intention
-	 * @throws Exception - Exception thrown on intention confirmation failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on intention confirmation failure.
 	 */
 	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
 		$request                   = array();
@@ -133,7 +133,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount    - Amount to charge.
 	 *
 	 * @return array
-	 * @throws Exception - Exception thrown on refund creation failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on refund creation failure.
 	 */
 	public function refund_charge( $charge_id, $amount = null ) {
 		$request           = array();
@@ -150,7 +150,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount       - Amount to capture.
 	 *
 	 * @return WC_Payments_API_Intention
-	 * @throws Exception - Exception thrown on intention capture failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on intention capture failure.
 	 */
 	public function capture_intention( $intention_id, $amount ) {
 		$request                      = array();
@@ -171,7 +171,7 @@ class WC_Payments_API_Client {
 	 * @param string $intention_id - The ID of the intention to cancel.
 	 *
 	 * @return WC_Payments_API_Intention
-	 * @throws Exception - Exception thrown on intention cancellation failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on intention cancellation failure.
 	 */
 	public function cancel_intention( $intention_id ) {
 		$response_array = $this->request(
@@ -220,19 +220,45 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Return summary for transactions.
+	 *
+	 * @param string $deposit_id The deposit to filter on.
+	 *
+	 * @return array     The transactions summary.
+	 * @throws WC_Payments_API_Exception Exception thrown on request failure.
+	 */
+	public function get_transactions_summary( $deposit_id = null ) {
+		$query = [
+			'deposit_id' => $deposit_id,
+		];
+
+		return $this->request( $query, self::TRANSACTIONS_API . '/summary', self::GET );
+	}
+
+	/**
 	 * List transactions
 	 *
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
+	 * @param string $deposit_id The deposit to filter on.
+	 *
 	 * @return array
-	 * @throws Exception - Exception thrown on request failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions() {
-		$transactions = $this->request( array(), self::TRANSACTIONS_API, self::GET );
+	public function list_transactions( $page = 0, $page_size = 25, $deposit_id = null ) {
+		$query = [
+			'page'       => $page,
+			'pagesize'   => $page_size,
+			'deposit_id' => $deposit_id,
+		];
+
+		$transactions = $this->request( $query, self::TRANSACTIONS_API, self::GET );
 
 		// Add order information to each transaction available.
 		// TODO: Throw exception when `$transactions` or `$transaction` don't have the fields expected?
 		if ( isset( $transactions['data'] ) ) {
 			foreach ( $transactions['data'] as &$transaction ) {
-				$transaction = $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
+				$transaction = $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
 			}
 		}
 
@@ -252,7 +278,7 @@ class WC_Payments_API_Client {
 			return $transaction;
 		}
 
-		return $this->add_order_info_to_object( $this->get_charge_id_from_transaction( $transaction ), $transaction );
+		return $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
 	}
 
 	/**
@@ -275,10 +301,25 @@ class WC_Payments_API_Client {
 	 * List disputes
 	 *
 	 * @return array
-	 * @throws Exception - Exception thrown on request failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
 	public function list_disputes() {
-		return $this->request( array(), self::DISPUTES_API, self::GET );
+		$disputes = $this->request( array(), self::DISPUTES_API, self::GET );
+
+		// Add WooCommerce order information to each dispute.
+		if ( isset( $disputes['data'] ) ) {
+			foreach ( $disputes['data'] as &$dispute ) {
+				try {
+					// Wrap with try/catch to avoid failing whole request because of a single dispute.
+					$dispute = $this->add_order_info_to_object( $dispute['charge']['id'], $dispute );
+				} catch ( Exception $e ) {
+					// TODO: Log the error once Logger PR (#326) is merged.
+					continue;
+				}
+			}
+		}
+
+		return $disputes;
 	}
 
 	/**
@@ -331,7 +372,7 @@ class WC_Payments_API_Client {
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
-				'create_live_account' => Utils::is_in_dev_mode() ? false : true,
+				'create_live_account' => ! Utils::is_in_dev_mode(),
 			]
 		);
 
@@ -393,10 +434,10 @@ class WC_Payments_API_Client {
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
 	 *
 	 * @return array
-	 * @throws Exception - If the account ID hasn't been set.
+	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $request, $api, $method, $is_site_specific = true ) {
-		$request['test_mode'] = $this->is_in_test_mode();
+		$request['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
@@ -412,8 +453,10 @@ class WC_Payments_API_Client {
 			// Encode the request body as JSON.
 			$body = wp_json_encode( $request );
 			if ( ! $body ) {
-				throw new Exception(
-					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' )
+				throw new WC_Payments_API_Exception(
+					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
+					'wcpay_client_unable_to_encode_json',
+					0
 				);
 			}
 		}
@@ -443,38 +486,44 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array $response_body
 	 *
-	 * @throws Exception Standard exception in case we can't extract the body.
+	 * @throws WC_Payments_API_Exception Standard exception in case we can't extract the body.
 	 */
 	protected function extract_response_body( $response ) {
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( ! $response_code ) {
+			$response_code = 0;
+		}
+
 		$response_body_json = wp_remote_retrieve_body( $response );
 		$response_body      = json_decode( $response_body_json, true );
-
 		if ( null === $response_body ) {
-			throw new Exception( __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' ) );
+			throw new WC_Payments_API_Exception(
+				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' ),
+				'wcpay_unparseable_or_null_body',
+				$response_code
+			);
 		}
 
 		// Check response error codes.
-		$response_code = wp_remote_retrieve_response_code( $response );
-		if ( 500 <= $response_code ) {
-			throw new Exception( __( 'Server error. Please try again.', 'woocommerce-payments' ) );
-		} elseif ( 400 <= $response_code ) {
+		if ( 500 <= $response_code || 400 <= $response_code ) {
 			if ( isset( $response_body['error'] ) ) {
-				$message = sprintf(
-					// translators: This is an error from a 400 API response.
-					_x( 'Error: %1$s %2$s', '400 Error type message to throw as Exception', 'woocommerce-payments' ),
-					$response_body['error']['code'],
-					$response_body['error']['message']
-				);
-				throw new Exception( $message );
-			};
+				$error_code    = $response_body['error']['code'];
+				$error_message = $response_body['error']['message'];
+			} elseif ( isset( $response_body['code'] ) ) {
+				$error_code    = $response_body['code'];
+				$error_message = $response_body['message'];
+			} else {
+				$error_code    = 'wcpay_client_error_code_missing';
+				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
+			}
 
 			$message = sprintf(
 				// translators: This is an error from a 400 API response.
 				_x( 'Error: %1$s %2$s', '400 Error type message to throw as Exception', 'woocommerce-payments' ),
-				$response_body['code'],
-				$response_body['message']
+				$error_code,
+				$error_message
 			);
-			throw new Exception( $message );
+			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
 		return $response_body;
@@ -504,24 +553,12 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Gets charge id for a given transaction.
-	 *
-	 * @param array $transaction transaction.
-	 */
-	private function get_charge_id_from_transaction( $transaction ) {
-		if ( 'refund' === $transaction['type'] ) {
-			return $transaction['source']['charge']['id'];
-		}
-		return $transaction['source']['id'];
-	}
-
-	/**
 	 * De-serialize a charge array into a charge object
 	 *
 	 * @param array $charge_array - The charge array to de-serialize.
 	 *
 	 * @return WC_Payments_API_Charge
-	 * @throws Exception - Unable to deserialize charge array.
+	 * @throws WC_Payments_API_Exception - Unable to deserialize charge array.
 	 */
 	private function deserialize_charge_object_from_array( array $charge_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
@@ -547,7 +584,7 @@ class WC_Payments_API_Client {
 	 * @param array $intention_array - The intention array to de-serialize.
 	 *
 	 * @return WC_Payments_API_Intention
-	 * @throws Exception - Unable to deserialize intention array.
+	 * @throws WC_Payments_API_Exception - Unable to deserialize intention array.
 	 */
 	private function deserialize_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.

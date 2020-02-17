@@ -8,6 +8,12 @@ exports[`Disputes list renders correctly 1`] = `
   headers={
     Array [
       Object {
+        "cellClassName": "info-button",
+        "key": "details",
+        "label": "",
+        "required": true,
+      },
+      Object {
         "key": "amount",
         "label": "Amount",
       },
@@ -18,6 +24,10 @@ exports[`Disputes list renders correctly 1`] = `
       Object {
         "key": "reason",
         "label": "Reason",
+      },
+      Object {
+        "key": "order",
+        "label": "Order #",
       },
       Object {
         "key": "created",
@@ -39,30 +49,41 @@ exports[`Disputes list renders correctly 1`] = `
     Array [
       Array [
         Object {
+          "display": <Link
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
+          "value": "dp_asdfghjkl",
+        },
+        Object {
           "display": "$10.00",
           "value": 10,
         },
         Object {
-          "display": <React.Fragment>
-            <Link
-              href="?page=wc-admin&path=/payments/disputes/evidence&id=dp_asdfghjkl"
-              type="wc-admin"
-            >
-              <t
-                icon="reply"
-                size={18}
-              />
-            </Link>
-             
-            <code>
-              Needs response
-            </code>
-          </React.Fragment>,
+          "display": <DisputeStatusChip
+            status="needs_response"
+          />,
           "value": "needs_response",
         },
         Object {
           "display": "Fraudulent",
           "value": "fraudulent",
+        },
+        Object {
+          "display": <OrderLink
+            order={
+              Object {
+                "number": "1",
+                "url": "http://test.local/order/1",
+              }
+            }
+          />,
+          "value": "1",
         },
         Object {
           "display": "Nov 1, 2019 / 2:46AM",
@@ -75,21 +96,33 @@ exports[`Disputes list renders correctly 1`] = `
       ],
       Array [
         Object {
+          "display": <Link
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            type="wc-admin"
+          >
+            <t
+              icon="info-outline"
+              size={18}
+            />
+          </Link>,
+          "value": "dp_zxcvbnm",
+        },
+        Object {
           "display": "$10.50",
           "value": 10.5,
         },
         Object {
-          "display": <React.Fragment>
-             
-            <code>
-              Under review
-            </code>
-          </React.Fragment>,
+          "display": <DisputeStatusChip
+            status="under_review"
+          />,
           "value": "under_review",
         },
         Object {
           "display": "General",
           "value": "general",
+        },
+        Object {
+          "display": null,
         },
         Object {
           "display": "Oct 30, 2019 / 8:13PM",
