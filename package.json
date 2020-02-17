@@ -30,8 +30,8 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx}": "eslint",
-    "*.scss": "stylelint --syntax=scss",
+    "*.{js,jsx}": "npm run lint:js",
+    "*.scss": "npm run lint:css",
     "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors"
   },
   "dependencies": {
