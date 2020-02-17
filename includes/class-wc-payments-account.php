@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay
+ * Class WC_Payments_Account
  *
  * @package WooCommerce\Payments
  */
@@ -24,25 +24,89 @@ class WC_Payments_Account {
 	private $payments_api_client;
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client   $payments_api_client Payments API client.
-	 * @param WC_Payment_Gateway_WCPay $gateway Gateway exposing the settings methods.
+	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
-		$this->gateway             = $gateway;
 
-		add_action( 'init', array( $this, 'check_stripe_account_status' ) );
+		add_action( 'admin_init', array( $this, 'check_stripe_account_status' ) );
 		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
+	}
+
+	/**
+	 * Return connected account ID
+	 *
+	 * @return string|null Account ID if connected, null if not connected or on error
+	 *
+	 * @throws Exception Bubbles up if get_account_data call fails.
+	 */
+	public function get_stripe_account_id() {
+		$account = $this->get_cached_account_data();
+
+		if ( empty( $account ) ) {
+			return null;
+		}
+
+		return $account['account_id'];
+	}
+
+	/**
+	 * Gets public key for the connected account
+	 *
+	 * @param bool $is_test true to get the test key, false otherwise.
+	 *
+	 * @return string|null public key if connected, null if not connected.
+	 *
+	 * @throws Exception Bubbles up if get_account_data call fails.
+	 */
+	public function get_publishable_key( $is_test ) {
+		$account = $this->get_cached_account_data();
+
+		if ( empty( $account ) ) {
+			return null;
+		}
+
+		if ( $is_test ) {
+			return $account['test_publishable_key'];
+		}
+
+		return $account['live_publishable_key'];
+	}
+
+	/**
+	 * Checks if the account is connected, assumes the value of $on_error on server error
+	 *
+	 * @param bool $on_error Value to return on server error, defaults to false.
+	 *
+	 * @return bool True if the account is connected, false otherwise, $on_error on error.
+	 */
+	public function is_stripe_connected( $on_error = false ) {
+		try {
+			return $this->try_is_stripe_connected();
+		} catch ( Exception $e ) {
+			return $on_error;
+		}
+	}
+
+	/**
+	 * Checks if the account is connected, throws on server error
+	 *
+	 * @return bool True if the account is connected, false otherwise.
+	 *
+	 * @throws Exception Bubbles up if get_account_data call fails.
+	 */
+	public function try_is_stripe_connected() {
+		$account = $this->get_cached_account_data();
+
+		if ( is_array( $account ) && empty( $account ) ) {
+			// empty array means no account.
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -51,20 +115,6 @@ class WC_Payments_Account {
 	 * @return bool True if the account is connected properly.
 	 */
 	public function check_stripe_account_status() {
-		if ( ! $this->gateway->is_stripe_connected() ) {
-			$message = self::get_connect_message();
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					WC_Payments::display_admin_notice(
-						$message,
-						'notice-success'
-					);
-				}
-			);
-			return false;
-		}
-
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
@@ -84,7 +134,17 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( ! is_array( $account ) ) {
+		if ( empty( $account ) ) {
+			$message = self::get_connect_message();
+			add_filter(
+				'admin_notices',
+				function () use ( $message ) {
+					WC_Payments::display_admin_notice(
+						$message,
+						'notice-success'
+					);
+				}
+			);
 			return false;
 		}
 
@@ -98,7 +158,6 @@ class WC_Payments_Account {
 			);
 		}
 
-		$this->update_public_keys( $account['live_publishable_key'], $account['test_publishable_key'] );
 		return true;
 	}
 
@@ -126,7 +185,7 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				$this->gateway->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
+				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
 			}
 		}
 
@@ -134,7 +193,7 @@ class WC_Payments_Account {
 			try {
 				$this->init_oauth();
 			} catch ( Exception $e ) {
-				$this->gateway->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
+				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
 			}
 			return;
 		}
@@ -146,12 +205,9 @@ class WC_Payments_Account {
 			&& isset( $_GET['wcpay-test-publishable-key'] )
 			&& isset( $_GET['wcpay-mode'] )
 		) {
-			$state                = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
-			$account_id           = sanitize_text_field( wp_unslash( $_GET['wcpay-account-id'] ) );
-			$live_publishable_key = sanitize_text_field( wp_unslash( $_GET['wcpay-live-publishable-key'] ) );
-			$test_publishable_key = sanitize_text_field( wp_unslash( $_GET['wcpay-test-publishable-key'] ) );
-			$mode                 = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
-			$this->finalize_connection( $state, $account_id, $live_publishable_key, $test_publishable_key, $mode );
+			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
+			$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
+			$this->finalize_connection( $state, $mode );
 			return;
 		}
 	}
@@ -215,21 +271,8 @@ class WC_Payments_Account {
 		);
 
 		if ( false === $oauth_data['url'] ) {
-			$account_id           = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
-			$live_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['live_publishable_key'] ) );
-			$test_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['test_publishable_key'] ) );
-
-			$this->gateway->update_option( 'stripe_account_id', $account_id );
-			$this->gateway->update_option( 'publishable_key', $live_publishable_key );
-			$this->gateway->update_option( 'test_publishable_key', $test_publishable_key );
-			$this->gateway->update_option( 'enabled', 'yes' );
-
-			if ( (bool) $oauth_data['is_live'] ) {
-				delete_option( 'wcpay_test_only' );
-			} else {
-				update_option( 'wcpay_test_only', true );
-			}
-
+			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
+			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
 			exit;
 		}
@@ -244,27 +287,17 @@ class WC_Payments_Account {
 	 * Once the API redirects back to the site after the OAuth flow, verifies the parameters and stores the data
 	 *
 	 * @param string $state Secret string.
-	 * @param string $account_id ID of the new account.
-	 * @param string $live_publishable_key Live publishable key for the connected account.
-	 * @param string $test_publishable_key Test publishable key for the connected account.
 	 * @param string $mode Mode in which this account has been connected. Either 'test' or 'live'.
 	 */
-	private function finalize_connection( $state, $account_id, $live_publishable_key, $test_publishable_key, $mode ) {
+	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
-			$this->gateway->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
+			WC_Payments::get_gateway()->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
 
-		$test_mode = 'test' === $mode;
-		if ( $test_mode ) {
-			update_option( 'wcpay_test_only', true );
-		} else {
-			delete_option( 'wcpay_test_only' );
-		}
-
-		$this->gateway->update_option( 'stripe_account_id', $account_id );
-		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
+		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
 		exit;
@@ -275,7 +308,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Account data;
 	 *
-	 * @Throws Exception that bubbles up if get_account_data call fails.
+	 * @throws WC_Payments_API_Exception Bubbles up if get_account_data call fails.
 	 */
 	private function get_cached_account_data() {
 		$account = get_transient( self::ACCOUNT_TRANSIENT );
@@ -284,7 +317,16 @@ class WC_Payments_Account {
 			return $account;
 		}
 
-		$account = $this->payments_api_client->get_account_data();
+		try {
+			$account = $this->payments_api_client->get_account_data();
+		} catch ( WC_Payments_API_Exception $e ) {
+			if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
+				// special case - detect account not connected and cache it.
+				$account = array();
+			} else {
+				throw $e;
+			}
+		}
 
 		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
@@ -316,25 +358,5 @@ class WC_Payments_Account {
 			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
 			self::get_login_url()
 		);
-	}
-
-	/**
-	 * Updates the publishable key settings on the gateway.
-	 *
-	 * @param string $live_key Live publishable key.
-	 * @param string $test_key Test publishable key.
-	 */
-	private function update_public_keys( $live_key, $test_key ) {
-		if ( ! empty( $live_key ) ) {
-			if ( get_option( 'wcpay_test_only', false ) ) {
-				$this->gateway->update_option( 'publishable_key', $test_key );
-			} else {
-				$this->gateway->update_option( 'publishable_key', $live_key );
-			}
-		}
-
-		if ( ! empty( $test_key ) ) {
-			$this->gateway->update_option( 'test_publishable_key', $test_key );
-		}
 	}
 }

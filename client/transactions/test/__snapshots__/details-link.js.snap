@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Details link renders with charge ID 1`] = `
+<Link
+  className="transactions-list__details-button"
+  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
+  type="wc-admin"
+>
+  <t
+    icon="info-outline"
+    size={18}
+  />
+</Link>
+`;
+
+exports[`Details link renders with no charge ID 1`] = `""`;

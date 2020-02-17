@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DisputeStatusChip renders charge_refunded status 1`] = `
+<Chip
+  message="Charge refunded"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders default appearance if status is unrecognized 1`] = `
+<Chip
+  message="Mock status"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders lost status 1`] = `
+<Chip
+  message="Lost"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders needs_response status 1`] = `
+<Chip
+  message="Needs response"
+  type="primary"
+/>
+`;
+
+exports[`DisputeStatusChip renders under_review status 1`] = `
+<Chip
+  message="Under review"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders warning_closed status 1`] = `
+<Chip
+  message="Inquiry: Closed"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
+<Chip
+  message="Inquiry: Needs response"
+  type="primary"
+/>
+`;
+
+exports[`DisputeStatusChip renders warning_under_review status 1`] = `
+<Chip
+  message="Inquiry: Under review"
+  type="light"
+/>
+`;
+
+exports[`DisputeStatusChip renders won status 1`] = `
+<Chip
+  message="Won"
+  type="light"
+/>
+`;

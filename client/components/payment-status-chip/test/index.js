@@ -15,26 +15,22 @@ jest.mock( '../../../utils/charge', () => ( { getChargeStatus: jest.fn() } ) );
 describe( 'PaymentStatusChip', () => {
 	test( 'renders a default light chip with no message if status does not match', () => {
 		getChargeStatus.mockReturnValue( 'teststatus' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with partially refunded message if there\'s a partial refund', () => {
-		getChargeStatus.mockReturnValue( 'partially-refunded' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+		getChargeStatus.mockReturnValue( 'refunded_partial' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with fully refunded message if there\'s a full refund', () => {
-		getChargeStatus.mockReturnValue( 'fully-refunded' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+		getChargeStatus.mockReturnValue( 'refunded_full' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a light chip with paid message if it is paid', () => {
 		getChargeStatus.mockReturnValue( 'paid' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	test( 'renders a primary chip with authorized message if payment was not captured', () => {
@@ -45,14 +41,32 @@ describe( 'PaymentStatusChip', () => {
 
 	test( 'renders an alert chip with failed message if payment status is failed', () => {
 		getChargeStatus.mockReturnValue( 'failed' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
-	test( 'renders a primary chip with dispute message if there\'s a dispute', () => {
-		getChargeStatus.mockReturnValue( 'disputed' );
-		const paymentStatusChip = renderPaymentStatus();
-		expect( paymentStatusChip ).toMatchSnapshot();
+	test( 'renders an alert chip with failed message if payment status is blocked', () => {
+		getChargeStatus.mockReturnValue( 'blocked' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
+	} );
+
+	test( 'renders a primary chip with dispute message if there\'s a dispute needing response', () => {
+		getChargeStatus.mockReturnValue( 'disputed_needs_response' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a dispute in review', () => {
+		getChargeStatus.mockReturnValue( 'disputed_under_review' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a won dispute', () => {
+		getChargeStatus.mockReturnValue( 'disputed_won' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
+	} );
+
+	test( 'renders a light chip with dispute message if there\'s a lost dispute', () => {
+		getChargeStatus.mockReturnValue( 'disputed_lost' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
 	function renderPaymentStatus() {

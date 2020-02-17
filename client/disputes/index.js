@@ -6,20 +6,31 @@
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
+import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import Gridicon from 'gridicons';
-import { capitalize } from 'lodash';
+
+/**
+ * Internal dependencies.
+ */
+import OrderLink from '../components/order-link';
+import DisputeStatusChip from '../components/dispute-status-chip';
+import { reasons } from './strings';
+import { formatStringValue } from '../util';
 
 const currency = new Currency();
 
 const headers = [
-	{ key: 'amount', label: 'Amount' },
-	{ key: 'status', label: 'Status' },
-	{ key: 'reason', label: 'Reason' },
-	{ key: 'created', label: 'Disputed On' },
-	{ key: 'dueBy', label: 'Respond By' },
+	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
+	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
+	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
+	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
+	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
 ];
 
 export const DisputesList = ( props ) => {
@@ -27,24 +38,39 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
-		const evidenceLink = dispute.status.indexOf( 'needs_response' ) === -1 ? null : (
-			<Link href={ `?page=wc-admin&path=/payments/disputes/evidence&id=${ dispute.id }` }>
-				<Gridicon icon="reply" size={ 18 } />
+		const order = dispute.order ? {
+			value: dispute.order.number,
+			display: <OrderLink order={ dispute.order } />,
+		} : null;
+
+		const detailsUrl = addQueryArgs(
+			'admin.php',
+			{
+				page: 'wc-admin',
+				path: '/payments/disputes/details',
+				id: dispute.id,
+			}
+		);
+		const detailsLink = (
+			<Link href={ detailsUrl } >
+				<Gridicon icon="info-outline" size={ 18 } />
 			</Link>
 		);
 
+		const reasonMapping = reasons[ dispute.reason ];
+		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
-			status: {
-				value: dispute.status,
-				display: <>{ evidenceLink } <code>{ capitalize( dispute.status.replace( /_/g, ' ' ) ) }</code></>,
-			},
-			reason: { value: dispute.reason, display: capitalize( dispute.reason.replace( /_/g, ' ' ) ) },
+			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
+			reason: { value: dispute.reason, display: reasonDisplay },
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 			},
+			order,
+			details: { value: dispute.id, display: detailsLink },
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
@@ -52,7 +78,7 @@ export const DisputesList = ( props ) => {
 
 	return (
 		<TableCard
-			title="Disputes"
+			title={ __( 'Disputes', 'woocommerce-payments' ) }
 			isLoading={ showPlaceholder }
 			rowsPerPage={ 10 }
 			totalRows={ 10 }
@@ -69,8 +95,11 @@ export default () => {
 
 	const fetchDisputes = async () => {
 		setLoading( true );
-		setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
-		setLoading( false );
+		try {
+			setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
+		} finally {
+			setLoading( false );
+		}
 	};
 	useEffect( () => {
 		fetchDisputes();

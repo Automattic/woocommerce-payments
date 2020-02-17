@@ -32,23 +32,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $payments_api_client;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+	}
+
+	/**
 	 * Returns whether test_mode is active for the gateway
 	 *
 	 * @return boolean Test mode enable if true, disabled if false
 	 */
-	public function get_test_mode() {
-		return 'yes' === $this->get_option( 'test_mode' );
-	}
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
 
-	/**
-	 * Returns the gateway publishable key based on test mode
-	 *
-	 * @return string Stripe's publishable key
-	 */
-	public function get_publishable_key() {
-		return $this->get_test_mode()
-			? $this->get_option( 'test_publishable_key' )
-			: $this->get_option( 'publishable_key' );
+		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
 	/**
@@ -64,9 +73,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account    $account - Account class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -87,7 +98,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			),
 			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue authorization and capture later', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
 				'default'     => 'no',
@@ -97,7 +108,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Place the payment gateway in test mode using test API keys.', 'woocommerce-payments' ),
+				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
 			),
@@ -147,7 +158,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return parent::is_available() && $this->is_stripe_connected();
+		return parent::is_available() && $this->account->is_stripe_connected( false );
+	}
+
+	/**
+	 * Add notice to WooCommerce Payments settings page explaining test mode when it's enabled.
+	 */
+	public function admin_options() {
+		if ( $this->is_in_test_mode() ) {
+			?>
+			<div id="wcpay-test-mode-notice" class="notice notice-warning">
+				<p>
+					<b><?php esc_html_e( 'Test Mode Active: ', 'woocommerce-payments' ); ?></b>
+					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
+
+		parent::admin_options();
 	}
 
 	/**
@@ -156,62 +185,73 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		// Add JavaScript for the payment form.
-		$js_config = array(
-			'publishableKey' => $this->get_publishable_key(),
-			'accountId'      => $this->get_option( 'stripe_account_id' ),
-		);
+		try {
+			// Add JavaScript for the payment form.
+			$js_config = array(
+				'publishableKey' => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
+			);
 
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however.
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			array(),
-			'3.0',
-			true
-		);
+			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+			// loading different versions however.
+			wp_register_script(
+				'stripe',
+				'https://js.stripe.com/v3/',
+				array(),
+				'3.0',
+				true
+			);
 
-		wp_register_script(
-			'wcpay-checkout',
-			plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
-			array( 'stripe', 'wc-checkout' ),
-			WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
-			true
-		);
+			wp_register_script(
+				'wcpay-checkout',
+				plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
+				array( 'stripe', 'wc-checkout' ),
+				WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
+				true
+			);
 
-		wp_localize_script( 'wcpay-checkout', 'wcpay_config', $js_config );
-		wp_enqueue_script( 'wcpay-checkout' );
+			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $js_config );
+			wp_enqueue_script( 'wcpay-checkout' );
 
-		wp_enqueue_style(
-			'wcpay-checkout',
-			plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
-			array(),
-			WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
-		);
+			wp_enqueue_style(
+				'wcpay-checkout',
+				plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
+				array(),
+				WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
+			);
 
-		// Output the form HTML.
-		?>
-		<fieldset>
-			<?php if ( ! empty( $this->get_description() ) ) : ?>
-				<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
-			<?php endif; ?>
+			// Output the form HTML.
+			?>
+			<fieldset>
+				<?php if ( ! empty( $this->get_description() ) ) : ?>
+					<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
+				<?php endif; ?>
 
-			<?php if ( $this->get_test_mode() ) : ?>
-				<p class="testmode-info">
+				<?php if ( $this->is_in_test_mode() ) : ?>
+					<p class="testmode-info">
+					<?php
+						/* translators: link to Stripe testing page */
+						echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+					?>
+					</p>
+				<?php endif; ?>
+
+				<div id="wcpay-card-element"></div>
+				<div id="wcpay-errors" role="alert"></div>
+				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
+			</fieldset>
+			<?php
+		} catch ( Exception $e ) {
+			// Output the error message.
+			?>
+			<div>
 				<?php
-					/* translators: link to Stripe testing page */
-					echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+				echo esc_html__( 'An error was encountered when preparing the payment form. Please try again later.', 'woocommerce-payments' );
 				?>
-				</p>
-			<?php endif; ?>
-
-			<div id="wcpay-card-element"></div>
-			<div id="wcpay-errors" role="alert"></div>
-			<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-		</fieldset>
-		<?php
+			</div>
+			<?php
+		}
 	}
 
 	/**
@@ -383,44 +423,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks whether the user has a Stripe account already connected
-	 *
-	 * @return boolean True if a Stripe account is registered, false otherwise.
-	 */
-	public function is_stripe_connected() {
-		$is_connected = $this->get_option( 'stripe_account_id' ) && $this->get_publishable_key();
-
-		// If we have a dev account connected but we're not in the right mode for it
-		// force the user to re-connect in live mode.
-		if ( Utils::is_connected_account_type_dev() && Utils::not_in_dev_mode() ) {
-			$is_connected = false;
-		}
-
-		return $is_connected;
-	}
-
-	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
-		if ( $this->is_stripe_connected() ) {
-			$description = sprintf(
-				/* translators: 1) dashboard login URL */
-				__( '<a href="%1$s">View payouts and account details</a>', 'woocommerce-payments' ),
-				WC_Payments_Account::get_login_url()
-			);
-		} else {
-			$description = WC_Payments_Account::get_connect_message();
-		}
+		try {
+			$stripe_connected = $this->account->try_is_stripe_connected();
+			if ( $stripe_connected ) {
+				$description = sprintf(
+					/* translators: 1) dashboard login URL */
+					__( '<a href="%1$s">View and edit account details</a>', 'woocommerce-payments' ),
+					WC_Payments_Account::get_login_url()
+				);
+			} else {
+				$description = WC_Payments_Account::get_connect_message();
+			}
 
-		// Allow the description text to be altered by filters.
-		$description = apply_filters(
-			'wc_payments_account_actions',
-			$description,
-			$this->is_stripe_connected(),
-			WC_Payments_Account::get_login_url(),
-			WC_Payments_Account::get_connect_url()
-		);
+			// Allow the description text to be altered by filters.
+			$description = apply_filters(
+				'wc_payments_account_actions',
+				$description,
+				$stripe_connected,
+				WC_Payments_Account::get_login_url(),
+				WC_Payments_Account::get_connect_url()
+			);
+
+		} catch ( Exception $e ) {
+			// do not render the actions if the server is unreachable.
+			$description = __( 'Error determining the connection status.', 'woocommerce-payments' );
+		}
 
 		ob_start();
 		?>
