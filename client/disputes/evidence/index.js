@@ -130,7 +130,6 @@ export default ( { query } ) => {
 
 	const doSave = async submit => {
 		setLoading( true );
-		let saved = false;
 		try {
 			setDispute(
 				await apiFetch( {
@@ -139,15 +138,10 @@ export default ( { query } ) => {
 					data: { evidence, submit },
 				} )
 			);
-			saved = true;
+			handleSaveSuccess( submit );
 		} finally {
 			setLoading( false );
 			setEvidence( {} );
-		}
-
-		// Do not redirect if save failed.
-		if ( saved ) {
-			handleSaveSuccess( submit );
 		}
 	};
 
