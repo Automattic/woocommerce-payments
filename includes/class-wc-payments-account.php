@@ -276,8 +276,7 @@ class WC_Payments_Account {
 			$test_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['test_publishable_key'] ) );
 
 			WC_Payments::get_gateway()->update_option( 'stripe_account_id', $account_id );
-			WC_Payments::get_gateway()->update_option( 'publishable_key', $live_publishable_key );
-			WC_Payments::get_gateway()->update_option( 'test_publishable_key', $test_publishable_key );
+			$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 
 			if ( (bool) $oauth_data['is_live'] ) {
