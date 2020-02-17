@@ -44,6 +44,10 @@ class Logger {
 			return;
 		}
 
+		if ( ! function_exists( 'wc_get_logger' ) ) {
+			return;
+		}
+
 		if ( ! isset( self::$logger ) && ! is_object( self::$logger ) ) {
 			self::$logger = wc_get_logger();
 		}
