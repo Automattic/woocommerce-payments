@@ -62,6 +62,6 @@ class Logger {
 			return true;
 		}
 
-		return 'yes' === WC_Payments::$gateway->get_option( 'enable_logging' );
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'enable_logging' );
 	}
 }
