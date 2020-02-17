@@ -21,7 +21,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	public static $gateway;
+	private static $gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
