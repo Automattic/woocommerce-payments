@@ -4,44 +4,18 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import { useState, useEffect } from '@wordpress/element';
-import { Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
-import { Card, Link } from '@woocommerce/components';
-import Page from 'components/page';
-import CardFooter from 'components/card-footer';
+import { Card } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
 import { reasons } from '../strings';
+import Actions from './actions';
 import Paragraphs from 'components/paragraphs';
+import Page from 'components/page';
 import '../style.scss';
-
-const Actions = ( { id, onAccept } ) => {
-	const challengeUrl = addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-admin',
-			path: '/payments/disputes/challenge',
-			id,
-		}
-	);
-
-	return (
-		<CardFooter>
-			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
-				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
-			</Link>
-			{ onAccept && (
-				<Button isDefault isLarge onClick={ onAccept }>
-					{ __( 'Accept Dispute', 'woocommerce-payments' ) }
-				</Button>
-			) }
-		</CardFooter>
-	);
-};
 
 export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 	if ( showPlaceholder ) {
