@@ -12,10 +12,9 @@ export const FileUploadControl = ( evidence, field, onFileChange, onFileRemove )
 	const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
 
 	const getIcon = () => {
-		if ( isDone && ! hasError ) {
-			return <Gridicon icon="checkmark" size={ 18 } />;
-		}
-		return <Gridicon icon="add-outline" size={ 18 } />;
+		return <Gridicon
+					icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
+					size={ 18 } />;
 	};
 
 	const message = hasError ? __( 'Upload failed.', 'woocommerce-payments' ) : fileName;
