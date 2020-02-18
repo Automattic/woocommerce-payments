@@ -353,7 +353,13 @@ class WC_Payments_API_Client {
 	 * @return array An array describing an account object.
 	 */
 	public function get_account_data() {
-		return $this->request( array(), self::ACCOUNTS_API, self::GET );
+		return $this->request(
+			array(
+				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			),
+			self::ACCOUNTS_API,
+			self::GET
+		);
 	}
 
 	/**
@@ -386,7 +392,10 @@ class WC_Payments_API_Client {
 	 */
 	public function get_login_data( $redirect_url ) {
 		return $this->request(
-			array( 'redirect_url' => $redirect_url ),
+			array(
+				'redirect_url' => $redirect_url,
+				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			),
 			self::ACCOUNTS_API . '/login_links',
 			self::POST
 		);
@@ -404,7 +413,12 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $request, $api, $method, $is_site_specific = true ) {
-		$request['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+		$request = wp_parse_args(
+			$request,
+			array(
+				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
+			)
+		);
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
