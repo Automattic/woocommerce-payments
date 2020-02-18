@@ -271,12 +271,9 @@ class WC_Payments_Account {
 		);
 
 		if ( false === $oauth_data['url'] ) {
-			$account_id           = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
-			$live_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['live_publishable_key'] ) );
-			$test_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['test_publishable_key'] ) );
+			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
 
 			WC_Payments::get_gateway()->update_option( 'stripe_account_id', $account_id );
-			$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 
 			if ( (bool) $oauth_data['is_live'] ) {
@@ -284,6 +281,10 @@ class WC_Payments_Account {
 			} else {
 				update_option( 'connected_account_is_dev', true );
 			}
+
+			$live_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['live_publishable_key'] ) );
+			$test_publishable_key = sanitize_text_field( wp_unslash( $oauth_data['test_publishable_key'] ) );
+			$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 
 			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
 			exit;
