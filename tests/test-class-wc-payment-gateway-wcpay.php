@@ -66,6 +66,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'live_publishable_key'     => 'pk_live_',
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => false,
+					'is_live'                  => true,
 				)
 			)
 		);

@@ -69,6 +69,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -85,6 +86,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -103,6 +105,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -137,6 +140,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -169,6 +173,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -185,6 +190,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -211,6 +217,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
+					'is_live'                  => true,
 				)
 			)
 		);
@@ -226,5 +233,82 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->expectException( WC_Payments_API_Exception::class );
 
 		$this->wcpay_account->get_stripe_account_id();
+	}
+
+	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
+		// enable dev mode.
+		add_filter( 'wcpay_dev_mode', '__return_true' );
+
+		// cache a dev account.
+		set_transient(
+			WC_Payments_Account::ACCOUNT_TRANSIENT,
+			array(
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => false,
+			)
+		);
+
+		// cached value should be used and the api should never be called.
+		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+
+		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
+
+		remove_filter( 'wcpay_dev_mode', '__return_true' );
+	}
+
+	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
+		// disable dev mode.
+		add_filter( 'wcpay_dev_mode', '__return_false' );
+
+		// cache a dev account.
+		set_transient(
+			WC_Payments_Account::ACCOUNT_TRANSIENT,
+			array(
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => false,
+			)
+		);
+
+		// cached value should be ignored and the api should return not-connected.
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+		);
+
+		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
+
+		remove_filter( 'wcpay_dev_mode', '__return_false' );
+	}
+
+	public function test_try_is_stripe_connected_returns_true_when_connected_with_live_account_in_dev_mode() {
+		// enable dev mode.
+		add_filter( 'wcpay_dev_mode', '__return_true' );
+
+		// cache a live account.
+		set_transient(
+			WC_Payments_Account::ACCOUNT_TRANSIENT,
+			array(
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+			)
+		);
+
+		// cached live account should be used and the api shouldn't be called.
+		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+
+		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
+
+		remove_filter( 'wcpay_dev_mode', '__return_true' );
 	}
 }

@@ -41,7 +41,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_in_dev_mode() {
-		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
 	}
 
 	/**
