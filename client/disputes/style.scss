@@ -9,7 +9,7 @@
 	}
 
 	.woocommerce-card__header {
-		border-bottom: 1px solid $gray-5;
+		border-bottom: 1px solid $studio-gray-5;
 	}
 	.woocommerce-card__title {
 		padding: 3px 0;
@@ -50,7 +50,7 @@
 	// Evidence form
 	.components-base-control .components-base-control__label {
 		font-size: 12px;
-		color: $gray-40;
+		color: $studio-gray-40;
 	}
 	.components-base-control + .components-base-control {
 		margin: 16px 0 0;
@@ -66,36 +66,36 @@
 		.components-icon-button.is-primary:not(:disabled):not([aria-disabled='true']) {
 			// Fix primary button hover.
 			&:hover {
-				background-color: $pink-60;
-				border-color: $pink-60;
+				background-color: $studio-pink-60;
+				border-color: $studio-pink-60;
 			}
 
 			// Set 'is-success' style.
 			&.is-success {
-				background-color: $green-50;
-				border-color: $green-50;
+				background-color: $studio-green;
+				border-color: $studio-green;
 
 				&:hover {
-					background-color: $green-60;
-					border-color: $green-60;
+					background-color: $studio-green-60;
+					border-color: $studio-green-60;
 				}
 			}
 
 			// Set 'is-destructive' style.
 			&.is-destructive {
-				background-color: $red-50;
-				border-color: $red-50;
+				background-color: $studio-red;
+				border-color: $studio-red;
 
 				&:hover {
-					background-color: $red-60;
-					border-color: $red-60;
+					background-color: $studio-red-60;
+					border-color: $studio-red-60;
 				}
 			}
 		}
 
 		.components-icon-button.delete-uploaded-file-button:not(:disabled):not([aria-disabled='true']) {
 			&:hover {
-				color: $red-60;
+				color: $studio-red-60;
 				box-shadow: none;
 			}
 		}
@@ -103,10 +103,10 @@
 		// Set styles for file name text and icon.
 		span {
 			padding-left: 24px;
-			color: $gray-40;
+			color: $studio-gray-40;
 
 			&.is-destructive {
-				color: $red-50;
+				color: $studio-red;
 			}
 		}
 	}

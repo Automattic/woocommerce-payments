@@ -23,7 +23,7 @@
 			@include font-size( 16 );
 			text-transform: uppercase;
 			margin: 0 1rem 0 0.25rem;
-			color: $gray-60;
+			color: $studio-gray-60;
 		}
 	}
 
@@ -64,7 +64,7 @@
 		text-transform: none;
 		@include breakpoint( '>800px' ) {
 			text-align: right;
-			color: $gray-40;
+			color: $studio-gray-40;
 			.woocommerce-list__item-content {
 				@include font-size( 12 );
 			}
