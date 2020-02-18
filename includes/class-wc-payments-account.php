@@ -274,12 +274,6 @@ class WC_Payments_Account {
 			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 
-			if ( (bool) $oauth_data['is_live'] ) {
-				delete_option( 'connected_account_is_dev' );
-			} else {
-				update_option( 'connected_account_is_dev', true );
-			}
-
 			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
 			exit;
 		}
@@ -302,12 +296,6 @@ class WC_Payments_Account {
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
-
-		if ( 'test' === $mode ) {
-			update_option( 'connected_account_is_dev', true );
-		} else {
-			delete_option( 'connected_account_is_dev' );
-		}
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
