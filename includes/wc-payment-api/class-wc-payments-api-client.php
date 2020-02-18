@@ -372,7 +372,7 @@ class WC_Payments_API_Client {
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
-				'create_live_account' => ! Utils::is_in_dev_mode(),
+				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
 			]
 		);
 
@@ -392,37 +392,6 @@ class WC_Payments_API_Client {
 			self::ACCOUNTS_API . '/login_links',
 			self::POST
 		);
-	}
-
-	/**
-	 * Check if test mode is enabled or not. This function uses Utils::is_in_dev_mode, which overrides
-	 * the function result.
-	 *
-	 * TODO: We should probably refactor this somewhat, since this is basically doing the
-	 * exact same thing as the `get_test_mode` function in the WCPay Gateway class. We
-	 * might even want to rethink the whole architecture to figure out the best location
-	 * for this function.
-	 *
-	 * @return bool - True if test mode is enabled, false otherwise.
-	 */
-	private function is_in_test_mode() {
-		if ( Utils::is_in_dev_mode() ) {
-			return true;
-		}
-
-		$options = get_option( 'woocommerce_woocommerce_payments_settings', array() );
-
-		// Default to live mode if option not available.
-		if ( ! isset( $options['test_mode'] ) ) {
-			return false;
-		}
-
-		if ( ! is_bool( $options['test_mode'] ) ) {
-			// Evaluates to true if the `test_mode` option contains "1", "true", "yes", or "on".
-			return filter_var( $options['test_mode'], FILTER_VALIDATE_BOOLEAN );
-		}
-
-		return $options['test_mode'];
 	}
 
 	/**
