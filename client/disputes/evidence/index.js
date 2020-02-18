@@ -146,11 +146,11 @@ export default ( { query } ) => {
 				} )
 			);
 			handleSaveSuccess( submit );
+			setEvidence( {} );
 		} catch ( err ) {
 			handleSaveError( submit );
 		} finally {
 			setLoading( false );
-			setEvidence( {} );
 		}
 	};
 
