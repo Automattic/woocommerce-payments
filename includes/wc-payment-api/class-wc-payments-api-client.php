@@ -365,6 +365,9 @@ class WC_Payments_API_Client {
 		$file_type   = $file_params['file']['type'];
 
 		$body = [
+			// We disable php linting here because otherwise it will show a warning on improper
+			// use of `file_get_contents()` and say you should "use `wp_remote_get()` for
+			// remote URLs instead", which is unrelated to our use here.
 			// phpcs:disable
 			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
 			// phpcs:enable
