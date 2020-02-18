@@ -273,7 +273,6 @@ class WC_Payments_Account {
 		if ( false === $oauth_data['url'] ) {
 			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-
 			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
 			exit;
 		}
