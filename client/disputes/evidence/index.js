@@ -133,39 +133,41 @@ export default ( { query } ) => {
 	};
 
 	const doUploadFile = async ( key, file ) => {
-		if ( file ) {
-			const body = new FormData();
-			body.append( 'file', file );
-			body.append( 'purpose', 'dispute_evidence' );
-
-			// Set request status for UI.
-			dispute.isUploading = {
-				...dispute.isUploading,
-				[ key ]: true,
-			};
-			dispute.uploadingErrors = {
-				...dispute.uploadingErrors,
-				[ key ]: false,
-			};
-
-			// Force reload evidence components.
-			setEvidence( e => ( { ...e, [ key ]: null } ) );
-
-			apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } )
-				.then( r => {
-					dispute.metadata[ key ] = r.filename;
-					dispute.isUploading[ key ] = false;
-
-					setEvidence( e => ( { ...e, [ key ]: r.id } ) );
-				} )
-				.catch( () => {
-					dispute.isUploading[ key ] = false;
-					dispute.uploadingErrors[ key ] = true;
-
-					// Force reload evidence components.
-					setEvidence( e => ( { ...e, [ key ]: null } ) );
-				} );
+		if ( ! file ) {
+			return;
 		}
+
+		const body = new FormData();
+		body.append( 'file', file );
+		body.append( 'purpose', 'dispute_evidence' );
+
+		// Set request status for UI.
+		dispute.isUploading = {
+			...dispute.isUploading,
+			[ key ]: true,
+		};
+		dispute.uploadingErrors = {
+			...dispute.uploadingErrors,
+			[ key ]: false,
+		};
+
+		// Force reload evidence components.
+		setEvidence( e => ( { ...e, [ key ]: null } ) );
+
+		apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } )
+			.then( r => {
+				dispute.metadata[ key ] = r.filename;
+				dispute.isUploading[ key ] = false;
+
+				setEvidence( e => ( { ...e, [ key ]: r.id } ) );
+			} )
+			.catch( () => {
+				dispute.isUploading[ key ] = false;
+				dispute.uploadingErrors[ key ] = true;
+
+				// Force reload evidence components.
+				setEvidence( e => ( { ...e, [ key ]: null } ) );
+			} );
 	};
 
 	const doSave = async ( submit ) => {
