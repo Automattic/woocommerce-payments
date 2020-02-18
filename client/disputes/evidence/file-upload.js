@@ -2,10 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-// This is all coming from a global '@wordpress/components' import, and will probably
-// cause issues down the line if the global scope is updated.
-// For example the 'IconButton' is deprecated in the latest version, and styles are
-// applied in a different way.
 import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
