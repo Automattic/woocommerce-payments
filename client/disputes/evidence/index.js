@@ -148,7 +148,7 @@ export default ( { query } ) => {
 		};
 
 		// Force reload evidence components.
-		setEvidence( e => ( { ...e, [ key ]: null } ) );
+		setEvidence( e => ( { ...e, [ key ]: '' } ) );
 
 		apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } )
 			.then( r => {
@@ -162,7 +162,7 @@ export default ( { query } ) => {
 				dispute.uploadingErrors[ key ] = true;
 
 				// Force reload evidence components.
-				setEvidence( e => ( { ...e, [ key ]: null } ) );
+				setEvidence( e => ( { ...e, [ key ]: '' } ) );
 			} );
 	};
 
