@@ -32,7 +32,8 @@ const getDepositsState = ( state ) => {
  */
 const getDepositsForQuery = ( state, query ) => {
 	const index = getResourceId( query );
-	return getDepositsState( state ).queries[ index ] || {};
+	const queries = getDepositsState( state ).queries || {};
+	return queries[ index ] || {};
 };
 
 export const getDeposits = ( state, query ) => {
