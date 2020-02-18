@@ -40,7 +40,16 @@ export const DisputeEvidenceForm = props => {
 				{
 					section.fields.map( field => {
 						if ( field.control === 'file' ) {
-							return FileUploadControl( evidence, field, onFileChange, onFileRemove );
+							const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
+							const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
+							const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
+							return <FileUploadControl
+										field={ field }
+										fileName={ fileName }
+										onFileChange={ onFileChange }
+										onFileRemove={ onFileRemove }
+										isLoading={ isLoading }
+										hasError={ hasError } />;
 						}
 
 						const Control = field.control === 'text' ? TextControl : TextareaControl;

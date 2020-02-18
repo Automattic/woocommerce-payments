@@ -5,11 +5,9 @@ import { __ } from '@wordpress/i18n';
 import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
-export const FileUploadControl = ( evidence, field, onFileChange, onFileRemove ) => {
-	const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
+export const FileUploadControl = ( props ) => {
+	const { fileName, field, isLoading, hasError, onFileChange, onFileRemove } = props;
 	const isDone = 0 !== fileName.length;
-	const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
-	const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
 
 	const getIcon = () => {
 		return <Gridicon
