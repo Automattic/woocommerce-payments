@@ -31,7 +31,7 @@ const mockDeposits = [
 		amount: 3000,
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
-	}
+	},
 ];
 
 describe( 'Deposits list', () => {
