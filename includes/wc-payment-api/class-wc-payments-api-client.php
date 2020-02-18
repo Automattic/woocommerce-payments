@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Utils;
-
 /**
  * Communicates with WooCommerce Payments API.
  */
