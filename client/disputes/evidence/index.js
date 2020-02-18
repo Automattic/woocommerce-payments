@@ -98,7 +98,7 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState( null );
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
-	const { createSuccessNotice } = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -128,6 +128,13 @@ export default ( { query } ) => {
 		getHistory().push( href );
 	};
 
+	const handleSaveError = submit => {
+		const message = submit
+			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
+			: __( 'Failed to save evidence!', 'woocommerce-payments' );
+		createErrorNotice( message );
+	};
+
 	const doSave = async submit => {
 		setLoading( true );
 		try {
@@ -139,6 +146,8 @@ export default ( { query } ) => {
 				} )
 			);
 			handleSaveSuccess( submit );
+		} catch ( err ) {
+			handleSaveError( submit );
 		} finally {
 			setLoading( false );
 			setEvidence( {} );
