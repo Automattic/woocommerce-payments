@@ -308,15 +308,12 @@ class WC_Payments_Account {
 		}
 		delete_transient( 'wcpay_oauth_state' );
 
-		$test_mode = 'test' === $mode;
-		if ( $test_mode ) {
+		if ( 'test' === $mode ) {
 			update_option( 'connected_account_is_dev', true );
 		} else {
 			delete_option( 'connected_account_is_dev' );
 		}
 
-		WC_Payments::get_gateway()->update_option( 'stripe_account_id', $account_id );
-		$this->update_public_keys( $live_publishable_key, $test_publishable_key );
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
