@@ -64,7 +64,7 @@ class WC_Payments_Http {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new WC_Payments_Http_Exception( $message, 500, $response->get_error_code() );
+			throw new WC_Payments_Http_Exception( $message, 500 );
 		}
 
 		return $response;

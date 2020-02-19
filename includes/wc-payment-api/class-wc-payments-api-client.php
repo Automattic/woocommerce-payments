@@ -433,17 +433,25 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
-		$response = $this->http_client->remote_request(
-			array(
-				'url'     => $url,
-				'method'  => $method,
-				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
-			),
-			$body,
-			$is_site_specific
-		);
+		try {
+			$response = $this->http_client->remote_request(
+				array(
+					'url'     => $url,
+					'method'  => $method,
+					'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
+				),
+				$body,
+				$is_site_specific
+			);
 
-		return $this->extract_response_body( $response );
+			return $this->extract_response_body( $response );
+		} catch ( WC_Payments_Http_Exception $e ) {
+			throw new WC_Payments_API_Exception(
+				$e->getMessage(),
+				'wcpay_http_request_failed',
+				$e->get_http_code()
+			);
+		}
 	}
 
 	/**
