@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Account {
 
-	const ACCOUNT_TRANSIENT = 'wcpay_account_data';
+	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -264,6 +265,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Has on-boarding been disabled?
+	 *
+	 * @return boolean
+	 */
+	public static function is_on_boarding_disabled() {
+		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
+		// on-boarding has been disabled (i.e. it's enabled as far as we know).
+		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+	}
+
+	/**
 	 * For the connected account, fetches the login url from the API and redirects to it
 	 */
 	private function redirect_to_login() {
@@ -340,16 +352,27 @@ class WC_Payments_Account {
 		}
 
 		try {
+			// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
+			// below re-create it if the server tells us on-boarding is still disabled.
+			delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+
 			$account = $this->payments_api_client->get_account_data();
 		} catch ( WC_Payments_API_Exception $e ) {
 			if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
-				// special case - detect account not connected and cache it.
+				// Special case - detect account not connected and cache it.
 				$account = array();
+			} elseif ( 'wcpay_on_boarding_disabled' === $e->get_error_code() ) {
+				// Special case - detect account not connected and on-boarding disabled. This will get updated the
+				// next time we call the server for account information, but just in case we set the expiry time for
+				// this setting an hour longer than the account details transient.
+				$account = array();
+				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
 				throw $e;
 			}
 		}
 
+		// Cache the account details so we don't call the server every time.
 		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
 	}
