@@ -84,7 +84,7 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 		$page       = intval( $request->get_params()['page'] );
 		$page_size  = intval( $request->get_params()['pagesize'] );
 		$deposit_id = $request->get_params()['deposit_id'];
-		return rest_ensure_response( $this->api_client->list_transactions( $page, $page_size, $deposit_id ) );
+		return $this->api_client->safe_request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
 	}
 
 	/**
