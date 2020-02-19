@@ -13,7 +13,11 @@ import { Link } from '@woocommerce/components';
  */
 import CardFooter from 'components/card-footer';
 
-const Actions = ( { id, onAccept } ) => {
+const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
+	if ( ! needsResponse && ! isSubmitted ) {
+		return null;
+	}
+
 	const challengeUrl = addQueryArgs(
 		'admin.php',
 		{
@@ -26,9 +30,12 @@ const Actions = ( { id, onAccept } ) => {
 	return (
 		<CardFooter>
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
-				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
+				{ needsResponse ?
+					__( 'Challenge Dispute', 'woocommerce-payments' ) :
+					__( 'View Submitted Evidence', 'woocommerce-payments' )
+				}
 			</Link>
-			{ onAccept && (
+			{ needsResponse && (
 				<Button isDefault isLarge onClick={ onAccept }>
 					{ __( 'Accept Dispute', 'woocommerce-payments' ) }
 				</Button>
