@@ -20,6 +20,8 @@ const ConnectAccountPage = () => {
 				<h2>
 					{ wcpaySettings.strings.setupHeading }
 				</h2>
+				{ ! wcpaySettings.onBoardingDisabled ? (
+				<>
 				<p>
 					<Link href={ wcpaySettings.tosUrl }>
 						{ wcpaySettings.strings.setupTerms }
@@ -33,6 +35,14 @@ const ConnectAccountPage = () => {
 						{ __( 'Additional payment methods', 'woocommerce-payments' ) }
 					</Link>
 				</p>
+				</>
+				) : (
+				<p>
+					{ __( 'We\'ve temporarily paused new account creation.', 'woocommmerce-payments' ) }
+					<br />
+					{ __( 'We\'ll notify you when we resume!', 'woocommmerce-payments' ) }
+				</p>
+				) }
 			</Card>
 		</div>
 	);

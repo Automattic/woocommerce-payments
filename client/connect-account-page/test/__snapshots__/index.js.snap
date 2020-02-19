@@ -40,3 +40,28 @@ exports[`ConnectAccountPage should render correctly 1`] = `
   </Card>
 </div>
 `;
+
+exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+<div
+  className="connect-account"
+>
+  <Card
+    className="connect-account__card"
+  >
+    <p>
+      <t
+        icon="credit-card"
+        size={72}
+      />
+    </p>
+    <h2>
+      setup-heading
+    </h2>
+    <p>
+      We've temporarily paused new account creation.
+      <br />
+      We'll notify you when we resume!
+    </p>
+  </Card>
+</div>
+`;
