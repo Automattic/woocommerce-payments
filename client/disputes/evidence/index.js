@@ -160,7 +160,7 @@ export default ( { query } ) => {
 			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
 			onChange={ ( key, value ) => setEvidence( { ...evidence, [ key ]: value } ) }
 			onSave={ doSave }
-			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
+			readOnly={ dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status }
 		/>
 	);
 };
