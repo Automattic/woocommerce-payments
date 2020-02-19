@@ -313,16 +313,7 @@ class WC_Payments_Account {
 	private function get_cached_account_data() {
 		$account = get_transient( self::ACCOUNT_TRANSIENT );
 
-		if (
-			// An account has been cached before.
-			false !== $account
-			// Return the cached account if it's empty (no account connected)...
-			&& ( empty( $account )
-			// ...or its marked as test and we're in dev mode...
-			|| ( ! $account['is_live'] && WC_Payments::get_gateway()->is_in_dev_mode() )
-			// ...or its marked as live.
-			|| $account['is_live'] )
-		) {
+		if ( $this->is_valid_cached_account( $account ) ) {
 			return $account;
 		}
 
@@ -339,6 +330,37 @@ class WC_Payments_Account {
 
 		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
+	}
+
+	/**
+	 * Checks if the cached account can be used in the current plugin state.
+	 *
+	 * @param bool|array $account cached account data.
+	 *
+	 * @return bool True if the cached account is valid.
+	 */
+	private function is_valid_cached_account( $account ) {
+		// false means no account has been cached.
+		if ( false === $account ) {
+			return false;
+		}
+
+		// empty array - special value to indicate that there's no account connected.
+		if ( empty( $account ) ) {
+			return true;
+		}
+
+		// live accounts are always valid.
+		if ( $account['is_live'] ) {
+			return true;
+		}
+
+		// test accounts are valid only when in dev mode.
+		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
