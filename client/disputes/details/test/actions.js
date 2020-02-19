@@ -11,11 +11,15 @@ import { mount } from 'enzyme';
 import Actions from '../actions';
 
 describe( 'Dispute details screen', () => {
-	test( 'renders correctly for dispute needing review', () => {
+	test( 'renders correctly for dispute needing response', () => {
 		const doAccept = jest.fn();
 
 		const actions = mount(
-			<Actions id="dp_mock" onAccept={ doAccept } />
+			<Actions
+				id="dp_mock"
+				needsResponse={ true }
+				onAccept={ doAccept }
+			/>
 		);
 		expect( actions ).toMatchSnapshot();
 
@@ -24,9 +28,16 @@ describe( 'Dispute details screen', () => {
 		expect( doAccept ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	test( 'renders correctly for dispute not needing review', () => {
+	test( 'renders correctly for closed dispute', () => {
 		const actions = mount(
-			<Actions id="dp_mock" />
+			<Actions id="dp_mock" needsResponse={ false } isSubmitted={ false } />
+		);
+		expect( actions ).toMatchSnapshot();
+	} );
+
+	test( 'renders correctly for dispute with evidence submitted', () => {
+		const actions = mount(
+			<Actions id="dp_mock" needsResponse={ false } isSubmitted={ true } />
 		);
 		expect( actions ).toMatchSnapshot();
 	} );

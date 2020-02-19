@@ -11,6 +11,8 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -21,6 +23,8 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -37,6 +41,8 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -47,6 +53,8 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -66,6 +74,8 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -89,6 +99,8 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -105,6 +117,8 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -115,6 +129,8 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -131,6 +147,8 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -141,6 +159,8 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -160,6 +180,8 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -185,6 +207,8 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -204,6 +228,8 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -228,6 +254,8 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -246,6 +274,8 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -258,6 +288,8 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -274,6 +306,8 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -284,6 +318,8 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -300,6 +336,8 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -310,6 +348,8 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -329,6 +369,8 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -352,6 +394,8 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -371,6 +415,8 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -397,6 +443,8 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -416,6 +464,8 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -440,6 +490,8 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>
@@ -459,6 +511,8 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
   <Card
@@ -482,6 +536,8 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
     </Paragraphs>
     <Actions
       id="dp_asdfghjkl"
+      isSubmitted={false}
+      needsResponse={true}
     />
   </Card>
 </Page>

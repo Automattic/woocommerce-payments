@@ -1,8 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Dispute details screen renders correctly for dispute needing review 1`] = `
+exports[`Dispute details screen renders correctly for closed dispute 1`] = `
 <Actions
   id="dp_mock"
+  isSubmitted={false}
+  needsResponse={false}
+/>
+`;
+
+exports[`Dispute details screen renders correctly for dispute needing response 1`] = `
+<Actions
+  id="dp_mock"
+  needsResponse={true}
   onAccept={[MockFunction]}
 >
   <CardFooter>
@@ -41,9 +50,11 @@ exports[`Dispute details screen renders correctly for dispute needing review 1`]
 </Actions>
 `;
 
-exports[`Dispute details screen renders correctly for dispute not needing review 1`] = `
+exports[`Dispute details screen renders correctly for dispute with evidence submitted 1`] = `
 <Actions
   id="dp_mock"
+  isSubmitted={true}
+  needsResponse={false}
 >
   <CardFooter>
     <div
@@ -60,7 +71,7 @@ exports[`Dispute details screen renders correctly for dispute not needing review
           href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
           onClick={[Function]}
         >
-          Challenge Dispute
+          View Submitted Evidence
         </a>
       </Link>
     </div>

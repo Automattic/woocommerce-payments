@@ -30,9 +30,9 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	return (
 		<CardFooter>
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
-				{ needsResponse ?
-					__( 'Challenge Dispute', 'woocommerce-payments' ) :
-					__( 'View Submitted Evidence', 'woocommerce-payments' )
+				{ needsResponse
+					? __( 'Challenge Dispute', 'woocommerce-payments' )
+					: __( 'View Submitted Evidence', 'woocommerce-payments' )
 				}
 			</Link>
 			{ needsResponse && (
