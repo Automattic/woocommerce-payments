@@ -370,6 +370,7 @@ class WC_Payments {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-exception.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http-exception.php';
 
 		// TODO: Don't hard code user agent string.
 		$payments_api_client = new WC_Payments_API_Client(
