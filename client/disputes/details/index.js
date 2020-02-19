@@ -22,12 +22,24 @@ export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 		return <div>Loading…</div>;
 	}
 
+	const needsResponse = 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status;
+	const isSubmitted = dispute.evidence_details && dispute.evidence_details.submission_count > 0;
+
+	const actions = (
+		<Actions
+			id={ dispute.id }
+			needsResponse={ needsResponse }
+			isSubmitted={ isSubmitted }
+			onAccept={ onAccept }
+		/>
+	);
+
 	const mapping = reasons[ dispute.reason ] || {};
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
 				<Paragraphs>{ mapping.overview }</Paragraphs>
-				<Actions id={ dispute.id } onAccept={ onAccept } />
+				{ actions }
 			</Card>
 			{/* translators: heading for dispute category information section */}
 			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
@@ -36,7 +48,7 @@ export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 				<Paragraphs>{ mapping.required }</Paragraphs>
 				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.respond }</Paragraphs>
-				<Actions id={ dispute.id } onAccept={ onAccept } />
+				{ actions }
 			</Card>
 		</Page>
 	);
@@ -74,7 +86,7 @@ export default ( { query } ) => {
 		<DisputeDetails
 			showPlaceholder={ loading }
 			dispute={ dispute }
-			onAccept={ dispute && dispute.status.indexOf( 'needs_response' ) >= 0 && doAccept }
+			onAccept={ doAccept }
 		/>
 	);
 };
