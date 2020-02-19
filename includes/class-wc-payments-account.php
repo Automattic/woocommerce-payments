@@ -136,40 +136,51 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			$message  = '<p>';
-			$message .= __(
-				'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
-				'woocommerce-payments'
-			);
-			$message .= '</p>';
-			$message .= '<p>';
+			if ( ! self::is_on_boarding_disabled() ) {
+				// Invite the user to connect.
+				$message  = '<p>';
+				$message .= __(
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+					'woocommerce-payments'
+				);
+				$message .= '</p>';
+				$message .= '<p>';
 
-			/* translators: Link to WordPress.com TOS URL */
-			$terms_message = __(
-				'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
-				'woocommerce-payments'
-			);
-			$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
-			$terms_message = str_replace( '{/A}', '</a>', $terms_message );
-			$message      .= $terms_message;
-			$message      .= '</p>';
+				/* translators: Link to WordPress.com TOS URL */
+				$terms_message = __(
+					'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+					'woocommerce-payments'
+				);
+				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+				$message      .= $terms_message;
+				$message      .= '</p>';
 
-			$message .= '<p>';
-			$message .= '<a href="' . self::get_connect_url() . '" class="button">';
-			$message .= __( ' Get started', 'woocommerce-payments' );
-			$message .= '</a>';
-			$message .= '</p>';
+				$message .= '<p>';
+				$message .= '<a href="' . self::get_connect_url() . '" class="button">';
+				$message .= __( ' Get started', 'woocommerce-payments' );
+				$message .= '</a>';
+				$message .= '</p>';
 
-			$message = wp_kses(
-				$message,
-				array(
-					'a' => array(
-						'class' => array(),
-						'href'  => array(),
-					),
-					'p' => array(),
-				)
-			);
+				$message = wp_kses(
+					$message,
+					array(
+						'a' => array(
+							'class' => array(),
+							'href'  => array(),
+						),
+						'p' => array(),
+					)
+				);
+			} else {
+				// On-boarding has been disabled on the server, so show a message to that effect.
+				$message = sprintf(
+					__(
+						'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
+						'woocommerce-payments'
+					)
+				);
+			}
 
 			add_filter(
 				'admin_notices',
