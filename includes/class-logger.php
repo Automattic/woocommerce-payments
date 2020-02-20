@@ -81,4 +81,77 @@ class Logger {
 
 		return 'yes' === WC_Payments::get_gateway()->get_option( 'enable_logging' );
 	}
+
+	/**
+	 * Creates a log entry of type emergency
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function emergency( $message ) {
+		self::log( $message, 'emergency' );
+	}
+
+	/**
+	 * Creates a log entry of type alert
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function alert( $message ) {
+		self::log( $message, 'alert' );
+	}
+
+	/**
+	 * Creates a log entry of type critical
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function critical( $message ) {
+		self::log( $message, 'critical' );
+	}
+
+	/**
+	 * Creates a log entry of type error
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function error( $message ) {
+		self::log( $message, 'error' );
+	}
+
+	/**
+	 * Creates a log entry of type warning
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function warning( $message ) {
+		self::log( $message, 'warning' );
+	}
+
+	/**
+	 * Creates a log entry of type notice
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function notice( $message ) {
+		self::log( $message, 'notice' );
+	}
+
+	/**
+	 * Creates a log entry of type info
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function info( $message ) {
+		self::log( $message, 'info' );
+	}
+
+	/**
+	 * Creates a log entry of type debug
+	 *
+	 * @param string $message To send to the log file.
+	 */
+	public static function debug( $message ) {
+		self::log( $message, 'debug' );
+	}
+
 }
