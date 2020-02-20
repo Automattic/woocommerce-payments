@@ -13,7 +13,7 @@ const DisputeStatusChip = ( { status } ) => {
 	const type = mapping.type || 'light';
 
 	return (
-		<Chip message={ message } type={ type } />
+		<Chip message={ message } type={ type } isCompact />
 	);
 };
 
