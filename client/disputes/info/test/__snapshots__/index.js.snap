@@ -81,5 +81,38 @@ exports[`Dispute info renders correctly 1`] = `
       />
     </span>
   </div>
+  <div
+    key="customer"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Customer: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      Mock Customer
+    </span>
+  </div>
+  <div
+    key="transactionId"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Transaction ID: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
+        type="wc-admin"
+      >
+        ch_mock
+      </Link>
+    </span>
+  </div>
 </div>
 `;
