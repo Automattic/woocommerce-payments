@@ -88,7 +88,7 @@ export const getChargeAmounts = ( charge ) => {
 	fee = charge.application_fee_amount;
 	refunded = 0;
 
-	if ( isChargeDisputed( charge ) ) {
+	if ( isChargeDisputed( charge ) && 'won' !== charge.dispute.status ) {
 		fee += disputeFee;
 		refunded = charge.dispute.amount;
 	} else if ( isChargeRefunded( charge ) ) {
