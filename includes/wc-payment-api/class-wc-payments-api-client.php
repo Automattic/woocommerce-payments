@@ -404,7 +404,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
-	 * @param array  $request          - Details of the request to make.
+	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
@@ -412,13 +412,15 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
-	private function request( $request, $api, $method, $is_site_specific = true ) {
-		$request = wp_parse_args(
-			$request,
+	private function request( $params, $api, $method, $is_site_specific = true ) {
+		// Apply the default params that can be overriden by the calling method.
+		$params = wp_parse_args(
+			$params,
 			array(
 				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
 			)
 		);
+
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
@@ -429,10 +431,10 @@ class WC_Payments_API_Client {
 		$body = null;
 
 		if ( self::GET === $method ) {
-			$url .= '?' . http_build_query( $request );
+			$url .= '?' . http_build_query( $params );
 		} else {
 			// Encode the request body as JSON.
-			$body = wp_json_encode( $request );
+			$body = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new WC_Payments_API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),

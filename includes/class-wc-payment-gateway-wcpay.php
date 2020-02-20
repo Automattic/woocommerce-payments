@@ -45,9 +45,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns whether test_mode is active for the gateway
+	 * Returns whether test_mode or dev_mode is active for the gateway
 	 *
-	 * @return boolean Test mode enable if true, disabled if false
+	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
 		if ( $this->is_in_dev_mode() ) {
