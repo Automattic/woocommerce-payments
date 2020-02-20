@@ -11,6 +11,7 @@ import Currency from '@woocommerce/currency';
 /**
  * Internal dependencies.
  */
+import OrderLink from 'components/order-link';
 import { reasons } from '../strings';
 import { formatStringValue } from '../../util';
 import './style.scss';
@@ -36,6 +37,7 @@ const Info = ( { dispute } ) => {
 		amount: `${ currency.formatCurrency( dispute.amount / 100 ) } ${ currency.code }`,
 		dueBy: dateI18n( 'M j, Y - g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 		reason: reasonDisplay,
+		order: dispute.order ? <OrderLink order={ dispute.order } /> : null,
 	};
 
 	return (
