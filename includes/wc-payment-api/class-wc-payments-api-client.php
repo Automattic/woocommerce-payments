@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * Communicates with WooCommerce Payments API.
  */
@@ -488,6 +490,7 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
+		Logger::log( "REQUEST $method $url" );
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
@@ -498,7 +501,10 @@ class WC_Payments_API_Client {
 			$is_site_specific
 		);
 
-		return $this->extract_response_body( $response );
+		$response_body = $this->extract_response_body( $response );
+		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+
+		return $response_body;
 	}
 
 	/**
@@ -519,8 +525,10 @@ class WC_Payments_API_Client {
 		$response_body_json = wp_remote_retrieve_body( $response );
 		$response_body      = json_decode( $response_body_json, true );
 		if ( null === $response_body ) {
+			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
+			Logger::error( $message );
 			throw new WC_Payments_API_Exception(
-				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' ),
+				$message,
 				'wcpay_unparseable_or_null_body',
 				$response_code
 			);
@@ -545,6 +553,8 @@ class WC_Payments_API_Client {
 				$error_code,
 				$error_message
 			);
+
+			Logger::error( $message );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
