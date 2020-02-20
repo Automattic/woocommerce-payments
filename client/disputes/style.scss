@@ -17,12 +17,11 @@
 	}
 	
 	.woocommerce-card__body {
-		> h3, > p {
+		font-weight: 300;
+		letter-spacing: 0.012rem;
+		line-height: 1.5;
+		&, p, h3 {
 			font-size: 1rem;
-			letter-spacing: 0.012rem;
-		}
-		> p {
-			font-weight: 300;
 		}
 
 		.woocommerce-card__footer {

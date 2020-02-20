@@ -13,6 +13,7 @@ import { Card } from '@woocommerce/components';
  */
 import { reasons } from '../strings';
 import Actions from './actions';
+import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import '../style.scss';
@@ -38,6 +39,7 @@ export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
 				<Paragraphs>{ mapping.overview }</Paragraphs>
 				{ actions }
 			</Card>
