@@ -20,12 +20,21 @@ class WC_Payments_Admin {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account Account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		$this->wcpay_gateway = $gateway;
+		$this->account       = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', array( $this, 'add_payments_menu' ), 9 );
@@ -39,7 +48,14 @@ class WC_Payments_Admin {
 	public function add_payments_menu() {
 		global $submenu;
 
-		$top_level_link = $this->wcpay_gateway->is_stripe_connected() ? '/payments/deposits' : '/payments/connect';
+		try {
+			$stripe_connected = $this->account->try_is_stripe_connected();
+		} catch ( Exception $e ) {
+			// do not render the menu if the server is unreachable.
+			return;
+		}
+
+		$top_level_link = $stripe_connected ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			array(
@@ -51,7 +67,7 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $this->wcpay_gateway->is_stripe_connected() ) {
+		if ( $stripe_connected ) {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-deposits',
@@ -109,6 +125,14 @@ class WC_Payments_Admin {
 			// TODO: More robust solution is to be implemented by https://github.com/Automattic/woocommerce-payments/issues/231.
 			wc_admin_register_page(
 				array(
+					'id'     => 'wc-payments-deposit-details',
+					'title'  => __( 'Deposit Details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions', // Not (top level) deposits, as workaround for showing up as submenu page.
+					'path'   => '/payments/deposits/details',
+				)
+			);
+			wc_admin_register_page(
+				array(
 					'id'     => 'wc-payments-transaction-details',
 					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions',
@@ -117,10 +141,18 @@ class WC_Payments_Admin {
 			);
 			wc_admin_register_page(
 				array(
-					'id'     => 'wc-payments-disputes-evidence',
-					'title'  => __( 'Evidence', 'woocommerce-payments' ),
+					'id'     => 'wc-payments-disputes-details',
+					'title'  => __( 'Dispute Details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
-					'path'   => '/payments/disputes/evidence',
+					'path'   => '/payments/disputes/details',
+				)
+			);
+			wc_admin_register_page(
+				array(
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge Dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details',
+					'path'   => '/payments/disputes/challenge',
 				)
 			);
 		}
@@ -153,7 +185,7 @@ class WC_Payments_Admin {
 			'wcpaySettings',
 			array(
 				'connectUrl' => WC_Payments_Account::get_connect_url(),
-				'testMode'   => $this->wcpay_gateway->get_test_mode(),
+				'testMode'   => $this->wcpay_gateway->is_in_test_mode(),
 			)
 		);
 

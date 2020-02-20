@@ -17,31 +17,48 @@ import {
 	updateErrorForTransactionsSummary,
 } from './actions';
 
-export function* getTransactions( { paged = '1', perPage = '25' } ) {
-	const url = addQueryArgs(
+/**
+ * Retrieves a series of transactions from the transactions list API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
+ */
+export function* getTransactions( query ) {
+	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
 		{
-			page: paged,
-			pagesize: perPage,
+			page: query.paged,
+			pagesize: query.perPage,
+			/* eslint-disable-next-line camelcase */
+			deposit_id: query.depositId,
 		}
 	);
 
 	try {
-		const results = yield apiFetch( { path: url } );
-		yield updateTransactions( { paged, perPage }, results.data || [] );
+		const results = yield apiFetch( { path } );
+		yield updateTransactions( query, results.data || [] );
 	} catch ( e ) {
-		yield updateErrorForTransactions( { paged, perPage }, null, e );
+		yield updateErrorForTransactions( query, null, e );
 	}
 }
 
 /**
  * Retrieves the transactions summary from the summary API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
  */
-export function* getTransactionsSummary() {
+export function* getTransactionsSummary( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/summary`,
+		{
+			/* eslint-disable-next-line camelcase */
+			deposit_id: query.depositId,
+		}
+	);
+
 	try {
-		const summary = yield apiFetch( { path: `${ NAMESPACE }/transactions/summary` } );
-		yield updateTransactionsSummary( summary );
+		const summary = yield apiFetch( { path } );
+		yield updateTransactionsSummary( query, summary );
 	} catch ( e ) {
-		yield updateErrorForTransactionsSummary( null, e );
+		yield updateErrorForTransactionsSummary( query, null, e );
 	}
 }

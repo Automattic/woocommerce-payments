@@ -6,27 +6,32 @@ import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 // eslint-disable-next-line camelcase
-export const useTransactions = ( { paged = '1', per_page = '25' } ) => useSelect( select => {
+export const useTransactions = ( { paged, per_page: perPage }, depositId ) => useSelect( select => {
 	const { getTransactions, getTransactionsError, isResolving } = select( STORE_NAME );
 
-	// eslint-disable-next-line camelcase
-	const query = { paged, perPage: per_page };
+	const query = {
+		paged: paged != null ? paged : '1',
+		perPage: perPage != null ? perPage : '25',
+		depositId: depositId || null,
+	};
 	return {
 		transactions: getTransactions( query ),
 		transactionsError: getTransactionsError( query ),
 		isLoading: isResolving( 'getTransactions', [ query ] ),
 	};
-// eslint-disable-next-line camelcase
-}, [ { paged, per_page } ] );
+}, [ paged, perPage, depositId ] );
 
-export const useTransactionsSummary = () => useSelect( select => {
+export const useTransactionsSummary = ( depositId ) => useSelect( select => {
 	const {
 		getTransactionsSummary,
 		isResolving,
 	} = select( STORE_NAME );
 
-	return {
-		transactionsSummary: getTransactionsSummary(),
-		isLoading: isResolving( 'getTransactionsSummary' ),
+	const query = {
+		depositId: depositId || null,
 	};
-} );
+	return {
+		transactionsSummary: getTransactionsSummary( query ),
+		isLoading: isResolving( 'getTransactionsSummary', [ query ] ),
+	};
+}, [ depositId ] );

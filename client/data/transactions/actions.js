@@ -22,16 +22,18 @@ export function updateErrorForTransactions( query, data, error ) {
 	};
 }
 
-export function updateTransactionsSummary( data ) {
+export function updateTransactionsSummary( query, data ) {
 	return {
 		type: TYPES.SET_TRANSACTIONS_SUMMARY,
+		query,
 		data,
 	};
 }
 
-export function updateErrorForTransactionsSummary( data, error ) {
+export function updateErrorForTransactionsSummary( query, data, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY,
+		query,
 		data,
 		error,
 	};

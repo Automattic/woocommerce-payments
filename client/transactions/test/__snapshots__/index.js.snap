@@ -71,6 +71,11 @@ exports[`Transactions list renders correctly 1`] = `
         "key": "riskLevel",
         "label": "Risk Level",
       },
+      Object {
+        "cellClassName": "deposit",
+        "key": "deposit",
+        "label": "Deposit",
+      },
     ]
   }
   isLoading={false}
@@ -83,16 +88,10 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            id="ch_j23w39dsajda"
+            parentSegment="transactions"
+          />,
           "value": "txn_j23jda9JJa",
         },
         Object {
@@ -150,19 +149,200 @@ exports[`Transactions list renders correctly 1`] = `
           />,
           "value": 0,
         },
+        Object {
+          "display": <Deposit
+            depositId={null}
+          />,
+          "value": null,
+        },
       ],
       Array [
         Object {
-          "display": <Link
-            className="transactions-list__details-button"
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            id="ch_j239jda"
+            parentSegment="transactions"
+          />,
+          "value": "txn_oa9kaKaa8",
+        },
+        Object {
+          "display": "Jan 4, 2020 / 11:22PM",
+          "value": "2020-01-05 04:22:59",
+        },
+        Object {
+          "display": "Charge",
+          "value": "charge",
+        },
+        Object {
+          "display": "$15.00",
+          "value": 15,
+        },
+        Object {
+          "display": "$-0.50",
+          "value": 0.5,
+        },
+        Object {
+          "display": "$14.50",
+          "value": 14.5,
+        },
+        Object {
+          "display": <OrderLink
+            order={
+              Object {
+                "number": 125,
+                "url": "https://example.com/order/125",
+              }
+            }
+          />,
+          "value": undefined,
+        },
+        Object {
+          "display": <span
+            className="payment-method__brand payment-method__brand--mastercard"
+          />,
+          "value": "mastercard",
+        },
+        Object {
+          "display": "My name",
+          "value": "My name",
+        },
+        Object {
+          "display": "a@b.com",
+          "value": "a@b.com",
+        },
+        Object {
+          "display": "US",
+          "value": "US",
+        },
+        Object {
+          "display": <RiskLevel
+            risk={2}
+          />,
+          "value": 2,
+        },
+        Object {
+          "display": <Deposit
+            dateAvailable="2020-01-07 00:00:00"
+            depositId="po_mock"
+          />,
+          "value": "po_mock",
+        },
+      ],
+    ]
+  }
+  rowsPerPage={25}
+  showMenu={true}
+  summary={
+    Array [
+      Object {
+        "label": "transactions",
+        "value": "10",
+      },
+      Object {
+        "label": "total",
+        "value": "$10.00",
+      },
+      Object {
+        "label": "fees",
+        "value": "$1.00",
+      },
+      Object {
+        "label": "net",
+        "value": "$9.00",
+      },
+    ]
+  }
+  title="Transactions"
+  totalRows={10}
+/>
+`;
+
+exports[`Transactions list renders correctly when filtered to deposit 1`] = `
+<TableCard
+  baseSearchQuery={Object {}}
+  className="transactions-list"
+  compareParam="filter"
+  downloadable={false}
+  headers={
+    Array [
+      Object {
+        "cellClassName": "info-button",
+        "key": "details",
+        "label": "",
+        "required": true,
+      },
+      Object {
+        "cellClassName": "date-time",
+        "defaultOrder": "desc",
+        "isLeftAligned": true,
+        "key": "created",
+        "label": "Date / Time",
+        "required": true,
+      },
+      Object {
+        "key": "type",
+        "label": "Type",
+        "required": true,
+      },
+      Object {
+        "isNumeric": true,
+        "key": "amount",
+        "label": "Amount",
+      },
+      Object {
+        "isNumeric": true,
+        "key": "fee",
+        "label": "Fees",
+      },
+      Object {
+        "isNumeric": true,
+        "key": "net",
+        "label": "Net",
+        "required": true,
+      },
+      Object {
+        "key": "order",
+        "label": "Order #",
+        "required": true,
+      },
+      Object {
+        "key": "source",
+        "label": "Source",
+      },
+      Object {
+        "key": "customer",
+        "label": "Customer",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "email",
+        "label": "Email",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "country",
+        "label": "Country",
+      },
+      Object {
+        "hiddenByDefault": true,
+        "key": "riskLevel",
+        "label": "Risk Level",
+      },
+    ]
+  }
+  isLoading={false}
+  onColumnsChange={[Function]}
+  onQueryChange={[Function]}
+  onSearch={[Function]}
+  query={Object {}}
+  rowHeader={0}
+  rows={
+    Array [
+      Array [
+        Object {
+          "display": <DetailsLink
+            id="ch_j239jda"
+            parentSegment="transactions"
+          />,
           "value": "txn_oa9kaKaa8",
         },
         Object {
@@ -229,23 +409,23 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Object {
         "label": "transactions",
-        "value": "10",
+        "value": "3",
       },
       Object {
         "label": "total",
-        "value": "$10.00",
+        "value": "$3.00",
       },
       Object {
         "label": "fees",
-        "value": "$1.00",
+        "value": "$0.30",
       },
       Object {
         "label": "net",
-        "value": "$9.00",
+        "value": "$2.70",
       },
     ]
   }
   title="Transactions"
-  totalRows={10}
+  totalRows={3}
 />
 `;

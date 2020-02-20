@@ -33,7 +33,7 @@ describe( 'Test mode notification', () => {
 	];
 	const detailsTopics = [
 		topics.depositDetails,
-		topics.disputeEvidence,
+		topics.disputeDetails,
 		topics.paymentDetails,
 	];
 	const allTopics = [ ...listTopics, ...detailsTopics ];
@@ -64,7 +64,7 @@ describe( 'Test mode notification', () => {
 			'WooCommerce Payments was in test mode when these orders were placed.'
 		);
 
-		expect( getTopicDetails( topics.disputeEvidence ) ).toBe(
+		expect( getTopicDetails( topics.disputeDetails ) ).toBe(
 			'WooCommerce Payments was in test mode when this order was placed.'
 		);
 

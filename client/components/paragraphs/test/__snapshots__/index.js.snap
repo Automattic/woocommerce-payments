@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Paragraphs renders empty set of strings correctly 1`] = `null`;
+
+exports[`Paragraphs renders missing strings correctly 1`] = `null`;
+
+exports[`Paragraphs renders set of strings correctly. 1`] = `
+Array [
+  <p
+    key="0"
+  >
+    Paragraph 1
+  </p>,
+  <p
+    key="1"
+  >
+    Paragraph 2
+  </p>,
+  <p
+    key="2"
+  >
+    Paragraph 3
+  </p>,
+]
+`;

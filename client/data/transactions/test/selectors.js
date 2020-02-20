@@ -1,9 +1,9 @@
+/** @format */
 
 /**
  * Internal dependencies
  */
 import { getResourceId } from '../../util';
-import { ID_PREFIX } from '../../constants';
 import {
 	getTransactions,
 	getTransactionsError,
@@ -13,7 +13,8 @@ import {
 
 describe( 'Transactions selectors', () => {
 	// Mock objects.
-	const mockQuery = { paged: '2', perPage: 50 };
+	const mockQuery = { paged: '2', perPage: '50', depositId: null };
+	const mockSummaryQuery = { depositId: null };
 	const mockTransactions = [
 		{
 			id: 1234,
@@ -38,13 +39,8 @@ describe( 'Transactions selectors', () => {
 		code: 400,
 	};
 
-	// Initial empty state.
+	// Sections in initial state are empty.
 	const emptyState = {
-		transactions: {},
-	};
-
-	// Sections in state are empty.
-	const emptySummaryState = {
 		transactions: {
 			summary: {},
 		},
@@ -52,7 +48,9 @@ describe( 'Transactions selectors', () => {
 	const emptySummaryErrorState = {
 		transactions: {
 			summary: {
-				error: {},
+				[ getResourceId( mockQuery ) ]: {
+					error: {},
+				},
 			},
 		},
 	};
@@ -60,28 +58,28 @@ describe( 'Transactions selectors', () => {
 	// State is populated.
 	const filledSuccessState = {
 		transactions: {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				data: mockTransactions,
 			},
 			summary: {
-				data: mockSummary,
+				[ getResourceId( mockSummaryQuery ) ]: {
+					data: mockSummary,
+				},
 			},
 		},
 	};
 	const filledErrorState = {
 		transactions: {
-			[ getResourceId( ID_PREFIX.transactions, mockQuery ) ]: {
+			[ getResourceId( mockQuery ) ]: {
 				error: mockError,
 			},
 			summary: {
-				error: mockError,
+				[ getResourceId( mockSummaryQuery ) ]: {
+					error: mockError,
+				},
 			},
 		},
 	};
-
-	test( 'Returns empty transactions list when state is uninitialized', () => {
-		expect( getTransactions( emptyState, mockQuery ) ).toStrictEqual( [] );
-	} );
 
 	test( 'Returns empty transactions list when transactions list is empty', () => {
 		expect( getTransactions( emptyState, mockQuery ) ).toStrictEqual( [] );
@@ -90,10 +88,6 @@ describe( 'Transactions selectors', () => {
 	test( 'Returns transactions list from state', () => {
 		const expected = mockTransactions;
 		expect( getTransactions( filledSuccessState, mockQuery ) ).toBe( expected );
-	} );
-
-	test( 'Returns empty transactions list error when state is uninitialized', () => {
-		expect( getTransactionsError( emptyState, mockQuery ) ).toStrictEqual( {} );
 	} );
 
 	test( 'Returns empty transactions list error when error is empty', () => {
@@ -105,29 +99,25 @@ describe( 'Transactions selectors', () => {
 		expect( getTransactionsError( filledErrorState, mockQuery ) ).toBe( expected );
 	} );
 
-	test( 'Returns empty transactions summary when state is uninitialized', () => {
-		expect( getTransactionsSummary( emptyState ) ).toStrictEqual( {} );
-	} );
-
 	test( 'Returns empty transactions summary when transactions summary is empty', () => {
-		expect( getTransactionsSummary( emptySummaryState ) ).toStrictEqual( {} );
+		expect( getTransactionsSummary( emptyState, mockSummaryQuery ) ).toStrictEqual( {} );
 	} );
 
 	test( 'Returns transactions summary from state', () => {
 		const expected = mockSummary;
-		expect( getTransactionsSummary( filledSuccessState ) ).toBe( expected );
+		expect( getTransactionsSummary( filledSuccessState, mockSummaryQuery ) ).toBe( expected );
 	} );
 
 	test( 'Returns empty transactions summary error when state is uninitialized', () => {
-		expect( getTransactionsSummaryError( emptyState ) ).toStrictEqual( {} );
+		expect( getTransactionsSummaryError( emptyState, mockSummaryQuery ) ).toStrictEqual( {} );
 	} );
 
 	test( 'Returns empty transactions summary error when error is empty', () => {
-		expect( getTransactionsSummaryError( emptySummaryErrorState ) ).toStrictEqual( {} );
+		expect( getTransactionsSummaryError( emptySummaryErrorState, mockSummaryQuery ) ).toStrictEqual( {} );
 	} );
 
 	test( 'Returns transactions summary error from state', () => {
 		const expected = mockError;
-		expect( getTransactionsSummaryError( filledErrorState ) ).toBe( expected );
+		expect( getTransactionsSummaryError( filledErrorState, mockSummaryQuery ) ).toBe( expected );
 	} );
 } );

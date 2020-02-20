@@ -5,12 +5,11 @@
  */
 import TYPES from './action-types';
 import { getResourceId } from '../util';
-import { ID_PREFIX } from '../constants';
 
 const defaultState = { summary: {} };
 
 const receiveTransactions = ( state = defaultState, { type, query = {}, data = [], error } ) => {
-	const index = getResourceId( ID_PREFIX.transactions, query );
+	const index = getResourceId( query );
 
 	switch ( type ) {
 		case TYPES.SET_TRANSACTIONS:
@@ -31,14 +30,20 @@ const receiveTransactions = ( state = defaultState, { type, query = {}, data = [
 			return {
 				...state,
 				summary: {
-					data: data,
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
 				},
 			};
 		case TYPES.SET_ERROR_FOR_TRANSACTIONS_SUMMARY:
 			return {
 				...state,
 				summary: {
-					error: error,
+					...state.summary,
+					[ index ]: {
+						error: error,
+					},
 				},
 			};
 	}

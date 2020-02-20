@@ -1,10 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Section>
+<Page
+  className="wcpay-dispute-evidence"
+  isNarrow={true}
+>
   <Card
     key="general"
-    title="General evidence"
+    title="General Evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -37,7 +40,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
   </Card>
   <Card
     key="uncategorized"
-    title="Additional details"
+    title="Additional Details"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -48,29 +51,48 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     />
   </Card>
   <Card>
-    <ForwardRef(Button)
-      isLarge={true}
-      isPrimary={true}
-      onClick={[Function]}
-    >
-      Submit Evidence
-    </ForwardRef(Button)>
-    <ForwardRef(Button)
-      isDefault={true}
-      isLarge={true}
-      onClick={[Function]}
-    >
-      Save For Later
-    </ForwardRef(Button)>
+    <p>
+      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+    </p>
+    <p>
+      <strong>
+        Evidence submission is final.
+      </strong>
+       
+      You can also save this evidence for later instead of submitting it immediately.
+       
+      <strong>
+        We will automatically submit any saved evidence at the due date.
+      </strong>
+    </p>
+    <CardFooter>
+      <ForwardRef(Button)
+        isLarge={true}
+        isPrimary={true}
+        onClick={[Function]}
+      >
+        Submit Evidence
+      </ForwardRef(Button)>
+      <ForwardRef(Button)
+        isDefault={true}
+        isLarge={true}
+        onClick={[Function]}
+      >
+        Save For Later
+      </ForwardRef(Button)>
+    </CardFooter>
   </Card>
-</Section>
+</Page>
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Section>
+<Page
+  className="wcpay-dispute-evidence"
+  isNarrow={true}
+>
   <Card
     key="general"
-    title="General evidence"
+    title="General Evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -103,7 +125,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
   </Card>
   <Card
     key="uncategorized"
-    title="Additional details"
+    title="Additional Details"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
@@ -114,20 +136,36 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     />
   </Card>
   <Card>
-    <ForwardRef(Button)
-      isLarge={true}
-      isPrimary={true}
-      onClick={[Function]}
-    >
-      Submit Evidence
-    </ForwardRef(Button)>
-    <ForwardRef(Button)
-      isDefault={true}
-      isLarge={true}
-      onClick={[Function]}
-    >
-      Save For Later
-    </ForwardRef(Button)>
+    <p>
+      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+    </p>
+    <p>
+      <strong>
+        Evidence submission is final.
+      </strong>
+       
+      You can also save this evidence for later instead of submitting it immediately.
+       
+      <strong>
+        We will automatically submit any saved evidence at the due date.
+      </strong>
+    </p>
+    <CardFooter>
+      <ForwardRef(Button)
+        isLarge={true}
+        isPrimary={true}
+        onClick={[Function]}
+      >
+        Submit Evidence
+      </ForwardRef(Button)>
+      <ForwardRef(Button)
+        isDefault={true}
+        isLarge={true}
+        onClick={[Function]}
+      >
+        Save For Later
+      </ForwardRef(Button)>
+    </CardFooter>
   </Card>
-</Section>
+</Page>
 `;

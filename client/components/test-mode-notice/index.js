@@ -25,13 +25,13 @@ export const topics = {
 		'Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
-	disputeEvidence: __( 'Test dispute:', 'woocommerce-payments' ),
+	disputeDetails: __( 'Test dispute:', 'woocommerce-payments' ),
 };
 
 // These are all the topics used for details pages where the notice is slightly different.
 const detailsTopics = [
 	topics.paymentDetails,
-	topics.disputeEvidence,
+	topics.disputeDetails,
 	topics.depositDetails,
 ];
 
