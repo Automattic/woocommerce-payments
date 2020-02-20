@@ -89,7 +89,8 @@ exports[`Transactions list renders correctly 1`] = `
       Array [
         Object {
           "display": <DetailsLink
-            chargeId="ch_j23w39dsajda"
+            id="ch_j23w39dsajda"
+            parentSegment="transactions"
           />,
           "value": "txn_j23jda9JJa",
         },
@@ -158,7 +159,8 @@ exports[`Transactions list renders correctly 1`] = `
       Array [
         Object {
           "display": <DetailsLink
-            chargeId="ch_j239jda"
+            id="ch_j239jda"
+            parentSegment="transactions"
           />,
           "value": "txn_oa9kaKaa8",
         },
@@ -338,7 +340,8 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       Array [
         Object {
           "display": <DetailsLink
-            chargeId="ch_j239jda"
+            id="ch_j239jda"
+            parentSegment="transactions"
           />,
           "value": "txn_oa9kaKaa8",
         },

@@ -16,9 +16,9 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
+import DetailsLink from '../components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
-import DetailsLink from './details-link';
 import Deposit from './deposit';
 import './style.scss';
 
@@ -55,7 +55,7 @@ export const TransactionsList = ( props ) => {
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
-		const detailsLink = <DetailsLink chargeId={ txn.charge_id } />;
+		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 		const deposit = <Deposit depositId={ txn.deposit_id } dateAvailable={ txn.date_available } />;
