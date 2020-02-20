@@ -358,7 +358,14 @@ class WC_Payments_API_Client {
 	 * @return array dispute object.
 	 */
 	public function get_dispute( $dispute_id ) {
-		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
+		$dispute = $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
+
+		if ( is_wp_error( $dispute ) ) {
+			return $dispute;
+		}
+
+		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
+		return $this->add_order_info_to_object( $charge_id, $dispute );
 	}
 
 	/**
