@@ -92,6 +92,7 @@ export const DisputeEvidencePage = props => {
 	const { showPlaceholder, dispute, evidence, onChange, onSave } = props;
 
 	if ( showPlaceholder ) {
+		// TODO Render proper placeholder view.
 		return <div>Loading…</div>;
 	}
 	if ( dispute == null ) {
