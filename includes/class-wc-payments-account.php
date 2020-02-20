@@ -240,7 +240,7 @@ class WC_Payments_Account {
 				'admin_notices',
 				function () {
 					WC_Payments::display_admin_notice(
-						__( 'You’re ready to start taking payments!', 'woocommerce-payments' ),
+						__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
 						'notice-success'
 					);
 				}
