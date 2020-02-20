@@ -15,7 +15,7 @@ export const FileUploadControl = ( props ) => {
 	};
 
 	const message = hasError ? __( 'Upload failed.', 'woocommerce-payments' ) : fileName;
-	const messageClass = hasError ? 'is-destructive' : null;
+	const messageClass = hasError ? 'upload-message is-destructive' : 'upload-message';
 
 	return (
 		<BaseControl
