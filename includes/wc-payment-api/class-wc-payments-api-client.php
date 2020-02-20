@@ -386,12 +386,23 @@ class WC_Payments_API_Client {
 	 * @param string $request request object received.
 	 *
 	 * @return array file object.
+	 * @throws WC_Payments_API_Exception - If request throws.
 	 */
 	public function upload_evidence( $request ) {
 		$purpose     = $request->get_param( 'purpose' );
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
 		$file_type   = $file_params['file']['type'];
+		$file_error  = $file_params['file']['error'];
+
+		if ( $file_error ) {
+			// TODO - Add better error message by specifiying which limit is reached (host or Stripe).
+			throw new WC_Payments_API_Exception(
+				__( 'Max file size exceeded.', 'woocommerce-payments' ),
+				'wcpay_evidence_file_max_size',
+				400
+			);
+		}
 
 		$body = [
 			// We disable php linting here because otherwise it will show a warning on improper

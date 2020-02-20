@@ -125,8 +125,12 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function upload_evidence( $request ) {
-		$response = $this->api_client->upload_evidence( $request );
-		return rest_ensure_response( $response );
+		try {
+			$response = $this->api_client->upload_evidence( $request );
+			return rest_ensure_response( $response );
+		} catch ( WC_Payments_API_Exception $e ) {
+			return new WP_Error( $e->get_http_code(), $e->getMessage() );
+		}
 	}
 
 	/**

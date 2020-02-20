@@ -6,15 +6,15 @@ import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
 export const FileUploadControl = ( props ) => {
-	const { fileName, field, isDone, isLoading, hasError, onFileChange, onFileRemove } = props;
-
+	const { fileName, field, isDone, isLoading, error, onFileChange, onFileRemove } = props;
+	const hasError = error && error.length > 0;
 	const getIcon = () => {
 		return <Gridicon
 					icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
 					size={ 18 } />;
 	};
 
-	const message = hasError ? __( 'Upload failed.', 'woocommerce-payments' ) : fileName;
+	const message = hasError ? error : fileName;
 	const messageClass = hasError ? 'upload-message is-destructive' : 'upload-message';
 
 	return (

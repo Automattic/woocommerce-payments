@@ -45,7 +45,7 @@ export const DisputeEvidenceForm = props => {
 						if ( field.control === 'file' ) {
 							const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
 							const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
-							const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
+							const error = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || '' );
 							return <FileUploadControl
 										key={ field.key }
 										field={ field }
@@ -54,7 +54,7 @@ export const DisputeEvidenceForm = props => {
 										onFileRemove={ onFileRemove }
 										isDone = { ! isLoading && fileName.length > 0 }
 										isLoading={ isLoading }
-										hasError={ hasError } />;
+										error={ error } />;
 						}
 
 						const Control = field.control === 'text' ? TextControl : TextareaControl;
@@ -159,7 +159,7 @@ export default ( { query } ) => {
 		};
 		dispute.uploadingErrors = {
 			...dispute.uploadingErrors,
-			[ key ]: false,
+			[ key ]: '',
 		};
 
 		// Force reload evidence components.
@@ -172,9 +172,9 @@ export default ( { query } ) => {
 
 				setEvidence( e => ( { ...e, [ key ]: r.id } ) );
 			} )
-			.catch( () => {
+			.catch( err => {
 				dispute.isUploading[ key ] = false;
-				dispute.uploadingErrors[ key ] = true;
+				dispute.uploadingErrors[ key ] = err.message;
 
 				// Force reload evidence components.
 				setEvidence( e => ( { ...e, [ key ]: '' } ) );
