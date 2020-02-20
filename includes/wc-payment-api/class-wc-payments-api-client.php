@@ -25,6 +25,7 @@ class WC_Payments_API_Client {
 	const CHARGES_API      = 'charges';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
+	const DEPOSITS_API     = 'deposits';
 	const TRANSACTIONS_API = 'transactions';
 	const DISPUTES_API     = 'disputes';
 	const OAUTH_API        = 'oauth';
@@ -217,6 +218,34 @@ class WC_Payments_API_Client {
 			return wc_get_order( $order_id );
 		}
 		return false;
+	}
+
+	/**
+	 * List deposits
+	 *
+	 * @param int $page      The requested page.
+	 * @param int $page_size The size of the requested page.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
+	 */
+	public function list_deposits( $page = 0, $page_size = 25 ) {
+		$query = [
+			'page'     => $page,
+			'pagesize' => $page_size,
+		];
+
+		return $this->request( $query, self::DEPOSITS_API, self::GET );
+	}
+
+	/**
+	 * Fetch a single deposit with provided id.
+	 *
+	 * @param string $deposit_id id of requested deposit.
+	 * @return array deposit object.
+	 */
+	public function get_deposit( $deposit_id ) {
+		return $this->request( array(), self::DEPOSITS_API . '/' . $deposit_id, self::GET );
 	}
 
 	/**

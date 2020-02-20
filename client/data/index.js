@@ -10,24 +10,29 @@ import { controls } from '@wordpress/data-controls';
  * Internal dependencies
  */
 import { STORE_NAME } from './constants';
+import * as deposits from './deposits';
 import * as transactions from './transactions';
 import * as charges from './charges';
 
 registerStore( STORE_NAME, {
 	reducer: combineReducers( {
+		deposits: deposits.reducer,
 		transactions: transactions.reducer,
 		charges: charges.reducer,
 	} ),
 	actions: {
+		...deposits.actions,
 		...transactions.actions,
 		...charges.actions,
 	},
 	controls,
 	selectors: {
+		...deposits.selectors,
 		...transactions.selectors,
 		...charges.selectors,
 	},
 	resolvers: {
+		...deposits.resolvers,
 		...transactions.resolvers,
 		...charges.resolvers,
 	},
@@ -35,5 +40,6 @@ registerStore( STORE_NAME, {
 
 export const WCPAY_STORE_NAME = STORE_NAME;
 
+export * from './deposits';
 export * from './transactions';
 export * from './charges';

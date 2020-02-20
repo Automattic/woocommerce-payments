@@ -49,15 +49,10 @@ exports[`Disputes list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          />,
           "value": "dp_asdfghjkl",
         },
         Object {
@@ -96,15 +91,10 @@ exports[`Disputes list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            type="wc-admin"
-          >
-            <t
-              icon="info-outline"
-              size={18}
-            />
-          </Link>,
+          "display": <DetailsLink
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          />,
           "value": "dp_zxcvbnm",
         },
         Object {

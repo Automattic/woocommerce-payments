@@ -142,22 +142,12 @@ class WC_Payments {
 			return true;
 		}
 
-		// TODO - Remove/update when Jetpack Connection package is all we need.
-		if ( ! self::check_for_jetpack_layer() ) {
-			if ( ! $silent ) {
-				$message = sprintf(
-					/* translators: %1: WooCommerce Payments version */
-					__( 'WooCommerce Payments %1$s requires Jetpack. Please install, activate, and connect Jetpack. This dependency will change in an upcoming release.', 'woocommerce-payments' ),
-					WCPAY_VERSION_NUMBER
-				);
-
-				self::display_admin_error( $message );
-			}
-
-			return false;
-		};
-
 		$plugin_headers = self::get_plugin_headers();
+
+		// Do not show alerts while installing plugins.
+		if ( ! $silent && self::is_at_plugin_install_page() ) {
+			return true;
+		}
 
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
@@ -174,6 +164,12 @@ class WC_Payments {
 				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
 				'slug'  => 'woocommerce-admin',
 				'file'  => 'woocommerce-admin/woocommerce-admin.php',
+			),
+			array(
+				'name'  => 'Jetpack',
+				'class' => 'Jetpack',
+				'slug'  => 'jetpack',
+				'file'  => 'jetpack/jetpack.php',
 			),
 		);
 
@@ -245,23 +241,54 @@ class WC_Payments {
 			return false;
 		}
 
+		// Check if Jetpack is connected.
+		if ( ! self::is_jetpack_connected() ) {
+			// Do not show an alert on Jetpack admin pages.
+			if ( ! $silent && ! self::is_at_jetpack_admin_page() ) {
+				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
+				$message    = sprintf(
+					/* translators: %1: WooCommerce Payments version, %2: Jetpack setup url */
+					__( 'To use WooCommerce Payments %1$s you\'ll need to <a href="%2$s">set up</a> the Jetpack plugin.', 'woocommerce-payments' ),
+					WCPAY_VERSION_NUMBER,
+					$set_up_url
+				);
+				self::display_admin_error( $message );
+			}
+
+			return false;
+		}
+
 		return true;
 	}
 
 	/**
-	 * Checks whether either Jetpack transport is available and displays an admin error message if not.
+	 * Checks if current page is plugin installation process page.
 	 *
-	 * @return bool true if either Jetpack transport is available, false otherwise.
+	 * @return bool True when installing plugin.
 	 */
-	public static function check_for_jetpack_layer() {
-		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
-			return true;
-		}
-		if ( class_exists( 'Jetpack_Client' ) ) {
-			return true;
-		}
+	private static function is_at_plugin_install_page() {
+		$cur_screen = get_current_screen();
+		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
+	}
 
-		return false;
+	/**
+	 * Checks if current page is Jetpack admin page.
+	 *
+	 * @return bool True when current page is one of the Jetpack admin pages.
+	 */
+	private static function is_at_jetpack_admin_page() {
+		$cur_screen = get_current_screen();
+		return 'jetpack' === $cur_screen->parent_base;
+	}
+
+	/**
+	 * Checks if Jetpack is connected.
+	 *
+	 * @return bool true if Jetpack connection is available and authenticated.
+	 */
+	public static function is_jetpack_connected() {
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+		return WC_Payments_Http::is_connected();
 	}
 
 	/**
@@ -360,6 +387,10 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
+		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
+		$deposits_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
 		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
 		$transactions_controller->register_routes();

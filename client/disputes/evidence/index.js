@@ -5,6 +5,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
+import { useDispatch } from '@wordpress/data';
+import { addQueryArgs } from '@wordpress/url';
+import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
@@ -95,6 +98,7 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState( null );
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
+	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -108,13 +112,45 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
-	const doSave = async ( submit ) => {
+	const handleSaveSuccess = submit => {
+		const message = submit
+			? __( 'Evidence submitted!', 'woocommerce-payments' )
+			: __( 'Evidence saved!', 'woocommerce-payments' );
+		const href = addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/payments/disputes',
+		} );
+		/*
+			We rely on WC-Admin Transient notices to display success message.
+			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+		*/
+		createSuccessNotice( message );
+		getHistory().push( href );
+	};
+
+	const handleSaveError = submit => {
+		const message = submit
+			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
+			: __( 'Failed to save evidence!', 'woocommerce-payments' );
+		createErrorNotice( message );
+	};
+
+	const doSave = async submit => {
 		setLoading( true );
 		try {
-			setDispute( await apiFetch( { path, method: 'post', data: { evidence, submit } } ) );
+			setDispute(
+				await apiFetch( {
+					path,
+					method: 'post',
+					data: { evidence, submit },
+				} )
+			);
+			handleSaveSuccess( submit );
+			setEvidence( {} );
+		} catch ( err ) {
+			handleSaveError( submit );
 		} finally {
 			setLoading( false );
-			setEvidence( {} );
 		}
 	};
 
