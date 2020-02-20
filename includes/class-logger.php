@@ -40,19 +40,21 @@ class Logger {
 	 *     'debug': Debug-level messages.
 	 */
 	public static function log( $message, $level = 'info' ) {
-		if ( ! self::is_logging_enabled() ) {
+		if ( ! self::can_log() ) {
 			return;
 		}
 
-		if ( ! function_exists( 'wc_get_logger' ) ) {
-			return;
-		}
+		self::init_logger();
+		self::$logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
+	}
 
+	/**
+	 * Initiate logger property with the WooCommerce core logger only if it's not set already
+	 */
+	public static function init_logger() {
 		if ( ! isset( self::$logger ) && ! is_object( self::$logger ) ) {
 			self::$logger = wc_get_logger();
 		}
-
-		self::$logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
 	}
 
 	/**
@@ -60,7 +62,15 @@ class Logger {
 	 *
 	 * @return bool Depending on the enable_logging setting.
 	 */
-	public static function is_logging_enabled() {
+	public static function can_log() {
+		if ( ! function_exists( 'wc_get_logger' ) ) {
+			return false;
+		}
+
+		if ( is_null( WC_Payments::get_gateway() ) ) {
+			return false;
+		}
+
 		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
 			return true;
 		}
