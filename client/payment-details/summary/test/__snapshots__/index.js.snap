@@ -23,11 +23,15 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           charge={
             Object {
               "amount": 1500,
+              "amount_refunded": 0,
+              "application_fee_amount": 70,
               "billing_details": Object {
                 "name": "Customer Name",
               },
               "created": 1568928240,
               "currency": "usd",
+              "dispute": null,
+              "disputed": false,
               "fee": 74,
               "id": "ch_38jdHA39KKA",
               "net": 1426,
@@ -55,11 +59,11 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       >
         <p>
           Fee: 
-          $-0.74
+          $-0.70
         </p>
         <p>
           Net: 
-          $14.26
+          $14.30
         </p>
       </div>
     </div>
@@ -220,11 +224,14 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             Object {
               "amount": 1500,
               "amount_refunded": 1500,
+              "application_fee_amount": 70,
               "billing_details": Object {
                 "name": "Customer Name",
               },
               "created": 1568928240,
               "currency": "usd",
+              "dispute": null,
+              "disputed": false,
               "fee": 74,
               "id": "ch_38jdHA39KKA",
               "net": 1426,
@@ -257,11 +264,11 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         </p>
         <p>
           Fee: 
-          $-0.74
+          $-0.70
         </p>
         <p>
           Net: 
-          $14.26
+          $-0.70
         </p>
       </div>
     </div>
@@ -347,11 +354,14 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             Object {
               "amount": 1500,
               "amount_refunded": 1200,
+              "application_fee_amount": 70,
               "billing_details": Object {
                 "name": "Customer Name",
               },
               "created": 1568928240,
               "currency": "usd",
+              "dispute": null,
+              "disputed": false,
               "fee": 74,
               "id": "ch_38jdHA39KKA",
               "net": 1426,
@@ -384,11 +394,142 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         </p>
         <p>
           Fee: 
-          $-0.74
+          $-0.70
         </p>
         <p>
           Net: 
-          $14.26
+          $2.30
+        </p>
+      </div>
+    </div>
+    <div
+      className="payment-details-summary__section"
+    >
+      <div
+        className="payment-details-summary__actions"
+      >
+        <ForwardRef(Button)
+          className="payment-details-summary__actions-item"
+          href="https://somerandomorderurl.com/?edit_order=45981"
+          isDefault={true}
+          isLarge={true}
+        >
+          View order 45981
+        </ForwardRef(Button)>
+      </div>
+    </div>
+  </div>
+  <hr
+    className="full-width"
+  />
+  <HorizontalList
+    items={
+      Array [
+        Object {
+          "content": "Sep 19, 2019, 5:24pm",
+          "title": "Date",
+        },
+        Object {
+          "content": "Customer Name",
+          "title": "Customer",
+        },
+        Object {
+          "content": <PaymentMethodDetails
+            payment={
+              Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              }
+            }
+          />,
+          "title": "Payment Method",
+        },
+        Object {
+          "content": "normal",
+          "title": "Risk Evaluation",
+        },
+        Object {
+          "content": "ch_38jdHA39KKA",
+        },
+      ]
+    }
+  />
+</Card>
+`;
+
+exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
+<Card
+  className="payment-details-summary-details"
+>
+  <div
+    className="payment-details-summary"
+  >
+    <div
+      className="payment-details-summary__section"
+    >
+      <p
+        className="payment-details-summary__amount"
+      >
+        $15.00
+        <span
+          className="payment-details-summary__amount-currency"
+        >
+          usd
+        </span>
+        <PaymentStatusChip
+          charge={
+            Object {
+              "amount": 1500,
+              "amount_refunded": 0,
+              "application_fee_amount": 70,
+              "billing_details": Object {
+                "name": "Customer Name",
+              },
+              "created": 1568928240,
+              "currency": "usd",
+              "dispute": Object {
+                "amount": 1500,
+              },
+              "disputed": true,
+              "fee": 74,
+              "id": "ch_38jdHA39KKA",
+              "net": 1426,
+              "order": Object {
+                "number": 45981,
+                "url": "https://somerandomorderurl.com/?edit_order=45981",
+              },
+              "outcome": Object {
+                "risk_level": "normal",
+              },
+              "payment_method_details": Object {
+                "card": Object {
+                  "brand": "visa",
+                  "last4": "4242",
+                },
+                "type": "card",
+              },
+              "type": "charge",
+            }
+          }
+        />
+      </p>
+      <div
+        className="payment-details-summary__breakdown"
+      >
+        <p>
+          Refunded: 
+          $-15.00
+        </p>
+        <p>
+          Fee: 
+          $-15.70
+        </p>
+        <p>
+          Net: 
+          $-15.70
         </p>
       </div>
     </div>

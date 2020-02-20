@@ -9,6 +9,7 @@
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
+const disputeFee = 1500;
 
 export const getDisputeStatus = ( dispute = {} ) => dispute.status || null;
 
@@ -72,4 +73,30 @@ export const getChargeStatus = ( charge = {} ) => {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
 	}
 	return '';
+};
+
+/**
+ * Calculates display values for charge amounts.
+ *
+ * @param {object} charge The full charge object.
+ * @return {object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
+ */
+export const getChargeAmounts = ( charge ) => {
+	let refunded, fee;
+
+	// The base fee is the application fee.
+	fee = charge.application_fee_amount;
+	refunded = 0;
+
+	if ( isChargeDisputed( charge ) ) {
+		fee += disputeFee;
+		refunded = charge.dispute.amount;
+	} else if ( isChargeRefunded( charge ) ) {
+		refunded = charge.amount_refunded;
+	}
+
+	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
+	const net = charge.amount - fee - ( refunded || 0 );
+
+	return { net, fee, refunded };
 };
