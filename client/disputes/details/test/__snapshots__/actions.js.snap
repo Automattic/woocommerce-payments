@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Dispute details screen renders correctly for closed dispute 1`] = `
+exports[`Dispute details actions renders correctly for closed dispute 1`] = `
 <Actions
   id="dp_mock"
   isSubmitted={false}
@@ -8,7 +8,7 @@ exports[`Dispute details screen renders correctly for closed dispute 1`] = `
 />
 `;
 
-exports[`Dispute details screen renders correctly for dispute needing response 1`] = `
+exports[`Dispute details actions renders correctly for dispute needing response 1`] = `
 <Actions
   id="dp_mock"
   needsResponse={true}
@@ -50,7 +50,7 @@ exports[`Dispute details screen renders correctly for dispute needing response 1
 </Actions>
 `;
 
-exports[`Dispute details screen renders correctly for dispute with evidence submitted 1`] = `
+exports[`Dispute details actions renders correctly for dispute with evidence submitted 1`] = `
 <Actions
   id="dp_mock"
   isSubmitted={true}
