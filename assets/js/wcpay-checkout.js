@@ -108,6 +108,7 @@ jQuery( function( $ ) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
+			paymentMethodGenerated = null;
 			return;
 		}
 
