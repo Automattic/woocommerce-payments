@@ -1,0 +1,85 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dispute info renders correctly 1`] = `
+<div
+  className="wcpay-dispute-info"
+>
+  <div
+    key="created"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Dispute date: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      Nov 1, 2019
+    </span>
+  </div>
+  <div
+    key="amount"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Disputed amount: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      $10.00 USD
+    </span>
+  </div>
+  <div
+    key="dueBy"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Respond by: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      Nov 8, 2019 - 2:46AM
+    </span>
+  </div>
+  <div
+    key="reason"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Reason: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      Fraudulent
+    </span>
+  </div>
+  <div
+    key="order"
+  >
+    <span
+      className="wcpay-dispute-info-key"
+    >
+      Order: 
+    </span>
+    <span
+      className="wcpay-dispute-info-value"
+    >
+      <OrderLink
+        order={
+          Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          }
+        }
+      />
+    </span>
+  </div>
+</div>
+`;
