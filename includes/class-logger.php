@@ -27,6 +27,10 @@ class Logger {
 	/**
 	 * Add a log entry.
 	 *
+	 * Note that this depends on WC_Payments gateway property to be initialized as
+	 * we need this to access the plugins debug setting to figure out if the setting
+	 * is turned on.
+	 *
 	 * @param string $message Log message.
 	 *
 	 * @param string $level One of the following:
