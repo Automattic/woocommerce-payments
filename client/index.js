@@ -10,7 +10,7 @@ import { addFilter } from '@wordpress/hooks';
  * Internal dependencies
  */
 import './style.scss';
-import { HelloWorld } from 'hello-world';
+import DepositsPage from 'deposits';
 import TransactionsPage from 'transactions';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
@@ -19,7 +19,6 @@ import PaymentDetailsPage from 'payment-details';
 import ConnectAccountPage from 'connect-account-page';
 import { withTestNotice, topics } from 'components/test-mode-notice';
 
-const DepositsPage = () => <HelloWorld>Hello from the deposits page</HelloWorld>;
 const DepositDetailsPage = ( { query } ) => <TransactionsPage depositId={ query.id } />;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {

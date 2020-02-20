@@ -1,0 +1,6 @@
+/** @format */
+
+export default {
+	SET_DEPOSITS: 'SET_DEPOSITS',
+	SET_ERROR_FOR_DEPOSIT_QUERY: 'SET_ERROR_FOR_DEPOSIT_QUERY',
+};
