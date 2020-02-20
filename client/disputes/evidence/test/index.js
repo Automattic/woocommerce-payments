@@ -7,7 +7,7 @@ import { shallow, mount } from 'enzyme';
 /**
  * Internal dependencies
  */
-import { DisputeEvidenceForm } from '../';
+import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 
 /* eslint-disable camelcase */
 const disputeNeedsResponse = {
@@ -46,7 +46,6 @@ describe( 'Dispute evidence form', () => {
 		const form = shallow(
 			<DisputeEvidenceForm
                 evidence={ disputeNeedsResponse.evidence }
-                showPlaceholder={ false }
                 readOnly={ false }
 			/>
 		);
@@ -57,8 +56,7 @@ describe( 'Dispute evidence form', () => {
         const form = shallow(
 			<DisputeEvidenceForm
 				evidence={ disputeNoNeedForResponse.evidence }
-				showPlaceholder={ false }
-				readOnly={ false }
+				readOnly={ true }
 			/>
 		);
 		expect( form ).toMatchSnapshot();
@@ -71,7 +69,6 @@ describe( 'Dispute evidence form', () => {
 		const form = mount(
 			<DisputeEvidenceForm
 				evidence={ disputeNeedsResponse.evidence }
-				showPlaceholder={ false }
 				readOnly={ false }
 				onSave={ jest.fn() }
 			/>
@@ -93,7 +90,6 @@ describe( 'Dispute evidence form', () => {
 		const form = mount(
 			<DisputeEvidenceForm
 				evidence={ disputeNeedsResponse.evidence }
-				showPlaceholder={ false }
 				readOnly={ false }
 				onSave={ onSave }
 			/>
@@ -112,5 +108,18 @@ describe( 'Dispute evidence form', () => {
 		// Test confirmed case.
 		submitButton.simulate( 'click' );
 		expect( onSave ).toHaveBeenCalledTimes( 1 );
+	} );
+} );
+
+describe( 'Dispute evidence page', () => {
+	test( 'renders correctly', () => {
+		const form = shallow(
+			<DisputeEvidencePage
+				showPlaceholder={ false }
+				dispute={ disputeNeedsResponse }
+				evidence={ disputeNeedsResponse.evidence }
+			/>
+		);
+		expect( form ).toMatchSnapshot();
 	} );
 } );
