@@ -333,7 +333,11 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
 	public function list_disputes() {
-		$disputes = $this->request( array(), self::DISPUTES_API, self::GET );
+		$query = [
+			'limit' => 100,
+		];
+
+		$disputes = $this->request( $query, self::DISPUTES_API, self::GET );
 
 		// Add WooCommerce order information to each dispute.
 		if ( isset( $disputes['data'] ) ) {
