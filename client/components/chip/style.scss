@@ -21,4 +21,8 @@
 		background: $red-5;
 		color: $red-80;
 	}
+
+	&.is-compact {
+		padding: 0.06rem 0.65rem 0.1rem;
+	}
 }
