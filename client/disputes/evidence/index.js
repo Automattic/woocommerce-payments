@@ -52,6 +52,7 @@ export const DisputeEvidenceForm = props => {
 										fileName={ fileName }
 										onFileChange={ onFileChange }
 										onFileRemove={ onFileRemove }
+										isDone = { ! isLoading && fileName.length > 0 }
 										isLoading={ isLoading }
 										hasError={ hasError } />;
 						}
