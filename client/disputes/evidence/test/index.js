@@ -77,7 +77,7 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		const submitButton = form.find( 'button.is-primary' );
+		const submitButton = form.find( 'button.is-primary' ).last();
 		submitButton.simulate( 'click' );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 		expect( window.confirm ).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe( 'Dispute evidence form', () => {
 				onSave={ onSave }
 			/>
 		);
-		const submitButton = form.find( 'button.is-primary' );
+		const submitButton = form.find( 'button.is-primary' ).last();
 
 		window.confirm = jest.fn();
 		window.confirm

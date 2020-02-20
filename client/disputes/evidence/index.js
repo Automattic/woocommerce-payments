@@ -47,6 +47,7 @@ export const DisputeEvidenceForm = props => {
 							const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
 							const hasError = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || false );
 							return <FileUploadControl
+										key={ field.key }
 										field={ field }
 										fileName={ fileName }
 										onFileChange={ onFileChange }

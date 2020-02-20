@@ -20,7 +20,6 @@ export const FileUploadControl = ( props ) => {
 
 	return (
 		<BaseControl
-			key={ field.key }
 			id={ 'form-file-upload-base-control-' + field.key }
 			label={ field.display }
 			help={ field.description }
