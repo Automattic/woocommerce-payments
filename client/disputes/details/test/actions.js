@@ -10,7 +10,7 @@ import { mount } from 'enzyme';
  */
 import Actions from '../actions';
 
-describe( 'Dispute details screen', () => {
+describe( 'Dispute details actions', () => {
 	test( 'renders correctly for dispute needing response', () => {
 		const doAccept = jest.fn();
 
