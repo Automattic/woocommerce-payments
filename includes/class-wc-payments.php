@@ -96,7 +96,7 @@ class WC_Payments {
 	 */
 	public static function display_admin_notice( $message, $classes ) {
 		?>
-		<div class="notice <?php echo esc_attr( $classes ); ?>">
+		<div class="notice wcpay-notice <?php echo esc_attr( $classes ); ?>">
 			<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
 			<p><?php echo $message; // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		</div>

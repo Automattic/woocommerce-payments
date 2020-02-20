@@ -187,6 +187,19 @@ class WC_Payments_Account {
 			} catch ( Exception $e ) {
 				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
 			}
+			return;
+		}
+
+		if ( isset( $_GET['wcpay-connection-success'] ) ) {
+			add_filter(
+				'admin_notices',
+				function () {
+					WC_Payments::display_admin_notice(
+						__( 'You’re ready to start taking payments!', 'woocommerce-payments' ),
+						'notice-success'
+					);
+				}
+			);
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
@@ -200,9 +213,6 @@ class WC_Payments_Account {
 
 		if (
 			isset( $_GET['wcpay-state'] )
-			&& isset( $_GET['wcpay-account-id'] )
-			&& isset( $_GET['wcpay-live-publishable-key'] )
-			&& isset( $_GET['wcpay-test-publishable-key'] )
 			&& isset( $_GET['wcpay-mode'] )
 		) {
 			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
@@ -273,7 +283,12 @@ class WC_Payments_Account {
 		if ( false === $oauth_data['url'] ) {
 			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
+			wp_safe_redirect(
+				add_query_arg(
+					array( 'wcpay-connection-success' => '1' ),
+					WC_Payment_Gateway_WCPay::get_settings_url()
+				)
+			);
 			exit;
 		}
 
@@ -295,11 +310,17 @@ class WC_Payments_Account {
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
+		delete_transient( self::ACCOUNT_TRANSIENT );
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
-		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'wcpay-connection-success' => '1' ),
+				WC_Payment_Gateway_WCPay::get_settings_url()
+			)
+		);
 		exit;
 	}
 
