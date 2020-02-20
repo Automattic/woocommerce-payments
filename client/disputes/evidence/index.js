@@ -17,15 +17,22 @@ import { Card } from '@woocommerce/components';
  */
 import '../style.scss';
 import evidenceFields from './fields';
-import Page from '../../components/page';
-import CardFooter from '../../components/card-footer';
+import Info from '../info';
+import Page from 'components/page';
+import CardFooter from 'components/card-footer';
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, showPlaceholder, onChange, onSave, readOnly } = props;
+	const { dispute, evidence, showPlaceholder, onChange, onSave } = props;
 
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
 	}
+
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
+
+	const readOnly = 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
 
 	const evidenceSections = evidenceFields.map( section => {
 		return (
@@ -56,7 +63,12 @@ export const DisputeEvidenceForm = props => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
+			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
+			</Card>
+
 			{ evidenceSections }
+
 			{ readOnly ? null : (
 				<Card>
 					<p>
@@ -157,10 +169,10 @@ export default ( { query } ) => {
 	return (
 		<DisputeEvidenceForm
 			showPlaceholder={ loading }
+			dispute={ dispute }
 			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
 			onChange={ ( key, value ) => setEvidence( { ...evidence, [ key ]: value } ) }
 			onSave={ doSave }
-			readOnly={ dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status }
 		/>
 	);
 };
