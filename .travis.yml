@@ -89,9 +89,9 @@ deploy:
   script: bash bin/deploy-to-test-site.sh
   skip_cleanup: true
   on:
-    branch: master
+    branch: fix/pressable-uploads
     condition: $SHOULD_DEPLOY = 1
 
 branches:
   only:
-    - master
+    - fix/pressable-uploads
