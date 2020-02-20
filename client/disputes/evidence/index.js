@@ -22,17 +22,7 @@ import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 
 export const DisputeEvidenceForm = props => {
-	const { dispute, evidence, showPlaceholder, onChange, onSave } = props;
-
-	if ( showPlaceholder ) {
-		return <div>Loading…</div>;
-	}
-
-	if ( dispute == null ) {
-		return <div>Dispute not loaded</div>;
-	}
-
-	const readOnly = 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+	const { evidence, onChange, onSave, readOnly } = props;
 
 	const evidenceSections = evidenceFields.map( section => {
 		return (
@@ -62,13 +52,8 @@ export const DisputeEvidenceForm = props => {
 	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
 
 	return (
-		<Page isNarrow className="wcpay-dispute-evidence">
-			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
-				<Info dispute={ dispute } />
-			</Card>
-
+		<>
 			{ evidenceSections }
-
 			{ readOnly ? null : (
 				<Card>
 					<p>
@@ -99,6 +84,34 @@ export const DisputeEvidenceForm = props => {
 					</CardFooter>
 				</Card>
 			) }
+		</>
+	);
+};
+
+export const DisputeEvidencePage = props => {
+	const { showPlaceholder, dispute, evidence, onChange, onSave } = props;
+
+	if ( showPlaceholder ) {
+		return <div>Loading…</div>;
+	}
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
+
+	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+
+	return (
+		<Page isNarrow className="wcpay-dispute-evidence">
+			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
+			</Card>
+
+			<DisputeEvidenceForm
+				evidence={ evidence }
+				onChange={ onChange }
+				onSave={ onSave }
+				readOnly={ readOnly }
+			/>
 		</Page>
 	);
 };
@@ -167,7 +180,7 @@ export default ( { query } ) => {
 	};
 
 	return (
-		<DisputeEvidenceForm
+		<DisputeEvidencePage
 			showPlaceholder={ loading }
 			dispute={ dispute }
 			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
