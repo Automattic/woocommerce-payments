@@ -8,6 +8,24 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "bank_cannot_process",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -38,6 +56,24 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "check_returned",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -68,6 +104,24 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "credit_not_processed",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If your customer was not refunded appropriately, you will need to accept the dispute, or resolve the issue with your customer. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -114,6 +168,24 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "customer_initiated",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -144,6 +216,24 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "debit_not_authorized",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -174,6 +264,24 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "duplicate",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If there were duplicate payments, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -222,6 +330,24 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "fraudulent",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
@@ -269,6 +395,24 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "general",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
     </Paragraphs>
@@ -303,6 +447,24 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "incorrect_account_details",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -333,6 +495,24 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "insufficient_funds",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs />
     <Actions
       id="dp_asdfghjkl"
@@ -363,6 +543,24 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "product_not_received",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If you can not prove the customer received their product or service, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -409,6 +607,24 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "product_unacceptable",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If you can not prove the customer received their product or service as described, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -458,6 +674,24 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "subscription_canceled",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -505,6 +739,24 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
   <Card
     title="Dispute Overview"
   >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "order": Object {
+            "number": "1",
+            "url": "http://test.local/order/1",
+          },
+          "reason": "unrecognized",
+          "status": "needs_response",
+        }
+      }
+    />
     <Paragraphs>
       If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.

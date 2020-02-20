@@ -22,6 +22,9 @@ export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 	if ( showPlaceholder ) {
 		return <div>Loading…</div>;
 	}
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
 
 	const needsResponse = 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status;
 	const isSubmitted = dispute.evidence_details && dispute.evidence_details.submission_count > 0;
