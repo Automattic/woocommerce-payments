@@ -153,5 +153,4 @@ class Logger {
 	public static function debug( $message ) {
 		self::log( $message, 'debug' );
 	}
-
 }
