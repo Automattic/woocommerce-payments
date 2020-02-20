@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow, render } from 'enzyme';
+import { shallow } from 'enzyme';
 
 /**
  * Internal dependencies
@@ -14,7 +14,9 @@ const getBaseCharge = () => ( {
 	/* Stripe data comes in seconds, instead of the default Date miliseconds */
 	created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
 	amount: 1500,
+	// eslint-disable-next-line camelcase
 	amount_refunded: 0,
+	// eslint-disable-next-line camelcase
 	application_fee_amount: 70,
 	disputed: false,
 	dispute: null,
