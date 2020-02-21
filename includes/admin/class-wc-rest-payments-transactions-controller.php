@@ -61,7 +61,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$page       = intval( $request->get_params()['page'] );
 		$page_size  = intval( $request->get_params()['pagesize'] );
 		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
+		return $this->forward_request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
 	}
 
 	/**
@@ -71,7 +71,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 */
 	public function get_transaction( $request ) {
 		$transaction_id = $request->get_params()['transaction_id'];
-		return $this->request( 'get_transactions', [ 'transaction_id' ] );
+		return $this->forward_request( 'get_transactions', [ 'transaction_id' ] );
 	}
 
 	/**
@@ -81,6 +81,6 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 */
 	public function get_transactions_summary( $request ) {
 		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->request( 'get_transactions_summary', [ $deposit_id ] );
+		return $this->forward_request( 'get_transactions_summary', [ $deposit_id ] );
 	}
 }
