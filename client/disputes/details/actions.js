@@ -27,6 +27,11 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 		}
 	);
 
+	const acceptMessage = __(
+		"Are you sure you'd like to accept this dispute? This action can not be undone.",
+		'woocommerce-payments'
+	);
+
 	return (
 		<CardFooter>
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
@@ -36,7 +41,7 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 				}
 			</Link>
 			{ needsResponse && (
-				<Button isDefault isLarge onClick={ onAccept }>
+				<Button isDefault isLarge onClick={ () => window.confirm( acceptMessage ) && onAccept() }>
 					{ __( 'Accept Dispute', 'woocommerce-payments' ) }
 				</Button>
 			) }
