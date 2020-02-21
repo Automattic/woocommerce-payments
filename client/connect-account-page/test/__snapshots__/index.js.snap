@@ -14,26 +14,20 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       />
     </p>
     <h2>
-      Accept credit cards online using WooCommerce Payments. Verify your business details to begin receiving payments.
+      setup-heading
     </h2>
+    <p>
+      <Link
+        href="/tos-url"
+        type="wc-admin"
+      />
+    </p>
     <p>
       <ForwardRef(Button)
         href="/wcpay-connect-url"
         isLarge={true}
         isPrimary={true}
-      >
-        Get started
-      </ForwardRef(Button)>
-    </p>
-    <p>
-      By clicking 'Get started' you agree to WooCommerce Payments
-       
-      <a
-        href="#"
-      >
-        terms of service
-      </a>
-      .
+      />
     </p>
     <p>
       <Link

@@ -135,7 +135,41 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			$message = self::get_connect_message();
+			$message  = '<p>';
+			$message .= __(
+				'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+				'woocommerce-payments'
+			);
+			$message .= '</p>';
+			$message .= '<p>';
+
+			/* translators: Link to WordPress.com TOS URL */
+			$terms_message = __(
+				'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+				'woocommerce-payments'
+			);
+			$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+			$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+			$message      .= $terms_message;
+			$message      .= '</p>';
+
+			$message .= '<p>';
+			$message .= '<a href="' . self::get_connect_url() . '" class="button">';
+			$message .= __( ' Get started', 'woocommerce-payments' );
+			$message .= '</a>';
+			$message .= '</p>';
+
+			$message = wp_kses(
+				$message,
+				array(
+					'a' => array(
+						'class' => array(),
+						'href'  => array(),
+					),
+					'p' => array(),
+				)
+			);
+
 			add_filter(
 				'admin_notices',
 				function () use ( $message ) {
@@ -157,7 +191,6 @@ class WC_Payments_Account {
 				}
 			);
 		}
-
 		return true;
 	}
 
@@ -228,17 +261,6 @@ class WC_Payments_Account {
 	 */
 	public static function get_connect_url() {
 		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
-	}
-
-	/**
-	 * Get Stripe connect message with connect link
-	 */
-	public static function get_connect_message() {
-		return sprintf(
-			/* translators: 1) oauth entry point URL */
-			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a>', 'woocommerce-payments' ),
-			self::get_connect_url()
-		);
 	}
 
 	/**

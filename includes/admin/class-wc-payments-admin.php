@@ -180,12 +180,28 @@ class WC_Payments_Admin {
 			true
 		);
 
+		$strings                 = array();
+		$strings['setupHeading'] = __(
+			'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+			'woocommerce-payments'
+		);
+
+		/* translators: Link to WordPress.com TOS URL */
+		$strings['setupTerms'] = __(
+			'By clicking \'Get started\' you agree to WooCommerce Payments terms of service.',
+			'woocommerce-payments'
+		);
+
+		$strings['setupGetStarted'] = __( ' Get started', 'woocommerce-payments' );
+
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
 			array(
 				'connectUrl' => WC_Payments_Account::get_connect_url(),
 				'testMode'   => $this->wcpay_gateway->is_in_test_mode(),
+				'strings'    => $strings,
+				'tosUrl'     => 'https://wordpress.com/tos',
 			)
 		);
 
