@@ -127,7 +127,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );

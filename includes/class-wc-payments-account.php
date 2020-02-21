@@ -185,20 +185,18 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
+				$this->add_notice_to_settings_page(
+					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
+					'notice-error'
+				);
 			}
 			return;
 		}
 
 		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			add_filter(
-				'admin_notices',
-				function () {
-					WC_Payments::display_admin_notice(
-						__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
-						'notice-success wcpay-settings-notice'
-					);
-				}
+			$this->add_notice_to_settings_page(
+				__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
+				'notice-success'
 			);
 		}
 
@@ -206,7 +204,10 @@ class WC_Payments_Account {
 			try {
 				$this->init_oauth();
 			} catch ( Exception $e ) {
-				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
+				$this->add_notice_to_settings_page(
+					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
+					'notice-error'
+				);
 			}
 			return;
 		}
@@ -306,7 +307,10 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
-			WC_Payments::get_gateway()->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
+			$this->add_notice_to_settings_page(
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
+				'notice-error'
+			);
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
@@ -409,6 +413,22 @@ class WC_Payments_Account {
 			/* translators: 1) dashboard login URL */
 			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
 			self::get_login_url()
+		);
+	}
+
+	/**
+	 * Adds a notice that will be forced to be visible on the settings page, despite WcAdmin hiding other notices.
+	 *
+	 * @param string $message Notice message.
+	 * @param string $classes Classes to apply, for example notice-error, notice-success.
+	 */
+	private function add_notice_to_settings_page( $message, $classes ) {
+		$classes .= ' wcpay-settings-notice'; // add a class that will be shown on the settings page.
+		add_filter(
+			'admin_notices',
+			function () use ( $message, $classes ) {
+				WC_Payments::display_admin_notice( $message, $classes );
+			}
 		);
 	}
 }
