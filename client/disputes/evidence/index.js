@@ -160,7 +160,11 @@ export default ( { query } ) => {
 	const fetchDispute = async () => {
 		setLoading( true );
 		try {
-			setDispute( await apiFetch( { path } ) );
+			const fetchedDispute = await apiFetch( { path } );
+			const fetchedEvidence = fetchedDispute && fetchedDispute.evidence || {};
+			setDispute( fetchedDispute );
+			// Updated fetched evidence to allow submission without UI changes.
+			setEvidence( fetchedEvidence );
 		} finally {
 			setLoading( false );
 		}
