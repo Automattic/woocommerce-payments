@@ -10,9 +10,9 @@ import { shallow } from 'enzyme';
 import ConnectAccountPage from '..';
 
 describe( 'ConnectAccountPage', () => {
-	const setupHeading    = 'setup-heading';
+	const setupHeading = 'setup-heading';
 	const wcpayConnectUrl = '/wcpay-connect-url';
-	const tosUrl          = '/tos-url';
+	const tosUrl = '/tos-url';
 	beforeEach( () => {
 		window.location.assign = jest.fn();
 		global.wcpaySettings = {
@@ -20,7 +20,7 @@ describe( 'ConnectAccountPage', () => {
 			strings: {
 				setupHeading: setupHeading,
 			},
-			tosUrl:     tosUrl,
+			tosUrl: tosUrl,
 		};
 	} );
 
