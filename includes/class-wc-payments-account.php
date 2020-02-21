@@ -241,7 +241,7 @@ class WC_Payments_Account {
 				function () {
 					WC_Payments::display_admin_notice(
 						__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
-						'notice-success'
+						'notice-success wcpay-settings-notice'
 					);
 				}
 			);
