@@ -26,6 +26,10 @@ exports[`Disputes list renders correctly 1`] = `
         "label": "Reason",
       },
       Object {
+        "key": "source",
+        "label": "Source",
+      },
+      Object {
         "key": "order",
         "label": "Order #",
       },
@@ -70,6 +74,12 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "fraudulent",
         },
         Object {
+          "display": <span
+            className="payment-method__brand payment-method__brand--visa"
+          />,
+          "value": "visa",
+        },
+        Object {
           "display": <OrderLink
             order={
               Object {
@@ -110,6 +120,12 @@ exports[`Disputes list renders correctly 1`] = `
         Object {
           "display": "General",
           "value": "general",
+        },
+        Object {
+          "display": <span
+            className="payment-method__brand payment-method__brand--undefined"
+          />,
+          "value": undefined,
         },
         Object {
           "display": null,

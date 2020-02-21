@@ -27,6 +27,7 @@ const headers = [
 	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
 	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
 	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
+	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
 	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
 	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
 	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
@@ -47,10 +48,16 @@ export const DisputesList = ( props ) => {
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
 
+		const source = ( ( ( dispute.charge || {} ).payment_method_details || {} ).card || {} ).brand;
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
 			reason: { value: dispute.reason, display: reasonDisplay },
+			source: {
+				value: source,
+				display: <span className={ `payment-method__brand payment-method__brand--${ source }` } />,
+			},
 			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,

@@ -67,7 +67,7 @@ export const TransactionsList = ( props ) => {
 			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
 			source: {
 				value: txn.source,
-				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` }></span>,
+				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` } />,
 			},
 			order: { value: txn.order_id, display: orderUrl },
 			customer: { value: txn.customer_name, display: txn.customer_name },

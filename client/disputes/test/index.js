@@ -24,6 +24,15 @@ describe( 'Disputes list', () => {
 					},
 					reason: 'fraudulent',
 					status: 'needs_response',
+					charge: {
+						id: 'ch_mock',
+						// eslint-disable-next-line camelcase
+						payment_method_details: {
+							card: {
+								brand: 'visa',
+							},
+						},
+					},
 					order: {
 						number: '1',
 						url: 'http://test.local/order/1',
@@ -40,7 +49,7 @@ describe( 'Disputes list', () => {
 					},
 					reason: 'general',
 					status: 'under_review',
-					// dispute without order information
+					// dispute without order or charge information
 				},
 			],
 		};
