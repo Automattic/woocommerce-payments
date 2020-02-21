@@ -392,7 +392,6 @@ class WC_Payments_API_Client {
 		);
 	}
 
-
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
