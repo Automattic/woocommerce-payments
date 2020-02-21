@@ -4,50 +4,48 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Card, Link } from '@woocommerce/components';
-import Page from '../components/page';
-import CardFooter from '../components/card-footer';
+import { Card } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
-import { reasons } from './strings';
-import Paragraphs from '../components/paragraphs';
-import './style.scss';
+import { reasons } from '../strings';
+import Actions from './actions';
+import Info from '../info';
+import Paragraphs from 'components/paragraphs';
+import Page from 'components/page';
+import '../style.scss';
 
-const Actions = ( { id } ) => {
-	const challengeUrl = addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-admin',
-			path: '/payments/disputes/challenge',
-			id,
-		}
-	);
-
-	return (
-		<CardFooter>
-			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
-				{ __( 'Challenge Dispute', 'woocommerce-payments' ) }
-			</Link>
-		</CardFooter>
-	);
-};
-
-export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
+export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 	if ( showPlaceholder ) {
+		// TODO Render proper placeholder view.
 		return <div>Loading…</div>;
 	}
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
+
+	const needsResponse = 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status;
+	const isSubmitted = dispute.evidence_details && dispute.evidence_details.submission_count > 0;
+
+	const actions = (
+		<Actions
+			id={ dispute.id }
+			needsResponse={ needsResponse }
+			isSubmitted={ isSubmitted }
+			onAccept={ onAccept }
+		/>
+	);
 
 	const mapping = reasons[ dispute.reason ] || {};
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
 				<Paragraphs>{ mapping.overview }</Paragraphs>
-				<Actions id={ dispute.id } />
+				{ actions }
 			</Card>
 			{/* translators: heading for dispute category information section */}
 			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
@@ -56,7 +54,7 @@ export const DisputeDetails = ( { dispute, showPlaceholder } ) => {
 				<Paragraphs>{ mapping.required }</Paragraphs>
 				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
 				<Paragraphs>{ mapping.respond }</Paragraphs>
-				<Actions id={ dispute.id } />
+				{ actions }
 			</Card>
 		</Page>
 	);
@@ -81,10 +79,20 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
+	const doAccept = async () => {
+		setLoading( true );
+		try {
+			setDispute( await apiFetch( { path: `${ path }/close`, method: 'post' } ) );
+		} finally {
+			setLoading( false );
+		}
+	};
+
 	return (
 		<DisputeDetails
 			showPlaceholder={ loading }
 			dispute={ dispute }
+			onAccept={ doAccept }
 		/>
 	);
 };

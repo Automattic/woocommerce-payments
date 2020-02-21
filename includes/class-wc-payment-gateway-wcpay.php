@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Gateway class for WooCommerce Payments
  */
@@ -41,13 +43,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_in_dev_mode() {
-		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
 	}
 
 	/**
-	 * Returns whether test_mode is active for the gateway
+	 * Returns whether test_mode or dev_mode is active for the gateway
 	 *
-	 * @return boolean Test mode enable if true, disabled if false
+	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
 		if ( $this->is_in_dev_mode() ) {
@@ -116,11 +118,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			),
+			'enable_logging'  => array(
+				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
 		);
 
 		if ( $this->is_in_dev_mode() ) {
-			$this->form_fields['test_mode']['custom_attributes']['disabled'] = 'disabled';
-			$this->form_fields['test_mode']['label']                         = __( 'Dev Mode is active so all transaction will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
+			$this->form_fields['test_mode']['label']                              = __( 'Dev Mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
+			$this->form_fields['enable_logging']['label']                         = __( 'Dev Mode is active so logging is on by default.', 'woocommerce-payments' );
 		}
 
 		// Load the settings.
@@ -309,7 +320,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => $this->get_return_url( $order ),
 			);
 		} catch ( Exception $e ) {
-			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
 
@@ -377,7 +387,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 
-			// TODO log error.
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
@@ -385,6 +394,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e->getMessage()
 			);
 
+			Logger::log( $note );
 			$order->add_order_note( $note );
 
 			return new WP_Error( $e->getMessage() );

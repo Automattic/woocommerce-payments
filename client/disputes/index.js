@@ -6,18 +6,17 @@
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard, Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
+import { TableCard } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
 import OrderLink from '../components/order-link';
 import DisputeStatusChip from '../components/dispute-status-chip';
+import DetailsLink from '../components/details-link';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
@@ -43,19 +42,7 @@ export const DisputesList = ( props ) => {
 			display: <OrderLink order={ dispute.order } />,
 		} : null;
 
-		const detailsUrl = addQueryArgs(
-			'admin.php',
-			{
-				page: 'wc-admin',
-				path: '/payments/disputes/details',
-				id: dispute.id,
-			}
-		);
-		const detailsLink = (
-			<Link href={ detailsUrl } >
-				<Gridicon icon="info-outline" size={ 18 } />
-			</Link>
-		);
+		const detailsLink = <DetailsLink id={ dispute.id } parentSegment="disputes" />;
 
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
