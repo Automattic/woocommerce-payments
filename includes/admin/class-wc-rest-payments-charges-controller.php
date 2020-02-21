@@ -64,7 +64,21 @@ class WC_REST_Payments_Charges_Controller extends WP_REST_Controller {
 	 */
 	public function get_charge( $request ) {
 		$charge_id = $request->get_params()['charge_id'];
-		return rest_ensure_response( $this->api_client->get_charge( $charge_id ) );
+		$charge    = $this->api_client->get_charge( $charge_id );
+
+		$raw_details     = $charge['billing_details']['address'];
+		$billing_details = array();
+
+		$billing_details['city']      = ( ! empty( $raw_details['city'] ) ) ? $raw_details['city'] : '';
+		$billing_details['country']   = ( ! empty( $raw_details['country'] ) ) ? $raw_details['country'] : '';
+		$billing_details['address_1'] = ( ! empty( $raw_details['line1'] ) ) ? $raw_details['line1'] : '';
+		$billing_details['address_2'] = ( ! empty( $raw_details['line2'] ) ) ? $raw_details['line2'] : '';
+		$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
+		$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
+
+		$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+
+		return rest_ensure_response( $charge );
 	}
 
 	/**
