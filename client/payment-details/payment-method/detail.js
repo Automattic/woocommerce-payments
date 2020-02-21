@@ -12,11 +12,10 @@ const PaymentDetailsPaymentMethodDetail = ( props ) => {
 	const { label, children } = props;
 
 	return (
-		<p>
-			<strong>{ label }</strong>
-			<br />
-			<em>{ children }</em>
-		</p>
+		<div className="payment-method-detail">
+			<h4 className="payment-method-detail__label">{ label }</h4>
+			<p className="payment-method-detail__value">{ children }</p>
+		</div>
 	);
 };
 

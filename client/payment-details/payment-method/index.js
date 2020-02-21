@@ -81,67 +81,70 @@ const PaymentDetailsPaymentMethod = ( props ) => {
 		cvcCheck, line1Check, postalCodeCheck, formattedAddress,
 	} = details;
 
+	// Shorthand for more readable code.
+	const Detail = PaymentDetailsPaymentMethodDetail;
+
 	return (
 		<Card title={ __( 'Payment method', 'woocommerce-payments' ) }>
-			<div style={ { float: 'left', width: '50%' } }>
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Number', 'woocommerce-payments' ) }>
-					&bull;&bull;&bull;&bull; { last4 }
-				</PaymentDetailsPaymentMethodDetail>
+			<div className="payment-method-details">
+				<div className="payment-method-details__column">
+					<Detail label={ __( 'Number', 'woocommerce-payments' ) }>
+						&bull;&bull;&bull;&bull; { last4 }
+					</Detail>
 
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Fingerprint', 'woocommerce-payments' ) }>
-					{ fingerprint }
-				</PaymentDetailsPaymentMethodDetail>
+					<Detail label={ __( 'Fingerprint', 'woocommerce-payments' ) }>
+						{ fingerprint }
+					</Detail>
 
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Expires', 'woocommerce-payments' ) }>
-					{ date }
-				</PaymentDetailsPaymentMethodDetail>
+					<Detail label={ __( 'Expires', 'woocommerce-payments' ) }>
+						{ date }
+					</Detail>
 
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Type', 'woocommerce-payments' ) }>
-					{ cardType }
-				</PaymentDetailsPaymentMethodDetail>
+					<Detail label={ __( 'Type', 'woocommerce-payments' ) }>
+						{ cardType }
+					</Detail>
 
-				<PaymentDetailsPaymentMethodDetail label={ __( 'ID', 'woocommerce-payments' ) }>
-					{ id }
-				</PaymentDetailsPaymentMethodDetail>
+					<Detail label={ __( 'ID', 'woocommerce-payments' ) }>
+						{ id }
+					</Detail>
+				</div>
+
+				<div className="payment-method-details__column">
+					<Detail label={ __( 'Owner', 'woocommerce-payments' ) }>
+						{ name }
+					</Detail>
+
+					<Detail label={ __( 'Owner Email', 'woocommerce-payments' ) }>
+						{ email }
+					</Detail>
+
+					<Detail label={ __( 'Address', 'woocommerce-payments' ) }>
+						<span dangerouslySetInnerHTML={ { __html: formattedAddress } } />
+					</Detail>
+
+					<Detail label={ __( 'Origin', 'woocommerce-payments' ) }>
+						{ country }
+					</Detail>
+
+					<Detail label={ __( 'CVC check', 'woocommerce-payments' ) }>
+						{ ( 'pass' === cvcCheck )
+							? __( 'Passed', 'woocommerce-payments' )
+							: __( 'Not passed ', 'woocommerce-payments' ) }
+					</Detail>
+
+					<Detail label={ __( 'Street check', 'woocommerce-payments' ) }>
+						{ ( 'pass' === line1Check )
+							? __( 'Passed', 'woocommerce-payments' )
+							: __( 'Not passed', 'woocommerce-payments' ) }
+					</Detail>
+
+					<Detail label={ __( 'Zip check', 'woocommerce-payments' ) }>
+						{ ( 'pass' === postalCodeCheck )
+							? __( 'Passed', 'woocommerce-payments' )
+							: __( 'Not passed', 'woocommerce-payments' ) }
+					</Detail>
+				</div>
 			</div>
-
-			<div style={ { float: 'right', width: '50%' } }>
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Owner', 'woocommerce-payments' ) }>
-					{ name }
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Owner Email', 'woocommerce-payments' ) }>
-					{ email }
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Address', 'woocommerce-payments' ) }>
-					<span dangerouslySetInnerHTML={ { __html: formattedAddress } } />
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Origin', 'woocommerce-payments' ) }>
-					{ country }
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'CVC check', 'woocommerce-payments' ) }>
-					{ ( 'pass' === cvcCheck )
-						? __( 'Passed', 'woocommerce-payments' )
-						: __( 'Not ', 'woocommerce-payments' ) }
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Street check', 'woocommerce-payments' ) }>
-					{ ( 'pass' === line1Check )
-						? __( 'Passed', 'woocommerce-payments' )
-						: __( 'Not ', 'woocommerce-payments' ) }
-				</PaymentDetailsPaymentMethodDetail>
-
-				<PaymentDetailsPaymentMethodDetail label={ __( 'Zip check', 'woocommerce-payments' ) }>
-					{ ( 'pass' === postalCodeCheck )
-						? __( 'Passed', 'woocommerce-payments' )
-						: __( 'Not ', 'woocommerce-payments' ) }
-				</PaymentDetailsPaymentMethodDetail>
-			</div>
-
-			<div style={ { clear: 'both', height: '2px' } }></div>
 		</Card>
 	);
 };

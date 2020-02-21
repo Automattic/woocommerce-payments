@@ -86,3 +86,35 @@
 	margin: 24px 0;
 	background-color: $warning;
 }
+
+.payment-method-details {
+	display: flex;
+	align-items: flex-start;
+
+	@media screen and (max-width: 1023px) {
+		display: block;
+	}
+
+	&__column {
+		flex: 0 0 50%;
+	}
+}
+
+.payment-method-detail {
+	display: flex;
+	align-items: flex-start;
+	font-size: 14px;
+	line-height: 28px;
+
+	&__label {
+		margin: 0;
+		color: $studio-gray-60;
+		flex: 0 0 36%;
+		font-weight: normal;
+	}
+
+	&__value {
+		margin: 0;
+		color: $studio-gray-80;
+	}
+}
