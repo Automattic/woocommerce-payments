@@ -50,7 +50,17 @@ export const DisputeEvidenceForm = props => {
 		const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
 		const error = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || '' );
 		const isDone = ! isLoading && fileName.length > 0;
-		return { fileName, field, onFileChange, onFileRemove, isLoading, error, isDone };
+		const accept = '.pdf, image/png, image/jpeg';
+		return {
+			field,
+			fileName,
+			accept,
+			onFileChange,
+			onFileRemove,
+			isLoading,
+			isDone,
+			error,
+		};
 	};
 
 	const composeFieldControl = field => {

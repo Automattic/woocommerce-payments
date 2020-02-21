@@ -6,7 +6,7 @@ import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
 export const FileUploadControl = ( props ) => {
-	const { fileName, field, isDone, isLoading, error, onFileChange, onFileRemove } = props;
+	const { fileName, field, isDone, isLoading, accept, error, onFileChange, onFileRemove } = props;
 	const hasError = error && error.length > 0;
 	const getIcon = () => {
 		return <Gridicon
@@ -33,7 +33,7 @@ export const FileUploadControl = ( props ) => {
 					isBusy={ isLoading }
 					disabled={ isLoading }
 					icon={ getIcon() }
-					accept=".pdf, image/png, image/jpeg"
+					accept={ accept }
 					onChange={ ( event ) => onFileChange( field.key, event.target.files[ 0 ] ) }
 				>
 					{ __( 'Upload File', 'woocommerce-payments' ) }
