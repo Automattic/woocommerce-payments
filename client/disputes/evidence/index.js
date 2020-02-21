@@ -11,6 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
+import { merge } from 'lodash';
 
 import { FileUploadControl } from './file-upload';
 
@@ -143,7 +144,16 @@ export default ( { query } ) => {
 	const fetchDispute = async () => {
 		setLoading( true );
 		try {
-			setDispute( await apiFetch( { path } ) );
+			const originalDispute = await apiFetch( { path } );
+			/*
+				Empty dispute metadata serialized as an Array if empty and this
+				affects merging dipute metadata updates with lodash.merge.
+				Replacing emtpy metadata array with empty object as a workaround.
+			*/
+			if ( originalDispute.metadata && 0 === originalDispute.metadata.length ) {
+				originalDispute.metadata = {};
+			}
+			setDispute( originalDispute );
 		} finally {
 			setLoading( false );
 		}
@@ -152,9 +162,15 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
+	const updateEvidence = ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) );
+	const updateDispute = ( updates = {} ) => setDispute( d => merge( {}, d, updates ) );
+
 	const doRemoveFile = async ( key ) => {
-		dispute.metadata[ key ] = '';
-		setEvidence( e => ( { ...e, [ key ]: '' } ) );
+		updateEvidence( key, '' );
+		updateDispute( {
+			metadata: { [ key ]: '' },
+			uploadingErrors: { [ key ]: '' },
+		} );
 	};
 
 	const doUploadFile = async ( key, file ) => {
@@ -167,32 +183,30 @@ export default ( { query } ) => {
 		body.append( 'purpose', 'dispute_evidence' );
 
 		// Set request status for UI.
-		dispute.isUploading = {
-			...dispute.isUploading,
-			[ key ]: true,
-		};
-		dispute.uploadingErrors = {
-			...dispute.uploadingErrors,
-			[ key ]: '',
-		};
+		updateDispute( {
+			isUploading: { [ key ]: true },
+			uploadingErrors: { [ key ]: '' },
+		} );
 
 		// Force reload evidence components.
-		setEvidence( e => ( { ...e, [ key ]: '' } ) );
+		updateEvidence( key, '' );
 
-		apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } )
-			.then( r => {
-				dispute.metadata[ key ] = r.filename;
-				dispute.isUploading[ key ] = false;
-
-				setEvidence( e => ( { ...e, [ key ]: r.id } ) );
-			} )
-			.catch( err => {
-				dispute.isUploading[ key ] = false;
-				dispute.uploadingErrors[ key ] = err.message;
-
-				// Force reload evidence components.
-				setEvidence( e => ( { ...e, [ key ]: '' } ) );
+		try {
+			const uploadedFile = await apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } );
+			updateDispute( {
+				metadata: { [ key ]: uploadedFile.filename },
+				isUploading: { [ key ]: false },
 			} );
+			updateEvidence( key, uploadedFile.id );
+		} catch ( err ) {
+			updateDispute( {
+				isUploading: { [ key ]: false },
+				uploadingErrors: { [ key ]: err.message },
+			} );
+
+			// Force reload evidence components.
+			updateEvidence( key, '' );
+		}
 	};
 
 	const handleSaveSuccess = submit => {
