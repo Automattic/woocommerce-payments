@@ -394,24 +394,6 @@ class WC_Payments_API_Client {
 
 
 	/**
-	 * Handles API request without throwing WC_Payments_API_Exception.
-	 *
-	 * @param string $method - API method name.
-	 * @param array  $args - API method args.
-	 * @param string $err_code - Optional error code to use for WP_Error.
-	 *
-	 * @return WP_Error|mixed - Method result of WP_Error in case of WC_Payments_API_Exception.
-	 */
-	public function safe_request( $method, $args, $err_code = '' ) {
-		try {
-			return call_user_func_array( [ $this, $method ], $args );
-		} catch ( WC_Payments_API_Exception $e ) {
-			$code = $err_code ?: 'wcpay_' . $method;
-			return new WP_Error( $code, $e->getMessage() );
-		}
-	}
-
-	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $request          - Details of the request to make.

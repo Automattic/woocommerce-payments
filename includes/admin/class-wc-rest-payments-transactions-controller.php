@@ -10,14 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for transactions.
  */
-class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
-
-	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
+class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
@@ -25,22 +18,6 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 * @var string
 	 */
 	protected $rest_base = 'payments/transactions';
-
-	/**
-	 * Client for making requests to the WooCommerce Payments API
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	private $api_client;
-
-	/**
-	 * WC_REST_Payments_Transactions_Controller constructor.
-	 *
-	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
-	 */
-	public function __construct( WC_Payments_API_Client $api_client ) {
-		$this->api_client = $api_client;
-	}
 
 	/**
 	 * Configure REST API routes.
@@ -84,7 +61,7 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 		$page       = intval( $request->get_params()['page'] );
 		$page_size  = intval( $request->get_params()['pagesize'] );
 		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->api_client->safe_request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
+		return $this->request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
 	}
 
 	/**
@@ -94,7 +71,7 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	public function get_transaction( $request ) {
 		$transaction_id = $request->get_params()['transaction_id'];
-		return rest_ensure_response( $this->api_client->get_transaction( $transaction_id ) );
+		return $this->request( 'get_transactions', [ 'transaction_id' ] );
 	}
 
 	/**
@@ -104,13 +81,6 @@ class WC_REST_Payments_Transactions_Controller extends WP_REST_Controller {
 	 */
 	public function get_transactions_summary( $request ) {
 		$deposit_id = $request->get_params()['deposit_id'];
-		return rest_ensure_response( $this->api_client->get_transactions_summary( $deposit_id ) );
-	}
-
-	/**
-	 * Verify access.
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
+		return $this->request( 'get_transactions_summary', [ $deposit_id ] );
 	}
 }
