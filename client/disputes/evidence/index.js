@@ -20,23 +20,12 @@ import { FileUploadControl } from './file-upload';
  */
 import '../style.scss';
 import evidenceFields from './fields';
-import Page from '../../components/page';
-import CardFooter from '../../components/card-footer';
+import Info from '../info';
+import Page from 'components/page';
+import CardFooter from 'components/card-footer';
 
 export const DisputeEvidenceForm = props => {
-	const {
-		evidence,
-		showPlaceholder,
-		onChange,
-		onFileChange,
-		onFileRemove,
-		onSave,
-		readOnly,
-	} = props;
-
-	if ( showPlaceholder ) {
-		return <div>Loading…</div>;
-	}
+	const { evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
 
 	const composeDefaultControlProps = field => ( {
 		label: field.display,
@@ -96,7 +85,7 @@ export const DisputeEvidenceForm = props => {
 	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
 
 	return (
-		<Page isNarrow className="wcpay-dispute-evidence">
+		<>
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
@@ -128,6 +117,33 @@ export const DisputeEvidenceForm = props => {
 					</CardFooter>
 				</Card>
 			) }
+		</>
+	);
+};
+
+export const DisputeEvidencePage = props => {
+	const { showPlaceholder, dispute, ...evidenceFormProps } = props;
+
+	if ( showPlaceholder ) {
+		// TODO Render proper placeholder view.
+		return <div>Loading…</div>;
+	}
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
+
+	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+
+	return (
+		<Page isNarrow className="wcpay-dispute-evidence">
+			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
+			</Card>
+
+			<DisputeEvidenceForm
+				{ ...evidenceFormProps }
+				readOnly={ readOnly }
+			/>
 		</Page>
 	);
 };
@@ -244,8 +260,9 @@ export default ( { query } ) => {
 	};
 
 	return (
-		<DisputeEvidenceForm
+		<DisputeEvidencePage
 			showPlaceholder={ loading }
+			dispute={ dispute }
 			evidence={
 				dispute
 				? {
@@ -256,10 +273,10 @@ export default ( { query } ) => {
 					uploadingErrors: dispute.uploadingErrors || {} }
 				: {}
 			}
-			onChange={ ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) ) }
+			onChange={ updateEvidence }
 			onFileChange={ doUploadFile }
-			onSave={ doSave }
 			onFileRemove={ doRemoveFile }
+			onSave={ doSave }
 			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
 		/>
 	);

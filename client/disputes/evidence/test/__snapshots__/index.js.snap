@@ -1,10 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Page
-  className="wcpay-dispute-evidence"
-  isNarrow={true}
->
+<Fragment>
   <Card
     key="general"
     title="General Evidence"
@@ -140,34 +137,31 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       </ForwardRef(Button)>
     </CardFooter>
   </Card>
-</Page>
+</Fragment>
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Page
-  className="wcpay-dispute-evidence"
-  isNarrow={true}
->
+<Fragment>
   <Card
     key="general"
     title="General Evidence"
   >
     <WithInstanceId(TextareaControl)
-      disabled={false}
+      disabled={true}
       key="product_description"
       label="Product Description"
       onChange={[Function]}
       value=""
     />
     <WithInstanceId(TextControl)
-      disabled={false}
+      disabled={true}
       key="customer_name"
       label="Customer Name"
       onChange={[Function]}
       value=""
     />
     <WithInstanceId(TextControl)
-      disabled={false}
+      disabled={true}
       key="customer_email_address"
       label="Customer Email"
       onChange={[Function]}
@@ -187,14 +181,14 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       key="customer_signature"
     />
     <WithInstanceId(TextareaControl)
-      disabled={false}
+      disabled={true}
       key="billing_address"
       label="Customer Billing Address"
       onChange={[Function]}
       value=""
     />
     <WithInstanceId(TextControl)
-      disabled={false}
+      disabled={true}
       key="customer_purchase_ip"
       label="Customer IP Address"
       onChange={[Function]}
@@ -232,7 +226,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     title="Additional Details"
   >
     <WithInstanceId(TextareaControl)
-      disabled={false}
+      disabled={true}
       key="uncategorized_text"
       label="Additional Details"
       onChange={[Function]}
@@ -251,37 +245,44 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       key="uncategorized_file"
     />
   </Card>
-  <Card>
-    <p>
-      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
-    </p>
-    <p>
-      <strong>
-        Evidence submission is final.
-      </strong>
-       
-      You can also save this evidence for later instead of submitting it immediately.
-       
-      <strong>
-        We will automatically submit any saved evidence at the due date.
-      </strong>
-    </p>
-    <CardFooter>
-      <ForwardRef(Button)
-        isLarge={true}
-        isPrimary={true}
-        onClick={[Function]}
-      >
-        Submit Evidence
-      </ForwardRef(Button)>
-      <ForwardRef(Button)
-        isDefault={true}
-        isLarge={true}
-        onClick={[Function]}
-      >
-        Save For Later
-      </ForwardRef(Button)>
-    </CardFooter>
+</Fragment>
+`;
+
+exports[`Dispute evidence page renders correctly 1`] = `
+<Page
+  className="wcpay-dispute-evidence"
+  isNarrow={true}
+>
+  <Card
+    title="Challenge Dispute"
+  >
+    <Info
+      dispute={
+        Object {
+          "amount": 1000,
+          "created": 1572590800,
+          "evidence": Object {
+            "customer_purchase_ip": "127.0.0.1",
+            "uncategorized_text": "",
+          },
+          "evidence_details": Object {
+            "due_by": 1573199200,
+          },
+          "id": "dp_asdfghjkl",
+          "reason": "fraudulent",
+          "status": "needs_response",
+        }
+      }
+    />
   </Card>
+  <DisputeEvidenceForm
+    evidence={
+      Object {
+        "customer_purchase_ip": "127.0.0.1",
+        "uncategorized_text": "",
+      }
+    }
+    readOnly={false}
+  />
 </Page>
 `;

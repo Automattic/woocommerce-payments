@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * Communicates with WooCommerce Payments API.
  */
@@ -357,7 +359,14 @@ class WC_Payments_API_Client {
 	 * @return array dispute object.
 	 */
 	public function get_dispute( $dispute_id ) {
-		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
+		$dispute = $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
+
+		if ( is_wp_error( $dispute ) ) {
+			return $dispute;
+		}
+
+		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
+		return $this->add_order_info_to_object( $charge_id, $dispute );
 	}
 
 	/**
@@ -377,7 +386,24 @@ class WC_Payments_API_Client {
 			'metadata' => $metadata,
 		);
 
-		return $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
+		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
+
+		if ( is_wp_error( $dispute ) ) {
+			return $dispute;
+		}
+
+		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
+		return $this->add_order_info_to_object( $charge_id, $dispute );
+	}
+
+	/**
+	 * Close dispute with provided id.
+	 *
+	 * @param string $dispute_id id of dispute to close.
+	 * @return array dispute object.
+	 */
+	public function close_dispute( $dispute_id ) {
+		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
 	}
 
 	/**
@@ -426,7 +452,13 @@ class WC_Payments_API_Client {
 	 * @return array An array describing an account object.
 	 */
 	public function get_account_data() {
-		return $this->request( array(), self::ACCOUNTS_API, self::GET );
+		return $this->request(
+			array(
+				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			),
+			self::ACCOUNTS_API,
+			self::GET
+		);
 	}
 
 	/**
@@ -459,7 +491,10 @@ class WC_Payments_API_Client {
 	 */
 	public function get_login_data( $redirect_url ) {
 		return $this->request(
-			array( 'redirect_url' => $redirect_url ),
+			array(
+				'redirect_url' => $redirect_url,
+				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			),
 			self::ACCOUNTS_API . '/login_links',
 			self::POST
 		);
@@ -468,7 +503,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
-	 * @param array  $request          - Details of the request to make.
+	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
@@ -476,8 +511,15 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
-	private function request( $request, $api, $method, $is_site_specific = true ) {
-		$request['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+	private function request( $params, $api, $method, $is_site_specific = true ) {
+		// Apply the default params that can be overriden by the calling method.
+		$params = wp_parse_args(
+			$params,
+			array(
+				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
+			)
+		);
+
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
@@ -488,10 +530,10 @@ class WC_Payments_API_Client {
 		$body = null;
 
 		if ( self::GET === $method ) {
-			$url .= '?' . http_build_query( $request );
+			$url .= '?' . http_build_query( $params );
 		} else {
 			// Encode the request body as JSON.
-			$body = wp_json_encode( $request );
+			$body = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new WC_Payments_API_Exception(
 					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
@@ -506,6 +548,7 @@ class WC_Payments_API_Client {
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 
+		Logger::log( "REQUEST $method $url" );
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
@@ -516,8 +559,10 @@ class WC_Payments_API_Client {
 			$is_site_specific
 		);
 
-		// Extract the response body and decode it from JSON into an array.
-		return $this->extract_response_body( $response );
+		$response_body = $this->extract_response_body( $response );
+		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+
+		return $response_body;
 	}
 
 	/**
@@ -538,8 +583,10 @@ class WC_Payments_API_Client {
 		$response_body_json = wp_remote_retrieve_body( $response );
 		$response_body      = json_decode( $response_body_json, true );
 		if ( null === $response_body ) {
+			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
+			Logger::error( $message );
 			throw new WC_Payments_API_Exception(
-				__( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' ),
+				$message,
 				'wcpay_unparseable_or_null_body',
 				$response_code
 			);
@@ -564,6 +611,8 @@ class WC_Payments_API_Client {
 				$error_code,
 				$error_message
 			);
+
+			Logger::error( $message );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
