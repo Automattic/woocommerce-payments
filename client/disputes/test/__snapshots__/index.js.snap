@@ -38,14 +38,14 @@ exports[`Disputes list renders correctly 1`] = `
         "label": "Customer",
       },
       Object {
-        "hiddenByDefault": true,
         "key": "email",
         "label": "Email",
+        "visible": false,
       },
       Object {
-        "hiddenByDefault": true,
         "key": "country",
         "label": "Country",
+        "visible": false,
       },
       Object {
         "key": "created",

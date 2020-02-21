@@ -57,19 +57,19 @@ exports[`Transactions list renders correctly 1`] = `
         "label": "Customer",
       },
       Object {
-        "hiddenByDefault": true,
         "key": "email",
         "label": "Email",
+        "visible": false,
       },
       Object {
-        "hiddenByDefault": true,
         "key": "country",
         "label": "Country",
+        "visible": false,
       },
       Object {
-        "hiddenByDefault": true,
         "key": "riskLevel",
         "label": "Risk Level",
+        "visible": false,
       },
       Object {
         "cellClassName": "deposit",
@@ -313,19 +313,19 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         "label": "Customer",
       },
       Object {
-        "hiddenByDefault": true,
         "key": "email",
         "label": "Email",
+        "visible": false,
       },
       Object {
-        "hiddenByDefault": true,
         "key": "country",
         "label": "Country",
+        "visible": false,
       },
       Object {
-        "hiddenByDefault": true,
         "key": "riskLevel",
         "label": "Risk Level",
+        "visible": false,
       },
     ]
   }
