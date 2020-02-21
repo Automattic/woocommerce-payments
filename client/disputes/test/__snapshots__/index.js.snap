@@ -117,7 +117,7 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "US",
         },
         Object {
-          "display": "Nov 1, 2019 / 2:46AM",
+          "display": "Nov 1, 2019",
           "value": 1572590800000,
         },
         Object {
@@ -169,7 +169,7 @@ exports[`Disputes list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": "Oct 30, 2019 / 8:13PM",
+          "display": "Oct 30, 2019",
           "value": 1572480800000,
         },
         Object {

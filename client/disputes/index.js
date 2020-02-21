@@ -63,7 +63,7 @@ export const DisputesList = ( props ) => {
 				value: source,
 				display: <span className={ `payment-method__brand payment-method__brand--${ source }` } />,
 			},
-			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
+			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
