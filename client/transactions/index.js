@@ -42,9 +42,9 @@ const columns = [
 	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ), required: true },
 	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
 	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
-	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), hiddenByDefault: true },
-	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), hiddenByDefault: true },
-	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), hiddenByDefault: true },
+	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), visible: false },
+	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), visible: false },
+	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), visible: false },
 ];
 const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
 
