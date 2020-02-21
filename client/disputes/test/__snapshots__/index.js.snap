@@ -16,22 +16,27 @@ exports[`Disputes list renders correctly 1`] = `
       Object {
         "key": "amount",
         "label": "Amount",
+        "required": true,
       },
       Object {
         "key": "status",
         "label": "Status",
+        "required": true,
       },
       Object {
         "key": "reason",
         "label": "Reason",
+        "required": true,
       },
       Object {
         "key": "source",
         "label": "Source",
+        "required": true,
       },
       Object {
         "key": "order",
         "label": "Order #",
+        "required": true,
       },
       Object {
         "key": "customer",
@@ -50,10 +55,12 @@ exports[`Disputes list renders correctly 1`] = `
       Object {
         "key": "created",
         "label": "Disputed On",
+        "required": true,
       },
       Object {
         "key": "dueBy",
         "label": "Respond By",
+        "required": true,
       },
     ]
   }
