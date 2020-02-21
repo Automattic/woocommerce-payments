@@ -24,16 +24,16 @@ const currency = new Currency();
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
-	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
-	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
-	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
-	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
-	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), required: true },
+	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
+	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ), required: true },
+	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ), required: true },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ), required: true },
 	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
 	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), visible: false },
 	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), visible: false },
-	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
-	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
+	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ), required: true },
+	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ), required: true },
 ];
 
 export const DisputesList = ( props ) => {
