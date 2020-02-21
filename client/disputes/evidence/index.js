@@ -37,39 +37,43 @@ export const DisputeEvidenceForm = props => {
 		return <div>Loading…</div>;
 	}
 
+	const composeDefaultControlProps = field => ( {
+		label: field.display,
+		value: evidence[ field.key ] || '',
+		onChange: value => onChange( field.key, value ),
+		disabled: readOnly,
+		help: field.description,
+	} );
+
+	const composeFileUploadProps = field => {
+		const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
+		const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
+		const error = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || '' );
+		const isDone = ! isLoading && fileName.length > 0;
+		return { fileName, field, onFileChange, onFileRemove, isLoading, error, isDone };
+	};
+
+	const composeFieldControl = field => {
+		let Control = TextareaControl;
+		let controlProps = composeDefaultControlProps( field );
+
+		switch ( field.control ) {
+			case 'file':
+				Control = FileUploadControl;
+				controlProps = composeFileUploadProps( field );
+				break;
+			case 'text':
+				Control = TextControl;
+				break;
+		}
+
+		return <Control key={ field.key } { ...controlProps } />;
+	};
+
 	const evidenceSections = evidenceFields.map( section => {
 		return (
 			<Card key={ section.key } title={ section.title }>
-				{
-					section.fields.map( field => {
-						if ( field.control === 'file' ) {
-							const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
-							const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
-							const error = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || '' );
-							return <FileUploadControl
-										key={ field.key }
-										field={ field }
-										fileName={ fileName }
-										onFileChange={ onFileChange }
-										onFileRemove={ onFileRemove }
-										isDone = { ! isLoading && fileName.length > 0 }
-										isLoading={ isLoading }
-										error={ error } />;
-						}
-
-						const Control = field.control === 'text' ? TextControl : TextareaControl;
-						return (
-							<Control
-								key={ field.key }
-								label={ field.display }
-								value={ evidence[ field.key ] || '' }
-								onChange={ value => onChange( field.key, value ) }
-								disabled={ readOnly }
-								help={ field.description }
-							/>
-						);
-					} )
-				}
+				{ section.fields.map( composeFieldControl ) }
 			</Card>
 		);
 	} );
