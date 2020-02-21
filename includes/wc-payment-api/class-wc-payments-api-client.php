@@ -567,6 +567,11 @@ class WC_Payments_API_Client {
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
+		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
+		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
+			$response_body['metadata'] = new stdClass();
+		}
+
 		return $response_body;
 	}
 

@@ -144,16 +144,7 @@ export default ( { query } ) => {
 	const fetchDispute = async () => {
 		setLoading( true );
 		try {
-			const originalDispute = await apiFetch( { path } );
-			/*
-				Empty dispute metadata serialized as an Array if empty and this
-				affects merging dipute metadata updates with lodash.merge.
-				Replacing emtpy metadata array with empty object as a workaround.
-			*/
-			if ( originalDispute.metadata && 0 === originalDispute.metadata.length ) {
-				originalDispute.metadata = {};
-			}
-			setDispute( originalDispute );
+			setDispute( await apiFetch( { path } ) );
 		} finally {
 			setLoading( false );
 		}
