@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FileUploadControl renders default file upload control 1`] = `
+<BaseControl
+  id="form-file-upload-base-control-field_key"
+  label="Upload file"
+>
+  <div
+    className="file-upload"
+  >
+    <FormFileUpload
+      accept=".pdf, image/png, image/jpeg"
+      className={null}
+      disabled={false}
+      icon={
+        <t
+          icon="add-outline"
+          size={18}
+        />
+      }
+      id="form-file-upload-field_key"
+      isBusy={false}
+      isDestructive=""
+      isLarge={true}
+      isPrimary={true}
+      onChange={[Function]}
+    >
+      Upload File
+    </FormFileUpload>
+    <span
+      className="upload-message"
+    />
+  </div>
+</BaseControl>
+`;
+
+exports[`FileUploadControl renders loading state 1`] = `
+<BaseControl
+  id="form-file-upload-base-control-field_key"
+  label="Upload file"
+>
+  <div
+    className="file-upload"
+  >
+    <FormFileUpload
+      accept=".pdf, image/png, image/jpeg"
+      className={null}
+      disabled={true}
+      icon={
+        <t
+          icon="add-outline"
+          size={18}
+        />
+      }
+      id="form-file-upload-field_key"
+      isBusy={true}
+      isDestructive=""
+      isLarge={true}
+      isPrimary={true}
+      onChange={[Function]}
+    >
+      Upload File
+    </FormFileUpload>
+    <span
+      className="upload-message"
+    />
+  </div>
+</BaseControl>
+`;
+
+exports[`FileUploadControl renders upload done state 1`] = `
+<BaseControl
+  id="form-file-upload-base-control-field_key"
+  label="Upload file"
+>
+  <div
+    className="file-upload"
+  >
+    <FormFileUpload
+      accept=".pdf, image/png, image/jpeg"
+      className="is-success"
+      disabled={false}
+      icon={
+        <t
+          icon="checkmark"
+          size={18}
+        />
+      }
+      id="form-file-upload-field_key"
+      isBusy={false}
+      isDestructive=""
+      isLarge={true}
+      isPrimary={true}
+      onChange={[Function]}
+    >
+      Upload File
+    </FormFileUpload>
+    <span
+      className="upload-message"
+    >
+      file.pdf
+    </span>
+    <ForwardRef(IconButton)
+      className="delete-uploaded-file-button"
+      icon={
+        <t
+          icon="trash"
+          size={18}
+        />
+      }
+      onClick={[Function]}
+    />
+  </div>
+</BaseControl>
+`;
+
+exports[`FileUploadControl renders upload failed state 1`] = `
+<BaseControl
+  id="form-file-upload-base-control-field_key"
+  label="Upload file"
+>
+  <div
+    className="file-upload"
+  >
+    <FormFileUpload
+      accept=".pdf, image/png, image/jpeg"
+      className={null}
+      disabled={false}
+      icon={
+        <t
+          icon="add-outline"
+          size={18}
+        />
+      }
+      id="form-file-upload-field_key"
+      isBusy={false}
+      isDestructive={true}
+      isLarge={true}
+      isPrimary={true}
+      onChange={[Function]}
+    >
+      Upload File
+    </FormFileUpload>
+    <span
+      className="upload-message is-destructive"
+    >
+      Error message
+    </span>
+  </div>
+</BaseControl>
+`;
