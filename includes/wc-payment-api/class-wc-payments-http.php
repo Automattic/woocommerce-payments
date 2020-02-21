@@ -22,7 +22,7 @@ class WC_Payments_Http {
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws WC_Payments_Http_Exception - If not connected or request failed.
+	 * @throws WC_Payments_API_Exception - If not connected or request failed.
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
@@ -34,7 +34,11 @@ class WC_Payments_Http {
 
 		// Make sure we're not sendign requests if Jetpack is not connected.
 		if ( ! self::is_connected() ) {
-			throw new WC_Payments_Http_Exception( __( 'Jetpack is not connected', 'woocommerce-payments' ) );
+			throw new WC_Payments_API_Exception(
+				__( 'Jetpack is not connected', 'woocommerce-payments' ),
+				'wcpay_jetpack_not_connected',
+				409 // HTTP Conflict status code.
+			);
 		}
 
 		return self::make_request( $args, $body );
@@ -47,7 +51,7 @@ class WC_Payments_Http {
 	 * @param string $body - The body passed to the HTTP request.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws WC_Payments_Http_Exception - If request returns WP_Error.
+	 * @throws WC_Payments_API_Exception - If request returns WP_Error.
 	 */
 	private static function make_request( $args, $body ) {
 		$response = null;
@@ -64,7 +68,7 @@ class WC_Payments_Http {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new WC_Payments_Http_Exception( $message, 500 );
+			throw new WC_Payments_API_Exception( $message, 'wcpay_http_request_failed', 500 );
 		}
 
 		return $response;
