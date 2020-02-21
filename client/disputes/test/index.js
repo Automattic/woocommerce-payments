@@ -32,6 +32,14 @@ describe( 'Disputes list', () => {
 								brand: 'visa',
 							},
 						},
+						// eslint-disable-next-line camelcase
+						billing_details: {
+							name: 'Mock Customer',
+							email: 'mock@customer.net',
+							address: {
+								country: 'US',
+							},
+						},
 					},
 					order: {
 						number: '1',

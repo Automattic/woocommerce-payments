@@ -29,6 +29,9 @@ const headers = [
 	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
 	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
 	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
+	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
+	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), hiddenByDefault: true },
+	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), hiddenByDefault: true },
 	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
 	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
 ];
@@ -48,7 +51,9 @@ export const DisputesList = ( props ) => {
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
 
-		const source = ( ( ( dispute.charge || {} ).payment_method_details || {} ).card || {} ).brand;
+		const charge = dispute.charge || {};
+		const source = ( ( charge.payment_method_details || {} ).card || {} ).brand;
+		const customer = charge.billing_details || {};
 
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
@@ -64,6 +69,9 @@ export const DisputesList = ( props ) => {
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 			},
 			order,
+			customer: { value: customer.name, display: customer.name },
+			email: { value: customer.email, display: customer.email },
+			country: { value: ( customer.address || {} ).country, display: ( customer.address || {} ).country },
 			details: { value: dispute.id, display: detailsLink },
 		};
 
