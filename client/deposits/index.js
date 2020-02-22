@@ -14,8 +14,9 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  * Internal dependencies.
  */
 import { useDeposits } from '../data';
+import { displayType, displayStatus } from './strings';
 import { formatStringValue } from '../util';
-import DetailsLink, { getDetailsURL } from '../components/details-link';
+import DetailsLink, { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
 
@@ -36,20 +37,6 @@ const columns = [
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{ key: 'bankAccount', label: __( 'Bank Account', 'woocommerce-payments' ) },
 ];
-
-const displayType = {
-	deposit: __( 'Deposit', 'woocommerce-payments' ),
-	withdrawal: __( 'Withdrawal', 'woocommerce-payments' ),
-};
-
-const displayStatus = {
-	paid: __( 'Paid', 'woocommerce-payments' ),
-	pending: __( 'Pending', 'woocommerce-payments' ),
-	// eslint-disable-next-line camelcase
-	in_transit: __( 'In Transit', 'woocommerce-payments' ),
-	canceled: __( 'Canceled', 'woocommerce-payments' ),
-	failed: __( 'Failed', 'woocommerce-payments' ),
-};
 
 export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
