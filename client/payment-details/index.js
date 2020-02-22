@@ -14,7 +14,7 @@ const PaymentDetails = ( props ) => {
 	const chargeId = props.query.id;
 	const { charge } = useCharge( chargeId );
 	return (
-		<div>
+		<div className="wcpay-payment-details">
 			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>
 			<PaymentDetailsTimeline charge={ charge }></PaymentDetailsTimeline>
 			{ // Hidden for the beta.
