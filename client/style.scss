@@ -43,12 +43,16 @@
 }
 
 .woocommerce-table {
+	border-radius: 0;
+	border: 1px solid $light-gray-700;
+	box-shadow: none;
+
 	font-weight: 300;
 	letter-spacing: 0.012rem;
 	color: $studio-gray-60;
 
 	.woocommerce-card__header {
-		border-bottom: 1px solid #ccd0d4;
+		border-bottom: 1px solid $light-gray-700;
 	}
 
 	.woocommerce-card__title {
