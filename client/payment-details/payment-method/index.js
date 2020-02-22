@@ -10,6 +10,7 @@ import { Card } from '@woocommerce/components';
  * Internal dependencies.
  */
 import PaymentDetailsPaymentMethodDetail from './detail';
+import PaymentDetailsPaymentMethodCheck from './check';
 
 /**
  * Extracts and formats payment method details from a charge.
@@ -83,6 +84,7 @@ const PaymentDetailsPaymentMethod = ( props ) => {
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
+	const Check = PaymentDetailsPaymentMethodCheck;
 
 	return (
 		<Card title={ __( 'Payment method', 'woocommerce-payments' ) }>
@@ -127,21 +129,15 @@ const PaymentDetailsPaymentMethod = ( props ) => {
 					</Detail>
 
 					<Detail label={ __( 'CVC check', 'woocommerce-payments' ) }>
-						{ ( 'pass' === cvcCheck )
-							? __( 'Passed', 'woocommerce-payments' )
-							: __( 'Not passed ', 'woocommerce-payments' ) }
+						<Check checked={ cvcCheck } />
 					</Detail>
 
 					<Detail label={ __( 'Street check', 'woocommerce-payments' ) }>
-						{ ( 'pass' === line1Check )
-							? __( 'Passed', 'woocommerce-payments' )
-							: __( 'Not passed', 'woocommerce-payments' ) }
+						<Check checked={ line1Check } />
 					</Detail>
 
 					<Detail label={ __( 'Zip check', 'woocommerce-payments' ) }>
-						{ ( 'pass' === postalCodeCheck )
-							? __( 'Passed', 'woocommerce-payments' )
-							: __( 'Not passed', 'woocommerce-payments' ) }
+						<Check checked={ postalCodeCheck } />
 					</Detail>
 				</div>
 			</div>
