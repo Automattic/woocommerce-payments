@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -47,7 +47,9 @@ export function* getDeposit( id ) {
 		}
 
 		yield updateDeposit( result );
-	} catch ( e ) {}
+	} catch ( e ) {
+		yield dispatch( 'core/notices', 'createErrorNotice', 'Error retrieving deposit.' );
+	}
 }
 
 /**
@@ -77,6 +79,7 @@ export function* getDeposits( query ) {
 
 		// TODO Finish resolution on getDeposit selector for each result.
 	} catch ( e ) {
+		yield dispatch( 'core/notices', 'createErrorNotice', 'Error retrieving deposits.' );
 		yield updateErrorForDepositQuery( query, null, e );
 	}
 }
