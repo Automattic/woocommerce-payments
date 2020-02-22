@@ -21,6 +21,39 @@ describe( 'Deposits reducer tests', () => {
 		},
 	];
 
+	test( 'New individual deposits reduced correctly', () => {
+		const stateAfterOne = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_DEPOSIT,
+				data: mockDeposits[ 0 ],
+			}
+		);
+
+		expect( stateAfterOne ).toStrictEqual( {
+			byId: {
+				po_mock1: mockDeposits[ 0 ],
+			},
+			queries: {},
+		} );
+
+		const stateAfterTwo = reducer(
+			stateAfterOne,
+			{
+				type: types.SET_DEPOSIT,
+				data: mockDeposits[ 1 ],
+			}
+		);
+
+		expect( stateAfterTwo ).toStrictEqual( {
+			byId: {
+				po_mock1: mockDeposits[ 0 ],
+				po_mock2: mockDeposits[ 1 ],
+			},
+			queries: {},
+		} );
+	} );
+
 	test( 'New deposits reduced correctly', () => {
 		const reduced = reducer(
 			undefined, // Default state.

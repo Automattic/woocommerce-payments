@@ -6,9 +6,38 @@
  */
 import { getResourceId } from '../../util';
 import {
+	getDeposit,
 	getDeposits,
 	getDepositQueryError,
 } from '../selectors';
+
+// Sections in initial state are empty.
+const emptyState = {
+	deposits: {},
+};
+
+describe( 'Deposit selector', () => {
+	const mockDeposit = {
+		id: 'po_mock1',
+		amount: 2000,
+	};
+
+	const filledState = {
+		deposits: {
+			byId: {
+				po_mock1: mockDeposit,
+			},
+		},
+	};
+
+	test( 'Returns undefined when deposit is not present', () => {
+		expect( getDeposit( emptyState, 'po_mock1' ) ).toStrictEqual( undefined );
+	} );
+
+	test( 'Returns deposit when it is present', () => {
+		expect( getDeposit( filledState, 'po_mock1' ) ).toStrictEqual( mockDeposit );
+	} );
+} );
 
 describe( 'Deposits selectors', () => {
 	// Mock objects.
@@ -26,11 +55,6 @@ describe( 'Deposits selectors', () => {
 	const mockError = {
 		error: 'Something went wrong!',
 		code: 400,
-	};
-
-	// Sections in initial state are empty.
-	const emptyState = {
-		deposits: {},
 	};
 
 	// State is populated.
