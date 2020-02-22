@@ -9,9 +9,9 @@ import { shallow } from 'enzyme';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits } from '../../data';
+import { useDeposits } from 'data';
 
-jest.mock( '../../data', () => ( {
+jest.mock( 'data', () => ( {
 	useDeposits: jest.fn(),
 } ) );
 
