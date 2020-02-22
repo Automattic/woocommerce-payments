@@ -21,6 +21,11 @@ const getDepositsState = ( state ) => {
 	return state.deposits || {};
 };
 
+export const getDeposit = ( state, id ) => {
+	const depositById = getDepositsState( state ).byId || {};
+	return depositById[ id ];
+};
+
 /**
  * Retrieves the deposits corresponding to the provided query or a sane
  * default if they don't exist.
@@ -38,7 +43,7 @@ const getDepositsForQuery = ( state, query ) => {
 
 export const getDeposits = ( state, query ) => {
 	const ids = getDepositsForQuery( state, query ).data || [];
-	const depositById = getDepositsState( state ).byId;
+	const depositById = getDepositsState( state ).byId || {};
 	return ids.map( ( id ) => depositById[ id ] );
 };
 

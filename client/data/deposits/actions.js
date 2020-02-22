@@ -5,7 +5,14 @@
  */
 import TYPES from './action-types';
 
-export function updateDeposits( query, data ) {
+export function updateDeposit( data ) {
+	return {
+		type: TYPES.SET_DEPOSIT,
+		data,
+	};
+}
+
+export function* updateDeposits( query, data ) {
 	return {
 		type: TYPES.SET_DEPOSITS,
 		query,
