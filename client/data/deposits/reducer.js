@@ -17,6 +17,11 @@ const receiveDeposits = ( state = defaultState, { type, query = {}, data = [], e
 	const index = getResourceId( query );
 
 	switch ( type ) {
+		case TYPES.SET_DEPOSIT:
+			return {
+				...state,
+				byId: { ...state.byId, [ data.id ]: data },
+			};
 		case TYPES.SET_DEPOSITS:
 			return {
 				...state,
