@@ -24,7 +24,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	 *
 	 * @var WC_Payments_API_Client
 	 */
-	private $api_client;
+	protected $api_client;
 
 	/**
 	 * WC_Payments_REST_Controller constructor.

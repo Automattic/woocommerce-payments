@@ -103,3 +103,41 @@
 	padding: 12px;
 	background-color: $warning;
 }
+
+.wcpay-payment-details {
+	.woocommerce-card__header {
+		border-bottom: 1px solid $gray-5;
+	}
+}
+
+.payment-method-details {
+	display: flex;
+	align-items: flex-start;
+
+	@media screen and (max-width: 1023px) {
+		display: block;
+	}
+
+	&__column {
+		flex: 0 0 50%;
+	}
+}
+
+.payment-method-detail {
+	display: flex;
+	align-items: flex-start;
+	font-size: 14px;
+	line-height: 28px;
+
+	&__label {
+		margin: 0;
+		color: $studio-gray-60;
+		flex: 0 0 36%;
+		font-weight: normal;
+	}
+
+	&__value {
+		margin: 0;
+		color: $studio-gray-80;
+	}
+}
