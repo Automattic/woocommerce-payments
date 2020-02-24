@@ -23,6 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
+define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 /**
  * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
@@ -33,4 +34,5 @@ function wcpay_init() {
 	WC_Payments::init();
 }
 
-add_action( 'plugins_loaded', 'wcpay_init' );
+// Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
+add_action( 'plugins_loaded', 'wcpay_init', 11 );
