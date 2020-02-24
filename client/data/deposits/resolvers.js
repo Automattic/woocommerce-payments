@@ -5,6 +5,7 @@
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -48,7 +49,7 @@ export function* getDeposit( id ) {
 
 		yield updateDeposit( result );
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', 'Error retrieving deposit.' );
+		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposit.', 'woocommerce-payments' ) );
 	}
 }
 
@@ -82,7 +83,7 @@ export function* getDeposits( query ) {
 			yield dispatch( STORE_NAME, 'finishResolution', 'getDeposit', [ results.data[ i ].id ] );
 		}
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', 'Error retrieving deposits.' );
+		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposits.', 'woocommerce-payments' ) );
 		yield updateErrorForDepositQuery( query, null, e );
 	}
 }
