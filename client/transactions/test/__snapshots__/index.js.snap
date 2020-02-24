@@ -425,7 +425,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
     ]
   }
-  title="Transactions"
+  title="Deposit Transactions"
   totalRows={3}
 />
 `;
