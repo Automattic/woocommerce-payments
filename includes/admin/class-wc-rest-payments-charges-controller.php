@@ -10,14 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for charges.
  */
-class WC_REST_Payments_Charges_Controller extends WP_REST_Controller {
-
-	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
+class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
@@ -25,22 +18,6 @@ class WC_REST_Payments_Charges_Controller extends WP_REST_Controller {
 	 * @var string
 	 */
 	protected $rest_base = 'payments/charges';
-
-	/**
-	 * Client for making requests to the WooCommerce Payments API
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	private $api_client;
-
-	/**
-	 * WC_REST_Payments_Charges_Controller constructor.
-	 *
-	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
-	 */
-	public function __construct( WC_Payments_API_Client $api_client ) {
-		$this->api_client = $api_client;
-	}
 
 	/**
 	 * Configure REST API routes.
@@ -64,13 +41,6 @@ class WC_REST_Payments_Charges_Controller extends WP_REST_Controller {
 	 */
 	public function get_charge( $request ) {
 		$charge_id = $request->get_params()['charge_id'];
-		return rest_ensure_response( $this->api_client->get_charge( $charge_id ) );
-	}
-
-	/**
-	 * Verify access.
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
+		return $this->forward_request( 'get_charge', [ $charge_id ] );
 	}
 }

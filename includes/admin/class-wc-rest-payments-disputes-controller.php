@@ -10,14 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for disputes.
  */
-class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
-
-	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
+class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
@@ -25,22 +18,6 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 * @var string
 	 */
 	protected $rest_base = 'payments/disputes';
-
-	/**
-	 * Client for making requests to the WooCommerce Payments API
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	private $api_client;
-
-	/**
-	 * WC_REST_Payments_Disputes_Controller constructor.
-	 *
-	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
-	 */
-	public function __construct( WC_Payments_API_Client $api_client ) {
-		$this->api_client = $api_client;
-	}
 
 	/**
 	 * Configure REST API routes.
@@ -88,7 +65,7 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 * Retrieve disputes to respond with via API.
 	 */
 	public function get_disputes() {
-		return rest_ensure_response( $this->api_client->list_disputes() );
+		return $this->forward_request( 'list_disputes', [] );
 	}
 
 	/**
@@ -98,7 +75,7 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 */
 	public function get_dispute( $request ) {
 		$dispute_id = $request->get_params()['dispute_id'];
-		return rest_ensure_response( $this->api_client->get_dispute( $dispute_id ) );
+		return $this->forward_request( 'get_dispute', [ $dispute_id ] );
 	}
 
 	/**
@@ -107,14 +84,15 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function update_dispute( $request ) {
-		$params   = $request->get_params();
-		$response = $this->api_client->update_dispute(
-			$params['dispute_id'],
-			$params['evidence'],
-			$params['submit']
+		$params = $request->get_params();
+		return $this->forward_request(
+			'update_dispute',
+			[
+				$params['dispute_id'],
+				$params['evidence'],
+				$params['submit'],
+			]
 		);
-
-		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -124,13 +102,6 @@ class WC_REST_Payments_Disputes_Controller extends WP_REST_Controller {
 	 */
 	public function close_dispute( $request ) {
 		$dispute_id = $request->get_params()['dispute_id'];
-		return rest_ensure_response( $this->api_client->close_dispute( $dispute_id ) );
-	}
-
-	/**
-	 * Verify access.
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
+		return $this->forward_request( 'close_dispute', [ $dispute_id ] );
 	}
 }

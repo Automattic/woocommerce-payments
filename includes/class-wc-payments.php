@@ -387,6 +387,8 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
