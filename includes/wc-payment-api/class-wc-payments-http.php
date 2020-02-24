@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * A wrapper around Jetpack HTTP request library. Necessary to increase
  * the testability of WC_Payments_API_Client, and allow dependency
@@ -34,6 +36,7 @@ class WC_Payments_Http {
 
 		// Make sure we're not sendign requests if Jetpack is not connected.
 		if ( ! self::is_connected() ) {
+			Logger::error( 'HTTP_REQUEST_ERROR Jetpack is not connected' );
 			throw new WC_Payments_API_Exception(
 				__( 'Jetpack is not connected', 'woocommerce-payments' ),
 				'wcpay_jetpack_not_connected',
@@ -63,6 +66,7 @@ class WC_Payments_Http {
 		}
 
 		if ( is_wp_error( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			$message = sprintf(
 				// translators: %1: original error message.
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
