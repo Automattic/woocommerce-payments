@@ -9,7 +9,7 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from '../constants';
+import { NAMESPACE, STORE_NAME } from '../constants';
 import {
 	updateDeposit,
 	updateDeposits,
@@ -77,7 +77,10 @@ export function* getDeposits( query ) {
 
 		yield updateDeposits( query, results.data );
 
-		// TODO Finish resolution on getDeposit selector for each result.
+		// Update resolution state on getDeposit selector for each result.
+		for ( const i in results.data ) {
+			yield dispatch( STORE_NAME, 'finishResolution', 'getDeposit', [ results.data[ i ].id ] );
+		}
 	} catch ( e ) {
 		yield dispatch( 'core/notices', 'createErrorNotice', 'Error retrieving deposits.' );
 		yield updateErrorForDepositQuery( query, null, e );
