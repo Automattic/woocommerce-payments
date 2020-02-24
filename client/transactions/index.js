@@ -94,7 +94,10 @@ export const TransactionsList = ( props ) => {
 	return (
 		<TableCard
 			className="transactions-list"
-			title={ __( 'Transactions', 'woocommerce-payments' ) }
+			title={ props.depositId
+				? __( 'Deposit Transactions', 'woocommerce-payments' )
+				: __( 'Transactions', 'woocommerce-payments' )
+			}
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
 			totalRows={ transactionsSummary.count || 0 }
