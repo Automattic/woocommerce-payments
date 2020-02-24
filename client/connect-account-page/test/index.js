@@ -28,4 +28,10 @@ describe( 'ConnectAccountPage', () => {
 		const page = shallow( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
+
+	test( 'should render correctly when on-boarding disabled', () => {
+		global.wcpaySettings.onBoardingDisabled = true;
+		const page = shallow( <ConnectAccountPage /> );
+		expect( page ).toMatchSnapshot();
+	} );
 } );
