@@ -464,7 +464,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'p' => array(),
 					)
 				);
-				$description = WC_Payments_Account::get_connect_message();
 			}
 
 			// Allow the description text to be altered by filters.
