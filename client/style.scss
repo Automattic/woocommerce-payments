@@ -43,9 +43,6 @@
 }
 
 .woocommerce-table {
-	border-radius: 0;
-	border: 1px solid $light-gray-700;
-	box-shadow: none;
 
 	font-weight: 300;
 	letter-spacing: 0.012rem;
@@ -55,12 +52,10 @@
 		border-bottom: 1px solid $light-gray-700;
 	}
 
-	.woocommerce-card__title {
-		padding: 3px;
-		font-size: 16px;
-		font-size: 1rem;
-		font-weight: 500;
+	.woocommerce-table__summary {
+		border-radius: 0 0 3px 3px;
 	}
+
 	.woocommerce-card__menu {
 		margin: -6px 0;
 	}

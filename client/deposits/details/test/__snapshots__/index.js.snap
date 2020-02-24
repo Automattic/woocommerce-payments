@@ -12,7 +12,7 @@ exports[`Deposit details page renders correctly 1`] = `
 `;
 
 exports[`Deposit overview renders correctly 1`] = `
-<div
+<Card
   className="wcpay-deposit-overview"
 >
   <div
@@ -46,5 +46,5 @@ exports[`Deposit overview renders correctly 1`] = `
       $20.00
     </div>
   </div>
-</div>
+</Card>
 `;

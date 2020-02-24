@@ -1,13 +1,11 @@
 .wcpay-deposit-overview {
-	background: $white;
-	border: 1px solid $light-gray-700;
-	margin-bottom: 24px;
-	display: flex;
-	flex-direction: row;
+	.woocommerce-card__body {
+		display: flex;
+		flex-direction: row;
+	}
 
 	.wcpay-deposit-detail {
 		flex-grow: 1;
-		padding: 18px 16px;
 	}
 	.wcpay-deposit-date {
 		font-size: 11px;
@@ -50,8 +48,9 @@
 
 	.wcpay-deposit-hero {
 		flex-grow: 5;
-		padding: 18px 16px;
 		border-left: 1px solid $light-gray-500;
+		margin: -16px 0;
+		padding: 16px 0;
 	}
 	.wcpay-deposit-amount {
 		text-align: right;

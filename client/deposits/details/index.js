@@ -7,7 +7,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { OrderStatus } from '@woocommerce/components';
+import { Card, OrderStatus } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -35,7 +35,7 @@ export const DepositOverview = ( { depositId } ) => {
 	}
 
 	return (
-		<div className="wcpay-deposit-overview">
+		<Card className="wcpay-deposit-overview">
 			<div className="wcpay-deposit-detail">
 				<div className="wcpay-deposit-date">
 					{ `${ __( 'Deposit date', 'woocommerce-payments' ) }: ` }
@@ -54,7 +54,7 @@ export const DepositOverview = ( { depositId } ) => {
 					{ currency.formatCurrency( deposit.amount / 100 ) }
 				</div>
 			</div>
-		</div>
+		</Card>
 	);
 };
 
