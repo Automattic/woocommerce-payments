@@ -419,7 +419,9 @@ class WC_Payments_API_Client {
 		$file_params = $request->get_file_params();
 		$file_name   = $file_params['file']['name'];
 		$file_type   = $file_params['file']['type'];
-		$file_error  = $file_params['file']['error'];
+
+		// Sometimes $file_params is empty array for large files (8+ MB).
+		$file_error = empty( $file_params ) || $file_params['file']['error'];
 
 		if ( $file_error ) {
 			// TODO - Add better error message by specifiying which limit is reached (host or Stripe).
