@@ -12,7 +12,7 @@ export function updateDeposit( data ) {
 	};
 }
 
-export function* updateDeposits( query, data ) {
+export function updateDeposits( query, data ) {
 	return {
 		type: TYPES.SET_DEPOSITS,
 		query,
