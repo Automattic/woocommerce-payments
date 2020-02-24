@@ -433,14 +433,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$description  = '<p>';
 				$description .= __(
-					'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to get started.',
 					'woocommerce-payments'
 				);
 				$description .= ' ';
 
 				/* translators: Link to WordPress.com TOS URL */
 				$terms_message = __(
-					'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
 					'woocommerce-payments'
 				);
 				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
@@ -450,7 +450,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$description .= '<p>';
 				$description .= '<a href="' . WC_Payments_Account::get_connect_url() . '" class="button">';
-				$description .= __( ' Get started', 'woocommerce-payments' );
+				$description .= __( ' Verify details', 'woocommerce-payments' );
 				$description .= '</a>';
 				$description .= '</p>';
 
