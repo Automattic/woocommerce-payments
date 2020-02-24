@@ -4,7 +4,7 @@
  * Internal dependencies.
  */
 
-const PaymentDetailsTimeline = ( props ) => {
+const PaymentDetailsTimeline = () => {
 	return null; // TODO: not implemented yet
 };
 
