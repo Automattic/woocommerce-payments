@@ -140,7 +140,7 @@ class WC_Payments_Account {
 				// Invite the user to connect.
 				$message  = '<p>';
 				$message .= __(
-					'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to get started.',
 					'woocommerce-payments'
 				);
 				$message .= '</p>';
@@ -148,7 +148,7 @@ class WC_Payments_Account {
 
 				/* translators: Link to WordPress.com TOS URL */
 				$terms_message = __(
-					'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
 					'woocommerce-payments'
 				);
 				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
@@ -158,7 +158,7 @@ class WC_Payments_Account {
 
 				$message .= '<p>';
 				$message .= '<a href="' . self::get_connect_url() . '" class="button">';
-				$message .= __( ' Get started', 'woocommerce-payments' );
+				$message .= __( ' Verify details', 'woocommerce-payments' );
 				$message .= '</a>';
 				$message .= '</p>';
 
