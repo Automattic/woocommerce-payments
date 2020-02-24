@@ -7,35 +7,37 @@ exports[`ConnectAccountPage should render correctly 1`] = `
   <Card
     className="connect-account__card"
   >
-    <p>
-      <t
-        icon="credit-card"
-        size={72}
-      />
-    </p>
+    <_default />
     <h2>
-      setup-heading
+      <span
+        key="0"
+      >
+        heading line 1
+        <br />
+      </span>
+      <span
+        key="1"
+      >
+        heading line 2
+        <br />
+      </span>
     </h2>
-    <p>
-      <Link
-        href="/tos-url"
-        type="wc-admin"
-      />
-    </p>
+    <p
+      dangerouslySetInnerHTML={
+        Object {
+          "__html": undefined,
+        }
+      }
+    />
+    <hr
+      className="full-width"
+    />
     <p>
       <ForwardRef(Button)
         href="/wcpay-connect-url"
         isLarge={true}
         isPrimary={true}
       />
-    </p>
-    <p>
-      <Link
-        href="admin.php?page=wc-settings&tab=checkout"
-        type="wp-admin"
-      >
-        Additional payment methods
-      </Link>
     </p>
   </Card>
 </div>
@@ -48,14 +50,20 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
   <Card
     className="connect-account__card"
   >
-    <p>
-      <t
-        icon="credit-card"
-        size={72}
-      />
-    </p>
+    <_default />
     <h2>
-      setup-heading
+      <span
+        key="0"
+      >
+        heading line 1
+        <br />
+      </span>
+      <span
+        key="1"
+      >
+        heading line 2
+        <br />
+      </span>
     </h2>
     <p>
       We've temporarily paused new account creation.
