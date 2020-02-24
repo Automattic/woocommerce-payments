@@ -43,8 +43,7 @@ const getDepositsForQuery = ( state, query ) => {
 
 export const getDeposits = ( state, query ) => {
 	const ids = getDepositsForQuery( state, query ).data || [];
-	const depositById = getDepositsState( state ).byId || {};
-	return ids.map( ( id ) => depositById[ id ] );
+	return ids.map( getDeposit.bind( this, state ) );
 };
 
 export const getDepositQueryError = ( state, query ) => {
