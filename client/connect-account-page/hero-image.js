@@ -1,6 +1,7 @@
 /** @format */
 
 export default () => (
+	/* eslint-disable */
 	<svg width="680" height="244" viewBox="0 0 680 244" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<rect width="680" height="244" fill="#F6F7F7"/>
 		<rect width="680" height="244" fill="#F6F7F7"/>
@@ -55,4 +56,5 @@ export default () => (
 			</clipPath>
 		</defs>
 	</svg>
+	/* eslint-enable */
 );

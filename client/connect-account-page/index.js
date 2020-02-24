@@ -18,7 +18,7 @@ const ConnectAccountPage = () => {
 			<Card className="connect-account__card" >
 				<HeroImage />
 				<h2>
-					{ wcpaySettings.strings.setupHeadings.map( ( heading, i ) => ( <span key={ i }>{ heading }<br/></span> ) ) }
+					{ wcpaySettings.strings.setupHeadings.map( ( heading, i ) => ( <span key={ i }>{ heading }<br /></span> ) ) }
 				</h2>
 				{ ! wcpaySettings.onBoardingDisabled ? (
 				<>
