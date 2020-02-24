@@ -72,7 +72,7 @@ export function* getDeposits( query ) {
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are coming from the server.
-		if ( results.data.length && results.data[ 0 ].object === 'payout' ) {
+		if ( results.data && results.data.length && results.data[ 0 ].object === 'payout' ) {
 			results.data = results.data.map( convertStripePayoutToDeposit );
 		}
 
