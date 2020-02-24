@@ -126,3 +126,69 @@ describe( 'Charge utilities', () => {
 		expect( utils.getChargeStatus( partiallyRefundedCharge ) ).toEqual( 'refunded_partial' );
 	} );
 } );
+
+describe( 'Charge utilities / getChargeAmounts', () => {
+	test( 'basic charge', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: charge.amount - charge.application_fee_amount,
+			fee: charge.application_fee_amount,
+			refunded: 0,
+		} );
+	} );
+
+	test( 'partial refund', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			amount_refunded: 300,
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: charge.amount - charge.application_fee_amount - charge.amount_refunded,
+			fee: charge.application_fee_amount,
+			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test( 'full refund', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			amount_refunded: 1800,
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: charge.amount - charge.application_fee_amount - charge.amount_refunded,
+			fee: charge.application_fee_amount,
+			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test( 'full dispute', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+			disputed: true,
+			dispute: {
+				amount: 1800,
+			},
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: 0 - charge.application_fee_amount - 1500,
+			fee: charge.application_fee_amount + 1500,
+			refunded: charge.dispute.amount,
+		} );
+	} );
+} );

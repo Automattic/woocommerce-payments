@@ -7,5 +7,6 @@ addFilter( 'woocommerce_admin_notices_to_show', 'plugin-domain', notices => {
 	return [
 		...notices,
 		[ 'wcpay-test-mode-notice', null, null ],
+		[ null, [ 'wcpay-settings-notice' ], null ],
 	];
 } );

@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Gateway class for WooCommerce Payments
  */
@@ -116,18 +118,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			),
+			'enable_logging'  => array(
+				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
 		);
 
 		if ( $this->is_in_dev_mode() ) {
-			$this->form_fields['test_mode']['custom_attributes']['disabled'] = 'disabled';
-			$this->form_fields['test_mode']['label']                         = __( 'Dev Mode is active so all transaction will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
+			$this->form_fields['test_mode']['label']                              = __( 'Dev Mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
+			$this->form_fields['enable_logging']['label']                         = __( 'Dev Mode is active so logging is on by default.', 'woocommerce-payments' );
 		}
 
 		// Load the settings.
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
@@ -309,7 +319,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => $this->get_return_url( $order ),
 			);
 		} catch ( Exception $e ) {
-			// TODO: Create or wire-up a logger for writing messages to the server filesystem.
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
 
@@ -377,7 +386,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 
-			// TODO log error.
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
@@ -385,6 +393,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$e->getMessage()
 			);
 
+			Logger::log( $note );
 			$order->add_order_note( $note );
 
 			return new WP_Error( $e->getMessage() );
@@ -422,6 +431,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Account::get_login_url()
 				);
 			} else {
+				$description  = '<p>';
+				$description .= __(
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to begin receiving payments.',
+					'woocommerce-payments'
+				);
+				$description .= ' ';
+
+				/* translators: Link to WordPress.com TOS URL */
+				$terms_message = __(
+					'By clicking \'Get started\' you agree to WooCommerce Payments {A}terms of service{/A}.',
+					'woocommerce-payments'
+				);
+				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+				$description  .= $terms_message;
+				$description  .= '</p>';
+
+				$description .= '<p>';
+				$description .= '<a href="' . WC_Payments_Account::get_connect_url() . '" class="button">';
+				$description .= __( ' Get started', 'woocommerce-payments' );
+				$description .= '</a>';
+				$description .= '</p>';
+
+				$description = wp_kses(
+					$description,
+					array(
+						'a' => array(
+							'class' => array(),
+							'href'  => array(),
+						),
+						'p' => array(),
+					)
+				);
 				$description = WC_Payments_Account::get_connect_message();
 			}
 

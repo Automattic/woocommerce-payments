@@ -14,7 +14,7 @@ import { get } from 'lodash';
 /**
  * Internal dependencies.
  */
-import { isChargeRefunded } from '../../utils/charge';
+import { getChargeAmounts } from '../../utils/charge';
 import PaymentStatusChip from '../../components/payment-status-chip';
 import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
@@ -22,9 +22,16 @@ import './style.scss';
 
 const currency = new Currency();
 
+const placeholderValues = {
+	net: 0,
+	fee: 0,
+	refunded: null,
+};
+
 const PaymentDetailsSummary = ( props ) => {
-	let { charge } = props;
-	charge = charge || {};
+	const { charge } = props;
+	const { net, fee, refunded } = ( charge.amount ? getChargeAmounts( charge ) : placeholderValues );
+
 	return (
 		<Card className="payment-details-summary-details">
 			<div className="payment-details-summary">
@@ -35,19 +42,19 @@ const PaymentDetailsSummary = ( props ) => {
 						<PaymentStatusChip charge={ charge } />
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ isChargeRefunded( charge )
+						{ refunded
 							? <p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -( charge.amount_refunded || 0 ) / 100 ) }
+								{ currency.formatCurrency( -refunded / 100 ) }
 							</p>
 							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( -charge.fee || 0 ) / 100 ) }
+							{ currency.formatCurrency( -fee / 100 ) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( charge.net || 0 ) / 100 ) }
+							{ currency.formatCurrency( net / 100 ) }
 						</p>
 					</div>
 				</div>

@@ -2,13 +2,15 @@
 
 exports[`DisputeStatusChip renders charge_refunded status 1`] = `
 <Chip
-  message="Charge refunded"
+  isCompact={true}
+  message="Charge Refunded"
   type="light"
 />
 `;
 
 exports[`DisputeStatusChip renders default appearance if status is unrecognized 1`] = `
 <Chip
+  isCompact={true}
   message="Mock status"
   type="light"
 />
@@ -16,6 +18,7 @@ exports[`DisputeStatusChip renders default appearance if status is unrecognized 
 
 exports[`DisputeStatusChip renders lost status 1`] = `
 <Chip
+  isCompact={true}
   message="Lost"
   type="light"
 />
@@ -23,20 +26,23 @@ exports[`DisputeStatusChip renders lost status 1`] = `
 
 exports[`DisputeStatusChip renders needs_response status 1`] = `
 <Chip
-  message="Needs response"
+  isCompact={true}
+  message="Needs Response"
   type="primary"
 />
 `;
 
 exports[`DisputeStatusChip renders under_review status 1`] = `
 <Chip
-  message="Under review"
+  isCompact={true}
+  message="Under Review"
   type="light"
 />
 `;
 
 exports[`DisputeStatusChip renders warning_closed status 1`] = `
 <Chip
+  isCompact={true}
   message="Inquiry: Closed"
   type="light"
 />
@@ -44,20 +50,23 @@ exports[`DisputeStatusChip renders warning_closed status 1`] = `
 
 exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
 <Chip
-  message="Inquiry: Needs response"
+  isCompact={true}
+  message="Inquiry: Needs Response"
   type="primary"
 />
 `;
 
 exports[`DisputeStatusChip renders warning_under_review status 1`] = `
 <Chip
-  message="Inquiry: Under review"
+  isCompact={true}
+  message="Inquiry: Under Review"
   type="light"
 />
 `;
 
 exports[`DisputeStatusChip renders won status 1`] = `
 <Chip
+  isCompact={true}
   message="Won"
   type="light"
 />

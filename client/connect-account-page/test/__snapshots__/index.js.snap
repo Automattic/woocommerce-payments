@@ -14,26 +14,20 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       />
     </p>
     <h2>
-      Accept credit cards online using WooCommerce Payments. Verify your business details to begin receiving payments.
+      setup-heading
     </h2>
+    <p>
+      <Link
+        href="/tos-url"
+        type="wc-admin"
+      />
+    </p>
     <p>
       <ForwardRef(Button)
         href="/wcpay-connect-url"
         isLarge={true}
         isPrimary={true}
-      >
-        Get started
-      </ForwardRef(Button)>
-    </p>
-    <p>
-      By clicking 'Get started' you agree to WooCommerce Payments
-       
-      <a
-        href="#"
-      >
-        terms of service
-      </a>
-      .
+      />
     </p>
     <p>
       <Link
@@ -42,6 +36,31 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       >
         Additional payment methods
       </Link>
+    </p>
+  </Card>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+<div
+  className="connect-account"
+>
+  <Card
+    className="connect-account__card"
+  >
+    <p>
+      <t
+        icon="credit-card"
+        size={72}
+      />
+    </p>
+    <h2>
+      setup-heading
+    </h2>
+    <p>
+      We've temporarily paused new account creation.
+      <br />
+      We'll notify you when we resume!
     </p>
   </Card>
 </div>

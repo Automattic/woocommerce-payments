@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
  */
@@ -62,6 +64,7 @@ class WC_Payments {
 		self::$api_client = self::create_api_client();
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
+		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$account = new WC_Payments_Account( self::$api_client );
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account );
@@ -96,7 +99,7 @@ class WC_Payments {
 	 */
 	public static function display_admin_notice( $message, $classes ) {
 		?>
-		<div class="notice <?php echo esc_attr( $classes ); ?>">
+		<div class="notice wcpay-notice <?php echo esc_attr( $classes ); ?>">
 			<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
 			<p><?php echo $message; // PHPCS:Ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 		</div>
@@ -384,6 +387,8 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();

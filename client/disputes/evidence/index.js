@@ -17,15 +17,12 @@ import { Card } from '@woocommerce/components';
  */
 import '../style.scss';
 import evidenceFields from './fields';
-import Page from '../../components/page';
-import CardFooter from '../../components/card-footer';
+import Info from '../info';
+import Page from 'components/page';
+import CardFooter from 'components/card-footer';
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, showPlaceholder, onChange, onSave, readOnly } = props;
-
-	if ( showPlaceholder ) {
-		return <div>Loading…</div>;
-	}
+	const { evidence, onChange, onSave, readOnly } = props;
 
 	const evidenceSections = evidenceFields.map( section => {
 		return (
@@ -55,7 +52,7 @@ export const DisputeEvidenceForm = props => {
 	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
 
 	return (
-		<Page isNarrow className="wcpay-dispute-evidence">
+		<>
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card>
@@ -87,6 +84,35 @@ export const DisputeEvidenceForm = props => {
 					</CardFooter>
 				</Card>
 			) }
+		</>
+	);
+};
+
+export const DisputeEvidencePage = props => {
+	const { showPlaceholder, dispute, evidence, onChange, onSave } = props;
+
+	if ( showPlaceholder ) {
+		// TODO Render proper placeholder view.
+		return <div>Loading…</div>;
+	}
+	if ( dispute == null ) {
+		return <div>Dispute not loaded</div>;
+	}
+
+	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+
+	return (
+		<Page isNarrow className="wcpay-dispute-evidence">
+			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
+				<Info dispute={ dispute } />
+			</Card>
+
+			<DisputeEvidenceForm
+				evidence={ evidence }
+				onChange={ onChange }
+				onSave={ onSave }
+				readOnly={ readOnly }
+			/>
 		</Page>
 	);
 };
@@ -155,12 +181,12 @@ export default ( { query } ) => {
 	};
 
 	return (
-		<DisputeEvidenceForm
+		<DisputeEvidencePage
 			showPlaceholder={ loading }
+			dispute={ dispute }
 			evidence={ dispute ? { ...dispute.evidence, ...evidence } : {} }
 			onChange={ ( key, value ) => setEvidence( { ...evidence, [ key ]: value } ) }
 			onSave={ doSave }
-			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
 		/>
 	);
 };

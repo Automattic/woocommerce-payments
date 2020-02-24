@@ -24,12 +24,16 @@ const currency = new Currency();
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
-	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ) },
-	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ) },
-	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
-	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ) },
-	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ) },
-	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ) },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), required: true },
+	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
+	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ), required: true },
+	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ), required: true },
+	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ), required: true },
+	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
+	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), visible: false },
+	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), visible: false },
+	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ), required: true },
+	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ), required: true },
 ];
 
 export const DisputesList = ( props ) => {
@@ -47,16 +51,27 @@ export const DisputesList = ( props ) => {
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
 
+		const charge = dispute.charge || {};
+		const source = ( ( charge.payment_method_details || {} ).card || {} ).brand;
+		const customer = charge.billing_details || {};
+
 		const data = {
 			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
 			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
 			reason: { value: dispute.reason, display: reasonDisplay },
-			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y / g:iA', moment( dispute.created * 1000 ) ) },
+			source: {
+				value: source,
+				display: <span className={ `payment-method__brand payment-method__brand--${ source }` } />,
+			},
+			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
 				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
 			},
 			order,
+			customer: { value: customer.name, display: customer.name },
+			email: { value: customer.email, display: customer.email },
+			country: { value: ( customer.address || {} ).country, display: ( customer.address || {} ).country },
 			details: { value: dispute.id, display: detailsLink },
 		};
 
