@@ -1,4 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
+2020-02-24 - version 0.8.0
+* First beta release
+
 2020-02-05 - version 0.7.0
-* Alpha
+* Alpha release
