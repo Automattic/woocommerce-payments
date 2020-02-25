@@ -6,7 +6,7 @@ const colors = require( 'colors' );
 const archiver = require( 'archiver' );
 const fs = require( 'fs' );
 
-const zipRootDirName = process.argv[2];
+const zipRootDirName = process.argv[ 2 ];
 
 // some config
 const releaseFolder = 'release';
