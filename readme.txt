@@ -2,9 +2,9 @@
 Contributors: automattic, woothemes, allendav, robobot3000, danreylop, pauldechov, radogeorgiev
 Tags: woocommerce, payment
 Requires at least: 5.0
-Tested up to: 5.2.2
+Tested up to: 5.3.2
 Requires PHP: 5.6
-Stable tag: 0.2.1
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,7 +36,7 @@ This section describes how to install the plugin and get it working.
 
 = This works with WooCommerce, right? =
 
-Yep! WooCommerce version 3.0 or newer, please.
+Yep! WooCommerce version 3.5 or newer, please.
 
 = Why is a WordPress.com account and connection required? =
 
@@ -50,11 +50,11 @@ Absolutely! You can read our Terms of Service [here](https://en.wordpress.com/to
 
 == Changelog ==
 
-= 0.20.0 =
+= 0.8.0 =
 
 * Limited Beta Release
 
 == Upgrade Notice ==
 
-= 0.20.0 =
+= 0.8.0 =
 Limited Beta Release
