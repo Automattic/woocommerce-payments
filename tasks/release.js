@@ -22,7 +22,7 @@ const filesToCopy = [
 
 // run npm dist
 rm( '-rf', 'dist' );
-exec( 'npm run build' );
+exec( 'SOURCEMAP=none npm run build' );
 
 // start with a clean release folder
 rm( '-rf', releaseFolder );

@@ -6,7 +6,7 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 
 const webpackConfig = {
 	mode: NODE_ENV,
-	devtool: 'source-map',
+	devtool: process.env.SOURCEMAP || 'source-map',
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings.js',
