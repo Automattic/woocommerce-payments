@@ -1,0 +1,62 @@
+.wcpay-deposit-overview {
+	.woocommerce-card__body {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.wcpay-deposit-detail {
+		flex-grow: 1;
+	}
+	.wcpay-deposit-date {
+		font-size: 11px;
+		line-height: 18px;
+		text-transform: uppercase;
+		color: $dark-gray-100;
+		margin-bottom: 12px;
+	}
+	.wcpay-deposit-bank-account {
+		font-size: 13px;
+		line-height: 18px;
+		font-weight: 300;
+		color: $dark-gray-500;
+		margin-top: 12px;
+	}
+
+	.wcpay-deposit-status {
+		font-size: 20px;
+		line-height: 18px;
+		color: $dark-gray-900;
+
+		.woocommerce-order-status__indicator {
+			width: 0.85em;
+			height: 0.85em;
+
+			&.is-paid {
+				background: $studio-green-50;
+				border-color: $studio-green-5;
+			}
+			&.is-pending, &.is-in_transit {
+				background: $studio-yellow-30;
+				border-color: $studio-yellow-5;
+			}
+			&.is-failed {
+				background: $studio-red-50;
+				border-color: $studio-red-5;
+			}
+		}
+	}
+
+	.wcpay-deposit-hero {
+		flex-grow: 5;
+		border-left: 1px solid $light-gray-500;
+		margin: -16px 0;
+		padding: 16px 0;
+	}
+	.wcpay-deposit-amount {
+		text-align: right;
+		font-size: 36px;
+		line-height: 72px;
+		color: $dark-gray-900;
+		padding-right: 18px;
+	}
+}

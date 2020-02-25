@@ -10,16 +10,15 @@ import { addFilter } from '@wordpress/hooks';
  * Internal dependencies
  */
 import './style.scss';
+import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';
+import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
+import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
-import PaymentDetailsPage from 'payment-details';
-import ConnectAccountPage from 'connect-account-page';
 import { withTestNotice, topics } from 'components/test-mode-notice';
-
-const DepositDetailsPage = ( { query } ) => <TransactionsPage depositId={ query.id } />;
 
 addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 	const { menuID, rootLink } = getMenuSettings();

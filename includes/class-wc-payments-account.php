@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Account {
 
-	const ACCOUNT_TRANSIENT = 'wcpay_account_data';
+	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -135,7 +136,52 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			$message = self::get_connect_message();
+			if ( ! self::is_on_boarding_disabled() ) {
+				// Invite the user to connect.
+				$message  = '<p>';
+				$message .= __(
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to get started.',
+					'woocommerce-payments'
+				);
+				$message .= '</p>';
+				$message .= '<p>';
+
+				/* translators: Link to WordPress.com TOS URL */
+				$terms_message = __(
+					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
+					'woocommerce-payments'
+				);
+				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+				$message      .= $terms_message;
+				$message      .= '</p>';
+
+				$message .= '<p>';
+				$message .= '<a href="' . self::get_connect_url() . '" class="button">';
+				$message .= __( ' Verify details', 'woocommerce-payments' );
+				$message .= '</a>';
+				$message .= '</p>';
+
+				$message = wp_kses(
+					$message,
+					array(
+						'a' => array(
+							'class' => array(),
+							'href'  => array(),
+						),
+						'p' => array(),
+					)
+				);
+			} else {
+				// On-boarding has been disabled on the server, so show a message to that effect.
+				$message = sprintf(
+					__(
+						'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
+						'woocommerce-payments'
+					)
+				);
+			}
+
 			add_filter(
 				'admin_notices',
 				function () use ( $message ) {
@@ -157,7 +203,6 @@ class WC_Payments_Account {
 				}
 			);
 		}
-
 		return true;
 	}
 
@@ -185,24 +230,35 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
-				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ) );
+				$this->add_notice_to_settings_page(
+					__( 'There was a problem redirecting you to the account dashboard. Please try again.', 'woocommerce-payments' ),
+					'notice-error'
+				);
 			}
+			return;
+		}
+
+		if ( isset( $_GET['wcpay-connection-success'] ) ) {
+			$this->add_notice_to_settings_page(
+				__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
+				'notice-success'
+			);
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			try {
 				$this->init_oauth();
 			} catch ( Exception $e ) {
-				WC_Payments::get_gateway()->add_error( __( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ) );
+				$this->add_notice_to_settings_page(
+					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
+					'notice-error'
+				);
 			}
 			return;
 		}
 
 		if (
 			isset( $_GET['wcpay-state'] )
-			&& isset( $_GET['wcpay-account-id'] )
-			&& isset( $_GET['wcpay-live-publishable-key'] )
-			&& isset( $_GET['wcpay-test-publishable-key'] )
 			&& isset( $_GET['wcpay-mode'] )
 		) {
 			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
@@ -231,14 +287,14 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Get Stripe connect message with connect link
+	 * Has on-boarding been disabled?
+	 *
+	 * @return boolean
 	 */
-	public static function get_connect_message() {
-		return sprintf(
-			/* translators: 1) oauth entry point URL */
-			__( 'Accept credit cards online. Simply verify your business details to activate WooCommerce Payments. <a href="%1$s">Get started</a>', 'woocommerce-payments' ),
-			self::get_connect_url()
-		);
+	public static function is_on_boarding_disabled() {
+		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
+		// on-boarding has been disabled (i.e. it's enabled as far as we know).
+		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 	}
 
 	/**
@@ -273,7 +329,12 @@ class WC_Payments_Account {
 		if ( false === $oauth_data['url'] ) {
 			$account_id = sanitize_text_field( wp_unslash( $oauth_data['account_id'] ) );
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-			wp_safe_redirect( WC_Payment_Gateway_WCPay::get_settings_url() );
+			wp_safe_redirect(
+				add_query_arg(
+					array( 'wcpay-connection-success' => '1' ),
+					WC_Payment_Gateway_WCPay::get_settings_url()
+				)
+			);
 			exit;
 		}
 
@@ -291,15 +352,24 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( $state, $mode ) {
 		if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
-			WC_Payments::get_gateway()->add_error( __( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ) );
+			$this->add_notice_to_settings_page(
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
+				'notice-error'
+			);
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
+		delete_transient( self::ACCOUNT_TRANSIENT );
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
-		wp_safe_redirect( remove_query_arg( [ 'wcpay-state', 'wcpay-account-id', 'wcpay-publishable-key', 'wcpay-mode' ] ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array( 'wcpay-connection-success' => '1' ),
+				WC_Payment_Gateway_WCPay::get_settings_url()
+			)
+		);
 		exit;
 	}
 
@@ -318,16 +388,27 @@ class WC_Payments_Account {
 		}
 
 		try {
+			// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
+			// below re-create it if the server tells us on-boarding is still disabled.
+			delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+
 			$account = $this->payments_api_client->get_account_data();
 		} catch ( WC_Payments_API_Exception $e ) {
 			if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
-				// special case - detect account not connected and cache it.
+				// Special case - detect account not connected and cache it.
 				$account = array();
+			} elseif ( 'wcpay_on_boarding_disabled' === $e->get_error_code() ) {
+				// Special case - detect account not connected and on-boarding disabled. This will get updated the
+				// next time we call the server for account information, but just in case we set the expiry time for
+				// this setting an hour longer than the account details transient.
+				$account = array();
+				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
 				throw $e;
 			}
 		}
 
+		// Cache the account details so we don't call the server every time.
 		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
 		return $account;
 	}
@@ -388,6 +469,22 @@ class WC_Payments_Account {
 			/* translators: 1) dashboard login URL */
 			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
 			self::get_login_url()
+		);
+	}
+
+	/**
+	 * Adds a notice that will be forced to be visible on the settings page, despite WcAdmin hiding other notices.
+	 *
+	 * @param string $message Notice message.
+	 * @param string $classes Classes to apply, for example notice-error, notice-success.
+	 */
+	private function add_notice_to_settings_page( $message, $classes ) {
+		$classes .= ' wcpay-settings-notice'; // add a class that will be shown on the settings page.
+		add_filter(
+			'admin_notices',
+			function () use ( $message, $classes ) {
+				WC_Payments::display_admin_notice( $message, $classes );
+			}
 		);
 	}
 }

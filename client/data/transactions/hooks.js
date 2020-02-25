@@ -10,8 +10,8 @@ export const useTransactions = ( { paged, per_page: perPage }, depositId ) => us
 	const { getTransactions, getTransactionsError, isResolving } = select( STORE_NAME );
 
 	const query = {
-		paged: paged != null ? paged : '1',
-		perPage: perPage != null ? perPage : '25',
+		paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
+		perPage: Number.isNaN( parseInt( perPage, 10 ) ) ? '25' : perPage,
 		depositId: depositId || null,
 	};
 	return {

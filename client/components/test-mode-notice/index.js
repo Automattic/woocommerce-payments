@@ -101,7 +101,7 @@ export const getNoticeMessage = ( topic ) => {
 export const getNotice = ( topic ) => {
 	return (
 		<Notice className={ 'wcpay-test-mode-notice' } status="warning" isDismissible={ false }>
-			<p>{ getNoticeMessage( topic ) }</p>
+			{ getNoticeMessage( topic ) }
 		</Notice>
 	);
 };

@@ -5,6 +5,9 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
+import { useDispatch } from '@wordpress/data';
+import { addQueryArgs } from '@wordpress/url';
+import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Card } from '@woocommerce/components';
 
@@ -66,6 +69,7 @@ export default ( { query } ) => {
 
 	const [ dispute, setDispute ] = useState( null );
 	const [ loading, setLoading ] = useState( true );
+	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -79,10 +83,24 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
+	const handleAcceptSuccess = () => {
+		const message = dispute.order
+			? sprintf( __( 'You have accepted the dispute for order #%s.', 'woocommerce-payments' ), dispute.order.number )
+			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
+		createSuccessNotice( message );
+		getHistory().push( addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/payments/disputes',
+		} ) );
+	};
+
 	const doAccept = async () => {
 		setLoading( true );
 		try {
 			setDispute( await apiFetch( { path: `${ path }/close`, method: 'post' } ) );
+			handleAcceptSuccess();
+		} catch ( err ) {
+			createErrorNotice( __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' ) );
 		} finally {
 			setLoading( false );
 		}

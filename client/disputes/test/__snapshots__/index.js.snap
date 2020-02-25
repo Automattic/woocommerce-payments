@@ -16,26 +16,51 @@ exports[`Disputes list renders correctly 1`] = `
       Object {
         "key": "amount",
         "label": "Amount",
+        "required": true,
       },
       Object {
         "key": "status",
         "label": "Status",
+        "required": true,
       },
       Object {
         "key": "reason",
         "label": "Reason",
+        "required": true,
+      },
+      Object {
+        "key": "source",
+        "label": "Source",
+        "required": true,
       },
       Object {
         "key": "order",
         "label": "Order #",
+        "required": true,
+      },
+      Object {
+        "key": "customer",
+        "label": "Customer",
+      },
+      Object {
+        "key": "email",
+        "label": "Email",
+        "visible": false,
+      },
+      Object {
+        "key": "country",
+        "label": "Country",
+        "visible": false,
       },
       Object {
         "key": "created",
         "label": "Disputed On",
+        "required": true,
       },
       Object {
         "key": "dueBy",
         "label": "Respond By",
+        "required": true,
       },
     ]
   }
@@ -70,6 +95,12 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "fraudulent",
         },
         Object {
+          "display": <span
+            className="payment-method__brand payment-method__brand--visa"
+          />,
+          "value": "visa",
+        },
+        Object {
           "display": <OrderLink
             order={
               Object {
@@ -81,7 +112,19 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "1",
         },
         Object {
-          "display": "Nov 1, 2019 / 2:46AM",
+          "display": "Mock Customer",
+          "value": "Mock Customer",
+        },
+        Object {
+          "display": "mock@customer.net",
+          "value": "mock@customer.net",
+        },
+        Object {
+          "display": "US",
+          "value": "US",
+        },
+        Object {
+          "display": "Nov 1, 2019",
           "value": 1572590800000,
         },
         Object {
@@ -112,10 +155,28 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "general",
         },
         Object {
+          "display": <span
+            className="payment-method__brand payment-method__brand--undefined"
+          />,
+          "value": undefined,
+        },
+        Object {
           "display": null,
         },
         Object {
-          "display": "Oct 30, 2019 / 8:13PM",
+          "display": undefined,
+          "value": undefined,
+        },
+        Object {
+          "display": undefined,
+          "value": undefined,
+        },
+        Object {
+          "display": undefined,
+          "value": undefined,
+        },
+        Object {
+          "display": "Oct 30, 2019",
           "value": 1572480800000,
         },
         Object {

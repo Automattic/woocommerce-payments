@@ -138,7 +138,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'admin_notices', array( $this, 'display_errors' ) );
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
@@ -230,7 +229,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<p class="testmode-info">
 					<?php
 						/* translators: link to Stripe testing page */
-						echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+						echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://docs.woocommerce.com/document/payments/testing/#test-cards' ) );
 					?>
 					</p>
 				<?php endif; ?>
@@ -432,7 +431,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC_Payments_Account::get_login_url()
 				);
 			} else {
-				$description = WC_Payments_Account::get_connect_message();
+				$description  = '<p>';
+				$description .= __(
+					'Accept credit cards online using WooCommerce payments. Simply verify your business details to get started.',
+					'woocommerce-payments'
+				);
+				$description .= ' ';
+
+				/* translators: Link to WordPress.com TOS URL */
+				$terms_message = __(
+					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
+					'woocommerce-payments'
+				);
+				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
+				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
+				$description  .= $terms_message;
+				$description  .= '</p>';
+
+				$description .= '<p>';
+				$description .= '<a href="' . WC_Payments_Account::get_connect_url() . '" class="button">';
+				$description .= __( ' Verify details', 'woocommerce-payments' );
+				$description .= '</a>';
+				$description .= '</p>';
+
+				$description = wp_kses(
+					$description,
+					array(
+						'a' => array(
+							'class' => array(),
+							'href'  => array(),
+						),
+						'p' => array(),
+					)
+				);
 			}
 
 			// Allow the description text to be altered by filters.
