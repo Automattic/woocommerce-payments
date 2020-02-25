@@ -229,7 +229,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<p class="testmode-info">
 					<?php
 						/* translators: link to Stripe testing page */
-						echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://stripe.com/docs/testing' ) );
+						echo wp_kses_post( sprintf( __( '<strong>Test mode:</strong> use test card numbers listed <a href="%s" target="_blank">here</a>.', 'woocommerce-payments' ), 'https://docs.woocommerce.com/document/payments/testing/#test-cards' ) );
 					?>
 					</p>
 				<?php endif; ?>
