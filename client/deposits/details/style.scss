@@ -35,7 +35,8 @@
 				background: $studio-green-50;
 				border-color: $studio-green-5;
 			}
-			&.is-pending, &.is-in_transit {
+			&.is-pending,
+			&.is-in_transit {
 				background: $studio-yellow-30;
 				border-color: $studio-yellow-5;
 			}
