@@ -448,8 +448,17 @@ class WC_Payments_API_Client {
 			'purpose'   => $purpose,
 		];
 
-		$response = $this->request( $body, self::FILES_API, self::POST );
-		return $response;
+		try {
+			return $this->request( $body, self::FILES_API, self::POST );
+		} catch ( WC_Payments_API_Exception $e ) {
+			// TODO - Send better error messages to the client once the server is updated.
+			// Throw generic error without details to the client.
+			throw new WC_Payments_API_Exception(
+				__( 'Upload failed.', 'woocommerce-payments' ),
+				'wcpay_evidence_file_upload_error',
+				$e->get_http_code()
+			);
+		}
 	}
 
 	/**

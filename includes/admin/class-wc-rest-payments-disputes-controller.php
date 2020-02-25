@@ -113,17 +113,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function upload_evidence( $request ) {
-		try {
-			$response = $this->api_client->upload_evidence( $request );
-			return rest_ensure_response( $response );
-		} catch ( WC_Payments_API_Exception $e ) {
-			$http_code = $e->get_http_code();
-			// TODO: Update when more informative errors are sent by the server.
-			$message = 400 === $http_code
-				? $e->getMessage()
-				: __( 'Upload failed.', 'woocommerce-payments' );
-			return new WP_Error( $http_code, $message );
-		}
+		return $this->forward_request( 'upload_evidence', [ $request ] );
 	}
 
 	/**
