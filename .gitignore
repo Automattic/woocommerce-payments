@@ -14,6 +14,7 @@ project.properties
 # Bundle
 dist
 release
+woocommerce-payments.zip
 
 # Grunt
 /node_modules/
