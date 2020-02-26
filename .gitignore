@@ -62,3 +62,6 @@ contributors.md
 docker/data
 docker/wordpress
 docker/logs
+
+# Test coverage report
+/coverage
