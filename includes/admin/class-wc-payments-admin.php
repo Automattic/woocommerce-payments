@@ -182,7 +182,7 @@ class WC_Payments_Admin {
 
 		$strings                  = array();
 		$strings['setupHeadings'] = [
-			__( 'Accept credit cards online using WooCommerce payments.', 'woocommerce-payments' ),
+			__( 'Accept credit cards online using WooCommerce Payments.', 'woocommerce-payments' ),
 			__( 'Simply verify your business details to get started.', 'woocommerce-payments' ),
 		];
 		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
