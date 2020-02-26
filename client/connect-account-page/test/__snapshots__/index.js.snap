@@ -24,6 +24,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       </span>
     </h2>
     <p
+      className="connect-account__terms"
       dangerouslySetInnerHTML={
         Object {
           "__html": undefined,
