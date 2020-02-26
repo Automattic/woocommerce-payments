@@ -1,8 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ConnectAccountPage should render correctly 1`] = `
-<div
+<Page
   className="connect-account"
+  isNarrow={true}
 >
   <Card
     className="connect-account__card"
@@ -40,12 +41,13 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       />
     </p>
   </Card>
-</div>
+</Page>
 `;
 
 exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
-<div
+<Page
   className="connect-account"
+  isNarrow={true}
 >
   <Card
     className="connect-account__card"
@@ -71,5 +73,5 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
       We'll notify you when we resume!
     </p>
   </Card>
-</div>
+</Page>
 `;
