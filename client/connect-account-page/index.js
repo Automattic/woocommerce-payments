@@ -10,12 +10,13 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
+import Page from 'components/page';
 import HeroImage from './hero-image';
 
 const ConnectAccountPage = () => {
 	return (
-		<div className="connect-account">
-			<Card className="connect-account__card" >
+		<Page isNarrow className="connect-account">
+			<Card className="connect-account__card">
 				<HeroImage />
 				<h2>
 					{ wcpaySettings.strings.setupHeadings.map( ( heading, i ) => ( <span key={ i }>{ heading }<br /></span> ) ) }
@@ -36,7 +37,7 @@ const ConnectAccountPage = () => {
 				</p>
 				) }
 			</Card>
-		</div>
+		</Page>
 	);
 };
 
