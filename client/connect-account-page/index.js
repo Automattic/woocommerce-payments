@@ -25,7 +25,7 @@ const ConnectAccountPage = () => {
 				<>
 				<p className="connect-account__terms" dangerouslySetInnerHTML={ { __html: wcpaySettings.strings.setupTerms } } />
 				<hr className="full-width" />
-				<p>
+				<p className="connect-account__action">
 					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ wcpaySettings.strings.setupGetStarted }</Button>
 				</p>
 				</>

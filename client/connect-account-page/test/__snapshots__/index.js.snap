@@ -34,7 +34,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
     <hr
       className="full-width"
     />
-    <p>
+    <p
+      className="connect-account__action"
+    >
       <ForwardRef(Button)
         href="/wcpay-connect-url"
         isLarge={true}
