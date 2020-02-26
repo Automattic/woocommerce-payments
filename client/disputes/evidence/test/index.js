@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -66,7 +67,7 @@ describe( 'Dispute evidence form', () => {
 		window.confirm = jest.fn();
 
 		// We have to mount component to select button for click.
-		const form = mount(
+		const form = shallow(
 			<DisputeEvidenceForm
 				evidence={ disputeNeedsResponse.evidence }
 				readOnly={ false }
@@ -74,7 +75,8 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		const submitButton = form.find( 'button.is-primary' ).last();
+		const buttons = form.find( Button );
+		const submitButton = buttons.at( buttons.length - 2 );
 		submitButton.simulate( 'click' );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 		expect( window.confirm ).toHaveBeenCalledWith(
@@ -87,14 +89,16 @@ describe( 'Dispute evidence form', () => {
 		const onSave = jest.fn();
 
 		// We have to mount component to select button for click.
-		const form = mount(
+		const form = shallow(
 			<DisputeEvidenceForm
 				evidence={ disputeNeedsResponse.evidence }
 				readOnly={ false }
 				onSave={ onSave }
 			/>
 		);
-		const submitButton = form.find( 'button.is-primary' ).last();
+
+		const buttons = form.find( Button );
+		const submitButton = buttons.at( buttons.length - 2 );
 
 		window.confirm = jest.fn();
 		window.confirm
