@@ -80,8 +80,4 @@ const webpackConfig = {
 	],
 };
 
-if ( webpackConfig.mode !== 'production' ) {
-	webpackConfig.devtool = process.env.SOURCEMAP || 'source-map';
-}
-
 module.exports = webpackConfig;
