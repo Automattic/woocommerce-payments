@@ -433,7 +433,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$description  = '<p>';
 				$description .= __(
-					'Accept credit cards online using WooCommerce payments. Simply verify your business details to get started.',
+					'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
 					'woocommerce-payments'
 				);
 				$description .= ' ';
