@@ -23,7 +23,7 @@ const ConnectAccountPage = () => {
 				</h2>
 				{ ! wcpaySettings.onBoardingDisabled ? (
 				<>
-				<p dangerouslySetInnerHTML={ { __html: wcpaySettings.strings.setupTerms } } />
+				<p className="connect-account__terms" dangerouslySetInnerHTML={ { __html: wcpaySettings.strings.setupTerms } } />
 				<hr className="full-width" />
 				<p>
 					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ wcpaySettings.strings.setupGetStarted }</Button>
