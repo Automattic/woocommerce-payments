@@ -30,6 +30,12 @@
 
 		.connect-account__action {
 			margin-top: 16px;
+
+			.is-button {
+				height: 32px;
+				line-height: 30px;
+				padding: 0 20px 2px;
+			}
 		}
 	}
 }
