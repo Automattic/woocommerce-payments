@@ -6,11 +6,11 @@ const colors = require( 'colors' );
 const archiver = require( 'archiver' );
 const fs = require( 'fs' );
 
-const zipRootDirName = process.argv[ 2 ];
+const pluginSlug = process.env.npm_package_name;
 
 // some config
 const releaseFolder = 'release';
-const targetFolder = 'release/' + process.env.npm_package_name;
+const targetFolder = 'release/' + pluginSlug;
 const filesToCopy = [
 	'assets',
 	'dist',
@@ -33,7 +33,7 @@ mkdir( targetFolder );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
-const output = fs.createWriteStream( releaseFolder + '/' + process.env.npm_package_name + '.zip' );
+const output = fs.createWriteStream( releaseFolder + '/' + pluginSlug + '.zip' );
 const archive = archiver( 'zip' );
 
 output.on( 'close', () => {
@@ -47,6 +47,6 @@ archive.on( 'error', ( err ) => {
 
 archive.pipe( output );
 
-archive.directory( targetFolder, zipRootDirName );
+archive.directory( targetFolder, pluginSlug );
 
 archive.finalize();
