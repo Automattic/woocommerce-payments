@@ -15,6 +15,7 @@ const filesToCopy = [
 	'assets',
 	'dist',
 	'includes',
+	'vendor',
 	'woocommerce-payments.php',
 	'changelog.txt',
 	'readme.txt',
