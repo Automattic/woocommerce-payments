@@ -10,6 +10,7 @@
 				font-size: 20px;
 				font-size: 1.2rem;
 				font-weight: 300;
+				margin: 16px 0 8px;
 			}
 		}
 
@@ -17,12 +18,18 @@
 			// Counteract the Card 16px padding
 			margin-top: -16px;
 			margin-left: -16px;
+			display: block;
 		}
 
 		.connect-account__terms {
+			margin: 0 0 16px;
 			font-weight: 300;
 			font-size: 12px;
 			color: $studio-gray-60;
+		}
+
+		.connect-account__action {
+			margin-top: 16px;
 		}
 	}
 }
