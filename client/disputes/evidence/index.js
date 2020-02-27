@@ -176,7 +176,7 @@ export default ( { query } ) => {
 	const updateEvidence = ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) );
 	const updateDispute = ( updates = {} ) => setDispute( d => merge( {}, d, updates ) );
 
-	const doRemoveFile = async ( key ) => {
+	const doRemoveFile = ( key ) => {
 		updateEvidence( key, '' );
 		updateDispute( {
 			metadata: { [ key ]: '' },
