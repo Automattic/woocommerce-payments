@@ -14,9 +14,6 @@ export const FileUploadControl = ( props ) => {
 					size={ 18 } />;
 	};
 
-	const message = hasError ? error : fileName;
-	const messageClass = hasError ? 'upload-message is-destructive' : 'upload-message';
-
 	return (
 		<BaseControl
 			id={ `form-file-upload-base-control-${ field.key }` }
@@ -39,7 +36,9 @@ export const FileUploadControl = ( props ) => {
 					{ __( 'Upload File', 'woocommerce-payments' ) }
 				</FormFileUpload>
 
-				<span className={ messageClass }>{ message }</span>
+				{ hasError
+					? <span className="upload-message is-destructive">{ error }</span>
+					: <span	className="upload-message">{ fileName }</span> }
 
 				{ isDone
 					? <IconButton
