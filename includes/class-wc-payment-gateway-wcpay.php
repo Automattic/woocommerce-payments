@@ -522,6 +522,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Capture previously authorized charge.
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function capture_charge( $order ) {
 		$amount = $order->get_total();
@@ -556,6 +558,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Cancel previously authorized charge.
 	 *
 	 * @param WC_Order $order - Order to cancel authorization on.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function cancel_authorization( $order ) {
 		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );

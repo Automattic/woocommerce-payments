@@ -299,6 +299,8 @@ class WC_Payments_Account {
 
 	/**
 	 * For the connected account, fetches the login url from the API and redirects to it
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
@@ -311,6 +313,8 @@ class WC_Payments_Account {
 
 	/**
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	private function init_oauth() {
 		// Clear account transient when generating Stripe's oauth data.

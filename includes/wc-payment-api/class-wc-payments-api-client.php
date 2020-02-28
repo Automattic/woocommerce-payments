@@ -243,6 +243,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $deposit_id id of requested deposit.
 	 * @return array deposit object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_deposit( $deposit_id ) {
 		return $this->request( array(), self::DEPOSITS_API . '/' . $deposit_id, self::GET );
@@ -299,6 +301,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $transaction_id id of requested transaction.
 	 * @return array transaction object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_transaction( $transaction_id ) {
 		$transaction = $this->request( array(), self::TRANSACTIONS_API . '/' . $transaction_id, self::GET );
@@ -315,6 +319,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $charge_id id of requested charge.
 	 * @return array charge object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_charge( $charge_id ) {
 		$charge = $this->request( array(), self::CHARGES_API . '/' . $charge_id, self::GET );
@@ -360,6 +366,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $dispute_id id of requested dispute.
 	 * @return array dispute object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_dispute( $dispute_id ) {
 		$dispute = $this->request( array(), self::DISPUTES_API . '/' . $dispute_id, self::GET );
@@ -379,6 +387,8 @@ class WC_Payments_API_Client {
 	 * @param array  $evidence   evidence to upload.
 	 * @param bool   $submit     whether to submit (rather than stage) evidence.
 	 * @return array dispute object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function update_dispute( $dispute_id, $evidence, $submit ) {
 		$request = array(
@@ -401,6 +411,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $dispute_id id of dispute to close.
 	 * @return array dispute object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function close_dispute( $dispute_id ) {
 		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
@@ -410,6 +422,8 @@ class WC_Payments_API_Client {
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_account_data() {
 		return $this->request(
@@ -428,6 +442,8 @@ class WC_Payments_API_Client {
 	 * @param array  $business_data - data to prefill the form.
 	 *
 	 * @return array An array containing the url and state fields.
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_oauth_data( $return_url, $business_data = array() ) {
 		$request_args = apply_filters(
@@ -448,6 +464,8 @@ class WC_Payments_API_Client {
 	 * @param string $redirect_url - URL to navigate back to from the dashboard.
 	 *
 	 * @return array An array containing the url field
+	 *
+	 * @throws WC_Payments_API_Exception
 	 */
 	public function get_login_data( $redirect_url ) {
 		return $this->request(
