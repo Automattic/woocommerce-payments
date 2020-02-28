@@ -60,6 +60,8 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	 * Verify access.
 	 *
 	 * Override this method if custom perimissions required.
+	 *
+	 * @return bool
 	 */
 	public function check_permission() {
 		return current_user_can( 'manage_woocommerce' );

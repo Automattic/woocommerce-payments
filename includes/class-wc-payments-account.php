@@ -457,6 +457,8 @@ class WC_Payments_Account {
 	 * Once we have our custom dashboard running, Payouts should be renamed to Deposits.
 	 *
 	 * @param int|null $current_deadline Timestamp for when the requirements are due.
+	 *
+	 * @return string
 	 */
 	private function get_verify_requirements_message( $current_deadline = null ) {
 		if ( ! empty( $current_deadline ) ) {
