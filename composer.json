@@ -11,14 +11,30 @@
         "php": "7.0"
       }
     },
+    "repositories": [
+      {
+        "type": "package",
+        "package": {
+          "name": "wordpress/wordpress",
+          "version": "5.3.2",
+          "source": {
+            "url": "https://github.com/WordPress/WordPress",
+            "type": "git",
+            "reference": "master"
+          }
+        }
+      }
+    ],
     "require": {
     },
     "require-dev": {
-      "composer/installers": "1.6.0",
       "phpunit/phpunit": "5.7.27",
-      "woocommerce/woocommerce": "3.7.1",
+      "woocommerce/woocommerce": "^3.9",
       "woocommerce/woocommerce-sniffs": "0.0.6",
-      "psalm/phar": "^3.4"
+      "psalm/phar": "^3.4",
+      "wordpress/wordpress": "^5.3",
+      "woocommerce/woocommerce-admin": "^0.26.1",
+      "automattic/jetpack": "^8.2"
     },
     "scripts": {
       "test": [
