@@ -571,6 +571,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'canceled' === $status ) {
 			$order->update_status( 'cancelled', __( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ) );
 		} else {
+			$amount = $order->get_total();
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
