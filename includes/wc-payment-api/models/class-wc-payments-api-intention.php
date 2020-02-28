@@ -41,6 +41,13 @@ class WC_Payments_API_Intention {
 	private $status;
 
 	/**
+	 * Associated charge ID
+	 *
+	 * @var string
+	 */
+	private $charge_id;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string   $id        - ID of the intention.
