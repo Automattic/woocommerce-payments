@@ -88,75 +88,6 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label"
-            for="form-file-upload-base-control-customer_signature"
-          >
-            Customer Signature
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-customer_signature"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="inspector-textarea-control-1"
-          >
-            Customer Billing Address
-          </label>
-          <textarea
-            class="components-textarea-control__input"
-            id="inspector-textarea-control-1"
-            rows="4"
-          />
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
             for="inspector-text-control-2"
           >
             Customer IP Address
@@ -167,106 +98,6 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
             type="text"
             value="127.0.0.1"
           />
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="form-file-upload-base-control-receipt"
-          >
-            Receipt
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-receipt"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="form-file-upload-base-control-customer_communication"
-          >
-            Customer Communication
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-customer_communication"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -298,59 +129,15 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label"
-            for="inspector-textarea-control-2"
+            for="inspector-textarea-control-1"
           >
             Additional Details
           </label>
           <textarea
             class="components-textarea-control__input"
-            id="inspector-textarea-control-2"
+            id="inspector-textarea-control-1"
             rows="4"
           />
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-uncategorized_file"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -368,9 +155,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         <strong>
           Evidence submission is final.
         </strong>
-
+         
         You can also save this evidence for later instead of submitting it immediately.
-
+         
         <strong>
           We will automatically submit any saved evidence at the due date.
         </strong>
@@ -425,14 +212,14 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label"
-            for="inspector-textarea-control-3"
+            for="inspector-textarea-control-2"
           >
             Product Description
           </label>
           <textarea
             class="components-textarea-control__input"
             disabled=""
-            id="inspector-textarea-control-3"
+            id="inspector-textarea-control-2"
             rows="4"
           />
         </div>
@@ -487,76 +274,6 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label"
-            for="form-file-upload-base-control-customer_signature"
-          >
-            Customer Signature
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-customer_signature"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="inspector-textarea-control-4"
-          >
-            Customer Billing Address
-          </label>
-          <textarea
-            class="components-textarea-control__input"
-            disabled=""
-            id="inspector-textarea-control-4"
-            rows="4"
-          />
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
             for="inspector-text-control-5"
           >
             Customer IP Address
@@ -568,106 +285,6 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             type="text"
             value="127.0.0.1"
           />
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="form-file-upload-base-control-receipt"
-          >
-            Receipt
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-receipt"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <label
-            class="components-base-control__label"
-            for="form-file-upload-base-control-customer_communication"
-          >
-            Customer Communication
-          </label>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-customer_communication"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -699,62 +316,18 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         >
           <label
             class="components-base-control__label"
-            for="inspector-textarea-control-5"
+            for="inspector-textarea-control-3"
           >
             Additional Details
           </label>
           <textarea
             class="components-textarea-control__input"
             disabled=""
-            id="inspector-textarea-control-5"
+            id="inspector-textarea-control-3"
             rows="4"
           >
             winning_evidence
           </textarea>
-        </div>
-      </div>
-      <div
-        class="components-base-control"
-      >
-        <div
-          class="components-base-control__field"
-        >
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
-                id="form-file-upload-uncategorized_file"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload File
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            <span
-              class="upload-message"
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -793,7 +366,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
-              Dispute date:
+              Dispute date: 
             </span>
             <span
               class="wcpay-dispute-info-value"
@@ -805,7 +378,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
-              Disputed amount:
+              Disputed amount: 
             </span>
             <span
               class="wcpay-dispute-info-value"
@@ -817,7 +390,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
-              Respond by:
+              Respond by: 
             </span>
             <span
               class="wcpay-dispute-info-value"
@@ -829,7 +402,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
-              Reason:
+              Reason: 
             </span>
             <span
               class="wcpay-dispute-info-value"
@@ -841,7 +414,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-key"
             >
-              Transaction ID:
+              Transaction ID: 
             </span>
             <span
               class="wcpay-dispute-info-value"
@@ -882,13 +455,13 @@ exports[`Dispute evidence page renders correctly 1`] = `
           >
             <label
               class="components-base-control__label"
-              for="inspector-textarea-control-12"
+              for="inspector-textarea-control-8"
             >
               Product Description
             </label>
             <textarea
               class="components-textarea-control__input"
-              id="inspector-textarea-control-12"
+              id="inspector-textarea-control-8"
               rows="4"
             />
           </div>
@@ -941,75 +514,6 @@ exports[`Dispute evidence page renders correctly 1`] = `
           >
             <label
               class="components-base-control__label"
-              for="form-file-upload-base-control-customer_signature"
-            >
-              Customer Signature
-            </label>
-            <div
-              class="file-upload"
-            >
-              <div
-                class="components-form-file-upload"
-              >
-                <button
-                  class="components-button components-icon-button has-text is-button is-primary is-large"
-                  id="form-file-upload-customer_signature"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-add-outline"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                      />
-                    </g>
-                  </svg>
-                  Upload File
-                </button>
-                <input
-                  accept=".pdf, image/png, image/jpeg"
-                  style="display: none;"
-                  type="file"
-                />
-              </div>
-              <span
-                class="upload-message"
-              />
-            </div>
-          </div>
-        </div>
-        <div
-          class="components-base-control"
-        >
-          <div
-            class="components-base-control__field"
-          >
-            <label
-              class="components-base-control__label"
-              for="inspector-textarea-control-13"
-            >
-              Customer Billing Address
-            </label>
-            <textarea
-              class="components-textarea-control__input"
-              id="inspector-textarea-control-13"
-              rows="4"
-            />
-          </div>
-        </div>
-        <div
-          class="components-base-control"
-        >
-          <div
-            class="components-base-control__field"
-          >
-            <label
-              class="components-base-control__label"
               for="inspector-text-control-14"
             >
               Customer IP Address
@@ -1020,106 +524,6 @@ exports[`Dispute evidence page renders correctly 1`] = `
               type="text"
               value="127.0.0.1"
             />
-          </div>
-        </div>
-        <div
-          class="components-base-control"
-        >
-          <div
-            class="components-base-control__field"
-          >
-            <label
-              class="components-base-control__label"
-              for="form-file-upload-base-control-receipt"
-            >
-              Receipt
-            </label>
-            <div
-              class="file-upload"
-            >
-              <div
-                class="components-form-file-upload"
-              >
-                <button
-                  class="components-button components-icon-button has-text is-button is-primary is-large"
-                  id="form-file-upload-receipt"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-add-outline"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                      />
-                    </g>
-                  </svg>
-                  Upload File
-                </button>
-                <input
-                  accept=".pdf, image/png, image/jpeg"
-                  style="display: none;"
-                  type="file"
-                />
-              </div>
-              <span
-                class="upload-message"
-              />
-            </div>
-          </div>
-        </div>
-        <div
-          class="components-base-control"
-        >
-          <div
-            class="components-base-control__field"
-          >
-            <label
-              class="components-base-control__label"
-              for="form-file-upload-base-control-customer_communication"
-            >
-              Customer Communication
-            </label>
-            <div
-              class="file-upload"
-            >
-              <div
-                class="components-form-file-upload"
-              >
-                <button
-                  class="components-button components-icon-button has-text is-button is-primary is-large"
-                  id="form-file-upload-customer_communication"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-add-outline"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                      />
-                    </g>
-                  </svg>
-                  Upload File
-                </button>
-                <input
-                  accept=".pdf, image/png, image/jpeg"
-                  style="display: none;"
-                  type="file"
-                />
-              </div>
-              <span
-                class="upload-message"
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -1151,59 +555,15 @@ exports[`Dispute evidence page renders correctly 1`] = `
           >
             <label
               class="components-base-control__label"
-              for="inspector-textarea-control-14"
+              for="inspector-textarea-control-9"
             >
               Additional Details
             </label>
             <textarea
               class="components-textarea-control__input"
-              id="inspector-textarea-control-14"
+              id="inspector-textarea-control-9"
               rows="4"
             />
-          </div>
-        </div>
-        <div
-          class="components-base-control"
-        >
-          <div
-            class="components-base-control__field"
-          >
-            <div
-              class="file-upload"
-            >
-              <div
-                class="components-form-file-upload"
-              >
-                <button
-                  class="components-button components-icon-button has-text is-button is-primary is-large"
-                  id="form-file-upload-uncategorized_file"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-add-outline"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    width="24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                      />
-                    </g>
-                  </svg>
-                  Upload File
-                </button>
-                <input
-                  accept=".pdf, image/png, image/jpeg"
-                  style="display: none;"
-                  type="file"
-                />
-              </div>
-              <span
-                class="upload-message"
-              />
-            </div>
           </div>
         </div>
       </div>
@@ -1221,9 +581,9 @@ exports[`Dispute evidence page renders correctly 1`] = `
           <strong>
             Evidence submission is final.
           </strong>
-
+           
           You can also save this evidence for later instead of submitting it immediately.
-
+           
           <strong>
             We will automatically submit any saved evidence at the due date.
           </strong>

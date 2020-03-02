@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`React testing library usage examples basic snapshot test 1`] = `
+<div>
+  <form
+    class=""
+    data-testid="demo-form"
+  >
+    <div>
+      <label
+        for="textInput"
+      >
+        Text input
+      </label>
+      <input
+        id="textInput"
+        type="text"
+        value=""
+      />
+    </div>
+    <div>
+      <label
+        for="numberInput"
+      >
+        Number input
+      </label>
+      <input
+        id="numberInput"
+        type="text"
+        value="0"
+      />
+    </div>
+    <div>
+      <button
+        type="submit"
+      >
+        Submit
+      </button>
+      <button>
+        Clear
+      </button>
+    </div>
+  </form>
+</div>
+`;
