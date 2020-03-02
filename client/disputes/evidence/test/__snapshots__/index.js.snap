@@ -1,172 +1,1251 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Fragment>
-  <Card
-    key="general"
-    title="General Evidence"
+<div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={false}
-      key="product_description"
-      label="Product Description"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_name"
-      label="Customer Name"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_email_address"
-      label="Customer Email"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_purchase_ip"
-      label="Customer IP Address"
-      onChange={[Function]}
-      value="127.0.0.1"
-    />
-  </Card>
-  <Card
-    key="uncategorized"
-    title="Additional Details"
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          General Evidence
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-0"
+          >
+            Product Description
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            id="inspector-textarea-control-0"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-0"
+          >
+            Customer Name
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-0"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-1"
+          >
+            Customer Email
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-1"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_signature"
+          >
+            Customer Signature
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-customer_signature"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-1"
+          >
+            Customer Billing Address
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            id="inspector-textarea-control-1"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-2"
+          >
+            Customer IP Address
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-2"
+            type="text"
+            value="127.0.0.1"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-receipt"
+          >
+            Receipt
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-receipt"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_communication"
+          >
+            Customer Communication
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-customer_communication"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={false}
-      key="uncategorized_text"
-      label="Additional Details"
-      onChange={[Function]}
-      value=""
-    />
-  </Card>
-  <Card>
-    <p>
-      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
-    </p>
-    <p>
-      <strong>
-        Evidence submission is final.
-      </strong>
-       
-      You can also save this evidence for later instead of submitting it immediately.
-       
-      <strong>
-        We will automatically submit any saved evidence at the due date.
-      </strong>
-    </p>
-    <CardFooter>
-      <ForwardRef(Button)
-        isLarge={true}
-        isPrimary={true}
-        onClick={[Function]}
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
       >
-        Submit Evidence
-      </ForwardRef(Button)>
-      <ForwardRef(Button)
-        isDefault={true}
-        isLarge={true}
-        onClick={[Function]}
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Additional Details
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
       >
-        Save For Later
-      </ForwardRef(Button)>
-    </CardFooter>
-  </Card>
-</Fragment>
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-2"
+          >
+            Additional Details
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            id="inspector-textarea-control-2"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-uncategorized_file"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="woocommerce-card"
+  >
+    <div
+      class="woocommerce-card__body"
+    >
+      <p>
+        When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+      </p>
+      <p>
+        <strong>
+          Evidence submission is final.
+        </strong>
+
+        You can also save this evidence for later instead of submitting it immediately.
+
+        <strong>
+          We will automatically submit any saved evidence at the due date.
+        </strong>
+      </p>
+      <div
+        class="woocommerce-card__footer"
+      >
+        <button
+          class="components-button is-button is-primary is-large"
+          type="button"
+        >
+          Submit Evidence
+        </button>
+        <button
+          class="components-button is-button is-default is-large"
+          type="button"
+        >
+          Save For Later
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Fragment>
-  <Card
-    key="general"
-    title="General Evidence"
+<div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={true}
-      key="product_description"
-      label="Product Description"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_name"
-      label="Customer Name"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_email_address"
-      label="Customer Email"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_purchase_ip"
-      label="Customer IP Address"
-      onChange={[Function]}
-      value="127.0.0.1"
-    />
-  </Card>
-  <Card
-    key="uncategorized"
-    title="Additional Details"
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          General Evidence
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-3"
+          >
+            Product Description
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            disabled=""
+            id="inspector-textarea-control-3"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-3"
+          >
+            Customer Name
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-3"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-4"
+          >
+            Customer Email
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-4"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_signature"
+          >
+            Customer Signature
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-customer_signature"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-4"
+          >
+            Customer Billing Address
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            disabled=""
+            id="inspector-textarea-control-4"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-5"
+          >
+            Customer IP Address
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-5"
+            type="text"
+            value="127.0.0.1"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-receipt"
+          >
+            Receipt
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-receipt"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_communication"
+          >
+            Customer Communication
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-customer_communication"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={true}
-      key="uncategorized_text"
-      label="Additional Details"
-      onChange={[Function]}
-      value="winning_evidence"
-    />
-  </Card>
-</Fragment>
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Additional Details
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-5"
+          >
+            Additional Details
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            disabled=""
+            id="inspector-textarea-control-5"
+            rows="4"
+          >
+            winning_evidence
+          </textarea>
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-uncategorized_file"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload File
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 `;
 
 exports[`Dispute evidence page renders correctly 1`] = `
-<Page
-  className="wcpay-dispute-evidence"
-  isNarrow={true}
->
-  <Card
-    title="Challenge Dispute"
+<div>
+  <div
+    class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
-    <Info
-      dispute={
-        Object {
-          "amount": 1000,
-          "created": 1572590800,
-          "evidence": Object {
-            "customer_purchase_ip": "127.0.0.1",
-            "uncategorized_text": "",
-          },
-          "evidence_details": Object {
-            "due_by": 1573199200,
-          },
-          "id": "dp_asdfghjkl",
-          "reason": "fraudulent",
-          "status": "needs_response",
-        }
-      }
-    />
-  </Card>
-  <DisputeEvidenceForm
-    evidence={
-      Object {
-        "customer_purchase_ip": "127.0.0.1",
-        "uncategorized_text": "",
-      }
-    }
-    readOnly={false}
-  />
-</Page>
+    <div
+      class="woocommerce-card"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Challenge Dispute
+          </h2>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div>
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date:
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div>
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount:
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00 USD
+            </span>
+          </div>
+          <div>
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by:
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div>
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason:
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div>
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID:
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            General Evidence
+          </h2>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-textarea-control-12"
+            >
+              Product Description
+            </label>
+            <textarea
+              class="components-textarea-control__input"
+              id="inspector-textarea-control-12"
+              rows="4"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-text-control-12"
+            >
+              Customer Name
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-12"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-text-control-13"
+            >
+              Customer Email
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-13"
+              type="text"
+              value=""
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="form-file-upload-base-control-customer_signature"
+            >
+              Customer Signature
+            </label>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button components-icon-button has-text is-button is-primary is-large"
+                  id="form-file-upload-customer_signature"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload File
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-textarea-control-13"
+            >
+              Customer Billing Address
+            </label>
+            <textarea
+              class="components-textarea-control__input"
+              id="inspector-textarea-control-13"
+              rows="4"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-text-control-14"
+            >
+              Customer IP Address
+            </label>
+            <input
+              class="components-text-control__input"
+              id="inspector-text-control-14"
+              type="text"
+              value="127.0.0.1"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="form-file-upload-base-control-receipt"
+            >
+              Receipt
+            </label>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button components-icon-button has-text is-button is-primary is-large"
+                  id="form-file-upload-receipt"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload File
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="form-file-upload-base-control-customer_communication"
+            >
+              Customer Communication
+            </label>
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button components-icon-button has-text is-button is-primary is-large"
+                  id="form-file-upload-customer_communication"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload File
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Additional Details
+          </h2>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <label
+              class="components-base-control__label"
+              for="inspector-textarea-control-14"
+            >
+              Additional Details
+            </label>
+            <textarea
+              class="components-textarea-control__input"
+              id="inspector-textarea-control-14"
+              rows="4"
+            />
+          </div>
+        </div>
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <div
+              class="file-upload"
+            >
+              <div
+                class="components-form-file-upload"
+              >
+                <button
+                  class="components-button components-icon-button has-text is-button is-primary is-large"
+                  id="form-file-upload-uncategorized_file"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-add-outline"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                      />
+                    </g>
+                  </svg>
+                  Upload File
+                </button>
+                <input
+                  accept=".pdf, image/png, image/jpeg"
+                  style="display: none;"
+                  type="file"
+                />
+              </div>
+              <span
+                class="upload-message"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card"
+    >
+      <div
+        class="woocommerce-card__body"
+      >
+        <p>
+          When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+        </p>
+        <p>
+          <strong>
+            Evidence submission is final.
+          </strong>
+
+          You can also save this evidence for later instead of submitting it immediately.
+
+          <strong>
+            We will automatically submit any saved evidence at the due date.
+          </strong>
+        </p>
+        <div
+          class="woocommerce-card__footer"
+        >
+          <button
+            class="components-button is-button is-primary is-large"
+            type="button"
+          >
+            Submit Evidence
+          </button>
+          <button
+            class="components-button is-button is-default is-large"
+            type="button"
+          >
+            Save For Later
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 `;
