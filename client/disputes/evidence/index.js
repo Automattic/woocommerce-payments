@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge } from 'lodash';
+import { merge, findKey } from 'lodash';
 
 import { FileUploadControl } from './file-upload';
 
@@ -155,7 +155,7 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState( null );
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
-	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -175,6 +175,7 @@ export default ( { query } ) => {
 
 	const updateEvidence = ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) );
 	const updateDispute = ( updates = {} ) => setDispute( d => merge( {}, d, updates ) );
+	const isUploadingEvidence = () => Boolean( findKey( dispute.isUploading, value => value === true ) );
 
 	const doRemoveFile = ( key ) => {
 		updateEvidence( key, '' );
@@ -244,6 +245,12 @@ export default ( { query } ) => {
 	};
 
 	const doSave = async submit => {
+		// Prevent submit if upload is in progress.
+		if ( isUploadingEvidence() ) {
+			createInfoNotice( __( 'Please wait until file upload is finished' ), 'woocommerce-payments' );
+			return;
+		}
+
 		setLoading( true );
 
 		try {
