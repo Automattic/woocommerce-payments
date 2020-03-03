@@ -205,6 +205,7 @@ export default ( { query } ) => {
 
 		try {
 			const uploadedFile = await apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } );
+			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			updateDispute( {
 				metadata: { [ key ]: uploadedFile.filename },
 				isUploading: { [ key ]: false },
