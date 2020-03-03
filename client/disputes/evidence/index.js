@@ -55,20 +55,14 @@ export const DisputeEvidenceForm = props => {
 	};
 
 	const composeFieldControl = field => {
-		let Control = TextareaControl;
-		let controlProps = composeDefaultControlProps( field );
-
 		switch ( field.control ) {
 			case 'file':
-				Control = FileUploadControl;
-				controlProps = composeFileUploadProps( field );
-				break;
+				return <FileUploadControl key={ field.key } { ...composeFileUploadProps( field ) } />;
 			case 'text':
-				Control = TextControl;
-				break;
+				return <TextControl key={ field.key } { ...composeDefaultControlProps( field ) } />;
+			default:
+				return <TextareaControl key={ field.key } { ...composeDefaultControlProps( field ) } />;
 		}
-
-		return <Control key={ field.key } { ...controlProps } />;
 	};
 
 	const evidenceSections = evidenceFields.map( section => {
