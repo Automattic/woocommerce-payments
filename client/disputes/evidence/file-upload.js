@@ -6,7 +6,7 @@ import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
 export const FileUploadControl = ( props ) => {
-	const { fileName, field, isDone, isLoading, accept, error, onFileChange, onFileRemove } = props;
+	const { fileName, field, disabled, isDone, isLoading, accept, error, onFileChange, onFileRemove } = props;
 	const hasError = error && error.length > 0;
 	const getIcon = () => {
 		return <Gridicon
@@ -28,7 +28,7 @@ export const FileUploadControl = ( props ) => {
 					isPrimary
 					isDestructive={ hasError }
 					isBusy={ isLoading }
-					disabled={ isLoading }
+					disabled={ disabled || isLoading }
 					icon={ getIcon() }
 					accept={ accept }
 					onChange={ ( event ) => onFileChange( field.key, event.target.files[ 0 ] ) }
@@ -40,7 +40,7 @@ export const FileUploadControl = ( props ) => {
 					? <span className="upload-message is-destructive">{ error }</span>
 					: <span	className="upload-message">{ fileName }</span> }
 
-				{ isDone
+				{ isDone && ! disabled
 					? <IconButton
 						className={ 'delete-uploaded-file-button' }
 						icon={ <Gridicon icon="trash" size={ 18 } /> }

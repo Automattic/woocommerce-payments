@@ -47,6 +47,7 @@ export const DisputeEvidenceForm = props => {
 			accept,
 			onFileChange,
 			onFileRemove,
+			disabled: readOnly,
 			isLoading,
 			isDone,
 			error,

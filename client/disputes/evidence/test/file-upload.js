@@ -26,6 +26,7 @@ describe( 'FileUploadControl', () => {
 			isLoading: false,
 			fileName: '',
 			error: '',
+			disabled: false,
 		};
 	} );
 
@@ -72,5 +73,13 @@ describe( 'FileUploadControl', () => {
 		control.find( IconButton ).simulate( 'click', {} );
 		expect( props.onFileRemove ).toHaveBeenCalledTimes( 1 );
 		expect( props.onFileRemove ).toHaveBeenCalledWith( field.key );
+	} );
+
+	test( 'renders disabled state', () => {
+		props.disabled = true;
+		props.isDone = true;
+		props.fileName = 'file.pdf';
+		const control = shallow( <FileUploadControl { ...props } /> );
+		expect( control ).toMatchSnapshot();
 	} );
 } );

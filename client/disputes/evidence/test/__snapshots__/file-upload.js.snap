@@ -34,6 +34,42 @@ exports[`FileUploadControl renders default file upload control 1`] = `
 </BaseControl>
 `;
 
+exports[`FileUploadControl renders disabled state 1`] = `
+<BaseControl
+  id="form-file-upload-base-control-field_key"
+  label="Upload file"
+>
+  <div
+    className="file-upload"
+  >
+    <FormFileUpload
+      accept=".pdf, image/png, image/jpeg"
+      className="is-success"
+      disabled={true}
+      icon={
+        <t
+          icon="checkmark"
+          size={18}
+        />
+      }
+      id="form-file-upload-field_key"
+      isBusy={false}
+      isDestructive=""
+      isLarge={true}
+      isPrimary={true}
+      onChange={[Function]}
+    >
+      Upload File
+    </FormFileUpload>
+    <span
+      className="upload-message"
+    >
+      file.pdf
+    </span>
+  </div>
+</BaseControl>
+`;
+
 exports[`FileUploadControl renders loading state 1`] = `
 <BaseControl
   id="form-file-upload-base-control-field_key"

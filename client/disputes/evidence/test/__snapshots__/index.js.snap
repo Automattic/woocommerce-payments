@@ -29,6 +29,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={false}
       field={
         Object {
           "control": "file",
@@ -56,6 +57,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={false}
       field={
         Object {
           "control": "file",
@@ -69,6 +71,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={false}
       field={
         Object {
           "control": "file",
@@ -94,6 +97,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={false}
       field={
         Object {
           "control": "file",
@@ -169,6 +173,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={true}
       field={
         Object {
           "control": "file",
@@ -196,6 +201,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={true}
       field={
         Object {
           "control": "file",
@@ -209,6 +215,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={true}
       field={
         Object {
           "control": "file",
@@ -234,6 +241,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
+      disabled={true}
       field={
         Object {
           "control": "file",
