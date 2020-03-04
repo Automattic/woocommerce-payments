@@ -20,7 +20,7 @@ export const FileUploadControl = ( props ) => {
 			label={ field.display }
 			help={ field.description }
 		>
-			<div className={ 'file-upload' }>
+			<div className="file-upload">
 				<FormFileUpload
 					id={ `form-file-upload-${ field.key }` }
 					className={ isDone && ! hasError ? 'is-success' : null }
@@ -42,7 +42,7 @@ export const FileUploadControl = ( props ) => {
 
 				{ isDone && ! disabled
 					? <IconButton
-						className={ 'delete-uploaded-file-button' }
+						className="delete-uploaded-file-button"
 						icon={ <Gridicon icon="trash" size={ 18 } /> }
 						onClick={ () => onFileRemove( field.key ) } />
 					: null }
