@@ -85,7 +85,7 @@ describe( 'Test mode notification', () => {
 
 	test.each( allTopics )( 'Returns correct notice', ( topic ) => {
 		const expected = (
-			<Notice className={ 'wcpay-test-mode-notice' } status="warning" isDismissible={ false }>
+			<Notice className="wcpay-test-mode-notice" status="warning" isDismissible={ false }>
 				{ getNoticeMessage( topic ) }
 			</Notice>
 		);

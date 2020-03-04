@@ -71,7 +71,7 @@
 
 		> a {
 			height: 18px;
-			fill: $gray-30;
+			fill: $studio-gray-30;
 		}
 
 		+ .woocommerce-table__header {
@@ -97,12 +97,12 @@
 .wcpay-test-mode-notice.components-notice.is-warning {
 	margin: 24px 0;
 	padding: 12px;
-	background-color: $warning;
+	background-color: $studio-yellow-5;
 }
 
 .wcpay-payment-details {
 	.woocommerce-card__header {
-		border-bottom: 1px solid $gray-5;
+		border-bottom: 1px solid $studio-gray-5;
 	}
 }
 

@@ -2,8 +2,8 @@
 	.connect-account__card {
 		.woocommerce-card__body {
 			line-height: 1.5;
-
-			p, h2 {
+			p,
+			h2 {
 				text-align: center;
 			}
 			h2 {
@@ -11,6 +11,11 @@
 				font-size: 1.2rem;
 				font-weight: 300;
 				margin: 16px 0 8px;
+			}
+			.gridicons-credit-card {
+				height: 144px;
+				width: 144px;
+				fill: $studio-gray-30;
 			}
 		}
 

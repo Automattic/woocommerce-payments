@@ -18,6 +18,7 @@ services:
       - ./docker/wordpress:/var/www/html/
       - ./docker/logs/apache2/:/var/log/apache2
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
+      - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
   db:
     container_name: woocommerce_payments_mysql
     image: mysql:5.7

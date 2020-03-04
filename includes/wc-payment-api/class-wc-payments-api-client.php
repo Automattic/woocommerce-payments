@@ -28,6 +28,7 @@ class WC_Payments_API_Client {
 	const DEPOSITS_API     = 'deposits';
 	const TRANSACTIONS_API = 'transactions';
 	const DISPUTES_API     = 'disputes';
+	const FILES_API        = 'files';
 	const OAUTH_API        = 'oauth';
 
 	/**
@@ -378,12 +379,15 @@ class WC_Payments_API_Client {
 	 * @param string $dispute_id id of dispute to update.
 	 * @param array  $evidence   evidence to upload.
 	 * @param bool   $submit     whether to submit (rather than stage) evidence.
+	 * @param array  $metadata   metadata associated with this dispute.
+	 *
 	 * @return array dispute object.
 	 */
-	public function update_dispute( $dispute_id, $evidence, $submit ) {
+	public function update_dispute( $dispute_id, $evidence, $submit, $metadata ) {
 		$request = array(
 			'evidence' => $evidence,
 			'submit'   => $submit,
+			'metadata' => $metadata,
 		);
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
@@ -404,6 +408,57 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		return $this->request( array(), self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+	}
+
+	/**
+	 * Upload evidence and return file object.
+	 *
+	 * @param string $request request object received.
+	 *
+	 * @return array file object.
+	 * @throws WC_Payments_API_Exception - If request throws.
+	 */
+	public function upload_evidence( $request ) {
+		$purpose     = $request->get_param( 'purpose' );
+		$file_params = $request->get_file_params();
+		$file_name   = $file_params['file']['name'];
+		$file_type   = $file_params['file']['type'];
+
+		// Sometimes $file_params is empty array for large files (8+ MB).
+		$file_error = empty( $file_params ) || $file_params['file']['error'];
+
+		if ( $file_error ) {
+			// TODO - Add better error message by specifiying which limit is reached (host or Stripe).
+			throw new WC_Payments_API_Exception(
+				__( 'Max file size exceeded.', 'woocommerce-payments' ),
+				'wcpay_evidence_file_max_size',
+				400
+			);
+		}
+
+		$body = [
+			// We disable php linting here because otherwise it will show a warning on improper
+			// use of `file_get_contents()` and say you should "use `wp_remote_get()` for
+			// remote URLs instead", which is unrelated to our use here.
+			// phpcs:disable
+			'file'      => base64_encode( file_get_contents( $file_params['file']['tmp_name'] ) ),
+			// phpcs:enable
+			'file_name' => $file_name,
+			'file_type' => $file_type,
+			'purpose'   => $purpose,
+		];
+
+		try {
+			return $this->request( $body, self::FILES_API, self::POST );
+		} catch ( WC_Payments_API_Exception $e ) {
+			// TODO - Send better error messages to the client once the server is updated.
+			// Throw generic error without details to the client.
+			throw new WC_Payments_API_Exception(
+				__( 'Upload failed.', 'woocommerce-payments' ),
+				'wcpay_evidence_file_upload_error',
+				$e->get_http_code()
+			);
+		}
 	}
 
 	/**
@@ -574,6 +629,11 @@ class WC_Payments_API_Client {
 
 			Logger::error( $message );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
+		}
+
+		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
+		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
+			$response_body['metadata'] = new stdClass();
 		}
 
 		return $response_body;

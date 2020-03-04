@@ -27,12 +27,61 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       onChange={[Function]}
       value=""
     />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={false}
+      field={
+        Object {
+          "control": "file",
+          "display": "Customer Signature",
+          "key": "customer_signature",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="customer_signature"
+    />
+    <WithInstanceId(TextareaControl)
+      disabled={false}
+      key="billing_address"
+      label="Customer Billing Address"
+      onChange={[Function]}
+      value=""
+    />
     <WithInstanceId(TextControl)
       disabled={false}
       key="customer_purchase_ip"
       label="Customer IP Address"
       onChange={[Function]}
       value="127.0.0.1"
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={false}
+      field={
+        Object {
+          "control": "file",
+          "display": "Receipt",
+          "key": "receipt",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="receipt"
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={false}
+      field={
+        Object {
+          "control": "file",
+          "display": "Customer Communication",
+          "key": "customer_communication",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="customer_communication"
     />
   </Card>
   <Card
@@ -45,6 +94,19 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       label="Additional Details"
       onChange={[Function]}
       value=""
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={false}
+      field={
+        Object {
+          "control": "file",
+          "key": "uncategorized_file",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="uncategorized_file"
     />
   </Card>
   <Card>
@@ -109,12 +171,61 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       onChange={[Function]}
       value=""
     />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={true}
+      field={
+        Object {
+          "control": "file",
+          "display": "Customer Signature",
+          "key": "customer_signature",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="customer_signature"
+    />
+    <WithInstanceId(TextareaControl)
+      disabled={true}
+      key="billing_address"
+      label="Customer Billing Address"
+      onChange={[Function]}
+      value=""
+    />
     <WithInstanceId(TextControl)
       disabled={true}
       key="customer_purchase_ip"
       label="Customer IP Address"
       onChange={[Function]}
       value="127.0.0.1"
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={true}
+      field={
+        Object {
+          "control": "file",
+          "display": "Receipt",
+          "key": "receipt",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="receipt"
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={true}
+      field={
+        Object {
+          "control": "file",
+          "display": "Customer Communication",
+          "key": "customer_communication",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="customer_communication"
     />
   </Card>
   <Card
@@ -127,6 +238,19 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       label="Additional Details"
       onChange={[Function]}
       value="winning_evidence"
+    />
+    <FileUploadControl
+      accept=".pdf, image/png, image/jpeg"
+      disabled={true}
+      field={
+        Object {
+          "control": "file",
+          "key": "uncategorized_file",
+        }
+      }
+      fileName=""
+      isDone={false}
+      key="uncategorized_file"
     />
   </Card>
 </Fragment>

@@ -19,8 +19,8 @@
     "start": "npm run watch",
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css",
-    "lint:css": "stylelint '*/**.scss'",
-    "lint:css-fix": "stylelint '*/**.scss' --fix",
+    "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
+    "lint:css-fix": "npm run lint:css -- --fix",
     "lint:js": "eslint . --ext=js,jsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)"

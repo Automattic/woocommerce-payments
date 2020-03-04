@@ -1,13 +1,15 @@
 // TODO generalize most of these styles to other WCPay views, if not WooCommerce Admin in general.
-.wcpay-dispute-details, .wcpay-dispute-evidence {
+.wcpay-dispute-details,
+.wcpay-dispute-evidence {
 	$horizontal-card-padding: 24px;
 
-	.woocommerce-card__header, .woocommerce-card__body {
+	.woocommerce-card__header,
+	.woocommerce-card__body {
 		padding: 16px $horizontal-card-padding;
 	}
 
 	.woocommerce-card__header {
-		border-bottom: 1px solid $gray-5;
+		border-bottom: 1px solid $studio-gray-5;
 	}
 	.woocommerce-card__title {
 		padding: 3px 0;
@@ -15,12 +17,14 @@
 		font-size: 1.2rem;
 		font-weight: 300;
 	}
-	
+
 	.woocommerce-card__body {
 		font-weight: 300;
 		letter-spacing: 0.012rem;
 		line-height: 1.5;
-		&, p, h3 {
+		&,
+		p,
+		h3 {
 			font-size: 1rem;
 		}
 
@@ -46,9 +50,62 @@
 	// Evidence form
 	.components-base-control .components-base-control__label {
 		font-size: 12px;
-		color: $gray-40;
+		color: $studio-gray-40;
 	}
 	.components-base-control + .components-base-control {
 		margin: 16px 0 0;
+	}
+
+	// Fix broken wc-admin style for file upload buttons specifically.
+	.file-upload {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+
+		// Selector here is super specific to ensure styles are overwritten.
+		.components-icon-button.is-primary:not(:disabled):not([aria-disabled='true']) {
+			// Fix primary button hover.
+			&:hover {
+				background-color: $studio-pink-60;
+				border-color: $studio-pink-60;
+			}
+
+			&.is-success {
+				background-color: $studio-green;
+				border-color: $studio-green;
+
+				&:hover {
+					background-color: $studio-green-60;
+					border-color: $studio-green-60;
+				}
+			}
+
+			&.is-destructive {
+				background-color: $studio-red;
+				border-color: $studio-red;
+
+				&:hover {
+					background-color: $studio-red-60;
+					border-color: $studio-red-60;
+				}
+			}
+		}
+
+		.components-icon-button.delete-uploaded-file-button:not(:disabled):not([aria-disabled='true']) {
+			&:hover {
+				color: $studio-red-60;
+				box-shadow: none;
+			}
+		}
+
+		// Set styles for file name text and icon.
+		.upload-message {
+			padding-left: 24px;
+			color: $studio-gray-40;
+
+			&.is-destructive {
+				color: $studio-red;
+			}
+		}
 	}
 }

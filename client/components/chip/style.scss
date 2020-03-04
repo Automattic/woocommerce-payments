@@ -8,18 +8,18 @@
 	white-space: nowrap;
 
 	&.chip-primary {
-		background: $blue-5;
-		color: $blue-80;
+		background: $studio-blue-5;
+		color: $studio-blue-80;
 	}
 
 	&.chip-light {
-		background: $gray-5;
-		color: $gray-80;
+		background: $studio-gray-5;
+		color: $studio-gray-80;
 	}
 
 	&.chip-alert {
-		background: $red-5;
-		color: $red-80;
+		background: $studio-red-5;
+		color: $studio-red-80;
 	}
 
 	&.is-compact {
