@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge, findKey } from 'lodash';
+import { merge, some } from 'lodash';
 
 import { FileUploadControl } from './file-upload';
 
@@ -170,7 +170,7 @@ export default ( { query } ) => {
 
 	const updateEvidence = ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) );
 	const updateDispute = ( updates = {} ) => setDispute( d => merge( {}, d, updates ) );
-	const isUploadingEvidence = () => Boolean( findKey( dispute.isUploading, value => value === true ) );
+	const isUploadingEvidence = () => some( dispute.isUploading );
 
 	const doRemoveFile = ( key ) => {
 		updateEvidence( key, '' );
@@ -284,7 +284,7 @@ export default ( { query } ) => {
 			onFileChange={ doUploadFile }
 			onFileRemove={ doRemoveFile }
 			onSave={ doSave }
-			readOnly={ dispute && dispute.status.indexOf( 'needs_response' ) === -1 }
+			readOnly={ dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status }
 		/>
 	);
 };
