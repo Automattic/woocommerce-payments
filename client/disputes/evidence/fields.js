@@ -6,47 +6,47 @@ import { __ } from '@wordpress/i18n';
 export default [
 	{
 		key: 'general',
-		title: __( 'General Evidence' ),
+		title: __( 'General Evidence', 'woocommerce-payments' ),
 		description: '',
 		fields: [
 			{
 				key: 'product_description',
-				display: 'Product Description',
+				display: __( 'Product Description', 'woocommerce-payments' ),
 				control: 'textarea',
 			},
 			{
 				key: 'customer_name',
-				display: 'Customer Name',
+				display: __( 'Customer Name', 'woocommerce-payments' ),
 				control: 'text',
 			},
 			{
 				key: 'customer_email_address',
-				display: 'Customer Email',
+				display: __( 'Customer Email', 'woocommerce-payments' ),
 				control: 'text',
 			},
 			{
 				key: 'customer_signature',
-				display: 'Customer Signature',
+				display: __( 'Customer Signature', 'woocommerce-payments' ),
 				control: 'file',
 			},
 			{
 				key: 'billing_address',
-				display: 'Customer Billing Address',
+				display: __( 'Customer Billing Address', 'woocommerce-payments' ),
 				control: 'textarea',
 			},
 			{
 				key: 'customer_purchase_ip',
-				display: 'Customer IP Address',
+				display: __( 'Customer IP Address', 'woocommerce-payments' ),
 				control: 'text',
 			},
 			{
 				key: 'receipt',
-				display: 'Receipt',
+				display: __( 'Receipt', 'woocommerce-payments' ),
 				control: 'file',
 			},
 			{
 				key: 'customer_communication',
-				display: 'Customer Communication',
+				display: __( 'Customer Communication', 'woocommerce-payments' ),
 				control: 'file',
 			},
 		],
@@ -54,11 +54,11 @@ export default [
 	// …
 	{
 		key: 'uncategorized',
-		title: __( 'Additional Details' ),
+		title: __( 'Additional Details', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'uncategorized_text',
-				display: 'Additional Details',
+				display: __( 'Additional Details', 'woocommerce-payments' ),
 				control: 'textarea',
 			},
 			{
