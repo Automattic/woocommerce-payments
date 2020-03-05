@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
@@ -290,6 +290,11 @@ export default ( { query } ) => {
 		setDispute( d => merge( {}, d, { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } ) );
 	};
 
+	const fieldsToDisplay = useMemo(
+		() => evidenceFields( dispute && dispute.reason, productType ),
+		[ dispute && dispute.reason, productType ]
+	);
+
 	return (
 		<DisputeEvidencePage
 			showPlaceholder={ loading }
@@ -310,7 +315,7 @@ export default ( { query } ) => {
 			onSave={ doSave }
 			productType={ productType }
 			onChangeProductType={ updateProductType }
-			fields={ evidenceFields }
+			fields={ fieldsToDisplay }
 		/>
 	);
 };

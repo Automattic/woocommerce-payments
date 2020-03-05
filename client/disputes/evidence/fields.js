@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { includes } from 'lodash';
 
-export default [
+const sections = [
 	{
 		key: 'general',
 		title: __( 'General Evidence', 'woocommerce-payments' ),
@@ -210,3 +211,34 @@ export default [
 		],
 	},
 ];
+
+/**
+ * Return evidence fields that pertain to given reason and productType.
+ *
+ * Sections can optionally specify 'reason' as a string or array of strings, and/or 'productType'.
+ * Fields can optionally specify 'productType'.
+ *
+ * @param {string} reason      Dispute reason for which to present fields.
+ * @param {string} productType Product type for which to present fields.
+ *
+ * @returns {array} Sections of fields.
+ */
+export default ( reason, productType ) => {
+	if ( ! reason || ! productType ) {
+		return [];
+	}
+
+	return sections.map( section => {
+		const reasonMismatch = section.reason && ! includes( section.reason, reason );
+		const productTypeMismatch = section.productType && section.productType !== productType;
+		if ( reasonMismatch || productTypeMismatch ) {
+			return null;
+		}
+
+		const fields = section.fields.filter( field => {
+			return ! field.productType || field.productType === productType;
+		} );
+
+		return { ...section, fields };
+	} ).filter( Boolean );
+};
