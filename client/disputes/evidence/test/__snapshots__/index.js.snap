@@ -283,6 +283,34 @@ exports[`Dispute evidence page renders correctly 1`] = `
       }
     />
   </Card>
+  <Card
+    title="Product Type"
+  >
+    <WithInstanceId(SelectControl)
+      disabled={false}
+      options={
+        Array [
+          Object {
+            "disabled": true,
+            "label": "Select one…",
+            "value": "",
+          },
+          Object {
+            "label": "Physical product",
+            "value": "physical_product",
+          },
+          Object {
+            "label": "Digital product or service",
+            "value": "digital_product_or_service",
+          },
+          Object {
+            "label": "Offline service",
+            "value": "offline_service",
+          },
+        ]
+      }
+    />
+  </Card>
   <DisputeEvidenceForm
     evidence={
       Object {
