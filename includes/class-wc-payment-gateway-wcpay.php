@@ -92,6 +92,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = array(
+			'enabled'         => array(
+				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
 			'account_details' => array(
 				'type' => 'account_actions',
 			),
@@ -110,13 +117,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
-			),
-			'enabled'         => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
 			),
 			'enable_logging'  => array(
 				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
@@ -416,6 +416,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->add_order_note( $note );
 
 		return true;
+	}
+
+	/**
+	 * Overrides the original method in woo's WC_Settings_API in order to conditionally render the enabled checkbox.
+	 *
+	 * @param string $key Field key.
+	 * @param array  $data Field data.
+	 *
+	 * @return string Checkbox markup or empty string.
+	 */
+	public function generate_checkbox_html( $key, $data ) {
+		if ( 'enabled' === $key && ! $this->account->is_stripe_connected( false ) ) {
+			return '';
+		}
+		return parent::generate_checkbox_html( $key, $data );
 	}
 
 	/**
