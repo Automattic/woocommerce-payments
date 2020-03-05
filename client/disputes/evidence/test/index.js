@@ -42,20 +42,46 @@ const disputeNoNeedForResponse = {
 };
 /* eslint-enable camelcase */
 
+const fields = [
+	{
+		key: 'general',
+		title: 'General Evidence',
+		fields: [
+			{
+				key: 'product_description',
+				label: 'Product Description',
+				type: 'textarea',
+			},
+			{
+				key: 'customer_name',
+				label: 'Customer Name',
+				type: 'text',
+			},
+			{
+				key: 'customer_signature',
+				label: 'Customer Signature',
+				type: 'file',
+			},
+		],
+	},
+];
+
 describe( 'Dispute evidence form', () => {
 	test( 'needing response, renders correctly', () => {
 		const form = shallow(
 			<DisputeEvidenceForm
-                evidence={ disputeNeedsResponse.evidence }
-                readOnly={ false }
+				fields={ fields }
+				evidence={ disputeNeedsResponse.evidence }
+				readOnly={ false }
 			/>
 		);
 		expect( form ).toMatchSnapshot();
-    } );
+	} );
 
 	test( 'not needing response, renders correctly', () => {
-        const form = shallow(
+		const form = shallow(
 			<DisputeEvidenceForm
+				fields={ fields }
 				evidence={ disputeNoNeedForResponse.evidence }
 				readOnly={ true }
 			/>
@@ -69,6 +95,7 @@ describe( 'Dispute evidence form', () => {
 		// We have to mount component to select button for click.
 		const form = shallow(
 			<DisputeEvidenceForm
+				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
 				readOnly={ false }
 				onSave={ jest.fn() }
@@ -91,6 +118,7 @@ describe( 'Dispute evidence form', () => {
 		// We have to mount component to select button for click.
 		const form = shallow(
 			<DisputeEvidenceForm
+				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
 				readOnly={ false }
 				onSave={ onSave }

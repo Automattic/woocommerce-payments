@@ -26,7 +26,11 @@ import CardFooter from 'components/card-footer';
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
 export const DisputeEvidenceForm = props => {
-	const { evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
+	const { fields, evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
+
+	if ( ! fields || ! fields.length ) {
+		return null;
+	}
 
 	const composeDefaultControlProps = field => ( {
 		label: field.label,
@@ -66,7 +70,7 @@ export const DisputeEvidenceForm = props => {
 		}
 	};
 
-	const evidenceSections = evidenceFields.map( section => {
+	const evidenceSections = fields.map( section => {
 		return (
 			<Card key={ section.key } title={ section.title }>
 				{ section.fields.map( composeFieldControl ) }
@@ -306,6 +310,7 @@ export default ( { query } ) => {
 			onSave={ doSave }
 			productType={ productType }
 			onChangeProductType={ updateProductType }
+			fields={ evidenceFields }
 		/>
 	);
 };
