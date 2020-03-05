@@ -102,6 +102,29 @@ jQuery( function( $ ) {
 		return billingDetails;
 	};
 
+	// Show error notice at top of checkout form.
+	var showError = function( errorMessage ) {
+		var messageWrapper = '<ul class="woocommerce-error" role="alert">' + errorMessage + '</ul>';
+		var $container = $( '.woocommerce-notices-wrapper, form.checkout' ).first();
+
+		if ( ! $container.length ) {
+			return;
+		}
+
+		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
+		$( '.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message' ).remove();
+		$container.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' + messageWrapper + '</div>' );
+		$container.find( '.input-text, select, input:checkbox' ).trigger( 'validate' ).blur();
+
+		var scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
+		if ( ! scrollElement.length ) {
+			scrollElement = $container;
+		}
+
+		$.scroll_to_notices( scrollElement );
+		$( document.body ).trigger( 'checkout_error' );
+	};
+
 	// Create payment method on submission.
 	var paymentMethodGenerated;
 
@@ -150,6 +173,9 @@ jQuery( function( $ ) {
 
 				// Re-submit the form.
 				$form.submit();
+			} )
+			.catch( function( error ) {
+				showError( error.message );
 			} );
 
 		// Prevent form submission so that we can fire it once a payment method has been generated.
