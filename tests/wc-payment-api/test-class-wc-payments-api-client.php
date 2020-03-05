@@ -283,7 +283,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			)
 		);
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "Error: $error_code $error_message" );
+		$this->expectExceptionMessage( "Error: $error_message" );
 
 		$this->payments_api_client->get_transaction( $transaction_id );
 	}
