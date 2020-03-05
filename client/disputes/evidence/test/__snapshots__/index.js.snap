@@ -32,9 +32,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       disabled={false}
       field={
         Object {
-          "control": "file",
-          "display": "Customer Signature",
           "key": "customer_signature",
+          "label": "Customer Signature",
+          "type": "file",
         }
       }
       fileName=""
@@ -60,9 +60,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       disabled={false}
       field={
         Object {
-          "control": "file",
-          "display": "Receipt",
           "key": "receipt",
+          "label": "Receipt",
+          "type": "file",
         }
       }
       fileName=""
@@ -74,9 +74,9 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       disabled={false}
       field={
         Object {
-          "control": "file",
-          "display": "Customer Communication",
           "key": "customer_communication",
+          "label": "Customer Communication",
+          "type": "file",
         }
       }
       fileName=""
@@ -100,8 +100,8 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       disabled={false}
       field={
         Object {
-          "control": "file",
           "key": "uncategorized_file",
+          "type": "file",
         }
       }
       fileName=""
@@ -176,9 +176,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       disabled={true}
       field={
         Object {
-          "control": "file",
-          "display": "Customer Signature",
           "key": "customer_signature",
+          "label": "Customer Signature",
+          "type": "file",
         }
       }
       fileName=""
@@ -204,9 +204,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       disabled={true}
       field={
         Object {
-          "control": "file",
-          "display": "Receipt",
           "key": "receipt",
+          "label": "Receipt",
+          "type": "file",
         }
       }
       fileName=""
@@ -218,9 +218,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       disabled={true}
       field={
         Object {
-          "control": "file",
-          "display": "Customer Communication",
           "key": "customer_communication",
+          "label": "Customer Communication",
+          "type": "file",
         }
       }
       fileName=""
@@ -244,8 +244,8 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       disabled={true}
       field={
         Object {
-          "control": "file",
           "key": "uncategorized_file",
+          "type": "file",
         }
       }
       fileName=""

@@ -13,13 +13,12 @@ import { Button, TextControl, TextareaControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
 import { merge, some } from 'lodash';
 
-import { FileUploadControl } from './file-upload';
-
 /**
  * Internal dependencies.
  */
 import '../style.scss';
 import evidenceFields from './fields';
+import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
@@ -28,7 +27,7 @@ export const DisputeEvidenceForm = props => {
 	const { evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
 
 	const composeDefaultControlProps = field => ( {
-		label: field.display,
+		label: field.label,
 		value: evidence[ field.key ] || '',
 		onChange: value => onChange( field.key, value ),
 		disabled: readOnly,
@@ -55,7 +54,7 @@ export const DisputeEvidenceForm = props => {
 	};
 
 	const composeFieldControl = field => {
-		switch ( field.control ) {
+		switch ( field.type ) {
 			case 'file':
 				return <FileUploadControl key={ field.key } { ...composeFileUploadProps( field ) } />;
 			case 'text':
