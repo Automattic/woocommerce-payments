@@ -9,7 +9,7 @@ import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, TextControl, TextareaControl } from '@wordpress/components';
+import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
 import { merge, some } from 'lodash';
 
@@ -22,6 +22,8 @@ import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
+
+const PRODUCT_TYPE_META_KEY = '__product_type';
 
 export const DisputeEvidenceForm = props => {
 	const { evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
@@ -116,7 +118,7 @@ export const DisputeEvidenceForm = props => {
 };
 
 export const DisputeEvidencePage = props => {
-	const { showPlaceholder, dispute, ...evidenceFormProps } = props;
+	const { showPlaceholder, dispute, productType, onChangeProductType, ...evidenceFormProps } = props;
 
 	if ( showPlaceholder ) {
 		// TODO Render proper placeholder view.
@@ -132,6 +134,20 @@ export const DisputeEvidencePage = props => {
 		<Page isNarrow className="wcpay-dispute-evidence">
 			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
 				<Info dispute={ dispute } />
+			</Card>
+
+			<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
+				<SelectControl
+					value={ productType }
+					onChange={ onChangeProductType }
+					options={ [
+						{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
+						{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
+						{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
+						{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
+					] }
+					disabled={ readOnly }
+				/>
 			</Card>
 
 			<DisputeEvidenceForm
@@ -265,6 +281,11 @@ export default ( { query } ) => {
 		}
 	};
 
+	const productType = dispute && dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
+	const updateProductType = ( newProductType ) => {
+		setDispute( d => merge( {}, d, { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } ) );
+	};
+
 	return (
 		<DisputeEvidencePage
 			showPlaceholder={ loading }
@@ -283,7 +304,8 @@ export default ( { query } ) => {
 			onFileChange={ doUploadFile }
 			onFileRemove={ doRemoveFile }
 			onSave={ doSave }
-			readOnly={ dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status }
+			productType={ productType }
+			onChangeProductType={ updateProductType }
 		/>
 	);
 };
