@@ -20,13 +20,6 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_email_address"
-      label="Customer Email"
-      onChange={[Function]}
-      value=""
-    />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
       disabled={false}
@@ -40,73 +33,6 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       fileName=""
       isDone={false}
       key="customer_signature"
-    />
-    <WithInstanceId(TextareaControl)
-      disabled={false}
-      key="billing_address"
-      label="Customer Billing Address"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_purchase_ip"
-      label="Customer IP Address"
-      onChange={[Function]}
-      value="127.0.0.1"
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={false}
-      field={
-        Object {
-          "key": "receipt",
-          "label": "Receipt",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="receipt"
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={false}
-      field={
-        Object {
-          "key": "customer_communication",
-          "label": "Customer Communication",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="customer_communication"
-    />
-  </Card>
-  <Card
-    key="uncategorized"
-    title="Additional Details"
-  >
-    <WithInstanceId(TextareaControl)
-      disabled={false}
-      key="uncategorized_text"
-      label="Additional Details"
-      onChange={[Function]}
-      value=""
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={false}
-      field={
-        Object {
-          "key": "uncategorized_file",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="uncategorized_file"
     />
   </Card>
   <Card>
@@ -164,13 +90,6 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       onChange={[Function]}
       value=""
     />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_email_address"
-      label="Customer Email"
-      onChange={[Function]}
-      value=""
-    />
     <FileUploadControl
       accept=".pdf, image/png, image/jpeg"
       disabled={true}
@@ -184,73 +103,6 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       fileName=""
       isDone={false}
       key="customer_signature"
-    />
-    <WithInstanceId(TextareaControl)
-      disabled={true}
-      key="billing_address"
-      label="Customer Billing Address"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_purchase_ip"
-      label="Customer IP Address"
-      onChange={[Function]}
-      value="127.0.0.1"
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={true}
-      field={
-        Object {
-          "key": "receipt",
-          "label": "Receipt",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="receipt"
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={true}
-      field={
-        Object {
-          "key": "customer_communication",
-          "label": "Customer Communication",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="customer_communication"
-    />
-  </Card>
-  <Card
-    key="uncategorized"
-    title="Additional Details"
-  >
-    <WithInstanceId(TextareaControl)
-      disabled={true}
-      key="uncategorized_text"
-      label="Additional Details"
-      onChange={[Function]}
-      value="winning_evidence"
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={true}
-      field={
-        Object {
-          "key": "uncategorized_file",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="uncategorized_file"
     />
   </Card>
 </Fragment>
