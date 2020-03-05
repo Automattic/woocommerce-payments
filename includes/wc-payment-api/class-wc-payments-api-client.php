@@ -607,8 +607,8 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		// Check response error codes.
-		if ( 500 <= $response_code || 400 <= $response_code ) {
+		// Check error codes for 4xx and 5xx responses.
+		if ( 400 <= $response_code ) {
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'];
 				$error_message = $response_body['error']['message'];
