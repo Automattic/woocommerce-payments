@@ -142,6 +142,15 @@ jQuery( function( $ ) {
 			return;
 		}
 
+		// Block UI to indicate processing and avoid duplicate submission.
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+
 		var paymentMethodArgs = {
 			type: 'card',
 			card: cardElement,
@@ -172,9 +181,10 @@ jQuery( function( $ ) {
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
-				$form.submit();
+				$form.removeClass( 'processing' ).submit();
 			} )
 			.catch( function( error ) {
+				$form.removeClass( 'processing' ).unblock();
 				showError( error.message );
 			} );
 
