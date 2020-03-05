@@ -621,13 +621,12 @@ class WC_Payments_API_Client {
 			}
 
 			$message = sprintf(
-				// translators: This is an error from a 400 API response.
-				_x( 'Error: %1$s %2$s', '400 Error type message to throw as Exception', 'woocommerce-payments' ),
-				$error_code,
+				// translators: This is an error API response.
+				_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
 				$error_message
 			);
 
-			Logger::error( $message );
+			Logger::error( "Error: $error_message ($error_code)" );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
