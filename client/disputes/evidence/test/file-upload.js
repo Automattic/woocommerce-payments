@@ -14,8 +14,8 @@ describe( 'FileUploadControl', () => {
 	let props;
 	const field = {
 		key: 'field_key',
-		display: 'Upload file',
-		control: 'file',
+		label: 'Upload file',
+		type: 'file',
 	};
 	const accept = '.pdf, image/png, image/jpeg';
 	beforeEach( () => {
