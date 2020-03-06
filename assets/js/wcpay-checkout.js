@@ -111,7 +111,7 @@ jQuery( function( $ ) {
 	 * @param {object} $form The jQuery object for the form.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var onPaymentFormSubmit = function( $form ) {
+	var handleOnPaymentFormSubmit = function( $form ) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
@@ -158,13 +158,13 @@ jQuery( function( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
-		return onPaymentFormSubmit( $( this ) );
+		return handleOnPaymentFormSubmit( $( this ) );
 	} );
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', function() {
 		if ( $( '#payment_method_woocommerce_payments' ).is( ':checked' ) ) {
-			return onPaymentFormSubmit( $( '#order_review' ) );
+			return handleOnPaymentFormSubmit( $( '#order_review' ) );
 		}
 	} );
 } );
