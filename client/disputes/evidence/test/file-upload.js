@@ -1,7 +1,8 @@
 /** @format */
+
 /**
  * External dependencies
-*/
+ */
 import { shallow } from 'enzyme';
 import { FormFileUpload, IconButton } from '@wordpress/components';
 
