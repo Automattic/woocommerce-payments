@@ -73,6 +73,7 @@ export const DisputeEvidenceForm = props => {
 	const evidenceSections = fields.map( section => {
 		return (
 			<Card key={ section.key } title={ section.title }>
+				{ section.description && <p>{ section.description }</p> }
 				{ section.fields.map( composeFieldControl ) }
 			</Card>
 		);

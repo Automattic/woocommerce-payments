@@ -11,7 +11,7 @@ const sections = [
 	{
 		key: 'general',
 		title: __( 'General Evidence', 'woocommerce-payments' ),
-		description: '',
+		description: __( 'Provide general evidence about the customer and the order.', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'product_description',
@@ -228,6 +228,7 @@ const sections = [
 	{
 		key: 'uncategorized',
 		title: __( 'Additional Details', 'woocommerce-payments' ),
+		description: __( "Provide any extra evidence or statements you'd like the bank to see, either as text or by uploading a document.", 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'uncategorized_text',
