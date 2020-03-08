@@ -25,7 +25,6 @@ export const FileUploadControl = ( props ) => {
 					id={ `form-file-upload-${ field.key }` }
 					className={ isDone && ! hasError ? 'is-success' : null }
 					isLarge
-					isPrimary
 					isDestructive={ hasError }
 					isBusy={ isLoading }
 					disabled={ disabled || isLoading }

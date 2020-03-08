@@ -22,7 +22,6 @@ exports[`FileUploadControl renders default file upload control 1`] = `
       isBusy={false}
       isDestructive=""
       isLarge={true}
-      isPrimary={true}
       onChange={[Function]}
     >
       Upload File
@@ -56,7 +55,6 @@ exports[`FileUploadControl renders disabled state 1`] = `
       isBusy={false}
       isDestructive=""
       isLarge={true}
-      isPrimary={true}
       onChange={[Function]}
     >
       Upload File
@@ -92,7 +90,6 @@ exports[`FileUploadControl renders loading state 1`] = `
       isBusy={true}
       isDestructive=""
       isLarge={true}
-      isPrimary={true}
       onChange={[Function]}
     >
       Upload File
@@ -126,7 +123,6 @@ exports[`FileUploadControl renders upload done state 1`] = `
       isBusy={false}
       isDestructive=""
       isLarge={true}
-      isPrimary={true}
       onChange={[Function]}
     >
       Upload File
@@ -172,7 +168,6 @@ exports[`FileUploadControl renders upload failed state 1`] = `
       isBusy={false}
       isDestructive={true}
       isLarge={true}
-      isPrimary={true}
       onChange={[Function]}
     >
       Upload File
