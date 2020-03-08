@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge, some } from 'lodash';
+import { merge, some, flatten } from 'lodash';
 
 /**
  * Internal dependencies.
@@ -25,6 +25,11 @@ import CardFooter from 'components/card-footer';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
+/* If description is an array, separate with newline elements. */
+const expandHelp = ( description ) => {
+	return Array.isArray( description ) ? flatten( description.map( line => [ line, <br /> ] ) ) : description;
+};
+
 export const DisputeEvidenceForm = props => {
 	const { fields, evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
 
@@ -37,7 +42,7 @@ export const DisputeEvidenceForm = props => {
 		value: evidence[ field.key ] || '',
 		onChange: value => onChange( field.key, value ),
 		disabled: readOnly,
-		help: field.description,
+		help: expandHelp( field.description ),
 	} );
 
 	const composeFileUploadProps = field => {
@@ -56,6 +61,7 @@ export const DisputeEvidenceForm = props => {
 			isLoading,
 			isDone,
 			error,
+			help: expandHelp( field.description ),
 		};
 	};
 

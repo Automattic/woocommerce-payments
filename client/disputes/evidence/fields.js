@@ -199,11 +199,33 @@ const sections = [
 			{
 				key: 'access_activity_log',
 				type: 'file',
+				description: [
+					__( 'Provide at least two of the following pieces of information:', 'woocommerce-payments' ),
+					__( "• Customer's IP address and their device's geographical location at the time of purchase", 'woocommerce-payments' ),
+					__( '• Device ID and name of the device', 'woocommerce-payments' ),
+					__( '• Customer name and email address linked to their customer profile', 'woocommerce-payments' ),
+					__( '• Evidence that the customer logged into their account for your business before the transaction date', 'woocommerce-payments' ),
+					__( '• Evidence that your website or app was accessed by the cardholder for purchase or services on or after the transaction date', 'woocommerce-payments' ),
+					__( '• Evidence that the same device and card used in the disputed payment was used in a previous payment that was not disputed', 'woocommerce-payments' ),
+				],
+			},
+		],
+		reason: [ 'fraudulent', 'product_not_received' ],
+		productType: 'digital_product_or_service',
+	},
+	{
+		key: 'download_and_activity_logs',
+		title: __( 'Download and activity logs', 'woocommerce-payments' ),
+		fields: [
+			{
+				key: 'access_activity_log',
+				type: 'file',
 				description: __( 'Any server or activity logs showing proof that the cardholder accessed or downloaded the purchased digital product. This information should include IP addresses, corresponding timestamps, and any detailed recorded activity.', 'woocommerce-payments' ),
 			},
 		],
-		reason: [ 'fraudulent', 'product_not_received', 'product_unacceptable', 'subscription_canceled', 'unrecognized' ],
+		reason: [ 'product_unacceptable', 'subscription_canceled', 'unrecognized' ],
 		productType: 'digital_product_or_service',
+		denormalized: true,
 	},
 	{
 		key: 'service_details',
