@@ -23,13 +23,11 @@ const sections = [
 				key: 'customer_name',
 				label: __( 'Customer Name', 'woocommerce-payments' ),
 				type: 'text',
-				hiddenDescription: __( 'The name of the customer. This field will be automatically filled when possible.', 'woocommerce-payments' ),
 			},
 			{
 				key: 'customer_email_address',
 				label: __( 'Customer Email', 'woocommerce-payments' ),
 				type: 'text',
-				hiddenDescription: __( 'The email address of the customer. This field will be automatically filled when possible.', 'woocommerce-payments' ),
 			},
 			{
 				key: 'customer_signature',
@@ -41,13 +39,11 @@ const sections = [
 				key: 'billing_address',
 				label: __( 'Customer Billing Address', 'woocommerce-payments' ),
 				type: 'textarea',
-				hiddenDescription: __( 'The billing address provided by the customer (if the AVS check was successful). This field is automatically filled when possible.', 'woocommerce-payments' ),
 			},
 			{
 				key: 'customer_purchase_ip',
 				label: __( 'Customer IP Address', 'woocommerce-payments' ),
 				type: 'text',
-				hiddenDescription: __( "The IP address that the customer used when making the purchase. This field will be automatically filled when possible, and will be expanded to include geographical data before we send your evidence to the customer's credit card company.", 'woocommerce-payments' ),
 			},
 			{
 				key: 'receipt',
