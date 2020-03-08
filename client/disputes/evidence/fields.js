@@ -139,7 +139,7 @@ const sections = [
 				key: 'shipping_tracking_number',
 				label: __( 'Tracking number', 'woocommerce-payments' ),
 				type: 'text',
-				description: __( 'The tracking number for a physical product, obtained from the delivery service. If multiple tracking numbers were generated for this purchase, please separate them with commas. When we compile your evidence into a single document, these tracking numbers will be expanded to include detailed delivery information from the carrier.', 'woocommerce-payments' ),
+				description: __( 'The tracking number (if available) for a physical product, obtained from the delivery service. If multiple tracking numbers were generated for this purchase, please separate them with commas. When we compile your evidence into a single document, these tracking numbers will be expanded to include detailed delivery information from the carrier.', 'woocommerce-payments' ),
 			},
 			{
 				key: 'shipping_documentation',
