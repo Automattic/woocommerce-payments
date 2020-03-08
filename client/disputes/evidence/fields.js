@@ -218,6 +218,8 @@ const sections = [
  * Sections can optionally specify 'reason' as a string or array of strings, and/or 'productType'.
  * Fields can optionally specify 'productType'.
  *
+ * Sections and fields can specify denormalized: true to be omitted when all fields are shown.
+ *
  * @param {string} reason      Dispute reason for which to present fields.
  * @param {string} productType Product type for which to present fields.
  *
@@ -226,6 +228,16 @@ const sections = [
 export default ( reason, productType ) => {
 	if ( ! reason || ! productType ) {
 		return [];
+	}
+
+	if ( productType === 'multiple' ) {
+		return sections.map( section => {
+			if ( section.denormalized ) {
+				return null;
+			}
+
+			return { ...section, fields: section.fields.filter( field => ! field.denormalized ) };
+		} ).filter( Boolean );
 	}
 
 	return sections.map( section => {
