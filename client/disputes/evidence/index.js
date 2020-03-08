@@ -149,6 +149,7 @@ export const DisputeEvidencePage = props => {
 						{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
 						{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
 						{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
+						{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
 					] }
 					disabled={ readOnly }
 				/>

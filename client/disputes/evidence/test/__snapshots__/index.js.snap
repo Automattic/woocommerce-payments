@@ -159,6 +159,10 @@ exports[`Dispute evidence page renders correctly 1`] = `
             "label": "Offline service",
             "value": "offline_service",
           },
+          Object {
+            "label": "Multiple product types",
+            "value": "multiple",
+          },
         ]
       }
     />
