@@ -439,7 +439,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$description .= ' ';
 
 				/* translators: Link to WordPress.com TOS URL */
-				$terms_message = __(
+				$terms_message = esc_html__(
 					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
 					'woocommerce-payments'
 				);
