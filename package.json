@@ -38,7 +38,8 @@
   "dependencies": {
     "css-loader": "^2.1.1",
     "debug": "^4.1.1",
-    "lodash": "^4.17.14"
+    "lodash": "^4.17.14",
+    "wordpress-element": "npm:@wordpress/element@2.11.0"
   },
   "devDependencies": {
     "@automattic/color-studio": "^2.2.0",

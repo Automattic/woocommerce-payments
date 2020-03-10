@@ -102,6 +102,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_details' => array(
 				'type' => 'account_actions',
 			),
+			'account_status'  => array(
+				'type' => 'account_status',
+			),
 			'manual_capture'  => array(
 				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
@@ -431,6 +434,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 		return parent::generate_checkbox_html( $key, $data );
+	}
+
+	/**
+	 * Outputs the container for account status information.
+	 *
+	 * @return string Container markup or empty if the account is not connected.
+	 */
+	public function generate_account_status_html() {
+		if ( ! $this->account->is_stripe_connected( false ) ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row">
+				<?php echo esc_html( __( 'Account Status', 'woocommerce-payments' ) ); ?>
+			</th>
+			<td>
+				<div id="wcpay-account-status-container"></div>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
