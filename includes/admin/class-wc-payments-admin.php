@@ -238,13 +238,36 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
 		);
+
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpayAdminSettings',
+			array(
+				'accountStatus' => $this->account->get_account_status_data(),
+			)
+		);
+
+		wp_register_style(
+			'WCPAY_ADMIN_SETTINGS',
+			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
+			array( 'wc-components' ),
+			WC_Payments::get_file_version( 'dist/settings.css' )
+		);
 	}
 
 	/**
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
-		wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
+		global $current_tab, $current_section;
+		if ( $current_tab && $current_section
+			&& 'checkout' === $current_tab
+			&& 'woocommerce_payments' === $current_section ) {
+			// Output the settings JS and CSS only on the settings page.
+			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+		}
+
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );

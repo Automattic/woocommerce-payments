@@ -111,6 +111,36 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account status data for rendering on the settings page.
+	 *
+	 * @return array An array containing the status data.
+	 */
+	public function get_account_status_data() {
+		try {
+			$account = $this->get_cached_account_data();
+		} catch ( Exception $e ) {
+			return array(
+				'error' => true,
+			);
+		}
+
+		if ( is_array( $account ) && empty( $account ) ) {
+			// empty array means no account. This data should not be used when the account is not connected.
+			return array(
+				'error' => true,
+			);
+		}
+
+		return array(
+			'status'          => $account['status'],
+			'paymentsEnabled' => $account['payments_enabled'],
+			'depositsStatus'  => $account['deposits_status'],
+			'currentDeadline' => $account['current_deadline'],
+			'accountLink'     => $this->get_login_url(),
+		);
+	}
+
+	/**
 	 * Checks if Stripe account is connected and displays admin notices if it is not.
 	 *
 	 * @return bool True if the account is connected properly.
@@ -274,7 +304,12 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	public static function get_login_url() {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-login' => '1' ] ), 'wcpay-login' );
+		return add_query_arg(
+			[
+				'wcpay-login' => '1',
+				'_wpnonce'    => wp_create_nonce( 'wcpay-login' ),
+			]
+		);
 	}
 
 	/**

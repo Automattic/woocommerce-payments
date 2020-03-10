@@ -1,0 +1,277 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountStatus renders connected account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Complete"
+      type="primary"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__green"
+      >
+        <t
+          icon="checkmark-circle"
+          size={18}
+        />
+        Enabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__green"
+      >
+        <t
+          icon="checkmark-circle"
+          size={18}
+        />
+        Daily
+      </span>
+    </span>
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders rejected.fraud account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Rejected"
+      type="light"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
+    This account has been rejected because of suspected fraudulent activity.
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders rejected.other account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Rejected"
+      type="light"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
+    This account has been rejected.
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders rejected.terms_of_service account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Rejected"
+      type="light"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
+    This account has been rejected due to violation of Terms Of Service.
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders restricted account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Restricted"
+      type="alert"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__red"
+      >
+        <t
+          icon="notice"
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
+    Payments and deposits are disabled for this account until missing business information is updated. 
+    <a
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1"
+    >
+      Update now
+    </a>
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders restricted soon account 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Restricted Soon"
+      type="warning"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__green"
+      >
+        <t
+          icon="checkmark-circle"
+          size={18}
+        />
+        Enabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__green"
+      >
+        <t
+          icon="checkmark-circle"
+          size={18}
+        />
+        Daily
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
+    To avoid disrupting deposits, 
+    <a
+      href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1"
+    >
+      update this account
+    </a>
+     by 8am Mar 10, 2020 with more information about the business.
+  </div>
+</div>
+`;

@@ -1,0 +1,24 @@
+.account-status__info {
+	margin-left: 1.6rem;
+
+	.account-status__info__green {
+		fill: $studio-green-50;
+		color: $studio-green-50;
+	}
+
+	.account-status__info__red {
+		fill: $studio-red-60;
+		color: $studio-red-60;
+	}
+
+	svg {
+		margin: 0 0.2rem;
+		position: relative;
+		top: 4px;
+	}
+}
+
+.account-status__desc {
+	margin-top: 1rem;
+	font-style: italic;
+}

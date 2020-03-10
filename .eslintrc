@@ -14,7 +14,8 @@
 		"wp": true,
 		"wpApiSettings": true,
 		"wcSettings": true,
-		"wcpaySettings": true
+		"wcpaySettings": true,
+		"wcpayAdminSettings": true
 	},
 	"settings": {
 		"react": {

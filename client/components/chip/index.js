@@ -5,7 +5,7 @@
  */
 import './style.scss';
 
-const types = [ 'primary', 'light', 'alert' ];
+const types = [ 'primary', 'light', 'warning', 'alert' ];
 
 const Chip = ( props ) => {
 	const { message, type, isCompact } = props;

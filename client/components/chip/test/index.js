@@ -30,6 +30,11 @@ describe( 'Chip', () => {
 		expect( chip ).toMatchSnapshot();
 	} );
 
+	test( 'renders a warning chip', () => {
+		const chip = renderChip( 'warning', 'Alert message' );
+		expect( chip ).toMatchSnapshot();
+	} );
+
 	test( 'renders default if type is invalid', () => {
 		const chip = renderChip( 'invalidtype', 'Message' );
 		expect( chip ).toMatchSnapshot();
