@@ -204,11 +204,9 @@ class WC_Payments_Account {
 				);
 			} else {
 				// On-boarding has been disabled on the server, so show a message to that effect.
-				$message = sprintf(
-					__(
-						'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
-						'woocommerce-payments'
-					)
+				$message = __(
+					'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
+					'woocommerce-payments'
 				);
 			}
 
@@ -224,15 +222,6 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( $account['has_pending_requirements'] ) {
-			$message = $this->get_verify_requirements_message( $account['current_deadline'] );
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					WC_Payments::display_admin_error( $message );
-				}
-			);
-		}
 		return true;
 	}
 
@@ -476,34 +465,6 @@ class WC_Payments_Account {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Get Stripe pending requirements message with dashboard link, based on current deadline.
-	 *
-	 * If $current_deadline is null, it means that the requirements are already past due.
-	 *
-	 * TODO: Payouts is a Stripe dashboard terminology and it's being used here to avoid confusion.
-	 * Once we have our custom dashboard running, Payouts should be renamed to Deposits.
-	 *
-	 * @param int|null $current_deadline Timestamp for when the requirements are due.
-	 */
-	private function get_verify_requirements_message( $current_deadline = null ) {
-		if ( ! empty( $current_deadline ) ) {
-			return sprintf(
-				/* translators: 1) formatted requirements current deadline 2) dashboard login URL */
-				__( 'We require additional details about your business. Please provide the required information by %1$s to avoid an interruption in your scheduled payouts. <a href="%2$s">Update now</a>', 'woocommerce-payments' ),
-				/* translators: date time format to display deadline in "...provide the required information by %1$s to avoid an..."*/
-				date_i18n( __( 'ga M j, Y', 'woocommerce-payments' ), $current_deadline ),
-				self::get_login_url()
-			);
-		}
-
-		return sprintf(
-			/* translators: 1) dashboard login URL */
-			__( 'Your payouts have been suspended. We require additional details about your business. Please provide the requested information so you may continue to receive your payouts. <a href="%1$s">Update now</a>', 'woocommerce-payments' ),
-			self::get_login_url()
-		);
 	}
 
 	/**
