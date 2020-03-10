@@ -190,7 +190,7 @@ class WC_Payments_Admin {
 		$on_boarding_disabled = WC_Payments_Account::is_on_boarding_disabled();
 
 		/* translators: Link to WordPress.com TOS URL */
-		$terms_message = __(
+		$terms_message = esc_html__(
 			'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
 			'woocommerce-payments'
 		);
