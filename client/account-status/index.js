@@ -5,8 +5,9 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement } from 'wordpress-element';
-import Gridicon from 'gridicons';
+import createInterpolateElement from 'wordpress-element/src/create-interpolate-element';
+import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
+import GridiconNotice from 'gridicons/dist/notice';
 
 /**
  * Internal dependencies
@@ -41,11 +42,11 @@ const renderPaymentsStatus = ( paymentsEnabled ) => {
 
 	if ( paymentsEnabled ) {
 		description = __( 'Enabled', 'woocommerce-payments' );
-		icon = 'checkmark-circle';
+		icon = <GridiconCheckmarkCircle size={ 18 } />;
 		className = 'account-status__info__green';
 	} else {
 		description = __( 'Disabled', 'woocommerce-payments' );
-		icon = 'notice';
+		icon = <GridiconNotice size={ 18 } />;
 		className = 'account-status__info__red';
 	}
 
@@ -53,7 +54,7 @@ const renderPaymentsStatus = ( paymentsEnabled ) => {
 		<span className="account-status__info">
 			{ __( 'Payments:', 'woocommerce-payments' ) }
 			<span className={ className }>
-				<Gridicon icon={ icon } size={ 18 } />
+				{ icon }
 				{ description }
 			</span>
 		</span>
@@ -63,12 +64,12 @@ const renderPaymentsStatus = ( paymentsEnabled ) => {
 const renderDepositsStatus = ( depositsStatus ) => {
 	let className = 'account-status__info__green';
 	let description;
-	let icon = 'checkmark-circle';
+	let icon = <GridiconCheckmarkCircle size={ 18 } />;
 
 	if ( 'disabled' === depositsStatus ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
 		className = 'account-status__info__red';
-		icon = 'notice';
+		icon = <GridiconNotice size={ 18 } />;
 	} else if ( 'daily' === depositsStatus ) {
 		description = __( 'Daily', 'woocommerce-payments' );
 	} else if ( 'weekly' === depositsStatus ) {
@@ -85,7 +86,7 @@ const renderDepositsStatus = ( depositsStatus ) => {
 		<span className="account-status__info">
 			{ __( 'Deposits:', 'woocommerce-payments' ) }
 			<span className={ className }>
-				<Gridicon icon={ icon } size={ 18 } />
+				{ icon }
 				{ description }
 			</span>
 		</span>
@@ -100,7 +101,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 
 	let description = '';
 	if ( 'restricted_soon' === status ) {
-		description = __experimentalCreateInterpolateElement(
+		description = createInterpolateElement(
 			sprintf(
 				/* translators: %s - formatted requirements current deadline, <a> - dashboard login URL */
 				__(
@@ -113,7 +114,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			{ a: <a href={ accountLink } /> }
 		);
 	} else if ( 'restricted' === status ) {
-		description = __experimentalCreateInterpolateElement(
+		description = createInterpolateElement(
 			/* translators: <a> - dashboard login URL */
 			__(
 				'Payments and deposits are disabled for this account until missing business information is updated. <a>Update now</a>',
