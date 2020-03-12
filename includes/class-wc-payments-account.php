@@ -149,19 +149,7 @@ class WC_Payments_Account {
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
-			$message = sprintf(
-				/* translators: %1: error message */
-				__( 'Could not fetch data for your account: "%1$s"', 'woocommerce-payments' ),
-				$e->getMessage()
-			);
-
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					WC_Payments::display_admin_error( $message );
-				}
-			);
-
+			// Return early. The exceptions have been logged in the http client.
 			return false;
 		}
 
