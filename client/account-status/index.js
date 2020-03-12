@@ -5,7 +5,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import createInterpolateElement from 'wordpress-element/src/create-interpolate-element';
+import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import GridiconNotice from 'gridicons/dist/notice';
 

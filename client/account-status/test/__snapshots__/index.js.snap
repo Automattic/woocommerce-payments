@@ -15,8 +15,7 @@ exports[`AccountStatus renders connected account 1`] = `
       <span
         className="account-status__info__green"
       >
-        <t
-          icon="checkmark-circle"
+        <Component
           size={18}
         />
         Enabled
@@ -29,8 +28,7 @@ exports[`AccountStatus renders connected account 1`] = `
       <span
         className="account-status__info__green"
       >
-        <t
-          icon="checkmark-circle"
+        <Component
           size={18}
         />
         Daily
@@ -55,8 +53,7 @@ exports[`AccountStatus renders rejected.fraud account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -69,8 +66,7 @@ exports[`AccountStatus renders rejected.fraud account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -100,8 +96,7 @@ exports[`AccountStatus renders rejected.other account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -114,8 +109,7 @@ exports[`AccountStatus renders rejected.other account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -145,8 +139,7 @@ exports[`AccountStatus renders rejected.terms_of_service account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -159,8 +152,7 @@ exports[`AccountStatus renders rejected.terms_of_service account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -190,8 +182,7 @@ exports[`AccountStatus renders restricted account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -204,8 +195,7 @@ exports[`AccountStatus renders restricted account 1`] = `
       <span
         className="account-status__info__red"
       >
-        <t
-          icon="notice"
+        <Component
           size={18}
         />
         Disabled
@@ -240,8 +230,7 @@ exports[`AccountStatus renders restricted soon account 1`] = `
       <span
         className="account-status__info__green"
       >
-        <t
-          icon="checkmark-circle"
+        <Component
           size={18}
         />
         Enabled
@@ -254,8 +243,7 @@ exports[`AccountStatus renders restricted soon account 1`] = `
       <span
         className="account-status__info__green"
       >
-        <t
-          icon="checkmark-circle"
+        <Component
           size={18}
         />
         Daily
