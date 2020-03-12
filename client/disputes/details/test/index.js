@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import React from 'react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -45,12 +46,12 @@ describe( 'Dispute details screen', () => {
 			},
 		};
 
-		const list = shallow(
+		const { container } = render(
 			<DisputeDetails
 				dispute={ dispute }
 				showPlaceholder={ false }
 			/>
 		);
-		expect( list ).toMatchSnapshot();
+		expect( container ).toMatchSnapshot();
 	} );
 } );
