@@ -1,0 +1,6 @@
+/** @format */
+
+export default {
+	SET_TIMELINE: 'SET_TIMELINE',
+	SET_ERROR_FOR_TIMELINE: 'SET_ERROR_FOR_TIMELINE',
+};
