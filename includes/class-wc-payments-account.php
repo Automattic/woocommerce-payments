@@ -131,11 +131,20 @@ class WC_Payments_Account {
 			);
 		}
 
+		if ( ! isset( $account['status'] )
+			|| ! isset( $account['payments_enabled'] )
+			|| ! isset( $account['deposits_status'] ) ) {
+			// return an error if any of the account data is missing.
+			return array(
+				'error' => true,
+			);
+		}
+
 		return array(
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
-			'currentDeadline' => $account['current_deadline'],
+			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'accountLink'     => $this->get_login_url(),
 		);
 	}
