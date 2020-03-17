@@ -21,20 +21,35 @@ exports[`Deposit overview renders correctly 1`] = `
     <div
       className="wcpay-deposit-date"
     >
-      Deposit date: 
-      Jan 2, 2020
+      <Placeholder
+        content="Date placeholder"
+        isActive={false}
+      >
+        Deposit date: 
+        Jan 2, 2020
+      </Placeholder>
     </div>
     <div
       className="wcpay-deposit-status"
     >
-      <Status
-        status="paid"
-      />
+      <Placeholder
+        content="Status placeholder"
+        isActive={false}
+      >
+        <Status
+          status="paid"
+        />
+      </Placeholder>
     </div>
     <div
       className="wcpay-deposit-bank-account"
     >
-      MOCK BANK •••• 1234 (USD)
+      <Placeholder
+        content="Bank account placeholder"
+        isActive={false}
+      >
+        MOCK BANK •••• 1234 (USD)
+      </Placeholder>
     </div>
   </div>
   <div
@@ -43,7 +58,13 @@ exports[`Deposit overview renders correctly 1`] = `
     <div
       className="wcpay-deposit-amount"
     >
-      $20.00
+      <Placeholder
+        content="Amount"
+        display="inline"
+        isActive={false}
+      >
+        $20.00
+      </Placeholder>
     </div>
   </div>
 </Card>

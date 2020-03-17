@@ -15,6 +15,7 @@ import { Card, OrderStatus } from '@woocommerce/components';
 import { useDeposit } from 'data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions';
+import Placeholder from 'components/placeholder';
 import './style.scss';
 
 const currency = new Currency();
@@ -25,33 +26,41 @@ const Status = ( { status } ) => (
 );
 
 export const DepositOverview = ( { depositId } ) => {
-	const { deposit, isLoading } = useDeposit( depositId );
-
-	if ( isLoading ) {
-		return <p>Loading…</p>;
-	}
-	if ( ! deposit ) {
-		return null;
-	}
+	const { deposit = {}, isLoading } = useDeposit( depositId );
 
 	return (
 		<Card className="wcpay-deposit-overview">
 			<div className="wcpay-deposit-detail">
 				<div className="wcpay-deposit-date">
-					{ `${ __( 'Deposit date', 'woocommerce-payments' ) }: ` }
-					{ dateI18n( 'M j, Y', moment.utc( deposit.date ).local() ) }
+					<Placeholder isActive={ isLoading } content="Date placeholder">
+						{`${ __( 'Deposit date', 'woocommerce-payments' ) }: `}
+						{dateI18n( 'M j, Y', moment.utc( deposit.date ).local() )}
+					</Placeholder>
 				</div>
 				<div className="wcpay-deposit-status">
-					<Status status={ deposit.status } />
+					<Placeholder
+						isActive={ isLoading }
+						content="Status placeholder"
+					>
+						<Status status={ deposit.status } />
+					</Placeholder>
 				</div>
 				<div className="wcpay-deposit-bank-account">
-					{ deposit.bankAccount }
+					<Placeholder isActive={ isLoading } content="Bank account placeholder">
+						{deposit.bankAccount}
+					</Placeholder>
 				</div>
 			</div>
 
 			<div className="wcpay-deposit-hero">
 				<div className="wcpay-deposit-amount">
-					{ currency.formatCurrency( deposit.amount / 100 ) }
+					<Placeholder
+						display="inline"
+						isActive={ isLoading }
+						content="Amount"
+					>
+						{currency.formatCurrency( deposit.amount / 100 )}
+					</Placeholder>
 				</div>
 			</div>
 		</Card>
