@@ -15,7 +15,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  */
 import { useDeposits } from 'data';
 import { displayType, displayStatus } from './strings';
-import { formatStringValue } from 'util';
+import { formatStringValue } from '../util';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
