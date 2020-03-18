@@ -126,7 +126,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 	} if ( 'rejected.fraud' === status ) {
 		description = __( 'This account has been rejected because of suspected fraudulent activity.', 'woocommerce-payments' );
 	} else if ( 'rejected.terms_of_service' === status ) {
-		description = __( 'This account has been rejected due to violation of Terms Of Service.', 'woocommerce-payments' );
+		description = __( 'This account has been rejected due to a Terms of Service violation.', 'woocommerce-payments' );
 	} else if ( status.startsWith( 'rejected' ) ) {
 		description = __( 'This account has been rejected.', 'woocommerce-payments' );
 	}

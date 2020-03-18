@@ -162,7 +162,7 @@ exports[`AccountStatus renders rejected.terms_of_service account 1`] = `
   <div
     className="account-status__desc"
   >
-    This account has been rejected due to violation of Terms Of Service.
+    This account has been rejected due to a Terms of Service violation.
   </div>
 </div>
 `;
