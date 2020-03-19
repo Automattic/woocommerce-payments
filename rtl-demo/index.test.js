@@ -6,7 +6,8 @@ import { render, fireEvent, wait } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import mockApiFetch from '@wordpress/api-fetch';
 
-import { Form, FormContainer } from './components';
+import { Form, FormContainer, ConnectedTransactions } from './components';
+import { initStore } from '../client/data/store';
 
 jest.mock( '@wordpress/api-fetch' );
 
@@ -122,5 +123,85 @@ describe( 'React testing library usage examples', () => {
 		debug( submitButton );
 	} );
 
-	test.todo( 'component connected to the store' );
+	describe( 'when component is connected to the store', () => {
+		beforeAll( () => {
+			initStore();
+		} );
+		test( 'test data loaded successfully', async () => {
+			/* eslint-disable camelcase */
+			const fakeTransactions = [
+				{
+					transaction_id: 'txn_1GIYexFL7IKwCJxfEBcdeCG6',
+					type: 'dispute',
+					date: '2020-03-03 11:11:35',
+					source: 'visa',
+					customer_name: 'Test User',
+					customer_email: 'vasily.belolapotkov@automattic.com',
+					customer_country: 'US',
+					amount: -2800,
+					net: -4300,
+					fees: 1500,
+					currency: 'usd',
+					risk_level: 0,
+					charge_id: 'ch_1GIYexFL7IKwCJxfBgxPK28l',
+					deposit_id: 'po_1GIqY3FL7IKwCJxfDn3E1DLO',
+					order: {
+						number: '213',
+						url:
+							'http://localhost:8082/wp-admin/post.php?post=213&action=edit',
+					},
+				},
+				{
+					transaction_id: 'txn_1GIYexFL7IKwCJxfHzH4MDCg',
+					type: 'charge',
+					date: '2020-03-03 11:11:35',
+					source: 'visa',
+					customer_name: 'Test User',
+					customer_email: 'vasily.belolapotkov@automattic.com',
+					customer_country: 'US',
+					amount: 2800,
+					net: 2689,
+					fees: 111,
+					currency: 'usd',
+					risk_level: 0,
+					charge_id: 'ch_1GIYexFL7IKwCJxfBgxPK28l',
+					deposit_id: 'po_1GIqY3FL7IKwCJxfDn3E1DLO',
+					order: {
+						number: '213',
+						url:
+							'http://localhost:8082/wp-admin/post.php?post=213&action=edit',
+					},
+				},
+			];
+			/* eslint-enable camelcase */
+
+			/*
+				Note: in our resolvers we rely on a control `apiFetch` provided by `@wordpress/data-controls` for fetching data.
+				@wordpress/data-controls has its own dependency on @wordoress/api-fetch that is why
+				mocking @wordoress/api-fetch does not work here, hence we have to mock `window.fetch`.
+			*/
+			window.fetch = jest.fn( async () => fakeSuccessfullResponse( fakeTransactions ) );
+			const { queryByText, queryByRole, container } = render( <ConnectedTransactions /> );
+
+			// Check loading state.
+			expect( queryByText( /loading/i ) ).toBeInTheDocument();
+
+			// Wait untill loading is finished. It will throw after timeout if not finished.
+			await wait( () =>
+				expect( queryByText( /loading/i ) ).not.toBeInTheDocument()
+			);
+
+			// Make sure our API was called without error.
+			expect( window.fetch ).toHaveBeenCalledTimes( 1 );
+			expect( queryByRole( 'alert' ) ).not.toBeInTheDocument();
+			expect( container ).toMatchSnapshot();
+		} );
+	} );
 } );
+
+function fakeSuccessfullResponse( data ) {
+	return {
+		status: 200,
+		json: () => Promise.resolve( { data } ),
+	};
+}

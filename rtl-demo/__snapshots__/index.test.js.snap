@@ -43,3 +43,18 @@ exports[`React testing library usage examples basic snapshot test 1`] = `
   </form>
 </div>
 `;
+
+exports[`React testing library usage examples when component is connected to the store test data loaded successfully 1`] = `
+<div>
+  <div>
+    <ul>
+      <li>
+        txn_1GIYexFL7IKwCJxfEBcdeCG6
+      </li>
+      <li>
+        txn_1GIYexFL7IKwCJxfHzH4MDCg
+      </li>
+    </ul>
+  </div>
+</div>
+`;

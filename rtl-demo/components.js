@@ -72,31 +72,31 @@ const TransactionsList = ( { transactions, isLoading, error } ) => {
 	return (
 		<div>
 			<ul>
-				{ transactions.map( t => <li key={ t.id }>{t.id}</li> ) }
+				{ transactions.map( t => <li key={ t.transaction_id }>{ t.transaction_id }</li> ) }
 			</ul>
-			{ error ? <p>error</p> : null}
+			{ error ? <p role="alert">{ error }</p> : null}
 		</div>
 	);
 };
 
 const selectTransactions = ( select, { paged, perPage, depositId } ) => {
-			const {
-				getTransactions,
-				getTransactionsError,
-				isResolving,
-			} = select( 'data/payments' );
+	const {
+		getTransactions,
+		getTransactionsError,
+		isResolving,
+	} = select( 'wc/payments' );
 
-			const query = {
-				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
-				perPage: Number.isNaN( parseInt( perPage, 10 ) ) ? '25' : perPage,
-				depositId: depositId || null,
-			};
-			return {
-				transactions: getTransactions( query ),
-				transactionsError: getTransactionsError( query ),
-				isLoading: isResolving( 'getTransactions', [ query ] ),
-			};
-		};
+	const query = {
+		paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
+		perPage: Number.isNaN( parseInt( perPage, 10 ) ) ? '25' : perPage,
+		depositId: depositId || null,
+	};
+	return {
+		transactions: getTransactions( query ),
+		transactionsError: getTransactionsError( query ),
+		isLoading: isResolving( 'getTransactions', [ query ] ),
+	};
+};
 
 export const ConnectedTransactions = ( { paged, perPage, depositId } ) => {
 	const {
@@ -105,6 +105,6 @@ export const ConnectedTransactions = ( { paged, perPage, depositId } ) => {
 		transactionsError,
 	} = useSelect( selectTransactions, [ paged, perPage, depositId ] );
 
-	return <TransactionsList transactionsError={ transactions } isLoading={ isLoading } error={ transactionsError } />;
+	return <TransactionsList transactions={ transactions || [] } isLoading={ isLoading } error={ transactionsError.message } />;
 };
 
