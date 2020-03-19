@@ -573,10 +573,9 @@ class WC_Payments_API_Client {
 		}
 
 		// Create standard headers.
-		$headers                  = array();
-		$headers['Content-Type']  = 'application/json; charset=utf-8';
-		$headers['User-Agent']    = $this->user_agent;
-		$headers['WCPay-Version'] = $this->get_plugin_version();
+		$headers                 = array();
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
 
 		Logger::log( "REQUEST $method $url" );
 		$response = $this->http_client->remote_request(
@@ -728,13 +727,4 @@ class WC_Payments_API_Client {
 		return $intent;
 	}
 
-	/**
-	 * Parses the main plugin file header to extract the plugin version.
-	 *
-	 * @return string Plugin version.
-	 */
-	private function get_plugin_version() {
-		$plugin_data = get_file_data( WCPAY_PLUGIN_FILE, array( 'Version' => 'Version' ) );
-		return $plugin_data['Version'];
-	}
 }
