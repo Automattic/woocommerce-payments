@@ -1,10 +1,10 @@
 === WooCommerce Payments ===
-Contributors: automattic, woothemes, allendav, robobot3000, danreylop, pauldechov, radogeorgiev
-Tags: woocommerce, payment
+Contributors: automattic
+Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.0
 Tested up to: 5.3.2
 Requires PHP: 5.6
-Stable tag: 0.8.1
+Stable tag: 0.8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,6 +13,10 @@ WooCommerce Payments supports credit cards in checkout and an integrated merchan
 == Description ==
 
 WooCommerce Payments, powered by Stripe and WordPress.com, supports credit cards in checkout and an integrated merchant dashboard for managing those payments.
+
+WooCommerce Payments is available for Store Owners and Merchants in:
+
+* United States
 
 == Installation ==
 
@@ -36,7 +40,7 @@ This section describes how to install the plugin and get it working.
 
 = This works with WooCommerce, right? =
 
-Yep! WooCommerce version 3.5 or newer, please.
+Yep! WooCommerce version 3.9 or newer, please.
 
 = Why is a WordPress.com account and connection required? =
 
@@ -50,11 +54,22 @@ Absolutely! You can read our Terms of Service [here](https://en.wordpress.com/to
 
 == Changelog ==
 
-= 0.8.0 =
+= 0.8.2 =
 
-* Limited Beta Release
+* Add - Dispute file evidence upload support
+* Add - Basic support for Pay for Order
+* Fix - Styling improvements in wp-admin
+* Fix - Undefined variable PHP notice in cancel_authorization
+* Fix - Remove unused variable in authentication
+* Fix - Improve Jetpack connection checking
 
 == Upgrade Notice ==
 
-= 0.8.0 =
-Limited Beta Release
+= 0.8.2 =
+
+* Add - Dispute file evidence upload support
+* Add - Basic support for Pay for Order
+* Fix - Styling improvements in wp-admin
+* Fix - Undefined variable PHP notice in cancel_authorization
+* Fix - Remove unused variable in authentication
+* Fix - Improve Jetpack connection checking
