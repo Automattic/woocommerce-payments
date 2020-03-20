@@ -37,6 +37,12 @@ describe( 'Timeline reducer tests', () => {
 			data: mockTimeline1,
 		},
 	};
+	const filledStateError = {
+		[ mockIntentionId1 ]: {
+			error: mockError,
+			data: mockTimeline1,
+		},
+	};
 
 	test( 'Unrelated action is ignored', () => {
 		expect( reducer( emptyState, {
@@ -53,6 +59,13 @@ describe( 'Timeline reducer tests', () => {
 
 	test( 'New timeline data reduced correctly', () => {
 		expect( reducer( emptyState, {
+			id: mockIntentionId1,
+			type: TYPES.SET_TIMELINE,
+			data: mockTimeline1,
+		} ) ).toStrictEqual( filledStateSuccess );
+
+		// Error removed when new timeline data is received
+		expect( reducer( filledStateError, {
 			id: mockIntentionId1,
 			type: TYPES.SET_TIMELINE,
 			data: mockTimeline1,
