@@ -43,6 +43,14 @@
 		font-weight: 500;
 		padding: 0 15px 2px;
 	}
+	.components-form-file-upload .is-button.is-large {
+		padding-left: 14px;
+		padding-bottom: 0;
+
+		svg {
+			margin-right: 6px;
+		}
+	}
 	.is-button + .is-button {
 		margin-left: 10px;
 	}
@@ -50,10 +58,24 @@
 	// Evidence form
 	.components-base-control .components-base-control__label {
 		font-size: 12px;
-		color: $studio-gray-40;
+		color: $dark-gray-500;
 	}
 	.components-base-control + .components-base-control {
 		margin: 16px 0 0;
+	}
+	.components-base-control:first-child {
+		margin-top: 4px;
+	}
+	.components-base-control:last-child > p {
+		margin-bottom: 8px;
+	}
+	.components-base-control > .components-base-control__help {
+		font-style: normal;
+		font-weight: 300;
+		font-size: 14px;
+		line-height: 20px;
+		color: $studio-gray-60;
+		margin-top: 0;
 	}
 
 	// Fix broken wc-admin style for file upload buttons specifically.
