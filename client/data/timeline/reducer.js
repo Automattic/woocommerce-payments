@@ -11,7 +11,6 @@ const receiveTimeline = ( state = {}, { type, id, data, error } ) => {
 			state = {
 				...state,
 				[ id ]: {
-					...state[ id ],
 					data,
 				},
 			};
