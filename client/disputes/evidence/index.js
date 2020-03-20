@@ -206,11 +206,7 @@ export default ( { query } ) => {
 	const fetchDispute = async () => {
 		setLoading( true );
 		try {
-			const fetchedDispute = await apiFetch( { path } );
-			const fetchedEvidence = fetchedDispute && fetchedDispute.evidence || {};
-			setDispute( fetchedDispute );
-			// Updated fetched evidence to allow submission without UI changes.
-			setEvidence( fetchedEvidence );
+			setDispute( await apiFetch( { path } ) );
 		} finally {
 			setLoading( false );
 		}
@@ -305,7 +301,7 @@ export default ( { query } ) => {
 			const updatedDispute = await apiFetch( {
 				path,
 				method: 'post',
-				data: { evidence, metadata, submit },
+				data: { evidence: { ...dispute.evidence, ...evidence }, metadata, submit },
 			} );
 			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
