@@ -27,7 +27,7 @@ const PRODUCT_TYPE_META_KEY = '__product_type';
 
 /* If description is an array, separate with newline elements. */
 const expandHelp = ( description ) => {
-	return Array.isArray( description ) ? flatten( description.map( line => [ line, <br /> ] ) ) : description;
+	return Array.isArray( description ) ? flatten( description.map( ( line, i ) => [ line, <br key={ i } /> ] ) ) : description;
 };
 
 export const DisputeEvidenceForm = props => {
