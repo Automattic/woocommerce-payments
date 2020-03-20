@@ -321,6 +321,11 @@ export default ( { query } ) => {
 		[ dispute && dispute.reason, productType ]
 	);
 
+	const pristine = Object.keys( evidence ).length === 0;
+	useEffect( () => {
+		window.onbeforeunload = pristine ? null : () => true;
+	}, [ pristine ] );
+
 	return (
 		<DisputeEvidencePage
 			isLoading={ loading }
