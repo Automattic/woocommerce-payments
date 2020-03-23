@@ -30,6 +30,7 @@ class WC_Payments_API_Client {
 	const DISPUTES_API     = 'disputes';
 	const FILES_API        = 'files';
 	const OAUTH_API        = 'oauth';
+	const TIMELINE_API     = 'timeline';
 
 	/**
 	 * User agent string to report in requests.
@@ -459,6 +460,19 @@ class WC_Payments_API_Client {
 				$e->get_http_code()
 			);
 		}
+	}
+
+	/**
+	 * Get timeline of events for an intention
+	 *
+	 * @param string $intention_id The payment intention ID.
+	 *
+	 * @return array
+	 *
+	 * @throws Exception - Exception thrown on request failure.
+	 */
+	public function get_timeline( $intention_id ) {
+		return $this->request( array(), self::TIMELINE_API . '/' . $intention_id, self::GET );
 	}
 
 	/**

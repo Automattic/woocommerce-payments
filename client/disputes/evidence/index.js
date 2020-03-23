@@ -4,35 +4,45 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, TextControl, TextareaControl } from '@wordpress/components';
+import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge, some } from 'lodash';
-
-import { FileUploadControl } from './file-upload';
+import { merge, some, flatten } from 'lodash';
 
 /**
  * Internal dependencies.
  */
 import '../style.scss';
 import evidenceFields from './fields';
+import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 
+const PRODUCT_TYPE_META_KEY = '__product_type';
+
+/* If description is an array, separate with newline elements. */
+const expandHelp = ( description ) => {
+	return Array.isArray( description ) ? flatten( description.map( ( line, i ) => [ line, <br key={ i } /> ] ) ) : description;
+};
+
 export const DisputeEvidenceForm = props => {
-	const { evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
+	const { fields, evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
+
+	if ( ! fields || ! fields.length ) {
+		return null;
+	}
 
 	const composeDefaultControlProps = field => ( {
-		label: field.display,
+		label: field.label,
 		value: evidence[ field.key ] || '',
 		onChange: value => onChange( field.key, value ),
 		disabled: readOnly,
-		help: field.description,
+		help: expandHelp( field.description ),
 	} );
 
 	const composeFileUploadProps = field => {
@@ -51,11 +61,12 @@ export const DisputeEvidenceForm = props => {
 			isLoading,
 			isDone,
 			error,
+			help: expandHelp( field.description ),
 		};
 	};
 
 	const composeFieldControl = field => {
-		switch ( field.control ) {
+		switch ( field.type ) {
 			case 'file':
 				return <FileUploadControl key={ field.key } { ...composeFileUploadProps( field ) } />;
 			case 'text':
@@ -65,9 +76,10 @@ export const DisputeEvidenceForm = props => {
 		}
 	};
 
-	const evidenceSections = evidenceFields.map( section => {
+	const evidenceSections = fields.map( section => {
 		return (
 			<Card key={ section.key } title={ section.title }>
+				{ section.description && <p>{ section.description }</p> }
 				{ section.fields.map( composeFieldControl ) }
 			</Card>
 		);
@@ -117,7 +129,7 @@ export const DisputeEvidenceForm = props => {
 };
 
 export const DisputeEvidencePage = props => {
-	const { showPlaceholder, dispute, ...evidenceFormProps } = props;
+	const { showPlaceholder, dispute, productType, onChangeProductType, ...evidenceFormProps } = props;
 
 	if ( showPlaceholder ) {
 		// TODO Render proper placeholder view.
@@ -133,6 +145,21 @@ export const DisputeEvidencePage = props => {
 		<Page isNarrow className="wcpay-dispute-evidence">
 			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
 				<Info dispute={ dispute } />
+			</Card>
+
+			<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
+				<SelectControl
+					value={ productType }
+					onChange={ onChangeProductType }
+					options={ [
+						{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
+						{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
+						{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
+						{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
+						{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
+					] }
+					disabled={ readOnly }
+				/>
 			</Card>
 
 			<DisputeEvidenceForm
@@ -266,6 +293,16 @@ export default ( { query } ) => {
 		}
 	};
 
+	const productType = dispute && dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
+	const updateProductType = ( newProductType ) => {
+		setDispute( d => merge( {}, d, { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } ) );
+	};
+
+	const fieldsToDisplay = useMemo(
+		() => evidenceFields( dispute && dispute.reason, productType ),
+		[ dispute && dispute.reason, productType ]
+	);
+
 	return (
 		<DisputeEvidencePage
 			showPlaceholder={ loading }
@@ -284,7 +321,9 @@ export default ( { query } ) => {
 			onFileChange={ doUploadFile }
 			onFileRemove={ doRemoveFile }
 			onSave={ doSave }
-			readOnly={ dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status }
+			productType={ productType }
+			onChangeProductType={ updateProductType }
+			fields={ fieldsToDisplay }
 		/>
 	);
 };

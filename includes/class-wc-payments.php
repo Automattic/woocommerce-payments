@@ -399,6 +399,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-jetpack-controller.php';
 		$jetpack_controller = new WC_REST_Payments_Jetpack_Controller( self::$api_client, self::$account );
 		$jetpack_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
+		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
+		$timeline_controller->register_routes();
 	}
 
 	/**

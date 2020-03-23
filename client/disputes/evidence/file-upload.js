@@ -6,7 +6,7 @@ import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
 export const FileUploadControl = ( props ) => {
-	const { fileName, field, disabled, isDone, isLoading, accept, error, onFileChange, onFileRemove } = props;
+	const { fileName, field, disabled, isDone, isLoading, accept, error, onFileChange, onFileRemove, help } = props;
 	const hasError = error && error.length > 0;
 	const getIcon = () => {
 		return <Gridicon
@@ -17,8 +17,8 @@ export const FileUploadControl = ( props ) => {
 	return (
 		<BaseControl
 			id={ `form-file-upload-base-control-${ field.key }` }
-			label={ field.display }
-			help={ field.description }
+			label={ field.label }
+			help={ help }
 		>
 			<div className="file-upload">
 				<FormFileUpload
