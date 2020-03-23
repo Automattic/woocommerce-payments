@@ -13,7 +13,7 @@ import { useEffect, useState } from '@wordpress/element';
 import './style.scss';
 import Page from 'components/page';
 import HeroImage from './hero-image';
-import apiFetch from "@wordpress/api-fetch";
+import apiFetch from '@wordpress/api-fetch';
 
 const ConnectAccountPage = () => {
 	const [ isJetpackRegistered, setJetpackRegistered ] = useState( wcpaySettings.isJetpackRegistered );
