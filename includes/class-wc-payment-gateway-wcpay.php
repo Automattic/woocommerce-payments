@@ -231,7 +231,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<?php if ( $this->is_in_test_mode() ) : ?>
 					<p class="testmode-info">
 					<?php
-						echo create_interpolate_element( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							/* translators: link to Stripe testing page */
 							__( '<strong>Test mode:</strong> use test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 							[
@@ -294,32 +294,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status         = $intent->get_status();
 
 				if ( 'requires_capture' === $status ) {
-					$note = create_interpolate_element(
-						sprintf(
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							wc_price( $amount ),
-							$transaction_id
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
 						),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
+						wc_price( $amount ),
+						$transaction_id
 					);
 					$order->update_status( 'on-hold', $note );
 					$order->set_transaction_id( $transaction_id );
 				} else {
-					$note = create_interpolate_element(
-						sprintf(
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							wc_price( $amount ),
-							$transaction_id
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
 						),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
+						wc_price( $amount ),
+						$transaction_id
 					);
 					$order->add_order_note( $note );
 					$order->payment_complete( $transaction_id );
@@ -485,7 +485,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$stripe_connected = $this->account->try_is_stripe_connected();
 			if ( $stripe_connected ) {
-				$description = create_interpolate_element(
+				$description = WC_Payments_Utils::esc_interpolated_html(
 					/* translators: 1) dashboard login URL */
 					__( '<a>View and edit account details</a>', 'woocommerce-payments' ),
 					[
@@ -597,24 +597,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->save();
 
 		if ( 'succeeded' === $status ) {
-			$note = create_interpolate_element(
-				sprintf(
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the successfully charged amount */
 					__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
-					wc_price( $amount )
+					[ 'strong' => '<strong>' ]
 				),
-				[ 'strong' => '<strong>' ]
+				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
 		} else {
-			$note = create_interpolate_element(
-				sprintf(
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the successfully charged amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
-					wc_price( $amount )
+					[ 'strong' => '<strong>' ]
 				),
-				[ 'strong' => '<strong>' ]
+				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
 		}
@@ -635,14 +635,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'canceled' === $status ) {
 			$order->update_status(
 				'cancelled',
-				create_interpolate_element(
+				WC_Payments_Utils::esc_interpolated_html(
 					__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				)
 			);
 		} else {
 			$order->add_order_note(
-				create_interpolate_element(
+				WC_Payments_Utils::esc_interpolated_html(
 					__( 'Canceling authorization <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				)
