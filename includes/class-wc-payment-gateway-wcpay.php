@@ -493,53 +493,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					]
 				);
 			} else {
-				$description  = '<p>';
-				$description .= __(
-					'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
-					'woocommerce-payments'
-				);
-				$description .= ' ';
-
-				/* translators: Link to WordPress.com TOS URL */
-				$terms_message = esc_html__(
-					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
-					'woocommerce-payments'
-				);
-				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
-				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
-				$description  .= $terms_message;
-				$description  .= '</p>';
-
-				$description .= '<p>';
-				$description .= '<a href="' . WC_Payments_Account::get_connect_url() . '" class="button">';
-				$description .= __( ' Verify details', 'woocommerce-payments' );
-				$description .= '</a>';
-				$description .= '</p>';
-
-				$description = wp_kses(
-					$description,
-					array(
-						'a' => array(
-							'class' => array(),
-							'href'  => array(),
-						),
-						'p' => array(),
-					)
-				);
+				$description = WC_Payments_Account::get_connection_message_html();
 			}
-
-			// Allow the description text to be altered by filters.
-			$description = apply_filters(
-				'wc_payments_account_actions',
-				$description,
-				$stripe_connected,
-				WC_Payments_Account::get_login_url(),
-				WC_Payments_Account::get_connect_url()
-			);
-
 		} catch ( Exception $e ) {
 			// do not render the actions if the server is unreachable.
-			$description = __( 'Error determining the connection status.', 'woocommerce-payments' );
+			$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
 		}
 
 		ob_start();
@@ -549,7 +507,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<?php echo esc_html( __( 'Account', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
-				<?php echo wp_kses_post( $description ); ?>
+				<?php echo $description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			</td>
 		</tr>
 		<?php
