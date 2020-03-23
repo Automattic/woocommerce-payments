@@ -35,6 +35,11 @@ class WC_Payments_Account {
 		add_action( 'admin_init', array( $this, 'check_stripe_account_status' ) );
 		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
+		add_action( 'jetpack_site_registered', array( $this, 'clear_cache' ) );
+	}
+
+	public function clear_cache() {
+		delete_transient( self::ACCOUNT_TRANSIENT );
 	}
 
 	/**
@@ -323,7 +328,7 @@ class WC_Payments_Account {
 	 */
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 
 		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
 		wp_safe_redirect( $login_data['url'] );
@@ -335,7 +340,7 @@ class WC_Payments_Account {
 	 */
 	private function init_oauth() {
 		// Clear account transient when generating Stripe's oauth data.
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 
 		$current_user = wp_get_current_user();
 
@@ -379,7 +384,7 @@ class WC_Payments_Account {
 			return;
 		}
 		delete_transient( 'wcpay_oauth_state' );
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
@@ -401,6 +406,10 @@ class WC_Payments_Account {
 	 * @throws WC_Payments_API_Exception Bubbles up if get_account_data call fails.
 	 */
 	private function get_cached_account_data() {
+		if ( ! WC_Payments_Http::is_connected() ) {
+			return [];
+		}
+
 		$account = get_transient( self::ACCOUNT_TRANSIENT );
 
 		if ( $this->is_valid_cached_account( $account ) ) {

@@ -12,12 +12,9 @@
       }
     },
     "require": {
-    },
-    "require-dev": {
-      "composer/installers": "1.6.0",
-      "phpunit/phpunit": "5.7.27",
-      "woocommerce/woocommerce": "3.7.1",
-      "woocommerce/woocommerce-sniffs": "0.0.6"
+        "automattic/jetpack-config": "dev-master",
+        "automattic/jetpack-connection": "dev-master",
+        "automattic/jetpack-autoloader": "dev-master"
     },
     "scripts": {
       "test": [

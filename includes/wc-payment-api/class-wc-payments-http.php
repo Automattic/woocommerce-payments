@@ -28,13 +28,13 @@ class WC_Payments_Http {
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
-		$args['user_id'] = JETPACK_MASTER_USER;
+		$args['user_id'] = Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER;
 
 		if ( $is_site_specific ) {
 			$args['url'] = sprintf( $args['url'], $args['blog_id'] );
 		}
 
-		// Make sure we're not sendign requests if Jetpack is not connected.
+		// Make sure we're not sending requests if Jetpack is not connected.
 		if ( ! self::is_connected() ) {
 			Logger::error( 'HTTP_REQUEST_ERROR Jetpack is not connected' );
 			throw new WC_Payments_API_Exception(
@@ -57,13 +57,7 @@ class WC_Payments_Http {
 	 * @throws WC_Payments_API_Exception - If request returns WP_Error.
 	 */
 	private static function make_request( $args, $body ) {
-		$response = null;
-		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
-			$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
-		} else {
-			$response = Jetpack_Client::remote_request( $args, $body );
-		}
+		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
 
 		if ( is_wp_error( $response ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
@@ -86,15 +80,6 @@ class WC_Payments_Http {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public static function is_connected() {
-		if ( class_exists( 'Automattic\Jetpack\Connection\Manager' ) ) {
-			return ( new Automattic\Jetpack\Connection\Manager() )->is_active();
-		}
-
-		if ( class_exists( 'Jetpack_Data' ) ) {
-			// Pass true as an argument to check user token rather than blog token.
-			return (bool) Jetpack_Data::get_access_token( true );
-		}
-
-		return false;
+		return ( new Automattic\Jetpack\Connection\Manager() )->is_registered();
 	}
 }
