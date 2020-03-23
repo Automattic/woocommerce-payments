@@ -231,7 +231,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<?php if ( $this->is_in_test_mode() ) : ?>
 					<p class="testmode-info">
 					<?php
-						echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 							__( '<strong>Test mode:</strong> use test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 							[
