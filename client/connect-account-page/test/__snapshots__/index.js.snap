@@ -10,27 +10,21 @@ exports[`ConnectAccountPage should render correctly 1`] = `
   >
     <_default />
     <h2>
-      <span
-        key="0"
-      >
-        heading line 1
-        <br />
-      </span>
-      <span
-        key="1"
-      >
-        heading line 2
-        <br />
-      </span>
+      Accept credit cards online using WooCommerce Payments.
+      <br />
+      Simply verify your business details to get started.
     </h2>
     <p
       className="connect-account__terms"
-      dangerouslySetInnerHTML={
-        Object {
-          "__html": undefined,
-        }
-      }
-    />
+    >
+      By clicking “Verify details,” you agree to the 
+      <a
+        href="https://wordpress.com/tos"
+      >
+        Terms of Service
+      </a>
+      .
+    </p>
     <hr
       className="full-width"
     />
@@ -41,7 +35,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
         href="/wcpay-connect-url"
         isLarge={true}
         isPrimary={true}
-      />
+      >
+        Verify details
+      </ForwardRef(Button)>
     </p>
   </Card>
 </Page>
@@ -57,18 +53,9 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
   >
     <_default />
     <h2>
-      <span
-        key="0"
-      >
-        heading line 1
-        <br />
-      </span>
-      <span
-        key="1"
-      >
-        heading line 2
-        <br />
-      </span>
+      Accept credit cards online using WooCommerce Payments.
+      <br />
+      Simply verify your business details to get started.
     </h2>
     <p>
       We've temporarily paused new account creation.

@@ -180,35 +180,9 @@ class WC_Payments_Admin {
 			true
 		);
 
-		$strings                  = array();
-		$strings['setupHeadings'] = [
-			__( 'Accept credit cards online using WooCommerce Payments.', 'woocommerce-payments' ),
-			__( 'Simply verify your business details to get started.', 'woocommerce-payments' ),
-		];
 		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
 		// as appropriate.
 		$on_boarding_disabled = WC_Payments_Account::is_on_boarding_disabled();
-
-		/* translators: Link to WordPress.com TOS URL */
-		$terms_message = esc_html__(
-			'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
-			'woocommerce-payments'
-		);
-		$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
-		$terms_message = str_replace( '{/A}', '</a>', $terms_message );
-
-		$strings['setupTerms'] = wp_kses(
-			$terms_message,
-			array(
-				'a' => array(
-					'class' => array(),
-					'href'  => array(),
-				),
-				'p' => array(),
-			)
-		);
-
-		$strings['setupGetStarted'] = __( ' Verify details', 'woocommerce-payments' );
 
 		wp_localize_script(
 			'WCPAY_DASH_APP',
@@ -216,7 +190,6 @@ class WC_Payments_Admin {
 			array(
 				'connectUrl'         => WC_Payments_Account::get_connect_url(),
 				'testMode'           => $this->wcpay_gateway->is_in_test_mode(),
-				'strings'            => $strings,
 				'onBoardingDisabled' => $on_boarding_disabled,
 			)
 		);
