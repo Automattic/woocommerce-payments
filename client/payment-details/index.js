@@ -13,16 +13,16 @@ import Page from 'components/page';
 
 const PaymentDetails = ( props ) => {
 	const chargeId = props.query.id;
-	const { charge } = useCharge( chargeId );
+	const { charge, isLoading } = useCharge( chargeId );
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			<PaymentDetailsSummary charge={ charge }></PaymentDetailsSummary>
-			<PaymentDetailsTimeline charge={ charge }></PaymentDetailsTimeline>
+			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+			<PaymentDetailsTimeline charge={ charge } />
 			{ // Hidden for the beta.
-				false && <PaymentDetailsPayment charge={ charge }></PaymentDetailsPayment> }
-			<PaymentDetailsPaymentMethod charge={ charge }></PaymentDetailsPaymentMethod>
+				false && <PaymentDetailsPayment charge={ charge } /> }
+			<PaymentDetailsPaymentMethod charge={ charge } />
 			{ // Hidden for the beta.
-				false && <PaymentDetailsSession charge={ charge }></PaymentDetailsSession> }
+				false && <PaymentDetailsSession charge={ charge } /> }
 		</Page>
 	);
 };
