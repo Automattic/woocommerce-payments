@@ -213,7 +213,7 @@ class WC_Payments_Admin {
 
 		$connection_manager = new Automattic\Jetpack\Connection\Manager();
 		$is_jetpack_fully_connected = WC_Payments_Http::is_connected();
-		$is_site_registered = $connection_manager->get_access_token();
+		$is_site_registered = false !== $connection_manager->get_access_token();
 
 		wp_localize_script(
 			'WCPAY_DASH_APP',
