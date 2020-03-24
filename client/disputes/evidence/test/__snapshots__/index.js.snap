@@ -174,7 +174,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
         "uncategorized_text": "",
       }
     }
-    readOnly={false}
+    showPlaceholder={false}
   />
 </Page>
 `;

@@ -129,43 +129,38 @@ export const DisputeEvidenceForm = props => {
 };
 
 export const DisputeEvidencePage = props => {
-	const { showPlaceholder, dispute, productType, onChangeProductType, ...evidenceFormProps } = props;
-
-	if ( showPlaceholder ) {
-		// TODO Render proper placeholder view.
-		return <div>Loading…</div>;
-	}
-	if ( dispute == null ) {
-		return <div>Dispute not loaded</div>;
-	}
-
+	const { isLoading, dispute = {}, productType, onChangeProductType, ...evidenceFormProps } = props;
 	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+	const disputeIsAvailable = ! isLoading && dispute.id;
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
-				<Info dispute={ dispute } />
+				{ ! isLoading && ! disputeIsAvailable
+					? <div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+					: <Info dispute={ dispute } isLoading={ isLoading } />
+				}
 			</Card>
-
-			<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
-				<SelectControl
-					value={ productType }
-					onChange={ onChangeProductType }
-					options={ [
-						{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
-						{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
-						{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
-						{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
-						{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
-					] }
-					disabled={ readOnly }
+			{ disputeIsAvailable && <>
+				<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
+					<SelectControl
+						value={ productType }
+						onChange={ onChangeProductType }
+						options={ [
+							{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
+							{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
+							{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
+							{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
+							{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
+						] }
+						disabled={ readOnly }
+					/>
+				</Card>
+				<DisputeEvidenceForm
+					{ ...evidenceFormProps }
+					readOnly={ readOnly }
 				/>
-			</Card>
-
-			<DisputeEvidenceForm
-				{ ...evidenceFormProps }
-				readOnly={ readOnly }
-			/>
+			</> }
 		</Page>
 	);
 };
@@ -174,7 +169,7 @@ export const DisputeEvidencePage = props => {
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 
-	const [ dispute, setDispute ] = useState( null );
+	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
@@ -305,7 +300,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			showPlaceholder={ loading }
+			isLoading={ loading }
 			dispute={ dispute }
 			evidence={
 				dispute
