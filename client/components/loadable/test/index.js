@@ -20,12 +20,12 @@ describe( 'Loadable', () => {
 			};
 		} );
 
-		test( 'renders default loadable value', () => {
+		test( 'renders default placeholder', () => {
 			const loadable = renderLoadable( loadableProps );
 			expect( loadable.text() ).toBe( 'placeholder' );
 		} );
 
-		test( 'renders custom placeholder value', () => {
+		test( 'renders custom placeholder', () => {
 			const customPlaceholder = 'Custom text';
 			loadableProps.placeholder = customPlaceholder;
 			const loadable = renderLoadable( loadableProps );
@@ -34,14 +34,38 @@ describe( 'Loadable', () => {
 	} );
 
 	describe( 'when inactive', () => {
-		test( 'render children', () => {
+		beforeEach( () => {
 			loadableProps = {
 				isLoading: false,
 			};
+		} );
 
+		test( 'render children', () => {
 			const loadable = renderLoadable( loadableProps );
 			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
 			expect( loadable.text() ).not.toBe( 'placeholder' );
+		} );
+
+		test( 'renders simple value', () => {
+			const simpleValue = 'Simple loadable value';
+			loadableProps.value = simpleValue;
+			const loadable = renderLoadable( loadableProps, null );
+			expect( loadable.find( ChildComponent ).length ).toBe( 0 );
+			expect( loadable.text() ).toBe( simpleValue );
+		} );
+
+		test( 'prioritizes rendering children over simple value', () => {
+			const simpleValue = 'Simple loadable value';
+			loadableProps.value = simpleValue;
+			const loadable = renderLoadable( loadableProps );
+			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
+			expect( loadable.text() ).not.toBe( simpleValue );
+		} );
+
+		test( 'renders nothing when neither children nor value passed', () => {
+			const loadable = renderLoadable( loadableProps, null );
+			expect( loadable.find( ChildComponent ).length ).toBe( 0 );
+			expect( loadable.text().length ).toBe( 0 );
 		} );
 	} );
 

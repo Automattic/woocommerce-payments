@@ -3,13 +3,13 @@
  */
 import './style.scss';
 
-const Loadable = ( { isLoading, display, placeholder = 'placeholder', children } ) =>
+const Loadable = ( { isLoading, display, placeholder = 'placeholder', value, children } ) =>
 	isLoading ? (
 		<div className={ display ? `is-placeholder is-${ display }` : 'is-placeholder' }>
 			{ placeholder }
 		</div>
 	) : (
-		<>{ children }</>
+		<>{ children || value }</>
 	);
 
 export default Loadable;
