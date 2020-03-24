@@ -20,7 +20,7 @@ const PaymentDetails = ( props ) => {
 			<PaymentDetailsTimeline charge={ charge } />
 			{ // Hidden for the beta.
 				false && <PaymentDetailsPayment charge={ charge } /> }
-			<PaymentDetailsPaymentMethod charge={ charge } />
+			<PaymentDetailsPaymentMethod charge={ charge } isLoading={ isLoading } />
 			{ // Hidden for the beta.
 				false && <PaymentDetailsSession charge={ charge } /> }
 		</Page>
