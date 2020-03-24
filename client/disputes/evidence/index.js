@@ -165,6 +165,27 @@ export const DisputeEvidencePage = props => {
 	);
 };
 
+/**
+ * Retrieves product type from the dispute.
+ *
+ * @param {Object?} dispute Dispute object
+ * @returns {string} dispute product type
+ */
+const getDisputeProductType = dispute => {
+	if ( ! dispute ) {
+		return '';
+	}
+
+	let productType = dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
+
+	// Fallback to `multiple` when evidence submitted but no product type meta.
+	if ( ! productType && dispute.evidence_details && dispute.evidence_details.has_evidence ) {
+		productType = 'multiple';
+	}
+
+	return productType;
+};
+
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
@@ -288,10 +309,8 @@ export default ( { query } ) => {
 		}
 	};
 
-	const productType = dispute && dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
-	const updateProductType = ( newProductType ) => {
-		setDispute( d => merge( {}, d, { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } ) );
-	};
+	const productType = getDisputeProductType( dispute );
+	const updateProductType = ( newProductType ) => updateDispute( { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } );
 
 	const fieldsToDisplay = useMemo(
 		() => evidenceFields( dispute && dispute.reason, productType ),
