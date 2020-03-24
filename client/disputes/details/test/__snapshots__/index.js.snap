@@ -139,7 +139,9 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       The customer claims that the purchased product was returned or the transaction was otherwise canceled, but you have not yet provided a refund or credit.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Demonstrate that you have refunded your customer through other means or that your customer is not entitled to a refund. You cannot issue a refund while a payment is being disputed. If you believe that your customer was entitled a refund that you did not provide, you can accept the dispute.
@@ -299,7 +301,9 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       The customer claims they were charged multiple times for the same product or service.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Demonstrate that each payment was for a separate product or service.
@@ -365,7 +369,9 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Provide adequate payment and order details so that a legitimate customer recognizes it, or proves to the card issuer that their cardholder authorized the transaction.
@@ -578,7 +584,9 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       The customer claims they did not receive the products or services purchased.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Prove that the customer received a physical product or offline service, or made use of a digital product or online service. This must have occurred prior to the date the dispute was initiated.
@@ -642,7 +650,9 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       The product or service was received but was defective, damaged, or not as described.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Demonstrate that the product or service was delivered as described at the time of purchase.
@@ -709,7 +719,9 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       The customer claims that you continued to charge them after a subscription was canceled.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       Prove that the subscription was still active and that the customer was aware of, and did not follow, your cancellation procedure.
@@ -774,7 +786,9 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       The customer doesn’t recognize the payment appearing on their card statement.
     </Paragraphs>
     <h3>
+       
       Required to overturn dispute
+       
     </h3>
     <Paragraphs>
       As with fraudulent disputes, get your customer to withdraw the dispute by helping them identify the payment. Otherwise challenge the dispute with appropriate evidence that proves the purchase was legitimate. 
