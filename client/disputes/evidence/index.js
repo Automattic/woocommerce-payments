@@ -324,6 +324,9 @@ export default ( { query } ) => {
 	const pristine = Object.keys( evidence ).length === 0;
 	useEffect( () => {
 		window.onbeforeunload = pristine ? null : () => true;
+		return () => {
+			window.onbeforeunload = null;
+		};
 	}, [ pristine ] );
 
 	return (
