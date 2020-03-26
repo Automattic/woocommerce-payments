@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Loadable when active uses children as placeholder if not passed 1`] = `
+<span
+  className="is-placeholder"
+>
+  <ChildComponent />
+</span>
+`;

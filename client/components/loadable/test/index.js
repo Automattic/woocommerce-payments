@@ -20,16 +20,17 @@ describe( 'Loadable', () => {
 			};
 		} );
 
-		test( 'renders default placeholder', () => {
-			const loadable = renderLoadable( loadableProps );
-			expect( loadable.text() ).toBe( 'placeholder' );
-		} );
-
 		test( 'renders custom placeholder', () => {
 			const customPlaceholder = 'Custom text';
 			loadableProps.placeholder = customPlaceholder;
 			const loadable = renderLoadable( loadableProps );
 			expect( loadable.text() ).toBe( customPlaceholder );
+		} );
+
+		test( 'uses children as placeholder if not passed', () => {
+			const loadable = renderLoadable( loadableProps );
+			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
+			expect( loadable ).toMatchSnapshot();
 		} );
 	} );
 
