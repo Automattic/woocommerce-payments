@@ -5,162 +5,135 @@ exports[`Dispute info renders correctly 1`] = `
   className="wcpay-dispute-info"
 >
   <div
+    className="wcpay-dispute-info-item"
     key="created"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Dispute date: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder="Nov 1, 2019"
-        value="Nov 1, 2019"
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Dispute date: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Nov 1, 2019
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="amount"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Disputed amount: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder="$10.00 USD"
-        value="$10.00 USD"
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Disputed amount: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        $10.00 USD
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="dueBy"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Respond by: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder="Nov 8, 2019 - 2:46AM"
-        value="Nov 8, 2019 - 2:46AM"
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Respond by: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Nov 8, 2019 - 2:46AM
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="reason"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Reason: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder="Fraudulent"
-        value="Fraudulent"
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Reason: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Fraudulent
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="order"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Order: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder={
-          <OrderLink
-            order={
-              Object {
-                "number": "1",
-                "url": "http://test.local/order/1",
-              }
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Order: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        <OrderLink
+          order={
+            Object {
+              "number": "1",
+              "url": "http://test.local/order/1",
             }
-          />
-        }
-        value={
-          <OrderLink
-            order={
-              Object {
-                "number": "1",
-                "url": "http://test.local/order/1",
-              }
-            }
-          />
-        }
-      />
-    </span>
+          }
+        />
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="customer"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Customer: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder="Mock Customer"
-        value="Mock Customer"
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Customer: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Mock Customer
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="transactionId"
   >
-    <span
-      className="wcpay-dispute-info-key"
-    >
-      Transaction ID: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        placeholder={
-          <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
-            type="wc-admin"
-          >
-            ch_mock
-          </Link>
-        }
-        value={
-          <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
-            type="wc-admin"
-          >
-            ch_mock
-          </Link>
-        }
-      />
-    </span>
+    <Loadable>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Transaction ID: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        <Link
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
+          type="wc-admin"
+        >
+          ch_mock
+        </Link>
+      </span>
+    </Loadable>
   </div>
 </div>
 `;
@@ -170,137 +143,137 @@ exports[`Dispute info renders loading state 1`] = `
   className="wcpay-dispute-info"
 >
   <div
+    className="wcpay-dispute-info-item"
     key="created"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Dispute date: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Created placeholder"
-        value="Created placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Dispute date: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Created placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="amount"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Disputed amount: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Amount placeholder"
-        value="Amount placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Disputed amount: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Amount placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="dueBy"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Respond by: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Due by placeholder"
-        value="Due by placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Respond by: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Due by placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="reason"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Reason: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Reason placeholder"
-        value="Reason placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Reason: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Reason placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="order"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Order: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Order link placeholder"
-        value="Order link placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Order: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Order link placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="customer"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Customer: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Customer placeholder"
-        value="Customer placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Customer: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Customer placeholder
+      </span>
+    </Loadable>
   </div>
   <div
+    className="wcpay-dispute-info-item"
     key="transactionId"
   >
-    <span
-      className="wcpay-dispute-info-key"
+    <Loadable
+      isLoading={true}
     >
-      Transaction ID: 
-    </span>
-    <span
-      className="wcpay-dispute-info-value"
-    >
-      <Loadable
-        display="inline"
-        isLoading={true}
-        placeholder="Transaction placeholder"
-        value="Transaction placeholder"
-      />
-    </span>
+      <span
+        className="wcpay-dispute-info-key"
+      >
+        Transaction ID: 
+      </span>
+      <span
+        className="wcpay-dispute-info-value"
+      >
+        Transaction placeholder
+      </span>
+    </Loadable>
   </div>
 </div>
 `;

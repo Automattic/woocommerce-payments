@@ -19,6 +19,7 @@ import Actions from './actions';
 import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
+import Loadable, { LoadableBlock } from 'components/loadable';
 import '../style.scss';
 
 export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
@@ -33,31 +34,48 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 		/>;
 
 	const mapping = reasons[ dispute.reason ] || {};
+
+	if ( ! isLoading && ! disputeIsAvailable ) {
+		return (
+			<Page isNarrow className="wcpay-dispute-details">
+				<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+			</Page>
+		);
+	}
+
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
-			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
-				{ ! isLoading && ! disputeIsAvailable
-					? <div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
-					: <Info dispute={ dispute } isLoading={ isLoading } />
-				}
-				{ disputeIsAvailable && (
-					<>
-						<Paragraphs>{ mapping.overview }</Paragraphs>
-						{ actions }
-					</>
-				) }
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute Overview', 'woocommerce-payments' ) } /> }>
+				<Info dispute={ dispute } isLoading={ isLoading } />
+				<LoadableBlock isLoading={ isLoading } lines={ 4 }>
+					<Paragraphs>{ mapping.overview }</Paragraphs>
+				</LoadableBlock>
+				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
+					{ actions }
+				</LoadableBlock>
 			</Card>
 			{/* translators: heading for dispute category information section */}
-			{ disputeIsAvailable && (
-				<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) } >
+			<Card
+				title={ <Loadable
+						isLoading={ isLoading }
+						value={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }
+				/> }
+			>
+				<LoadableBlock isLoading={ isLoading } lines={ 4 }>
 					<Paragraphs>{ mapping.summary }</Paragraphs>
+				</LoadableBlock>
+
+				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
 					{ mapping.required && ( <h3> {__( 'Required to overturn dispute', 'woocommerce-payments' )} </h3> ) }
 					<Paragraphs>{ mapping.required }</Paragraphs>
+				</LoadableBlock>
+
+				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
 					{ mapping.respond && ( <h3>{__( 'How to respond', 'woocommerce-payments' )}</h3> ) }
 					<Paragraphs>{ mapping.respond }</Paragraphs>
 					{ actions }
-				</Card>
-			) }
+				</LoadableBlock>
+			</Card>
 		</Page>
 	);
 };

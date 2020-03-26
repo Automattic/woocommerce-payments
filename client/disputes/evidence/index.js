@@ -22,6 +22,7 @@ import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
+import Loadable, { LoadableBlock } from 'components/loadable';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -133,16 +134,21 @@ export const DisputeEvidencePage = props => {
 	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
+	if ( ! isLoading && ! disputeIsAvailable ) {
+		return (
+			<Page isNarrow className="wcpay-dispute-details">
+				<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+			</Page>
+		);
+	}
+
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
-				{ ! isLoading && ! disputeIsAvailable
-					? <div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
-					: <Info dispute={ dispute } isLoading={ isLoading } />
-				}
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Challenge Dispute', 'woocommerce-payments' ) } /> }>
+				<Info dispute={ dispute } isLoading={ isLoading } />
 			</Card>
-			{ disputeIsAvailable && <>
-				<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product Type', 'woocommerce-payments' ) } /> }>
+				<LoadableBlock isLoading={ isLoading } lines={ 2 }>
 					<SelectControl
 						value={ productType }
 						onChange={ onChangeProductType }
@@ -155,12 +161,10 @@ export const DisputeEvidencePage = props => {
 						] }
 						disabled={ readOnly }
 					/>
-				</Card>
-				<DisputeEvidenceForm
-					{ ...evidenceFormProps }
-					readOnly={ readOnly }
-				/>
-			</> }
+				</LoadableBlock>
+			</Card>
+			{/* Don't render form because it depends on product selector value */}
+			{ disputeIsAvailable && <DisputeEvidenceForm { ...evidenceFormProps } readOnly={ readOnly } /> }
 		</Page>
 	);
 };

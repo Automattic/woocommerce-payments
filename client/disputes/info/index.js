@@ -67,16 +67,13 @@ const Info = ( { dispute, isLoading } ) => {
 					return null;
 				}
 				return (
-					<div key={ key }>
-						<span className="wcpay-dispute-info-key">{`${ label }: `}</span>
-						<span className="wcpay-dispute-info-value">
-							<Loadable
-								display="inline"
-								isLoading={ isLoading }
-								placeholder={ data[ key ] }
-								value={ data[ key ] }
-							/>
-						</span>
+					<div key={ key } className="wcpay-dispute-info-item">
+						<Loadable isLoading={ isLoading }>
+							<span className="wcpay-dispute-info-key">{`${ label }: `}</span>
+							<span className="wcpay-dispute-info-value">
+								{data[ key ]}
+							</span>
+						</Loadable>
 					</div>
 				);
 			} ) }
