@@ -1,0 +1,281 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Deposits Overview renders correctly 1`] = `
+<div>
+  <div
+    class="wcpay-deposits-overview"
+  >
+    <p
+      class="wcpay-deposits-overview__schedule"
+    >
+      <svg
+        class="gridicon gridicons-calendar wcpay-deposits-overview__schedule-icon"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g>
+          <path
+            d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+          />
+        </g>
+      </svg>
+      <span
+        class="wcpay-deposits-overview__schedule-label"
+      >
+        Deposit Schedule:
+      </span>
+       
+      <span
+        class="wcpay-deposits-overview__schedule-value"
+      >
+        Automatic, every business day
+      </span>
+    </p>
+    <div
+      aria-describedby="woocommerce-summary-helptext-1"
+      aria-label="Deposits Overview"
+      aria-orientation="horizontal"
+      role="menu"
+    >
+      <p
+        class="screen-reader-text"
+        id="woocommerce-summary-helptext-1"
+      >
+        List of data points available for filtering. Use arrow keys to cycle through the list. Click a data point for a detailed report.
+      </p>
+      <ul
+        class="woocommerce-summary has-4-items"
+      >
+        <li
+          class="woocommerce-summary__item-container"
+        >
+          <div
+            class="woocommerce-summary__item"
+          >
+            <span
+              class="woocommerce-summary__item-label"
+            >
+              Last deposit
+            </span>
+            <span
+              class="woocommerce-summary__item-data"
+            >
+              <span
+                class="woocommerce-summary__item-value"
+              >
+                $65.74
+              </span>
+              <div
+                aria-label="No change from April 18, 2019"
+                class="woocommerce-summary__item-delta"
+                role="presentation"
+              >
+                <svg
+                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                    />
+                  </g>
+                </svg>
+                <span
+                  class="woocommerce-summary__item-delta-value"
+                >
+                  N/A
+                </span>
+              </div>
+            </span>
+            <span
+              class="woocommerce-summary__item-prev-label"
+            >
+              April 18, 2019
+            </span>
+             
+            <span
+              class="woocommerce-summary__item-prev-value"
+            >
+              N/A
+            </span>
+          </div>
+        </li>
+        <li
+          class="woocommerce-summary__item-container"
+        >
+          <div
+            class="woocommerce-summary__item"
+          >
+            <span
+              class="woocommerce-summary__item-label"
+            >
+              Next deposit
+            </span>
+            <span
+              class="woocommerce-summary__item-data"
+            >
+              <span
+                class="woocommerce-summary__item-value"
+              >
+                $15.22
+              </span>
+              <div
+                aria-label="No change from Est. April 18, 2019 - In transit"
+                class="woocommerce-summary__item-delta"
+                role="presentation"
+              >
+                <svg
+                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                    />
+                  </g>
+                </svg>
+                <span
+                  class="woocommerce-summary__item-delta-value"
+                >
+                  N/A
+                </span>
+              </div>
+            </span>
+            <span
+              class="woocommerce-summary__item-prev-label"
+            >
+              Est. April 18, 2019 - In transit
+            </span>
+             
+            <span
+              class="woocommerce-summary__item-prev-value"
+            >
+              N/A
+            </span>
+          </div>
+        </li>
+        <li
+          class="woocommerce-summary__item-container"
+        >
+          <div
+            class="woocommerce-summary__item"
+          >
+            <span
+              class="woocommerce-summary__item-label"
+            >
+              Pending balance
+            </span>
+            <span
+              class="woocommerce-summary__item-data"
+            >
+              <span
+                class="woocommerce-summary__item-value"
+              >
+                $48.66
+              </span>
+              <div
+                aria-label="No change from 2 deposits"
+                class="woocommerce-summary__item-delta"
+                role="presentation"
+              >
+                <svg
+                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                    />
+                  </g>
+                </svg>
+                <span
+                  class="woocommerce-summary__item-delta-value"
+                >
+                  N/A
+                </span>
+              </div>
+            </span>
+            <span
+              class="woocommerce-summary__item-prev-label"
+            >
+              2 deposits
+            </span>
+             
+            <span
+              class="woocommerce-summary__item-prev-value"
+            >
+              N/A
+            </span>
+          </div>
+        </li>
+        <li
+          class="woocommerce-summary__item-container"
+        >
+          <div
+            class="woocommerce-summary__item"
+          >
+            <span
+              class="woocommerce-summary__item-label"
+            >
+              Available balance
+            </span>
+            <span
+              class="woocommerce-summary__item-data"
+            >
+              <span
+                class="woocommerce-summary__item-value"
+              >
+                $0.00
+              </span>
+              <div
+                aria-label="No change from "
+                class="woocommerce-summary__item-delta"
+                role="presentation"
+              >
+                <svg
+                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                    />
+                  </g>
+                </svg>
+                <span
+                  class="woocommerce-summary__item-delta-value"
+                >
+                  N/A
+                </span>
+              </div>
+            </span>
+            <span
+              class="woocommerce-summary__item-prev-label"
+            />
+             
+            <span
+              class="woocommerce-summary__item-prev-value"
+            >
+              N/A
+            </span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+`;

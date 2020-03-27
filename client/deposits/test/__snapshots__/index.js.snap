@@ -3,250 +3,529 @@
 exports[`Deposits list renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    class=" woocommerce-payments-page"
   >
     <div
-      class="woocommerce-card__header"
+      class="wcpay-deposits-overview"
     >
-      <div
-        class="woocommerce-card__title-wrapper"
+      <p
+        class="wcpay-deposits-overview__schedule"
       >
-        <h2
-          class="woocommerce-card__title woocommerce-card__header-item"
+        <svg
+          class="gridicon gridicons-calendar wcpay-deposits-overview__schedule-icon"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          Deposit History
-        </h2>
-      </div>
+          <g>
+            <path
+              d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+            />
+          </g>
+        </svg>
+        <span
+          class="wcpay-deposits-overview__schedule-label"
+        >
+          Deposit Schedule:
+        </span>
+         
+        <span
+          class="wcpay-deposits-overview__schedule-value"
+        >
+          Automatic, every business day
+        </span>
+      </p>
       <div
-        class="woocommerce-card__action woocommerce-card__header-item"
-      />
-      <div
-        class="woocommerce-card__menu woocommerce-card__header-item"
+        aria-describedby="woocommerce-summary-helptext-1"
+        aria-label="Deposits Overview"
+        aria-orientation="horizontal"
+        role="menu"
       >
-        <div
-          class="woocommerce-ellipsis-menu"
+        <p
+          class="screen-reader-text"
+          id="woocommerce-summary-helptext-1"
         >
-          <div>
-            <button
-              aria-expanded="false"
-              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
-              title="Choose which values to display"
-              type="button"
+          List of data points available for filtering. Use arrow keys to cycle through the list. Click a data point for a detailed report.
+        </p>
+        <ul
+          class="woocommerce-summary has-4-items"
+        >
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
             >
-              <svg
-                aria-hidden="true"
-                class="dashicon dashicons-ellipsis"
-                focusable="false"
-                height="20"
-                role="img"
-                viewBox="0 0 20 20"
-                width="20"
-                xmlns="http://www.w3.org/2000/svg"
+              <span
+                class="woocommerce-summary__item-label"
               >
-                <path
-                  d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+                Last deposit
+              </span>
+              <span
+                class="woocommerce-summary__item-data"
+              >
+                <span
+                  class="woocommerce-summary__item-value"
+                >
+                  $65.74
+                </span>
+                <div
+                  aria-label="No change from April 18, 2019"
+                  class="woocommerce-summary__item-delta"
+                  role="presentation"
+                >
+                  <svg
+                    class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    class="woocommerce-summary__item-delta-value"
+                  >
+                    N/A
+                  </span>
+                </div>
+              </span>
+              <span
+                class="woocommerce-summary__item-prev-label"
+              >
+                April 18, 2019
+              </span>
+               
+              <span
+                class="woocommerce-summary__item-prev-value"
+              >
+                N/A
+              </span>
+            </div>
+          </li>
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
+            >
+              <span
+                class="woocommerce-summary__item-label"
+              >
+                Next deposit
+              </span>
+              <span
+                class="woocommerce-summary__item-data"
+              >
+                <span
+                  class="woocommerce-summary__item-value"
+                >
+                  $15.22
+                </span>
+                <div
+                  aria-label="No change from Est. April 18, 2019 - In transit"
+                  class="woocommerce-summary__item-delta"
+                  role="presentation"
+                >
+                  <svg
+                    class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    class="woocommerce-summary__item-delta-value"
+                  >
+                    N/A
+                  </span>
+                </div>
+              </span>
+              <span
+                class="woocommerce-summary__item-prev-label"
+              >
+                Est. April 18, 2019 - In transit
+              </span>
+               
+              <span
+                class="woocommerce-summary__item-prev-value"
+              >
+                N/A
+              </span>
+            </div>
+          </li>
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
+            >
+              <span
+                class="woocommerce-summary__item-label"
+              >
+                Pending balance
+              </span>
+              <span
+                class="woocommerce-summary__item-data"
+              >
+                <span
+                  class="woocommerce-summary__item-value"
+                >
+                  $48.66
+                </span>
+                <div
+                  aria-label="No change from 2 deposits"
+                  class="woocommerce-summary__item-delta"
+                  role="presentation"
+                >
+                  <svg
+                    class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    class="woocommerce-summary__item-delta-value"
+                  >
+                    N/A
+                  </span>
+                </div>
+              </span>
+              <span
+                class="woocommerce-summary__item-prev-label"
+              >
+                2 deposits
+              </span>
+               
+              <span
+                class="woocommerce-summary__item-prev-value"
+              >
+                N/A
+              </span>
+            </div>
+          </li>
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
+            >
+              <span
+                class="woocommerce-summary__item-label"
+              >
+                Available balance
+              </span>
+              <span
+                class="woocommerce-summary__item-data"
+              >
+                <span
+                  class="woocommerce-summary__item-value"
+                >
+                  $0.00
+                </span>
+                <div
+                  aria-label="No change from "
+                  class="woocommerce-summary__item-delta"
+                  role="presentation"
+                >
+                  <svg
+                    class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    class="woocommerce-summary__item-delta-value"
+                  >
+                    N/A
+                  </span>
+                </div>
+              </span>
+              <span
+                class="woocommerce-summary__item-prev-label"
+              />
+               
+              <span
+                class="woocommerce-summary__item-prev-value"
+              >
+                N/A
+              </span>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
     <div
-      class="woocommerce-card__body"
+      class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
     >
       <div
-        aria-hidden="false"
-        aria-labelledby="caption-0"
-        class="woocommerce-table__table"
-        role="group"
+        class="woocommerce-card__header"
       >
-        <table>
-          <caption
-            class="woocommerce-table__caption screen-reader-text"
-            id="caption-0"
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
           >
             Deposit History
-          </caption>
-          <tbody>
-            <tr>
-              <th
-                class="woocommerce-table__header info-button"
-                role="columnheader"
-                scope="col"
+          </h2>
+        </div>
+        <div
+          class="woocommerce-card__action woocommerce-card__header-item"
+        />
+        <div
+          class="woocommerce-card__menu woocommerce-card__header-item"
+        >
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div>
+              <button
+                aria-expanded="false"
+                class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+                title="Choose which values to display"
+                type="button"
               >
-                <span
-                  aria-hidden="false"
-                />
-              </th>
-              <th
-                class="woocommerce-table__header date-time is-left-aligned"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
+                <svg
+                  aria-hidden="true"
+                  class="dashicon dashicons-ellipsis"
+                  focusable="false"
+                  height="20"
+                  role="img"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  Date
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
+                  <path
+                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          aria-hidden="false"
+          aria-labelledby="caption-0"
+          class="woocommerce-table__table"
+          role="group"
+        >
+          <table>
+            <caption
+              class="woocommerce-table__caption screen-reader-text"
+              id="caption-0"
+            >
+              Deposit History
+            </caption>
+            <tbody>
+              <tr>
+                <th
+                  class="woocommerce-table__header info-button"
+                  role="columnheader"
+                  scope="col"
                 >
-                  Type
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header is-numeric"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
+                  <span
+                    aria-hidden="false"
+                  />
+                </th>
+                <th
+                  class="woocommerce-table__header date-time is-left-aligned"
+                  role="columnheader"
+                  scope="col"
                 >
-                  Amount
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Status
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Bank Account
-                </span>
-              </th>
-            </tr>
-            <tr>
-              <th
-                class="woocommerce-table__item info-button"
-                scope="row"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
-                >
-                  <svg
-                    class="gridicon gridicons-info-outline needs-offset"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    aria-hidden="false"
                   >
-                    <g>
-                      <path
-                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
-                      />
-                    </g>
-                  </svg>
-                </a>
-              </th>
-              <td
-                class="woocommerce-table__item date-time is-left-aligned"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                    Date
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
                 >
-                  Jan 2, 2020 / 12:46PM
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Deposit
-              </td>
-              <td
-                class="woocommerce-table__item is-numeric"
-              >
-                $20.00
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Paid
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                MOCK BANK •••• 1234 (USD)
-              </td>
-            </tr>
-            <tr>
-              <th
-                class="woocommerce-table__item info-button"
-                scope="row"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
-                >
-                  <svg
-                    class="gridicon gridicons-info-outline needs-offset"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    aria-hidden="false"
                   >
-                    <g>
-                      <path
-                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
-                      />
-                    </g>
-                  </svg>
-                </a>
-              </th>
-              <td
-                class="woocommerce-table__item date-time is-left-aligned"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                    Type
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-numeric"
+                  role="columnheader"
+                  scope="col"
                 >
-                  Jan 3, 2020 / 12:46PM
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Withdrawal
-              </td>
-              <td
-                class="woocommerce-table__item is-numeric"
-              >
-                $30.00
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Pending
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                MOCK BANK •••• 1234 (USD)
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                  <span
+                    aria-hidden="false"
+                  >
+                    Amount
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Status
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Bank Account
+                  </span>
+                </th>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item date-time is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  >
+                    Jan 2, 2020 / 12:46PM
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  Deposit
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  $20.00
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  Paid
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  MOCK BANK •••• 1234 (USD)
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item date-time is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  >
+                    Jan 3, 2020 / 12:46PM
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  Withdrawal
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  $30.00
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  Pending
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  MOCK BANK •••• 1234 (USD)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

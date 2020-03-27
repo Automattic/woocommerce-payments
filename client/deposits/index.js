@@ -17,6 +17,8 @@ import { useDeposits } from 'data';
 import { displayType, displayStatus } from './strings';
 import { formatStringValue } from '../util';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
+import Page from 'components/page';
+import DepositsOverview from './overview';
 
 const currency = new Currency();
 
@@ -64,19 +66,22 @@ export const DepositsList = () => {
 	} );
 
 	return (
-		<TableCard
-			// className="deposits-list"
-			title={ __( 'Deposit History', 'woocommerce-payments' ) }
-			isLoading={ isLoading }
-			// rowsPerPage={ getQuery().per_page || 25 }
-			// totalRows={ count || 0 }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
-			headers={ columns }
-			rows={ rows }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-		/>
+		<Page>
+			<DepositsOverview />
+			<TableCard
+				// className="deposits-list"
+				title={ __( 'Deposit History', 'woocommerce-payments' ) }
+				isLoading={ isLoading }
+				// rowsPerPage={ getQuery().per_page || 25 }
+				// totalRows={ count || 0 }
+				rowsPerPage={ 10 }
+				totalRows={ 10 }
+				headers={ columns }
+				rows={ rows }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+			/>
+		</Page>
 	);
 };
 
