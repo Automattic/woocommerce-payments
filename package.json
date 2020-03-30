@@ -20,7 +20,8 @@
     "test": "wp-scripts test-unit-js --config tests/js/jest.config.json",
     "test:watch": "wp-scripts test-unit-js --config tests/js/jest.config.json --watch",
     "test:debug": "node --inspect node_modules/.bin/jest --config tests/js/jest.config.json --watch --runInBand",
-    "test:e2e": "wp-scripts test-e2e",
+    "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e",
+    "test:e2e:dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --puppeteer-interactive --watch",
     "test:update-snapshots": "npm test -- --updateSnapshot",
     "watch": "webpack --watch",
     "start": "npm run watch",
@@ -53,6 +54,7 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "^2.2.0",
+    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils",
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
     "@testing-library/react": "^9.4.1",
     "@testing-library/jest-dom": "^4.2.3",
