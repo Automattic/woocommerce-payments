@@ -143,4 +143,16 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		);
 		$this->assertEquals( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', $result );
 	}
+
+	public function test_esc_interpolated_html_handles_nested_tags() {
+		$result = WC_Payments_Utils::esc_interpolated_html(
+			'Hello <strong>there, <em>John Doe</em> <img/></strong>',
+			[
+				'strong' => '<strong/>',
+				'em'     => '<em>',
+				'img'    => '<img src="test"/>',
+			]
+		);
+		$this->assertEquals( 'Hello <strong>there, <em>John Doe</em> <img src="test"/></strong>', $result );
+	}
 }
