@@ -102,63 +102,46 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Date"
-            value="Sep 19, 2019, 5:24pm"
-          />,
-          "title": "Date",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Customer"
-            value="Customer Name"
-          />,
-          "title": "Customer",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Payment Method"
-            value={
-              <PaymentMethodDetails
-                payment={
-                  Object {
-                    "card": Object {
-                      "brand": "visa",
-                      "last4": "4242",
-                    },
-                    "type": "card",
-                  }
+  <LoadableBlock
+    isLoading={false}
+    lines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
                 }
-              />
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Risk Evaluation"
-            value="normal"
-          />,
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            value="ch_38jdHA39KKA"
-          />,
-          "title": undefined,
-        },
-      ]
-    }
-  />
+              }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -269,63 +252,46 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Date"
-            value="Sep 19, 2019, 5:24pm"
-          />,
-          "title": "Date",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Customer"
-            value="Customer Name"
-          />,
-          "title": "Customer",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Payment Method"
-            value={
-              <PaymentMethodDetails
-                payment={
-                  Object {
-                    "card": Object {
-                      "brand": "visa",
-                      "last4": "4242",
-                    },
-                    "type": "card",
-                  }
+  <LoadableBlock
+    isLoading={false}
+    lines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
                 }
-              />
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Risk Evaluation"
-            value="normal"
-          />,
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            value="ch_38jdHA39KKA"
-          />,
-          "title": undefined,
-        },
-      ]
-    }
-  />
+              }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -391,51 +357,36 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": <Loadable
-            isLoading={true}
-            placeholder="Date"
-            value="–"
-          />,
-          "title": "Date",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={true}
-            placeholder="Customer"
-            value="–"
-          />,
-          "title": "Customer",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={true}
-            placeholder="Payment Method"
-            value={<PaymentMethodDetails />}
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={true}
-            placeholder="Risk Evaluation"
-            value="–"
-          />,
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={true}
-            value="–"
-          />,
-          "title": undefined,
-        },
-      ]
-    }
-  />
+  <LoadableBlock
+    isLoading={true}
+    lines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "–",
+            "title": "Date",
+          },
+          Object {
+            "content": "–",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "–",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "–",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -546,63 +497,46 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Date"
-            value="Sep 19, 2019, 5:24pm"
-          />,
-          "title": "Date",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Customer"
-            value="Customer Name"
-          />,
-          "title": "Customer",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Payment Method"
-            value={
-              <PaymentMethodDetails
-                payment={
-                  Object {
-                    "card": Object {
-                      "brand": "visa",
-                      "last4": "4242",
-                    },
-                    "type": "card",
-                  }
+  <LoadableBlock
+    isLoading={false}
+    lines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
                 }
-              />
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Risk Evaluation"
-            value="normal"
-          />,
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            value="ch_38jdHA39KKA"
-          />,
-          "title": undefined,
-        },
-      ]
-    }
-  />
+              }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -714,62 +648,45 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Date"
-            value="Sep 19, 2019, 5:24pm"
-          />,
-          "title": "Date",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Customer"
-            value="Customer Name"
-          />,
-          "title": "Customer",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Payment Method"
-            value={
-              <PaymentMethodDetails
-                payment={
-                  Object {
-                    "card": Object {
-                      "brand": "visa",
-                      "last4": "4242",
-                    },
-                    "type": "card",
-                  }
+  <LoadableBlock
+    isLoading={false}
+    lines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
                 }
-              />
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            placeholder="Risk Evaluation"
-            value="normal"
-          />,
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": <Loadable
-            isLoading={false}
-            value="ch_38jdHA39KKA"
-          />,
-          "title": undefined,
-        },
-      ]
-    }
-  />
+              }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;

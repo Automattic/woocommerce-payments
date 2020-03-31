@@ -60,14 +60,14 @@ const formatPaymentMethodDetails = ( charge ) => {
  */
 const paymentMethodPlaceholders = {
 	last4: '0000',
-	fingerprint: '-',
-	date: '-',
-	cardType: '-',
-	id: '-',
-	name: '-',
-	email: '-',
-	formattedAddress: '-',
-	country: '-',
+	fingerprint: 'fingerprint placeholder',
+	date: 'date placeholder',
+	cardType: 'card type placeholder',
+	id: 'id placeholder',
+	name: 'name placeholder',
+	email: 'email placeholder',
+	formattedAddress: 'address placeholder',
+	country: 'country placeholder',
 	cvcCheck: null,
 	line1Check: null,
 	postalCodeCheck: null,
@@ -88,77 +88,57 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 	const Check = PaymentDetailsPaymentMethodCheck;
 
 	return (
-		<Card title={ __( 'Payment method', 'woocommerce-payments' ) }>
+		<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Payment method', 'woocommerce-payments' ) } /> }>
 			<div className="payment-method-details">
 				<div className="payment-method-details__column">
-					<Detail label={ __( 'Number', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="**** 0000">
-							&bull;&bull;&bull;&bull; { last4 }
-						</Loadable>
+					<Detail isLoading={ isLoading } label={ __( 'Number', 'woocommerce-payments' ) }>
+						&bull;&bull;&bull;&bull; { last4 }
 					</Detail>
 
-					<Detail label={ __( 'Fingerprint', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Fingerprint placeholder" value={ fingerprint } />
+					<Detail isLoading={ isLoading } label={ __( 'Fingerprint', 'woocommerce-payments' ) }>
+						{ fingerprint }
 					</Detail>
 
-					<Detail label={ __( 'Expires', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Date placeholder" value={ date } />
+					<Detail isLoading={ isLoading } label={ __( 'Expires', 'woocommerce-payments' ) }>
+						{ date }
 					</Detail>
 
-					<Detail label={ __( 'Type', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Card type placeholder" value={ cardType } />
+					<Detail isLoading={ isLoading } label={ __( 'Type', 'woocommerce-payments' ) }>
+						{ cardType }
 					</Detail>
 
-					<Detail label={ __( 'ID', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Payment ID placeholder" value={ id } />
+					<Detail isLoading={ isLoading } label={ __( 'ID', 'woocommerce-payments' ) }>
+						{ id }
 					</Detail>
 				</div>
 
 				<div className="payment-method-details__column">
-					<Detail label={ __( 'Owner', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Owner placeholder" value={ name } />
+					<Detail isLoading={ isLoading } label={ __( 'Owner', 'woocommerce-payments' ) }>
+						{ name }
 					</Detail>
 
-					<Detail label={ __( 'Owner Email', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Email placeholder" value={ email } />
+					<Detail isLoading={ isLoading } label={ __( 'Owner Email', 'woocommerce-payments' ) }>
+						{ email }
 					</Detail>
 
-					<Detail label={ __( 'Address', 'woocommerce-payments' ) }>
-						<Loadable
-							isLoading={ isLoading }
-							display="inline"
-							placeholder={ <span>Address placeholder line 1 <br /> placholder line 2 </span> }
-						>
-							<span dangerouslySetInnerHTML={ { __html: formattedAddress } } />
-						</Loadable>
+					<Detail isLoading={ isLoading } label={ __( 'Address', 'woocommerce-payments' ) }>
+						<span dangerouslySetInnerHTML={ { __html: formattedAddress } } />
 					</Detail>
 
-					<Detail label={ __( 'Origin', 'woocommerce-payments' ) }>
-						<Loadable isLoading={ isLoading } placeholder="Origin placeholder" value={ country } />
+					<Detail isLoading={ isLoading } label={ __( 'Origin', 'woocommerce-payments' ) }>
+						{ country }
 					</Detail>
 
-					<Detail label={ __( 'CVC check', 'woocommerce-payments' ) }>
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Check"
-							value={ <Check checked={ cvcCheck } /> }
-						/>
+					<Detail isLoading={ isLoading } label={ __( 'CVC check', 'woocommerce-payments' ) }>
+						<Check checked={ cvcCheck } />
 					</Detail>
 
-					<Detail label={ __( 'Street check', 'woocommerce-payments' ) }>
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Check"
-							value={ <Check checked={ line1Check } /> }
-						/>
+					<Detail isLoading={ isLoading } label={ __( 'Street check', 'woocommerce-payments' ) }>
+						<Check checked={ line1Check } />
 					</Detail>
 
-					<Detail label={ __( 'Zip check', 'woocommerce-payments' ) }>
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Check"
-							value={ <Check checked={ postalCodeCheck } /> }
-						/>
+					<Detail isLoading={ isLoading } label={ __( 'Zip check', 'woocommerce-payments' ) }>
+						<Check checked={ postalCodeCheck } />
 					</Detail>
 				</div>
 			</div>

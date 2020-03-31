@@ -18,7 +18,7 @@ import { getChargeAmounts } from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
-import Loadable from 'components/loadable';
+import Loadable, { LoadableBlock } from 'components/loadable';
 import './style.scss';
 
 const currency = new Currency();
@@ -29,7 +29,7 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge, isLoading } ) =>
+const composePaymentSummaryItems = ( { charge } ) =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -54,10 +54,7 @@ const composePaymentSummaryItems = ( { charge, isLoading } ) =>
 		{
 			content: charge.id || '–',
 		},
-	].map( ( { title, content } ) => ( {
-		title,
-		content: <Loadable isLoading={ isLoading } placeholder={ title } value={ content } />,
-	} ) );
+	];
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const { net, fee, refunded } = charge.amount ? getChargeAmounts( charge ) : placeholderValues;
@@ -128,9 +125,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 				</div>
 			</div>
 			<hr className="full-width" />
-			<HorizontalList
-				items={ composePaymentSummaryItems( { charge, isLoading } ) }
-			/>
+			<LoadableBlock isLoading={ isLoading } lines={ 4 } >
+				<HorizontalList items={ composePaymentSummaryItems( { charge } ) } />
+			</LoadableBlock>
 		</Card>
 	);
 };
