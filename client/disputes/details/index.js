@@ -54,11 +54,14 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 					{ actions }
 				</LoadableBlock>
 			</Card>
-			{/* translators: heading for dispute category information section */}
 			<Card
 				title={ <Loadable
-						isLoading={ isLoading }
-						value={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }
+					isLoading={ isLoading }
+					value={ mapping.display
+						/* translators: heading for dispute category information section */
+						? sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display )
+						: __( 'Dispute type', 'woocommerce-payments' )
+					}
 				/> }
 			>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
