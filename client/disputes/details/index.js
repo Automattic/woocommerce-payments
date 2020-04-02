@@ -25,7 +25,6 @@ import '../style.scss';
 export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
-	// Use function to avoid creating Actions while loading.
 	const actions = disputeIsAvailable && <Actions
 			id={ dispute.id }
 			needsResponse={ 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status }
