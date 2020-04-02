@@ -17,7 +17,7 @@ import './style.scss';
  */
 const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 	isLoading ? (
-		<span className={ display ? `is-placeholder is-${ display }` : 'is-placeholder' }>
+		<span className={ display ? `is-placeholder is-${ display }` : 'is-placeholder' } aria-busy="true">
 			{ undefined === placeholder ? children || value : placeholder }
 		</span>
 	) : children || value;

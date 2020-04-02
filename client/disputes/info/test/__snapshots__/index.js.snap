@@ -8,7 +8,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="created"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -25,7 +27,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="amount"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -42,7 +46,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="dueBy"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -59,7 +65,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="reason"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -76,7 +84,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="order"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -100,7 +110,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="customer"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -117,7 +129,9 @@ exports[`Dispute info renders correctly 1`] = `
     className="wcpay-dispute-info-item"
     key="transactionId"
   >
-    <Loadable>
+    <Loadable
+      display="inline"
+    >
       <span
         className="wcpay-dispute-info-key"
       >
@@ -147,6 +161,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="created"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -166,6 +181,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="amount"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -185,6 +201,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="dueBy"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -204,6 +221,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="reason"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -223,6 +241,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="order"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -242,6 +261,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="customer"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
@@ -261,6 +281,7 @@ exports[`Dispute info renders loading state 1`] = `
     key="transactionId"
   >
     <Loadable
+      display="inline"
       isLoading={true}
     >
       <span
