@@ -45,7 +45,6 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	 * @return WP_Error|mixed - Method result of WP_Error in case of WC_Payments_API_Exception.
 	 */
 	public function forward_request( $api_method, $args, $err_code = '' ) {
-		$response;
 		try {
 			$response = call_user_func_array( [ $this->api_client, $api_method ], $args );
 		} catch ( WC_Payments_API_Exception $e ) {
@@ -59,7 +58,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	/**
 	 * Verify access.
 	 *
-	 * Override this method if custom perimissions required.
+	 * Override this method if custom permissions required.
 	 */
 	public function check_permission() {
 		return current_user_can( 'manage_woocommerce' );
