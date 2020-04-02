@@ -53,7 +53,7 @@ exports[`Deposits list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="po_mock1"
             parentSegment="deposits"
           />,
@@ -87,7 +87,7 @@ exports[`Deposits list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="po_mock2"
             parentSegment="deposits"
           />,

@@ -13,7 +13,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies.
  */
 import OrderLink from 'components/order-link';
-import { getDetailsURL } from 'components/details-link';
+import { getDetailsURL } from 'components/details-icon';
 import { reasons } from '../strings';
 import { formatStringValue } from '../../util';
 import './style.scss';

@@ -16,7 +16,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useDeposits } from 'data';
 import { displayType, displayStatus } from './strings';
 import { formatStringValue } from 'util';
-import DetailsLink, { getDetailsURL } from 'components/details-link';
+import DetailsIcon, { getDetailsURL } from 'components/details-icon';
 
 const currency = new Currency();
 
@@ -42,7 +42,7 @@ export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
-		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
+		const detailsIcon = <DetailsIcon id={ deposit.id } parentSegment="deposits" />;
 
 		const dateDisplay = (
 			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
@@ -52,7 +52,7 @@ export const DepositsList = () => {
 
 		// Map deposit to table row.
 		const data = {
-			details: { value: deposit.id, display: detailsLink },
+			details: { value: deposit.id, display: detailsIcon },
 			date: { value: deposit.date, display: dateDisplay },
 			type: { value: deposit.type, display: displayType[ deposit.type ] },
 			amount: { value: deposit.amount / 100, display: currency.formatCurrency( deposit.amount / 100 ) },

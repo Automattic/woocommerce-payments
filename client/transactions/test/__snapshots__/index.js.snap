@@ -88,14 +88,19 @@ exports[`Transactions list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="ch_j23w39dsajda"
             parentSegment="transactions"
           />,
           "value": "txn_j23jda9JJa",
         },
         Object {
-          "display": "Jan 2, 2020 / 12:46PM",
+          "display": <DetailsLink
+            id="ch_j23w39dsajda"
+            parentSegment="transactions"
+          >
+            Jan 2, 2020 / 12:46PM
+          </DetailsLink>,
           "value": "2020-01-02 17:46:02",
         },
         Object {
@@ -158,14 +163,19 @@ exports[`Transactions list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="ch_j239jda"
             parentSegment="transactions"
           />,
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Jan 4, 2020 / 11:22PM",
+          "display": <DetailsLink
+            id="ch_j239jda"
+            parentSegment="transactions"
+          >
+            Jan 4, 2020 / 11:22PM
+          </DetailsLink>,
           "value": "2020-01-05 04:22:59",
         },
         Object {
@@ -339,14 +349,19 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
     Array [
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="ch_j239jda"
             parentSegment="transactions"
           />,
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Jan 4, 2020 / 11:22PM",
+          "display": <DetailsLink
+            id="ch_j239jda"
+            parentSegment="transactions"
+          >
+            Jan 4, 2020 / 11:22PM
+          </DetailsLink>,
           "value": "2020-01-05 04:22:59",
         },
         Object {

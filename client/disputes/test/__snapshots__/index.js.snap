@@ -74,14 +74,19 @@ exports[`Disputes list renders correctly 1`] = `
     Array [
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="dp_asdfghjkl"
             parentSegment="disputes"
           />,
           "value": "dp_asdfghjkl",
         },
         Object {
-          "display": "$10.00",
+          "display": <DetailsLink
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            $10.00
+          </DetailsLink>,
           "value": 10,
         },
         Object {
@@ -134,14 +139,19 @@ exports[`Disputes list renders correctly 1`] = `
       ],
       Array [
         Object {
-          "display": <DetailsLink
+          "display": <DetailsIcon
             id="dp_zxcvbnm"
             parentSegment="disputes"
           />,
           "value": "dp_zxcvbnm",
         },
         Object {
-          "display": "$10.50",
+          "display": <DetailsLink
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            $10.50
+          </DetailsLink>,
           "value": 10.5,
         },
         Object {

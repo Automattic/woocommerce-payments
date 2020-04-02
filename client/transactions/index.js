@@ -16,6 +16,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
+import DetailsIcon from '../components/details-icon';
 import DetailsLink from '../components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
@@ -55,15 +56,18 @@ export const TransactionsList = ( props ) => {
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
-		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
+		const detailsIcon = <DetailsIcon id={ txn.charge_id } parentSegment="transactions" />;
+		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions">
+			{ dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) }
+		</DetailsLink>;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 		const deposit = <Deposit depositId={ txn.deposit_id } dateAvailable={ txn.date_available } />;
 
 		// Map transaction into table row.
 		const data = {
-			details: { value: txn.transaction_id, display: detailsLink },
-			created: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
+			details: { value: txn.transaction_id, display: detailsIcon },
+			created: { value: txn.date, display: detailsLink },
 			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
 			source: {
 				value: txn.source,

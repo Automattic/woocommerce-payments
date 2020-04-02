@@ -16,6 +16,7 @@ import { TableCard } from '@woocommerce/components';
  */
 import OrderLink from '../components/order-link';
 import DisputeStatusChip from '../components/dispute-status-chip';
+import DetailsIcon from '../components/details-icon';
 import DetailsLink from '../components/details-link';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
@@ -46,7 +47,10 @@ export const DisputesList = ( props ) => {
 			display: <OrderLink order={ dispute.order } />,
 		} : null;
 
-		const detailsLink = <DetailsLink id={ dispute.id } parentSegment="disputes" />;
+		const detailsIcon = <DetailsIcon id={ dispute.id } parentSegment="disputes" />;
+		const amountLink = <DetailsLink id={ dispute.id } parentSegment="disputes">
+			{ currency.formatCurrency( dispute.amount / 100 ) }
+		</DetailsLink>;
 
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
@@ -56,7 +60,7 @@ export const DisputesList = ( props ) => {
 		const customer = charge.billing_details || {};
 
 		const data = {
-			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
+			amount: { value: dispute.amount / 100, display: amountLink },
 			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
 			reason: { value: dispute.reason, display: reasonDisplay },
 			source: {
@@ -72,7 +76,7 @@ export const DisputesList = ( props ) => {
 			customer: { value: customer.name, display: customer.name },
 			email: { value: customer.email, display: customer.email },
 			country: { value: ( customer.address || {} ).country, display: ( customer.address || {} ).country },
-			details: { value: dispute.id, display: detailsLink },
+			details: { value: dispute.id, display: detailsIcon },
 		};
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );

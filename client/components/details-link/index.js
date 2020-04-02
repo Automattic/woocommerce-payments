@@ -3,25 +3,13 @@
 /**
  * External dependencies
  */
-import Gridicon from 'gridicons';
-import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
+import { getDetailsURL } from './../details-icon';
 
-export const getDetailsURL = ( id, parentSegment ) => (
-	addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-admin',
-			path: `/payments/${ parentSegment }/details`,
-			id,
-		}
-	)
-);
-
-const DetailsLink = ( { id, parentSegment } ) => (
+const DetailsLink = ( { id, parentSegment, children } ) => (
 	id ? (
 		<Link href={ getDetailsURL( id, parentSegment ) } >
-			<Gridicon icon="info-outline" size={ 18 } />
+			{ children }
 		</Link>
 	) : null
 );
