@@ -12,8 +12,11 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
 import {
 	updateDepositsOverview,
 	updateErrorForDepositsOverview,
+	updateDeposit,
+	updateDeposits,
+	updateErrorForDepositQuery,
 } from '../actions';
-import { getDepositsOverview } from '../resolvers';
+import { getDepositsOverview, getDeposit, getDeposits } from '../resolvers';
 
 const stripePayouts = [	{
 	id: 'test_po_1',
@@ -93,6 +96,81 @@ describe( 'getDepositsOverview resolver', () => {
 				dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
 			);
 			expect( generator.next().value ).toEqual( updateErrorForDepositsOverview( errorResponse ) );
+		} );
+	} );
+} );
+
+describe( 'getDeposit resolver', () => {
+	let generator = null;
+
+	beforeEach( () => {
+		generator = getDeposit( 'test_dep_1' );
+		expect( generator.next().value ).toEqual( apiFetch( { path: '/wc/v3/payments/deposits/test_dep_1' } ) );
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with deposit data', () => {
+			expect( generator.next( convertedStripePayouts[ 0 ] ).value ).toEqual( updateDeposit( convertedStripePayouts[ 0 ] ) );
+		} );
+
+		test( 'should convert payout to deposit', () => {
+			expect( generator.next( stripePayouts[ 0 ] ).value ).toEqual( updateDeposit( convertedStripePayouts[ 0 ] ) );
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error on error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
+			);
+		} );
+	} );
+} );
+
+describe( 'getDeposits resolver', () => {
+	let generator = null;
+	const query = { paged: 1, perPage: 25 };
+
+	beforeEach( () => {
+		generator = getDeposits( query );
+		expect( generator.next().value ).toEqual( apiFetch( { path: '/wc/v3/payments/deposits?page=1&pagesize=25' } ) );
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with deposits data', () => {
+			expect( generator.next( { data: convertedStripePayouts } ).value )
+				.toEqual( updateDeposits( query, convertedStripePayouts ) );
+			convertedStripePayouts.forEach( payout => {
+				expect( generator.next().value ).toEqual(
+					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [ payout.id ] )
+				);
+			} );
+		} );
+
+		test( 'should convert payout to deposits', () => {
+			expect( generator.next( { data: stripePayouts } ).value ).toEqual( updateDeposits( query, convertedStripePayouts ) );
+			convertedStripePayouts.forEach( payout => {
+				expect( generator.next().value ).toEqual(
+					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [ payout.id ] )
+				);
+			} );
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error on error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
+			);
+			expect( generator.next().value ).toEqual( updateErrorForDepositQuery( query, null, errorResponse ) );
 		} );
 	} );
 } );
