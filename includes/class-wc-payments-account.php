@@ -228,7 +228,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Filter function to add Stripe to the list of allowed redirect hosts
+	 * Filter function to add Stripe and WP.com to the list of allowed redirect hosts
 	 *
 	 * @param array $hosts - array of allowed hosts.
 	 *
@@ -236,6 +236,7 @@ class WC_Payments_Account {
 	 */
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'connect.stripe.com';
+		$hosts[] = 'jetpack.wordpress.com';
 		return $hosts;
 	}
 
@@ -264,9 +265,20 @@ class WC_Payments_Account {
 				__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
 				'notice-success'
 			);
+			return;
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			try {
+				$this->maybe_init_jetpack_connection();
+			} catch ( Exception $e ) {
+				$this->add_notice_to_settings_page(
+					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
+					'notice-error'
+				);
+				return;
+			}
+
 			try {
 				$this->init_oauth();
 			} catch ( Exception $e ) {
@@ -321,6 +333,45 @@ class WC_Payments_Account {
 		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
 		// on-boarding has been disabled (i.e. it's enabled as far as we know).
 		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+	}
+
+	/**
+	 * Starts the Jetpack connection flow if it's not already fully connected.
+	 *
+	 * @throws Exception If there was an error when registering the site on WP.com.
+	 */
+	private function maybe_init_jetpack_connection() {
+		$connection_manager = new Automattic\Jetpack\Connection\Manager();
+		$is_jetpack_fully_connected = WC_Payments_Http::is_connected();
+		if ( $is_jetpack_fully_connected ) {
+			return;
+		}
+
+		// First, register the site to wp.com.
+		if ( ! $connection_manager->get_access_token() ) {
+			$result = $connection_manager->register();
+			if ( is_wp_error( $result ) ) {
+				throw new Exception( $result->get_error_message() );
+			}
+		}
+
+		// Second, redirect the user to the Jetpack user connection flow.
+		add_filter( 'jetpack_use_iframe_authorization_flow', '__return_false' );
+		$redirect = add_query_arg(
+			array(
+				'wcpay-connect' => '1',
+				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+			),
+			WC_Payment_Gateway_WCPay::get_settings_url()
+		);
+		wp_safe_redirect(
+			add_query_arg(
+				'from',
+				'woocommerce-onboarding',
+				$connection_manager->get_authorization_url( null, $redirect )
+			)
+		);
+		exit;
 	}
 
 	/**

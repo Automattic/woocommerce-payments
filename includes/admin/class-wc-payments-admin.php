@@ -210,11 +210,6 @@ class WC_Payments_Admin {
 
 		$strings['setupGetStarted'] = __( ' Verify details', 'woocommerce-payments' );
 
-
-		$connection_manager = new Automattic\Jetpack\Connection\Manager();
-		$is_jetpack_fully_connected = WC_Payments_Http::is_connected();
-		$is_site_registered = false !== $connection_manager->get_access_token();
-
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
@@ -223,8 +218,6 @@ class WC_Payments_Admin {
 				'testMode'            => $this->wcpay_gateway->is_in_test_mode(),
 				'strings'             => $strings,
 				'onBoardingDisabled'  => $on_boarding_disabled,
-				'isJetpackRegistered' => $is_site_registered,
-				'jetpackConnectURL'   => ( $is_site_registered && ! $is_jetpack_fully_connected ) ? $connection_manager->get_authorization_url() : null,
 			)
 		);
 

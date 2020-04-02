@@ -33,9 +33,6 @@ require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 function wcpay_jetpack_init() {
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure( 'connection' );
-
-	// TODO: don't use the iframe flow for Safari, it will break because of ITP.
-	add_filter( 'jetpack_use_iframe_authorization_flow', '__return_true' );
 }
 
 // The Jetpack initialization needs to be run with higher priority.
