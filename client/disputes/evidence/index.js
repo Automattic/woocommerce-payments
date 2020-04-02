@@ -163,8 +163,10 @@ export const DisputeEvidencePage = props => {
 					/>
 				</LoadableBlock>
 			</Card>
-			{/* Don't render form because it depends on product selector value */}
-			{ disputeIsAvailable && <DisputeEvidenceForm { ...evidenceFormProps } readOnly={ readOnly } /> }
+			{	// Don't render the form placeholder while the dispute is being loaded.
+				// The form content depends on the selected product type, hence placeholder might disappear after loading.
+				! isLoading && <DisputeEvidenceForm { ...evidenceFormProps } readOnly={ readOnly } />
+			}
 		</Page>
 	);
 };
