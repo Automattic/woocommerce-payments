@@ -34,7 +34,7 @@ exports[`Deposit overview renders correctly 1`] = `
     >
       <Loadable
         isLoading={false}
-        placeholder="Status placeholder"
+        placeholder="Status"
       >
         <Status
           status="paid"

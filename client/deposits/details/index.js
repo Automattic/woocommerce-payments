@@ -15,7 +15,7 @@ import { Card, OrderStatus } from '@woocommerce/components';
 import { useDeposit } from 'data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions';
-import Loadable from '../../components/loadable';
+import Loadable from 'components/loadable';
 import './style.scss';
 
 const currency = new Currency();
@@ -33,33 +33,26 @@ export const DepositOverview = ( { depositId } ) => {
 			<div className="wcpay-deposit-detail">
 				<div className="wcpay-deposit-date">
 					<Loadable isLoading={ isLoading } placeholder="Date placeholder">
-						{`${ __( 'Deposit date', 'woocommerce-payments' ) }: `}
-						{dateI18n( 'M j, Y', moment.utc( deposit.date ).local() )}
+						{ `${ __( 'Deposit date', 'woocommerce-payments' ) }: ` }
+						{ dateI18n( 'M j, Y', moment.utc( deposit.date ).local() ) }
 					</Loadable>
 				</div>
 				<div className="wcpay-deposit-status">
-					<Loadable
-						isLoading={ isLoading }
-						placeholder="Status placeholder"
-					>
+					<Loadable isLoading={ isLoading } placeholder="Status" >
 						<Status status={ deposit.status } />
 					</Loadable>
 				</div>
 				<div className="wcpay-deposit-bank-account">
 					<Loadable isLoading={ isLoading } placeholder="Bank account placeholder">
-						{deposit.bankAccount}
+						{ deposit.bankAccount }
 					</Loadable>
 				</div>
 			</div>
 
 			<div className="wcpay-deposit-hero">
 				<div className="wcpay-deposit-amount">
-					<Loadable
-						display="inline"
-						isLoading={ isLoading }
-						placeholder="Amount"
-					>
-						{currency.formatCurrency( deposit.amount / 100 )}
+					<Loadable isLoading={ isLoading } placeholder="Amount" display="inline">
+						{ currency.formatCurrency( deposit.amount / 100 ) }
 					</Loadable>
 				</div>
 			</div>
