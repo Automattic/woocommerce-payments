@@ -9,6 +9,8 @@ import {
 	getDeposit,
 	getDeposits,
 	getDepositQueryError,
+	getDepositsOverview,
+	getDepositsOverviewError,
 } from '../selectors';
 
 // Sections in initial state are empty.
@@ -97,5 +99,45 @@ describe( 'Deposits selectors', () => {
 	test( 'Returns deposits query error from state', () => {
 		const expected = mockError;
 		expect( getDepositQueryError( filledErrorState, mockQuery ) ).toBe( expected );
+	} );
+} );
+
+describe( 'Deposits overview selectors', () => {
+	const filledSuccessState = {
+		deposits: {
+			overview: {
+				data: {
+					last_deposit: null,
+					next_deposit: null,
+					balance: { object: 'balance' },
+					deposit_schedule: { interval: 'daily' },
+				},
+			},
+		},
+	};
+	const filledErrorState = {
+		deposits: {
+			overview: {
+				error: {
+					code: 'error',
+				},
+			},
+		},
+	};
+
+	test( 'Returns undefined when overview is not present', () => {
+		expect( getDepositsOverview( emptyState ) ).toStrictEqual( undefined );
+	} );
+
+	test( 'Returns undefined when overview error is not present', () => {
+		expect( getDepositsOverviewError( emptyState ) ).toStrictEqual( undefined );
+	} );
+
+	test( 'Returns deposits overview from state', () => {
+		expect( getDepositsOverview( filledSuccessState ) ).toStrictEqual( filledSuccessState.deposits.overview.data );
+	} );
+
+	test( 'Returns deposits overview error from state', () => {
+		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual( filledErrorState.deposits.overview.error );
 	} );
 } );

@@ -15,6 +15,16 @@ export const useDeposit = ( id ) => useSelect( select => {
 	};
 }, [ id ] );
 
+export const useDepositsOverview = () => useSelect( select => {
+	const { getDepositsOverview, getDepositsOverviewError, isResolving } = select( STORE_NAME );
+
+	return {
+		overview: getDepositsOverview(),
+		overviewError: getDepositsOverviewError(),
+		isLoading: isResolving( 'getDepositsOverview' ),
+	};
+} );
+
 // eslint-disable-next-line camelcase
 export const useDeposits = ( { paged, per_page: perPage } ) => useSelect( select => {
 	const { getDeposits, getDepositQueryError, isResolving } = select( STORE_NAME );

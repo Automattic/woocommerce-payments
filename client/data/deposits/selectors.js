@@ -26,6 +26,16 @@ export const getDeposit = ( state, id ) => {
 	return depositById[ id ];
 };
 
+export const getDepositsOverview = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overview || {};
+	return DepositsOverview.data;
+};
+
+export const getDepositsOverviewError = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overview || {};
+	return DepositsOverview.error;
+};
+
 /**
  * Retrieves the deposits corresponding to the provided query or a sane
  * default if they don't exist.

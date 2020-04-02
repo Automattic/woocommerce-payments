@@ -15,6 +15,8 @@ import {
 	updateDeposit,
 	updateDeposits,
 	updateErrorForDepositQuery,
+	updateDepositsOverview,
+	updateErrorForDepositsOverview,
 } from './actions';
 
 const convertStripePayoutToDeposit = ( stripePayout ) => ( {
@@ -50,6 +52,33 @@ export function* getDeposit( id ) {
 		yield updateDeposit( result );
 	} catch ( e ) {
 		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposit.', 'woocommerce-payments' ) );
+	}
+}
+
+/**
+ * Retrieve deposits overview from the deposits API.
+ */
+export function* getDepositsOverview() {
+	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview` );
+
+	try {
+		const result = yield apiFetch( { path } );
+
+		// If using Stripe API objects directly, map to deposits.
+		// TODO Remove this mapping when these deposits are coming from the server.
+		if ( result.last_deposit && result.last_deposit.object === 'payout' ) {
+			// eslint-disable-next-line camelcase
+			result.last_deposit = convertStripePayoutToDeposit( result.last_deposit );
+		}
+		if ( result.next_deposit && result.next_deposit.object === 'payout' ) {
+			// eslint-disable-next-line camelcase
+			result.next_deposit = convertStripePayoutToDeposit( result.next_deposit );
+		}
+
+		yield updateDepositsOverview( result );
+	} catch ( e ) {
+		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposits overview.', 'woocommerce-payments' ) );
+		yield updateErrorForDepositsOverview( e );
 	}
 }
 
