@@ -64,6 +64,7 @@ class WC_Payments {
 		self::$api_client = self::create_api_client();
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
+		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$account = new WC_Payments_Account( self::$api_client );
@@ -171,11 +172,13 @@ class WC_Payments {
 		foreach ( $plugin_dependencies as $plugin_data ) {
 			if ( ! class_exists( $plugin_data['class'] ) ) {
 				if ( ! $silent ) {
-					$message = sprintf(
-						/* translators: %1: WordPress.org plugin URL, %2: plugin name */
-						__( 'WooCommerce Payments requires <a href="%1$s">%2$s</a> to be installed and active.', 'woocommerce-payments' ),
-						'https://wordpress.org/plugins/' . trailingslashit( $plugin_data['slug'] ),
-						$plugin_data['name']
+					$message = WC_Payments_Utils::esc_interpolated_html(
+						sprintf(
+							/* translators: %1: plugin name */
+							__( 'WooCommerce Payments requires <a>%1$s</a> to be installed and active.', 'woocommerce-payments' ),
+							$plugin_data['name']
+						),
+						[ 'a' => '<a href="https://wordpress.org/plugins/' . trailingslashit( $plugin_data['slug'] ) . '">' ]
 					);
 
 					if ( current_user_can( 'install_plugins' ) ) {
@@ -202,7 +205,12 @@ class WC_Payments {
 		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
 		if ( ! defined( 'WC_ADMIN_VERSION_NUMBER' ) ) {
 			if ( ! $silent ) {
-				self::display_admin_error( __( 'WooCommerce Payments requires WooCommerce Admin to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use WooCommerce Payments.', 'woocommerce-payments' ) );
+				self::display_admin_error(
+					WC_Payments_Utils::esc_interpolated_html(
+						__( 'WooCommerce Payments requires WooCommerce Admin to be enabled. Please remove the <code>woocommerce_admin_disabled</code> filter to use WooCommerce Payments.', 'woocommerce-payments' ),
+						[ 'code' => '<code>' ]
+					)
+				);
 			}
 			return false;
 		}
@@ -210,11 +218,14 @@ class WC_Payments {
 		// Check if the version of WooCommerce Admin is compatible with WooCommerce Payments.
 		if ( version_compare( WC_ADMIN_VERSION_NUMBER, WCPAY_MIN_WC_ADMIN_VERSION, '<' ) ) {
 			if ( ! $silent ) {
-				$message = sprintf(
-					/* translators: %1: required WC-Admin version number, %2: currently installed WC-Admin version number */
-					__( 'WooCommerce Payments requires <strong>WooCommerce Admin %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
-					WCPAY_MIN_WC_ADMIN_VERSION,
-					WC_ADMIN_VERSION_NUMBER
+				$message = WC_Payments_Utils::esc_interpolated_html(
+					sprintf(
+						/* translators: %1: required WC-Admin version number, %2: currently installed WC-Admin version number */
+						__( 'WooCommerce Payments requires <strong>WooCommerce Admin %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+						WCPAY_MIN_WC_ADMIN_VERSION,
+						WC_ADMIN_VERSION_NUMBER
+					),
+					[ 'strong' => '<strong>' ]
 				);
 
 				if ( defined( 'WC_ADMIN_PACKAGE_EXISTS' ) ) { // Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
@@ -237,11 +248,14 @@ class WC_Payments {
 		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
 		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
 			if ( ! $silent ) {
-				$message = sprintf(
-					/* translators: %1: required WC version number, %2: currently installed WC version number */
-					__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
-					$wc_version,
-					WC_VERSION
+				$message = WC_Payments_Utils::esc_interpolated_html(
+					sprintf(
+						/* translators: %1: required WC version number, %2: currently installed WC version number */
+						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+						$wc_version,
+						WC_VERSION
+					),
+					[ 'strong' => '<strong>' ]
 				);
 				if ( current_user_can( 'update_plugins' ) ) {
 					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
@@ -256,11 +270,14 @@ class WC_Payments {
 		// Check if the version of WordPress is compatible with WooCommerce Payments.
 		if ( version_compare( get_bloginfo( 'version' ), $wp_version, '<' ) ) {
 			if ( ! $silent ) {
-				$message = sprintf(
-					/* translators: %1: required WP version number, %2: currently installed WP version number */
-					__( 'WooCommerce Payments requires <strong>WordPress %1$s</strong> or greater (you are using %2$s).', 'woocommerce-payments' ),
-					$wp_version,
-					get_bloginfo( 'version' )
+				$message = WC_Payments_Utils::esc_interpolated_html(
+					sprintf(
+						/* translators: %1: required WP version number, %2: currently installed WP version number */
+						__( 'WooCommerce Payments requires <strong>WordPress %1$s</strong> or greater (you are using %2$s).', 'woocommerce-payments' ),
+						$wp_version,
+						get_bloginfo( 'version' )
+					),
+					[ 'strong' => '<strong>' ]
 				);
 				if ( current_user_can( 'update_core' ) ) {
 					$message .= ' <a href="' . admin_url( 'update-core.php' ) . '">' . __( 'Update WordPress', 'woocommerce-payments' ) . '</a>';

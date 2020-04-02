@@ -169,44 +169,10 @@ class WC_Payments_Account {
 
 		if ( empty( $account ) ) {
 			if ( ! self::is_on_boarding_disabled() ) {
-				// Invite the user to connect.
-				$message  = '<p>';
-				$message .= __(
-					'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
-					'woocommerce-payments'
-				);
-				$message .= '</p>';
-				$message .= '<p>';
-
-				/* translators: Link to WordPress.com TOS URL */
-				$terms_message = esc_html__(
-					'By clicking “Verify details,” you agree to the {A}Terms of Service{/A}.',
-					'woocommerce-payments'
-				);
-				$terms_message = str_replace( '{A}', '<a href="https://wordpress.com/tos">', $terms_message );
-				$terms_message = str_replace( '{/A}', '</a>', $terms_message );
-				$message      .= $terms_message;
-				$message      .= '</p>';
-
-				$message .= '<p>';
-				$message .= '<a href="' . self::get_connect_url() . '" class="button">';
-				$message .= __( ' Verify details', 'woocommerce-payments' );
-				$message .= '</a>';
-				$message .= '</p>';
-
-				$message = wp_kses(
-					$message,
-					array(
-						'a' => array(
-							'class' => array(),
-							'href'  => array(),
-						),
-						'p' => array(),
-					)
-				);
+				$message = self::get_connection_message_html();
 			} else {
 				// On-boarding has been disabled on the server, so show a message to that effect.
-				$message = __(
+				$message = esc_html__(
 					'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
 					'woocommerce-payments'
 				);
@@ -299,6 +265,39 @@ class WC_Payments_Account {
 			$this->finalize_connection( $state, $mode );
 			return;
 		}
+	}
+
+	/**
+	 * Returns html markup containing the connection message.
+	 *
+	 * @return string Connection message.
+	 */
+	public static function get_connection_message_html() {
+		ob_start();
+		?>
+		<p>
+			<?php
+			esc_html_e(
+				'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
+				'woocommerce-payments'
+			);
+			?>
+		</p>
+		<p>
+			<?php
+			echo WC_Payments_Utils::esc_interpolated_html(
+				__( 'By clicking “Verify details,” you agree to the <a>Terms of Service</a>.', 'woocommerce-payments' ),
+				[ 'a' => '<a href="https://wordpress.com/tos">' ]
+			);
+			?>
+		</p>
+		<p>
+			<a href="<?php echo esc_attr( self::get_connect_url() ); ?>" class="button">
+				<?php esc_html_e( ' Verify details', 'woocommerce-payments' ); ?>
+			</a>
+		</p>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

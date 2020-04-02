@@ -5,6 +5,7 @@
 import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
+import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
  * Internal dependencies
@@ -19,14 +20,26 @@ const ConnectAccountPage = () => {
 			<Card className="connect-account__card">
 				<HeroImage />
 				<h2>
-					{ wcpaySettings.strings.setupHeadings.map( ( heading, i ) => ( <span key={ i }>{ heading }<br /></span> ) ) }
+					{ __( 'Accept credit cards online using WooCommerce Payments.', 'woocommerce-payments' ) }
+					<br />
+					{ __( 'Simply verify your business details to get started.', 'woocommerce-payments' ) }
 				</h2>
 				{ ! wcpaySettings.onBoardingDisabled ? (
 				<>
-				<p className="connect-account__terms" dangerouslySetInnerHTML={ { __html: wcpaySettings.strings.setupTerms } } />
+				<p className="connect-account__terms">
+					{
+						createInterpolateElement(
+							__( 'By clicking “Verify details,” you agree to the <a>Terms of Service</a>.', 'woocommerce-payments' ),
+							{
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								a: <a href="https://wordpress.com/tos" />,
+							}
+						)
+					}
+				</p>
 				<hr className="full-width" />
 				<p className="connect-account__action">
-					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ wcpaySettings.strings.setupGetStarted }</Button>
+					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Verify details', 'woocommerce-payments' ) }</Button>
 				</p>
 				</>
 				) : (

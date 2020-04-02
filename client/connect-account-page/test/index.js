@@ -14,9 +14,6 @@ describe( 'ConnectAccountPage', () => {
 		window.location.assign = jest.fn();
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
-			strings: {
-				setupHeadings: [ 'heading line 1', 'heading line 2' ],
-			},
 		};
 	} );
 
