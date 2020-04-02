@@ -68,12 +68,12 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 				</LoadableBlock>
 
 				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-					{ mapping.required && ( <h3> {__( 'Required to overturn dispute', 'woocommerce-payments' )} </h3> ) }
+					{ mapping.required && ( <h3> { __( 'Required to overturn dispute', 'woocommerce-payments' ) } </h3> ) }
 					<Paragraphs>{ mapping.required }</Paragraphs>
 				</LoadableBlock>
 
 				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-					{ mapping.respond && ( <h3>{__( 'How to respond', 'woocommerce-payments' )}</h3> ) }
+					{ mapping.respond && ( <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> ) }
 					<Paragraphs>{ mapping.respond }</Paragraphs>
 					{ actions }
 				</LoadableBlock>

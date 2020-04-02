@@ -64,63 +64,52 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 			<div className="payment-details-summary">
 				<div className="payment-details-summary__section">
 					<p className="payment-details-summary__amount">
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Amount placeholder"
-						>
-							{currency.formatCurrency(
-								( charge.amount || 0 ) / 100
-							)}
+						<Loadable isLoading={ isLoading } placeholder="Amount placeholder" >
+							{ currency.formatCurrency( ( charge.amount || 0 ) / 100 ) }
 							<span className="payment-details-summary__amount-currency">
-								{charge.currency || 'cur'}
+								{ charge.currency || 'cur' }
 							</span>
 							<PaymentStatusChip charge={ charge } />
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{refunded ? (
+						{ refunded ? (
 							<p>
-								{`${ __( 'Refunded', 'woocommerce-payments' ) }: `}
-								{currency.formatCurrency( -refunded / 100 )}
+								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
+								{ currency.formatCurrency( -refunded / 100 ) }
 							</p>
 						) : (
 							''
-						)}
+						) }
 						<p>
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Fee amount"
-							>
-								{`${ __( 'Fee', 'woocommerce-payments' ) }: `}
-								{currency.formatCurrency( -fee / 100 )}
+							<Loadable isLoading={ isLoading } placeholder="Fee amount" >
+								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
+								{ currency.formatCurrency( -fee / 100 ) }
 							</Loadable>
 						</p>
 						<p>
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Net amount"
-							>
-								{`${ __( 'Net', 'woocommerce-payments' ) }: `}
-								{currency.formatCurrency( net / 100 )}
+							<Loadable isLoading={ isLoading } placeholder="Net amount" >
+								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
+								{ currency.formatCurrency( net / 100 ) }
 							</Loadable>
 						</p>
 					</div>
 				</div>
 				<div className="payment-details-summary__section">
-					{/* TODO: implement control buttons depending on the transaction status */}
+					{ /* TODO: implement control buttons depending on the transaction status */ }
 					<div className="payment-details-summary__actions">
-						{charge.order ? (
+						{ charge.order ? (
 							<Button
 								className="payment-details-summary__actions-item"
 								isDefault
 								isLarge
 								href={ charge.order.url }
 							>
-								{`${ __( 'View order' ) } ${ charge.order.number }`}
+								{ `${ __( 'View order' ) } ${ charge.order.number }` }
 							</Button>
 						) : (
 							''
-						)}
+						) }
 					</div>
 				</div>
 			</div>

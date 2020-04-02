@@ -69,9 +69,9 @@ const Info = ( { dispute, isLoading } ) => {
 				return (
 					<div key={ key } className="wcpay-dispute-info-item">
 						<Loadable isLoading={ isLoading } display="inline">
-							<span className="wcpay-dispute-info-key">{`${ label }: `}</span>
+							<span className="wcpay-dispute-info-key">{ `${ label }: ` }</span>
 							<span className="wcpay-dispute-info-value">
-								{data[ key ]}
+								{ data[ key ] }
 							</span>
 						</Loadable>
 					</div>

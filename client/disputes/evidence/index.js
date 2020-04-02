@@ -112,15 +112,17 @@ export const DisputeEvidenceForm = props => {
 							'woocommerce-payments'
 							) }
 						{ ' ' }
-						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
+						<strong>
+							{ __( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' ) }
+						</strong>
 					</p>
 
 					<CardFooter>
 						<Button isPrimary isLarge onClick={ handleSubmit }>
-							{__( 'Submit Evidence', 'woocommerce-payments' )}
+							{ __( 'Submit Evidence', 'woocommerce-payments' ) }
 						</Button>
 						<Button isDefault isLarge onClick={ () => onSave( false ) }>
-							{__( 'Save For Later', 'woocommerce-payments' )}
+							{ __( 'Save For Later', 'woocommerce-payments' ) }
 						</Button>
 					</CardFooter>
 				</Card>
