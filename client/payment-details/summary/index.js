@@ -125,7 +125,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 				</div>
 			</div>
 			<hr className="full-width" />
-			<LoadableBlock isLoading={ isLoading } lines={ 4 } >
+			<LoadableBlock isLoading={ isLoading } numLines={ 4 } >
 				<HorizontalList items={ composePaymentSummaryItems( { charge } ) } />
 			</LoadableBlock>
 		</Card>

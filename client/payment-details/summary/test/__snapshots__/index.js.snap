@@ -104,7 +104,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   />
   <LoadableBlock
     isLoading={false}
-    lines={4}
+    numLines={4}
   >
     <HorizontalList
       items={
@@ -254,7 +254,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   />
   <LoadableBlock
     isLoading={false}
-    lines={4}
+    numLines={4}
   >
     <HorizontalList
       items={
@@ -359,7 +359,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
   />
   <LoadableBlock
     isLoading={true}
-    lines={4}
+    numLines={4}
   >
     <HorizontalList
       items={
@@ -499,7 +499,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   />
   <LoadableBlock
     isLoading={false}
-    lines={4}
+    numLines={4}
   >
     <HorizontalList
       items={
@@ -650,7 +650,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
   />
   <LoadableBlock
     isLoading={false}
-    lines={4}
+    numLines={4}
   >
     <HorizontalList
       items={

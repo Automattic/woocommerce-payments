@@ -31,12 +31,12 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -53,17 +53,17 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -107,12 +107,12 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -129,17 +129,17 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -183,7 +183,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -191,7 +191,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -208,14 +208,14 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The customer claims that the purchased product was returned or the transaction was otherwise canceled, but you have not yet provided a refund or credit.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -227,7 +227,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -277,12 +277,12 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -299,17 +299,17 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -353,12 +353,12 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -375,17 +375,17 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -429,7 +429,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -437,7 +437,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -454,14 +454,14 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The customer claims they were charged multiple times for the same product or service.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -473,7 +473,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -525,7 +525,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -533,7 +533,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -550,14 +550,14 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -569,7 +569,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -620,14 +620,14 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -644,19 +644,19 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         This is an uncategorized dispute, so you should contact the customer for additional details to find out why the payment was disputed.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -700,12 +700,12 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -722,17 +722,17 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -776,12 +776,12 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -798,17 +798,17 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Paragraphs />
       <Actions
@@ -852,7 +852,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -860,7 +860,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -877,14 +877,14 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The customer claims they did not receive the products or services purchased.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -896,7 +896,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -946,7 +946,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -954,7 +954,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -971,14 +971,14 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The product or service was received but was defective, damaged, or not as described.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -990,7 +990,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -1043,7 +1043,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -1051,7 +1051,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -1068,14 +1068,14 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The customer claims that you continued to charge them after a subscription was canceled.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -1087,7 +1087,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond
@@ -1138,7 +1138,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       }
     />
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
@@ -1146,7 +1146,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <Actions
         id="dp_asdfghjkl"
@@ -1163,14 +1163,14 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
     }
   >
     <LoadableBlock
-      lines={4}
+      numLines={4}
     >
       <Paragraphs>
         The customer doesn’t recognize the payment appearing on their card statement.
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
          
@@ -1182,7 +1182,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       </Paragraphs>
     </LoadableBlock>
     <LoadableBlock
-      lines={6}
+      numLines={6}
     >
       <h3>
         How to respond

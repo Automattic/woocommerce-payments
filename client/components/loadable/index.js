@@ -22,8 +22,16 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 		</span>
 	) : children || value;
 
-export const LoadableBlock = ( { lines = 1, ...loadableProps } ) => {
-	const placeholder = <p style={ { lineHeight: lines } }>Block placeholder</p>;
+/**
+ * Helper component for rendering loadable block which takes several lines in the ui.
+ *
+ * @param {Object} props Component props.
+ * @param {Number} props.numLines Vertical size of the component in lines.
+ *
+ * @returns {ReactNode} Loadable content
+ */
+export const LoadableBlock = ( { numLines = 1, ...loadableProps } ) => {
+	const placeholder = <p style={ { lineHeight: numLines } }>Block placeholder</p>;
 	return <Loadable { ...loadableProps } placeholder={ placeholder } display="block" />;
 };
 

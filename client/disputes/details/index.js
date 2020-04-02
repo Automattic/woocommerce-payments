@@ -47,10 +47,10 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 		<Page isNarrow className="wcpay-dispute-details">
 			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute Overview', 'woocommerce-payments' ) } /> }>
 				<Info dispute={ dispute } isLoading={ isLoading } />
-				<LoadableBlock isLoading={ isLoading } lines={ 4 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Paragraphs>{ mapping.overview }</Paragraphs>
 				</LoadableBlock>
-				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
 					{ actions }
 				</LoadableBlock>
 			</Card>
@@ -61,16 +61,16 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 						value={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }
 				/> }
 			>
-				<LoadableBlock isLoading={ isLoading } lines={ 4 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Paragraphs>{ mapping.summary }</Paragraphs>
 				</LoadableBlock>
 
-				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
 					{ mapping.required && ( <h3> {__( 'Required to overturn dispute', 'woocommerce-payments' )} </h3> ) }
 					<Paragraphs>{ mapping.required }</Paragraphs>
 				</LoadableBlock>
 
-				<LoadableBlock isLoading={ isLoading } lines={ 6 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
 					{ mapping.respond && ( <h3>{__( 'How to respond', 'woocommerce-payments' )}</h3> ) }
 					<Paragraphs>{ mapping.respond }</Paragraphs>
 					{ actions }

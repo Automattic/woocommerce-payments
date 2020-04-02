@@ -147,7 +147,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
     }
   >
     <LoadableBlock
-      lines={2}
+      numLines={2}
     >
       <WithInstanceId(SelectControl)
         disabled={false}

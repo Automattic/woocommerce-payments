@@ -148,7 +148,7 @@ export const DisputeEvidencePage = props => {
 				<Info dispute={ dispute } isLoading={ isLoading } />
 			</Card>
 			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product Type', 'woocommerce-payments' ) } /> }>
-				<LoadableBlock isLoading={ isLoading } lines={ 2 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 					<SelectControl
 						value={ productType }
 						onChange={ onChangeProductType }
