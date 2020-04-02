@@ -71,6 +71,6 @@ describe( 'Loadable', () => {
 	} );
 
 	function renderLoadable( props = {}, content = <ChildComponent /> ) {
-	return shallow( <Loadable { ...props }>{ content }</Loadable> );
+		return shallow( <Loadable { ...props }>{ content }</Loadable> );
 	}
 } );
