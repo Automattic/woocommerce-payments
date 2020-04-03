@@ -172,7 +172,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Created placeholder
+        Created date
       </span>
     </Loadable>
   </div>
@@ -192,7 +192,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Amount placeholder
+        Amount
       </span>
     </Loadable>
   </div>
@@ -212,7 +212,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Due by placeholder
+        Due by date
       </span>
     </Loadable>
   </div>
@@ -232,7 +232,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Reason placeholder
+        Dispute reason
       </span>
     </Loadable>
   </div>
@@ -252,7 +252,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Order link placeholder
+        Order link
       </span>
     </Loadable>
   </div>
@@ -272,7 +272,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Customer placeholder
+        Customer name
       </span>
     </Loadable>
   </div>
@@ -292,7 +292,7 @@ exports[`Dispute info renders loading state 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Transaction placeholder
+        Transaction link
       </span>
     </Loadable>
   </div>

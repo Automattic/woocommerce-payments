@@ -43,21 +43,21 @@ const composeDisputeReason = dispute => {
 
 const Info = ( { dispute, isLoading } ) => {
 	const data = isLoading ? {
-				created: 'Created placeholder',
-				amount: 'Amount placeholder',
-				dueBy: 'Due by placeholder',
-				reason: 'Reason placeholder',
-				order: 'Order link placeholder',
-				customer: 'Customer placeholder',
-				transactionId: 'Transaction placeholder',
+			created: 'Created date',
+			amount: 'Amount',
+			dueBy: 'Due by date',
+			reason: 'Dispute reason',
+			order: 'Order link',
+			customer: 'Customer name',
+			transactionId: 'Transaction link',
 		} : {
-				created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
-				amount: `${ currency.formatCurrency( dispute.amount / 100 ) } ${ currency.code }`,
-				dueBy: dateI18n( 'M j, Y - g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
-				reason: composeDisputeReason( dispute ),
-				order: dispute.order ? ( <OrderLink order={ dispute.order } /> ) : null,
-				customer: typeof dispute.charge === 'object' ? dispute.charge.billing_details.name : null,
-				transactionId: composeTransactionIdLink( dispute ),
+			created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
+			amount: `${ currency.formatCurrency( dispute.amount / 100 ) } ${ currency.code }`,
+			dueBy: dateI18n( 'M j, Y - g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
+			reason: composeDisputeReason( dispute ),
+			order: dispute.order ? ( <OrderLink order={ dispute.order } /> ) : null,
+			customer: typeof dispute.charge === 'object' ? dispute.charge.billing_details.name : null,
+			transactionId: composeTransactionIdLink( dispute ),
 		};
 
 	return (
