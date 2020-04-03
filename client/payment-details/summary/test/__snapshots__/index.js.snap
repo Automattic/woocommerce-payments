@@ -30,7 +30,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 "amount_refunded": 0,
                 "application_fee_amount": 70,
                 "billing_details": Object {
-                  "name": "Customer Name",
+                  "name": "Customer name",
                 },
                 "created": 1568928240,
                 "currency": "usd",
@@ -114,7 +114,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             "title": "Date",
           },
           Object {
-            "content": "Customer Name",
+            "content": "Customer name",
             "title": "Customer",
           },
           Object {
@@ -129,11 +129,11 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 }
               }
             />,
-            "title": "Payment Method",
+            "title": "Payment method",
           },
           Object {
             "content": "normal",
-            "title": "Risk Evaluation",
+            "title": "Risk evaluation",
           },
           Object {
             "content": "ch_38jdHA39KKA",
@@ -175,7 +175,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 "amount_refunded": 1500,
                 "application_fee_amount": 70,
                 "billing_details": Object {
-                  "name": "Customer Name",
+                  "name": "Customer name",
                 },
                 "created": 1568928240,
                 "currency": "usd",
@@ -264,7 +264,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             "title": "Date",
           },
           Object {
-            "content": "Customer Name",
+            "content": "Customer name",
             "title": "Customer",
           },
           Object {
@@ -279,11 +279,11 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 }
               }
             />,
-            "title": "Payment Method",
+            "title": "Payment method",
           },
           Object {
             "content": "normal",
-            "title": "Risk Evaluation",
+            "title": "Risk evaluation",
           },
           Object {
             "content": "ch_38jdHA39KKA",
@@ -374,11 +374,11 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
           },
           Object {
             "content": <PaymentMethodDetails />,
-            "title": "Payment Method",
+            "title": "Payment method",
           },
           Object {
             "content": "–",
-            "title": "Risk Evaluation",
+            "title": "Risk evaluation",
           },
           Object {
             "content": "–",
@@ -420,7 +420,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 "amount_refunded": 1200,
                 "application_fee_amount": 70,
                 "billing_details": Object {
-                  "name": "Customer Name",
+                  "name": "Customer name",
                 },
                 "created": 1568928240,
                 "currency": "usd",
@@ -509,7 +509,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             "title": "Date",
           },
           Object {
-            "content": "Customer Name",
+            "content": "Customer name",
             "title": "Customer",
           },
           Object {
@@ -524,11 +524,11 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 }
               }
             />,
-            "title": "Payment Method",
+            "title": "Payment method",
           },
           Object {
             "content": "normal",
-            "title": "Risk Evaluation",
+            "title": "Risk evaluation",
           },
           Object {
             "content": "ch_38jdHA39KKA",
@@ -570,7 +570,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 "amount_refunded": 0,
                 "application_fee_amount": 70,
                 "billing_details": Object {
-                  "name": "Customer Name",
+                  "name": "Customer name",
                 },
                 "created": 1568928240,
                 "currency": "usd",
@@ -660,7 +660,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             "title": "Date",
           },
           Object {
-            "content": "Customer Name",
+            "content": "Customer name",
             "title": "Customer",
           },
           Object {
@@ -675,11 +675,11 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 }
               }
             />,
-            "title": "Payment Method",
+            "title": "Payment method",
           },
           Object {
             "content": "normal",
-            "title": "Risk Evaluation",
+            "title": "Risk evaluation",
           },
           Object {
             "content": "ch_38jdHA39KKA",

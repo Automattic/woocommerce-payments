@@ -28,7 +28,7 @@ describe( 'Dispute info', () => {
 			charge: {
 				id: 'ch_mock',
 				billing_details: {
-					name: 'Mock Customer',
+					name: 'Mock customer',
 				},
 			},
 		};

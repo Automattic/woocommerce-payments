@@ -476,7 +476,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Account Status', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Account status', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<div id="wcpay-account-status-container"></div>

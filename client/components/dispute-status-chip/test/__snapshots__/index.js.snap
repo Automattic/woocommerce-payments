@@ -3,7 +3,7 @@
 exports[`DisputeStatusChip renders charge_refunded status 1`] = `
 <Chip
   isCompact={true}
-  message="Charge Refunded"
+  message="Charge refunded"
   type="light"
 />
 `;
@@ -27,7 +27,7 @@ exports[`DisputeStatusChip renders lost status 1`] = `
 exports[`DisputeStatusChip renders needs_response status 1`] = `
 <Chip
   isCompact={true}
-  message="Needs Response"
+  message="Needs response"
   type="primary"
 />
 `;
@@ -35,7 +35,7 @@ exports[`DisputeStatusChip renders needs_response status 1`] = `
 exports[`DisputeStatusChip renders under_review status 1`] = `
 <Chip
   isCompact={true}
-  message="Under Review"
+  message="Under review"
   type="light"
 />
 `;
@@ -51,7 +51,7 @@ exports[`DisputeStatusChip renders warning_closed status 1`] = `
 exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
 <Chip
   isCompact={true}
-  message="Inquiry: Needs Response"
+  message="Inquiry: Needs response"
   type="primary"
 />
 `;
@@ -59,7 +59,7 @@ exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
 exports[`DisputeStatusChip renders warning_under_review status 1`] = `
 <Chip
   isCompact={true}
-  message="Inquiry: Under Review"
+  message="Inquiry: Under review"
   type="light"
 />
 `;

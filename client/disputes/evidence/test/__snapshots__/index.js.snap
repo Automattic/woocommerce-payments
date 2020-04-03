@@ -4,19 +4,19 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <Fragment>
   <Card
     key="general"
-    title="General Evidence"
+    title="General evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={false}
       key="product_description"
-      label="Product Description"
+      label="Product description"
       onChange={[Function]}
       value=""
     />
     <WithInstanceId(TextControl)
       disabled={false}
       key="customer_name"
-      label="Customer Name"
+      label="Customer name"
       onChange={[Function]}
       value=""
     />
@@ -26,7 +26,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       field={
         Object {
           "key": "customer_signature",
-          "label": "Customer Signature",
+          "label": "Customer signature",
           "type": "file",
         }
       }
@@ -56,14 +56,14 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         isPrimary={true}
         onClick={[Function]}
       >
-        Submit Evidence
+        Submit evidence
       </ForwardRef(Button)>
       <ForwardRef(Button)
         isDefault={true}
         isLarge={true}
         onClick={[Function]}
       >
-        Save For Later
+        Save for later
       </ForwardRef(Button)>
     </CardFooter>
   </Card>
@@ -74,19 +74,19 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <Fragment>
   <Card
     key="general"
-    title="General Evidence"
+    title="General evidence"
   >
     <WithInstanceId(TextareaControl)
       disabled={true}
       key="product_description"
-      label="Product Description"
+      label="Product description"
       onChange={[Function]}
       value=""
     />
     <WithInstanceId(TextControl)
       disabled={true}
       key="customer_name"
-      label="Customer Name"
+      label="Customer name"
       onChange={[Function]}
       value=""
     />
@@ -96,7 +96,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       field={
         Object {
           "key": "customer_signature",
-          "label": "Customer Signature",
+          "label": "Customer signature",
           "type": "file",
         }
       }
@@ -116,7 +116,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
   <Card
     title={
       <Loadable
-        value="Challenge Dispute"
+        value="Challenge dispute"
       />
     }
   >
@@ -142,7 +142,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
   <Card
     title={
       <Loadable
-        value="Product Type"
+        value="Product type"
       />
     }
   >

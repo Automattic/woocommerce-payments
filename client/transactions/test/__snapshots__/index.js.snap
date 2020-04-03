@@ -19,7 +19,7 @@ exports[`Transactions list renders correctly 1`] = `
         "defaultOrder": "desc",
         "isLeftAligned": true,
         "key": "created",
-        "label": "Date / Time",
+        "label": "Date / time",
         "required": true,
       },
       Object {
@@ -68,7 +68,7 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "key": "riskLevel",
-        "label": "Risk Level",
+        "label": "Risk level",
         "visible": false,
       },
       Object {
@@ -275,7 +275,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         "defaultOrder": "desc",
         "isLeftAligned": true,
         "key": "created",
-        "label": "Date / Time",
+        "label": "Date / time",
         "required": true,
       },
       Object {
@@ -324,7 +324,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
       Object {
         "key": "riskLevel",
-        "label": "Risk Level",
+        "label": "Risk level",
         "visible": false,
       },
     ]
@@ -425,7 +425,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
     ]
   }
-  title="Deposit Transactions"
+  title="Deposit transactions"
   totalRows={3}
 />
 `;

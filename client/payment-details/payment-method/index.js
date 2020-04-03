@@ -117,7 +117,7 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 						{ name }
 					</Detail>
 
-					<Detail isLoading={ isLoading } label={ __( 'Owner Email', 'woocommerce-payments' ) }>
+					<Detail isLoading={ isLoading } label={ __( 'Owner email', 'woocommerce-payments' ) }>
 						{ email }
 					</Detail>
 

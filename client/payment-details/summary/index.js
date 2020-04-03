@@ -42,13 +42,13 @@ const composePaymentSummaryItems = ( { charge } ) =>
 			content: get( charge, 'billing_details.name' ) || '–',
 		},
 		{
-			title: __( 'Payment Method', 'woocommerce-payments' ),
+			title: __( 'Payment method', 'woocommerce-payments' ),
 			content: (
 				<PaymentMethodDetails payment={ charge.payment_method_details } />
 			),
 		},
 		{
-			title: __( 'Risk Evaluation', 'woocommerce-payments' ),
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
 			content: get( charge, 'outcome.risk_level' ) || '–',
 		},
 		{

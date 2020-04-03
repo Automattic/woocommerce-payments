@@ -78,7 +78,7 @@ const TransactionSummaryDetails = ( props ) => {
 					content: transaction.created ? dateI18n( 'M j, Y, g:ia', moment( transaction.created * 1000 ) ) : '–',
 				},
 				{
-					title: __( 'Order No.', 'woocommerce-payments' ),
+					title: __( 'Order no.', 'woocommerce-payments' ),
 					content: <OrderLink order={ transaction.order } />,
 				},
 				{
@@ -86,11 +86,11 @@ const TransactionSummaryDetails = ( props ) => {
 					content: get( transaction, 'source.billing_details.name' ) || '–',
 				},
 				{
-					title: __( 'Payment Method', 'woocommerce-payments' ),
+					title: __( 'Payment method', 'woocommerce-payments' ),
 					content: <PaymentMethodDetails payment={ get( transaction, 'source.payment_method_details' ) } />,
 				},
 				{
-					title: __( 'Risk Evaluation', 'woocommerce-payments' ),
+					title: __( 'Risk evaluation', 'woocommerce-payments' ),
 					content: get( transaction, 'source.outcome.risk_level' ) || '–',
 				},
 				{

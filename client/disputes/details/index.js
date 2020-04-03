@@ -46,7 +46,7 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute Overview', 'woocommerce-payments' ) } /> }>
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute overview', 'woocommerce-payments' ) } /> }>
 				<Info dispute={ dispute } isLoading={ isLoading } />
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Paragraphs>{ mapping.overview }</Paragraphs>
@@ -60,7 +60,7 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 					isLoading={ isLoading }
 					value={ mapping.display
 						/* translators: heading for dispute category information section */
-						? sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display )
+						? sprintf( __( '"%s" dispute', 'woocommerce-payments' ), mapping.display )
 						: __( 'Dispute type', 'woocommerce-payments' )
 					}
 				/> }
