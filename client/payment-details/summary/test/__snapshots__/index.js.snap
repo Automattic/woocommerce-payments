@@ -13,57 +13,72 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       <p
         className="payment-details-summary__amount"
       >
-        $15.00
-        <span
-          className="payment-details-summary__amount-currency"
+        <Loadable
+          isLoading={false}
+          placeholder="Amount placeholder"
         >
-          usd
-        </span>
-        <PaymentStatusChip
-          charge={
-            Object {
-              "amount": 1500,
-              "amount_refunded": 0,
-              "application_fee_amount": 70,
-              "billing_details": Object {
-                "name": "Customer Name",
-              },
-              "created": 1568928240,
-              "currency": "usd",
-              "dispute": null,
-              "disputed": false,
-              "fee": 74,
-              "id": "ch_38jdHA39KKA",
-              "net": 1426,
-              "order": Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              },
-              "outcome": Object {
-                "risk_level": "normal",
-              },
-              "payment_method_details": Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
+          $15.00
+          <span
+            className="payment-details-summary__amount-currency"
+          >
+            usd
+          </span>
+          <PaymentStatusChip
+            charge={
+              Object {
+                "amount": 1500,
+                "amount_refunded": 0,
+                "application_fee_amount": 70,
+                "billing_details": Object {
+                  "name": "Customer Name",
                 },
-                "type": "card",
-              },
-              "type": "charge",
+                "created": 1568928240,
+                "currency": "usd",
+                "dispute": null,
+                "disputed": false,
+                "fee": 74,
+                "id": "ch_38jdHA39KKA",
+                "net": 1426,
+                "order": Object {
+                  "number": 45981,
+                  "url": "https://somerandomorderurl.com/?edit_order=45981",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
+                "type": "charge",
+              }
             }
-          }
-        />
+          />
+        </Loadable>
       </p>
       <div
         className="payment-details-summary__breakdown"
       >
         <p>
-          Fee: 
-          $-0.70
+          <Loadable
+            isLoading={false}
+            placeholder="Fee amount"
+          >
+            Fee: 
+            $-0.70
+          </Loadable>
         </p>
         <p>
-          Net: 
-          $14.30
+          <Loadable
+            isLoading={false}
+            placeholder="Net amount"
+          >
+            Net: 
+            $14.30
+          </Loadable>
         </p>
       </div>
     </div>
@@ -87,116 +102,46 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": "Sep 19, 2019, 5:24pm",
-          "title": "Date",
-        },
-        Object {
-          "content": "Customer Name",
-          "title": "Customer",
-        },
-        Object {
-          "content": <PaymentMethodDetails
-            payment={
-              Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
-                },
-                "type": "card",
-              }
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": "normal",
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": "ch_38jdHA39KKA",
-        },
-      ]
-    }
-  />
-</Card>
-`;
-
-exports[`PaymentDetailsSummary renders defaults if charge object is empty 1`] = `
-<Card
-  className="payment-details-summary-details"
->
-  <div
-    className="payment-details-summary"
+  <LoadableBlock
+    isLoading={false}
+    numLines={4}
   >
-    <div
-      className="payment-details-summary__section"
-    >
-      <p
-        className="payment-details-summary__amount"
-      >
-        $0.00
-        <span
-          className="payment-details-summary__amount-currency"
-        >
-          cur
-        </span>
-        <PaymentStatusChip
-          charge={Object {}}
-        />
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          Fee: 
-          $0.00
-        </p>
-        <p>
-          Net: 
-          $0.00
-        </p>
-      </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
-    >
-      <div
-        className="payment-details-summary__actions"
-      />
-    </div>
-  </div>
-  <hr
-    className="full-width"
-  />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": "–",
-          "title": "Date",
-        },
-        Object {
-          "content": "–",
-          "title": "Customer",
-        },
-        Object {
-          "content": <PaymentMethodDetails />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": "–",
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": "–",
-        },
-      ]
-    }
-  />
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                }
+              }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -213,47 +158,52 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       <p
         className="payment-details-summary__amount"
       >
-        $15.00
-        <span
-          className="payment-details-summary__amount-currency"
+        <Loadable
+          isLoading={false}
+          placeholder="Amount placeholder"
         >
-          usd
-        </span>
-        <PaymentStatusChip
-          charge={
-            Object {
-              "amount": 1500,
-              "amount_refunded": 1500,
-              "application_fee_amount": 70,
-              "billing_details": Object {
-                "name": "Customer Name",
-              },
-              "created": 1568928240,
-              "currency": "usd",
-              "dispute": null,
-              "disputed": false,
-              "fee": 74,
-              "id": "ch_38jdHA39KKA",
-              "net": 1426,
-              "order": Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              },
-              "outcome": Object {
-                "risk_level": "normal",
-              },
-              "payment_method_details": Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
+          $15.00
+          <span
+            className="payment-details-summary__amount-currency"
+          >
+            usd
+          </span>
+          <PaymentStatusChip
+            charge={
+              Object {
+                "amount": 1500,
+                "amount_refunded": 1500,
+                "application_fee_amount": 70,
+                "billing_details": Object {
+                  "name": "Customer Name",
                 },
-                "type": "card",
-              },
-              "refunded": true,
-              "type": "charge",
+                "created": 1568928240,
+                "currency": "usd",
+                "dispute": null,
+                "disputed": false,
+                "fee": 74,
+                "id": "ch_38jdHA39KKA",
+                "net": 1426,
+                "order": Object {
+                  "number": 45981,
+                  "url": "https://somerandomorderurl.com/?edit_order=45981",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
+                "refunded": true,
+                "type": "charge",
+              }
             }
-          }
-        />
+          />
+        </Loadable>
       </p>
       <div
         className="payment-details-summary__breakdown"
@@ -263,12 +213,22 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           $-15.00
         </p>
         <p>
-          Fee: 
-          $-0.70
+          <Loadable
+            isLoading={false}
+            placeholder="Fee amount"
+          >
+            Fee: 
+            $-0.70
+          </Loadable>
         </p>
         <p>
-          Net: 
-          $-0.70
+          <Loadable
+            isLoading={false}
+            placeholder="Net amount"
+          >
+            Net: 
+            $-0.70
+          </Loadable>
         </p>
       </div>
     </div>
@@ -292,41 +252,141 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": "Sep 19, 2019, 5:24pm",
-          "title": "Date",
-        },
-        Object {
-          "content": "Customer Name",
-          "title": "Customer",
-        },
-        Object {
-          "content": <PaymentMethodDetails
-            payment={
-              Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
-                },
-                "type": "card",
+  <LoadableBlock
+    isLoading={false}
+    numLines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                }
               }
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": "normal",
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": "ch_38jdHA39KKA",
-        },
-      ]
-    }
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
+</Card>
+`;
+
+exports[`PaymentDetailsSummary renders loading state 1`] = `
+<Card
+  className="payment-details-summary-details"
+>
+  <div
+    className="payment-details-summary"
+  >
+    <div
+      className="payment-details-summary__section"
+    >
+      <p
+        className="payment-details-summary__amount"
+      >
+        <Loadable
+          isLoading={true}
+          placeholder="Amount placeholder"
+        >
+          $0.00
+          <span
+            className="payment-details-summary__amount-currency"
+          >
+            cur
+          </span>
+          <PaymentStatusChip
+            charge={Object {}}
+          />
+        </Loadable>
+      </p>
+      <div
+        className="payment-details-summary__breakdown"
+      >
+        <p>
+          <Loadable
+            isLoading={true}
+            placeholder="Fee amount"
+          >
+            Fee: 
+            $0.00
+          </Loadable>
+        </p>
+        <p>
+          <Loadable
+            isLoading={true}
+            placeholder="Net amount"
+          >
+            Net: 
+            $0.00
+          </Loadable>
+        </p>
+      </div>
+    </div>
+    <div
+      className="payment-details-summary__section"
+    >
+      <div
+        className="payment-details-summary__actions"
+      />
+    </div>
+  </div>
+  <hr
+    className="full-width"
   />
+  <LoadableBlock
+    isLoading={true}
+    numLines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "–",
+            "title": "Date",
+          },
+          Object {
+            "content": "–",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "–",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "–",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -343,47 +403,52 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       <p
         className="payment-details-summary__amount"
       >
-        $15.00
-        <span
-          className="payment-details-summary__amount-currency"
+        <Loadable
+          isLoading={false}
+          placeholder="Amount placeholder"
         >
-          usd
-        </span>
-        <PaymentStatusChip
-          charge={
-            Object {
-              "amount": 1500,
-              "amount_refunded": 1200,
-              "application_fee_amount": 70,
-              "billing_details": Object {
-                "name": "Customer Name",
-              },
-              "created": 1568928240,
-              "currency": "usd",
-              "dispute": null,
-              "disputed": false,
-              "fee": 74,
-              "id": "ch_38jdHA39KKA",
-              "net": 1426,
-              "order": Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              },
-              "outcome": Object {
-                "risk_level": "normal",
-              },
-              "payment_method_details": Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
+          $15.00
+          <span
+            className="payment-details-summary__amount-currency"
+          >
+            usd
+          </span>
+          <PaymentStatusChip
+            charge={
+              Object {
+                "amount": 1500,
+                "amount_refunded": 1200,
+                "application_fee_amount": 70,
+                "billing_details": Object {
+                  "name": "Customer Name",
                 },
-                "type": "card",
-              },
-              "refunded": false,
-              "type": "charge",
+                "created": 1568928240,
+                "currency": "usd",
+                "dispute": null,
+                "disputed": false,
+                "fee": 74,
+                "id": "ch_38jdHA39KKA",
+                "net": 1426,
+                "order": Object {
+                  "number": 45981,
+                  "url": "https://somerandomorderurl.com/?edit_order=45981",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
+                "refunded": false,
+                "type": "charge",
+              }
             }
-          }
-        />
+          />
+        </Loadable>
       </p>
       <div
         className="payment-details-summary__breakdown"
@@ -393,12 +458,22 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           $-12.00
         </p>
         <p>
-          Fee: 
-          $-0.70
+          <Loadable
+            isLoading={false}
+            placeholder="Fee amount"
+          >
+            Fee: 
+            $-0.70
+          </Loadable>
         </p>
         <p>
-          Net: 
-          $2.30
+          <Loadable
+            isLoading={false}
+            placeholder="Net amount"
+          >
+            Net: 
+            $2.30
+          </Loadable>
         </p>
       </div>
     </div>
@@ -422,41 +497,46 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": "Sep 19, 2019, 5:24pm",
-          "title": "Date",
-        },
-        Object {
-          "content": "Customer Name",
-          "title": "Customer",
-        },
-        Object {
-          "content": <PaymentMethodDetails
-            payment={
-              Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
-                },
-                "type": "card",
+  <LoadableBlock
+    isLoading={false}
+    numLines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                }
               }
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": "normal",
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": "ch_38jdHA39KKA",
-        },
-      ]
-    }
-  />
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;
 
@@ -473,48 +553,53 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
       <p
         className="payment-details-summary__amount"
       >
-        $15.00
-        <span
-          className="payment-details-summary__amount-currency"
+        <Loadable
+          isLoading={false}
+          placeholder="Amount placeholder"
         >
-          usd
-        </span>
-        <PaymentStatusChip
-          charge={
-            Object {
-              "amount": 1500,
-              "amount_refunded": 0,
-              "application_fee_amount": 70,
-              "billing_details": Object {
-                "name": "Customer Name",
-              },
-              "created": 1568928240,
-              "currency": "usd",
-              "dispute": Object {
+          $15.00
+          <span
+            className="payment-details-summary__amount-currency"
+          >
+            usd
+          </span>
+          <PaymentStatusChip
+            charge={
+              Object {
                 "amount": 1500,
-              },
-              "disputed": true,
-              "fee": 74,
-              "id": "ch_38jdHA39KKA",
-              "net": 1426,
-              "order": Object {
-                "number": 45981,
-                "url": "https://somerandomorderurl.com/?edit_order=45981",
-              },
-              "outcome": Object {
-                "risk_level": "normal",
-              },
-              "payment_method_details": Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
+                "amount_refunded": 0,
+                "application_fee_amount": 70,
+                "billing_details": Object {
+                  "name": "Customer Name",
                 },
-                "type": "card",
-              },
-              "type": "charge",
+                "created": 1568928240,
+                "currency": "usd",
+                "dispute": Object {
+                  "amount": 1500,
+                },
+                "disputed": true,
+                "fee": 74,
+                "id": "ch_38jdHA39KKA",
+                "net": 1426,
+                "order": Object {
+                  "number": 45981,
+                  "url": "https://somerandomorderurl.com/?edit_order=45981",
+                },
+                "outcome": Object {
+                  "risk_level": "normal",
+                },
+                "payment_method_details": Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                },
+                "type": "charge",
+              }
             }
-          }
-        />
+          />
+        </Loadable>
       </p>
       <div
         className="payment-details-summary__breakdown"
@@ -524,12 +609,22 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           $-15.00
         </p>
         <p>
-          Fee: 
-          $-15.70
+          <Loadable
+            isLoading={false}
+            placeholder="Fee amount"
+          >
+            Fee: 
+            $-15.70
+          </Loadable>
         </p>
         <p>
-          Net: 
-          $-15.70
+          <Loadable
+            isLoading={false}
+            placeholder="Net amount"
+          >
+            Net: 
+            $-15.70
+          </Loadable>
         </p>
       </div>
     </div>
@@ -553,40 +648,45 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
   <hr
     className="full-width"
   />
-  <HorizontalList
-    items={
-      Array [
-        Object {
-          "content": "Sep 19, 2019, 5:24pm",
-          "title": "Date",
-        },
-        Object {
-          "content": "Customer Name",
-          "title": "Customer",
-        },
-        Object {
-          "content": <PaymentMethodDetails
-            payment={
-              Object {
-                "card": Object {
-                  "brand": "visa",
-                  "last4": "4242",
-                },
-                "type": "card",
+  <LoadableBlock
+    isLoading={false}
+    numLines={4}
+  >
+    <HorizontalList
+      items={
+        Array [
+          Object {
+            "content": "Sep 19, 2019, 5:24pm",
+            "title": "Date",
+          },
+          Object {
+            "content": "Customer Name",
+            "title": "Customer",
+          },
+          Object {
+            "content": <PaymentMethodDetails
+              payment={
+                Object {
+                  "card": Object {
+                    "brand": "visa",
+                    "last4": "4242",
+                  },
+                  "type": "card",
+                }
               }
-            }
-          />,
-          "title": "Payment Method",
-        },
-        Object {
-          "content": "normal",
-          "title": "Risk Evaluation",
-        },
-        Object {
-          "content": "ch_38jdHA39KKA",
-        },
-      ]
-    }
-  />
+            />,
+            "title": "Payment Method",
+          },
+          Object {
+            "content": "normal",
+            "title": "Risk Evaluation",
+          },
+          Object {
+            "content": "ch_38jdHA39KKA",
+          },
+        ]
+      }
+    />
+  </LoadableBlock>
 </Card>
 `;

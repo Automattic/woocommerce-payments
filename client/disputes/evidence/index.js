@@ -22,6 +22,7 @@ import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
+import Loadable, { LoadableBlock } from 'components/loadable';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -111,15 +112,17 @@ export const DisputeEvidenceForm = props => {
 							'woocommerce-payments'
 							) }
 						{ ' ' }
-						<strong>{__( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' )}</strong>
+						<strong>
+							{ __( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' ) }
+						</strong>
 					</p>
 
 					<CardFooter>
 						<Button isPrimary isLarge onClick={ handleSubmit }>
-							{__( 'Submit Evidence', 'woocommerce-payments' )}
+							{ __( 'Submit Evidence', 'woocommerce-payments' ) }
 						</Button>
 						<Button isDefault isLarge onClick={ () => onSave( false ) }>
-							{__( 'Save For Later', 'woocommerce-payments' )}
+							{ __( 'Save For Later', 'woocommerce-payments' ) }
 						</Button>
 					</CardFooter>
 				</Card>
@@ -129,52 +132,73 @@ export const DisputeEvidenceForm = props => {
 };
 
 export const DisputeEvidencePage = props => {
-	const { showPlaceholder, dispute, productType, onChangeProductType, ...evidenceFormProps } = props;
-
-	if ( showPlaceholder ) {
-		// TODO Render proper placeholder view.
-		return <div>Loading…</div>;
-	}
-	if ( dispute == null ) {
-		return <div>Dispute not loaded</div>;
-	}
-
+	const { isLoading, dispute = {}, productType, onChangeProductType, ...evidenceFormProps } = props;
 	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+	const disputeIsAvailable = ! isLoading && dispute.id;
+
+	if ( ! isLoading && ! disputeIsAvailable ) {
+		return (
+			<Page isNarrow className="wcpay-dispute-details">
+				<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+			</Page>
+		);
+	}
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			<Card title={ __( 'Challenge Dispute', 'woocommerce-payments' ) }>
-				<Info dispute={ dispute } />
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Challenge Dispute', 'woocommerce-payments' ) } /> }>
+				<Info dispute={ dispute } isLoading={ isLoading } />
 			</Card>
-
-			<Card title={ __( 'Product Type', 'woocommerce-payments' ) }>
-				<SelectControl
-					value={ productType }
-					onChange={ onChangeProductType }
-					options={ [
-						{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
-						{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
-						{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
-						{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
-						{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
-					] }
-					disabled={ readOnly }
-				/>
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product Type', 'woocommerce-payments' ) } /> }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
+					<SelectControl
+						value={ productType }
+						onChange={ onChangeProductType }
+						options={ [
+							{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
+							{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
+							{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
+							{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
+							{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
+						] }
+						disabled={ readOnly }
+					/>
+				</LoadableBlock>
 			</Card>
-
-			<DisputeEvidenceForm
-				{ ...evidenceFormProps }
-				readOnly={ readOnly }
-			/>
+			{	// Don't render the form placeholder while the dispute is being loaded.
+				// The form content depends on the selected product type, hence placeholder might disappear after loading.
+				! isLoading && <DisputeEvidenceForm { ...evidenceFormProps } readOnly={ readOnly } />
+			}
 		</Page>
 	);
+};
+
+/**
+ * Retrieves product type from the dispute.
+ *
+ * @param {Object?} dispute Dispute object
+ * @returns {string} dispute product type
+ */
+const getDisputeProductType = dispute => {
+	if ( ! dispute ) {
+		return '';
+	}
+
+	let productType = dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
+
+	// Fallback to `multiple` when evidence submitted but no product type meta.
+	if ( ! productType && dispute.evidence_details && dispute.evidence_details.has_evidence ) {
+		productType = 'multiple';
+	}
+
+	return productType;
 };
 
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 
-	const [ dispute, setDispute ] = useState( null );
+	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
@@ -293,10 +317,8 @@ export default ( { query } ) => {
 		}
 	};
 
-	const productType = dispute && dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
-	const updateProductType = ( newProductType ) => {
-		setDispute( d => merge( {}, d, { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } ) );
-	};
+	const productType = getDisputeProductType( dispute );
+	const updateProductType = ( newProductType ) => updateDispute( { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } );
 
 	const fieldsToDisplay = useMemo(
 		() => evidenceFields( dispute && dispute.reason, productType ),
@@ -305,7 +327,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeEvidencePage
-			showPlaceholder={ loading }
+			isLoading={ loading }
 			dispute={ dispute }
 			evidence={
 				dispute

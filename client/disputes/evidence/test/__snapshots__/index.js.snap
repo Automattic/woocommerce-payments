@@ -114,7 +114,11 @@ exports[`Dispute evidence page renders correctly 1`] = `
   isNarrow={true}
 >
   <Card
-    title="Challenge Dispute"
+    title={
+      <Loadable
+        value="Challenge Dispute"
+      />
+    }
   >
     <Info
       dispute={
@@ -136,36 +140,44 @@ exports[`Dispute evidence page renders correctly 1`] = `
     />
   </Card>
   <Card
-    title="Product Type"
+    title={
+      <Loadable
+        value="Product Type"
+      />
+    }
   >
-    <WithInstanceId(SelectControl)
-      disabled={false}
-      options={
-        Array [
-          Object {
-            "disabled": true,
-            "label": "Select one…",
-            "value": "",
-          },
-          Object {
-            "label": "Physical product",
-            "value": "physical_product",
-          },
-          Object {
-            "label": "Digital product or service",
-            "value": "digital_product_or_service",
-          },
-          Object {
-            "label": "Offline service",
-            "value": "offline_service",
-          },
-          Object {
-            "label": "Multiple product types",
-            "value": "multiple",
-          },
-        ]
-      }
-    />
+    <LoadableBlock
+      numLines={2}
+    >
+      <WithInstanceId(SelectControl)
+        disabled={false}
+        options={
+          Array [
+            Object {
+              "disabled": true,
+              "label": "Select one…",
+              "value": "",
+            },
+            Object {
+              "label": "Physical product",
+              "value": "physical_product",
+            },
+            Object {
+              "label": "Digital product or service",
+              "value": "digital_product_or_service",
+            },
+            Object {
+              "label": "Offline service",
+              "value": "offline_service",
+            },
+            Object {
+              "label": "Multiple product types",
+              "value": "multiple",
+            },
+          ]
+        }
+      />
+    </LoadableBlock>
   </Card>
   <DisputeEvidenceForm
     evidence={
@@ -175,6 +187,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
       }
     }
     readOnly={false}
+    showPlaceholder={false}
   />
 </Page>
 `;
