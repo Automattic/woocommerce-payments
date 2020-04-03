@@ -50,6 +50,7 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		{
 			title: __( 'Risk evaluation', 'woocommerce-payments' ),
 			content: get( charge, 'outcome.risk_level' ) || '–',
+			className: 'wcpay-risk-evaluation',
 		},
 		{
 			content: charge.id || '–',

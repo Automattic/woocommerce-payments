@@ -132,6 +132,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             "title": "Payment method",
           },
           Object {
+            "className": "wcpay-risk-evaluation",
             "content": "normal",
             "title": "Risk evaluation",
           },
@@ -282,6 +283,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             "title": "Payment method",
           },
           Object {
+            "className": "wcpay-risk-evaluation",
             "content": "normal",
             "title": "Risk evaluation",
           },
@@ -377,6 +379,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             "title": "Payment method",
           },
           Object {
+            "className": "wcpay-risk-evaluation",
             "content": "–",
             "title": "Risk evaluation",
           },
@@ -527,6 +530,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             "title": "Payment method",
           },
           Object {
+            "className": "wcpay-risk-evaluation",
             "content": "normal",
             "title": "Risk evaluation",
           },
@@ -678,6 +682,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             "title": "Payment method",
           },
           Object {
+            "className": "wcpay-risk-evaluation",
             "content": "normal",
             "title": "Risk evaluation",
           },

@@ -9,7 +9,6 @@
 
 .woocommerce-card__body .woocommerce-list--horizontal,
 .woocommerce-list--horizontal {
-	text-transform: capitalize;
 	display: flex;
 	align-items: stretch;
 	flex-direction: column;
@@ -17,6 +16,7 @@
 		flex-direction: initial;
 		margin: 1rem 0 0 0;
 	}
+
 	.woocommerce-list__item {
 		padding: 0.75rem 1rem;
 		border-left: 0;
@@ -50,5 +50,9 @@
 		@include breakpoint( '>800px' ) {
 			padding-right: 0;
 		}
+	}
+
+	.wcpay-risk-evaluation .woocommerce-list__item-content {
+		text-transform: capitalize;
 	}
 }
