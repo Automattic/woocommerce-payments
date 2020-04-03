@@ -12,7 +12,7 @@
     "dist",
     "docker",
     "includes",
-    "node_moduled",
+    "node_modules",
     "vendor"
   ]
 }
