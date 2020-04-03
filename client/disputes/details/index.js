@@ -37,7 +37,9 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
-				<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+				<Card>
+					<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+				</Card>
 			</Page>
 		);
 	}
