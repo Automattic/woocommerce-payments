@@ -125,7 +125,7 @@ exports[`Deposits Overview renders correctly 1`] = `
                 $15.22
               </span>
               <div
-                aria-label="No change from Est. April 18, 2019 - In transit"
+                aria-label="No change from Est. Apr 22, 2019"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -152,7 +152,7 @@ exports[`Deposits Overview renders correctly 1`] = `
             <span
               class="woocommerce-summary__item-prev-label"
             >
-              Est. April 18, 2019 - In transit
+              Est. Apr 22, 2019
             </span>
              
             <span
