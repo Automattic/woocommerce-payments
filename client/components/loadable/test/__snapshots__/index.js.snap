@@ -3,7 +3,7 @@
 exports[`Loadable when active uses children as placeholder if not passed 1`] = `
 <span
   aria-busy="true"
-  className="is-placeholder"
+  className="is-lodable-placeholder"
 >
   <ChildComponent />
 </span>
