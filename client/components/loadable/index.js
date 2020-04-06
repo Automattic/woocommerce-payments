@@ -20,7 +20,7 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 		<span className={ display ? `is-placeholder is-${ display }` : 'is-placeholder' } aria-busy="true">
 			{ undefined === placeholder ? children || value : placeholder }
 		</span>
-	) : ( children || value || '' );
+	) : ( children || value || null );
 
 /**
  * Helper component for rendering loadable block which takes several lines in the ui.
