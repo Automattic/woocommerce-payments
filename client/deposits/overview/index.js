@@ -65,12 +65,12 @@ const DepositsOverview = () => {
 				<span className="wcpay-deposits-overview__schedule-label">{ __( 'Deposit Schedule:', 'woocommerce-payments' ) }</span>
 				{ ' ' }
 				<span className="wcpay-deposits-overview__schedule-value">
-					<Loadable isLoading={ isLoading } display="inline" placeholder="Deposit Schedule placeholder">
+					<Loadable isLoading={ isLoading || ! overview } display="inline" placeholder="Deposit Schedule placeholder">
 						{ overview ? getDepositScheduleFormatted( overview.deposit_schedule ) : '' }
 					</Loadable>
 				</span>
 			</p>
-			{ isLoading
+			{ isLoading || ! overview
 				? <SummaryListPlaceholder numberOfItems={ 4 } />
 				: <SummaryList label={ __( 'Deposits Overview', 'woocommerce-payments' ) }>
 					{ () => {
