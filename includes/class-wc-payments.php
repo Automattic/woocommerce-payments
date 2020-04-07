@@ -150,6 +150,11 @@ class WC_Payments {
 			return true;
 		}
 
+		// If the silent dependency check failed, WC_Payments_Utils will not have yet loaded.
+		if ( ! class_exists( 'WC_Payments_Utils' ) ) {
+			include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
+		}
+
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
