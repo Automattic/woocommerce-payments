@@ -18,7 +18,7 @@ import Loadable from 'components/loadable';
 const currency = new Currency();
 const formatDate = ( date ) => dateI18n( 'F j, Y', moment.utc( date ) );
 const getAmount = ( obj ) => currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
-const getDepositDate = ( deposit ) => deposit ? formatDate( deposit.date ) : '–';
+const getDepositDate = ( deposit ) => deposit ? formatDate( deposit.date ) : '';
 const getBalanceDepositCount = ( balance ) =>
 	sprintf( _n( '%d deposit', '%d deposits', balance.deposits_count, 'woocommerce-payments' ), balance.deposits_count );
 const getNextDepositLabelFormatted = ( deposit ) => {
@@ -78,13 +78,13 @@ const DepositsOverview = () => {
 							<SummaryNumber
 								key="lastDeposit"
 								label={ __( 'Last deposit', 'woocommerce-payments' ) }
-								value={ getAmount( overview.last_deposit ) }
+								value={ overview.last_deposit ? getAmount( overview.last_deposit ) : '–' }
 								prevLabel={ getDepositDate( overview.last_deposit ) }
 							/>,
 							<SummaryNumber
 								key="nextDeposit"
 								label={ __( 'Next deposit', 'woocommerce-payments' ) }
-								value={ getAmount( overview.next_deposit ) }
+								value={ overview.next_deposit ? getAmount( overview.next_deposit ) : '–' }
 								prevLabel={ getNextDepositLabelFormatted( overview.next_deposit ) }
 							/>,
 							<SummaryNumber
