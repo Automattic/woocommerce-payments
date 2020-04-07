@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useState, useEffect, useMemo, useRef } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
@@ -202,6 +202,7 @@ export default ( { query } ) => {
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
+	const unblock = useRef();
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -272,11 +273,14 @@ export default ( { query } ) => {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
+
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
 		createSuccessNotice( message );
+
+		unblock.current && unblock.current();
 		getHistory().push( href );
 	};
 
@@ -324,8 +328,18 @@ export default ( { query } ) => {
 	const pristine = Object.keys( evidence ).length === 0;
 	useEffect( () => {
 		window.onbeforeunload = pristine ? null : () => true;
+
+		unblock.current && unblock.current();
+		unblock.current = ! pristine && getHistory().block(
+			__(
+				'There are unsaved dispute evidence values in the form. Are you sure you want to leave and discard changes?',
+				'woocommerce-payments'
+			)
+		);
+
 		return () => {
 			window.onbeforeunload = null;
+			unblock.current && unblock.current();
 		};
 	}, [ pristine ] );
 
