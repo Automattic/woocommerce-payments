@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.0
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 0.8.2
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ WooCommerce Payments supports credit cards in checkout and an integrated merchan
 
 == Description ==
 
-WooCommerce Payments, powered by Stripe and WordPress.com, supports credit cards in checkout and an integrated merchant dashboard for managing those payments.
+WooCommerce Payments, currently in Beta and powered by Stripe and WordPress.com, supports credit cards in checkout and an integrated merchant dashboard for managing those payments.
 
 WooCommerce Payments is available for Store Owners and Merchants in:
 
@@ -53,6 +53,9 @@ Absolutely! You can read our Terms of Service [here](https://en.wordpress.com/to
 == Screenshots ==
 
 == Changelog ==
+
+= 0.9.0 =
+* Release for Public Beta
 
 = 0.8.2 =
 
