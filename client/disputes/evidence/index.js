@@ -305,7 +305,12 @@ export default ( { query } ) => {
 			const updatedDispute = await apiFetch( {
 				path,
 				method: 'post',
-				data: { evidence: { ...dispute.evidence, ...evidence }, metadata, submit },
+				data: {
+					// Send full evidence, as submission does not appear to work without new evidence despite being optional.
+					evidence: { ...dispute.evidence, ...evidence },
+					metadata,
+					submit,
+				},
 			} );
 			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
