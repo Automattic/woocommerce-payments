@@ -578,6 +578,10 @@ class WC_Payments_API_Client {
 		$headers['User-Agent']   = $this->user_agent;
 
 		Logger::log( "REQUEST $method $url" );
+		if ( 'POST' === $method || 'PUT' === $method ) {
+			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		}
+
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
