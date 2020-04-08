@@ -83,13 +83,13 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
-	test( 'renders defaults if charge object is empty', () => {
-		const paymentDetailsSummary = renderCharge( {} );
+	test( 'renders loading state', () => {
+		const paymentDetailsSummary = renderCharge( {}, true );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
-	function renderCharge( charge ) {
-		return shallow( <PaymentDetailsSummary charge={ charge } /> );
+	function renderCharge( charge, isLoading = false ) {
+		return shallow( <PaymentDetailsSummary charge={ charge } isLoading={ isLoading } /> );
 	}
 } );
 

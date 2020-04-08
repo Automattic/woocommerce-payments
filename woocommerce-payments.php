@@ -8,9 +8,9 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 3.9
- * WC tested up to: 3.9
+ * WC tested up to: 4.0
  * Requires WP: 5.3
- * Version: 0.8.2
+ * Version: 0.8.3-dev
  *
  * @package WooCommerce\Payments
  *

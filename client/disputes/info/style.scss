@@ -1,3 +1,9 @@
+.wcpay-dispute-info-item {
+	&:first-child {
+		margin-top: 0;
+	}
+}
+
 .wcpay-dispute-info-key {
 	font-weight: 600;
 }
