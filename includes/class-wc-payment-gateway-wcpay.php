@@ -278,15 +278,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
 				$payment_method = $this->get_payment_method_from_request();
-
 				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
+				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+
+				$metadata = [
+					'customer_name'  => $name,
+					'customer_email' => sanitize_email( $order->get_billing_email() ),
+					'order_id'       => $order->get_order_number(),
+				];
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
-					$manual_capture
+					$manual_capture,
+					$metadata
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
