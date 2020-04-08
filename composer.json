@@ -12,9 +12,14 @@
       }
     },
     "require": {
-        "automattic/jetpack-config": "dev-master",
-        "automattic/jetpack-connection": "dev-master",
-        "automattic/jetpack-autoloader": "dev-master"
+      "automattic/jetpack-connection": "^1.11.0",
+      "automattic/jetpack-config": "^1.1.0",
+      "automattic/jetpack-autoloader": "^1.6.0"
+    },
+    "require-dev": {
+      "woocommerce/woocommerce": "^4.1.0",
+      "phpunit/phpunit": "^5.7.27",
+      "composer/installers": "^1.7.0"
     },
     "scripts": {
       "test": [
@@ -35,4 +40,4 @@
       },
       "installer-disable": true
     }
-  }
+}
