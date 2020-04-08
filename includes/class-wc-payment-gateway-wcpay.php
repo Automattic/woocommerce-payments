@@ -284,7 +284,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$metadata = [
 					'customer_name'  => $name,
 					'customer_email' => sanitize_email( $order->get_billing_email() ),
-					'order_id'       => $order->get_order_number(),
+					'site_url'       => esc_url( get_site_url() ),
+					'order_id'       => $order->get_id(),
 				];
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
