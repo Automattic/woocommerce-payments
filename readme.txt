@@ -45,7 +45,7 @@ No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issue
 * WooCommerce 3.9 or newer.
 * WooCommerce Admin 1.0 or newer (if running a WooCommerce version less than 4.0)
 * [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
-* PHP version 5.6.20 or newer. PHP 7.2 or newer is recommended.
+* PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 == Installation ==
 
