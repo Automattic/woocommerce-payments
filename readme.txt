@@ -18,11 +18,9 @@ The only payments plugin designed exclusively for WooCommerce, by WooCommerce.
 
 Currently in public beta.
 
-**Never leave your WordPress dashboard**
+**See and manage all transactions in your WooCommerce Payments integrated dashboard**
 
-With the WooCommerce Payments integrated dashboard, you get the features normally only available at your payment provider's website all within your own site's dashboard.
-
-Including:
+Features normally only available at your payment provider's website are now part of your site's dashboard.
 
 - View the details of [payments, refunds and other transactions](https://docs.woocommerce.com/document/payments/#section-4)
 - View and respond to [disputes / chargebacks](https://docs.woocommerce.com/document/payments/disputes/)
@@ -40,7 +38,7 @@ No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issue
 
 = Requirements =
 
-* United States based business.
+* United States-based business.
 * WordPress 5.3 or newer.
 * WooCommerce 3.9 or newer.
 * WooCommerce Admin 1.0 or newer (if running a WooCommerce version less than 4.0)
@@ -70,7 +68,7 @@ Yep! WooCommerce version 3.9 or newer, please.
 
 = Why is a WordPress.com account and connection required? =
 
-WooCommerce Payments uses the WordPress.com connection to authenticate each request, connecitng your store with our payments partner.
+WooCommerce Payments uses the WordPress.com connection to authenticate each request, connecting your store with our payments partner.
 
 = How is WooCommerce Payments related to Stripe? =
 
@@ -78,7 +76,7 @@ WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When y
 
 = Are there Terms of Service and data usage policies? =
 
-Absolutely! You can read our Terms of Service [here](https://en.wordpress.com/tos).
+You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Screenshots ==
 
