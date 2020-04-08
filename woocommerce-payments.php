@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: WooCommerce Payments
+ * Plugin Name: WooCommerce Payments (Beta)
  * Plugin URI: https://github.com/Automattic/woocommerce-payments
- * Description: Feature plugin for accepting payments via a WooCommerce-branded payment gateway.
+ * Description: Accept payments via credit card. Manage transactions within WordPress. Beta.
  * Author: Automattic
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-payments
@@ -10,7 +10,7 @@
  * WC requires at least: 3.9
  * WC tested up to: 4.0
  * Requires WP: 5.3
- * Version: 0.8.3-dev
+ * Version: 0.9.0-beta
  *
  * @package WooCommerce\Payments
  *

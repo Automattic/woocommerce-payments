@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+2020-04-08 - version 0.9.0
+* Release for Public Beta
+
 2020-03-10 - version 0.8.2
 * Add - Dispute file evidence upload support
 * Add - Basic support for Pay for Order
