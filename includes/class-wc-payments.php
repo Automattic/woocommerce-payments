@@ -50,6 +50,8 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
+
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', array( __CLASS__, 'check_plugin_dependencies' ) );
 			return;
@@ -64,7 +66,6 @@ class WC_Payments {
 		self::$api_client = self::create_api_client();
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
-		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$account = new WC_Payments_Account( self::$api_client );
