@@ -96,14 +96,3 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 * Fix - Undefined variable PHP notice in cancel_authorization
 * Fix - Remove unused variable in authentication
 * Fix - Improve Jetpack connection checking
-
-== Upgrade Notice ==
-
-= 0.8.2 =
-
-* Add - Dispute file evidence upload support
-* Add - Basic support for Pay for Order
-* Fix - Styling improvements in wp-admin
-* Fix - Undefined variable PHP notice in cancel_authorization
-* Fix - Remove unused variable in authentication
-* Fix - Improve Jetpack connection checking
