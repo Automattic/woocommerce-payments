@@ -12,4 +12,12 @@
 			<directory suffix=".php">./tests/</directory>
 		</testsuite>
 	</testsuites>
+
+	<!-- Set a whitelist for code coverage analysis -->
+	<filter>
+		<whitelist>
+			<directory suffix=".php">includes</directory>
+		</whitelist>
+	</filter>
+
 </phpunit>

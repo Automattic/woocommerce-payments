@@ -40,6 +40,7 @@ tests/cli/composer.json
 tests/cli/vendor
 
 # Unit tests
+/coverage
 /tmp
 /tests/bin/tmp
 /tests/e2e-tests/config/local-*.json
