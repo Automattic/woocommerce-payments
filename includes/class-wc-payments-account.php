@@ -194,7 +194,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Filter function to add Stripe and WP.com to the list of allowed redirect hosts
+	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
 	 * @param array $hosts - array of allowed hosts.
 	 *
@@ -202,7 +202,6 @@ class WC_Payments_Account {
 	 */
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'connect.stripe.com';
-		$hosts[] = 'jetpack.wordpress.com';
 		return $hosts;
 	}
 
@@ -337,14 +336,22 @@ class WC_Payments_Account {
 	/**
 	 * Starts the Jetpack connection flow if it's not already fully connected.
 	 *
-	 * @throws Exception If there was an error when registering the site on WP.com.
+	 * @throws WC_Payments_API_Exception If there was an error when registering the site on WP.com.
 	 */
 	private function maybe_init_jetpack_connection() {
-		$connection_manager = new Automattic\Jetpack\Connection\Manager();
-		$is_jetpack_fully_connected = WC_Payments_Http::is_connected();
+		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected();
 		if ( $is_jetpack_fully_connected ) {
 			return;
 		}
+
+		$redirect = add_query_arg(
+			array(
+				'wcpay-connect' => '1',
+				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+			),
+			WC_Payment_Gateway_WCPay::get_settings_url()
+		);
+		$this->payments_api_client->start_server_connection( $redirect );
 
 		// First, register the site to wp.com.
 		if ( ! $connection_manager->get_access_token() ) {
@@ -456,7 +463,7 @@ class WC_Payments_Account {
 	 * @throws WC_Payments_API_Exception Bubbles up if get_account_data call fails.
 	 */
 	private function get_cached_account_data() {
-		if ( ! WC_Payments_Http::is_connected() ) {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 

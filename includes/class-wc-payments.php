@@ -386,7 +386,7 @@ class WC_Payments {
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http()
+			new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager() )
 		);
 
 		return $payments_api_client;
