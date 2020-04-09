@@ -12,6 +12,7 @@
       }
     },
     "require": {
+      "automattic/jetpack-autoloader": "^1"
     },
     "require-dev": {
       "composer/installers": "1.6.0",
