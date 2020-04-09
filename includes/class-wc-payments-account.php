@@ -38,6 +38,9 @@ class WC_Payments_Account {
 		add_action( 'jetpack_site_registered', array( $this, 'clear_cache' ) );
 	}
 
+	/**
+	 * Wipes the account transient, forcing to re-fetch the account status from WP.com.
+	 */
 	public function clear_cache() {
 		delete_transient( self::ACCOUNT_TRANSIENT );
 	}
@@ -238,6 +241,7 @@ class WC_Payments_Account {
 				$this->maybe_init_jetpack_connection();
 			} catch ( Exception $e ) {
 				$this->add_notice_to_settings_page(
+					/* translators: error message. */
 					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
 					'notice-error'
 				);
