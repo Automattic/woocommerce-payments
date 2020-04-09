@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.0
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 == Screenshots ==
 
 == Changelog ==
+
+= 0.9.1 =
+* Fix - Add logging for OAuth initialization failures
 
 = 0.9.0 =
 * Release for Public Beta
