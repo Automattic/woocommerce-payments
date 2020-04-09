@@ -43,10 +43,6 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_init() {
-	$manager = new Automattic\Jetpack\Connection\Manager();
-	include_once WCPAY_ABSPATH . 'includes/class-jetpack-debug-notice.php';
-	Jetpack_Debug_Notice::init( $manager );
-
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::init();
 }
