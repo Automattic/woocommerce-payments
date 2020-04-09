@@ -4,8 +4,9 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e82fd84c11656c4f1671bf13d111ec9b",
-    "packages": [
+    "content-hash": "2855ea1322538253d0d9ecd812d3cc7a",
+    "packages": [],
+    "packages-dev": [
         {
             "name": "automattic/jetpack-autoloader",
             "version": "v1.2.0",
@@ -41,9 +42,7 @@
             ],
             "description": "Creates a custom autoloader for a plugin or theme.",
             "time": "2019-06-24T15:13:23+00:00"
-        }
-    ],
-    "packages-dev": [
+        },
         {
             "name": "composer/installers",
             "version": "v1.6.0",
@@ -2058,5 +2057,6 @@
     "platform-dev": [],
     "platform-overrides": {
         "php": "7.0"
-    }
+    },
+    "plugin-api-version": "1.1.0"
 }
