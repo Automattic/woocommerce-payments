@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Class handling any account connection functionality
  */
@@ -251,6 +253,7 @@ class WC_Payments_Account {
 			try {
 				$this->init_oauth();
 			} catch ( Exception $e ) {
+				Logger::error( 'Init oauth flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
 					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
 					'notice-error'

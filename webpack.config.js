@@ -58,6 +58,8 @@ const webpackConfig = {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
+					case '@wordpress/components':
+						return null;
 					case '@woocommerce/components':
 						return [ 'wc', 'components' ];
 					case '@woocommerce/currency':
@@ -68,6 +70,8 @@ const webpackConfig = {
 			},
 			requestToHandle( request ) {
 				switch ( request ) {
+					case '@wordpress/components':
+						return null;
 					case '@woocommerce/components':
 						return 'wc-components';
 					case '@woocommerce/currency':
