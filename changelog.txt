@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+2020-04-09 - version 0.9.1
+* Fix - Add logging for OAuth initialization failures
+
 2020-04-08 - version 0.9.0
 * Release for Public Beta
 
