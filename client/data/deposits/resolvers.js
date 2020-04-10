@@ -44,7 +44,7 @@ export function* getDeposit( id ) {
 		let result = yield apiFetch( { path } );
 
 		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are coming from the server.
+		// TODO Remove this mapping when these deposits are formatted by the server.
 		if ( result.object === 'payout' ) {
 			result = convertStripePayoutToDeposit( result );
 		}
@@ -65,7 +65,7 @@ export function* getDepositsOverview() {
 		const result = yield apiFetch( { path } );
 
 		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are coming from the server.
+		// TODO Remove this mapping when these deposits are formatted by the server.
 		if ( result.last_deposit && result.last_deposit.object === 'payout' ) {
 			// eslint-disable-next-line camelcase
 			result.last_deposit = convertStripePayoutToDeposit( result.last_deposit );
@@ -100,7 +100,7 @@ export function* getDeposits( query ) {
 		const results = yield apiFetch( { path } ) || {};
 
 		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are coming from the server.
+		// TODO Remove this mapping when these deposits are formatted by the server.
 		if ( results.data && results.data.length && results.data[ 0 ].object === 'payout' ) {
 			results.data = results.data.map( convertStripePayoutToDeposit );
 		}
