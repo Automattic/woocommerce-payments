@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useMemo, useRef } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
@@ -194,6 +194,20 @@ const getDisputeProductType = dispute => {
 	return productType;
 };
 
+const useConfirmUnsavedChanges = ( handler, deps ) => {
+	useEffect( () => {
+		console.log( '###: useConfirmUnsavedChanges -> useConfirmUnsavedChanges.init' );
+		window.onbeforeunload = handler() ? () => true : null;
+		const unblock = getHistory().block( handler );
+
+		return () => {
+			console.log( '###: useConfirmUnsavedChanges -> useConfirmUnsavedChanges.destroy' );
+			unblock();
+			window.onbeforeunload = null;
+		};
+	}, deps );
+};
+
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
@@ -202,7 +216,19 @@ export default ( { query } ) => {
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
-	const unblock = useRef();
+	const pristine = Object.keys( evidence ).length === 0;
+	useConfirmUnsavedChanges( () => {
+		console.log( '###: pristine', pristine );
+
+		if ( pristine ) {
+			return;
+		}
+
+		return __(
+			'There are unsaved dispute evidence values in the form. Are you sure you want to leave and discard changes?',
+			'woocommerce-payments'
+		);
+	}, [ pristine ] );
 
 	const fetchDispute = async () => {
 		setLoading( true );
@@ -280,7 +306,6 @@ export default ( { query } ) => {
 		*/
 		createSuccessNotice( message );
 
-		unblock.current && unblock.current();
 		getHistory().push( href );
 	};
 
@@ -329,24 +354,6 @@ export default ( { query } ) => {
 		() => evidenceFields( dispute && dispute.reason, productType ),
 		[ dispute && dispute.reason, productType ]
 	);
-
-	const pristine = Object.keys( evidence ).length === 0;
-	useEffect( () => {
-		window.onbeforeunload = pristine ? null : () => true;
-
-		unblock.current && unblock.current();
-		unblock.current = ! pristine && getHistory().block(
-			__(
-				'There are unsaved dispute evidence values in the form. Are you sure you want to leave and discard changes?',
-				'woocommerce-payments'
-			)
-		);
-
-		return () => {
-			window.onbeforeunload = null;
-			unblock.current && unblock.current();
-		};
-	}, [ pristine ] );
 
 	return (
 		<DisputeEvidencePage
