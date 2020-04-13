@@ -2,7 +2,8 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
+
 /**
  * Internal dependencies
  */
@@ -10,11 +11,11 @@ import AccountStatus from '../';
 
 describe( 'AccountStatus', () => {
 	const renderAccountStatus = ( accountStatus ) => {
-		return shallow( <AccountStatus accountStatus={ accountStatus } /> );
+		return render( <AccountStatus accountStatus={ accountStatus } /> );
 	};
 
 	test( 'renders connected account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'complete',
 			paymentsEnabled: true,
 			depositsStatus: 'daily',
@@ -25,7 +26,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders restricted soon account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'restricted_soon',
 			paymentsEnabled: true,
 			depositsStatus: 'daily',
@@ -36,7 +37,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders restricted account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'restricted',
 			paymentsEnabled: false,
 			depositsStatus: 'disabled',
@@ -47,7 +48,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders rejected.other account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.other',
 			paymentsEnabled: false,
 			depositsStatus: 'disabled',
@@ -58,7 +59,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders rejected.fraud account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.fraud',
 			paymentsEnabled: false,
 			depositsStatus: 'disabled',
@@ -69,7 +70,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders rejected.terms_of_service account', () => {
-		const accountStatus = renderAccountStatus( {
+		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.terms_of_service',
 			paymentsEnabled: false,
 			depositsStatus: 'disabled',
