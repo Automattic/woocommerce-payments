@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -18,13 +18,13 @@ describe( 'ConnectAccountPage', () => {
 	} );
 
 	test( 'should render correctly', () => {
-		const page = shallow( <ConnectAccountPage /> );
+		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
 
 	test( 'should render correctly when on-boarding disabled', () => {
 		global.wcpaySettings.onBoardingDisabled = true;
-		const page = shallow( <ConnectAccountPage /> );
+		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
 	} );
 } );
