@@ -3,8 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
-import { Button } from '@wordpress/components';
+import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -69,7 +68,7 @@ const fields = [
 
 describe( 'Dispute evidence form', () => {
 	test( 'needing response, renders correctly', () => {
-		const form = shallow(
+		const { container: form } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
@@ -80,7 +79,7 @@ describe( 'Dispute evidence form', () => {
 	} );
 
 	test( 'not needing response, renders correctly', () => {
-		const form = shallow(
+        const { container: form } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNoNeedForResponse.evidence }
@@ -94,7 +93,7 @@ describe( 'Dispute evidence form', () => {
 		window.confirm = jest.fn();
 
 		// We have to mount component to select button for click.
-		const form = shallow(
+		const { getAllByText } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
@@ -103,9 +102,9 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		const buttons = form.find( Button );
-		const submitButton = buttons.at( buttons.length - 2 );
-		submitButton.simulate( 'click' );
+		// There are multiple submit buttons in the form. Use the last one.
+		const submitButton = getAllByText( /submit.*/i ).pop();
+		fireEvent.click( submitButton );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 		expect( window.confirm ).toHaveBeenCalledWith(
 			"Are you sure you're ready to submit this evidence? Evidence submissions are final."
@@ -117,7 +116,7 @@ describe( 'Dispute evidence form', () => {
 		const onSave = jest.fn();
 
 		// We have to mount component to select button for click.
-		const form = shallow(
+		const { getAllByText } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
@@ -126,8 +125,8 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		const buttons = form.find( Button );
-		const submitButton = buttons.at( buttons.length - 2 );
+		// There are multiple submit buttons in the form. Use the last one.
+		const submitButton = getAllByText( /submit.*/i ).pop();
 
 		window.confirm = jest.fn();
 		window.confirm
@@ -135,18 +134,18 @@ describe( 'Dispute evidence form', () => {
 		.mockReturnValueOnce( true );
 
 		// Test not confirmed case.
-		submitButton.simulate( 'click' );
+		fireEvent.click( submitButton );
 		expect( onSave ).toHaveBeenCalledTimes( 0 );
 
 		// Test confirmed case.
-		submitButton.simulate( 'click' );
+		fireEvent.click( submitButton );
 		expect( onSave ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
 
 describe( 'Dispute evidence page', () => {
 	test( 'renders correctly', () => {
-		const form = shallow(
+		const { container: form } = render(
 			<DisputeEvidencePage
 				showPlaceholder={ false }
 				dispute={ disputeNeedsResponse }
