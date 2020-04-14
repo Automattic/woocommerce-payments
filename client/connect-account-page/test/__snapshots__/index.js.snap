@@ -198,7 +198,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
         >
           <a
             class="components-button is-button is-primary is-large"
-            href="/wcpay-connect-url"
+            href="/wcpay-onboarding-url"
           >
             Set up
           </a>
