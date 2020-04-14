@@ -42,19 +42,11 @@ No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issue
 * WordPress 5.3 or newer.
 * WooCommerce 3.9 or newer.
 * WooCommerce Admin 1.0 or newer (if running a WooCommerce version less than 4.0)
-* [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 == Installation ==
 
-Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com
-
-1. Log in to your WordPress dashboard.
-1. Go to: Plugins > Add New.
-1. Enter "WooCommerce Payments" in the Search field.
-1. Click "Install Now".
-1. Go to: Payments
-1. Create your WooCommerce Payments account.
+Install and activate the WooCommerce and WooCommerce Payments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
 
 == Frequently Asked Questions ==
 
