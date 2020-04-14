@@ -15,7 +15,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  * Internal dependencies
  */
 import { useTimeline } from 'data';
-import { Card, Timeline } from '@woocommerce/components';
+import { Timeline } from '@woocommerce/components';
 import { reasons as disputeReasons } from 'disputes/strings';
 
 const currencyData = getCurrencyData();
@@ -260,12 +260,7 @@ const PaymentDetailsTimeline = ( props ) => {
 
 	const items = flatMap( timeline, mapEventToTimelineItems );
 
-	// TODO: this is a placeholder card and does not require translation
-	return (
-		<Card title="Timeline">
-			<Timeline items={ items } />
-		</Card>
-	);
+	return <Timeline items={ items } />;
 };
 
 export default PaymentDetailsTimeline;
