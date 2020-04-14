@@ -316,6 +316,18 @@ class WC_Payments_Account {
 			return;
 		}
 
+		if ( isset( $_GET['wcpay-onboarding'] ) && check_admin_referer( 'wcpay-onboarding' ) ) {
+			try {
+				$this->onboard_account();
+			} catch ( Exception $e ) {
+				$this->add_notice_to_settings_page(
+					__( 'There was a problem redirecting you to the new account verification step. Please try again.', 'woocommerce-payments' ),
+					'notice-error'
+				);
+			}
+			return;
+		}
+
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
 				$this->redirect_to_login();
