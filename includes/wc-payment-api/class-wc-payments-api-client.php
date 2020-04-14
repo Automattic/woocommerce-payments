@@ -840,6 +840,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create an account and return onboarding URL.
+	 *
+	 * @param string $return_url   - URL to redirect to at the end of the flow.
+	 * @param array  $account_data - data to prefill the form.
+	 *
+	 * @return array An array containing the onboarding URL and other account data.
+	 */
+	public function onboard_account( $return_url, $account_data = [] ) {
+		$request_args = apply_filters(
+			'wc_payments_onboard_account_args',
+			[
+				'return_url'          => $return_url,
+				'account_data'        => $account_data,
+				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+			]
+		);
+
+		return $this->request( $request_args, self::ACCOUNTS_API, self::POST );
+	}
+
+	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
 	 * @param string $return_url     - URL to redirect to at the end of the flow.

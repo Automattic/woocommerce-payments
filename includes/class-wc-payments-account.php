@@ -524,6 +524,56 @@ class WC_Payments_Account {
 
 	/**
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it.
+	 * Create an account and redirect to onboarding flow.
+	 */
+	private function onboard_account() {
+		// Clear account transient when generating new Stripe account.
+		delete_transient( self::ACCOUNT_TRANSIENT );
+
+		$current_user = wp_get_current_user();
+		$settings_url = WC_Payment_Gateway_WCPay::get_settings_url();
+
+		$prefilled_data = [
+			'business_profile' => [
+				'name' => get_bloginfo( 'name' ),
+				'url'  => get_home_url(),
+			],
+			'business_type'    => 'individual',
+			'individual'       => [
+				'email'   => $current_user->user_email,
+				'address' => [
+					'line1'       => WC()->countries->get_base_address(),
+					'line2'       => WC()->countries->get_base_address_2(),
+					'city'        => WC()->countries->get_base_city(),
+					'state'       => WC()->countries->get_base_state(),
+					'postal_code' => WC()->countries->get_base_postcode(),
+					'country'     => WC()->countries->get_base_country(),
+				],
+
+				/**
+				 * 'first_name' => 'Mockfirstname',
+				 * 'last_name' => 'Mocklastname',
+				 * 'phone' => '+14152342345',
+				 * 'dob' => [ 'year' => 1966, 'month' => 1, 'day' => 11 ],
+				 * 'ssn_last_4' => 3535,
+				 */
+			],
+		];
+
+		$account_data = $this->payments_api_client->onboard_account( $settings_url, $prefilled_data );
+
+		$url = $account_data['url'];
+		if ( false === $url ) {
+			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+			$url = add_query_arg( [ 'wcpay-connection-success' => '1' ], $settings_url );
+		}
+
+		wp_safe_redirect( $url );
+		exit;
+	}
+
+	/**
+	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
