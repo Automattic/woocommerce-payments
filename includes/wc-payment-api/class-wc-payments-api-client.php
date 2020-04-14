@@ -849,7 +849,7 @@ class WC_Payments_API_Client {
 	 */
 	public function onboard_account( $return_url, $account_data = [] ) {
 		$request_args = apply_filters(
-			'wc_payments_onboard_account_args',
+			'wc_payments_get_oauth_data_args',
 			[
 				'return_url'          => $return_url,
 				'account_data'        => $account_data,
