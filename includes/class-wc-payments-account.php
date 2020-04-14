@@ -359,32 +359,6 @@ class WC_Payments_Account {
 			WC_Payment_Gateway_WCPay::get_settings_url()
 		);
 		$this->payments_api_client->start_server_connection( $redirect );
-
-		// First, register the site to wp.com.
-		if ( ! $connection_manager->get_access_token() ) {
-			$result = $connection_manager->register();
-			if ( is_wp_error( $result ) ) {
-				throw new Exception( $result->get_error_message() );
-			}
-		}
-
-		// Second, redirect the user to the Jetpack user connection flow.
-		add_filter( 'jetpack_use_iframe_authorization_flow', '__return_false' );
-		$redirect = add_query_arg(
-			array(
-				'wcpay-connect' => '1',
-				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
-			),
-			WC_Payment_Gateway_WCPay::get_settings_url()
-		);
-		wp_safe_redirect(
-			add_query_arg(
-				'from',
-				'woocommerce-onboarding',
-				$connection_manager->get_authorization_url( null, $redirect )
-			)
-		);
-		exit;
 	}
 
 	/**
