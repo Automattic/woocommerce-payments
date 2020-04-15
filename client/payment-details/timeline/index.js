@@ -8,6 +8,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import Currency, { getCurrencyData } from '@woocommerce/currency';
+import { Card, Timeline } from '@woocommerce/components';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
@@ -15,8 +16,8 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  * Internal dependencies
  */
 import { useTimeline } from 'data';
-import { Timeline } from '@woocommerce/components';
 import { reasons as disputeReasons } from 'disputes/strings';
+import Loadable, { LoadableBlock } from 'components/loadable';
 
 const currencyData = getCurrencyData();
 
@@ -242,19 +243,21 @@ const mapEventToTimelineItems = ( event ) => {
 };
 
 const PaymentDetailsTimeline = ( props ) => {
-	const { charge, isLoading } = props;
+	const charge = props.charge;
+	let isLoading = props.isLoading;
+	let timeline;
+
+	if ( ! isLoading ) {
+		( { timeline, isLoading } = useTimeline( charge.payment_intent ) );
+	}
 
 	if ( isLoading ) {
 		return (
-			<div>loading charge...</div>
-		);
-	}
-
-	const { timeline, isLoading: isTimelineLoading } = useTimeline( charge.payment_intent );
-
-	if ( isTimelineLoading ) {
-		return (
-			<div>loading timeline...</div>
+			<Card title={ <Loadable isLoading value={ __( 'Timeline', 'woocommerce-payments' ) } /> }>
+				<LoadableBlock isLoading numLines={ 3 } />
+				<LoadableBlock isLoading numLines={ 3 } />
+				<LoadableBlock isLoading numLines={ 3 } />
+			</Card>
 		);
 	}
 
