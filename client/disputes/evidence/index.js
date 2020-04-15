@@ -207,11 +207,12 @@ const useConfirmUnsavedChanges = ( getMessage, deps ) => {
 			return;
 		}
 
-		window.onbeforeunload = () => true;
+		const handler = () => true;
+		window.addEventListener( 'beforeunload', handler );
 		const unblock = getHistory().block( message );
 
 		return () => {
-			window.onbeforeunload = null;
+			window.removeEventListener( 'beforeunload', handler );
 			unblock();
 		};
 	}, deps );
