@@ -50,8 +50,6 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
-		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
-
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', array( __CLASS__, 'check_plugin_dependencies' ) );
 			return;
@@ -65,9 +63,6 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
-		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
-		include_once dirname( __FILE__ ) . '/class-logger.php';
-		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		self::$account = new WC_Payments_Account( self::$api_client );
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account );
 
@@ -77,7 +72,6 @@ class WC_Payments {
 
 		// Add admin screens.
 		if ( is_admin() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
 		}
 
@@ -342,7 +336,6 @@ class WC_Payments {
 	 * @return bool true if Jetpack connection is available and authenticated.
 	 */
 	public static function is_jetpack_connected() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
 		return WC_Payments_Http::is_connected();
 	}
 
@@ -423,12 +416,6 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-exception.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
-
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			new WC_Payments_Http()
@@ -441,25 +428,18 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
 		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
 		$transactions_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
 	}

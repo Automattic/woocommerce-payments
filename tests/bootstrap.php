@@ -31,12 +31,10 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once dirname( __FILE__ ) . '/../vendor/woocommerce/woocommerce/woocommerce.php';
 
-	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
+	// Include the Composer autoloader so that we can load classes from this project.
+	require_once dirname( __FILE__ ) . '/../vendor/autoload.php';
 
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
