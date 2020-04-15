@@ -196,12 +196,10 @@ const getDisputeProductType = dispute => {
 
 const useConfirmUnsavedChanges = ( handler, deps ) => {
 	useEffect( () => {
-		console.log( '###: useConfirmUnsavedChanges -> useConfirmUnsavedChanges.init' );
 		window.onbeforeunload = handler() ? () => true : null;
 		const unblock = getHistory().block( handler );
 
 		return () => {
-			console.log( '###: useConfirmUnsavedChanges -> useConfirmUnsavedChanges.destroy' );
 			unblock();
 			window.onbeforeunload = null;
 		};
@@ -216,10 +214,9 @@ export default ( { query } ) => {
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
+
 	const pristine = Object.keys( evidence ).length === 0;
 	useConfirmUnsavedChanges( () => {
-		console.log( '###: pristine', pristine );
-
 		if ( pristine ) {
 			return;
 		}
