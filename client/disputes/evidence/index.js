@@ -207,7 +207,10 @@ const useConfirmUnsavedChanges = ( getMessage, deps ) => {
 			return;
 		}
 
-		const handler = () => true;
+		const handler = event => {
+			event.preventDefault();
+			event.returnValue = '';
+		};
 		window.addEventListener( 'beforeunload', handler );
 		const unblock = getHistory().block( message );
 
