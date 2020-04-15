@@ -17,4 +17,5 @@ export const displayStatus = {
 	in_transit: __( 'In Transit', 'woocommerce-payments' ),
 	canceled: __( 'Canceled', 'woocommerce-payments' ),
 	failed: __( 'Failed', 'woocommerce-payments' ),
+	estimated: __( 'Estimated', 'woocommerce-payments' ),
 };

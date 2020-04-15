@@ -19,45 +19,66 @@ import Actions from './actions';
 import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
+import Loadable, { LoadableBlock } from 'components/loadable';
 import '../style.scss';
 
-export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
-	if ( showPlaceholder ) {
-		// TODO Render proper placeholder view.
-		return <div>Loading…</div>;
-	}
-	if ( dispute == null ) {
-		return <div>Dispute not loaded</div>;
-	}
+export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
+	const disputeIsAvailable = ! isLoading && dispute.id;
 
-	const needsResponse = 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status;
-	const isSubmitted = dispute.evidence_details && dispute.evidence_details.submission_count > 0;
-
-	const actions = (
-		<Actions
+	const actions = disputeIsAvailable && <Actions
 			id={ dispute.id }
-			needsResponse={ needsResponse }
-			isSubmitted={ isSubmitted }
+			needsResponse={ 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status }
+			isSubmitted={ dispute.evidence_details && dispute.evidence_details.submission_count > 0 }
 			onAccept={ onAccept }
-		/>
-	);
+		/>;
 
 	const mapping = reasons[ dispute.reason ] || {};
+
+	if ( ! isLoading && ! disputeIsAvailable ) {
+		return (
+			<Page isNarrow className="wcpay-dispute-details">
+				<Card>
+					<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+				</Card>
+			</Page>
+		);
+	}
+
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
-			<Card title={ __( 'Dispute Overview', 'woocommerce-payments' ) }>
-				<Info dispute={ dispute } />
-				<Paragraphs>{ mapping.overview }</Paragraphs>
-				{ actions }
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute Overview', 'woocommerce-payments' ) } /> }>
+				<Info dispute={ dispute } isLoading={ isLoading } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+					<Paragraphs>{ mapping.overview }</Paragraphs>
+				</LoadableBlock>
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+					{ actions }
+				</LoadableBlock>
 			</Card>
-			{/* translators: heading for dispute category information section */}
-			<Card title={ sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display ) }>
-				<Paragraphs>{ mapping.summary }</Paragraphs>
-				{ mapping.required && <h3>{ __( 'Required to overturn dispute', 'woocommerce-payments' ) }</h3> }
-				<Paragraphs>{ mapping.required }</Paragraphs>
-				{ mapping.respond && <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> }
-				<Paragraphs>{ mapping.respond }</Paragraphs>
-				{ actions }
+			<Card
+				title={ <Loadable
+					isLoading={ isLoading }
+					value={ mapping.display
+						/* translators: heading for dispute category information section */
+						? sprintf( __( '%s Dispute', 'woocommerce-payments' ), mapping.display )
+						: __( 'Dispute type', 'woocommerce-payments' )
+					}
+				/> }
+			>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+					<Paragraphs>{ mapping.summary }</Paragraphs>
+				</LoadableBlock>
+
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+					{ mapping.required && ( <h3> { __( 'Required to overturn dispute', 'woocommerce-payments' ) } </h3> ) }
+					<Paragraphs>{ mapping.required }</Paragraphs>
+				</LoadableBlock>
+
+				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+					{ mapping.respond && ( <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> ) }
+					<Paragraphs>{ mapping.respond }</Paragraphs>
+					{ actions }
+				</LoadableBlock>
 			</Card>
 		</Page>
 	);
@@ -67,7 +88,7 @@ export const DisputeDetails = ( { dispute, onAccept, showPlaceholder } ) => {
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 
-	const [ dispute, setDispute ] = useState( null );
+	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( true );
 	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
 
@@ -108,7 +129,7 @@ export default ( { query } ) => {
 
 	return (
 		<DisputeDetails
-			showPlaceholder={ loading }
+			isLoading={ loading }
 			dispute={ dispute }
 			onAccept={ doAccept }
 		/>

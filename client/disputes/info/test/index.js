@@ -12,12 +12,11 @@ import Info from '../';
 
 describe( 'Dispute info', () => {
 	test( 'renders correctly', () => {
+		/* eslint-disable camelcase */
 		const dispute = {
 			amount: 1000,
 			created: 1572590800,
-			// eslint-disable-next-line camelcase
 			evidence_details: {
-				// eslint-disable-next-line camelcase
 				due_by: 1573199200,
 			},
 			reason: 'fraudulent',
@@ -28,16 +27,19 @@ describe( 'Dispute info', () => {
 			},
 			charge: {
 				id: 'ch_mock',
-				// eslint-disable-next-line camelcase
 				billing_details: {
 					name: 'Mock Customer',
 				},
 			},
 		};
+		/* eslint-enable camelcase */
 
-		const info = shallow(
-			<Info dispute={ dispute } />
-		);
+		const info = shallow( <Info dispute={ dispute } /> );
+		expect( info ).toMatchSnapshot();
+	} );
+
+	test( 'renders loading state', () => {
+		const info = shallow( <Info isLoading={ true } /> );
 		expect( info ).toMatchSnapshot();
 	} );
 } );
