@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge, some, flatten } from 'lodash';
+import { merge, some, flatten, isMatch } from 'lodash';
 
 /**
  * Internal dependencies.
@@ -215,7 +215,7 @@ export default ( { query } ) => {
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
 
-	const pristine = Object.keys( evidence ).length === 0;
+	const pristine = ! dispute || isMatch( { ...evidence, ...dispute.evidence }, evidence );
 	useConfirmUnsavedChanges( () => {
 		if ( pristine ) {
 			return;
