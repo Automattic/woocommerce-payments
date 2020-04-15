@@ -1,0 +1,17 @@
+.woocommerce-table__clickable-cell {
+	display: block;
+	margin: -16px -24px;
+	padding: 16px 24px;
+	color: inherit;
+	text-decoration: none;
+
+	&,
+	.woocommerce-layout &,
+	.woocommerce-layout &:link,
+	.woocommerce-layout &:hover,
+	.woocommerce-layout &:focus,
+	.woocommerce-layout &:visited {
+		color: #50575e;
+		box-shadow: none;
+	}
+}

@@ -60,28 +60,53 @@ exports[`Deposits list renders correctly 1`] = `
           "value": "po_mock1",
         },
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
-            type="wc-admin"
+          "display": <ClickableCell
+            id="po_mock1"
+            parentSegment="deposits"
           >
-            Jan 2, 2020 / 12:46PM
-          </Link>,
+            <Link
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+              type="wc-admin"
+            >
+              Jan 2, 2020 / 12:46PM
+            </Link>
+          </ClickableCell>,
           "value": "2020-01-02 17:46:02",
         },
         Object {
-          "display": "Deposit",
+          "display": <ClickableCell
+            id="po_mock1"
+            parentSegment="deposits"
+          >
+            Deposit
+          </ClickableCell>,
           "value": "deposit",
         },
         Object {
-          "display": "$20.00",
+          "display": <ClickableCell
+            id="po_mock1"
+            parentSegment="deposits"
+          >
+            $20.00
+          </ClickableCell>,
           "value": 20,
         },
         Object {
-          "display": "Paid",
+          "display": <ClickableCell
+            id="po_mock1"
+            parentSegment="deposits"
+          >
+            Paid
+          </ClickableCell>,
           "value": "paid",
         },
         Object {
-          "display": "MOCK BANK •••• 1234 (USD)",
+          "display": <ClickableCell
+            id="po_mock1"
+            parentSegment="deposits"
+          >
+            MOCK BANK •••• 1234 (USD)
+          </ClickableCell>,
           "value": "MOCK BANK •••• 1234 (USD)",
         },
       ],
@@ -94,28 +119,53 @@ exports[`Deposits list renders correctly 1`] = `
           "value": "po_mock2",
         },
         Object {
-          "display": <Link
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
-            type="wc-admin"
+          "display": <ClickableCell
+            id="po_mock2"
+            parentSegment="deposits"
           >
-            Jan 3, 2020 / 12:46PM
-          </Link>,
+            <Link
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+              type="wc-admin"
+            >
+              Jan 3, 2020 / 12:46PM
+            </Link>
+          </ClickableCell>,
           "value": "2020-01-03 17:46:02",
         },
         Object {
-          "display": "Withdrawal",
+          "display": <ClickableCell
+            id="po_mock2"
+            parentSegment="deposits"
+          >
+            Withdrawal
+          </ClickableCell>,
           "value": "withdrawal",
         },
         Object {
-          "display": "$30.00",
+          "display": <ClickableCell
+            id="po_mock2"
+            parentSegment="deposits"
+          >
+            $30.00
+          </ClickableCell>,
           "value": 30,
         },
         Object {
-          "display": "Pending",
+          "display": <ClickableCell
+            id="po_mock2"
+            parentSegment="deposits"
+          >
+            Pending
+          </ClickableCell>,
           "value": "pending",
         },
         Object {
-          "display": "MOCK BANK •••• 1234 (USD)",
+          "display": <ClickableCell
+            id="po_mock2"
+            parentSegment="deposits"
+          >
+            MOCK BANK •••• 1234 (USD)
+          </ClickableCell>,
           "value": "MOCK BANK •••• 1234 (USD)",
         },
       ],

@@ -81,23 +81,43 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "dp_asdfghjkl",
         },
         Object {
-          "display": "$10.00",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            $10.00
+          </ClickableCell>,
           "value": 10,
         },
         Object {
-          "display": <DisputeStatusChip
-            status="needs_response"
-          />,
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            <DisputeStatusChip
+              status="needs_response"
+            />
+          </ClickableCell>,
           "value": "needs_response",
         },
         Object {
-          "display": "Fraudulent",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            Fraudulent
+          </ClickableCell>,
           "value": "fraudulent",
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--visa"
-          />,
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            <span
+              className="payment-method__brand payment-method__brand--visa"
+            />
+          </ClickableCell>,
           "value": "visa",
         },
         Object {
@@ -112,23 +132,48 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "1",
         },
         Object {
-          "display": "Mock Customer",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            Mock Customer
+          </ClickableCell>,
           "value": "Mock Customer",
         },
         Object {
-          "display": "mock@customer.net",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            mock@customer.net
+          </ClickableCell>,
           "value": "mock@customer.net",
         },
         Object {
-          "display": "US",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            US
+          </ClickableCell>,
           "value": "US",
         },
         Object {
-          "display": "Nov 1, 2019",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            Nov 1, 2019
+          </ClickableCell>,
           "value": 1572590800000,
         },
         Object {
-          "display": "Nov 8, 2019 / 2:46AM",
+          "display": <ClickableCell
+            id="dp_asdfghjkl"
+            parentSegment="disputes"
+          >
+            Nov 8, 2019 / 2:46AM
+          </ClickableCell>,
           "value": 1573199200000,
         },
       ],
@@ -141,46 +186,85 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "dp_zxcvbnm",
         },
         Object {
-          "display": "$10.50",
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            $10.50
+          </ClickableCell>,
           "value": 10.5,
         },
         Object {
-          "display": <DisputeStatusChip
-            status="under_review"
-          />,
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            <DisputeStatusChip
+              status="under_review"
+            />
+          </ClickableCell>,
           "value": "under_review",
         },
         Object {
-          "display": "General",
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            General
+          </ClickableCell>,
           "value": "general",
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--undefined"
-          />,
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            <span
+              className="payment-method__brand payment-method__brand--undefined"
+            />
+          </ClickableCell>,
           "value": undefined,
         },
         Object {
           "display": null,
         },
         Object {
-          "display": undefined,
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          />,
           "value": undefined,
         },
         Object {
-          "display": undefined,
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          />,
           "value": undefined,
         },
         Object {
-          "display": undefined,
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          />,
           "value": undefined,
         },
         Object {
-          "display": "Oct 30, 2019",
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            Oct 30, 2019
+          </ClickableCell>,
           "value": 1572480800000,
         },
         Object {
-          "display": "Nov 6, 2019 / 11:00PM",
+          "display": <ClickableCell
+            id="dp_zxcvbnm"
+            parentSegment="disputes"
+          >
+            Nov 6, 2019 / 11:00PM
+          </ClickableCell>,
           "value": 1573099200000,
         },
       ],

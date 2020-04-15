@@ -95,23 +95,43 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_j23jda9JJa",
         },
         Object {
-          "display": "Jan 2, 2020 / 12:46PM",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Jan 2, 2020 / 12:46PM
+          </ClickableCell>,
           "value": "2020-01-02 17:46:02",
         },
         Object {
-          "display": "Refund",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Refund
+          </ClickableCell>,
           "value": "refund",
         },
         Object {
-          "display": "$10.00",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $10.00
+          </ClickableCell>,
           "value": 10,
         },
         Object {
-          "display": "$-0.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $-0.50
+          </ClickableCell>,
           "value": 0.5,
         },
         Object {
-          "display": "$9.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $9.50
+          </ClickableCell>,
           "value": 9.5,
         },
         Object {
@@ -126,33 +146,57 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--visa"
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <span
+              className="payment-method__brand payment-method__brand--visa"
+            />
+          </ClickableCell>,
           "value": "visa",
         },
         Object {
-          "display": "Another customer",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Another customer
+          </ClickableCell>,
           "value": "Another customer",
         },
         Object {
-          "display": "another@customer.com",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            another@customer.com
+          </ClickableCell>,
           "value": "another@customer.com",
         },
         Object {
-          "display": "US",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            US
+          </ClickableCell>,
           "value": "US",
         },
         Object {
-          "display": <RiskLevel
-            risk={0}
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <RiskLevel
+              risk={0}
+            />
+          </ClickableCell>,
           "value": 0,
         },
         Object {
-          "display": <Deposit
-            depositId={null}
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <Deposit
+              depositId={null}
+            />
+          </ClickableCell>,
           "value": null,
         },
       ],
@@ -165,23 +209,43 @@ exports[`Transactions list renders correctly 1`] = `
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Jan 4, 2020 / 11:22PM",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Jan 4, 2020 / 11:22PM
+          </ClickableCell>,
           "value": "2020-01-05 04:22:59",
         },
         Object {
-          "display": "Charge",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Charge
+          </ClickableCell>,
           "value": "charge",
         },
         Object {
-          "display": "$15.00",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $15.00
+          </ClickableCell>,
           "value": 15,
         },
         Object {
-          "display": "$-0.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $-0.50
+          </ClickableCell>,
           "value": 0.5,
         },
         Object {
-          "display": "$14.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $14.50
+          </ClickableCell>,
           "value": 14.5,
         },
         Object {
@@ -196,34 +260,58 @@ exports[`Transactions list renders correctly 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--mastercard"
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <span
+              className="payment-method__brand payment-method__brand--mastercard"
+            />
+          </ClickableCell>,
           "value": "mastercard",
         },
         Object {
-          "display": "My name",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            My name
+          </ClickableCell>,
           "value": "My name",
         },
         Object {
-          "display": "a@b.com",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            a@b.com
+          </ClickableCell>,
           "value": "a@b.com",
         },
         Object {
-          "display": "US",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            US
+          </ClickableCell>,
           "value": "US",
         },
         Object {
-          "display": <RiskLevel
-            risk={2}
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <RiskLevel
+              risk={2}
+            />
+          </ClickableCell>,
           "value": 2,
         },
         Object {
-          "display": <Deposit
-            dateAvailable="2020-01-07 00:00:00"
-            depositId="po_mock"
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <Deposit
+              dateAvailable="2020-01-07 00:00:00"
+              depositId="po_mock"
+            />
+          </ClickableCell>,
           "value": "po_mock",
         },
       ],
@@ -346,23 +434,43 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
           "value": "txn_oa9kaKaa8",
         },
         Object {
-          "display": "Jan 4, 2020 / 11:22PM",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Jan 4, 2020 / 11:22PM
+          </ClickableCell>,
           "value": "2020-01-05 04:22:59",
         },
         Object {
-          "display": "Charge",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            Charge
+          </ClickableCell>,
           "value": "charge",
         },
         Object {
-          "display": "$15.00",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $15.00
+          </ClickableCell>,
           "value": 15,
         },
         Object {
-          "display": "$-0.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $-0.50
+          </ClickableCell>,
           "value": 0.5,
         },
         Object {
-          "display": "$14.50",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            $14.50
+          </ClickableCell>,
           "value": 14.5,
         },
         Object {
@@ -377,27 +485,47 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
           "value": undefined,
         },
         Object {
-          "display": <span
-            className="payment-method__brand payment-method__brand--mastercard"
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <span
+              className="payment-method__brand payment-method__brand--mastercard"
+            />
+          </ClickableCell>,
           "value": "mastercard",
         },
         Object {
-          "display": "My name",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            My name
+          </ClickableCell>,
           "value": "My name",
         },
         Object {
-          "display": "a@b.com",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            a@b.com
+          </ClickableCell>,
           "value": "a@b.com",
         },
         Object {
-          "display": "US",
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            US
+          </ClickableCell>,
           "value": "US",
         },
         Object {
-          "display": <RiskLevel
-            risk={2}
-          />,
+          "display": <ClickableCell
+            parentSegment="transactions"
+          >
+            <RiskLevel
+              risk={2}
+            />
+          </ClickableCell>,
           "value": 2,
         },
       ],
