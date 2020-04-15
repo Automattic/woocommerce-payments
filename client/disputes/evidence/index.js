@@ -194,14 +194,25 @@ const getDisputeProductType = dispute => {
 	return productType;
 };
 
-const useConfirmUnsavedChanges = ( handler, deps ) => {
+/**
+ * Hook for displaying an optional confirmation message.
+ *
+ * @param {Function} getMessage returns confirmation message string if one should appear
+ * @param {Array} deps effect dependencies
+ */
+const useConfirmUnsavedChanges = ( getMessage, deps ) => {
 	useEffect( () => {
-		window.onbeforeunload = handler() ? () => true : null;
-		const unblock = getHistory().block( handler );
+		const message = getMessage();
+		if ( ! message ) {
+			return;
+		}
+
+		window.onbeforeunload = () => true;
+		const unblock = getHistory().block( message );
 
 		return () => {
-			unblock();
 			window.onbeforeunload = null;
+			unblock();
 		};
 	}, deps );
 };
