@@ -60,9 +60,9 @@ describe( 'Deposits Overview', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders deposit schedule for manual interval', () => {
+	test( 'renders temporarily suspended notice for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Manual' );
+		expect( depositSchedule ).toEqual( 'Deposit Schedule: Temporarily suspended (Learn more)' );
 	} );
 
 	test( 'renders deposit schedule for daily interval', () => {

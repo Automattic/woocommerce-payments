@@ -1,12 +1,13 @@
 /**
  * External dependencies
  */
+import { SummaryListPlaceholder, SummaryList, SummaryNumber } from '@woocommerce/components';
+import Currency from '@woocommerce/currency';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
-import { SummaryListPlaceholder, SummaryList, SummaryNumber } from '@woocommerce/components';
 import Gridicon from 'gridicons';
-import Currency from '@woocommerce/currency';
+import moment from 'moment';
+import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
  * Internal dependencies
@@ -31,7 +32,12 @@ const getNextDepositLabelFormatted = ( deposit ) => {
 const getDepositScheduleFormatted = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'manual':
-			return __( 'Manual', 'woocommerce-payments' );
+			return createInterpolateElement(
+				/* translators: <a> - suspended accounts FAQ URL */
+				__( 'Temporarily suspended (<a>Learn more</a>)', 'woocommerce-payments' ),
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/" /> }
+			);
 		case 'daily':
 			return __( 'Automatic, every business day', 'woocommerce-payments' );
 		case 'weekly':
