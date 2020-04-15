@@ -180,6 +180,9 @@ const mapEventToTimelineItems = ( event ) => {
 					__( 'A payment of %s failed', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
 				),
+				body: [
+					event.reason,
+				],
 			},
 			getStatusChangeTimelineItem( event, __( 'Failed', 'woocommerce-payments' ) ),
 		];
