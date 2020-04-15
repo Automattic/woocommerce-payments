@@ -15,7 +15,7 @@
     },
     "require-dev": {
       "composer/installers": "1.7.0",
-      "phpunit/phpunit": "5.7.27",
+      "phpunit/phpunit": "6.5.14",
       "woocommerce/woocommerce": "3.9.3",
       "woocommerce/woocommerce-sniffs": "0.0.6"
     },
