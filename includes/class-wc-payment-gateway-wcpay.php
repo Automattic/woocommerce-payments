@@ -233,7 +233,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<?php
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-							__( '<strong>Test mode:</strong> use test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
+							__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
 								'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
