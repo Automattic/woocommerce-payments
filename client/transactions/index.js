@@ -24,7 +24,7 @@ import './style.scss';
 
 const currency = new Currency();
 
-// TODO make date / time, amount, fee, and net sortable - when date time is sortable, the background of the info buttons should match
+// TODO when date time is sortable, the background of the info buttons should match
 const columns = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
 	{
@@ -34,11 +34,13 @@ const columns = [
 		isLeftAligned: true,
 		defaultOrder: 'desc',
 		cellClassName: 'date-time',
+		isSortable: true,
+		defaultSort: true,
 	},
 	{ key: 'type', label: __( 'Type', 'woocommerce-payments' ), required: true },
-	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true },
-	{ key: 'fees', label: __( 'Fees', 'woocommerce-payments' ), isNumeric: true },
-	{ key: 'net', label: __( 'Net', 'woocommerce-payments' ), isNumeric: true, required: true },
+	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true, isSortable: true },
+	{ key: 'fees', label: __( 'Fees', 'woocommerce-payments' ), isNumeric: true, isSortable: true },
+	{ key: 'net', label: __( 'Net', 'woocommerce-payments' ), isNumeric: true, required: true, isSortable: true },
 	{ key: 'order', label: __( 'Order #', 'woocommerce-payments' ), required: true },
 	{ key: 'source', label: __( 'Source', 'woocommerce-payments' ) },
 	{ key: 'customer_name', label: __( 'Customer', 'woocommerce-payments' ) },

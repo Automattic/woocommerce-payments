@@ -17,7 +17,9 @@ exports[`Transactions list renders correctly 1`] = `
       Object {
         "cellClassName": "date-time",
         "defaultOrder": "desc",
+        "defaultSort": true,
         "isLeftAligned": true,
+        "isSortable": true,
         "key": "date",
         "label": "Date / Time",
         "required": true,
@@ -29,16 +31,19 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "amount",
         "label": "Amount",
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "fees",
         "label": "Fees",
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "net",
         "label": "Net",
         "required": true,
@@ -273,7 +278,9 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       Object {
         "cellClassName": "date-time",
         "defaultOrder": "desc",
+        "defaultSort": true,
         "isLeftAligned": true,
+        "isSortable": true,
         "key": "date",
         "label": "Date / Time",
         "required": true,
@@ -285,16 +292,19 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "amount",
         "label": "Amount",
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "fees",
         "label": "Fees",
       },
       Object {
         "isNumeric": true,
+        "isSortable": true,
         "key": "net",
         "label": "Net",
         "required": true,
