@@ -18,7 +18,7 @@ exports[`Transactions list renders correctly 1`] = `
         "cellClassName": "date-time",
         "defaultOrder": "desc",
         "isLeftAligned": true,
-        "key": "created",
+        "key": "date",
         "label": "Date / Time",
         "required": true,
       },
@@ -34,7 +34,7 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "isNumeric": true,
-        "key": "fee",
+        "key": "fees",
         "label": "Fees",
       },
       Object {
@@ -53,21 +53,21 @@ exports[`Transactions list renders correctly 1`] = `
         "label": "Source",
       },
       Object {
-        "key": "customer",
+        "key": "customer_name",
         "label": "Customer",
       },
       Object {
-        "key": "email",
+        "key": "customer_email",
         "label": "Email",
         "visible": false,
       },
       Object {
-        "key": "country",
+        "key": "customer_country",
         "label": "Country",
         "visible": false,
       },
       Object {
-        "key": "riskLevel",
+        "key": "risk_level",
         "label": "Risk level",
         "visible": false,
       },
@@ -274,7 +274,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         "cellClassName": "date-time",
         "defaultOrder": "desc",
         "isLeftAligned": true,
-        "key": "created",
+        "key": "date",
         "label": "Date / Time",
         "required": true,
       },
@@ -290,7 +290,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
       Object {
         "isNumeric": true,
-        "key": "fee",
+        "key": "fees",
         "label": "Fees",
       },
       Object {
@@ -309,21 +309,21 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         "label": "Source",
       },
       Object {
-        "key": "customer",
+        "key": "customer_name",
         "label": "Customer",
       },
       Object {
-        "key": "email",
+        "key": "customer_email",
         "label": "Email",
         "visible": false,
       },
       Object {
-        "key": "country",
+        "key": "customer_country",
         "label": "Country",
         "visible": false,
       },
       Object {
-        "key": "riskLevel",
+        "key": "risk_level",
         "label": "Risk level",
         "visible": false,
       },
