@@ -341,6 +341,22 @@ class WC_Payments_Account {
 
 		$current_user = wp_get_current_user();
 
+		// Usually the return URL is the WCPay plugin settings page.
+		// But if connection originated on the WCADMIN payment task page, return there.
+		$return_url = WC_Payment_Gateway_WCPay::get_settings_url();
+		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+			if ( strcmp( $wcpay_connect_param, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
+				$return_url = add_query_arg(
+					array(
+						'page' => 'wc-admin',
+						'task' => 'payments',
+					),
+					admin_url()
+				);
+			}
+		}
+
 		$oauth_data = $this->payments_api_client->get_oauth_data(
 			WC_Payment_Gateway_WCPay::get_settings_url(),
 			array(
@@ -349,12 +365,13 @@ class WC_Payments_Account {
 			)
 		);
 
+		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			wp_safe_redirect(
 				add_query_arg(
 					array( 'wcpay-connection-success' => '1' ),
-					WC_Payment_Gateway_WCPay::get_settings_url()
+					$return_url
 				)
 			);
 			exit;
