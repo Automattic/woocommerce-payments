@@ -352,7 +352,7 @@ class WC_Payments_Account {
 						'page' => 'wc-admin',
 						'task' => 'payments',
 					),
-					admin_url()
+					admin_url( 'admin.php' )
 				);
 			}
 		}
