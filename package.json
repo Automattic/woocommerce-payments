@@ -9,6 +9,9 @@
     "node": ">=12.16.0",
     "npm": ">=6.13.0"
   },
+  "config": {
+    "wp_org_slug": "woocommerce-payments"
+  },
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "release": "rm -rf vendor && composer install --no-dev && node tasks/release.js",
