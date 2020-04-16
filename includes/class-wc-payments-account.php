@@ -358,7 +358,7 @@ class WC_Payments_Account {
 		}
 
 		$oauth_data = $this->payments_api_client->get_oauth_data(
-			WC_Payment_Gateway_WCPay::get_settings_url(),
+			$return_url,
 			array(
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
