@@ -9,7 +9,7 @@ exports[`Transactions list renders correctly 1`] = `
   headers={
     Array [
       Object {
-        "cellClassName": "info-button",
+        "cellClassName": "info-button is-sorted",
         "key": "details",
         "label": "",
         "required": true,
@@ -270,7 +270,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
   headers={
     Array [
       Object {
-        "cellClassName": "info-button",
+        "cellClassName": "info-button is-sorted",
         "key": "details",
         "label": "",
         "required": true,

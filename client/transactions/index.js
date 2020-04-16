@@ -24,9 +24,8 @@ import './style.scss';
 
 const currency = new Currency();
 
-// TODO when date time is sortable, the background of the info buttons should match
 const columns = [
-	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+	{ key: 'details', label: '', required: true },
 	{
 		key: 'date',
 		label: __( 'Date / Time', 'woocommerce-payments' ),
@@ -55,6 +54,14 @@ export const TransactionsList = ( props ) => {
 	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( props.depositId );
 
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
+
+	// match background of details and date when sorting
+	const detailsColumn = columnsToDisplay.find( el => 'details' === el.key ) || {};
+	if ( ! getQuery().orderby || 'date' === getQuery().orderby ) {
+		detailsColumn.cellClassName = 'info-button is-sorted';
+	} else {
+		detailsColumn.cellClassName = 'info-button';
+	}
 
 	const rows = transactions.map( ( txn ) => {
 		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
