@@ -24,7 +24,7 @@ describe( 'Deposits reducer tests', () => {
 		last_deposit: mockDeposits[ 0 ],
 		next_deposit: mockDeposits[ 1 ],
 		balance: { object: 'balance' },
-		deposit_schedule: { interval: 'daily' },
+		deposits_schedule: { interval: 'daily' },
 	};
 
 	test( 'New individual deposits reduced correctly', () => {

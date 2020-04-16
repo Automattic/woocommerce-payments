@@ -29,15 +29,16 @@ const getNextDepositLabelFormatted = ( deposit ) => {
 	}
 	return baseLabel;
 };
-const getDepositScheduleFormatted = ( schedule ) => {
+const getDepositScheduleFormatted = ( { deposits_schedule: schedule, deposits_disabled: disabled } ) => {
+	if ( disabled || 'manual' === schedule.interval ) {
+		return createInterpolateElement(
+			/* translators: <a> - suspended accounts FAQ URL */
+			__( 'Temporarily suspended (<a>Learn more</a>)', 'woocommerce-payments' ),
+			// eslint-disable-next-line jsx-a11y/anchor-has-content
+			{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/" /> }
+		);
+	}
 	switch ( schedule.interval ) {
-		case 'manual':
-			return createInterpolateElement(
-				/* translators: <a> - suspended accounts FAQ URL */
-				__( 'Temporarily suspended (<a>Learn more</a>)', 'woocommerce-payments' ),
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/" /> }
-			);
 		case 'daily':
 			return __( 'Automatic, every business day', 'woocommerce-payments' );
 		case 'weekly':
@@ -72,7 +73,7 @@ const DepositsOverview = () => {
 				{ ' ' }
 				<span className="wcpay-deposits-overview__schedule-value">
 					<Loadable isLoading={ isLoading || ! overview } display="inline" placeholder="Deposit Schedule placeholder">
-						{ overview ? getDepositScheduleFormatted( overview.deposit_schedule ) : '' }
+						{ overview ? getDepositScheduleFormatted( overview.account ) : '' }
 					</Loadable>
 				</span>
 			</p>

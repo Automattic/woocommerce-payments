@@ -41,9 +41,13 @@ const getMockedOverview = ( additionalData ) => merge(
 				amount: 0,
 			},
 		},
-		// eslint-disable-next-line camelcase
-		deposit_schedule: {
-			interval: 'daily',
+		account: {
+			// eslint-disable-next-line camelcase
+			deposits_disabled: false,
+			// eslint-disable-next-line camelcase
+			deposits_schedule: {
+				interval: 'daily',
+			},
 		},
 	},
 	additionalData
@@ -58,6 +62,11 @@ describe( 'Deposits Overview', () => {
 		mockUseDepositsOverview( getMockedOverview() );
 		const { container } = render( <DepositsOverview /> );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
+		const depositSchedule = getDepositSchedule( { interval: 'daily' }, true );
+		expect( depositSchedule ).toEqual( 'Deposit Schedule: Temporarily suspended (Learn more)' );
 	} );
 
 	test( 'renders temporarily suspended notice for manual interval', () => {
@@ -120,9 +129,9 @@ describe( 'Deposits Overview', () => {
 	} );
 } );
 
-function getDepositSchedule( schedule ) {
+function getDepositSchedule( schedule, disabled = false ) {
 	// eslint-disable-next-line camelcase
-	const overview = getMockedOverview( { deposit_schedule: schedule } );
+	const overview = getMockedOverview( { account: { deposits_schedule: schedule, deposits_disabled: disabled } } );
 	mockUseDepositsOverview( overview );
 	const { getByText } = render( <DepositsOverview /> );
 	const depositSchedule = getByText( 'Deposit Schedule:' );
