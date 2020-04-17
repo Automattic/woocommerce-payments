@@ -230,7 +230,7 @@ const mapEventToTimelineItems = ( event ) => {
 			getStatusChangeTimelineItem( event, __( 'Disputed: In Review', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'dispute_won' === type ) {
-		const total = event.amount + event.fee;
+		const total = event.amount + Math.abs( event.fee );
 		return [
 			{
 				...baseItem,
@@ -239,7 +239,7 @@ const mapEventToTimelineItems = ( event ) => {
 			},
 			getDepositTimelineItem( event, total, currency, true, [
 				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), currency.formatCurrency( event.amount / 100 ) ),
-				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), currency.formatCurrency( event.fee / 100 ) ),
+				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), currency.formatCurrency( Math.abs( event.fee / 100 ) ) ),
 			] ),
 			getStatusChangeTimelineItem( event, __( 'Disputed: Won', 'woocommerce-payments' ) ),
 		];
