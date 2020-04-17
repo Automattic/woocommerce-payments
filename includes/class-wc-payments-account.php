@@ -428,8 +428,43 @@ class WC_Payments_Account {
 		}
 
 		// Cache the account details so we don't call the server every time.
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+		$this->cache_account( $account );
 		return $account;
+	}
+
+	/**
+	 * Caches account data for two hours
+	 *
+	 * @param array $account - Account data to cache.
+	 */
+	private function cache_account( $account ) {
+		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Updates the account data in cache.
+	 *
+	 * @param array $account - An array containing the account data.
+	 *
+	 * @throws Exception When cached account_id doesn't match new account_id.
+	 */
+	public function update_cached_account_data( $account ) {
+		try {
+			$cached_account = get_transient( self::ACCOUNT_TRANSIENT );
+
+			if ( ! $this->is_valid_cached_account( $cached_account ) ) {
+				$this->cache_account( $account );
+				return;
+			}
+
+			if ( $cached_account['account_id'] !== $account['account_id'] ) {
+				throw new Exception( 'Cached account_id' . $cached_account['account_id'] . ' does not match account_id ' . $account['account_id'] );
+			}
+
+			$this->cache_account( $account );
+		} catch ( Exception $e ) {
+			WCPay\Logger::error( "Failed to update account status data. Error: $e" );
+		}
 	}
 
 	/**

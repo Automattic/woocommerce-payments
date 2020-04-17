@@ -54,12 +54,14 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$account = new WC_Payments_Account( $mock_api_client );
+
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
 			->setMethods( array( 'order_from_charge_id' ) )
 			->getMock();
 
-		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper );
+		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(

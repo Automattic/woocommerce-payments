@@ -38,14 +38,23 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_db;
 
 	/**
+	 * WC Payments Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payments_DB         $wcpay_db   WC_Payments_DB instance.
+	 * @param WC_Payments_Account    $account    WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db, WC_Payments_Account $account ) {
 		parent::__construct( $api_client );
 		$this->wcpay_db = $wcpay_db;
+		$this->account  = $account;
 	}
 
 	/**
@@ -82,6 +91,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $event_object );
+					break;
+				case 'account.updated':
+					$this->account->update_cached_account_data( $event_object );
 					break;
 			}
 		} catch ( WC_Payments_Rest_Exception $e ) {

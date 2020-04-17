@@ -369,4 +369,63 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		remove_filter( 'wcpay_dev_mode', '__return_true' );
 	}
+
+	public function test_update_cached_account_data_with_empty_cache() {
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+
+		// Make sure cache is clear.
+		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+
+		$this->wcpay_account->update_cached_account_data( $expected_account );
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Account is not cached' );
+	}
+
+	public function test_update_cached_account_data_with_existing_cache() {
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+
+		$existing_cache                     = $expected_account;
+		$existing_cache['current_deadline'] = 11111;
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $existing_cache );
+
+		$this->wcpay_account->update_cached_account_data( $expected_account );
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Account is not cached' );
+	}
+
+	public function test_update_cahced_account_data_skips_update_on_account_id_mismatch() {
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $expected_account );
+
+		$account               = $expected_account;
+		$account['account_id'] = 'acc_test_123';
+
+		$this->wcpay_account->update_cached_account_data( $account );
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Cached account should not be updated' );
+	}
 }
