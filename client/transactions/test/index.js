@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -96,11 +96,18 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const list = shallow(
+		const { container } = render(
 			<TransactionsList />
 		);
-		expect( list ).toMatchSnapshot();
+		expect( container ).toMatchSnapshot();
 	} );
+
+	// test( 'filters by date', () => {
+	// 	useTransactions.mockReturnValue( {
+	// 		transactions: mockTransactions,
+	// 		isLoading: false,
+	// 	} );
+	// } );
 
 	test( 'renders correctly when filtered to deposit', () => {
 		useTransactions.mockReturnValue( {
@@ -118,10 +125,10 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const list = shallow(
+		const { container } = render(
 			<TransactionsList depositId="po_mock" />
 		);
-		expect( list ).toMatchSnapshot();
+		expect( container ).toMatchSnapshot();
 		expect( useTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 } );
