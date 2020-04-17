@@ -19,7 +19,7 @@ exports[`Transactions list renders correctly 1`] = `
         "defaultOrder": "desc",
         "isLeftAligned": true,
         "key": "created",
-        "label": "Date / time",
+        "label": "Date / Time",
         "required": true,
       },
       Object {
@@ -275,7 +275,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         "defaultOrder": "desc",
         "isLeftAligned": true,
         "key": "created",
-        "label": "Date / time",
+        "label": "Date / Time",
         "required": true,
       },
       Object {

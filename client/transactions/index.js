@@ -29,7 +29,7 @@ const columns = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
 	{
 		key: 'created',
-		label: __( 'Date / time', 'woocommerce-payments' ),
+		label: __( 'Date / Time', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		defaultOrder: 'desc',
