@@ -26,11 +26,11 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<charge_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_charge' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_charge' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 
@@ -49,7 +49,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$raw_details     = $charge['billing_details']['address'];
-		$billing_details = array();
+		$billing_details = [];
 
 		$billing_details['city']      = ( ! empty( $raw_details['city'] ) ) ? $raw_details['city'] : '';
 		$billing_details['country']   = ( ! empty( $raw_details['country'] ) ) ? $raw_details['country'] : '';

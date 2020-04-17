@@ -26,29 +26,29 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_transactions' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/summary',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_transactions_summary' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_transactions_summary' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_transaction' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_transaction' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 

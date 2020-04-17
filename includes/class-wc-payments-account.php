@@ -34,9 +34,9 @@ class WC_Payments_Account {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
-		add_action( 'admin_init', array( $this, 'maybe_handle_oauth' ) );
-		add_action( 'admin_init', array( $this, 'check_stripe_account_status' ) );
-		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
+		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
+		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ] );
+		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 	}
 
 	/**
@@ -121,35 +121,35 @@ class WC_Payments_Account {
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
-			return array(
+			return [
 				'error' => true,
-			);
+			];
 		}
 
 		if ( is_array( $account ) && empty( $account ) ) {
 			// empty array means no account. This data should not be used when the account is not connected.
-			return array(
+			return [
 				'error' => true,
-			);
+			];
 		}
 
 		if ( ! isset( $account['status'] )
 			|| ! isset( $account['payments_enabled'] )
 			|| ! isset( $account['deposits_status'] ) ) {
 			// return an error if any of the account data is missing.
-			return array(
+			return [
 				'error' => true,
-			);
+			];
 		}
 
-		return array(
+		return [
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
-		);
+		];
 	}
 
 	/**
@@ -157,10 +157,10 @@ class WC_Payments_Account {
 	 * Note that this function immediately ends the execution.
 	 */
 	private function redirect_to_onboarding_page() {
-		$params = array(
+		$params = [
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
-		);
+		];
 		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
 			// We are already in the onboarding page, do nothing.
 			return;
@@ -328,21 +328,21 @@ class WC_Payments_Account {
 		$return_url = WC_Payment_Gateway_WCPay::get_settings_url();
 		if ( strcmp( $wcpay_connect_from, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
 			$return_url = add_query_arg(
-				array(
+				[
 					'page' => 'wc-admin',
 					'task' => 'payments',
-				),
+				],
 				admin_url( 'admin.php' )
 			);
 		}
 
 		$oauth_data = $this->payments_api_client->get_oauth_data(
 			$return_url,
-			array(
+			[
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
-			)
+			]
 		);
 
 		// If an account already exists for this site, we're done.
@@ -350,7 +350,7 @@ class WC_Payments_Account {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			wp_safe_redirect(
 				add_query_arg(
-					array( 'wcpay-connection-success' => '1' ),
+					[ 'wcpay-connection-success' => '1' ],
 					$return_url
 				)
 			);
@@ -421,12 +421,12 @@ class WC_Payments_Account {
 		} catch ( WC_Payments_API_Exception $e ) {
 			if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
 				// Special case - detect account not connected and cache it.
-				$account = array();
+				$account = [];
 			} elseif ( 'wcpay_on_boarding_disabled' === $e->get_error_code() ) {
 				// Special case - detect account not connected and on-boarding disabled. This will get updated the
 				// next time we call the server for account information, but just in case we set the expiry time for
 				// this setting an hour longer than the account details transient.
-				$account = array();
+				$account = [];
 				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
 				throw $e;

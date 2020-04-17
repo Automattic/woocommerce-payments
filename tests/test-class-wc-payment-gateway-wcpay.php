@@ -44,7 +44,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'get_account_data' ) )
+			->setMethods( [ 'get_account_data' ] )
 			->getMock();
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
@@ -73,13 +73,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_payment_fields_outputs_fields() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_live_',
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => false,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -136,7 +136,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Setup the order.
 		$mock_order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
-			->setMethods( array( 'get_id', 'get_items', 'get_currency', 'get_shipping_total', 'get_shipping_tax', 'get_shipping_postcode' ) )
+			->setMethods( [ 'get_id', 'get_items', 'get_currency', 'get_shipping_total', 'get_shipping_tax', 'get_shipping_postcode' ] )
 			->getMock();
 
 		$mock_order

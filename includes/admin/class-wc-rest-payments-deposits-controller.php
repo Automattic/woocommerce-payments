@@ -26,20 +26,20 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_deposits' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_deposits' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<deposit_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_deposit' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_deposit' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 
