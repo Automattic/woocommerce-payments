@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Transactions list renders correctly 1`] = `
+exports[`Transactions list renders correctly when filtered to deposit 1`] = `
 <div>
   <div
     class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
@@ -14,7 +14,7 @@ exports[`Transactions list renders correctly 1`] = `
         <h2
           class="woocommerce-card__title woocommerce-card__header-item"
         >
-          Transactions
+          Deposit transactions
         </h2>
       </div>
       <div
@@ -66,7 +66,7 @@ exports[`Transactions list renders correctly 1`] = `
             class="woocommerce-table__caption screen-reader-text"
             id="caption-0"
           >
-            Transactions
+            Deposit transactions
           </caption>
           <tbody>
             <tr>
@@ -254,6 +254,490 @@ exports[`Transactions list renders correctly 1`] = `
                 <span
                   class="screen-reader-text"
                   id="header-0-5"
+                >
+                  Sort by net in descending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Order #
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Source
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Customer
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Email
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Country
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Risk level
+                </span>
+              </th>
+            </tr>
+            <tr>
+              <th
+                class="woocommerce-table__item info-button is-sorted"
+                scope="row"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                >
+                  <svg
+                    class="gridicon gridicons-info-outline needs-offset"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                      />
+                    </g>
+                  </svg>
+                </a>
+              </th>
+              <td
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
+              >
+                Jan 4, 2020 / 11:22PM
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                Charge
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                $15.00
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                $-0.50
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                $14.50
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/order/125"
+                >
+                  125
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <span
+                  class="payment-method__brand payment-method__brand--mastercard"
+                />
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                My name
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                a@b.com
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                US
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <span
+                  style="color: red;"
+                >
+                  Highest
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul
+        class="woocommerce-table__summary"
+      >
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            3
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            transactions
+          </span>
+        </li>
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            $3.00
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            total
+          </span>
+        </li>
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            $0.30
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            fees
+          </span>
+        </li>
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            $2.70
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            net
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Transactions list when not filtered by deposit renders correctly 1`] = `
+<div>
+  <div
+    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Transactions
+        </h2>
+      </div>
+      <div
+        class="woocommerce-card__action woocommerce-card__header-item"
+      />
+      <div
+        class="woocommerce-card__menu woocommerce-card__header-item"
+      >
+        <div
+          class="woocommerce-ellipsis-menu"
+        >
+          <div>
+            <button
+              aria-expanded="false"
+              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+              title="Choose which values to display"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="dashicon dashicons-ellipsis"
+                focusable="false"
+                height="20"
+                role="img"
+                viewBox="0 0 20 20"
+                width="20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        aria-hidden="false"
+        aria-labelledby="caption-1"
+        class="woocommerce-table__table"
+        role="group"
+      >
+        <table>
+          <caption
+            class="woocommerce-table__caption screen-reader-text"
+            id="caption-1"
+          >
+            Transactions
+          </caption>
+          <tbody>
+            <tr>
+              <th
+                class="woocommerce-table__header info-button is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                />
+              </th>
+              <th
+                aria-sort="descending"
+                class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-1-1"
+                  class="components-button components-icon-button has-text is-button is-default"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-chevron-down"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Date / Time
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    date and time
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-1-1"
+                >
+                  Sort by date and time in ascending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                >
+                  Type
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-1-3"
+                  class="components-button components-icon-button has-text is-button is-default"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-chevron-down"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Amount
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    amount
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-1-3"
+                >
+                  Sort by amount in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-1-4"
+                  class="components-button components-icon-button has-text is-button is-default"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-chevron-down"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Fees
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    fees
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-1-4"
+                >
+                  Sort by fees in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-1-5"
+                  class="components-button components-icon-button has-text is-button is-default"
+                  type="button"
+                >
+                  <svg
+                    class="gridicon gridicons-chevron-down"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
+                      />
+                    </g>
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Net
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    net
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-1-5"
                 >
                   Sort by net in descending order
                 </span>
@@ -588,490 +1072,6 @@ exports[`Transactions list renders correctly 1`] = `
             class="woocommerce-table__summary-value"
           >
             $9.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            net
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`Transactions list renders correctly when filtered to deposit 1`] = `
-<div>
-  <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
-  >
-    <div
-      class="woocommerce-card__header"
-    >
-      <div
-        class="woocommerce-card__title-wrapper"
-      >
-        <h2
-          class="woocommerce-card__title woocommerce-card__header-item"
-        >
-          Deposit transactions
-        </h2>
-      </div>
-      <div
-        class="woocommerce-card__action woocommerce-card__header-item"
-      />
-      <div
-        class="woocommerce-card__menu woocommerce-card__header-item"
-      >
-        <div
-          class="woocommerce-ellipsis-menu"
-        >
-          <div>
-            <button
-              aria-expanded="false"
-              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
-              title="Choose which values to display"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="dashicon dashicons-ellipsis"
-                focusable="false"
-                height="20"
-                role="img"
-                viewBox="0 0 20 20"
-                width="20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      class="woocommerce-card__body"
-    >
-      <div
-        aria-hidden="false"
-        aria-labelledby="caption-1"
-        class="woocommerce-table__table"
-        role="group"
-      >
-        <table>
-          <caption
-            class="woocommerce-table__caption screen-reader-text"
-            id="caption-1"
-          >
-            Deposit transactions
-          </caption>
-          <tbody>
-            <tr>
-              <th
-                class="woocommerce-table__header info-button is-sorted"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                />
-              </th>
-              <th
-                aria-sort="descending"
-                class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
-                role="columnheader"
-                scope="col"
-              >
-                <button
-                  aria-describedby="header-1-1"
-                  class="components-button components-icon-button has-text is-button is-default"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                  >
-                    Date / Time
-                  </span>
-                  <span
-                    class="screen-reader-text"
-                  >
-                    date and time
-                  </span>
-                </button>
-                <span
-                  class="screen-reader-text"
-                  id="header-1-1"
-                >
-                  Sort by date and time in ascending order
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Type
-                </span>
-              </th>
-              <th
-                aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
-                role="columnheader"
-                scope="col"
-              >
-                <button
-                  aria-describedby="header-1-3"
-                  class="components-button components-icon-button has-text is-button is-default"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                  >
-                    Amount
-                  </span>
-                  <span
-                    class="screen-reader-text"
-                  >
-                    amount
-                  </span>
-                </button>
-                <span
-                  class="screen-reader-text"
-                  id="header-1-3"
-                >
-                  Sort by amount in descending order
-                </span>
-              </th>
-              <th
-                aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
-                role="columnheader"
-                scope="col"
-              >
-                <button
-                  aria-describedby="header-1-4"
-                  class="components-button components-icon-button has-text is-button is-default"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                  >
-                    Fees
-                  </span>
-                  <span
-                    class="screen-reader-text"
-                  >
-                    fees
-                  </span>
-                </button>
-                <span
-                  class="screen-reader-text"
-                  id="header-1-4"
-                >
-                  Sort by fees in descending order
-                </span>
-              </th>
-              <th
-                aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
-                role="columnheader"
-                scope="col"
-              >
-                <button
-                  aria-describedby="header-1-5"
-                  class="components-button components-icon-button has-text is-button is-default"
-                  type="button"
-                >
-                  <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
-                  </svg>
-                  <span
-                    aria-hidden="true"
-                  >
-                    Net
-                  </span>
-                  <span
-                    class="screen-reader-text"
-                  >
-                    net
-                  </span>
-                </button>
-                <span
-                  class="screen-reader-text"
-                  id="header-1-5"
-                >
-                  Sort by net in descending order
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Order #
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Source
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Customer
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Email
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Country
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="false"
-                >
-                  Risk level
-                </span>
-              </th>
-            </tr>
-            <tr>
-              <th
-                class="woocommerce-table__item info-button is-sorted"
-                scope="row"
-              >
-                <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                >
-                  <svg
-                    class="gridicon gridicons-info-outline needs-offset"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g>
-                      <path
-                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
-                      />
-                    </g>
-                  </svg>
-                </a>
-              </th>
-              <td
-                class="woocommerce-table__item date-time is-left-aligned is-sorted"
-              >
-                Jan 4, 2020 / 11:22PM
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Charge
-              </td>
-              <td
-                class="woocommerce-table__item is-numeric"
-              >
-                $15.00
-              </td>
-              <td
-                class="woocommerce-table__item is-numeric"
-              >
-                $-0.50
-              </td>
-              <td
-                class="woocommerce-table__item is-numeric"
-              >
-                $14.50
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  data-link-type="external"
-                  href="https://example.com/order/125"
-                >
-                  125
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <span
-                  class="payment-method__brand payment-method__brand--mastercard"
-                />
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                My name
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                a@b.com
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                US
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <span
-                  style="color: red;"
-                >
-                  Highest
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <ul
-        class="woocommerce-table__summary"
-      >
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            3
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            transactions
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $3.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            total
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $0.30
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            fees
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $2.70
           </span>
           <span
             class="woocommerce-table__summary-label"
