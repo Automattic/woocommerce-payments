@@ -67,7 +67,7 @@ const getDepositTimelineItem = ( event, amount, currency, isPositive, body = [] 
 	}
 
 	return {
-		datetime: event.date,
+		datetime: event.datetime,
 		gridicon: isPositive ? 'plus' : 'minus',
 		headline,
 		body,
@@ -76,7 +76,7 @@ const getDepositTimelineItem = ( event, amount, currency, isPositive, body = [] 
 
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
-		datetime: event.date,
+		datetime: event.datetime,
 		gridicon: 'sync',
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
@@ -88,9 +88,9 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 };
 
 const mapEventToTimelineItems = ( event ) => {
-	const { date, type } = event;
+	const { datetime, type } = event;
 	const baseItem = {
-		datetime: date,
+		datetime,
 		body: [],
 	};
 	const currency = getCurrency( event.currency || 'USD' );
