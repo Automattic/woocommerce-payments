@@ -196,11 +196,23 @@ const mapEventToTimelineItems = ( event ) => {
 			);
 		}
 
+		const disputeUrl = addQueryArgs(
+			'admin.php',
+			{
+				page: 'wc-admin',
+				path: '/payments/disputes/details',
+				id: event.dispute_id,
+			}
+		);
+
 		return [
 			{
 				...baseItem,
 				gridicon: 'cross',
 				headline: reasonHeadline,
+				body: [
+					<a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a>,
+				],
 			},
 			getDepositTimelineItem( event, total, currency, false, [
 				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), currency.formatCurrency( Math.abs( event.amount ) / 100 ) ),
