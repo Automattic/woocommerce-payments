@@ -15,6 +15,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 import './style.scss';
 import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
+import { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
 const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ).local() );
@@ -87,12 +88,14 @@ const DepositsOverview = () => {
 								label={ __( 'Last deposit', 'woocommerce-payments' ) }
 								value={ getAmount( overview.last_deposit ) }
 								prevLabel={ getDepositDate( overview.last_deposit ) }
+								href={ overview.last_deposit ? getDetailsURL( overview.last_deposit.id, 'deposits' ) : '' }
 							/>,
 							<SummaryNumber
 								key="nextDeposit"
 								label={ __( 'Next deposit', 'woocommerce-payments' ) }
 								value={ getAmount( overview.next_deposit ) }
 								prevLabel={ getNextDepositLabelFormatted( overview.next_deposit ) }
+								href={ overview.next_deposit ? getDetailsURL( overview.next_deposit.id, 'deposits' ) : '' }
 							/>,
 							<SummaryNumber
 								key="pendingBalance"

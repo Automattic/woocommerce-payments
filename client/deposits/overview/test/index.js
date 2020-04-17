@@ -23,11 +23,13 @@ const getMockedOverview = ( additionalData ) => merge(
 	{
 		// eslint-disable-next-line camelcase
 		last_deposit: {
+			id: 'last_deposit',
 			amount: 6574,
 			date: new Date( '2019-04-18' ).getTime(),
 		},
 		// eslint-disable-next-line camelcase
 		next_deposit: {
+			id: 'next_deposit',
 			amount: 1522,
 			date: new Date( '2019-04-22' ).getTime(),
 		},

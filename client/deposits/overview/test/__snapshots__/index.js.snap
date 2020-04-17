@@ -51,8 +51,11 @@ exports[`Deposits Overview renders correctly 1`] = `
         <li
           class="woocommerce-summary__item-container"
         >
-          <div
+          <a
             class="woocommerce-summary__item"
+            data-link-type="wc-admin"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=last_deposit"
+            role="menuitem"
           >
             <span
               class="woocommerce-summary__item-label"
@@ -103,13 +106,16 @@ exports[`Deposits Overview renders correctly 1`] = `
             >
               N/A
             </span>
-          </div>
+          </a>
         </li>
         <li
           class="woocommerce-summary__item-container"
         >
-          <div
+          <a
             class="woocommerce-summary__item"
+            data-link-type="wc-admin"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=next_deposit"
+            role="menuitem"
           >
             <span
               class="woocommerce-summary__item-label"
@@ -160,7 +166,7 @@ exports[`Deposits Overview renders correctly 1`] = `
             >
               N/A
             </span>
-          </div>
+          </a>
         </li>
         <li
           class="woocommerce-summary__item-container"
