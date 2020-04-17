@@ -33,6 +33,8 @@
 	}
 	.woocommerce-summary__item {
 		background: $studio-white;
+	}
+	a.woocommerce-summary__item {
 		&:hover {
 			background-color: $light-gray-200;
 		}
