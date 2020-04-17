@@ -53,4 +53,9 @@
 	<rule ref="Squiz.Commenting.FunctionComment">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
+
+	<!-- We don't need to do nonce checks in unit test code -->
+	<rule ref="WordPress.Security.NonceVerification.Recommended">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
 </ruleset>

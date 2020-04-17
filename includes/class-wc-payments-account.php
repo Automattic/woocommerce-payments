@@ -161,7 +161,7 @@ class WC_Payments_Account {
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		];
-		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// We are already in the onboarding page, do nothing.
 			return;
 		}
