@@ -10,9 +10,9 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from '../../data';
+import { useTransactions, useTransactionsSummary } from 'data';
 
-jest.mock( '../../data', () => ( {
+jest.mock( 'data', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
