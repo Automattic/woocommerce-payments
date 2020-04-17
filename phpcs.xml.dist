@@ -20,7 +20,11 @@
 
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
+
+	<!-- Disallow long array syntax -->
+	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
