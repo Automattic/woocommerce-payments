@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -45,9 +45,7 @@ describe( 'Deposits list', () => {
 			isLoading: false,
 		} );
 
-		const list = shallow(
-			<DepositsList />
-		);
-		expect( list ).toMatchSnapshot();
+		const { container } = render( <DepositsList /> );
+		expect( container ).toMatchSnapshot();
 	} );
 } );
