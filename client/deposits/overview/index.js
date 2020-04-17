@@ -17,13 +17,13 @@ import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 
 const currency = new Currency();
-const formatDate = ( date ) => dateI18n( 'F j, Y', moment.utc( date ) );
+const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ).local() );
 const getAmount = ( obj ) => currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
-const getDepositDate = ( deposit ) => deposit ? formatDate( deposit.date ) : '—';
+const getDepositDate = ( deposit ) => deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
 	sprintf( _n( '%d deposit', '%d deposits', balance.deposits_count, 'woocommerce-payments' ), balance.deposits_count );
 const getNextDepositLabelFormatted = ( deposit ) => {
-	const baseLabel = ( deposit ) ? `${ __( 'Est.', 'woocommerce-payments' ) } ${ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }` : '—';
+	const baseLabel = ( deposit ) ? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate( 'M j, Y', deposit.date ) }` : '—';
 	if ( deposit && 'in_transit' === deposit.status ) {
 		return `${ baseLabel } - ${ __( 'In transit', 'woocommerce-payments' ) }`;
 	}

@@ -68,7 +68,7 @@ exports[`Deposits Overview renders correctly 1`] = `
                 $65.74
               </span>
               <div
-                aria-label="No change from April 18, 2019"
+                aria-label="No change from April 17, 2019"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -95,7 +95,7 @@ exports[`Deposits Overview renders correctly 1`] = `
             <span
               class="woocommerce-summary__item-prev-label"
             >
-              April 18, 2019
+              April 17, 2019
             </span>
              
             <span
@@ -125,7 +125,7 @@ exports[`Deposits Overview renders correctly 1`] = `
                 $15.22
               </span>
               <div
-                aria-label="No change from Est. Apr 22, 2019"
+                aria-label="No change from Est. Apr 21, 2019"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -152,7 +152,7 @@ exports[`Deposits Overview renders correctly 1`] = `
             <span
               class="woocommerce-summary__item-prev-label"
             >
-              Est. Apr 22, 2019
+              Est. Apr 21, 2019
             </span>
              
             <span
