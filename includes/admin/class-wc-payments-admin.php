@@ -106,7 +106,7 @@ class WC_Payments_Admin {
 			// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
 			$submenu_keys                   = array_keys( $submenu );
 			$last_submenu_key               = $submenu_keys[ count( $submenu ) - 1 ];
-			$submenu[ $last_submenu_key ][] = array( // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
+			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 				'manage_woocommerce',
 				WC_Payment_Gateway_WCPay::get_settings_url(),
