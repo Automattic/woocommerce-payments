@@ -31,4 +31,13 @@
 			display: none;
 		}
 	}
+	.woocommerce-summary__item {
+		background: $studio-white;
+		&:hover {
+			background-color: $light-gray-200;
+		}
+		&:active {
+			background-color: $light-gray-300;
+		}
+	}
 }
