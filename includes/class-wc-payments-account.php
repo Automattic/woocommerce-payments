@@ -238,13 +238,23 @@ class WC_Payments_Account {
 			return;
 		}
 
-		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+		if ( isset( $_GET['wcpay-connect'] ) && 'jetpack' === $_GET['wcpay-connect'] && check_admin_referer( 'wcpay-connect' ) ) {
 			try {
 				$this->maybe_init_jetpack_connection();
 			} catch ( Exception $e ) {
 				$this->add_notice_to_settings_page(
 					/* translators: error message. */
 					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
+					'notice-error'
+				);
+				return;
+			}
+		}
+
+		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			if ( ! $this->payments_api_client->is_server_connected() ) {
+				$this->add_notice_to_settings_page(
+					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' ),
 					'notice-error'
 				);
 				return;
@@ -326,7 +336,7 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	public static function get_connect_url() {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => 'jetpack' ] ), 'wcpay-connect' );
 	}
 
 	/**
@@ -353,7 +363,7 @@ class WC_Payments_Account {
 
 		$redirect = add_query_arg(
 			array(
-				'wcpay-connect' => '1',
+				'wcpay-connect' => 'stripe',
 				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
 			),
 			WC_Payment_Gateway_WCPay::get_settings_url()
