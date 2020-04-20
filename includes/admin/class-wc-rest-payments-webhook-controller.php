@@ -88,6 +88,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			$event_data   = $this->read_rest_property( $body, 'data' );
 			$event_object = $this->read_rest_property( $event_data, 'object' );
 
+			Logger::debug( 'Webhook recieved: ' . $event_type );
+			Logger::debug( 'Webhook body: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $event_object );
