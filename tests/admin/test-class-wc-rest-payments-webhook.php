@@ -25,11 +25,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	private $mock_db_wrapper;
 
 	/**
-	 * @var WP_REST_Server
-	 */
-	private $server;
-
-	/**
 	 * @var WP_REST_Request
 	 */
 	private $request;
@@ -48,7 +43,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		// TODO: Remove this as a requirement?
 		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -83,7 +77,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	 * Test processing a webhook that requires no action.
 	 */
 	public function test_noop_webhook() {
-		// TODO: Test unauthenticated user - could put on base class?
 		// Setup test request data.
 		$this->request_body['type'] = 'unknown.webhook.event';
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
