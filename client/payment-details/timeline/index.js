@@ -278,7 +278,11 @@ const PaymentDetailsTimeline = ( props ) => {
 
 	const items = flatMap( timeline, mapEventToTimelineItems );
 
-	return <Timeline items={ items } />;
+	return (
+		<Card title={ __( 'Timeline', 'woocommerce-payments' ) } >
+			<Timeline items={ items } />
+		</Card>
+	);
 };
 
 export default PaymentDetailsTimeline;
