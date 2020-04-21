@@ -75,9 +75,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			// Extract information about the webhook event.
-			$event_type   = $this->read_property( $body, 'type' );
-			$event_data   = $this->read_property( $body, 'data' );
-			$event_object = $this->read_property( $event_data, 'object' );
+			$event_type   = $this->read_rest_property( $body, 'type' );
+			$event_data   = $this->read_rest_property( $body, 'data' );
+			$event_object = $this->read_rest_property( $event_data, 'object' );
 
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
@@ -105,15 +105,15 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function process_webhook_refund_updated( $event_object ) {
 		// First, check the reason for the update. We're only interesting in a status of failed.
-		$status = $this->read_property( $event_object, 'status' );
+		$status = $this->read_rest_property( $event_object, 'status' );
 		if ( 'failed' !== $status ) {
 			return;
 		}
 
 		// Fetch the details of the failed refund so that we can find the associated order and write a note.
-		$charge_id = $this->read_property( $event_object, 'charge' );
-		$refund_id = $this->read_property( $event_object, 'id' );
-		$amount    = $this->read_property( $event_object, 'amount' );
+		$charge_id = $this->read_rest_property( $event_object, 'charge' );
+		$refund_id = $this->read_rest_property( $event_object, 'id' );
+		$amount    = $this->read_rest_property( $event_object, 'amount' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -131,18 +131,24 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Get a property from a refund event.
+	 * Safely get a value from the REST request body array.
 	 *
-	 * @param array  $event_object Event object to read from.
-	 * @param string $key          Name of property to get.
+	 * @param array  $array Array to read from.
+	 * @param string $key   ID to fetch on.
 	 *
 	 * @return string|array
-	 * @throws WC_Payments_Rest_Exception Thrown if property not found.
+	 * @throws WC_Payments_Rest_Exception Thrown if ID not set.
 	 */
-	private function read_property( $event_object, $key ) {
-		if ( ! isset( $event_object[ $key ] ) ) {
-			throw new WC_Payments_Rest_Exception( $key . ' property not found in refund event' );
+	private function read_rest_property( $array, $key ) {
+		if ( ! isset( $array[ $key ] ) ) {
+			throw new WC_Payments_Rest_Exception(
+				sprintf(
+					/* translators: %1: ID being fetched */
+					__( '%1$s not found in array', 'woocommerce-payments' ),
+					$key
+				)
+			);
 		}
-		return $event_object[ $key ];
+		return $array[ $key ];
 	}
 }
