@@ -128,8 +128,14 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$note = sprintf(
-			/* translators: %1: the refund amount, %2: ID of the refund */
-			__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: ID of the refund */
+				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+				array(
+					'strong' => '<strong>',
+					'code'   => '<code>',
+				)
+			),
 			wc_price( $amount / 100 ),
 			$refund_id
 		);
