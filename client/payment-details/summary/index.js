@@ -105,7 +105,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								isLarge
 								href={ charge.order.url }
 							>
-								{ `${ __( 'View order' ) } ${ charge.order.number }` }
+								{ `${ __( 'View order' ) } #${ charge.order.number }` }
 							</Button>
 						) : (
 							''

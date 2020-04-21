@@ -84,6 +84,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
+	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -92,7 +93,8 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_method_id,
-		$manual_capture = false
+		$manual_capture = false,
+		$metadata = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -101,6 +103,7 @@ class WC_Payments_API_Client {
 		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
+		$request['metadata']       = $metadata;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -578,6 +581,10 @@ class WC_Payments_API_Client {
 		$headers['User-Agent']   = $this->user_agent;
 
 		Logger::log( "REQUEST $method $url" );
+		if ( 'POST' === $method || 'PUT' === $method ) {
+			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		}
+
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
