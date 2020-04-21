@@ -1,12 +1,18 @@
 *** WooCommerce Payments Changelog ***
 
-2020-04-09 - version 0.9.1
+= 0.9.2 - 2020-xx-xx =
+* Fix - Remove unused variable
+* Update - Automated testing
+* Add - Metadata when creating payment intent
+* Update - PHP versions supported
+
+= 0.9.1 - 2020-04-09 =
 * Fix - Add logging for OAuth initialization failures
 
-2020-04-08 - version 0.9.0
+= 0.9.0 - 2020-04-08 =
 * Release for Public Beta
 
-2020-03-10 - version 0.8.2
+= 0.8.2 - 2020-03-10 =
 * Add - Dispute file evidence upload support
 * Add - Basic support for Pay for Order
 * Fix - Styling improvements in wp-admin
@@ -14,11 +20,11 @@
 * Fix - Remove unused variable in authentication
 * Fix - Improve Jetpack connection checking
 
-2020-02-25 - version 0.8.1
+= 0.8.1 - 2020-02-25 =
 * Update link to test card documentation
 
-2020-02-24 - version 0.8.0
+= 0.8.0 - 2020-02-24 =
 * First beta release
 
-2020-02-05 - version 0.7.0
+= 0.7.0 - 2020-02-05 =
 * Alpha release
