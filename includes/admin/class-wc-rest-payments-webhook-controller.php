@@ -118,7 +118,13 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 		if ( ! $order ) {
-			throw new Exception( 'Could not find order via charge ID: ' . $charge_id );
+			throw new Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
 		}
 
 		$note = sprintf(
