@@ -60,17 +60,12 @@ exports[`Deposits list renders correctly 1`] = `
           "value": "po_mock1",
         },
         Object {
-          "display": <ClickableCell
-            id="po_mock1"
-            parentSegment="deposits"
+          "display": <Link
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+            type="wc-admin"
           >
-            <Link
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
-              type="wc-admin"
-            >
-              Jan 2, 2020 / 12:46PM
-            </Link>
-          </ClickableCell>,
+            Jan 2, 2020 / 12:46PM
+          </Link>,
           "value": "2020-01-02 17:46:02",
         },
         Object {
@@ -119,17 +114,12 @@ exports[`Deposits list renders correctly 1`] = `
           "value": "po_mock2",
         },
         Object {
-          "display": <ClickableCell
-            id="po_mock2"
-            parentSegment="deposits"
+          "display": <Link
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+            type="wc-admin"
           >
-            <Link
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
-              type="wc-admin"
-            >
-              Jan 3, 2020 / 12:46PM
-            </Link>
-          </ClickableCell>,
+            Jan 3, 2020 / 12:46PM
+          </Link>,
           "value": "2020-01-03 17:46:02",
         },
         Object {
