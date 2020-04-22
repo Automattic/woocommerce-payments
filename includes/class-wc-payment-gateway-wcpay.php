@@ -38,37 +38,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $account;
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
-	}
-
-	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
@@ -144,6 +113,37 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
+	}
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
+	}
+
+	/**
+	 * Returns whether test_mode or dev_mode is active for the gateway
+	 *
+	 * @return boolean Test mode enabled if true, disabled if false
+	 */
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
+		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
 	/**
