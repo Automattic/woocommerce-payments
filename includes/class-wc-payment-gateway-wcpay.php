@@ -371,36 +371,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$transaction_id = $intent->get_id();
 				$status         = $intent->get_status();
 
-				if ( 'requires_capture' === $status ) {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$transaction_id
-					);
-					$order->update_status( 'on-hold', $note );
-					$order->set_transaction_id( $transaction_id );
-				} else {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$transaction_id
-					);
-					$order->add_order_note( $note );
-					$order->payment_complete( $transaction_id );
+				switch ( $status ) {
+					case 'succeeded':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$transaction_id
+						);
+						$order->add_order_note( $note );
+						$order->payment_complete( $transaction_id );
+						break;
+					case 'requires_capture':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$transaction_id
+						);
+						$order->update_status( 'on-hold', $note );
+						$order->set_transaction_id( $transaction_id );
+						break;
 				}
 
 				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
