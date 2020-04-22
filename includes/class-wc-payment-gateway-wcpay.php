@@ -273,8 +273,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$amount = $order->get_total();
 
-			$transaction_id = '';
-
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
 				$payment_method = $this->get_payment_method_from_request();
