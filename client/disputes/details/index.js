@@ -60,7 +60,7 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 					isLoading={ isLoading }
 					value={ mapping.display
 						/* translators: heading for dispute category information section */
-						? sprintf( __( '"%s" dispute', 'woocommerce-payments' ), mapping.display )
+						? sprintf( __( 'Dispute: %s', 'woocommerce-payments' ), mapping.display )
 						: __( 'Dispute type', 'woocommerce-payments' )
 					}
 				/> }
