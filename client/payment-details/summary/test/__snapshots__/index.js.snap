@@ -94,7 +94,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           isDefault={true}
           isLarge={true}
         >
-          View order 45981
+          View order #45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -244,7 +244,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           isDefault={true}
           isLarge={true}
         >
-          View order 45981
+          View order #45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -489,7 +489,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           isDefault={true}
           isLarge={true}
         >
-          View order 45981
+          View order #45981
         </ForwardRef(Button)>
       </div>
     </div>
@@ -640,7 +640,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           isDefault={true}
           isLarge={true}
         >
-          View order 45981
+          View order #45981
         </ForwardRef(Button)>
       </div>
     </div>

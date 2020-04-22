@@ -1,0 +1,45 @@
+.wcpay-deposits-overview {
+	.wcpay-deposits-overview__schedule {
+		@include font-size( 13 );
+		color: $dark-gray-500;
+		/* Bring schedule closer to overview SummaryList */
+		margin: 0 0 -8px 0;
+		.wcpay-deposits-overview__schedule-icon,
+		.wcpay-deposits-overview__schedule-label,
+		.wcpay-deposits-overview__schedule-value {
+			vertical-align: middle;
+		}
+		.wcpay-deposits-overview__schedule-label {
+			font-weight: 600;
+		}
+		.wcpay-deposits-overview__schedule-icon {
+			margin-right: 8px;
+			fill: $dark-gray-500;
+		}
+	}
+	.woocommerce-summary {
+		.woocommerce-summary__item-label {
+			margin-bottom: 12px;
+		}
+		.woocommerce-summary__item-data {
+			margin-top: 0;
+			margin-bottom: 8px;
+		}
+		/* Hide unused SummaryNumber fields */
+		.woocommerce-summary__item-prev-value,
+		.woocommerce-summary__item-delta {
+			display: none;
+		}
+	}
+	.woocommerce-summary__item {
+		background: $studio-white;
+	}
+	a.woocommerce-summary__item {
+		&:hover {
+			background-color: $light-gray-200;
+		}
+		&:active {
+			background-color: $light-gray-300;
+		}
+	}
+}

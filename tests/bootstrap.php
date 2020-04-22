@@ -33,10 +33,15 @@ function _manually_load_plugin() {
 
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 
+	require_once dirname( __FILE__ ) . '/../includes/class-wc-payments-db.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+
+	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-wc-payments-rest-request-exception.php';
+	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-payments-rest-controller.php';
+	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-webhook-controller.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 

@@ -47,14 +47,23 @@ class WC_Payments_API_Client {
 	private $http_client;
 
 	/**
+	 * DB access wrapper.
+	 *
+	 * @var WC_Payments_DB
+	 */
+	private $wcpay_db;
+
+	/**
 	 * WC_Payments_API_Client constructor.
 	 *
 	 * @param string           $user_agent  - User agent string to report in requests.
 	 * @param WC_Payments_Http $http_client - Used to send HTTP requests.
+	 * @param WC_Payments_DB   $wcpay_db    - DB access wrapper.
 	 */
-	public function __construct( $user_agent, $http_client ) {
+	public function __construct( $user_agent, $http_client, $wcpay_db ) {
 		$this->user_agent  = $user_agent;
 		$this->http_client = $http_client;
+		$this->wcpay_db    = $wcpay_db;
 	}
 
 	/**
@@ -84,6 +93,7 @@ class WC_Payments_API_Client {
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
+	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -92,7 +102,8 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_method_id,
-		$manual_capture = false
+		$manual_capture = false,
+		$metadata = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -101,6 +112,7 @@ class WC_Payments_API_Client {
 		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
+		$request['metadata']       = $metadata;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -184,42 +196,6 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->deserialize_intention_object_from_array( $response_array );
-	}
-
-	/**
-	 * Retrive an order ID from the DB using a corresponding Stripe charge ID.
-	 *
-	 * @param string $charge_id Charge ID corresponding to an order ID.
-	 *
-	 * @return null|string
-	 */
-	private function order_id_from_charge_id( $charge_id ) {
-		global $wpdb;
-
-		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$order_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT DISTINCT ID FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_value = %s AND meta.meta_key = '_charge_id'",
-				$charge_id
-			)
-		);
-		return $order_id;
-	}
-
-	/**
-	 * Retrieve an order from the DB using a corresponding Stripe charge ID.
-	 *
-	 * @param string $charge_id Charge ID corresponding to an order ID.
-	 *
-	 * @return boolean|WC_Order|WC_Order_Refund
-	 */
-	private function order_from_charge_id( $charge_id ) {
-		$order_id = $this->order_id_from_charge_id( $charge_id );
-
-		if ( $order_id ) {
-			return wc_get_order( $order_id );
-		}
-		return false;
 	}
 
 	/**
@@ -578,6 +554,10 @@ class WC_Payments_API_Client {
 		$headers['User-Agent']   = $this->user_agent;
 
 		Logger::log( "REQUEST $method $url" );
+		if ( 'POST' === $method || 'PUT' === $method ) {
+			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		}
+
 		$response = $this->http_client->remote_request(
 			array(
 				'url'     => $url,
@@ -660,7 +640,7 @@ class WC_Payments_API_Client {
 	 * @return array  new object with order information.
 	 */
 	private function add_order_info_to_object( $charge_id, $object ) {
-		$order = $this->order_from_charge_id( $charge_id );
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.

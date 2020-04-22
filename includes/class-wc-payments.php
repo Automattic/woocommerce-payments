@@ -31,6 +31,13 @@ class WC_Payments {
 	private static $api_client;
 
 	/**
+	 * Instance of WC_Payments_DB.
+	 *
+	 * @var WC_Payments_DB
+	 */
+	private static $db_helper;
+
+	/**
 	 * Instance of WC_Payments_Account, created in init function.
 	 *
 	 * @var WC_Payments_Account
@@ -62,6 +69,9 @@ class WC_Payments {
 		};
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
+
+		include_once dirname( __FILE__ ) . '/class-wc-payments-db.php';
+		self::$db_helper = new WC_Payments_DB();
 
 		self::$api_client = self::create_api_client();
 
@@ -431,7 +441,8 @@ class WC_Payments {
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http()
+			new WC_Payments_Http(),
+			self::$db_helper
 		);
 
 		return $payments_api_client;
@@ -441,6 +452,7 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
@@ -462,6 +474,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper );
+		$webhook_controller->register_routes();
 	}
 
 	/**

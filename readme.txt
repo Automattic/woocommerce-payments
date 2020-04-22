@@ -82,17 +82,31 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 0.9.1 =
+= 0.9.2 - 2020-xx-xx =
+* Fix - Remove unused variable
+* Update - Automated testing
+* Add - Metadata when creating payment intent
+* Update - PHP versions supported
+
+= 0.9.1 - 2020-04-09 =
 * Fix - Add logging for OAuth initialization failures
 
-= 0.9.0 =
+= 0.9.0 - 2020-04-08 =
 * Release for Public Beta
 
-= 0.8.2 =
-
+= 0.8.2 - 2020-03-10 =
 * Add - Dispute file evidence upload support
 * Add - Basic support for Pay for Order
 * Fix - Styling improvements in wp-admin
 * Fix - Undefined variable PHP notice in cancel_authorization
 * Fix - Remove unused variable in authentication
 * Fix - Improve Jetpack connection checking
+
+= 0.8.1 - 2020-02-25 =
+* Update link to test card documentation
+
+= 0.8.0 - 2020-02-24 =
+* First beta release
+
+= 0.7.0 - 2020-02-05 =
+* Alpha release
