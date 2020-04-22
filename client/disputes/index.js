@@ -14,10 +14,10 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import OrderLink from '../components/order-link';
-import DisputeStatusChip from '../components/dispute-status-chip';
+import OrderLink from 'components/order-link';
+import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink from '../components/details-link';
+import DetailsLink from 'components/details-link';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
