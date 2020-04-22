@@ -109,6 +109,7 @@ describe( 'Transactions list', () => {
 	} );
 
 	describe( 'when not filtered by deposit', () => {
+		let container, getAllByText, rerender;
 		beforeEach( () => {
 			useTransactions.mockReturnValue( {
 				transactions: mockTransactions,
@@ -124,65 +125,58 @@ describe( 'Transactions list', () => {
 				},
 				isLoading: false,
 			} );
+
+			( { container, rerender, getAllByText } = render( <TransactionsList /> ) );
 		} );
 
 		test( 'renders correctly', () => {
-			const { container } = render( <TransactionsList /> );
 			expect( container ).toMatchSnapshot();
 		} );
 
 		test( 'sorts by default field date', () => {
-			const { rerender, getAllByText } = render( <TransactionsList /> );
-
-			sortBy( 'Date / Time', getAllByText, rerender );
+			sortBy( 'Date / Time' );
 			expectSortingToBe( 'date', 'asc' );
 
-			sortBy( 'Date / Time', getAllByText, rerender );
+			sortBy( 'Date / Time' );
 			expectSortingToBe( 'date', 'desc' );
 		} );
 
 		test( 'sorts by amount', () => {
-			const { rerender, getAllByText } = render( <TransactionsList /> );
-
-			sortBy( 'Amount', getAllByText, rerender );
+			sortBy( 'Amount' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount', getAllByText, rerender );
+			sortBy( 'Amount' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
 		test( 'sorts by fees', () => {
-			const { rerender, getAllByText } = render( <TransactionsList /> );
-
-			sortBy( 'Fees', getAllByText, rerender );
+			sortBy( 'Fees' );
 			expectSortingToBe( 'fees', 'desc' );
 
-			sortBy( 'Fees', getAllByText, rerender );
+			sortBy( 'Fees' );
 			expectSortingToBe( 'fees', 'asc' );
 		} );
 
 		test( 'sorts by net', () => {
-			const { rerender, getAllByText } = render( <TransactionsList /> );
-
-			sortBy( 'Net', getAllByText, rerender );
+			sortBy( 'Net' );
 			expectSortingToBe( 'net', 'desc' );
 
-			sortBy( 'Net', getAllByText, rerender );
+			sortBy( 'Net' );
 			expectSortingToBe( 'net', 'asc' );
 		} );
+
+		function sortBy( field ) {
+			const sortButton = getAllByText( field )[ 0 ];
+			fireEvent.click( sortButton, { preventDefault: () => {} } );
+			rerender( <TransactionsList /> );
+		}
+
+		function expectSortingToBe( field, direction ) {
+			expect( getQuery().orderby ).toEqual( field );
+			expect( getQuery().order ).toEqual( direction );
+			const useTransactionsCall = useTransactions.mock.calls[ useTransactions.mock.calls.length - 1 ];
+			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
+			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
+		}
 	} );
 } );
-
-function sortBy( field, getAllByText, rerender ) {
-	const sortButton = getAllByText( field )[ 0 ];
-	fireEvent.click( sortButton, { preventDefault: () => {} } );
-	rerender( <TransactionsList /> );
-}
-
-function expectSortingToBe( field, direction ) {
-	expect( getQuery().orderby ).toEqual( field );
-	expect( getQuery().order ).toEqual( direction );
-	const useTransactionsCall = useTransactions.mock.calls[ useTransactions.mock.calls.length - 1 ];
-	expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
-	expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
-}
