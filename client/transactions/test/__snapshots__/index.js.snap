@@ -96,8 +96,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             Jan 2, 2020 / 12:46PM
           </ClickableCell>,
@@ -105,8 +104,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             Refund
           </ClickableCell>,
@@ -114,8 +112,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             $10.00
           </ClickableCell>,
@@ -123,8 +120,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             $-0.50
           </ClickableCell>,
@@ -132,8 +128,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             $9.50
           </ClickableCell>,
@@ -152,8 +147,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             <span
               className="payment-method__brand payment-method__brand--visa"
@@ -163,8 +157,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             Another customer
           </ClickableCell>,
@@ -172,8 +165,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             another@customer.com
           </ClickableCell>,
@@ -181,8 +173,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             US
           </ClickableCell>,
@@ -190,8 +181,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             <RiskLevel
               risk={0}
@@ -201,8 +191,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j23w39dsajda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
           >
             <Deposit
               depositId={null}
@@ -221,8 +210,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             Jan 4, 2020 / 11:22PM
           </ClickableCell>,
@@ -230,8 +218,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             Charge
           </ClickableCell>,
@@ -239,8 +226,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $15.00
           </ClickableCell>,
@@ -248,8 +234,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $-0.50
           </ClickableCell>,
@@ -257,8 +242,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $14.50
           </ClickableCell>,
@@ -277,8 +261,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             <span
               className="payment-method__brand payment-method__brand--mastercard"
@@ -288,8 +271,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             My name
           </ClickableCell>,
@@ -297,8 +279,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             a@b.com
           </ClickableCell>,
@@ -306,8 +287,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             US
           </ClickableCell>,
@@ -315,8 +295,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             <RiskLevel
               risk={2}
@@ -326,8 +305,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             <Deposit
               dateAvailable="2020-01-07 00:00:00"
@@ -457,8 +435,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             Jan 4, 2020 / 11:22PM
           </ClickableCell>,
@@ -466,8 +443,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             Charge
           </ClickableCell>,
@@ -475,8 +451,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $15.00
           </ClickableCell>,
@@ -484,8 +459,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $-0.50
           </ClickableCell>,
@@ -493,8 +467,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             $14.50
           </ClickableCell>,
@@ -513,8 +486,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             <span
               className="payment-method__brand payment-method__brand--mastercard"
@@ -524,8 +496,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             My name
           </ClickableCell>,
@@ -533,8 +504,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             a@b.com
           </ClickableCell>,
@@ -542,8 +512,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             US
           </ClickableCell>,
@@ -551,8 +520,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="ch_j239jda"
-            parentSegment="transactions"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
           >
             <RiskLevel
               risk={2}

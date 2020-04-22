@@ -17,7 +17,7 @@ import { TableCard } from '@woocommerce/components';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink from 'components/details-link';
+import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
@@ -47,7 +47,7 @@ export const DisputesList = ( props ) => {
 			display: <OrderLink order={ dispute.order } />,
 		} : null;
 
-		const clickable = ( children ) => <ClickableCell id={ dispute.id } parentSegment="disputes">{ children }</ClickableCell>;
+		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( dispute.id, 'disputes' ) }>{ children }</ClickableCell>;
 
 		const detailsLink = <DetailsLink id={ dispute.id } parentSegment="disputes" />;
 

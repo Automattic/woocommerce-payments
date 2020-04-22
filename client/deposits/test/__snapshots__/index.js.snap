@@ -70,8 +70,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock1"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
           >
             Deposit
           </ClickableCell>,
@@ -79,8 +78,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock1"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
           >
             $20.00
           </ClickableCell>,
@@ -88,8 +86,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock1"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
           >
             Paid
           </ClickableCell>,
@@ -97,8 +94,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock1"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
           >
             MOCK BANK •••• 1234 (USD)
           </ClickableCell>,
@@ -124,8 +120,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock2"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
           >
             Withdrawal
           </ClickableCell>,
@@ -133,8 +128,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock2"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
           >
             $30.00
           </ClickableCell>,
@@ -142,8 +136,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock2"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
           >
             Pending
           </ClickableCell>,
@@ -151,8 +144,7 @@ exports[`Deposits list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="po_mock2"
-            parentSegment="deposits"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
           >
             MOCK BANK •••• 1234 (USD)
           </ClickableCell>,

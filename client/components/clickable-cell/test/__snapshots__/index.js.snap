@@ -1,11 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Clickable cell empty render with no ID 1`] = `""`;
-
-exports[`Clickable cell renders dispute details with ID 1`] = `
+exports[`Clickable cell renders a clickable cell when a link is provided 1`] = `
 <Link
   className="woocommerce-table__clickable-cell"
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_mock"
+  href="https://example.com"
   tabIndex="-1"
   type="wc-admin"
 >
@@ -13,13 +11,4 @@ exports[`Clickable cell renders dispute details with ID 1`] = `
 </Link>
 `;
 
-exports[`Clickable cell renders transaction details with charge ID 1`] = `
-<Link
-  className="woocommerce-table__clickable-cell"
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
-  tabIndex="-1"
-  type="wc-admin"
->
-  Content
-</Link>
-`;
+exports[`Clickable cell renders a plain content when no link is provided 1`] = `"Content"`;

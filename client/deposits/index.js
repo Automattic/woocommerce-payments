@@ -43,7 +43,7 @@ export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
-		const clickable = ( children ) => <ClickableCell id={ deposit.id } parentSegment="deposits">{ children }</ClickableCell>;
+		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
 
 		const dateDisplay = (

@@ -82,8 +82,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             $10.00
           </ClickableCell>,
@@ -91,8 +90,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             <DisputeStatusChip
               status="needs_response"
@@ -102,8 +100,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             Fraudulent
           </ClickableCell>,
@@ -111,8 +108,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             <span
               className="payment-method__brand payment-method__brand--visa"
@@ -133,8 +129,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             Mock Customer
           </ClickableCell>,
@@ -142,8 +137,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             mock@customer.net
           </ClickableCell>,
@@ -151,8 +145,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             US
           </ClickableCell>,
@@ -160,8 +153,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             Nov 1, 2019
           </ClickableCell>,
@@ -169,8 +161,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
             Nov 8, 2019 / 2:46AM
           </ClickableCell>,
@@ -187,8 +178,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             $10.50
           </ClickableCell>,
@@ -196,8 +186,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             <DisputeStatusChip
               status="under_review"
@@ -207,8 +196,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             General
           </ClickableCell>,
@@ -216,8 +204,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             <span
               className="payment-method__brand payment-method__brand--undefined"
@@ -230,29 +217,25 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           />,
           "value": undefined,
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           />,
           "value": undefined,
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           />,
           "value": undefined,
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             Oct 30, 2019
           </ClickableCell>,
@@ -260,8 +243,7 @@ exports[`Disputes list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
           >
             Nov 6, 2019 / 11:00PM
           </ClickableCell>,

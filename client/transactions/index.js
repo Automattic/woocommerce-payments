@@ -17,7 +17,7 @@ import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from '../components/order-link';
 import RiskLevel from '../components/risk-level';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink from '../components/details-link';
+import DetailsLink, { getDetailsURL } from '../components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
 import Deposit from './deposit';
@@ -56,7 +56,8 @@ export const TransactionsList = ( props ) => {
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
-		const clickable = ( children ) => <ClickableCell id={ txn.charge_id } parentSegment="transactions">{ children }</ClickableCell>;
+		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
+		const clickable = ( children ) => <ClickableCell href={ detailsURL }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
