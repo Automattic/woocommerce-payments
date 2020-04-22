@@ -521,7 +521,7 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $params, $api, $method, $is_site_specific = true ) {
-		// Apply the default params that can be overriden by the calling method.
+		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
 			array(
@@ -710,5 +710,4 @@ class WC_Payments_API_Client {
 
 		return $intent;
 	}
-
 }
