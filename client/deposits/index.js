@@ -55,7 +55,7 @@ export const DepositsList = () => {
 		// Map deposit to table row.
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
-			date: { value: deposit.date, display: clickable( dateDisplay ) },
+			date: { value: deposit.date, display: dateDisplay },
 			type: { value: deposit.type, display: clickable( displayType[ deposit.type ] ) },
 			amount: { value: deposit.amount / 100, display: clickable( currency.formatCurrency( deposit.amount / 100 ) ) },
 			status: { value: deposit.status, display: clickable( displayStatus[ deposit.status ] || formatStringValue( deposit.status ) ) },
