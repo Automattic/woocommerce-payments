@@ -107,7 +107,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789' );
+		$result = $this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
+
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}

@@ -291,10 +291,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method = $this->get_payment_method_from_request();
 				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email          = sanitize_email( $order->get_billing_email() );
+
+				// Determine the customer making the payment, create one if we don't have one already.
+				$user        = wp_get_current_user();
+				$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+				if ( null === $customer_id ) {
+					// Create a new customer.
+					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+				} else {
+					$this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+				}
 
 				$metadata = [
 					'customer_name'  => $name,
-					'customer_email' => sanitize_email( $order->get_billing_email() ),
+					'customer_email' => $email,
 					'site_url'       => esc_url( get_site_url() ),
 					'order_id'       => $order->get_id(),
 				];
@@ -304,6 +316,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
+					$customer_id,
 					$manual_capture,
 					$metadata
 				);
