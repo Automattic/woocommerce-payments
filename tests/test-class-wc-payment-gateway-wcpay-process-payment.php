@@ -103,6 +103,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$intent_id = 'pi_123';
 		$charge_id = 'ch_123';
 		$status    = 'succeeded';
+		$secret    = 'client_secret_123';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -113,7 +114,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			1500,
 			new DateTime(),
 			$status,
-			$charge_id
+			$charge_id,
+			$secret
 		);
 		$this->mock_api_client
 			->expects( $this->any() )
@@ -165,6 +167,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$intent_id = 'pi_123';
 		$charge_id = 'ch_123';
 		$status    = 'requires_capture';
+		$secret    = 'client_secret_123';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -175,7 +178,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			1500,
 			new DateTime(),
 			$status,
-			$charge_id
+			$charge_id,
+			$secret
 		);
 		$this->mock_api_client
 			->expects( $this->any() )

@@ -65,11 +65,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->set_http_mock_response(
 			200,
 			[
-				'id'      => 'test_intention_id',
-				'amount'  => $expected_amount,
-				'created' => 1557224304,
-				'status'  => $expected_status,
-				'charges' => [
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
 					'total_count' => 1,
 					'data'        => [
 						[
@@ -80,6 +80,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
+				'client_secret' => 'test_client_secret',
 			]
 		);
 
@@ -145,11 +146,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->set_http_mock_response(
 			200,
 			[
-				'id'      => 'test_intention_id',
-				'amount'  => $expected_amount,
-				'created' => 1557224304,
-				'status'  => $expected_status,
-				'charges' => [
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
 					'total_count' => 1,
 					'data'        => [
 						[
@@ -160,6 +161,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
+				'client_secret' => 'test_client_secret',
 			]
 		);
 
@@ -196,6 +198,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
+				'client_secret'   => 'test_client_secret',
 			]
 		);
 
@@ -214,11 +217,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->set_http_mock_response(
 			200,
 			[
-				'id'      => 'test_intention_id',
-				'amount'  => 123,
-				'created' => 1557224304,
-				'status'  => $expected_status,
-				'charges' => [
+				'id'            => 'test_intention_id',
+				'amount'        => 123,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
 					'total_count' => 1,
 					'data'        => [
 						[
@@ -229,6 +232,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
+				'client_secret' => 'test_client_secret',
 			]
 		);
 
