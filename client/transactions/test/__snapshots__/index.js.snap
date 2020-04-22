@@ -111,14 +111,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   <span
                     class="screen-reader-text"
                   >
-                    date and time
+                    Date and Time
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-0-1"
                 >
-                  Sort by date and time in ascending order
+                  Sort by Date and Time in ascending order
                 </span>
               </th>
               <th
@@ -127,7 +127,12 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Type
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Type
                 </span>
@@ -164,14 +169,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   <span
                     class="screen-reader-text"
                   >
-                    amount
+                    Amount
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-0-3"
                 >
-                  Sort by amount in descending order
+                  Sort by Amount in descending order
                 </span>
               </th>
               <th
@@ -206,14 +211,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   <span
                     class="screen-reader-text"
                   >
-                    fees
+                    Fees
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-0-4"
                 >
-                  Sort by fees in descending order
+                  Sort by Fees in descending order
                 </span>
               </th>
               <th
@@ -248,14 +253,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   <span
                     class="screen-reader-text"
                   >
-                    net
+                    Net
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-0-5"
                 >
-                  Sort by net in descending order
+                  Sort by Net in descending order
                 </span>
               </th>
               <th
@@ -264,10 +269,15 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
                 >
                   Order #
                 </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Order Number
+                </span>
               </th>
               <th
                 class="woocommerce-table__header"
@@ -275,7 +285,12 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Source
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Source
                 </span>
@@ -286,7 +301,12 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Customer
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Customer
                 </span>
@@ -297,7 +317,12 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Email
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Email
                 </span>
@@ -308,7 +333,12 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Country
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Country
                 </span>
@@ -319,9 +349,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
                 >
                   Risk level
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Risk Level
                 </span>
               </th>
             </tr>
@@ -595,14 +630,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <span
                     class="screen-reader-text"
                   >
-                    date and time
+                    Date and Time
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-1-1"
                 >
-                  Sort by date and time in ascending order
+                  Sort by Date and Time in ascending order
                 </span>
               </th>
               <th
@@ -611,7 +646,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Type
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Type
                 </span>
@@ -648,14 +688,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <span
                     class="screen-reader-text"
                   >
-                    amount
+                    Amount
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-1-3"
                 >
-                  Sort by amount in descending order
+                  Sort by Amount in descending order
                 </span>
               </th>
               <th
@@ -690,14 +730,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <span
                     class="screen-reader-text"
                   >
-                    fees
+                    Fees
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-1-4"
                 >
-                  Sort by fees in descending order
+                  Sort by Fees in descending order
                 </span>
               </th>
               <th
@@ -732,14 +772,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <span
                     class="screen-reader-text"
                   >
-                    net
+                    Net
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-1-5"
                 >
-                  Sort by net in descending order
+                  Sort by Net in descending order
                 </span>
               </th>
               <th
@@ -748,10 +788,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
                 >
                   Order #
                 </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Order Number
+                </span>
               </th>
               <th
                 class="woocommerce-table__header"
@@ -759,7 +804,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Source
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Source
                 </span>
@@ -770,7 +820,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Customer
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Customer
                 </span>
@@ -781,7 +836,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Email
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Email
                 </span>
@@ -792,7 +852,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Country
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Country
                 </span>
@@ -803,9 +868,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
                 >
                   Risk level
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Risk Level
                 </span>
               </th>
               <th

@@ -132,49 +132,49 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by default field date', () => {
-			const { rerender, getByText } = render( <TransactionsList /> );
+			const { rerender, getAllByText } = render( <TransactionsList /> );
 
-			sortBy( 'Date / Time', getByText, rerender );
+			sortBy( 'Date / Time', getAllByText, rerender );
 			expectSortingToBe( 'date', 'asc' );
 
-			sortBy( 'Date / Time', getByText, rerender );
+			sortBy( 'Date / Time', getAllByText, rerender );
 			expectSortingToBe( 'date', 'desc' );
 		} );
 
 		test( 'sorts by amount', () => {
-			const { rerender, getByText } = render( <TransactionsList /> );
+			const { rerender, getAllByText } = render( <TransactionsList /> );
 
-			sortBy( 'Amount', getByText, rerender );
+			sortBy( 'Amount', getAllByText, rerender );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount', getByText, rerender );
+			sortBy( 'Amount', getAllByText, rerender );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
 		test( 'sorts by fees', () => {
-			const { rerender, getByText } = render( <TransactionsList /> );
+			const { rerender, getAllByText } = render( <TransactionsList /> );
 
-			sortBy( 'Fees', getByText, rerender );
+			sortBy( 'Fees', getAllByText, rerender );
 			expectSortingToBe( 'fees', 'desc' );
 
-			sortBy( 'Fees', getByText, rerender );
+			sortBy( 'Fees', getAllByText, rerender );
 			expectSortingToBe( 'fees', 'asc' );
 		} );
 
 		test( 'sorts by net', () => {
-			const { rerender, getByText } = render( <TransactionsList /> );
+			const { rerender, getAllByText } = render( <TransactionsList /> );
 
-			sortBy( 'Net', getByText, rerender );
+			sortBy( 'Net', getAllByText, rerender );
 			expectSortingToBe( 'net', 'desc' );
 
-			sortBy( 'Net', getByText, rerender );
+			sortBy( 'Net', getAllByText, rerender );
 			expectSortingToBe( 'net', 'asc' );
 		} );
 	} );
 } );
 
-function sortBy( field, getByText, rerender ) {
-	const sortButton = getByText( field );
+function sortBy( field, getAllByText, rerender ) {
+	const sortButton = getAllByText( field )[ 0 ];
 	fireEvent.click( sortButton, { preventDefault: () => {} } );
 	rerender( <TransactionsList /> );
 }
