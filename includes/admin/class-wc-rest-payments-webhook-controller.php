@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\WC_Payments_Rest_Exception;
+use WCPay\Exceptions\WC_Payments_Rest_Request_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -84,7 +84,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					$this->process_webhook_refund_updated( $event_object );
 					break;
 			}
-		} catch ( WC_Payments_Rest_Exception $e ) {
+		} catch ( WC_Payments_Rest_Request_Exception $e ) {
 			Logger::error( $e );
 			return new WP_REST_Response( array( 'result' => self::RESULT_BAD_REQUEST ), 400 );
 		} catch ( Exception $e ) {
@@ -100,7 +100,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param array $event_object The event that triggered the webhook.
 	 *
-	 * @throws WC_Payments_Rest_Exception Required parameters not found.
+	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
 	 * @throws Exception                  Unable to resolve charge ID to order.
 	 */
 	private function process_webhook_refund_updated( $event_object ) {
@@ -149,11 +149,11 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	 * @param string $key   ID to fetch on.
 	 *
 	 * @return string|array
-	 * @throws WC_Payments_Rest_Exception Thrown if ID not set.
+	 * @throws WC_Payments_Rest_Request_Exception Thrown if ID not set.
 	 */
 	private function read_rest_property( $array, $key ) {
 		if ( ! isset( $array[ $key ] ) ) {
-			throw new WC_Payments_Rest_Exception(
+			throw new WC_Payments_Rest_Request_Exception(
 				sprintf(
 					/* translators: %1: ID being fetched */
 					__( '%1$s not found in array', 'woocommerce-payments' ),
