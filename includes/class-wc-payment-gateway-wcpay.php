@@ -158,7 +158,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return parent::is_available() && $this->account->is_stripe_connected( false );
+		if ( ! parent::is_available() || ! $this->account->is_stripe_connected( false ) ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+		return empty( $account_status['error'] ) && $account_status['paymentsEnabled'];
 	}
 
 	/**
