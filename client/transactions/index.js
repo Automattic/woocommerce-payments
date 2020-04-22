@@ -56,7 +56,7 @@ export const TransactionsList = ( props ) => {
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 
 	const rows = transactions.map( ( txn ) => {
-		const clickable = ( children ) => <ClickableCell id={ txn.id } parentSegment="transactions">{ children }</ClickableCell>;
+		const clickable = ( children ) => <ClickableCell id={ txn.charge_id } parentSegment="transactions">{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;

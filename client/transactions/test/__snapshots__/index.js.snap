@@ -96,6 +96,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             Jan 2, 2020 / 12:46PM
@@ -104,6 +105,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             Refund
@@ -112,6 +114,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             $10.00
@@ -120,6 +123,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             $-0.50
@@ -128,6 +132,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             $9.50
@@ -147,6 +152,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             <span
@@ -157,6 +163,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             Another customer
@@ -165,6 +172,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             another@customer.com
@@ -173,6 +181,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             US
@@ -181,6 +190,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             <RiskLevel
@@ -191,6 +201,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j23w39dsajda"
             parentSegment="transactions"
           >
             <Deposit
@@ -210,6 +221,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             Jan 4, 2020 / 11:22PM
@@ -218,6 +230,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             Charge
@@ -226,6 +239,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $15.00
@@ -234,6 +248,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $-0.50
@@ -242,6 +257,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $14.50
@@ -261,6 +277,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             <span
@@ -271,6 +288,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             My name
@@ -279,6 +297,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             a@b.com
@@ -287,6 +306,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             US
@@ -295,6 +315,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             <RiskLevel
@@ -305,6 +326,7 @@ exports[`Transactions list renders correctly 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             <Deposit
@@ -435,6 +457,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             Jan 4, 2020 / 11:22PM
@@ -443,6 +466,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             Charge
@@ -451,6 +475,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $15.00
@@ -459,6 +484,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $-0.50
@@ -467,6 +493,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             $14.50
@@ -486,6 +513,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             <span
@@ -496,6 +524,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             My name
@@ -504,6 +533,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             a@b.com
@@ -512,6 +542,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             US
@@ -520,6 +551,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         },
         Object {
           "display": <ClickableCell
+            id="ch_j239jda"
             parentSegment="transactions"
           >
             <RiskLevel
