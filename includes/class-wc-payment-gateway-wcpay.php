@@ -38,14 +38,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $account;
 
 	/**
+	 * WC_Payments_Customer instance for working with customer information
+	 *
+	 * @var WC_Payments_Customer_Service
+	 */
+	private $customer_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account    $account - Account class instance.
+	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account          $account             - Account class instance.
+	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		WC_Payments_Customer_Service $customer_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+		$this->customer_service    = $customer_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.

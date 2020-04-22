@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -47,7 +49,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $this->wcpay_account );
+		/** @var WC_Payments_Customer_Service|MockObject $mock_customer_service */
+		$mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->wcpay_account,
+			$mock_customer_service
+		);
 	}
 
 	/**
