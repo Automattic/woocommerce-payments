@@ -19,6 +19,7 @@ import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import riskMappings from 'components/risk-level/strings';
 import './style.scss';
 
 const currency = new Currency();
@@ -49,8 +50,7 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		{
 			title: __( 'Risk evaluation', 'woocommerce-payments' ),
-			content: get( charge, 'outcome.risk_level' ) || '–',
-			className: 'wcpay-risk-evaluation',
+			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
 		},
 		{
 			content: charge.id || '–',
