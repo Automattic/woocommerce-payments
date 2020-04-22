@@ -137,6 +137,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           },
           Object {
             "content": "ch_38jdHA39KKA",
+            "title": "",
           },
         ]
       }
@@ -287,6 +288,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           },
           Object {
             "content": "ch_38jdHA39KKA",
+            "title": "",
           },
         ]
       }
@@ -382,6 +384,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
           },
           Object {
             "content": "–",
+            "title": "",
           },
         ]
       }
@@ -532,6 +535,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           },
           Object {
             "content": "ch_38jdHA39KKA",
+            "title": "",
           },
         ]
       }
@@ -683,6 +687,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           },
           Object {
             "content": "ch_38jdHA39KKA",
+            "title": "",
           },
         ]
       }

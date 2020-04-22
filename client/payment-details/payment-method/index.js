@@ -92,7 +92,7 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 			<div className="payment-method-details">
 				<div className="payment-method-details__column">
 					<Detail isLoading={ isLoading } label={ __( 'Number', 'woocommerce-payments' ) }>
-						&bull;&bull;&bull;&bull; { last4 }
+						&bull;&bull;&bull;&bull;&nbsp;{ last4 }
 					</Detail>
 
 					<Detail isLoading={ isLoading } label={ __( 'Fingerprint', 'woocommerce-payments' ) }>

@@ -53,6 +53,7 @@ const composePaymentSummaryItems = ( { charge } ) =>
 			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
 		},
 		{
+			title: '',
 			content: charge.id || '–',
 		},
 	];
