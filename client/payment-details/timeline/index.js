@@ -11,6 +11,7 @@ import Currency, { getCurrencyData } from '@woocommerce/currency';
 import { Card, Timeline } from '@woocommerce/components';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import GridIcon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -68,7 +69,7 @@ const getDepositTimelineItem = ( event, amount, currency, isPositive, body = [] 
 
 	return {
 		datetime: event.datetime,
-		gridicon: isPositive ? 'plus' : 'minus',
+		icon: <GridIcon icon={ isPositive ? 'plus' : 'minus' } />,
 		headline,
 		body,
 	};
@@ -77,7 +78,7 @@ const getDepositTimelineItem = ( event, amount, currency, isPositive, body = [] 
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
 		datetime: event.datetime,
-		gridicon: 'sync',
+		icon: <GridIcon icon={ 'sync' } />,
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
 			__( 'Payment status changed to %s', 'woocommerce-payments' ),
@@ -99,7 +100,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'checkmark',
+				icon: <GridIcon icon={ 'checkmark' } />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully authorized', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -111,7 +112,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'checkmark',
+				icon: <GridIcon icon={ 'checkmark' } />,
 				headline: sprintf(
 					__( 'Authorization for %s was voided', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -123,7 +124,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'cross',
+				icon: <GridIcon icon={ 'cross' } />,
 				headline: sprintf(
 					__( 'Authorization for %s expired', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -136,7 +137,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'checkmark',
+				icon: <GridIcon icon={ 'checkmark' } />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully charged', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -159,7 +160,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'checkmark',
+				icon: <GridIcon icon={ 'checkmark' } />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully refunded', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount_refunded / 100 )
@@ -175,7 +176,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'cross',
+				icon: <GridIcon icon={ 'cross' } />,
 				headline: sprintf(
 					__( 'A payment of %s failed', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -208,7 +209,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'cross',
+				icon: <GridIcon icon={ 'cross' } />,
 				headline: reasonHeadline,
 				body: [
 					<a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a>,
@@ -224,7 +225,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'checkmark',
+				icon: <GridIcon icon={ 'checkmark' } />,
 				headline: __( 'Challenge evidence submitted', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: In Review', 'woocommerce-payments' ) ),
@@ -234,7 +235,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'notice-outline',
+				icon: <GridIcon icon={ 'notice-outline' } />,
 				headline: __( 'Dispute won! The bank ruled in your favor', 'woocommerce-payments' ),
 			},
 			getDepositTimelineItem( event, total, currency, true, [
@@ -247,7 +248,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				gridicon: 'cross',
+				icon: <GridIcon icon={ 'cross' } />,
 				headline: __( 'Dispute lost. The bank ruled favor of your customer', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: Lost', 'woocommerce-payments' ) ),
