@@ -16,6 +16,9 @@
 	<!-- Rules -->
 	<rule ref="WooCommerce-Core" >
 		<exclude name="Generic.Commenting.Todo.TaskFound"/>
+
+		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
+		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
 	</rule>
 
 	<rule ref="WordPress.WP.I18n">
