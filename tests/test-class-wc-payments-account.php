@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay_Test
+ * Class WC_Payments_Account_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -43,6 +43,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function tearDown() {
 		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
+		parent::tearDown();
 	}
 
 	public function test_check_stripe_account_status_stripe_disconnected() {
