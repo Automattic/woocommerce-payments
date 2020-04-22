@@ -188,6 +188,19 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch a single intent with provided id.
+	 *
+	 * @param string $intent_id intent id.
+	 *
+	 * @return WC_Payments_API_Intention intention object.
+	 */
+	public function get_intent( $intent_id ) {
+		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
+
+		return $this->deserialize_intention_object_from_array( $intent );
+	}
+
+	/**
 	 * List deposits
 	 *
 	 * @param int $page      The requested page.
