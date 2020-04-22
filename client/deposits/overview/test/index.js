@@ -55,7 +55,7 @@ const getMockedOverview = ( additionalData ) => merge(
 	additionalData
 );
 
-describe( 'Deposits Overview', () => {
+describe( 'Deposits overview', () => {
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
@@ -68,29 +68,29 @@ describe( 'Deposits Overview', () => {
 
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'daily' }, true );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Temporarily suspended (Learn more)' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (Learn more)' );
 	} );
 
 	test( 'renders temporarily suspended notice for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Temporarily suspended (Learn more)' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (Learn more)' );
 	} );
 
 	test( 'renders deposit schedule for daily interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'daily' } );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Automatic, every business day' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Automatic, every business day' );
 	} );
 
 	test( 'renders deposit schedule for weekly interval', () => {
 		// eslint-disable-next-line camelcase
 		const depositSchedule = getDepositSchedule( { interval: 'weekly', weekly_anchor: 'monday' } );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Automatic, every week on Monday' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Automatic, every week on Monday' );
 	} );
 
 	test( 'renders deposit schedule for monthly interval', () => {
 		// eslint-disable-next-line camelcase
 		const depositSchedule = getDepositSchedule( { interval: 'monthly', monthly_anchor: 26 } );
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Automatic, every month on the 26th' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Automatic, every month on the 26th' );
 	} );
 
 	test( 'renders weekly anchor for non en locales', () => {
@@ -98,7 +98,7 @@ describe( 'Deposits Overview', () => {
 		// eslint-disable-next-line camelcase
 		const depositSchedule = getDepositSchedule( { interval: 'weekly', weekly_anchor: 'tuesday' } );
 		// without resetting the locale to en the anchor monday would become Sonntag, instead of Dienstag
-		expect( depositSchedule ).toEqual( 'Deposit Schedule: Automatic, every week on Dienstag' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Automatic, every week on Dienstag' );
 		// the default locale should not have changed
 		expect( momentLib.locale() ).toEqual( 'de' );
 	} );
@@ -137,6 +137,6 @@ function getDepositSchedule( schedule, disabled = false ) {
 	const overview = getMockedOverview( { account: { deposits_schedule: schedule, deposits_disabled: disabled } } );
 	mockUseDepositsOverview( overview );
 	const { getByText } = render( <DepositsOverview /> );
-	const depositSchedule = getByText( 'Deposit Schedule:' );
+	const depositSchedule = getByText( 'Deposit schedule:' );
 	return depositSchedule.parentElement.textContent;
 }
