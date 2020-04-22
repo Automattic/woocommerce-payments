@@ -813,7 +813,8 @@ class WC_Payments_API_Client {
 			$intention_array['amount'],
 			$created,
 			$intention_array['status'],
-			$charge ? $charge['id'] : null
+			$charge ? $charge['id'] : null,
+			$intention_array['client_secret']
 		);
 
 		return $intent;
