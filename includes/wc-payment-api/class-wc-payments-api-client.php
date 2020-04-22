@@ -23,6 +23,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API     = 'accounts';
 	const CHARGES_API      = 'charges';
+	const CUSTOMERS_API    = 'customers';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const DEPOSITS_API     = 'deposits';
@@ -505,6 +506,61 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			),
 			self::ACCOUNTS_API . '/login_links',
+			self::POST
+		);
+	}
+
+	/**
+	 * Create a customer.
+	 *
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @return string The created customer's ID
+	 *
+	 * @throws WC_Payments_API_Exception Error creating customer.
+	 */
+	public function create_customer( $name = null, $email = null, $description = null ) {
+		$customer_array = $this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API,
+			self::POST
+		);
+
+		return $customer_array['id'];
+	}
+
+	/**
+	 * Update a customer.
+	 *
+	 * @param string      $customer_id ID of customer to update.
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @throws WC_Payments_API_Exception Error updating customer.
+	 */
+	public function update_customer( $customer_id, $name = null, $email = null, $description = null ) {
+		if ( null === $customer_id || '' === $customer_id ) {
+			throw new WC_Payments_API_Exception(
+				__( 'Customer ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_customer_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API . '/' . $customer_id,
 			self::POST
 		);
 	}
