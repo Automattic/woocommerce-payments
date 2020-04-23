@@ -243,7 +243,7 @@ export default ( { query } ) => {
 		}
 
 		return __(
-			'There are unsaved dispute evidence values in the form. Are you sure you want to leave and discard changes?',
+			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
 		);
 	}, [ pristine ] );
