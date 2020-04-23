@@ -39,12 +39,13 @@ tests/cli/composer.lock
 tests/cli/composer.json
 tests/cli/vendor
 
-# Unit tests
+# Tests
 /coverage
 /tmp
 /tests/bin/tmp
-/tests/e2e-tests/config/local-*.json
-/tests/e2e-tests/config/local.json
+/tests/e2e/config/local-*.json
+/tests/e2e/config/local.json
+/tests/e2e/config/local.env
 phpcs.xml
 phpunit.xml
 

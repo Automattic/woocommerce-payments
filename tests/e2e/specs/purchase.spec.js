@@ -19,7 +19,7 @@ describe( 'Successfull purchase', () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 	} );
 
-	test( 'successfull purchase', async () => {
+	it( 'successfull purchase', async () => {
 		await CustomerFlow.goToShop();
 		await CustomerFlow.addToCartFromShopPage( 'Beanie' );
 		await CustomerFlow.goToCheckout();
