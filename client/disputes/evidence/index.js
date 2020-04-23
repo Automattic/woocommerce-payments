@@ -23,6 +23,7 @@ import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import useConfirmNavigation from 'utils/use-confirm-navigation';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -194,33 +195,6 @@ const getDisputeProductType = dispute => {
 	return productType;
 };
 
-/**
- * Hook for displaying an optional confirmation message.
- *
- * @param {Function} getMessage returns confirmation message string if one should appear
- * @param {Array} deps effect dependencies
- */
-const useConfirmUnsavedChanges = ( getMessage, deps ) => {
-	useEffect( () => {
-		const message = getMessage();
-		if ( ! message ) {
-			return;
-		}
-
-		const handler = event => {
-			event.preventDefault();
-			event.returnValue = '';
-		};
-		window.addEventListener( 'beforeunload', handler );
-		const unblock = getHistory().block( message );
-
-		return () => {
-			window.removeEventListener( 'beforeunload', handler );
-			unblock();
-		};
-	}, deps );
-};
-
 // Temporary MVP data wrapper
 export default ( { query } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
@@ -237,7 +211,7 @@ export default ( { query } ) => {
 		}
 	} );
 
-	useConfirmUnsavedChanges( () => {
+	useConfirmNavigation( () => {
 		if ( pristine ) {
 			return;
 		}
