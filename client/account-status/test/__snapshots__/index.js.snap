@@ -220,7 +220,7 @@ exports[`AccountStatus renders restricted soon account 1`] = `
   <div>
     <Chip
       isCompact={true}
-      message="Restricted Soon"
+      message="Restricted soon"
       type="warning"
     />
     <span

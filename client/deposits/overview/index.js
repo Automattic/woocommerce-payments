@@ -70,17 +70,17 @@ const DepositsOverview = () => {
 		<div className="wcpay-deposits-overview">
 			<p className="wcpay-deposits-overview__schedule">
 				<Gridicon icon="calendar" className="wcpay-deposits-overview__schedule-icon" />
-				<span className="wcpay-deposits-overview__schedule-label">{ __( 'Deposit Schedule:', 'woocommerce-payments' ) }</span>
+				<span className="wcpay-deposits-overview__schedule-label">{ __( 'Deposit schedule:', 'woocommerce-payments' ) }</span>
 				{ ' ' }
 				<span className="wcpay-deposits-overview__schedule-value">
-					<Loadable isLoading={ isLoading || ! overview } display="inline" placeholder="Deposit Schedule placeholder">
+					<Loadable isLoading={ isLoading || ! overview } display="inline" placeholder="Deposit schedule placeholder">
 						{ overview ? getDepositScheduleFormatted( overview.account ) : '' }
 					</Loadable>
 				</span>
 			</p>
 			{ isLoading || ! overview
 				? <SummaryListPlaceholder numberOfItems={ 4 } />
-				: <SummaryList label={ __( 'Deposits Overview', 'woocommerce-payments' ) }>
+				: <SummaryList label={ __( 'Deposits overview', 'woocommerce-payments' ) }>
 					{ () => {
 						return [
 							<SummaryNumber

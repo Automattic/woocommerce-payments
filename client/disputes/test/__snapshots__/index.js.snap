@@ -54,12 +54,12 @@ exports[`Disputes list renders correctly 1`] = `
       },
       Object {
         "key": "created",
-        "label": "Disputed On",
+        "label": "Disputed on",
         "required": true,
       },
       Object {
         "key": "dueBy",
-        "label": "Respond By",
+        "label": "Respond by",
         "required": true,
       },
     ]
@@ -112,8 +112,8 @@ exports[`Disputes list renders correctly 1`] = `
           "value": "1",
         },
         Object {
-          "display": "Mock Customer",
-          "value": "Mock Customer",
+          "display": "Mock customer",
+          "value": "Mock customer",
         },
         Object {
           "display": "mock@customer.net",

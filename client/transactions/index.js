@@ -44,7 +44,7 @@ const columns = [
 	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
 	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), visible: false },
 	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), visible: false },
-	{ key: 'riskLevel', label: __( 'Risk Level', 'woocommerce-payments' ), visible: false },
+	{ key: 'riskLevel', label: __( 'Risk level', 'woocommerce-payments' ), visible: false },
 ];
 const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
 
@@ -95,7 +95,7 @@ export const TransactionsList = ( props ) => {
 		<TableCard
 			className="transactions-list"
 			title={ props.depositId
-				? __( 'Deposit Transactions', 'woocommerce-payments' )
+				? __( 'Deposit transactions', 'woocommerce-payments' )
 				: __( 'Transactions', 'woocommerce-payments' )
 			}
 			isLoading={ isLoading }

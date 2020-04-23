@@ -36,13 +36,13 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 		<CardFooter>
 			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
 				{ needsResponse
-					? __( 'Challenge Dispute', 'woocommerce-payments' )
-					: __( 'View Submitted Evidence', 'woocommerce-payments' )
+					? __( 'Challenge dispute', 'woocommerce-payments' )
+					: __( 'View submitted evidence', 'woocommerce-payments' )
 				}
 			</Link>
 			{ needsResponse && (
 				<Button isDefault isLarge onClick={ () => window.confirm( acceptMessage ) && onAccept() }>
-					{ __( 'Accept Dispute', 'woocommerce-payments' ) }
+					{ __( 'Accept dispute', 'woocommerce-payments' ) }
 				</Button>
 			) }
 		</CardFooter>

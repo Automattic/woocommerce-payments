@@ -19,6 +19,7 @@ import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import riskMappings from 'components/risk-level/strings';
 import './style.scss';
 
 const currency = new Currency();
@@ -42,16 +43,17 @@ const composePaymentSummaryItems = ( { charge } ) =>
 			content: get( charge, 'billing_details.name' ) || '–',
 		},
 		{
-			title: __( 'Payment Method', 'woocommerce-payments' ),
+			title: __( 'Payment method', 'woocommerce-payments' ),
 			content: (
 				<PaymentMethodDetails payment={ charge.payment_method_details } />
 			),
 		},
 		{
-			title: __( 'Risk Evaluation', 'woocommerce-payments' ),
-			content: get( charge, 'outcome.risk_level' ) || '–',
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
 		},
 		{
+			title: '',
 			content: charge.id || '–',
 		},
 	];

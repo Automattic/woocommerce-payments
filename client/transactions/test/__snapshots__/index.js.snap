@@ -68,7 +68,7 @@ exports[`Transactions list renders correctly 1`] = `
       },
       Object {
         "key": "riskLevel",
-        "label": "Risk Level",
+        "label": "Risk level",
         "visible": false,
       },
       Object {
@@ -324,7 +324,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
       Object {
         "key": "riskLevel",
-        "label": "Risk Level",
+        "label": "Risk level",
         "visible": false,
       },
     ]
@@ -425,7 +425,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
       },
     ]
   }
-  title="Deposit Transactions"
+  title="Deposit transactions"
   totalRows={3}
 />
 `;

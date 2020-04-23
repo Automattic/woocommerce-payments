@@ -48,7 +48,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 		breadcrumbs: [
 			rootLink,
 			[ '/payments/deposits', __( 'Deposits', 'woocommerce-payments' ) ],
-			__( 'Deposit Details', 'woocommerce-payments' ),
+			__( 'Deposit details', 'woocommerce-payments' ),
 		],
 	} );
 	pages.push( {
@@ -67,7 +67,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 		breadcrumbs: [
 			rootLink,
 			[ '/payments/transactions', __( 'Transactions', 'woocommerce-payments' ) ],
-			__( 'Payment Details', 'woocommerce-payments' ),
+			__( 'Payment details', 'woocommerce-payments' ),
 		],
 	} );
 	pages.push( {
@@ -86,7 +86,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 		breadcrumbs: [
 			rootLink,
 			[ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
-			__( 'Dispute Details', 'woocommerce-payments' ),
+			__( 'Dispute details', 'woocommerce-payments' ),
 		],
 	} );
 	pages.push( {
@@ -96,7 +96,7 @@ addFilter( 'woocommerce_admin_pages_list', 'woocommerce-payments', pages => {
 		breadcrumbs: [
 			rootLink,
 			[ '/payments/disputes', __( 'Disputes', 'woocommerce-payments' ) ],
-			__( 'Challenge Dispute', 'woocommerce-payments' ),
+			__( 'Challenge dispute', 'woocommerce-payments' ),
 		],
 	} );
 	return pages;

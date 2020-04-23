@@ -22,7 +22,7 @@ const renderStatusChip = ( status ) => {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'primary';
 	} else if ( 'restricted_soon' === status ) {
-		description = __( 'Restricted Soon', 'woocommerce-payments' );
+		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
 	} else if ( 'restricted' === status ) {
 		description = __( 'Restricted', 'woocommerce-payments' );

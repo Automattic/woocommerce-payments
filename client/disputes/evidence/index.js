@@ -119,10 +119,10 @@ export const DisputeEvidenceForm = props => {
 
 					<CardFooter>
 						<Button isPrimary isLarge onClick={ handleSubmit }>
-							{ __( 'Submit Evidence', 'woocommerce-payments' ) }
+							{ __( 'Submit evidence', 'woocommerce-payments' ) }
 						</Button>
 						<Button isDefault isLarge onClick={ () => onSave( false ) }>
-							{ __( 'Save For Later', 'woocommerce-payments' ) }
+							{ __( 'Save for later', 'woocommerce-payments' ) }
 						</Button>
 					</CardFooter>
 				</Card>
@@ -146,10 +146,10 @@ export const DisputeEvidencePage = props => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Challenge Dispute', 'woocommerce-payments' ) } /> }>
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Challenge dispute', 'woocommerce-payments' ) } /> }>
 				<Info dispute={ dispute } isLoading={ isLoading } />
 			</Card>
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product Type', 'woocommerce-payments' ) } /> }>
+			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product type', 'woocommerce-payments' ) } /> }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 					<SelectControl
 						value={ productType }
