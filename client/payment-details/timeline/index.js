@@ -73,6 +73,7 @@ const getDepositTimelineItem = ( event, amount, currency, isPositive, body = [] 
 		icon: <Gridicon icon={ isPositive ? 'plus' : 'minus' } />,
 		headline,
 		body,
+		hideTimestamp: true,
 	};
 };
 
@@ -86,6 +87,7 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 			status
 		),
 		body: [],
+		hideTimestamp: true,
 	};
 };
 
