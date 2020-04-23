@@ -337,7 +337,6 @@ class WC_Payments_Account {
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
-	 *
 	 */
 	private function init_oauth( $wcpay_connect_from ) {
 		// Clear account transient when generating Stripe's oauth data.
