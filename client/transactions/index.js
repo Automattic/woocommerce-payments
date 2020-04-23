@@ -29,7 +29,7 @@ const columns = [
 	{
 		key: 'date',
 		label: __( 'Date / Time', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Date and Time', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		defaultOrder: 'desc',
@@ -68,7 +68,7 @@ const columns = [
 	{
 		key: 'order',
 		label: __( 'Order #', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Order Number', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Order number', 'woocommerce-payments' ),
 		required: true,
 	},
 	{
@@ -96,7 +96,7 @@ const columns = [
 	{
 		key: 'risk_level',
 		label: __( 'Risk level', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Risk Level', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
 		visible: false,
 	},
 ];

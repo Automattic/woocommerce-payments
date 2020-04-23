@@ -111,14 +111,14 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   <span
                     class="screen-reader-text"
                   >
-                    Date and Time
+                    Date and time
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-0-1"
                 >
-                  Sort by Date and Time in ascending order
+                  Sort by Date and time in ascending order
                 </span>
               </th>
               <th
@@ -276,7 +276,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 <span
                   class="screen-reader-text"
                 >
-                  Order Number
+                  Order number
                 </span>
               </th>
               <th
@@ -356,7 +356,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 <span
                   class="screen-reader-text"
                 >
-                  Risk Level
+                  Risk level
                 </span>
               </th>
             </tr>
@@ -630,14 +630,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <span
                     class="screen-reader-text"
                   >
-                    Date and Time
+                    Date and time
                   </span>
                 </button>
                 <span
                   class="screen-reader-text"
                   id="header-1-1"
                 >
-                  Sort by Date and Time in ascending order
+                  Sort by Date and time in ascending order
                 </span>
               </th>
               <th
@@ -795,7 +795,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 <span
                   class="screen-reader-text"
                 >
-                  Order Number
+                  Order number
                 </span>
               </th>
               <th
@@ -875,7 +875,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 <span
                   class="screen-reader-text"
                 >
-                  Risk Level
+                  Risk level
                 </span>
               </th>
               <th
