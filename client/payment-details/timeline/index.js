@@ -19,7 +19,6 @@ import Gridicon from 'gridicons';
 import { useTimeline } from 'data';
 import { reasons as disputeReasons } from 'disputes/strings';
 import Loadable, { LoadableBlock } from 'components/loadable';
-import './style.scss';
 
 const currencyData = getCurrencyData();
 
@@ -103,7 +102,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="icon-yellow" />,
+				icon: <Gridicon icon="checkmark" className="is-warning" />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully authorized', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -115,7 +114,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="icon-yellow" />,
+				icon: <Gridicon icon="checkmark" className="is-warning" />,
 				headline: sprintf(
 					__( 'Authorization for %s was voided', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -127,7 +126,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="icon-red" />,
+				icon: <Gridicon icon="cross" className="is-error" />,
 				headline: sprintf(
 					__( 'Authorization for %s expired', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -140,7 +139,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="icon-green" />,
+				icon: <Gridicon icon="checkmark" className="is-success" />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully charged', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -163,7 +162,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="icon-green" />,
+				icon: <Gridicon icon="checkmark" className="is-success" />,
 				headline: sprintf(
 					__( 'A payment of %s was successfully refunded', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount_refunded / 100 )
@@ -179,7 +178,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="icon-red" />,
+				icon: <Gridicon icon="cross" className="is-error" />,
 				headline: sprintf(
 					__( 'A payment of %s failed', 'woocommerce-payments' ),
 					currency.formatCurrency( event.amount / 100 )
@@ -212,7 +211,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="icon-red" />,
+				icon: <Gridicon icon="cross" className="is-error" />,
 				headline: reasonHeadline,
 				body: [
 					<a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a>,
@@ -228,7 +227,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="icon-green" />,
+				icon: <Gridicon icon="checkmark" className="is-success" />,
 				headline: __( 'Challenge evidence submitted', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: In Review', 'woocommerce-payments' ) ),
@@ -238,7 +237,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="notice-outline" className="icon-green" />,
+				icon: <Gridicon icon="notice-outline" className="is-success" />,
 				headline: __( 'Dispute won! The bank ruled in your favor', 'woocommerce-payments' ),
 			},
 			getDepositTimelineItem( event, total, currency, true, [
@@ -251,7 +250,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="icon-red" />,
+				icon: <Gridicon icon="cross" className="is-error" />,
 				headline: __( 'Dispute lost. The bank ruled favor of your customer', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: Lost', 'woocommerce-payments' ) ),
