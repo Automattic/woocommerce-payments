@@ -231,7 +231,8 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			try {
-				$this->init_oauth();
+				$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+				$this->init_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init oauth flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
@@ -334,8 +335,11 @@ class WC_Payments_Account {
 
 	/**
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
+	 *
+	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
+	 *
 	 */
-	private function init_oauth() {
+	private function init_oauth( $wcpay_connect_from ) {
 		// Clear account transient when generating Stripe's oauth data.
 		delete_transient( self::ACCOUNT_TRANSIENT );
 
@@ -344,17 +348,14 @@ class WC_Payments_Account {
 		// Usually the return URL is the WCPay plugin settings page.
 		// But if connection originated on the WCADMIN payment task page, return there.
 		$return_url = WC_Payment_Gateway_WCPay::get_settings_url();
-		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-			if ( strcmp( $wcpay_connect_param, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
-				$return_url = add_query_arg(
-					array(
-						'page' => 'wc-admin',
-						'task' => 'payments',
-					),
-					admin_url( 'admin.php' )
-				);
-			}
+		if ( strcmp( $wcpay_connect_from, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
+			$return_url = add_query_arg(
+				array(
+					'page' => 'wc-admin',
+					'task' => 'payments',
+				),
+				admin_url( 'admin.php' )
+			);
 		}
 
 		$oauth_data = $this->payments_api_client->get_oauth_data(
