@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -18,7 +18,7 @@ describe( 'HorizontalList', () => {
 			{ title: 'Item 3', content: 'Item 3 content' },
 			{ title: 'Item 4', content: 'Item 4 content' },
 		];
-		horizontalList = renderHorizontalList( items );
+		horizontalList = renderHorizontalList( items ).container;
 	} );
 
 	test( 'correctly renders a List element with horizontal class modifier', () => {
@@ -26,7 +26,7 @@ describe( 'HorizontalList', () => {
 	} );
 
 	function renderHorizontalList( items ) {
-		return shallow( <HorizontalList items={ items } /> );
+		return render( <HorizontalList items={ items } /> );
 	}
 } );
 
