@@ -301,7 +301,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// Create a new customer.
 					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
 				} else {
-					$this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+					// Update the existing customer with the current details. In the event the old customer can't be
+					// found a new one is created, so we update the customer ID here as well.
+					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
 				}
 
 				$metadata = [
