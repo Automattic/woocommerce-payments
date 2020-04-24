@@ -28,6 +28,8 @@ export function* getTransactions( query ) {
 		{
 			page: query.paged,
 			pagesize: query.perPage,
+			sort: query.orderby,
+			direction: query.order,
 			/* eslint-disable-next-line camelcase */
 			deposit_id: query.depositId,
 		}

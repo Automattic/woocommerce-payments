@@ -10,13 +10,13 @@ import { __ } from '@wordpress/i18n';
 // Mapping of dispute reason to strings.
 export const reasons = {
 	bank_cannot_process: {
-		display: __( 'Bank Cannot Process', 'woocommerce-payments' ),
+		display: __( 'Bank cannot process', 'woocommerce-payments' ),
 	},
 	check_returned: {
-		display: __( 'Check Returned', 'woocommerce-payments' ),
+		display: __( 'Check returned', 'woocommerce-payments' ),
 	},
 	credit_not_processed: {
-		display: __( 'Credit Not Processed', 'woocommerce-payments' ),
+		display: __( 'Credit not processed', 'woocommerce-payments' ),
 		overview: [
 			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
 			__( 'If your customer was not refunded appropriately, you will need to accept the dispute, or resolve the issue with your customer. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
@@ -33,10 +33,10 @@ export const reasons = {
 		],
 	},
 	customer_initiated: {
-		display: __( 'Customer Initiated', 'woocommerce-payments' ),
+		display: __( 'Customer initiated', 'woocommerce-payments' ),
 	},
 	debit_not_authorized: {
-		display: __( 'Debit Not Authorized', 'woocommerce-payments' ),
+		display: __( 'Debit not authorized', 'woocommerce-payments' ),
 	},
 	duplicate: {
 		display: __( 'Duplicate', 'woocommerce-payments' ),
@@ -85,13 +85,13 @@ export const reasons = {
 		],
 	},
 	incorrect_account_details: {
-		display: __( 'Incorrect Account Details', 'woocommerce-payments' ),
+		display: __( 'Incorrect account details', 'woocommerce-payments' ),
 	},
 	insufficient_funds: {
-		display: __( 'Insufficient Funds', 'woocommerce-payments' ),
+		display: __( 'Insufficient funds', 'woocommerce-payments' ),
 	},
 	product_not_received: {
-		display: __( 'Product Not Received', 'woocommerce-payments' ),
+		display: __( 'Product not received', 'woocommerce-payments' ),
 		overview: [
 			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer received their product or service, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
@@ -108,7 +108,7 @@ export const reasons = {
 		],
 	},
 	product_unacceptable: {
-		display: __( 'Product Unacceptable', 'woocommerce-payments' ),
+		display: __( 'Product unacceptable', 'woocommerce-payments' ),
 		overview: [
 			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer received their product or service as described, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
@@ -128,7 +128,7 @@ export const reasons = {
 		],
 	},
 	subscription_canceled: {
-		display: __( 'Subscription Canceled', 'woocommerce-payments' ),
+		display: __( 'Subscription canceled', 'woocommerce-payments' ),
 		overview: [
 			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),

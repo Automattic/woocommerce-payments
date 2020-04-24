@@ -46,21 +46,21 @@ const disputeNoNeedForResponse = {
 const fields = [
 	{
 		key: 'general',
-		title: 'General Evidence',
+		title: 'General evidence',
 		fields: [
 			{
 				key: 'product_description',
-				label: 'Product Description',
+				label: 'Product description',
 				type: 'textarea',
 			},
 			{
 				key: 'customer_name',
-				label: 'Customer Name',
+				label: 'Customer name',
 				type: 'text',
 			},
 			{
 				key: 'customer_signature',
-				label: 'Customer Signature',
+				label: 'Customer signature',
 				type: 'file',
 			},
 		],

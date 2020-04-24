@@ -54,12 +54,12 @@ exports[`Disputes list renders correctly 1`] = `
       },
       Object {
         "key": "created",
-        "label": "Disputed On",
+        "label": "Disputed on",
         "required": true,
       },
       Object {
         "key": "dueBy",
-        "label": "Respond By",
+        "label": "Respond by",
         "required": true,
       },
     ]
@@ -131,9 +131,9 @@ exports[`Disputes list renders correctly 1`] = `
           "display": <ClickableCell
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
           >
-            Mock Customer
+            Mock customer
           </ClickableCell>,
-          "value": "Mock Customer",
+          "value": "Mock customer",
         },
         Object {
           "display": <ClickableCell

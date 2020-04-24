@@ -33,7 +33,7 @@ export const FileUploadControl = ( props ) => {
 					accept={ accept }
 					onChange={ ( event ) => onFileChange( field.key, event.target.files[ 0 ] ) }
 				>
-					{ __( 'Upload File', 'woocommerce-payments' ) }
+					{ __( 'Upload file', 'woocommerce-payments' ) }
 				</FormFileUpload>
 
 				{ hasError

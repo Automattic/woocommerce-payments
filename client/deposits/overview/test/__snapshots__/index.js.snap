@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposits Overview renders correctly 1`] = `
+exports[`Deposits overview renders correctly 1`] = `
 <div>
   <div
     class="wcpay-deposits-overview"
@@ -24,7 +24,7 @@ exports[`Deposits Overview renders correctly 1`] = `
       <span
         class="wcpay-deposits-overview__schedule-label"
       >
-        Deposit Schedule:
+        Deposit schedule:
       </span>
        
       <span
@@ -35,7 +35,7 @@ exports[`Deposits Overview renders correctly 1`] = `
     </p>
     <div
       aria-describedby="woocommerce-summary-helptext-1"
-      aria-label="Deposits Overview"
+      aria-label="Deposits overview"
       aria-orientation="horizontal"
       role="menu"
     >

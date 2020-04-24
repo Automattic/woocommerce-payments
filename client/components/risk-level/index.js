@@ -1,27 +1,25 @@
 /** @format */
 
 /**
- * External dependencies
+ * Internal dependencies
  */
-import { __ } from '@wordpress/i18n';
+import riskMappings from './strings';
 
-const riskMappings = [
-	__( 'Normal', 'woocommerce-payments' ),
-	__( 'Elevated', 'woocommerce-payments' ),
-	__( 'Highest', 'woocommerce-payments' ),
-];
+const riskOrder = [ 'normal', 'elevated', 'highest' ];
 
-const colorMappings = [
-	'green',
-	'orange',
-	'red',
-];
+const colorMappings = {
+	normal: 'green',
+	elevated: 'orange',
+	highest: 'red',
+};
 
-const RiskLevel = ( props ) => {
-	const { risk } = props;
+const RiskLevel = ( { risk } ) => {
+	const riskLevel = riskOrder[ risk ];
 
 	return (
-		<span style={ { color: colorMappings[ risk ] } }>{ riskMappings[ risk ] }</span>
+		<span style={ { color: colorMappings[ riskLevel ] } }>
+			{ riskMappings[ riskLevel ] }
+		</span>
 	);
 };
 

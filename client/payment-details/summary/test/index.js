@@ -30,7 +30,7 @@ const getBaseCharge = () => ( {
 	},
 	// eslint-disable-next-line camelcase
 	billing_details: {
-		name: 'Customer Name',
+		name: 'Customer name',
 	},
 	// eslint-disable-next-line camelcase
 	payment_method_details: {

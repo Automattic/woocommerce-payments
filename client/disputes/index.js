@@ -33,8 +33,8 @@ const headers = [
 	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
 	{ key: 'email', label: __( 'Email', 'woocommerce-payments' ), visible: false },
 	{ key: 'country', label: __( 'Country', 'woocommerce-payments' ), visible: false },
-	{ key: 'created', label: __( 'Disputed On', 'woocommerce-payments' ), required: true },
-	{ key: 'dueBy', label: __( 'Respond By', 'woocommerce-payments' ), required: true },
+	{ key: 'created', label: __( 'Disputed on', 'woocommerce-payments' ), required: true },
+	{ key: 'dueBy', label: __( 'Respond by', 'woocommerce-payments' ), required: true },
 ];
 
 export const DisputesList = ( props ) => {

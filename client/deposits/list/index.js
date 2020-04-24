@@ -36,7 +36,7 @@ const columns = [
 	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true, required: true },
 	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
-	{ key: 'bankAccount', label: __( 'Bank Account', 'woocommerce-payments' ) },
+	{ key: 'bankAccount', label: __( 'Bank account', 'woocommerce-payments' ) },
 ];
 
 export const DepositsList = () => {
@@ -68,7 +68,7 @@ export const DepositsList = () => {
 	return (
 		<TableCard
 			// className="deposits-list"
-			title={ __( 'Deposit History', 'woocommerce-payments' ) }
+			title={ __( 'Deposit history', 'woocommerce-payments' ) }
 			isLoading={ isLoading }
 			// rowsPerPage={ getQuery().per_page || 25 }
 			// totalRows={ count || 0 }

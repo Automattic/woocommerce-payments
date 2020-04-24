@@ -83,7 +83,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit Card', 'woocommerce-payments' );
+		$this->title              = __( 'Credit card', 'woocommerce-payments' );
 		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = array(
 			'products',
@@ -93,7 +93,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Define setting fields.
 		$this->form_fields = array(
 			'enabled'         => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
+				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
@@ -106,7 +106,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type' => 'account_status',
 			),
 			'manual_capture'  => array(
-				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
+				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
@@ -114,7 +114,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'desc_tip'    => true,
 			),
 			'test_mode'       => array(
-				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
+				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
@@ -122,7 +122,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'desc_tip'    => true,
 			),
 			'enable_logging'  => array(
-				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
+				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
@@ -132,9 +132,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $this->is_in_dev_mode() ) {
 			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
-			$this->form_fields['test_mode']['label']                              = __( 'Dev Mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['test_mode']['label']                              = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
 			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
-			$this->form_fields['enable_logging']['label']                         = __( 'Dev Mode is active so logging is on by default.', 'woocommerce-payments' );
+			$this->form_fields['enable_logging']['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
 		}
 
 		// Load the settings.
@@ -169,7 +169,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
-					<b><?php esc_html_e( 'Test Mode Active: ', 'woocommerce-payments' ); ?></b>
+					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
 					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
 				</p>
 			</div>
@@ -476,7 +476,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Account Status', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Account status', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<div id="wcpay-account-status-container"></div>

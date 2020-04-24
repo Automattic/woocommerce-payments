@@ -10,39 +10,39 @@ import { includes } from 'lodash';
 const sections = [
 	{
 		key: 'general',
-		title: __( 'General Evidence', 'woocommerce-payments' ),
+		title: __( 'General evidence', 'woocommerce-payments' ),
 		description: __( 'Provide general evidence about the customer and the order.', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'product_description',
-				label: __( 'Product Description', 'woocommerce-payments' ),
+				label: __( 'Product description', 'woocommerce-payments' ),
 				type: 'textarea',
 				description: __( 'A description of the product or service and any relevant details on how this was presented to the customer at the time of purchase.', 'woocommerce-payments' ),
 			},
 			{
 				key: 'customer_name',
-				label: __( 'Customer Name', 'woocommerce-payments' ),
+				label: __( 'Customer name', 'woocommerce-payments' ),
 				type: 'text',
 			},
 			{
 				key: 'customer_email_address',
-				label: __( 'Customer Email', 'woocommerce-payments' ),
+				label: __( 'Customer email', 'woocommerce-payments' ),
 				type: 'text',
 			},
 			{
 				key: 'customer_signature',
-				label: __( 'Customer Signature', 'woocommerce-payments' ),
+				label: __( 'Customer signature', 'woocommerce-payments' ),
 				type: 'file',
 				description: __( "A relevant document or contract showing the customer's signature (if available).", 'woocommerce-payments' ),
 			},
 			{
 				key: 'billing_address',
-				label: __( 'Customer Billing Address', 'woocommerce-payments' ),
+				label: __( 'Customer billing address', 'woocommerce-payments' ),
 				type: 'textarea',
 			},
 			{
 				key: 'customer_purchase_ip',
-				label: __( 'Customer IP Address', 'woocommerce-payments' ),
+				label: __( 'Customer IP address', 'woocommerce-payments' ),
 				type: 'text',
 			},
 			{
@@ -53,7 +53,7 @@ const sections = [
 			},
 			{
 				key: 'customer_communication',
-				label: __( 'Customer Communication', 'woocommerce-payments' ),
+				label: __( 'Customer communication', 'woocommerce-payments' ),
 				type: 'file',
 				description: __( 'Any communication with the customer that you feel is relevant to your case (e.g. emails proving that they received the product or service, or demonstrating their use of or satisfaction with the product or service).', 'woocommerce-payments' ),
 			},
@@ -61,11 +61,11 @@ const sections = [
 	},
 	{
 		key: 'refund_policy_info',
-		title: __( 'Refund Policy Info', 'woocommerce-payments' ),
+		title: __( 'Refund policy info', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'refund_policy',
-				label: __( 'Refund Policy', 'woocommerce-payments' ),
+				label: __( 'Refund policy', 'woocommerce-payments' ),
 				type: 'file',
 				description: __( 'Your refund policy, as shown or provided to the customer.', 'woocommerce-payments' ),
 			},
@@ -86,7 +86,7 @@ const sections = [
 	},
 	{
 		key: 'duplicate_charge_info',
-		title: __( 'Duplicate Charge Info', 'woocommerce-payments' ),
+		title: __( 'Duplicate charge info', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'duplicate_charge_id',
@@ -127,7 +127,7 @@ const sections = [
 	},
 	{
 		key: 'shipping_information',
-		title: __( 'Shipping Information', 'woocommerce-payments' ),
+		title: __( 'Shipping information', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'shipping_carrier',
@@ -155,7 +155,7 @@ const sections = [
 			},
 			{
 				key: 'shipping_address',
-				label: __( 'Shipping Address', 'woocommerce-payments' ),
+				label: __( 'Shipping address', 'woocommerce-payments' ),
 				type: 'textarea',
 				description: __( 'The address to which a physical product was shipped. The shipping address must match a billing address verified with AVS. (A signature is not required as evidence of delivery).', 'woocommerce-payments' ),
 			},
@@ -165,11 +165,11 @@ const sections = [
 	},
 	{
 		key: 'cancellation_policy_info',
-		title: __( 'Cancellation Policy Info', 'woocommerce-payments' ),
+		title: __( 'Cancellation policy info', 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'cancellation_policy',
-				label: __( 'Cancellation Policy', 'woocommerce-payments' ),
+				label: __( 'Cancellation policy', 'woocommerce-payments' ),
 				type: 'file',
 				description: __( 'Your subscription cancellation policy, as shown to the customer.', 'woocommerce-payments' ),
 			},
@@ -181,7 +181,7 @@ const sections = [
 			},
 			{
 				key: 'cancellation_rebuttal',
-				label: __( 'Cancellation Rebuttal', 'woocommerce-payments' ),
+				label: __( 'Cancellation rebuttal', 'woocommerce-payments' ),
 				type: 'textarea',
 				description: __( "A justification for why the customer's subscription was not canceled.", 'woocommerce-payments' ),
 			},
@@ -245,12 +245,12 @@ const sections = [
 	},
 	{
 		key: 'uncategorized',
-		title: __( 'Additional Details', 'woocommerce-payments' ),
+		title: __( 'Additional details', 'woocommerce-payments' ),
 		description: __( "Provide any extra evidence or statements you'd like the bank to see, either as text or by uploading a document.", 'woocommerce-payments' ),
 		fields: [
 			{
 				key: 'uncategorized_text',
-				label: __( 'Additional Details', 'woocommerce-payments' ),
+				label: __( 'Additional details', 'woocommerce-payments' ),
 				type: 'textarea',
 			},
 			{
