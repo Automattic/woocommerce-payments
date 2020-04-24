@@ -14,10 +14,10 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  * Internal dependencies.
  */
 import { useTransactions, useTransactionsSummary } from '../data';
-import OrderLink from '../components/order-link';
-import RiskLevel from '../components/risk-level';
+import OrderLink from 'components/order-link';
+import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink, { getDetailsURL } from '../components/details-link';
+import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
 import Deposit from './deposit';
