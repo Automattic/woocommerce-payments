@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -78,28 +79,10 @@ const mockTransactions = [
 describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-	} );
-
-	test( 'renders correctly', () => {
-		useTransactions.mockReturnValue( {
-			transactions: mockTransactions,
-			isLoading: false,
-		} );
-
-		useTransactionsSummary.mockReturnValue( {
-			transactionsSummary: {
-				count: 10,
-				fees: 100,
-				total: 1000,
-				net: 900,
-			},
-			isLoading: false,
-		} );
-
-		const list = shallow(
-			<TransactionsList />
-		);
-		expect( list ).toMatchSnapshot();
+		// the query string is preserved across tests, so we need to reset it
+		if ( '' !== window.location.search ) {
+			updateQueryString( {} );
+		}
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {
@@ -118,10 +101,82 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const list = shallow(
+		const { container } = render(
 			<TransactionsList depositId="po_mock" />
 		);
-		expect( list ).toMatchSnapshot();
+		expect( container ).toMatchSnapshot();
 		expect( useTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
+	} );
+
+	describe( 'when not filtered by deposit', () => {
+		let container, getAllByText, rerender;
+		beforeEach( () => {
+			useTransactions.mockReturnValue( {
+				transactions: mockTransactions,
+				isLoading: false,
+			} );
+
+			useTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 10,
+					fees: 100,
+					total: 1000,
+					net: 900,
+				},
+				isLoading: false,
+			} );
+
+			( { container, rerender, getAllByText } = render( <TransactionsList /> ) );
+		} );
+
+		test( 'renders correctly', () => {
+			expect( container ).toMatchSnapshot();
+		} );
+
+		test( 'sorts by default field date', () => {
+			sortBy( 'Date / Time' );
+			expectSortingToBe( 'date', 'asc' );
+
+			sortBy( 'Date / Time' );
+			expectSortingToBe( 'date', 'desc' );
+		} );
+
+		test( 'sorts by amount', () => {
+			sortBy( 'Amount' );
+			expectSortingToBe( 'amount', 'desc' );
+
+			sortBy( 'Amount' );
+			expectSortingToBe( 'amount', 'asc' );
+		} );
+
+		test( 'sorts by fees', () => {
+			sortBy( 'Fees' );
+			expectSortingToBe( 'fees', 'desc' );
+
+			sortBy( 'Fees' );
+			expectSortingToBe( 'fees', 'asc' );
+		} );
+
+		test( 'sorts by net', () => {
+			sortBy( 'Net' );
+			expectSortingToBe( 'net', 'desc' );
+
+			sortBy( 'Net' );
+			expectSortingToBe( 'net', 'asc' );
+		} );
+
+		function sortBy( field ) {
+			const sortButton = getAllByText( field )[ 0 ];
+			fireEvent.click( sortButton, { preventDefault: () => {} } );
+			rerender( <TransactionsList /> );
+		}
+
+		function expectSortingToBe( field, direction ) {
+			expect( getQuery().orderby ).toEqual( field );
+			expect( getQuery().order ).toEqual( direction );
+			const useTransactionsCall = useTransactions.mock.calls[ useTransactions.mock.calls.length - 1 ];
+			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
+			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
+		}
 	} );
 } );

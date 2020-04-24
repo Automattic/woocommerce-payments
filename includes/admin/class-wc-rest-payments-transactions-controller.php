@@ -60,8 +60,10 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	public function get_transactions( $request ) {
 		$page       = intval( $request->get_params()['page'] );
 		$page_size  = intval( $request->get_params()['pagesize'] );
+		$sort       = $request->get_params()['sort'];
+		$direction  = $request->get_params()['direction'];
 		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->forward_request( 'list_transactions', [ $page, $page_size, $deposit_id ] );
+		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $deposit_id ] );
 	}
 
 	/**

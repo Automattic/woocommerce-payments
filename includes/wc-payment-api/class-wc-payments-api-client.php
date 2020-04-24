@@ -247,15 +247,19 @@ class WC_Payments_API_Client {
 	 *
 	 * @param int    $page       The requested page.
 	 * @param int    $page_size  The size of the requested page.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
 	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions( $page = 0, $page_size = 25, $deposit_id = null ) {
+	public function list_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $deposit_id = null ) {
 		$query = [
 			'page'       => $page,
 			'pagesize'   => $page_size,
+			'sort'       => $sort,
+			'direction'  => $direction,
 			'deposit_id' => $deposit_id,
 		];
 
