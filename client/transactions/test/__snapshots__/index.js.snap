@@ -387,27 +387,62 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               <td
                 class="woocommerce-table__item date-time is-left-aligned is-sorted"
               >
-                Jan 4, 2020 / 11:22PM
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Jan 4, 2020 / 11:22PM
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Charge
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Charge
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $15.00
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $15.00
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $-0.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $14.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $14.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
@@ -422,33 +457,68 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <span
-                  class="payment-method__brand payment-method__brand--mastercard"
-                />
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                My name
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                a@b.com
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                US
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <span
-                  style="color: red;"
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
                 >
-                  Highest
-                </span>
+                  <span
+                    class="payment-method__brand payment-method__brand--mastercard"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  My name
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  a@b.com
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  US
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <span
+                    style="color: red;"
+                  >
+                    Highest
+                  </span>
+                </a>
               </td>
             </tr>
           </tbody>
@@ -917,27 +987,62 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item date-time is-left-aligned is-sorted"
               >
-                Jan 2, 2020 / 12:46PM
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Jan 2, 2020 / 12:46PM
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Refund
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Refund
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $10.00
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $10.00
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $-0.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $9.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $9.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
@@ -952,33 +1057,68 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <span
-                  class="payment-method__brand payment-method__brand--visa"
-                />
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                Another customer
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                another@customer.com
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                US
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <span
-                  style="color: green;"
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
                 >
-                  Normal
-                </span>
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Another customer
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  another@customer.com
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  US
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  <span
+                    style="color: green;"
+                  >
+                    Normal
+                  </span>
+                </a>
               </td>
               <td
                 class="woocommerce-table__item deposit"
@@ -1013,27 +1153,62 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item date-time is-left-aligned is-sorted"
               >
-                Jan 4, 2020 / 11:22PM
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Jan 4, 2020 / 11:22PM
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Charge
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Charge
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $15.00
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $15.00
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $-0.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $14.50
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $14.50
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
@@ -1048,33 +1223,68 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <span
-                  class="payment-method__brand payment-method__brand--mastercard"
-                />
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                My name
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                a@b.com
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                US
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <span
-                  style="color: red;"
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
                 >
-                  Highest
-                </span>
+                  <span
+                    class="payment-method__brand payment-method__brand--mastercard"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  My name
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  a@b.com
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  US
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <span
+                    style="color: red;"
+                  >
+                    Highest
+                  </span>
+                </a>
               </td>
               <td
                 class="woocommerce-table__item deposit"

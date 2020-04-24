@@ -14,9 +14,10 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  * Internal dependencies.
  */
 import { useTransactions, useTransactionsSummary } from '../data';
-import OrderLink from '../components/order-link';
-import RiskLevel from '../components/risk-level';
-import DetailsLink from '../components/details-link';
+import OrderLink from 'components/order-link';
+import RiskLevel from 'components/risk-level';
+import ClickableCell from 'components/clickable-cell';
+import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
 import Deposit from './deposit';
@@ -117,6 +118,8 @@ export const TransactionsList = ( props ) => {
 	}
 
 	const rows = transactions.map( ( txn ) => {
+		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
+		const clickable = ( children ) => <ClickableCell href={ detailsURL }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
@@ -125,25 +128,25 @@ export const TransactionsList = ( props ) => {
 		// Map transaction into table row.
 		const data = {
 			details: { value: txn.transaction_id, display: detailsLink },
-			date: { value: txn.date, display: dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) },
-			type: { value: txn.type, display: displayType[ txn.type ] || formatStringValue( txn.type ) },
+			date: { value: txn.date, display: clickable( dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) ) },
+			type: { value: txn.type, display: clickable( displayType[ txn.type ] || formatStringValue( txn.type ) ) },
 			source: {
 				value: txn.source,
-				display: <span className={ `payment-method__brand payment-method__brand--${ txn.source }` } />,
+				display: clickable( <span className={ `payment-method__brand payment-method__brand--${ txn.source }` } /> ),
 			},
 			order: { value: txn.order_id, display: orderUrl },
 			// eslint-disable-next-line camelcase
-			customer_name: { value: txn.customer_name, display: txn.customer_name },
+			customer_name: { value: txn.customer_name, display: clickable( txn.customer_name ) },
 			// eslint-disable-next-line camelcase
-			customer_email: { value: txn.customer_email, display: txn.customer_email },
+			customer_email: { value: txn.customer_email, display: clickable( txn.customer_email ) },
 			// eslint-disable-next-line camelcase
-			customer_country: { value: txn.customer_country, display: txn.customer_country },
-			amount: { value: txn.amount / 100, display: currency.formatCurrency( txn.amount / 100 ) },
+			customer_country: { value: txn.customer_country, display: clickable( txn.customer_country ) },
+			amount: { value: txn.amount / 100, display: clickable( currency.formatCurrency( txn.amount / 100 ) ) },
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fees: { value: txn.fees / 100, display: currency.formatCurrency( ( txn.fees / 100 ) * -1 ) },
-			net: { value: txn.net / 100, display: currency.formatCurrency( txn.net / 100 ) },
+			fees: { value: txn.fees / 100, display: clickable( currency.formatCurrency( ( txn.fees / 100 ) * -1 ) ) },
+			net: { value: txn.net / 100, display: clickable( currency.formatCurrency( txn.net / 100 ) ) },
 			// eslint-disable-next-line camelcase
-			risk_level: { value: txn.risk_level, display: riskLevel },
+			risk_level: { value: txn.risk_level, display: clickable( riskLevel ) },
 			deposit: { value: txn.deposit_id, display: deposit },
 		};
 
