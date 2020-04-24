@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -70,7 +70,7 @@ describe( 'PaymentStatusChip', () => {
 	} );
 
 	function renderPaymentStatus() {
-		return shallow( <PaymentStatusChip charge={ {} } /> );
+		return render( <PaymentStatusChip charge={ {} } /> ).container;
 	}
 } );
 

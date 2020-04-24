@@ -1,78 +1,109 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentStatusChip renders a default light chip with no message if status does not match 1`] = `
-<Chip
-  message=""
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  />
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with dispute message if there's a dispute in review 1`] = `
-<Chip
-  message="Disputed: In review"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: In review
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with dispute message if there's a lost dispute 1`] = `
-<Chip
-  message="Disputed: Lost"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Lost
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with dispute message if there's a won dispute 1`] = `
-<Chip
-  message="Disputed: Won"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Won
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with fully refunded message if there's a full refund 1`] = `
-<Chip
-  message="Refunded"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Refunded
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with paid message if it is paid 1`] = `
-<Chip
-  message="Paid"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Paid
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a light chip with partially refunded message if there's a partial refund 1`] = `
-<Chip
-  message="Partial refund"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Partial refund
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a primary chip with authorized message if payment was not captured 1`] = `
-<Chip
-  message="Payment authorized"
-  type="primary"
-/>
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Payment authorized
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders a primary chip with dispute message if there's a dispute needing response 1`] = `
-<Chip
-  message="Disputed: Needs response"
-  type="primary"
-/>
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Disputed: Needs response
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders an alert chip with failed message if payment status is blocked 1`] = `
-<Chip
-  message="Payment blocked"
-  type="alert"
-/>
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Payment blocked
+  </span>
+</div>
 `;
 
 exports[`PaymentStatusChip renders an alert chip with failed message if payment status is failed 1`] = `
-<Chip
-  message="Payment failed"
-  type="alert"
-/>
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Payment failed
+  </span>
+</div>
 `;
