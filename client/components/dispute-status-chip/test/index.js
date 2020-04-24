@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -30,7 +30,8 @@ describe( 'DisputeStatusChip', () => {
 	} );
 
 	function renderDisputeStatus( status ) {
-		return shallow( <DisputeStatusChip status={ status } /> );
+		const { container } = render( <DisputeStatusChip status={ status } /> );
+		return container;
 	}
 } );
 
