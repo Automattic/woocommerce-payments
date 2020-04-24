@@ -99,12 +99,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	/**
 	 */
 	public function test_intent_status_success() {
+		// Arrange: Reusable data.
+		$intent_id = 'pi_123';
+
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
 
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
-			'pi_123',
+			$intent_id,
 			1500,
 			new DateTime(),
 			'succeeded',
@@ -123,5 +126,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals( $this->return_url, $result['redirect'] );
+
+		// Assert: The order note contains all the information we want:
+		// - status
+		// - intention id
+		// - amount charged.
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$latest_wcpay_note = current(
+			array_filter(
+				$notes,
+				function( $note ) {
+					return false !== strpos( $note->content, 'WooCommerce Payments' );
+				}
+			)
+		);
+		$this->assertContains( 'successfully charged', $latest_wcpay_note->content );
+		$this->assertContains( $intent_id, $latest_wcpay_note->content );
+		$this->assertContains( $order->get_total(), $latest_wcpay_note->content );
 	}
 }
