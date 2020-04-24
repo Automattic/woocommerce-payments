@@ -50,9 +50,7 @@
   "devDependencies": {
     "@automattic/color-studio": "^2.2.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
-    "@testing-library/jest-dom": "^4.2.3",
     "@testing-library/react": "^9.4.1",
-    "@testing-library/user-event": "^10.0.0",
     "@woocommerce/components": "^3.2.0",
     "@woocommerce/currency": "^2.0.0",
     "@woocommerce/date": "^1.2.1",
@@ -83,7 +81,7 @@
     "husky": "^2.4.1",
     "lint-staged": "^10.0.7",
     "mini-css-extract-plugin": "^0.6.0",
-    "node-sass": "^4.13.1",
+    "node-sass": "^4.11.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-test-renderer": "^16.8.6",
