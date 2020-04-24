@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -23,14 +23,13 @@ describe( 'Loadable', () => {
 		test( 'renders custom placeholder', () => {
 			const customPlaceholder = 'Custom text';
 			loadableProps.placeholder = customPlaceholder;
-			const loadable = renderLoadable( loadableProps );
-			expect( loadable.text() ).toBe( customPlaceholder );
+			const { queryByText } = renderLoadable( loadableProps );
+			expect( queryByText( customPlaceholder ) ).toBeInTheDocument();
 		} );
 
 		test( 'uses children as placeholder if not passed', () => {
-			const loadable = renderLoadable( loadableProps );
-			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
-			expect( loadable ).toMatchSnapshot();
+			const { container } = renderLoadable( loadableProps );
+			expect( container ).toMatchSnapshot();
 		} );
 	} );
 
@@ -42,35 +41,33 @@ describe( 'Loadable', () => {
 		} );
 
 		test( 'render children', () => {
-			const loadable = renderLoadable( loadableProps );
-			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
-			expect( loadable.text() ).not.toBe( 'placeholder' );
+			const { container } = renderLoadable( loadableProps );
+			expect( container ).toMatchSnapshot();
 		} );
 
 		test( 'renders simple value', () => {
 			const simpleValue = 'Simple loadable value';
 			loadableProps.value = simpleValue;
-			const loadable = renderLoadable( loadableProps, null );
-			expect( loadable.find( ChildComponent ).length ).toBe( 0 );
-			expect( loadable.text() ).toBe( simpleValue );
+			const { queryByText } = renderLoadable( loadableProps, null );
+			expect( queryByText( simpleValue ) ).toBeInTheDocument();
 		} );
 
 		test( 'prioritizes rendering children over simple value', () => {
 			const simpleValue = 'Simple loadable value';
 			loadableProps.value = simpleValue;
-			const loadable = renderLoadable( loadableProps );
-			expect( loadable.find( ChildComponent ).length ).toBe( 1 );
-			expect( loadable.text() ).not.toBe( simpleValue );
+			const { queryByText } = renderLoadable( loadableProps );
+			expect( queryByText( /loaded content/i ) ).toBeInTheDocument();
+			expect( queryByText( simpleValue ) ).not.toBeInTheDocument();
 		} );
 
 		test( 'renders nothing when neither children nor value passed', () => {
-			const loadable = renderLoadable( loadableProps, null );
-			expect( loadable.find( ChildComponent ).length ).toBe( 0 );
-			expect( loadable.text().length ).toBe( 0 );
+			const { container, queryByText } = renderLoadable( loadableProps, null );
+			expect( queryByText( /loaded content/i ) ).not.toBeInTheDocument();
+			expect( container.innerHTML ).toBe( '' );
 		} );
 	} );
 
 	function renderLoadable( props = {}, content = <ChildComponent /> ) {
-		return shallow( <Loadable { ...props }>{ content }</Loadable> );
+		return render( <Loadable { ...props }>{ content }</Loadable> );
 	}
 } );
