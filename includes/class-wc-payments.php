@@ -45,6 +45,13 @@ class WC_Payments {
 	private static $account;
 
 	/**
+	 * Instance of WC_Payments_Customer_Service, created in init function.
+	 *
+	 * @var WC_Payments_Customer_Service
+	 */
+	private static $customer_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -79,10 +86,10 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
-		self::$account    = new WC_Payments_Account( self::$api_client );
-		$customer_service = new WC_Payments_Customer_Service( self::$api_client );
+		self::$account          = new WC_Payments_Account( self::$api_client );
+		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
 
-		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, $customer_service );
+		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service );
 
 		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
 		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
