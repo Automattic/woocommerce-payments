@@ -110,7 +110,7 @@ const depositColumn = {
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
-	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( props.depositId );
+	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( getQuery(), props.depositId );
 
 	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
 

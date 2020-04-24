@@ -16,6 +16,21 @@ import {
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
 } from './actions';
+import { getFormattedQuery } from '../../util';
+
+/*eslint-disable camelcase*/
+const paginationQueryMapping = {
+	page: { source: 'paged', default: 1, isNumber: true },
+	pagesize: { source: 'perPage', default: 25, isNumber: true },
+	sort: { source: 'orderby', default: 'date' },
+	direction: { source: 'order', default: 'desc' },
+};
+const filterQueryMapping = {
+	date: { source: 'date', rules: [ 'before', 'after', 'between' ], isFilter: true },
+	type: { source: 'type', rules: [ 'is', 'is_not' ], isFilter: true },
+	deposit_id: { source: 'depositId' },
+};
+/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of transactions from the transactions list API.
@@ -25,14 +40,7 @@ import {
 export function* getTransactions( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
-		{
-			page: query.paged,
-			pagesize: query.perPage,
-			sort: query.orderby,
-			direction: query.order,
-			/* eslint-disable-next-line camelcase */
-			deposit_id: query.depositId,
-		}
+		getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } )
 	);
 
 	try {
@@ -51,10 +59,7 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		{
-			/* eslint-disable-next-line camelcase */
-			deposit_id: query.depositId,
-		}
+		getFormattedQuery( query, filterQueryMapping )
 	);
 
 	try {
