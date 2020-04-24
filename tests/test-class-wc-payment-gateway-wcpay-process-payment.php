@@ -102,6 +102,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Arrange: Reusable data.
 		$intent_id = 'pi_123';
 		$charge_id = 'ch_123';
+		$status    = 'succeeded';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -111,7 +112,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			$intent_id,
 			1500,
 			new DateTime(),
-			'succeeded',
+			$status,
 			$charge_id
 		);
 		$this->mock_api_client
@@ -151,5 +152,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Assert: Order has correct charge id meta data.
 		$this->assertEquals( $order->get_meta( '_charge_id' ), $charge_id );
+
+		// Assert: Order has correct intention status meta data.
+		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
 	}
 }
