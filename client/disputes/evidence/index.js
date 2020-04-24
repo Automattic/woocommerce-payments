@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import { merge, some, flatten } from 'lodash';
+import { merge, some, flatten, isMatchWith } from 'lodash';
 
 /**
  * Internal dependencies.
@@ -23,6 +23,7 @@ import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import useConfirmNavigation from 'utils/use-confirm-navigation';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -203,14 +204,28 @@ export default ( { query } ) => {
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
 	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
 
+	const pristine = ! dispute || isMatchWith( dispute.evidence, evidence, ( disputeValue, formValue ) => {
+		// Treat null and '' as equal values.
+		if ( null === disputeValue && ! formValue ) {
+			return true;
+		}
+	} );
+
+	useConfirmNavigation( () => {
+		if ( pristine ) {
+			return;
+		}
+
+		return __(
+			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
+			'woocommerce-payments'
+		);
+	}, [ pristine ] );
+
 	const fetchDispute = async () => {
 		setLoading( true );
 		try {
-			const fetchedDispute = await apiFetch( { path } );
-			const fetchedEvidence = fetchedDispute && fetchedDispute.evidence || {};
-			setDispute( fetchedDispute );
-			// Updated fetched evidence to allow submission without UI changes.
-			setEvidence( fetchedEvidence );
+			setDispute( await apiFetch( { path } ) );
 		} finally {
 			setLoading( false );
 		}
@@ -276,11 +291,13 @@ export default ( { query } ) => {
 			page: 'wc-admin',
 			path: '/payments/disputes',
 		} );
+
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
 		*/
 		createSuccessNotice( message );
+
 		getHistory().push( href );
 	};
 
@@ -305,7 +322,12 @@ export default ( { query } ) => {
 			const updatedDispute = await apiFetch( {
 				path,
 				method: 'post',
-				data: { evidence, metadata, submit },
+				data: {
+					// Send full evidence, as submission does not appear to work without new evidence despite being optional.
+					evidence: { ...dispute.evidence, ...evidence },
+					metadata,
+					submit,
+				},
 			} );
 			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
