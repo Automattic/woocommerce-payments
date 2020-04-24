@@ -1,19 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentMethodDetails renders a dash if no card was provided 1`] = `
-<span>
-  –
-</span>
+<div>
+  <span>
+    –
+  </span>
+</div>
 `;
 
 exports[`PaymentMethodDetails renders a valid card brand and last 4 digits 1`] = `
-<span
-  className="payment-method-details"
->
+<div>
   <span
-    className="payment-method__brand payment-method__brand--visa"
-  />
-   •••• 
-  4242
-</span>
+    class="payment-method-details"
+  >
+    <span
+      class="payment-method__brand payment-method__brand--visa"
+    />
+     •••• 
+    4242
+  </span>
+</div>
 `;
