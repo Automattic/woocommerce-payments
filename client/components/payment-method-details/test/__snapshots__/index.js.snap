@@ -13,7 +13,7 @@ exports[`PaymentMethodDetails renders a valid card brand and last 4 digits 1`] =
   <span
     className="payment-method__brand payment-method__brand--visa"
   />
-   •••• 
+   •••• 
   4242
 </span>
 `;

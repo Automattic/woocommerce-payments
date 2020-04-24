@@ -25,7 +25,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
       isPrimary={true}
       onChange={[Function]}
     >
-      Upload File
+      Upload file
     </FormFileUpload>
     <span
       className="upload-message"
@@ -59,7 +59,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
       isPrimary={true}
       onChange={[Function]}
     >
-      Upload File
+      Upload file
     </FormFileUpload>
     <span
       className="upload-message"
@@ -95,7 +95,7 @@ exports[`FileUploadControl renders loading state 1`] = `
       isPrimary={true}
       onChange={[Function]}
     >
-      Upload File
+      Upload file
     </FormFileUpload>
     <span
       className="upload-message"
@@ -129,7 +129,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
       isPrimary={true}
       onChange={[Function]}
     >
-      Upload File
+      Upload file
     </FormFileUpload>
     <span
       className="upload-message"
@@ -175,7 +175,7 @@ exports[`FileUploadControl renders upload failed state 1`] = `
       isPrimary={true}
       onChange={[Function]}
     >
-      Upload File
+      Upload file
     </FormFileUpload>
     <span
       className="upload-message is-destructive"

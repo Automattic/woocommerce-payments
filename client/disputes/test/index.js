@@ -34,7 +34,7 @@ describe( 'Disputes list', () => {
 						},
 						// eslint-disable-next-line camelcase
 						billing_details: {
-							name: 'Mock Customer',
+							name: 'Mock customer',
 							email: 'mock@customer.net',
 							address: {
 								country: 'US',

@@ -9,6 +9,9 @@
     "node": ">=12.16.0",
     "npm": ">=6.13.0"
   },
+  "config": {
+    "wp_org_slug": "woocommerce-payments"
+  },
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "release": "rm -rf vendor && composer install --no-dev && node tasks/release.js",
@@ -19,6 +22,9 @@
     "test:update-snapshots": "npm test -- --updateSnapshot",
     "watch": "webpack --watch",
     "start": "npm run watch",
+    "dev": "npm run up && npm run watch",
+    "up": "docker-compose up -d",
+    "down": "docker-compose down",
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
