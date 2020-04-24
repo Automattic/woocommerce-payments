@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -27,6 +27,6 @@ describe( 'RiskLevel', () => {
 	} );
 
 	function renderRisk( risk ) {
-		return shallow( <RiskLevel risk={ risk } /> );
+		return render( <RiskLevel risk={ risk } /> ).container;
 	}
 } );
