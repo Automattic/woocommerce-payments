@@ -101,7 +101,12 @@ const columns = [
 		visible: false,
 	},
 ];
-const depositColumn = { key: 'deposit', label: __( 'Deposit', 'woocommerce-payments' ), cellClassName: 'deposit' };
+const depositColumn = {
+	key: 'deposit',
+	label: __( 'Deposit', 'woocommerce-payments' ),
+	screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
+	cellClassName: 'deposit',
+};
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );

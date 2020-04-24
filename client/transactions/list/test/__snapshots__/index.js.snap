@@ -954,7 +954,12 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 scope="col"
               >
                 <span
-                  aria-hidden="false"
+                  aria-hidden="true"
+                >
+                  Deposit
+                </span>
+                <span
+                  class="screen-reader-text"
                 >
                   Deposit
                 </span>
