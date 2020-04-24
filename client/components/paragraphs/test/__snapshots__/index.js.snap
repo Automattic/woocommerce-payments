@@ -1,25 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Paragraphs renders empty set of strings correctly 1`] = `null`;
+exports[`Paragraphs renders empty set of strings correctly 1`] = `<div />`;
 
-exports[`Paragraphs renders missing strings correctly 1`] = `null`;
+exports[`Paragraphs renders missing strings correctly 1`] = `<div />`;
 
 exports[`Paragraphs renders set of strings correctly. 1`] = `
-Array [
-  <p
-    key="0"
-  >
+<div>
+  <p>
     Paragraph 1
-  </p>,
-  <p
-    key="1"
-  >
+  </p>
+  <p>
     Paragraph 2
-  </p>,
-  <p
-    key="2"
-  >
+  </p>
+  <p>
     Paragraph 3
-  </p>,
-]
+  </p>
+</div>
 `;
