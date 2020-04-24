@@ -549,7 +549,7 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception Error updating customer.
 	 */
 	public function update_customer( $customer_id, $name = null, $email = null, $description = null ) {
-		if ( null === $customer_id || '' === $customer_id ) {
+		if ( null === $customer_id || '' === trim( $customer_id ) ) {
 			throw new WC_Payments_API_Exception(
 				__( 'Customer ID is required', 'woocommerce-payments' ),
 				'wcpay_mandatory_customer_id_missing',
