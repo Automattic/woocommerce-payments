@@ -115,7 +115,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	 */
 	public function test_webhook_with_no_object_property() {
 		// Setup test request data.
-		$this->request_body['type'] = 'unknown.webhook.event';
+		$this->request_body['type'] = 'charge.refund.updated';
 		unset( $this->request_body['data']['object'] );
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
@@ -130,11 +130,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test a webhook with no object property.
+	 * Test a webhook with no data property.
 	 */
 	public function test_webhook_with_no_data_property() {
 		// Setup test request data.
-		$this->request_body['type'] = 'unknown.webhook.event';
+		$this->request_body['type'] = 'charge.refund.updated';
 		unset( $this->request_body['data'] );
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
