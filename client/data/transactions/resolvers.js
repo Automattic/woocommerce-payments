@@ -5,7 +5,6 @@
  */
 import { apiFetch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
-import { pickBy } from 'lodash';
 
 /**
  * Internal dependencies
@@ -17,21 +16,6 @@ import {
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
 } from './actions';
-import { getFormattedQuery } from '../../util';
-
-/*eslint-disable camelcase*/
-const paginationQueryMapping = {
-	page: { source: 'paged', default: 1, isNumber: true },
-	pagesize: { source: 'perPage', default: 25, isNumber: true },
-	sort: { source: 'orderby', default: 'date' },
-	direction: { source: 'order', default: 'desc' },
-};
-const filterQueryMapping = {
-	date: { source: 'date', rules: [ 'before', 'after', 'between' ], isFilter: true },
-	type: { source: 'type', rules: [ 'is', 'is_not' ], isFilter: true },
-	deposit_id: { source: 'depositId' },
-};
-/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of transactions from the transactions list API.
@@ -41,10 +25,20 @@ const filterQueryMapping = {
 export function* getTransactions( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
-		pickBy(
-			getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } ),
-			item => undefined !== item
-		)
+		/*eslint-disable camelcase*/
+		{
+			page: query.paged,
+			pagesize: query.perPage,
+			sort: query.orderby,
+			direction: query.order,
+			date_before: query.dateBefore,
+			date_after: query.dateAfter,
+			date_between: query.dateBetween,
+			type_is: query.typeIs,
+			type_is_not: query.typeIsNot,
+			deposit_id: query.depositId,
+		}
+		/*eslint-enable camelcase*/
 	);
 
 	try {
@@ -63,10 +57,16 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		pickBy(
-			getFormattedQuery( query, filterQueryMapping ),
-			item => undefined !== item
-		)
+		/*eslint-disable camelcase*/
+		{
+			date_before: query.dateBefore,
+			date_after: query.dateAfter,
+			date_between: query.dateBetween,
+			type_is: query.typeIs,
+			type_is_not: query.typeIsNot,
+			deposit_id: query.depositId,
+		}
+		/*eslint-enable camelcase*/
 	);
 
 	try {

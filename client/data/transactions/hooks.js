@@ -8,48 +8,66 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { getFormattedQuery } from '../../util';
 
-const paginationQueryMapping = {
-	paged: { source: 'paged', default: 1, isNumber: true },
-	perPage: { source: 'per_page', default: 25, isNumber: true },
-	orderby: { source: 'orderby', default: 'date' },
-	order: { source: 'order', default: 'desc' },
-};
-const filterQueryMapping = {
-	date: { source: 'date', rules: [ 'before', 'after', 'between' ], isFilter: true },
-	type: { source: 'type', rules: [ 'is', 'is_not' ], isFilter: true },
-};
-
-export const useTransactions = ( query, depositId ) => useSelect( select => {
+export const useTransactions = (
+	{
+		paged,
+		per_page: perPage,
+		orderby,
+		order,
+		date_before: dateBefore,
+		date_after: dateAfter,
+		date_between: dateBetween,
+		type_is: typeIs,
+		type_is_not: typeIsNot,
+	},
+	depositId
+) => useSelect( select => {
 	const { getTransactions, getTransactionsError, isResolving } = select( STORE_NAME );
 
-	const formattedQuery = getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } );
-	formattedQuery.depositId = depositId || null;
+	const query = {
+		paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
+		perPage: Number.isNaN( parseInt( perPage, 10 ) ) ? '25' : perPage,
+		orderby: orderby || 'date',
+		order: order || 'desc',
+		dateBefore,
+		dateAfter,
+		dateBetween,
+		typeIs,
+		typeIsNot,
+		depositId,
+	};
 
 	return {
-		transactions: getTransactions( formattedQuery ),
-		transactionsError: getTransactionsError( formattedQuery ),
-		isLoading: isResolving( 'getTransactions', [ formattedQuery ] ),
+		transactions: getTransactions( query ),
+		transactionsError: getTransactionsError( query ),
+		isLoading: isResolving( 'getTransactions', [ query ] ),
 	};
-}, [
-	...Object.values( getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } ) ),
-	depositId,
-] );
+}, [ paged, perPage, orderby, order, dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );
 
-export const useTransactionsSummary = ( query, depositId ) => useSelect( select => {
-	const {
-		getTransactionsSummary,
-		isResolving,
-	} = select( STORE_NAME );
+export const useTransactionsSummary = (
+	{
+		date_before: dateBefore,
+		date_after: dateAfter,
+		date_between: dateBetween,
+		type_is: typeIs,
+		type_is_not: typeIsNot,
+	},
+	depositId
+) => useSelect( select => {
+	const { getTransactionsSummary,	isResolving } = select( STORE_NAME );
 
-	const formattedQuery = getFormattedQuery( query, filterQueryMapping );
-	formattedQuery.depositId = depositId || null;
+	const query = {
+		dateBefore,
+		dateAfter,
+		dateBetween,
+		typeIs,
+		typeIsNot,
+		depositId,
+	};
+
 	return {
-		transactionsSummary: getTransactionsSummary( formattedQuery ),
-		isLoading: isResolving( 'getTransactionsSummary', [ formattedQuery ] ),
+		transactionsSummary: getTransactionsSummary( query ),
+		isLoading: isResolving( 'getTransactionsSummary', [ query ] ),
 	};
-}, [
-	...Object.values( getFormattedQuery( query, filterQueryMapping ) ),
-	depositId,
-] );
+}, [ dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );
