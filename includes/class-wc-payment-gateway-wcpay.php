@@ -648,7 +648,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 			);
 		};
-		$items_to_send = array_map( $process_item, $order_items);
+		$items_to_send = array_map( $process_item, $order_items );
 
 		$level3_data = array(
 			'merchant_reference' => $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
