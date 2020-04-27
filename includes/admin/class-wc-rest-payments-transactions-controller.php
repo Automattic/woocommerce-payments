@@ -58,12 +58,13 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
-		$page       = intval( $request->get_params()['page'] );
-		$page_size  = intval( $request->get_params()['pagesize'] );
-		$sort       = $request->get_params()['sort'];
-		$direction  = $request->get_params()['direction'];
-		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $deposit_id ] );
+		$page       = intval( $request->get_param( 'page' ) );
+		$page_size  = intval( $request->get_param( 'pagesize' ) );
+		$sort       = $request->get_param( 'sort' );
+		$direction  = $request->get_param( 'direction' );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$filters    = $this->get_transactions_filters( $request );
+		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
 	}
 
 	/**
@@ -72,7 +73,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transaction( $request ) {
-		$transaction_id = $request->get_params()['transaction_id'];
+		$transaction_id = $request->get_param( 'transaction_id' );
 		return $this->forward_request( 'get_transactions', [ 'transaction_id' ] );
 	}
 
@@ -82,7 +83,28 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions_summary( $request ) {
-		$deposit_id = $request->get_params()['deposit_id'];
-		return $this->forward_request( 'get_transactions_summary', [ $deposit_id ] );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$filters    = $this->get_transactions_filters( $request );
+		return $this->forward_request( 'get_transactions_summary', [ $filters, $deposit_id ] );
+	}
+
+	/**
+	 * Extract transactions filters from request
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	private function get_transactions_filters( $request ) {
+		return array_filter(
+			[
+				'date_before'  => $request->get_param( 'date_before' ),
+				'date_after'   => $request->get_param( 'date_after' ),
+				'date_between' => $request->get_param( 'date_between' ),
+				'type_is'      => $request->get_param( 'type_is' ),
+				'type_is_not'  => $request->get_param( 'type_is_not' ),
+			],
+			function ( $filter ) {
+				return null !== $filter;
+			}
+		);
 	}
 }
