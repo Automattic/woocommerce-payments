@@ -260,30 +260,25 @@ const mapEventToTimelineItems = ( event ) => {
 	return [];
 };
 
-const PaymentDetailsTimeline = ( props ) => {
-	const charge = props.charge;
-	let isLoading = props.isLoading;
-	let timeline;
+const PaymentDetailsTimeline = ( { chargeId } ) => {
+	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
 
-	if ( ! isLoading ) {
-		( { timeline, isLoading } = useTimeline( charge.payment_intent ) );
-	}
-
-	if ( isLoading ) {
-		return (
-			<Card title={ <Loadable isLoading value={ __( 'Timeline', 'woocommerce-payments' ) } /> }>
-				<LoadableBlock isLoading numLines={ 3 } />
-				<LoadableBlock isLoading numLines={ 3 } />
-				<LoadableBlock isLoading numLines={ 3 } />
-			</Card>
-		);
-	}
-
-	const items = flatMap( timeline, mapEventToTimelineItems );
+	const items = timeline ? flatMap( timeline, mapEventToTimelineItems ) : [];
 
 	return (
-		<Card title={ __( 'Timeline', 'woocommerce-payments' ) } className="payment-details__timeline" >
-			<Timeline items={ items } />
+		<Card
+			title={ <Loadable isLoading={ isLoading } value={ __( 'Timeline', 'woocommerce-payments' ) } /> }
+			className="payment-details__timeline" >
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
+				{
+				timelineError instanceof Error
+					? __( 'Error while loading timeline', 'woocommerce-payments' )
+					: <Timeline items={ items } />
+				}
+			</LoadableBlock>
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
 		</Card>
 	);
 };
