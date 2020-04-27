@@ -38,45 +38,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $account;
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
+	 * WC_Payments_Customer instance for working with customer information
 	 *
-	 * @return bool
+	 * @var WC_Payments_Customer_Service
 	 */
-	public function is_in_dev_mode() {
-		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
-	}
+	private $customer_service;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account    $account - Account class instance.
+	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account          $account             - Account class instance.
+	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		WC_Payments_Customer_Service $customer_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+		$this->customer_service    = $customer_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -144,6 +126,37 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
+	}
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
+	}
+
+	/**
+	 * Returns whether test_mode or dev_mode is active for the gateway
+	 *
+	 * @return boolean Test mode enabled if true, disabled if false
+	 */
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
+		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
 	/**
@@ -273,17 +286,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$amount = $order->get_total();
 
-			$transaction_id = '';
-
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
 				$payment_method = $this->get_payment_method_from_request();
 				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email          = sanitize_email( $order->get_billing_email() );
+
+				// Determine the customer making the payment, create one if we don't have one already.
+				$user        = wp_get_current_user();
+				$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+				if ( null === $customer_id ) {
+					// Create a new customer.
+					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+				} else {
+					// Update the existing customer with the current details. In the event the old customer can't be
+					// found a new one is created, so we update the customer ID here as well.
+					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+				}
 
 				$metadata = [
 					'customer_name'  => $name,
-					'customer_email' => sanitize_email( $order->get_billing_email() ),
+					'customer_email' => $email,
 					'site_url'       => esc_url( get_site_url() ),
 					'order_id'       => $order->get_id(),
 				];
@@ -293,6 +318,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
+					$customer_id,
 					$manual_capture,
 					$metadata
 				);

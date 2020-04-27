@@ -107,7 +107,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789' );
+		$result = $this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
+
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
@@ -298,6 +304,133 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->expectExceptionMessage( "Error: $error_message" );
 
 		$this->payments_api_client->get_transaction( $transaction_id );
+	}
+
+	/**
+	 * Test creating a customer.
+	 *
+	 * @throws WC_Payments_API_Exception
+	 */
+	public function test_create_customer_success() {
+		$name        = 'Test Customer';
+		$email       = 'test.customer@example.com';
+		$description = 'Test Customer Description';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'   => 'cus_test12345',
+				'type' => 'customer',
+			]
+		);
+
+		$customer_id = $this->payments_api_client->create_customer( $name, $email, $description );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
+	/**
+	 * Test updating a customer.
+	 *
+	 * @throws WC_Payments_API_Exception
+	 */
+	public function test_update_customer_success() {
+		$name        = 'Test Customer';
+		$email       = 'test.customer@example.com';
+		$description = 'Test Customer Description';
+
+		// Mock the HTTP client manually so that we can assert against the request used.
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
+					'method'  => 'POST',
+					'headers' => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+				],
+				wp_json_encode(
+					[
+						'test_mode'   => false,
+						'name'        => 'Test Customer',
+						'email'       => 'test.customer@example.com',
+						'description' => 'Test Customer Description',
+					]
+				),
+				true
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'   => 'cus_test12345',
+								'type' => 'customer',
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->payments_api_client->update_customer( 'cus_test12345', $name, $email, $description );
+	}
+
+	/**
+	 * Test updating a customer with null customer ID.
+	 *
+	 * @throws WC_Payments_API_Exception
+	 */
+	public function test_update_customer_with_null_customer_id() {
+		// Ensure we don't make a call to the server.
+		$this->mock_http_client
+			->expects( $this->never() )
+			->method( 'remote_request' );
+
+		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectExceptionMessage( 'Customer ID is required' );
+
+		$this->payments_api_client->update_customer( null );
+	}
+
+	/**
+	 * Test updating a customer with an empty string customer ID.
+	 *
+	 * @throws WC_Payments_API_Exception
+	 */
+	public function test_update_customer_with_empty_string_customer_id() {
+		// Ensure we don't make a call to the server.
+		$this->mock_http_client
+			->expects( $this->never() )
+			->method( 'remote_request' );
+
+		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectExceptionMessage( 'Customer ID is required' );
+
+		$this->payments_api_client->update_customer( '' );
+	}
+
+	/**
+	 * Test updating a customer with an empty string customer ID.
+	 *
+	 * @throws WC_Payments_API_Exception
+	 */
+	public function test_update_customer_with_whitespace_customer_id() {
+		// Ensure we don't make a call to the server.
+		$this->mock_http_client
+			->expects( $this->never() )
+			->method( 'remote_request' );
+
+		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectExceptionMessage( 'Customer ID is required' );
+
+		$this->payments_api_client->update_customer( ' ' );
 	}
 
 	/**

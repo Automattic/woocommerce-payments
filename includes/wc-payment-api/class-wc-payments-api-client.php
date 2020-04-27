@@ -23,6 +23,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API     = 'accounts';
 	const CHARGES_API      = 'charges';
+	const CUSTOMERS_API    = 'customers';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const DEPOSITS_API     = 'deposits';
@@ -92,6 +93,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount            - Amount to charge.
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
+	 * @param string $customer_id       - ID of the customer making the payment.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
 	 *
@@ -102,6 +104,7 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_method_id,
+		$customer_id,
 		$manual_capture = false,
 		$metadata = []
 	) {
@@ -111,6 +114,7 @@ class WC_Payments_API_Client {
 		$request['currency']       = $currency_code;
 		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
+		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 
@@ -510,6 +514,61 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a customer.
+	 *
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @return string The created customer's ID
+	 *
+	 * @throws WC_Payments_API_Exception Error creating customer.
+	 */
+	public function create_customer( $name = null, $email = null, $description = null ) {
+		$customer_array = $this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API,
+			self::POST
+		);
+
+		return $customer_array['id'];
+	}
+
+	/**
+	 * Update a customer.
+	 *
+	 * @param string      $customer_id ID of customer to update.
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @throws WC_Payments_API_Exception Error updating customer.
+	 */
+	public function update_customer( $customer_id, $name = null, $email = null, $description = null ) {
+		if ( null === $customer_id || '' === trim( $customer_id ) ) {
+			throw new WC_Payments_API_Exception(
+				__( 'Customer ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_customer_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API . '/' . $customer_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -521,7 +580,7 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $params, $api, $method, $is_site_specific = true ) {
-		// Apply the default params that can be overriden by the calling method.
+		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
 			array(
@@ -710,5 +769,4 @@ class WC_Payments_API_Client {
 
 		return $intent;
 	}
-
 }
