@@ -32,6 +32,17 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => array( $this, 'check_permission' ),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/overview',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_deposits_overview' ),
+				'permission_callback' => array( $this, 'check_permission' ),
+			)
+		);
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<deposit_id>\w+)',
@@ -52,6 +63,13 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		$page      = intval( $request->get_params()['page'] );
 		$page_size = intval( $request->get_params()['pagesize'] );
 		return $this->forward_request( 'list_deposits', [ $page, $page_size ] );
+	}
+
+	/**
+	 * Retrieve overview of deposits to respond with via API.
+	 */
+	public function get_deposits_overview() {
+		return $this->forward_request( 'get_deposits_overview', [] );
 	}
 
 	/**
