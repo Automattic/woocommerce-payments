@@ -629,7 +629,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_items = array_values( $order->get_items() );
 		$currency    = $order->get_currency();
 
-		$process_item = function( $item ) use ( $currency ) {
+		$process_item  = function( $item ) use ( $currency ) {
 			$description     = substr( $item->get_name(), 0, 26 );
 			$quantity        = $item->get_quantity();
 			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
