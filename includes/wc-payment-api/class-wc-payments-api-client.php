@@ -94,6 +94,7 @@ class WC_Payments_API_Client {
 	 * @param string $payment_method_id - ID of payment method to process charge with.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3            - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -103,7 +104,8 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$payment_method_id,
 		$manual_capture = false,
-		$metadata = []
+		$metadata = [],
+		$level3 = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -113,6 +115,7 @@ class WC_Payments_API_Client {
 		$request['payment_method'] = $payment_method_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
+		$request['level3']         = $level3;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
