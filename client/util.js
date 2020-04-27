@@ -54,13 +54,11 @@ export const formatStringValue = ( value ) => capitalize( value ).replace( /_/g,
  * @param {object} config query config object
  */
 const addValueToQuery = ( query, formattedQuery, source, key, config ) => {
-	if ( undefined !== query[ source ] || config.default ) {
-		let value = query[ source ];
-		if ( config.isNumber ) {
-			value = Number.isNaN( parseInt( value, 10 ) ) ? null : value;
-		}
-		formattedQuery[ key ] = value || config.default;
+	let value = query[ source ];
+	if ( config.isNumber ) {
+		value = Number.isNaN( parseInt( value, 10 ) ) ? undefined : value;
 	}
+	formattedQuery[ key ] = value || config.default;
 };
 
 /**

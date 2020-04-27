@@ -5,6 +5,7 @@
  */
 import { apiFetch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
+import { pickBy } from 'lodash';
 
 /**
  * Internal dependencies
@@ -40,7 +41,10 @@ const filterQueryMapping = {
 export function* getTransactions( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
-		getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } )
+		pickBy(
+			getFormattedQuery( query, { ...paginationQueryMapping, ...filterQueryMapping } ),
+			item => undefined !== item
+		)
 	);
 
 	try {
@@ -59,7 +63,10 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		getFormattedQuery( query, filterQueryMapping )
+		pickBy(
+			getFormattedQuery( query, filterQueryMapping ),
+			item => undefined !== item
+		)
 	);
 
 	try {
