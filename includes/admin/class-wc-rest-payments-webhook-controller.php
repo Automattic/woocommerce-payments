@@ -84,16 +84,14 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			// Extract information about the webhook event.
-			$event_type   = $this->read_rest_property( $body, 'type' );
-			$event_data   = $this->read_rest_property( $body, 'data' );
-			$event_object = $this->read_rest_property( $event_data, 'object' );
+			$event_type = $this->read_rest_property( $body, 'type' );
 
 			Logger::debug( 'Webhook recieved: ' . $event_type );
 			Logger::debug( 'Webhook body: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
-					$this->process_webhook_refund_updated( $event_object );
+					$this->process_webhook_refund_updated( $body );
 					break;
 				case 'account.updated':
 					$this->account->refresh_account_data();
@@ -113,12 +111,15 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Process webhook refund updated.
 	 *
-	 * @param array $event_object The event that triggered the webhook.
+	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
 	 * @throws Exception                  Unable to resolve charge ID to order.
 	 */
-	private function process_webhook_refund_updated( $event_object ) {
+	private function process_webhook_refund_updated( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
 		// First, check the reason for the update. We're only interesting in a status of failed.
 		$status = $this->read_rest_property( $event_object, 'status' );
 		if ( 'failed' !== $status ) {
