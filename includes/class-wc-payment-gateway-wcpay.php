@@ -629,12 +629,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_items = array_values( $order->get_items() );
 		$currency    = $order->get_currency();
 
-		$items_to_send = array_map( function( $item ) use ( $currency ) {
+		$process_item = function( $item ) use ( $currency ) {
 			$description     = substr( $item->get_name(), 0, 26 );
 			$quantity        = $item->get_quantity();
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity , $currency );
-			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax() , $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total() , $currency );
+			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
+			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total(), $currency );
 			$product_id      = $item->get_variation_id()
 				? $item->get_variation_id()
 				: $item->get_product_id();
@@ -647,12 +647,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
 				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 			);
-		}, $order_items);
+		};
+		$items_to_send = array_map( $process_item, $order_items);
 
 		$level3_data = array(
-			'merchant_reference'   => $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
-			'shipping_amount'      => WC_Payments_Utils::prepare_amount( $order->get_shipping_total() + $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
-			'line_items'           => $items_to_send,
+			'merchant_reference' => $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
+			'shipping_amount'    => WC_Payments_Utils::prepare_amount( $order->get_shipping_total() + $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
+			'line_items'         => $items_to_send,
 		);
 
 		// The customer’s U.S. shipping ZIP code.
