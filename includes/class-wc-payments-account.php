@@ -448,8 +448,29 @@ class WC_Payments_Account {
 		}
 
 		// Cache the account details so we don't call the server every time.
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+		$this->cache_account( $account );
 		return $account;
+	}
+
+	/**
+	 * Caches account data for two hours
+	 *
+	 * @param array $account - Account data to cache.
+	 */
+	private function cache_account( $account ) {
+		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Refetches account data.
+	 */
+	public function refresh_account_data() {
+		try {
+			delete_transient( self::ACCOUNT_TRANSIENT );
+			$this->get_cached_account_data();
+		} catch ( Exception $e ) {
+			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+		}
 	}
 
 	/**
