@@ -15,6 +15,7 @@ export const useTransactions = (
 		per_page: perPage,
 		orderby,
 		order,
+		match,
 		date_before: dateBefore,
 		date_after: dateAfter,
 		date_between: dateBetween,
@@ -30,6 +31,7 @@ export const useTransactions = (
 		perPage: Number.isNaN( parseInt( perPage, 10 ) ) ? '25' : perPage,
 		orderby: orderby || 'date',
 		order: order || 'desc',
+		match,
 		dateBefore,
 		dateAfter,
 		dateBetween,
@@ -43,10 +45,11 @@ export const useTransactions = (
 		transactionsError: getTransactionsError( query ),
 		isLoading: isResolving( 'getTransactions', [ query ] ),
 	};
-}, [ paged, perPage, orderby, order, dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );
+}, [ paged, perPage, orderby, order, match, dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );
 
 export const useTransactionsSummary = (
 	{
+		match,
 		date_before: dateBefore,
 		date_after: dateAfter,
 		date_between: dateBetween,
@@ -58,6 +61,7 @@ export const useTransactionsSummary = (
 	const { getTransactionsSummary,	isResolving } = select( STORE_NAME );
 
 	const query = {
+		match,
 		dateBefore,
 		dateAfter,
 		dateBetween,
@@ -70,4 +74,4 @@ export const useTransactionsSummary = (
 		transactionsSummary: getTransactionsSummary( query ),
 		isLoading: isResolving( 'getTransactionsSummary', [ query ] ),
 	};
-}, [ dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );
+}, [ match, dateBefore, dateAfter, dateBetween, typeIs, typeIsNot, depositId ] );

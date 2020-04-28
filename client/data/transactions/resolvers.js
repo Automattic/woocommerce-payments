@@ -31,6 +31,7 @@ export function* getTransactions( query ) {
 			pagesize: query.perPage,
 			sort: query.orderby,
 			direction: query.order,
+			match: query.match,
 			date_before: query.dateBefore,
 			date_after: query.dateAfter,
 			date_between: query.dateBetween,
@@ -59,6 +60,7 @@ export function* getTransactionsSummary( query ) {
 		`${ NAMESPACE }/transactions/summary`,
 		/*eslint-disable camelcase*/
 		{
+			match: query.match,
 			date_before: query.dateBefore,
 			date_after: query.dateAfter,
 			date_between: query.dateBetween,

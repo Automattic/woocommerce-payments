@@ -96,6 +96,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	private function get_transactions_filters( $request ) {
 		return array_filter(
 			[
+				'match'        => $request->get_param( 'match' ),
 				'date_before'  => $request->get_param( 'date_before' ),
 				'date_after'   => $request->get_param( 'date_after' ),
 				'date_between' => $request->get_param( 'date_between' ),
