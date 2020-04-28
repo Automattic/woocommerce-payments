@@ -16,6 +16,22 @@ import {
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
 } from './actions';
+import { formatDateValue } from '../../util';
+
+/*eslint-disable camelcase*/
+const formatQueryFilters = ( query ) => ( {
+	match: query.match,
+	date_before: formatDateValue( query.dateBefore ),
+	date_after: formatDateValue( query.dateAfter, true ),
+	date_between: query.dateBetween && [
+		formatDateValue( query.dateBetween[ 0 ] ),
+		formatDateValue( query.dateBetween[ 1 ], true ),
+	],
+	type_is: query.typeIs,
+	type_is_not: query.typeIsNot,
+	deposit_id: query.depositId,
+} );
+/*eslint-enable camelcase*/
 
 /**
  * Retrieves a series of transactions from the transactions list API.
@@ -25,21 +41,13 @@ import {
 export function* getTransactions( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions`,
-		/*eslint-disable camelcase*/
 		{
 			page: query.paged,
 			pagesize: query.perPage,
 			sort: query.orderby,
 			direction: query.order,
-			match: query.match,
-			date_before: query.dateBefore,
-			date_after: query.dateAfter,
-			date_between: query.dateBetween,
-			type_is: query.typeIs,
-			type_is_not: query.typeIsNot,
-			deposit_id: query.depositId,
+			...formatQueryFilters( query ),
 		}
-		/*eslint-enable camelcase*/
 	);
 
 	try {
@@ -58,17 +66,7 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		/*eslint-disable camelcase*/
-		{
-			match: query.match,
-			date_before: query.dateBefore,
-			date_after: query.dateAfter,
-			date_between: query.dateBetween,
-			type_is: query.typeIs,
-			type_is_not: query.typeIsNot,
-			deposit_id: query.depositId,
-		}
-		/*eslint-enable camelcase*/
+		formatQueryFilters( query ),
 	);
 
 	try {
