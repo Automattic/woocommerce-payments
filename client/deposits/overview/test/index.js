@@ -103,6 +103,16 @@ describe( 'Deposits overview', () => {
 		expect( momentLib.locale() ).toEqual( 'de' );
 	} );
 
+	test( 'renders deposit delay notice prior to first deposit', () => {
+		// eslint-disable-next-line camelcase
+		const overview = getMockedOverview( { last_deposit: null } );
+		mockUseDepositsOverview( overview );
+		const { getByText } = render( <DepositsOverview /> );
+		const depositSchedule = getByText( 'Deposit schedule:' );
+		const expected = 'Deposit schedule: Automatic, every business day (Your first deposit is held for seven days. Learn more)';
+		expect( depositSchedule.parentElement.textContent ).toEqual( expected );
+	} );
+
 	test( 'renders in transit label to in_transit next deposits', () => {
 		// eslint-disable-next-line camelcase
 		const overview = getMockedOverview( { next_deposit: { status: 'in_transit' } } );
