@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import { filters, advancedFilters } from './config';
 
-export const TransactionFilters = () => {
+export const TransactionsFilters = () => {
 	return <ReportFilters
 		filters={ filters }
 		advancedFilters={ advancedFilters }
@@ -18,4 +18,4 @@ export const TransactionFilters = () => {
 		query={ getQuery() } />;
 };
 
-export default TransactionFilters;
+export default TransactionsFilters;
