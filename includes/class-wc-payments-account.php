@@ -580,6 +580,8 @@ class WC_Payments_Account {
 			$url = add_query_arg( [ 'wcpay-connection-success' => '1' ], $settings_url );
 		}
 
+		set_transient( 'wcpay_oauth_state', $account_data['state'], DAY_IN_SECONDS );
+
 		wp_safe_redirect( $url );
 		exit;
 	}
