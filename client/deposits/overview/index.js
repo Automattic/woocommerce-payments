@@ -59,15 +59,17 @@ const formatDepositSchedule = schedule => {
 
 const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule, deposits_disabled: disabled }, last_deposit: last } ) => {
 	if ( disabled || 'manual' === schedule.interval ) {
+		const learnMoreHref = 'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__( 'Temporarily suspended (<a>Learn more</a>)', 'woocommerce-payments' ),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/" /> }
+			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
 		);
 	}
 
 	if ( ! last ) {
+		const learnMoreHref = 'https://docs.woocommerce.com/document/payments/faq/deposit-schedule/';
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
@@ -75,7 +77,7 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 				formatDepositSchedule( schedule ),
 			),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposit-schedule/" /> }
+			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
 		);
 	}
 
