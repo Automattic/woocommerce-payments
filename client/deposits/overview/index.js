@@ -68,14 +68,14 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 	}
 
 	if ( ! last ) {
-		return sprintf(
-			createInterpolateElement(
+		return createInterpolateElement(
+			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
 				__( '%s (Your first deposit is held for seven days. <a>Learn more</a>)', 'woocommerce-payments' ),
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposit-schedule/" /> }
+				formatDepositSchedule( schedule ),
 			),
-			formatDepositSchedule( schedule )
+			// eslint-disable-next-line jsx-a11y/anchor-has-content
+			{ a: <a href="https://docs.woocommerce.com/document/payments/faq/deposit-schedule/" /> }
 		);
 	}
 
