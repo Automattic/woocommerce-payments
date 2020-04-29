@@ -35,7 +35,7 @@ const PaymentDetails = ( props ) => {
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
-			<PaymentDetailsTimeline chargeId={ chargeId } isLoading={ isLoading } />
+			<PaymentDetailsTimeline chargeId={ chargeId } />
 			{ // Hidden for the beta.
 				false && <PaymentDetailsPayment charge={ charge } /> }
 			<PaymentDetailsPaymentMethod charge={ charge } isLoading={ isLoading } />
