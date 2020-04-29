@@ -3,8 +3,9 @@
 /**
  * External dependencies
  */
-import { render, fireEvent } from '@testing-library/react';
+import { render, cleanup, fireEvent } from '@testing-library/react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -80,9 +81,13 @@ describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		// the query string is preserved across tests, so we need to reset it
-		if ( '' !== window.location.search ) {
-			updateQueryString( {} );
+		if ( ! isEmpty( getQuery() ) ) {
+			updateQueryString( {}, '/', {} );
 		}
+	} );
+
+	afterEach( () => {
+		cleanup();
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {
