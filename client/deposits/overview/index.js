@@ -74,7 +74,7 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
 				__( '%s (Your first deposit is held for seven days. <a>Learn more</a>)', 'woocommerce-payments' ),
-				formatDepositSchedule( schedule ),
+				formatDepositSchedule( { interval: 'daily' } ),
 			),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
