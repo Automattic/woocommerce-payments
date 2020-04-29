@@ -851,9 +851,9 @@ class WC_Payments_API_Client {
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
-				'return_url'          => $return_url,
-				'account_data'        => $account_data,
-				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+				'return_url'   => $return_url,
+				'account_data' => $account_data,
+				'test_account' => WC_Payments::get_gateway()->is_in_dev_mode(),
 			]
 		);
 
