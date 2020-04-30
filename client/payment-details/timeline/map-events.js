@@ -35,6 +35,16 @@ const getCurrency = ( currencyCode ) => {
 };
 
 /**
+ * Creates a Gridicon
+ *
+ * @param {String} icon Icon to render
+ * @param {String} className Extra class name, defaults to empty
+ *
+ * @return {Gridicon} Gridicon component
+ */
+const getIcon = ( icon, className = '' ) => <Gridicon icon={ icon } className={ className } />;
+
+/**
  * Creates a timeline item about a payment status change
  *
  * @param {Object} event An event triggering the status change
@@ -45,7 +55,7 @@ const getCurrency = ( currencyCode ) => {
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
 		datetime: event.datetime,
-		icon: <Gridicon icon="sync" />,
+		icon: getIcon( 'sync' ),
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
 			__( 'Payment status changed to %s', 'woocommerce-payments' ),
@@ -106,7 +116,7 @@ const getDepositTimelineItem = ( event, amount, formatCurrency, isPositive, body
 
 	return {
 		datetime: event.datetime,
-		icon: <Gridicon icon={ isPositive ? 'plus' : 'minus' } />,
+		icon: getIcon( isPositive ? 'plus' : 'minus' ),
 		headline,
 		body,
 		hideTimestamp: true,
@@ -134,7 +144,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="is-warning" />,
+				icon: getIcon( 'checkmark', 'is-warning' ),
 				headline: sprintf(
 					__( 'A payment of %s was successfully authorized', 'woocommerce-payments' ),
 					formatCurrency( event.amount )
@@ -146,7 +156,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="is-warning" />,
+				icon: getIcon( 'checkmark', 'is-warning' ),
 				headline: sprintf(
 					__( 'Authorization for %s was voided', 'woocommerce-payments' ),
 					formatCurrency( event.amount )
@@ -158,7 +168,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="is-error" />,
+				icon: getIcon( 'cross', 'is-error' ),
 				headline: sprintf(
 					__( 'Authorization for %s expired', 'woocommerce-payments' ),
 					formatCurrency( event.amount )
@@ -171,7 +181,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="is-success" />,
+				icon: getIcon( 'checkmark', 'is-success' ),
 				headline: sprintf(
 					__( 'A payment of %s was successfully charged', 'woocommerce-payments' ),
 					formatCurrency( event.amount )
@@ -194,7 +204,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="is-success" />,
+				icon: getIcon( 'checkmark', 'is-success' ),
 				headline: sprintf(
 					__( 'A payment of %s was successfully refunded', 'woocommerce-payments' ),
 					formatCurrency( event.amount_refunded )
@@ -210,7 +220,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="is-error" />,
+				icon: getIcon( 'cross', 'is-error' ),
 				headline: sprintf(
 					__( 'A payment of %s failed', 'woocommerce-payments' ),
 					formatCurrency( event.amount )
@@ -243,7 +253,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="is-error" />,
+				icon: getIcon( 'cross', 'is-error' ),
 				headline: reasonHeadline,
 				body: [
 					<a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a>,
@@ -259,7 +269,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="checkmark" className="is-success" />,
+				icon: getIcon( 'checkmark', 'is-success' ),
 				headline: __( 'Challenge evidence submitted', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: In Review', 'woocommerce-payments' ) ),
@@ -269,7 +279,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="notice-outline" className="is-success" />,
+				icon: getIcon( 'notice-outline', 'is-success' ),
 				headline: __( 'Dispute won! The bank ruled in your favor', 'woocommerce-payments' ),
 			},
 			getDepositTimelineItem( event, total, formatCurrency, true, [
@@ -282,7 +292,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			{
 				...baseItem,
-				icon: <Gridicon icon="cross" className="is-error" />,
+				icon: getIcon( 'cross', 'is-error' ),
 				headline: __( 'Dispute lost. The bank ruled favor of your customer', 'woocommerce-payments' ),
 			},
 			getStatusChangeTimelineItem( event, __( 'Disputed: Lost', 'woocommerce-payments' ) ),
