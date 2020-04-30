@@ -41,7 +41,7 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by before', () => {
 			user.selectOptions( ruleSelector, 'before' );
 
-			user.type( getByLabelText( 'Choose a date' ), '2020-04-29' );
+			user.type( getByLabelText( 'Choose a date' ), '04/29/2020' );
 			user.click( getByText( 'Filter' ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
@@ -50,7 +50,7 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by after', () => {
 			user.selectOptions( ruleSelector, 'after' );
 
-			user.type( getByLabelText( 'Choose a date' ), '2020-04-29' );
+			user.type( getByLabelText( 'Choose a date' ), '04/29/2020' );
 			user.click( getByText( 'Filter' ) );
 
 			expect( getQuery().date_after ).toEqual( '2020-04-29' );
@@ -60,8 +60,8 @@ describe( 'Transactions filters', () => {
 			user.selectOptions( ruleSelector, 'between' );
 
 			const dateInputs = getAllByLabelText( 'Choose a date' );
-			user.type( dateInputs[ 0 ], '2020-04-19' );
-			user.type( dateInputs[ 1 ], '2020-04-29' );
+			user.type( dateInputs[ 0 ], '04/19/2020' );
+			user.type( dateInputs[ 1 ], '04/29/2020' );
 			user.click( getByText( 'Filter' ) );
 
 			expect( getQuery().date_between ).toEqual( [ '2020-04-19', '2020-04-29' ] );
