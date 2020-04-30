@@ -10,12 +10,12 @@ import { Card, Timeline } from '@woocommerce/components';
  * Internal dependencies
  */
 import { useTimeline } from 'data';
-import mapEvents from './map-events';
+import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
 
 const PaymentDetailsTimeline = ( { chargeId } ) => {
 	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
-	const items = mapEvents( timeline );
+	const items = mapTimelineEvents( timeline );
 
 	return (
 		<Card
