@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, cleanup, fireEvent } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { isEmpty } from 'lodash';
 
@@ -84,10 +84,6 @@ describe( 'Transactions list', () => {
 		if ( ! isEmpty( getQuery() ) ) {
 			updateQueryString( {}, '/', {} );
 		}
-	} );
-
-	afterEach( () => {
-		cleanup();
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {

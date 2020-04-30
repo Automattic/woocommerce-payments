@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, cleanup } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { isEmpty } from 'lodash';
@@ -17,7 +17,6 @@ describe( 'Transactions filters', () => {
 	let rerender, getByText, getByLabelText, getAllByLabelText;
 
 	beforeEach( () => {
-		jest.clearAllMocks();
 		// the query string is preserved across tests, so we need to reset it
 		if ( ! isEmpty( getQuery() ) ) {
 			updateQueryString( {}, '/', {} );
@@ -29,10 +28,6 @@ describe( 'Transactions filters', () => {
 		user.click( getByText( 'All transactions' ) );
 		user.click( getByText( 'Advanced filters' ) );
 		rerender( <TransactionsFilters /> );
-	} );
-
-	afterEach( () => {
-		cleanup();
 	} );
 
 	describe( 'when filtering by date', () => {
