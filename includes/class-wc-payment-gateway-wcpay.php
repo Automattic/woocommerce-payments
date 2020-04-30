@@ -126,17 +126,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
 		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
 		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
-
-		// Register Stripe.js now to support enqueueing in admin and front side using the same ID as the
-		// Stripe Gateway plugin. This prevents this JS being loaded twice in the event a site has both
-		// plugins enabled. We still run the risk of different plugins loading different versions however.
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			array(),
-			'3.0',
-			true
-		);
 	}
 
 	/**
