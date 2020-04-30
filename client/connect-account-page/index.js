@@ -19,17 +19,16 @@ const ConnectAccountPage = () => {
 		<Page isNarrow className="connect-account">
 			<Card className="connect-account__card">
 				<HeroImage />
-				<h2>
-					{ __( 'Accept credit cards online using WooCommerce Payments.', 'woocommerce-payments' ) }
-					<br />
-					{ __( 'Simply verify your business details to get started.', 'woocommerce-payments' ) }
-				</h2>
+				<h2> { __( 'WooCommerce Payments', 'woocommerce-payments' ) } </h2>
+				<p className="connect-account__description">
+					{ __( 'Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.', 'woocommerce-payments' ) }
+				</p>
 				{ ! wcpaySettings.onBoardingDisabled ? (
 				<>
 				<p className="connect-account__terms">
 					{
 						createInterpolateElement(
-							__( 'By clicking “Verify details,” you agree to the <a>Terms of Service</a>.', 'woocommerce-payments' ),
+							__( 'By clicking “Setup,” you agree to the <a>Terms of Service</a>', 'woocommerce-payments' ),
 							{
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								a: <a href="https://wordpress.com/tos" />,
@@ -39,7 +38,7 @@ const ConnectAccountPage = () => {
 				</p>
 				<hr className="full-width" />
 				<p className="connect-account__action">
-					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Verify details', 'woocommerce-payments' ) }</Button>
+					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Setup', 'woocommerce-payments' ) }</Button>
 				</p>
 				</>
 				) : (

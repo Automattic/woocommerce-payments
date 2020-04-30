@@ -60,6 +60,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * @return bool Whether the current page is the WooCommerce Payments settings page.
+	 */
+	public static function is_current_page_settings() {
+		$params = array(
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => self::GATEWAY_ID,
+		);
+		return $params == array_intersect_assoc( $_GET, $params );
+	}
+
+	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway
@@ -510,7 +522,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					]
 				);
 			} else {
-				$description = WC_Payments_Account::get_connection_message_html();
+				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
+				// @see WC_Payments_Account::check_stripe_account_status.
+				$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
 			}
 		} catch ( Exception $e ) {
 			// do not render the actions if the server is unreachable.

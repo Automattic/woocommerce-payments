@@ -159,8 +159,22 @@ class WC_Payments_Account {
 		);
 	}
 
+	private function redirect_to_onboarding_page() {
+		$params = array(
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		);
+		if ( $params == array_intersect_assoc( $_GET, $params ) ) {
+			// We are already in the onboarding page, do nothing.
+			return;
+		}
+
+		wp_safe_redirect( admin_url( add_query_arg(  $params, 'admin.php' ) ) );
+		exit();
+	}
+
 	/**
-	 * Checks if Stripe account is connected and displays admin notices if it is not.
+	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the account is connected properly.
 	 */
@@ -173,25 +187,11 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			if ( ! self::is_on_boarding_disabled() ) {
-				$message = self::get_connection_message_html();
-			} else {
-				// On-boarding has been disabled on the server, so show a message to that effect.
-				$message = esc_html__(
-					'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
-					'woocommerce-payments'
-				);
+			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
+				 || ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) ) ) {
+				update_option( 'wcpay_redirected_to_onboarding', true );
+				$this->redirect_to_onboarding_page();
 			}
-
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					WC_Payments::display_admin_notice(
-						$message,
-						'notice-success'
-					);
-				}
-			);
 			return false;
 		}
 
@@ -281,39 +281,6 @@ class WC_Payments_Account {
 			$this->finalize_connection( $state, $mode );
 			return;
 		}
-	}
-
-	/**
-	 * Returns html markup containing the connection message.
-	 *
-	 * @return string Connection message.
-	 */
-	public static function get_connection_message_html() {
-		ob_start();
-		?>
-		<p>
-			<?php
-			esc_html_e(
-				'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
-				'woocommerce-payments'
-			);
-			?>
-		</p>
-		<p>
-			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
-				__( 'By clicking “Verify details,” you agree to the <a>Terms of Service</a>.', 'woocommerce-payments' ),
-				[ 'a' => '<a href="https://wordpress.com/tos">' ]
-			);
-			?>
-		</p>
-		<p>
-			<a href="<?php echo esc_attr( self::get_connect_url() ); ?>" class="button">
-				<?php esc_html_e( ' Verify details', 'woocommerce-payments' ); ?>
-			</a>
-		</p>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**
