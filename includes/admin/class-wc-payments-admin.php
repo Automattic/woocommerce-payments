@@ -207,7 +207,7 @@ class WC_Payments_Admin {
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
-			$script_asset['dependencies'],
+			$settings_script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
 		);
