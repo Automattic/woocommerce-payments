@@ -65,7 +65,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
+		return admin_url(
+			add_query_arg(
+				array(
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => self::GATEWAY_ID,
+				),
+				'admin.php'
+			)
+		);
 	}
 
 	/**
@@ -147,6 +156,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * @see WC_Payment_Gateway::needs_setup
+	 * @return bool True if the gateway needs additional configuration, false if it's ready to use.
+	 */
+	public function needs_setup() {
+		return parent::needs_setup() || ! $this->account->is_stripe_connected( false );
+	}
+
+	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
 	 * Use parent method value alongside other business rules to make the decision.
@@ -158,7 +175,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return parent::is_available() && $this->account->is_stripe_connected( false );
+		return parent::is_available() && ! $this->needs_setup();
 	}
 
 	/**
