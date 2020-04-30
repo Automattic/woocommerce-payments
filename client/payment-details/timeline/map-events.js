@@ -134,7 +134,7 @@ const getDepositTimelineItem = ( event, amount, formatCurrency, isPositive, body
  *
  * @return {Object} Formatted main item
  */
-const getMainItem = ( event, headline, icon, iconClass, body = [] ) => ( {
+const getMainTimelineItem = ( event, headline, icon, iconClass, body = [] ) => ( {
 	datetime: event.datetime,
 	headline,
 	icon: getIcon( icon, iconClass ),
@@ -156,53 +156,61 @@ const mapEventToTimelineItems = ( event ) => {
 
 	if ( 'authorized' === type ) {
 		return [
-			getMainItem( event, sprintf(
-				__( 'A payment of %s was successfully authorized', 'woocommerce-payments' ),
-				formatCurrency( event.amount )
-			), 'checkmark', 'is-warning' ),
+			getMainTimelineItem(
+				event,
+				sprintf( __( 'A payment of %s was successfully authorized', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				'checkmark',
+				'is-warning'
+			),
 			getStatusChangeTimelineItem( event, __( 'Authorized', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'authorization_voided' === type ) {
 		return [
-			getMainItem( event, sprintf(
-				__( 'Authorization for %s was voided', 'woocommerce-payments' ),
-				formatCurrency( event.amount )
-			), 'checkmark', 'is-warning' ),
+			getMainTimelineItem(
+				event,
+				sprintf( __( 'Authorization for %s was voided', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				'checkmark',
+				'is-warning'
+			),
 			getStatusChangeTimelineItem( event, __( 'Authorization Voided', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'authorization_expired' === type ) {
 		return [
-			getMainItem( event, sprintf(
-				__( 'Authorization for %s expired', 'woocommerce-payments' ),
-				formatCurrency( event.amount )
-			), 'cross', 'is-error' ),
+			getMainTimelineItem(
+				event,
+				sprintf( __( 'Authorization for %s expired', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				'cross',
+				'is-error'
+			),
 			getStatusChangeTimelineItem( event, __( 'Authorization Expired', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'captured' === type ) {
 		const net = event.amount - event.fee;
 		return [
-			getMainItem( event, sprintf(
-				__( 'A payment of %s was successfully charged', 'woocommerce-payments' ),
-				formatCurrency( event.amount )
-			), 'checkmark', 'is-success', [
-				sprintf(
-					__( 'Fee: %s', 'woocommerce-payments' ),
-					formatCurrency( event.fee )
-				),
-				sprintf(
-					__( 'Net deposit: %s', 'woocommerce-payments' ),
-					formatCurrency( net )
-				),
-			] ),
+			getMainTimelineItem(
+				event,
+				sprintf( __( 'A payment of %s was successfully charged', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				'checkmark',
+				'is-success',
+				[
+					sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
+					sprintf( __( 'Net deposit: %s', 'woocommerce-payments' ), formatCurrency( net ) ),
+				]
+			),
 			getDepositTimelineItem( event, net, formatCurrency, true ),
 			getStatusChangeTimelineItem( event, __( 'Paid', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
 		return [
-			getMainItem( event, sprintf(
-				__( 'A payment of %s was successfully refunded', 'woocommerce-payments' ),
-				formatCurrency( event.amount_refunded )
-			), 'checkmark', 'is-success' ),
+			getMainTimelineItem(
+				event,
+				sprintf(
+					__( 'A payment of %s was successfully refunded', 'woocommerce-payments' ),
+					formatCurrency( event.amount_refunded )
+				),
+				'checkmark',
+				'is-success'
+			),
 			getDepositTimelineItem( event, event.amount_refunded, formatCurrency, false ),
 			getStatusChangeTimelineItem( event, 'full_refund' === type
 				? __( 'Refunded', 'woocommerce-payments' )
@@ -211,10 +219,12 @@ const mapEventToTimelineItems = ( event ) => {
 		];
 	} else if ( 'failed' === type ) {
 		return [
-			getMainItem( event, sprintf(
-				__( 'A payment of %s failed', 'woocommerce-payments' ),
-				formatCurrency( event.amount )
-			), 'cross', 'is-error' ),
+			getMainTimelineItem(
+				event,
+				sprintf( __( 'A payment of %s failed', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				'cross',
+				'is-error'
+			),
 			getStatusChangeTimelineItem( event, __( 'Failed', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'dispute_needs_response' === type ) {
@@ -237,9 +247,13 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 		return [
-			getMainItem( event, reasonHeadline, 'cross', 'is-error', [
-				<a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a>,
-			] ),
+			getMainTimelineItem(
+				event,
+				reasonHeadline,
+				'cross',
+				'is-error',
+				[ <a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a> ]
+			),
 			getDepositTimelineItem( event, total, formatCurrency, false, [
 				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
 				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
@@ -248,13 +262,18 @@ const mapEventToTimelineItems = ( event ) => {
 		];
 	} else if ( 'dispute_in_review' === type ) {
 		return [
-			getMainItem( event, __( 'Challenge evidence submitted', 'woocommerce-payments' ), 'checkmark', 'is-success' ),
+			getMainTimelineItem( event, __( 'Challenge evidence submitted', 'woocommerce-payments' ), 'checkmark', 'is-success' ),
 			getStatusChangeTimelineItem( event, __( 'Disputed: In Review', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'dispute_won' === type ) {
 		const total = Math.abs( event.amount ) + Math.abs( event.fee );
 		return [
-			getMainItem( event, __( 'Dispute won! The bank ruled in your favor', 'woocommerce-payments' ), 'notice-outline', 'is-success' ),
+			getMainTimelineItem(
+				event,
+				__( 'Dispute won! The bank ruled in your favor', 'woocommerce-payments' ),
+				'notice-outline',
+				'is-success'
+			),
 			getDepositTimelineItem( event, total, formatCurrency, true, [
 				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
 				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
@@ -263,7 +282,12 @@ const mapEventToTimelineItems = ( event ) => {
 		];
 	} else if ( 'dispute_lost' === type ) {
 		return [
-			getMainItem( event, __( 'Dispute lost. The bank ruled favor of your customer', 'woocommerce-payments' ), 'cross', 'is-error' ),
+			getMainTimelineItem(
+				event,
+				__( 'Dispute lost. The bank ruled favor of your customer', 'woocommerce-payments' ),
+				'cross',
+				'is-error'
+			),
 			getStatusChangeTimelineItem( event, __( 'Disputed: Lost', 'woocommerce-payments' ) ),
 		];
 	}
