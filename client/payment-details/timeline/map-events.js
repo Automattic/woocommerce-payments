@@ -152,12 +152,13 @@ const mapEventToTimelineItems = ( event ) => {
 
 	const currency = getCurrency( event.currency || 'USD' );
 	const formatCurrency = ( amount ) => currency.formatCurrency( Math.abs( amount / 100 ) );
+	const stringWithAmount = ( headline, amount ) => sprintf( headline, formatCurrency( amount ) );
 
 	if ( 'authorized' === type ) {
 		return [
 			getMainTimelineItem(
 				event,
-				sprintf( __( 'A payment of %s was successfully authorized', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				stringWithAmount( __( 'A payment of %s was successfully authorized', 'woocommerce-payments' ), event.amount ),
 				'checkmark',
 				'is-warning'
 			),
@@ -167,7 +168,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getMainTimelineItem(
 				event,
-				sprintf( __( 'Authorization for %s was voided', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				stringWithAmount( __( 'Authorization for %s was voided', 'woocommerce-payments' ), event.amount ),
 				'checkmark',
 				'is-warning'
 			),
@@ -177,7 +178,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getMainTimelineItem(
 				event,
-				sprintf( __( 'Authorization for %s expired', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				stringWithAmount( __( 'Authorization for %s expired', 'woocommerce-payments' ), event.amount ),
 				'cross',
 				'is-error'
 			),
@@ -188,11 +189,11 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getMainTimelineItem(
 				event,
-				sprintf( __( 'A payment of %s was successfully charged', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				stringWithAmount( __( 'A payment of %s was successfully charged', 'woocommerce-payments' ), event.amount ),
 				'checkmark',
 				'is-success',
 				[
-					sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
+					stringWithAmount( __( 'Fee: %s', 'woocommerce-payments' ), event.fee ),
 					sprintf( __( 'Net deposit: %s', 'woocommerce-payments' ), formattedNet ),
 				]
 			),
@@ -221,7 +222,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getMainTimelineItem(
 				event,
-				sprintf( __( 'A payment of %s failed', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
+				stringWithAmount( __( 'A payment of %s failed', 'woocommerce-payments' ), event.amount ),
 				'cross',
 				'is-error'
 			),
@@ -255,8 +256,8 @@ const mapEventToTimelineItems = ( event ) => {
 				[ <a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a> ]
 			),
 			getDepositTimelineItem( event, formattedTotal, false, [
-				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
-				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
+				stringWithAmount( __( 'Disputed amount: %s', 'woocommerce-payments' ), event.amount ),
+				stringWithAmount( __( 'Fee: %s', 'woocommerce-payments' ), event.fee ),
 			] ),
 			getStatusChangeTimelineItem( event, __( 'Disputed: Needs Response', 'woocommerce-payments' ) ),
 		];
@@ -275,8 +276,8 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 			getDepositTimelineItem( event, formattedTotal, true, [
-				sprintf( __( 'Disputed amount: %s', 'woocommerce-payments' ), formatCurrency( event.amount ) ),
-				sprintf( __( 'Fee: %s', 'woocommerce-payments' ), formatCurrency( event.fee ) ),
+				stringWithAmount( __( 'Disputed amount: %s', 'woocommerce-payments' ), event.amount ),
+				stringWithAmount( __( 'Fee: %s', 'woocommerce-payments' ), event.fee ),
 			] ),
 			getStatusChangeTimelineItem( event, __( 'Disputed: Won', 'woocommerce-payments' ) ),
 		];
