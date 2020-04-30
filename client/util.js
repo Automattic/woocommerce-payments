@@ -59,6 +59,6 @@ export const formatStringValue = ( value ) => capitalize( value ).replace( /_/g,
 export const formatDateValue = ( date, upperBound = false ) => {
 	const adjustedDate = upperBound
 		? moment( date ).endOf( 'day' ).utc()
-		: moment( date ).utc();
+		: moment( date ).startOf( 'day' ).utc();
 	return date && dateI18n( 'Y-m-d H:i:s', adjustedDate );
 };
