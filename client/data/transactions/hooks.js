@@ -3,6 +3,7 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -34,7 +35,7 @@ export const useTransactions = (
 		match,
 		dateBefore,
 		dateAfter,
-		dateBetween,
+		dateBetween: dateBetween && dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
 		typeIs,
 		typeIsNot,
 		depositId,
