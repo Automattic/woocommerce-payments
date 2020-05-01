@@ -60,7 +60,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * @return bool Whether the current page is the WooCommerce Payments settings page.
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @return bool
 	 */
 	public static function is_current_page_settings() {
 		$params = array(
@@ -68,7 +70,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'tab'     => 'checkout',
 			'section' => self::GATEWAY_ID,
 		);
-		return $params == array_intersect_assoc( $_GET, $params );
+		return count( $params ) === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
 	}
 
 	/**
@@ -168,8 +170,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
+	 *
 	 * @see WC_Payment_Gateway::needs_setup
-	 * @return bool True if the gateway needs additional configuration, false if it's ready to use.
+	 * @return bool
 	 */
 	public function needs_setup() {
 		return parent::needs_setup() || ! $this->account->is_stripe_connected( false );

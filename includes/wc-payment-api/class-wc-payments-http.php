@@ -120,12 +120,12 @@ class WC_Payments_Http {
 
 		// Second, redirect the user to the Jetpack user connection flow.
 		add_filter( 'jetpack_use_iframe_authorization_flow', '__return_false' );
-		// Same logic as in WC-Admin
+		// Same logic as in WC-Admin.
 		$calypso_env = defined( 'WOOCOMMERCE_CALYPSO_ENVIRONMENT' ) && in_array( WOOCOMMERCE_CALYPSO_ENVIRONMENT, array( 'development', 'wpcalypso', 'horizon', 'stage' ), true ) ? WOOCOMMERCE_CALYPSO_ENVIRONMENT : 'production';
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'from' => 'woocommerce-payments',
+					'from'        => 'woocommerce-payments',
 					'calypso_env' => $calypso_env,
 				),
 				$this->connection_manager->get_authorization_url( null, $redirect )

@@ -159,43 +159,44 @@ class WC_Payments_Account {
 		);
 	}
 
+	/**
+	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
+	 * Note that this function immediately ends the execution.
+	 */
 	private function redirect_to_onboarding_page() {
 		$params = array(
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		);
-		if ( $params == array_intersect_assoc( $_GET, $params ) ) {
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
 			// We are already in the onboarding page, do nothing.
 			return;
 		}
 
-		wp_safe_redirect( admin_url( add_query_arg(  $params, 'admin.php' ) ) );
+		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
 		exit();
 	}
 
 	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * @return bool True if the account is connected properly.
+	 * TODO: Add back the tests for this function (figure out how to test a function that ends in a redirect + die()).
 	 */
 	public function check_stripe_account_status() {
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
 			// Return early. The exceptions have been logged in the http client.
-			return false;
+			return;
 		}
 
 		if ( empty( $account ) ) {
 			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
-				 || ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) ) ) {
+				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) ) ) {
 				update_option( 'wcpay_redirected_to_onboarding', true );
 				$this->redirect_to_onboarding_page();
 			}
-			return false;
 		}
-
-		return true;
 	}
 
 	/**
