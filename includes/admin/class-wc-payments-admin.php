@@ -117,7 +117,7 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-deposit-details',
-					'title'  => __( 'Deposit Details', 'woocommerce-payments' ),
+					'title'  => __( 'Deposit details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions', // Not (top level) deposits, as workaround for showing up as submenu page.
 					'path'   => '/payments/deposits/details',
 				)
@@ -125,7 +125,7 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-transaction-details',
-					'title'  => __( 'Payment Details', 'woocommerce-payments' ),
+					'title'  => __( 'Payment details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions',
 					'path'   => '/payments/transactions/details',
 				)
@@ -133,7 +133,7 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-disputes-details',
-					'title'  => __( 'Dispute Details', 'woocommerce-payments' ),
+					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes',
 					'path'   => '/payments/disputes/details',
 				)
@@ -141,7 +141,7 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				array(
 					'id'     => 'wc-payments-disputes-challenge',
-					'title'  => __( 'Challenge Dispute', 'woocommerce-payments' ),
+					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-disputes-details',
 					'path'   => '/payments/disputes/challenge',
 				)

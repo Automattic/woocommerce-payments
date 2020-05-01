@@ -121,7 +121,7 @@ exports[`Dispute info renders correctly 1`] = `
       <span
         className="wcpay-dispute-info-value"
       >
-        Mock Customer
+        Mock customer
       </span>
     </Loadable>
   </div>

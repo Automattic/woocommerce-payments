@@ -150,12 +150,6 @@ install_db() {
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
-get_latest_release() {
-	curl --silent "https://api.github.com/repos/woocommerce/woocommerce/releases/latest" |
-	grep '"tag_name":' |
-	sed -E 's/.*"([^"]+)".*/\1/'
-}
-
 install_wp
 install_test_suite
 install_db

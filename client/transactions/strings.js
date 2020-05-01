@@ -10,10 +10,10 @@ import { __ } from '@wordpress/i18n';
 export const displayType = {
 	charge: __( 'Charge', 'woocommerce-payments' ),
 	payment: __( 'Payment', 'woocommerce-payments' ),
-	payment_failure_refund: __( 'Payment Failure Refund', 'woocommerce-payments' ),
-	payment_refund: __( 'Payment Refund', 'woocommerce-payments' ),
+	payment_failure_refund: __( 'Payment failure refund', 'woocommerce-payments' ),
+	payment_refund: __( 'Payment refund', 'woocommerce-payments' ),
 	refund: __( 'Refund', 'woocommerce-payments' ),
-	refund_failure: __( 'Refund Failure', 'woocommerce-payments' ),
+	refund_failure: __( 'Refund failure', 'woocommerce-payments' ),
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
-	dispute_reversal: __( 'Dispute Reversal', 'woocommerce-payments' ),
+	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 };

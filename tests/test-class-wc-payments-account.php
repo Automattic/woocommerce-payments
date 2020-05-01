@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay_Test
+ * Class WC_Payments_Account_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -44,6 +44,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function tearDown() {
 		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
+		parent::tearDown();
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
@@ -260,5 +261,66 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
 		remove_filter( 'wcpay_dev_mode', '__return_true' );
+	}
+
+	public function test_refresh_account_data_with_empty_cache() {
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+
+		// Make sure cache is clear.
+		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will( $this->returnValue( $expected_account ) );
+		$this->wcpay_account->refresh_account_data();
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Account is not cached' );
+	}
+
+	public function test_refresh_account_data_with_existing_cache() {
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+
+		$existing_cache                     = $expected_account;
+		$existing_cache['current_deadline'] = 11111;
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $existing_cache );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will( $this->returnValue( $expected_account ) );
+		$this->wcpay_account->refresh_account_data();
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+	}
+
+	public function test_refresh_account_data_clears_cache_on_failure() {
+		$account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+		);
+		$this->wcpay_account->refresh_account_data();
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( [], $cached_account, 'Cached account is not cleared' );
 	}
 }

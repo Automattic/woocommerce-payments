@@ -36,28 +36,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @var WC_Payments_Account
 	 */
 	private $account;
-
 	/**
-	 * Check the defined constant to determine the current plugin mode.
+	 * WC_Payments_Customer instance for working with customer information
 	 *
-	 * @return bool
+	 * @var WC_Payments_Customer_Service
 	 */
-	public function is_in_dev_mode() {
-		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
-	}
+	private $customer_service;
 
 	/**
 	 * Whether the current page is the WooCommerce Payments settings page.
@@ -71,6 +55,105 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'section' => self::GATEWAY_ID,
 		);
 		return count( $params ) === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+	}
+
+	/**
+	 * WC_Payment_Gateway_WCPay constructor.
+	 *
+	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account          $account             - Account class instance.
+	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
+	 */
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		WC_Payments_Customer_Service $customer_service
+	) {
+		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
+		$this->customer_service    = $customer_service;
+
+		$this->id                 = self::GATEWAY_ID;
+		$this->icon               = ''; // TODO: icon.
+		$this->has_fields         = true;
+		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
+		$this->title              = __( 'Credit card', 'woocommerce-payments' );
+		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
+		$this->supports           = array(
+			'products',
+			'refunds',
+		);
+
+		// Define setting fields.
+		$this->form_fields = array(
+			'enabled'         => array(
+				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
+			'account_details' => array(
+				'type' => 'account_actions',
+			),
+			'account_status'  => array(
+				'type' => 'account_status',
+			),
+			'manual_capture'  => array(
+				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
+			'test_mode'       => array(
+				'title'       => __( 'Test mode', 'woocommerce-payments' ),
+				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
+				'default'     => 'no',
+				'desc_tip'    => true,
+			),
+			'enable_logging'  => array(
+				'title'       => __( 'Debug log', 'woocommerce-payments' ),
+				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			),
+		);
+
+		if ( $this->is_in_dev_mode() ) {
+			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
+			$this->form_fields['test_mode']['label']                              = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
+			$this->form_fields['enable_logging']['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
+		}
+
+		// Load the settings.
+		$this->init_settings();
+
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
+		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
+		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	}
+
+	/**
+	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
+	 *
+	 * @see WC_Payment_Gateway::needs_setup
+	 * @return bool
+	 */
+	public function needs_setup() {
+		if ( ! $this->account->is_stripe_connected( false ) ) {
+			return true;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
 	}
 
 	/**
@@ -92,91 +175,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * WC_Payment_Gateway_WCPay constructor.
+	 * Check the defined constant to determine the current plugin mode.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account    $account - Account class instance.
+	 * @return bool
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
-		$this->payments_api_client = $payments_api_client;
-		$this->account             = $account;
-
-		$this->id                 = self::GATEWAY_ID;
-		$this->icon               = ''; // TODO: icon.
-		$this->has_fields         = true;
-		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit Card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = array(
-			'products',
-			'refunds',
-		);
-
-		// Define setting fields.
-		$this->form_fields = array(
-			'enabled'         => array(
-				'title'       => __( 'Enable/Disable', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			),
-			'account_details' => array(
-				'type' => 'account_actions',
-			),
-			'account_status'  => array(
-				'type' => 'account_status',
-			),
-			'manual_capture'  => array(
-				'title'       => __( 'Manual Capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
-				'default'     => 'no',
-				'desc_tip'    => true,
-			),
-			'test_mode'       => array(
-				'title'       => __( 'Test Mode', 'woocommerce-payments' ),
-				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
-				'default'     => 'no',
-				'desc_tip'    => true,
-			),
-			'enable_logging'  => array(
-				'title'       => __( 'Debug Log', 'woocommerce-payments' ),
-				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'no',
-			),
-		);
-
-		if ( $this->is_in_dev_mode() ) {
-			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
-			$this->form_fields['test_mode']['label']                              = __( 'Dev Mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
-			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
-			$this->form_fields['enable_logging']['label']                         = __( 'Dev Mode is active so logging is on by default.', 'woocommerce-payments' );
-		}
-
-		// Load the settings.
-		$this->init_settings();
-
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
-		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
-		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+	public function is_in_dev_mode() {
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
 	}
 
 	/**
-	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
+	 * Returns whether test_mode or dev_mode is active for the gateway
 	 *
-	 * @see WC_Payment_Gateway::needs_setup
-	 * @return bool
+	 * @return boolean Test mode enabled if true, disabled if false
 	 */
-	public function needs_setup() {
-		return parent::needs_setup() || ! $this->account->is_stripe_connected( false );
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
+		return 'yes' === $this->get_option( 'test_mode' );
 	}
 
 	/**
@@ -202,7 +219,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
-					<b><?php esc_html_e( 'Test Mode Active: ', 'woocommerce-payments' ); ?></b>
+					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
 					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
 				</p>
 			</div>
@@ -306,20 +323,41 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$amount = $order->get_total();
 
-			$transaction_id = '';
-
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
 				$payment_method = $this->get_payment_method_from_request();
-
 				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
+				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email          = sanitize_email( $order->get_billing_email() );
+
+				// Determine the customer making the payment, create one if we don't have one already.
+				$user        = wp_get_current_user();
+				$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+				if ( null === $customer_id ) {
+					// Create a new customer.
+					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+				} else {
+					// Update the existing customer with the current details. In the event the old customer can't be
+					// found a new one is created, so we update the customer ID here as well.
+					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+				}
+
+				$metadata = [
+					'customer_name'  => $name,
+					'customer_email' => $email,
+					'site_url'       => esc_url( get_site_url() ),
+					'order_id'       => $order->get_id(),
+				];
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					round( (float) $amount * 100 ),
 					'usd',
 					$payment_method,
-					$manual_capture
+					$customer_id,
+					$manual_capture,
+					$metadata
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
@@ -501,7 +539,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<tr valign="top">
 			<th scope="row">
-				<?php echo esc_html( __( 'Account Status', 'woocommerce-payments' ) ); ?>
+				<?php echo esc_html( __( 'Account status', 'woocommerce-payments' ) ); ?>
 			</th>
 			<td>
 				<div id="wcpay-account-status-container"></div>

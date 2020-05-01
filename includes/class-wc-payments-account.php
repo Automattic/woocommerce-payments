@@ -262,7 +262,8 @@ class WC_Payments_Account {
 			}
 
 			try {
-				$this->init_oauth();
+				$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+				$this->init_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init oauth flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
@@ -353,27 +354,43 @@ class WC_Payments_Account {
 
 	/**
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
+	 *
+	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
-	private function init_oauth() {
+	private function init_oauth( $wcpay_connect_from ) {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
 		$current_user = wp_get_current_user();
 
+		// Usually the return URL is the WCPay plugin settings page.
+		// But if connection originated on the WCADMIN payment task page, return there.
+		$return_url = WC_Payment_Gateway_WCPay::get_settings_url();
+		if ( strcmp( $wcpay_connect_from, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
+			$return_url = add_query_arg(
+				array(
+					'page' => 'wc-admin',
+					'task' => 'payments',
+				),
+				admin_url( 'admin.php' )
+			);
+		}
+
 		$oauth_data = $this->payments_api_client->get_oauth_data(
-			WC_Payment_Gateway_WCPay::get_settings_url(),
+			$return_url,
 			array(
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 			)
 		);
 
+		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			wp_safe_redirect(
 				add_query_arg(
 					array( 'wcpay-connection-success' => '1' ),
-					WC_Payment_Gateway_WCPay::get_settings_url()
+					$return_url
 				)
 			);
 			exit;
@@ -454,8 +471,29 @@ class WC_Payments_Account {
 		}
 
 		// Cache the account details so we don't call the server every time.
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+		$this->cache_account( $account );
 		return $account;
+	}
+
+	/**
+	 * Caches account data for two hours
+	 *
+	 * @param array $account - Account data to cache.
+	 */
+	private function cache_account( $account ) {
+		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Refetches account data.
+	 */
+	public function refresh_account_data() {
+		try {
+			delete_transient( self::ACCOUNT_TRANSIENT );
+			$this->get_cached_account_data();
+		} catch ( Exception $e ) {
+			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+		}
 	}
 
 	/**
