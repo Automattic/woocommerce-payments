@@ -20,6 +20,7 @@ import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import includeStripeJS from 'hooks/include-stripe-js';
 import '../style.scss';
 
 export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
@@ -43,6 +44,8 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 			</Page>
 		);
 	}
+
+	includeStripeJS();
 
 	return (
 		<Page isNarrow className="wcpay-dispute-details">

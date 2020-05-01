@@ -16,6 +16,7 @@ import PaymentDetailsPayment from './payment';
 import PaymentDetailsPaymentMethod from './payment-method';
 import PaymentDetailsSession from './session';
 import Page from 'components/page';
+import includeStripeJS from '../hooks/include-stripe-js';
 
 const PaymentDetails = ( props ) => {
 	const chargeId = props.query.id;
@@ -31,6 +32,8 @@ const PaymentDetails = ( props ) => {
 			</Page>
 		);
 	}
+
+	includeStripeJS();
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">

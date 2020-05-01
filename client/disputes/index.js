@@ -20,6 +20,7 @@ import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
+import includeStripeJS from '../hooks/include-stripe-js';
 
 const currency = new Currency();
 
@@ -80,6 +81,8 @@ export const DisputesList = ( props ) => {
 
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
+
+	includeStripeJS();
 
 	return (
 		<TableCard

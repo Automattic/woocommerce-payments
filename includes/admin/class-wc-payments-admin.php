@@ -201,13 +201,25 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/index.css' )
 		);
 
-		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
-		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : null;
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			array(),
+			'3.0',
+			true
+		);
+
+		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
+		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
+		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : null;
+		$settings_script_dependencies = array_merge(
+			$script_asset['dependencies'],
+			[ 'stripe' ]
+		);
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
-			$settings_script_asset['dependencies'],
+			$settings_script_dependencies,
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
 		);
@@ -233,7 +245,6 @@ class WC_Payments_Admin {
 	 */
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
-		$wcpay_page = false;
 
 		if ( $current_tab && $current_section
 			&& 'checkout' === $current_tab
@@ -241,29 +252,12 @@ class WC_Payments_Admin {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
-			$wcpay_page = true;
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
-
-			// TODO - Only enqueue on /payments pages.
-			$wcpay_page = true;
-		}
-
-		// Only enqueue stripe.js if merchant has an account already.
-		$stripe_connected = false;
-		try {
-			$stripe_connected = $this->account->try_is_stripe_connected();
-		} catch ( Exception $e ) {
-			$stripe_connected = false;
-		}
-
-		// As an aid in monitoring for abuse of the merchant's dashboard, enqueue stripe JS.
-		if ( $stripe_connected && $wcpay_page ) {
-			wp_enqueue_script( 'stripe', 'https://js.stripe.com/v3/', array(), '3.0', true );
 		}
 	}
 }
