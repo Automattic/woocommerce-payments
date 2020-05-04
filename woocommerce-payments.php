@@ -30,7 +30,7 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_init() {
-	include_once dirname( __FILE__ ) . '/includes/class-wc-payments.php';
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::init();
 }
 
