@@ -68,6 +68,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Whether the site can communicate with the WCPay server (i.e. Jetpack connection has been established).
+	 *
+	 * @return bool
+	 */
+	public function is_server_connected() {
+		return $this->http_client->is_connected();
+	}
+
+	/**
+	 * Starts the Jetpack connection process. Note that running this function will immediately redirect
+	 * to the Jetpack flow, so any PHP code after it will never be executed.
+	 *
+	 * @param string $redirect - URL to redirect to after the connection process is over.
+	 *
+	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
+	 */
+	public function start_server_connection( $redirect ) {
+		$this->http_client->start_connection( $redirect );
+	}
+
+	/**
+	 * Create a charge
+	 *
+	 * @param int    $amount    - Amount to charge.
+	 * @param string $source_id - ID of the source to associate with charge.
+	 *
+	 * @return WC_Payments_API_Charge
+	 * @throws WC_Payments_API_Exception - Exception thrown on payment failure.
+	 */
+	public function create_charge( $amount, $source_id ) {
+
+		$request           = array();
+		$request['amount'] = $amount;
+		$request['source'] = $source_id;
+
+		$response_array = $this->request( $request, self::CHARGES_API, self::POST );
+
+		return $this->deserialize_charge_object_from_array( $response_array );
+	}
+
+	/**
 	 * Create an intention, and automatically confirm it.
 	 *
 	 * @param int    $amount            - Amount to charge.

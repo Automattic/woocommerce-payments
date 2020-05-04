@@ -44,8 +44,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_account_data' ] )
+			->setMethods( [ 'get_account_data', 'is_server_connected' ] )
 			->getMock();
+		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 
