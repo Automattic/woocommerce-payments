@@ -134,7 +134,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
+		return admin_url(
+			add_query_arg(
+				array(
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => self::GATEWAY_ID,
+				),
+				'admin.php'
+			)
+		);
 	}
 
 	/**
