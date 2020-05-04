@@ -187,12 +187,6 @@ class WC_Payments {
 				'slug'  => 'woocommerce-admin',
 				'file'  => 'woocommerce-admin/woocommerce-admin.php',
 			),
-			array(
-				'name'  => 'Jetpack',
-				'class' => 'Jetpack',
-				'slug'  => 'jetpack',
-				'file'  => 'jetpack/jetpack.php',
-			),
 		);
 
 		// Check if WooCommerce and other dependencies are  installed and active.

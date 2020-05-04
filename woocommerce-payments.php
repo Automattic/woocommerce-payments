@@ -23,6 +23,19 @@ define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
+require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
+
+/**
+ * Initialize the Jetpack connection functionality.
+ */
+function wcpay_jetpack_init() {
+	$jetpack_config = new Automattic\Jetpack\Config();
+	$jetpack_config->ensure( 'connection' );
+}
+
+// The Jetpack initialization needs to be run with higher priority.
+add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
+
 /**
  * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
