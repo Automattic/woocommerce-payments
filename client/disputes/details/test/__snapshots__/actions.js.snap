@@ -1,1 +1,41 @@
-To be regenerated
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dispute details actions renders correctly for closed dispute 1`] = `<div />`;
+
+exports[`Dispute details actions renders correctly for dispute needing response, confirmation requested on submit 1`] = `
+<div>
+  <div
+    class="woocommerce-card__footer"
+  >
+    <a
+      class="components-button is-button is-primary is-large"
+      data-link-type="wc-admin"
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
+    >
+      Challenge dispute
+    </a>
+    <button
+      class="components-button is-button is-default is-large"
+      type="button"
+    >
+      Accept dispute
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Dispute details actions renders correctly for dispute with evidence submitted 1`] = `
+<div>
+  <div
+    class="woocommerce-card__footer"
+  >
+    <a
+      class="components-button is-button is-primary is-large"
+      data-link-type="wc-admin"
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
+    >
+      View submitted evidence
+    </a>
+  </div>
+</div>
+`;

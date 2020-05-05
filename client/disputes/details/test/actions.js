@@ -25,7 +25,7 @@ describe( 'Dispute details actions', () => {
 		);
 		expect( container ).toMatchSnapshot();
 
-		fireEvent.click( getByText( 'Accept Dispute' ) );
+		fireEvent.click( getByText( /accept dispute/i ) );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 		expect( doAccept ).toHaveBeenCalledTimes( 0 );
 	} );
@@ -45,9 +45,9 @@ describe( 'Dispute details actions', () => {
 			.mockReturnValueOnce( false )
 			.mockReturnValueOnce( true );
 
-		fireEvent.click( getByText( 'Accept Dispute' ) );
+		fireEvent.click( getByText( /accept dispute/i ) );
 		expect( doAccept ).toHaveBeenCalledTimes( 0 );
-		fireEvent.click( getByText( 'Accept Dispute' ) );
+		fireEvent.click( getByText( /accept dispute/i ) );
 		expect( doAccept ).toHaveBeenCalledTimes( 1 );
 	} );
 
