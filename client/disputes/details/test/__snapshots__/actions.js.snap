@@ -1,80 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Dispute details actions renders correctly for closed dispute 1`] = `
-<Actions
-  id="dp_mock"
-  isSubmitted={false}
-  needsResponse={false}
-/>
-`;
+exports[`Dispute details actions renders correctly for closed dispute 1`] = `<div />`;
 
 exports[`Dispute details actions renders correctly for dispute needing response, confirmation requested on submit 1`] = `
-<Actions
-  id="dp_mock"
-  needsResponse={true}
-  onAccept={[MockFunction]}
->
-  <CardFooter>
-    <div
-      className="woocommerce-card__footer"
+<div>
+  <div
+    class="woocommerce-card__footer"
+  >
+    <a
+      class="components-button is-button is-primary is-large"
+      data-link-type="wc-admin"
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
     >
-      <Link
-        className="components-button is-button is-primary is-large"
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
-        type="wc-admin"
-      >
-        <a
-          className="components-button is-button is-primary is-large"
-          data-link-type="wc-admin"
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
-          onClick={[Function]}
-        >
-          Challenge dispute
-        </a>
-      </Link>
-      <ForwardRef(Button)
-        isDefault={true}
-        isLarge={true}
-        onClick={[Function]}
-      >
-        <button
-          className="components-button is-button is-default is-large"
-          onClick={[Function]}
-          type="button"
-        >
-          Accept dispute
-        </button>
-      </ForwardRef(Button)>
-    </div>
-  </CardFooter>
-</Actions>
+      Challenge dispute
+    </a>
+    <button
+      class="components-button is-button is-default is-large"
+      type="button"
+    >
+      Accept dispute
+    </button>
+  </div>
+</div>
 `;
 
 exports[`Dispute details actions renders correctly for dispute with evidence submitted 1`] = `
-<Actions
-  id="dp_mock"
-  isSubmitted={true}
-  needsResponse={false}
->
-  <CardFooter>
-    <div
-      className="woocommerce-card__footer"
+<div>
+  <div
+    class="woocommerce-card__footer"
+  >
+    <a
+      class="components-button is-button is-primary is-large"
+      data-link-type="wc-admin"
+      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
     >
-      <Link
-        className="components-button is-button is-primary is-large"
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
-        type="wc-admin"
-      >
-        <a
-          className="components-button is-button is-primary is-large"
-          data-link-type="wc-admin"
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
-          onClick={[Function]}
-        >
-          View submitted evidence
-        </a>
-      </Link>
-    </div>
-  </CardFooter>
-</Actions>
+      View submitted evidence
+    </a>
+  </div>
+</div>
 `;
