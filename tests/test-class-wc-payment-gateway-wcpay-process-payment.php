@@ -156,4 +156,74 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: Order has correct intention status meta data.
 		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
 	}
+
+	/**
+	 * Test processing payment with the status "requires_capture".
+	 */
+	public function test_intent_status_requires_capture() {
+		// Arrange: Reusable data.
+		$intent_id = 'pi_123';
+		$charge_id = 'ch_123';
+		$status    = 'requires_capture';
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Return a 'requires_capture' response from create_and_confirm_intention().
+		$intent = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			new DateTime(),
+			$status,
+			$charge_id
+		);
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $this->return_url, $result['redirect'] );
+
+		// Assert: The order note contains all the information we want:
+		// - status
+		// - intention id
+		// - amount charged.
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$latest_wcpay_note = current(
+			array_filter(
+				$notes,
+				function( $note ) {
+					return false !== strpos( $note->content, 'WooCommerce Payments' );
+				}
+			)
+		);
+		$this->assertContains( 'authorized', $latest_wcpay_note->content );
+		$this->assertContains( $intent_id, $latest_wcpay_note->content );
+		$this->assertContains( $order->get_total(), $latest_wcpay_note->content );
+
+		// Assert: Order has correct  status.
+		// Need to get the order again to see the correct order status.
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_status(), 'on-hold' );
+
+		// Assert: Order has correct transaction ID set.
+		$this->assertEquals( $updated_order->get_transaction_id(), $intent_id );
+
+		// Assert: Order has correct charge id meta data.
+		$this->assertEquals( $order->get_meta( '_charge_id' ), $charge_id );
+
+		// Assert: Order has correct intention status meta data.
+		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
+	}
 }
