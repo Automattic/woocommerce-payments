@@ -226,4 +226,69 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: Order has correct intention status meta data.
 		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
 	}
+
+	public function test_exception_thrown() {
+		// Arrange: Reusable data.
+		$error_message = 'Error: No such customer: 123';
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Throw an exception in create_and_confirm_intention.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new WC_Payments_API_Exception(
+						$error_message,
+						'resource_missing',
+						400
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: A notice has been added.
+		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+
+		// Assert: Order has correct  status.
+		// Need to get the order again to see the correct order status.
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_status(), 'failed' );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( '', $result['redirect'] );
+
+		// Assert: Order does not have transaction ID set.
+		$this->assertEquals( $updated_order->get_transaction_id(), '' );
+
+		// Assert: Order does not have charge id meta data.
+		$this->assertEquals( $order->get_meta( '_charge_id' ), '' );
+
+		// Assert: Order does not have intention status meta data.
+		$this->assertEquals( $order->get_meta( '_intention_status' ), null );
+
+		// Assert: There is no order note added.
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$latest_wcpay_note = current(
+			array_filter(
+				$notes,
+				function( $note ) {
+					return false !== strpos( $note->content, 'WooCommerce Payments' );
+				}
+			)
+		);
+		// Note that for empty arrays, current() may return
+		// Boolean FALSE, but may also return a non-Boolean value which evaluates to FALSE.
+		// That's why it's being cast to Boolean for the test.
+		$this->assertFalse( (bool) $latest_wcpay_note );
+	}
 }
