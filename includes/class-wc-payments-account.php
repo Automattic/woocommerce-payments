@@ -405,8 +405,14 @@ class WC_Payments_Account {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'wcpay-connection-success' => '1' ),
-				WC_Payment_Gateway_WCPay::get_settings_url()
+				[
+					'wcpay-state'                => false,
+					'wcpay-account-id'           => false,
+					'wcpay-live-publishable-key' => false,
+					'wcpay-test-publishable-key' => false,
+					'wcpay-mode'                 => false,
+					'wcpay-connection-success'   => '1',
+				]
 			)
 		);
 		exit;
