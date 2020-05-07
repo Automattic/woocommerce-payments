@@ -1,6 +1,8 @@
 /**
  * Internal dependencies
  */
+import includeStripeJS from '../../hooks/include-stripe-js';
+
 import './style.scss';
 
 const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
@@ -9,6 +11,8 @@ const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 	if ( isNarrow ) {
 		classNames.push( 'is-narrow' );
 	}
+
+	includeStripeJS();
 
 	return <div className={ classNames.join( ' ' ) } style={ customStyle }>{ children }</div>;
 };

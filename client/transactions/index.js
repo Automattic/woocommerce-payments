@@ -13,6 +13,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
+import Page from '../components/page';
 import { useTransactions, useTransactionsSummary } from '../data';
 import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
@@ -21,7 +22,6 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
 import Deposit from './deposit';
-import includeStripeJS from '../hooks/include-stripe-js';
 
 import './style.scss';
 
@@ -162,24 +162,24 @@ export const TransactionsList = ( props ) => {
 		{ label: 'net', value: `${ currency.formatCurrency( transactionsSummary.net / 100 ) }` },
 	];
 
-	includeStripeJS();
-
 	return (
-		<TableCard
-			className="transactions-list"
-			title={ props.depositId
-				? __( 'Deposit transactions', 'woocommerce-payments' )
-				: __( 'Transactions', 'woocommerce-payments' )
-			}
-			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
-			totalRows={ transactionsSummary.count || 0 }
-			headers={ columnsToDisplay }
-			rows={ rows }
-			summary={ isSummaryLoading ? null : summary }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-		/>
+		<Page>
+			<TableCard
+				className="transactions-list"
+				title={ props.depositId
+					? __( 'Deposit transactions', 'woocommerce-payments' )
+					: __( 'Transactions', 'woocommerce-payments' )
+				}
+				isLoading={ isLoading }
+				rowsPerPage={ getQuery().per_page || 25 }
+				totalRows={ transactionsSummary.count || 0 }
+				headers={ columnsToDisplay }
+				rows={ rows }
+				summary={ isSummaryLoading ? null : summary }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+			/>
+		</Page>
 	);
 };
 

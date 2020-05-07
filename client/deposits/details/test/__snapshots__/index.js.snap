@@ -1,14 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Deposit details page renders correctly 1`] = `
-<Fragment>
+<Page>
   <DepositOverview
     depositId="po_mock"
   />
   <TransactionsList
     depositId="po_mock"
   />
-</Fragment>
+</Page>
 `;
 
 exports[`Deposit overview renders correctly 1`] = `

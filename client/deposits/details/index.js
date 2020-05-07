@@ -12,6 +12,7 @@ import { Card, OrderStatus } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
+import Page from 'components/page';
 import { useDeposit } from 'data';
 import { displayStatus } from '../strings';
 import TransactionsList from 'transactions';
@@ -61,10 +62,10 @@ export const DepositOverview = ( { depositId } ) => {
 };
 
 export const DepositDetails = ( { query: { id: depositId } } ) => (
-	<>
+	<Page>
 		<DepositOverview depositId={ depositId } />
 		<TransactionsList depositId={ depositId } />
-	</>
+	</Page>
 );
 
 export default DepositDetails;

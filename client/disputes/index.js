@@ -18,9 +18,9 @@ import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
+import Page from '../components/page';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
-import includeStripeJS from '../hooks/include-stripe-js';
 
 const currency = new Currency();
 
@@ -82,8 +82,6 @@ export const DisputesList = ( props ) => {
 		return headers.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	includeStripeJS();
-
 	return (
 		<TableCard
 			title={ __( 'Disputes', 'woocommerce-payments' ) }
@@ -114,9 +112,11 @@ export default () => {
 	}, [] );
 
 	return (
-		<DisputesList
-			disputes={ disputes }
-			showPlaceholder={ loading }
-		/>
+		<Page>
+			<DisputesList
+				disputes={ disputes }
+				showPlaceholder={ loading }
+			/>
+		</Page>
 	);
 };
