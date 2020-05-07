@@ -210,6 +210,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'accountId'      => $this->account->get_stripe_account_id(),
 			);
 
+			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+			// loading different versions however.
+			wp_register_script(
+				'stripe',
+				'https://js.stripe.com/v3/',
+				array(),
+				'3.0',
+				true
+			);
+
 			wp_register_script(
 				'wcpay-checkout',
 				plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
