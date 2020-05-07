@@ -22,7 +22,6 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from './strings';
 import { formatStringValue } from '../util';
 import Deposit from './deposit';
-
 import './style.scss';
 
 const currency = new Currency();

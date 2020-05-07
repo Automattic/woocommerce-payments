@@ -20,7 +20,6 @@ import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
-
 import '../style.scss';
 
 export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {

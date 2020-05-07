@@ -245,7 +245,6 @@ class WC_Payments_Admin {
 	 */
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
-
 		if ( $current_tab && $current_section
 			&& 'checkout' === $current_tab
 			&& 'woocommerce_payments' === $current_section ) {
