@@ -62,7 +62,7 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 		const learnMoreHref = 'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
-			__( 'Temporarily suspended (<a>Learn more</a>)', 'woocommerce-payments' ),
+			__( 'Temporarily suspended (<a>learn more</a>)', 'woocommerce-payments' ),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
 		);
@@ -73,7 +73,7 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
-				__( '%s (Your first deposit is held for seven days. <a>Learn more</a>)', 'woocommerce-payments' ),
+				__( '%s – your first deposit is held for seven days (<a>learn more</a>)', 'woocommerce-payments' ),
 				formatDepositSchedule( { interval: 'daily' } ),
 			),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content

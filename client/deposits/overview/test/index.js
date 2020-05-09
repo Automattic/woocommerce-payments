@@ -68,12 +68,12 @@ describe( 'Deposits overview', () => {
 
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'daily' }, true );
-		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (Learn more)' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (learn more)' );
 	} );
 
 	test( 'renders temporarily suspended notice for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (Learn more)' );
+		expect( depositSchedule ).toEqual( 'Deposit schedule: Temporarily suspended (learn more)' );
 	} );
 
 	test( 'renders deposit schedule for daily interval', () => {
@@ -109,7 +109,7 @@ describe( 'Deposits overview', () => {
 		mockUseDepositsOverview( overview );
 		const { getByText } = render( <DepositsOverview /> );
 		const depositSchedule = getByText( 'Deposit schedule:' );
-		const expected = 'Deposit schedule: Automatic, every business day (Your first deposit is held for seven days. Learn more)';
+		const expected = 'Deposit schedule: Automatic, every business day – your first deposit is held for seven days (learn more)';
 		expect( depositSchedule.parentElement.textContent ).toEqual( expected );
 	} );
 
