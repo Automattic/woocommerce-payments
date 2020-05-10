@@ -10,20 +10,24 @@ exports[`ConnectAccountPage should render correctly 1`] = `
   >
     <_default />
     <h2>
-      Accept credit cards online using WooCommerce Payments.
-      <br />
-      Simply verify your business details to get started.
+
+      WooCommerce Payments
+
     </h2>
+    <p
+      className="connect-account__description"
+    >
+      Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.
+    </p>
     <p
       className="connect-account__terms"
     >
-      By clicking “Verify details,” you agree to the 
+      By clicking “Set up,” you agree to the
       <a
         href="https://wordpress.com/tos"
       >
         Terms of Service
       </a>
-      .
     </p>
     <hr
       className="full-width"
@@ -36,7 +40,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
         isLarge={true}
         isPrimary={true}
       >
-        Verify details
+        Set up
       </ForwardRef(Button)>
     </p>
   </Card>
@@ -53,10 +57,15 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
   >
     <_default />
     <h2>
-      Accept credit cards online using WooCommerce Payments.
-      <br />
-      Simply verify your business details to get started.
+
+      WooCommerce Payments
+
     </h2>
+    <p
+      className="connect-account__description"
+    >
+      Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.
+    </p>
     <p>
       We've temporarily paused new account creation.
       <br />
