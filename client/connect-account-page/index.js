@@ -21,7 +21,8 @@ const ConnectAccountPage = () => {
 				<HeroImage />
 				<h2> { __( 'WooCommerce Payments', 'woocommerce-payments' ) } </h2>
 				<p className="connect-account__description">
-					{ __( 'Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.', 'woocommerce-payments' ) }
+					{ __( 'Accept credit card payments the easy way! No set up fees. ' +
+						'No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.', 'woocommerce-payments' ) }
 				</p>
 				{ ! wcpaySettings.onBoardingDisabled ? (
 				<>
