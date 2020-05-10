@@ -109,16 +109,7 @@ class WC_Payments_Admin {
 			$submenu[ $last_submenu_key ][] = array( // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
 				__( 'Settings', 'woocommerce' ), // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 				'manage_woocommerce',
-				admin_url(
-					add_query_arg(
-						array(
-							'page'    => 'wc-settings',
-							'tab'     => 'checkout',
-							'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-						),
-						'admin.php'
-					)
-				),
+				WC_Payment_Gateway_WCPay::get_settings_url(),
 			);
 
 			// Temporary fix to settings menu disappearance is to register the page after settings menu has been manually added.
