@@ -24,6 +24,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const GATEWAY_ID = 'woocommerce_payments';
 
 	/**
+	 * Set of parameters to build the URL to the gateway's settings page.
+	 *
+	 * @var string[]
+	 */
+	private static $settings_url_params = array(
+		'page'    => 'wc-settings',
+		'tab'     => 'checkout',
+		'section' => self::GATEWAY_ID,
+	);
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -43,20 +54,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @var WC_Payments_Customer_Service
 	 */
 	private $customer_service;
-
-	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		$params = array(
-			'page'    => 'wc-settings',
-			'tab'     => 'checkout',
-			'section' => self::GATEWAY_ID,
-		);
-		return count( $params ) === count( array_intersect_assoc( $_GET, $params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
-	}
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -158,21 +155,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+	}
+
+	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		return admin_url(
-			add_query_arg(
-				array(
-					'page'    => 'wc-settings',
-					'tab'     => 'checkout',
-					'section' => self::GATEWAY_ID,
-				),
-				'admin.php'
-			)
-		);
+		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
 	/**
