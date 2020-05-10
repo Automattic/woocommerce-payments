@@ -175,6 +175,10 @@ class WC_Payments_Account {
 	 * TODO: Add back the tests for this function (figure out how to test a function that ends in a redirect + die()).
 	 */
 	public function check_stripe_account_status() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
