@@ -129,6 +129,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
+	 *
+	 * @see WC_Payment_Gateway::needs_setup
+	 * @return bool
+	 */
+	public function needs_setup() {
+		if ( ! $this->account->is_stripe_connected( false ) ) {
+			return true;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
+	}
+
+	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway
@@ -180,12 +195,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		if ( ! parent::is_available() || ! $this->account->is_stripe_connected( false ) ) {
-			return false;
-		}
-
-		$account_status = $this->account->get_account_status_data();
-		return empty( $account_status['error'] ) && $account_status['paymentsEnabled'];
+		return parent::is_available() && ! $this->needs_setup();
 	}
 
 	/**
