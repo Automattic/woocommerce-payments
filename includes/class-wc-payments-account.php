@@ -18,6 +18,7 @@ class WC_Payments_Account {
 
 	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
+	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -163,8 +164,14 @@ class WC_Payments_Account {
 	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string $error_message Optional error message to show in a notice.
 	 */
-	private function redirect_to_onboarding_page() {
+	private function redirect_to_onboarding_page( $error_message = null ) {
+		if ( isset( $error_message ) ) {
+			set_transient( self::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
+		}
+
 		$params = [
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
@@ -254,23 +261,18 @@ class WC_Payments_Account {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
 			if ( ! $this->payments_api_client->is_server_connected() && isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$this->add_notice_to_settings_page(
-					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' ),
-					'notice-error'
+				$this->redirect_to_onboarding_page(
+					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
 				);
-
-				return;
 			}
 
 			try {
 				$this->maybe_init_jetpack_connection( $wcpay_connect_param );
 			} catch ( Exception $e ) {
-				$this->add_notice_to_settings_page(
+				$this->redirect_to_onboarding_page(
 				/* translators: error message. */
-					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
-					'notice-error'
+					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
 				);
-				return;
 			}
 
 			try {

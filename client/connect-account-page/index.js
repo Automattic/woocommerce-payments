@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
@@ -17,6 +17,11 @@ import HeroImage from './hero-image';
 const ConnectAccountPage = () => {
 	return (
 		<Page isNarrow className="connect-account">
+			{ wcpaySettings.errorMessage &&
+				<Notice className="wcpay-connect-error-notice" status="error" isDismissible={ false }>
+					{ wcpaySettings.errorMessage }
+				</Notice>
+			}
 			<Card className="connect-account__card">
 				<HeroImage />
 				<h2> { __( 'WooCommerce Payments', 'woocommerce-payments' ) } </h2>
