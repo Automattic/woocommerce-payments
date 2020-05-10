@@ -184,7 +184,8 @@ class WC_Payments_Account {
 
 		if ( empty( $account ) ) {
 			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
-				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) ) ) {
+				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) )
+			) {
 				update_option( 'wcpay_redirected_to_onboarding', true );
 				$this->redirect_to_onboarding_page();
 			}
