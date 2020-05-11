@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import includeStripeJS from 'hooks/include-stripe-js';
-
 import './style.scss';
 
 const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
