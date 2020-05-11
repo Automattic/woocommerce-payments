@@ -10,9 +10,9 @@ exports[`ConnectAccountPage should render correctly 1`] = `
   >
     <_default />
     <h2>
-
+       
       WooCommerce Payments
-
+       
     </h2>
     <p
       className="connect-account__description"
@@ -22,7 +22,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
     <p
       className="connect-account__terms"
     >
-      By clicking “Set up,” you agree to the
+      By clicking “Set up,” you agree to the 
       <a
         href="https://wordpress.com/tos"
       >
@@ -57,9 +57,9 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
   >
     <_default />
     <h2>
-
+       
       WooCommerce Payments
-
+       
     </h2>
     <p
       className="connect-account__description"
