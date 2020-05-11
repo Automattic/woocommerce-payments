@@ -213,7 +213,7 @@ class WC_Payments_Admin {
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
 		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : null;
 		$settings_script_dependencies = array_merge(
-			$script_asset['dependencies'],
+			$settings_script_asset['dependencies'],
 			[ 'stripe' ]
 		);
 		wp_register_script(

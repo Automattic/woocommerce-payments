@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import includeStripeJS from '../../hooks/include-stripe-js';
+import includeStripeJS from 'hooks/include-stripe-js';
 
 import './style.scss';
 

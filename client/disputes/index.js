@@ -18,7 +18,7 @@ import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
-import Page from '../components/page';
+import Page from 'components/page';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
@@ -83,14 +83,16 @@ export const DisputesList = ( props ) => {
 	} );
 
 	return (
-		<TableCard
-			title={ __( 'Disputes', 'woocommerce-payments' ) }
-			isLoading={ showPlaceholder }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
-			headers={ headers }
-			rows={ rows }
-		/>
+		<Page>
+			<TableCard
+				title={ __( 'Disputes', 'woocommerce-payments' ) }
+				isLoading={ showPlaceholder }
+				rowsPerPage={ 10 }
+				totalRows={ 10 }
+				headers={ headers }
+				rows={ rows }
+			/>
+		</Page>
 	);
 };
 
@@ -112,11 +114,9 @@ export default () => {
 	}, [] );
 
 	return (
-		<Page>
-			<DisputesList
-				disputes={ disputes }
-				showPlaceholder={ loading }
-			/>
-		</Page>
+		<DisputesList
+			disputes={ disputes }
+			showPlaceholder={ loading }
+		/>
 	);
 };
