@@ -54,30 +54,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful call to create_charge.
-	 *
-	 * @throws Exception - In the event of test failure.
-	 */
-	public function test_create_charge_success() {
-		// Mock up a test response from WP_Http.
-		$this->set_http_mock_response(
-			200,
-			array(
-				'id'      => 'test_charge_id',
-				'amount'  => 123,
-				'created' => 1557224304,
-				'status'  => 'success',
-			)
-		);
-
-		// Attempt to create a charge.
-		$result = $this->payments_api_client->create_charge( 123, 'test_source' );
-
-		// Assert amount returned is correct (ignoring other properties for now since this is a stub implementation).
-		$this->assertEquals( 123, $result->get_amount() );
-	}
-
-	/**
 	 * Test a successful call to create_intention.
 	 *
 	 * @throws Exception - In the event of test failure.
