@@ -97,37 +97,30 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$mock_item
-			->expects( $this->once() )
 			->method( 'get_name' )
 			->will( $this->returnValue( 'Beanie with Logo' ) );
 
 		$mock_item
-			->expects( $this->once() )
 			->method( 'get_quantity' )
 			->will( $this->returnValue( 1 ) );
 
 		$mock_item
-			->expects( $this->any() )
 			->method( 'get_total' )
 			->will( $this->returnValue( 18 ) );
 
 		$mock_item
-			->expects( $this->any() )
 			->method( 'get_subtotal' )
 			->will( $this->returnValue( 18 ) );
 
 		$mock_item
-			->expects( $this->once() )
 			->method( 'get_total_tax' )
 			->will( $this->returnValue( 2.7 ) );
 
 		$mock_item
-			->expects( $this->once() )
 			->method( 'get_variation_id' )
 			->will( $this->returnValue( false ) );
 
 		$mock_item
-			->expects( $this->once() )
 			->method( 'get_product_id' )
 			->will( $this->returnValue( 30 ) );
 
@@ -138,32 +131,26 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_id' )
 			->will( $this->returnValue( 210 ) );
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_items' )
 			->will( $this->returnValue( [ $mock_item ] ) );
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_currency' )
 			->will( $this->returnValue( 'USD' ) );
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_shipping_total' )
 			->will( $this->returnValue( 30 ) );
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_shipping_tax' )
 			->will( $this->returnValue( 8 ) );
 
 		$mock_order
-			->expects( $this->once() )
 			->method( 'get_shipping_postcode' )
 			->will( $this->returnValue( $shipping_postcode ) );
 
@@ -216,6 +203,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Use a US postcode.
 		update_option( 'woocommerce_store_postcode', '94110' );
 
+		// Use a non-us customer postcode to ensure it's not included in the level3 data.
 		$mock_order   = $this->mock_level_3_order( '9000' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
