@@ -651,7 +651,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$items_to_send = array_map( $process_item, $order_items );
 
 		$level3_data = array(
-			'merchant_reference' => $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
+			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'shipping_amount'    => WC_Payments_Utils::prepare_amount( $order->get_shipping_total() + $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
 			'line_items'         => $items_to_send,
 		);
