@@ -556,7 +556,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount = $order->get_total();
 		$intent = $this->payments_api_client->capture_intention(
 			$order->get_transaction_id(),
-			WC_Payments_Utils::prepare_amount( $amount, 'USD' )
+			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+			$this->get_level3_data_from_order( $order )
 		);
 		$status = $intent->get_status();
 

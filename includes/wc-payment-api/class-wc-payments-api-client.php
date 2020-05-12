@@ -117,7 +117,7 @@ class WC_Payments_API_Client {
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
 
-		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -166,15 +166,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
 	 * @param int    $amount       - Amount to capture.
+	 * @param array  $level3       - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount ) {
+	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
 		$request                      = array();
 		$request['amount_to_capture'] = $amount;
+		$request['level3']            = $level3;
 
-		$response_array = $this->request(
+		$response_array = $this->request_with_level3_data(
 			$request,
 			self::INTENTIONS_API . '/' . $intention_id . '/capture',
 			self::POST
@@ -582,6 +584,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Handles issues with level3 data and retries requests when necessary.
+	 *
+	 * All parameters will be passed transparently to `request`.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
+	 */
+	private function request_with_level3_data() {
+		$args = func_get_args();
+
+		// If level3 data is not present for some reason, simply proceed normally.
+		if ( ! isset( $args[0]['level3'] ) ) {
+			return call_user_func_array( [ $this, 'request' ], $args );
+		}
+
+		try {
+			return call_user_func_array( [ $this, 'request' ], $args );
+		} catch ( WC_Payments_API_Exception $e ) {
+			if ( 'invalid_request_error' !== $e->get_error_code() ) {
+				throw $e;
+			}
+
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+			// Log the issue so we could debug it.
+			Logger::error(
+				'Level3 data sum incorrect: ' . PHP_EOL
+				. print_r( $e->getMessage(), true ) . PHP_EOL
+				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+				. print_r( $args[0]['level3'], true )
+			);
+
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+			// Retry without level3 data.
+			unset( $args[0]['level3'] );
+			return call_user_func_array( [ $this, 'request' ], $args );
+		}
+	}
+
+	/**
 	 * From a given response extract the body. Invalid HTTP codes will result in an error.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
@@ -613,6 +656,10 @@ class WC_Payments_API_Client {
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'];
 				$error_message = $response_body['error']['message'];
+
+				if ( is_null( $error_code ) && ! empty( $response_body['error']['type'] ) ) {
+					$error_code = $response_body['error']['type'];
+				}
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
