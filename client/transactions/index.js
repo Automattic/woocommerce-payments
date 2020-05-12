@@ -14,6 +14,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  * Internal dependencies.
  */
 import { useTransactions, useTransactionsSummary } from '../data';
+import Page from 'components/page';
 import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
@@ -161,21 +162,23 @@ export const TransactionsList = ( props ) => {
 	];
 
 	return (
-		<TableCard
-			className="transactions-list"
-			title={ props.depositId
-				? __( 'Deposit transactions', 'woocommerce-payments' )
-				: __( 'Transactions', 'woocommerce-payments' )
-			}
-			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
-			totalRows={ transactionsSummary.count || 0 }
-			headers={ columnsToDisplay }
-			rows={ rows }
-			summary={ isSummaryLoading ? null : summary }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-		/>
+		<Page>
+			<TableCard
+				className="transactions-list"
+				title={ props.depositId
+					? __( 'Deposit transactions', 'woocommerce-payments' )
+					: __( 'Transactions', 'woocommerce-payments' )
+				}
+				isLoading={ isLoading }
+				rowsPerPage={ getQuery().per_page || 25 }
+				totalRows={ transactionsSummary.count || 0 }
+				headers={ columnsToDisplay }
+				rows={ rows }
+				summary={ isSummaryLoading ? null : summary }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+			/>
+		</Page>
 	);
 };
 

@@ -1,260 +1,262 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Disputes list renders correctly 1`] = `
-<TableCard
-  baseSearchQuery={Object {}}
-  compareParam="filter"
-  downloadable={false}
-  headers={
-    Array [
-      Object {
-        "cellClassName": "info-button",
-        "key": "details",
-        "label": "",
-        "required": true,
-      },
-      Object {
-        "key": "amount",
-        "label": "Amount",
-        "required": true,
-      },
-      Object {
-        "key": "status",
-        "label": "Status",
-        "required": true,
-      },
-      Object {
-        "key": "reason",
-        "label": "Reason",
-        "required": true,
-      },
-      Object {
-        "key": "source",
-        "label": "Source",
-        "required": true,
-      },
-      Object {
-        "key": "order",
-        "label": "Order #",
-        "required": true,
-      },
-      Object {
-        "key": "customer",
-        "label": "Customer",
-      },
-      Object {
-        "key": "email",
-        "label": "Email",
-        "visible": false,
-      },
-      Object {
-        "key": "country",
-        "label": "Country",
-        "visible": false,
-      },
-      Object {
-        "key": "created",
-        "label": "Disputed on",
-        "required": true,
-      },
-      Object {
-        "key": "dueBy",
-        "label": "Respond by",
-        "required": true,
-      },
-    ]
-  }
-  isLoading={false}
-  onColumnsChange={[Function]}
-  onQueryChange={[Function]}
-  onSearch={[Function]}
-  query={Object {}}
-  rowHeader={0}
-  rows={
-    Array [
+<Page>
+  <TableCard
+    baseSearchQuery={Object {}}
+    compareParam="filter"
+    downloadable={false}
+    headers={
       Array [
         Object {
-          "display": <DetailsLink
-            id="dp_asdfghjkl"
-            parentSegment="disputes"
-          />,
-          "value": "dp_asdfghjkl",
+          "cellClassName": "info-button",
+          "key": "details",
+          "label": "",
+          "required": true,
         },
         Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            $10.00
-          </ClickableCell>,
-          "value": 10,
+          "key": "amount",
+          "label": "Amount",
+          "required": true,
         },
         Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            <DisputeStatusChip
-              status="needs_response"
-            />
-          </ClickableCell>,
-          "value": "needs_response",
+          "key": "status",
+          "label": "Status",
+          "required": true,
         },
         Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            Fraudulent
-          </ClickableCell>,
-          "value": "fraudulent",
+          "key": "reason",
+          "label": "Reason",
+          "required": true,
         },
         Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            <span
-              className="payment-method__brand payment-method__brand--visa"
-            />
-          </ClickableCell>,
-          "value": "visa",
+          "key": "source",
+          "label": "Source",
+          "required": true,
         },
         Object {
-          "display": <OrderLink
-            order={
-              Object {
-                "number": "1",
-                "url": "http://test.local/order/1",
+          "key": "order",
+          "label": "Order #",
+          "required": true,
+        },
+        Object {
+          "key": "customer",
+          "label": "Customer",
+        },
+        Object {
+          "key": "email",
+          "label": "Email",
+          "visible": false,
+        },
+        Object {
+          "key": "country",
+          "label": "Country",
+          "visible": false,
+        },
+        Object {
+          "key": "created",
+          "label": "Disputed on",
+          "required": true,
+        },
+        Object {
+          "key": "dueBy",
+          "label": "Respond by",
+          "required": true,
+        },
+      ]
+    }
+    isLoading={false}
+    onColumnsChange={[Function]}
+    onQueryChange={[Function]}
+    onSearch={[Function]}
+    query={Object {}}
+    rowHeader={0}
+    rows={
+      Array [
+        Array [
+          Object {
+            "display": <DetailsLink
+              id="dp_asdfghjkl"
+              parentSegment="disputes"
+            />,
+            "value": "dp_asdfghjkl",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              $10.00
+            </ClickableCell>,
+            "value": 10,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              <DisputeStatusChip
+                status="needs_response"
+              />
+            </ClickableCell>,
+            "value": "needs_response",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              Fraudulent
+            </ClickableCell>,
+            "value": "fraudulent",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              <span
+                className="payment-method__brand payment-method__brand--visa"
+              />
+            </ClickableCell>,
+            "value": "visa",
+          },
+          Object {
+            "display": <OrderLink
+              order={
+                Object {
+                  "number": "1",
+                  "url": "http://test.local/order/1",
+                }
               }
-            }
-          />,
-          "value": "1",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            Mock customer
-          </ClickableCell>,
-          "value": "Mock customer",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            mock@customer.net
-          </ClickableCell>,
-          "value": "mock@customer.net",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            US
-          </ClickableCell>,
-          "value": "US",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            Nov 1, 2019
-          </ClickableCell>,
-          "value": 1572590800000,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-          >
-            Nov 8, 2019 / 2:46AM
-          </ClickableCell>,
-          "value": 1573199200000,
-        },
-      ],
-      Array [
-        Object {
-          "display": <DetailsLink
-            id="dp_zxcvbnm"
-            parentSegment="disputes"
-          />,
-          "value": "dp_zxcvbnm",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            $10.50
-          </ClickableCell>,
-          "value": 10.5,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            <DisputeStatusChip
-              status="under_review"
-            />
-          </ClickableCell>,
-          "value": "under_review",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            General
-          </ClickableCell>,
-          "value": "general",
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            <span
-              className="payment-method__brand payment-method__brand--undefined"
-            />
-          </ClickableCell>,
-          "value": undefined,
-        },
-        Object {
-          "display": null,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          />,
-          "value": undefined,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          />,
-          "value": undefined,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          />,
-          "value": undefined,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            Oct 30, 2019
-          </ClickableCell>,
-          "value": 1572480800000,
-        },
-        Object {
-          "display": <ClickableCell
-            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-          >
-            Nov 6, 2019 / 11:00PM
-          </ClickableCell>,
-          "value": 1573099200000,
-        },
-      ],
-    ]
-  }
-  rowsPerPage={10}
-  showMenu={true}
-  title="Disputes"
-  totalRows={10}
-/>
+            />,
+            "value": "1",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              Mock customer
+            </ClickableCell>,
+            "value": "Mock customer",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              mock@customer.net
+            </ClickableCell>,
+            "value": "mock@customer.net",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              US
+            </ClickableCell>,
+            "value": "US",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              Nov 1, 2019
+            </ClickableCell>,
+            "value": 1572590800000,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+            >
+              Nov 8, 2019 / 2:46AM
+            </ClickableCell>,
+            "value": 1573199200000,
+          },
+        ],
+        Array [
+          Object {
+            "display": <DetailsLink
+              id="dp_zxcvbnm"
+              parentSegment="disputes"
+            />,
+            "value": "dp_zxcvbnm",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              $10.50
+            </ClickableCell>,
+            "value": 10.5,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              <DisputeStatusChip
+                status="under_review"
+              />
+            </ClickableCell>,
+            "value": "under_review",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              General
+            </ClickableCell>,
+            "value": "general",
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              <span
+                className="payment-method__brand payment-method__brand--undefined"
+              />
+            </ClickableCell>,
+            "value": undefined,
+          },
+          Object {
+            "display": null,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            />,
+            "value": undefined,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            />,
+            "value": undefined,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            />,
+            "value": undefined,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              Oct 30, 2019
+            </ClickableCell>,
+            "value": 1572480800000,
+          },
+          Object {
+            "display": <ClickableCell
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+            >
+              Nov 6, 2019 / 11:00PM
+            </ClickableCell>,
+            "value": 1573099200000,
+          },
+        ],
+      ]
+    }
+    rowsPerPage={10}
+    showMenu={true}
+    title="Disputes"
+    totalRows={10}
+  />
+</Page>
 `;
