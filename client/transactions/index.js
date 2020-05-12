@@ -13,8 +13,8 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import Page from '../components/page';
 import { useTransactions, useTransactionsSummary } from '../data';
+import Page from 'components/page';
 import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';

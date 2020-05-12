@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from 'react';
+import { useEffect } from '@wordpress/element';
 
 const includeStripeJS = () => {
 	useEffect( () => {
