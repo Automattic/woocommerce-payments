@@ -350,8 +350,9 @@ class WC_Payments_Account {
 		if ( strcmp( $wcpay_connect_from, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
 			$return_url = add_query_arg(
 				array(
-					'page' => 'wc-admin',
-					'task' => 'payments',
+					'page'   => 'wc-admin',
+					'task'   => 'payments',
+					'method' => 'wcpay',
 				),
 				admin_url( 'admin.php' )
 			);
