@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 0.9.2 - 2020-xx-xx =
+= 0.9.2 - 2020-05-14 =
 * Add - Customer ID to payment intent
 * Update - Register and enqueue js.stripe.com on WCPay admin pages
 * Update - Override needs_setup to redirect from Payments settings
