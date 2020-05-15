@@ -184,30 +184,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_us_store_level_3_data() {
-		$expected_data = [
-			'merchant_reference' => '210',
-			'shipping_amount'    => 3800,
-			'line_items'         => [
-				(object) [
-					'product_code'        => 30,
-					'product_description' => 'Beanie with Logo',
-					'unit_cost'           => 1800,
-					'quantity'            => 1,
-					'tax_amount'          => 270,
-					'discount_amount'     => 0,
-				],
-			],
-			'shipping_from_zip'  => '94110',
-		];
-
-		// Use a US postcode.
-		update_option( 'woocommerce_store_postcode', '94110' );
-
 		// Use a non-us customer postcode to ensure it's not included in the level3 data.
 		$mock_order   = $this->mock_level_3_order( '9000' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertArrayNotHasKey( 'shipping_address_zip', $level_3_data );
 	}
 
 	public function test_us_customer_level_3_data() {
