@@ -35,7 +35,7 @@ export const DepositOverview = ( { depositId } ) => {
 				<div className="wcpay-deposit-date">
 					<Loadable isLoading={ isLoading } placeholder="Date placeholder">
 						{ `${ __( 'Deposit date', 'woocommerce-payments' ) }: ` }
-						{ dateI18n( 'M j, Y', moment.utc( deposit.date ).local() ) }
+						{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
 					</Loadable>
 				</div>
 				<div className="wcpay-deposit-status">
