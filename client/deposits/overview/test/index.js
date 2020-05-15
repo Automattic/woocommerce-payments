@@ -109,7 +109,7 @@ describe( 'Deposits overview', () => {
 		mockUseDepositsOverview( overview );
 		const { getByText } = render( <DepositsOverview /> );
 		// tests run on America/New_York timezone, so date should be Apr 21
-		const nextDepositDate = getByText( 'Est. Apr 21, 2019 - In transit' );
+		const nextDepositDate = getByText( 'Est. Apr 22, 2019 - In transit' );
 		expect( nextDepositDate.parentElement.textContent ).toContain( 'Next deposit' );
 	} );
 
