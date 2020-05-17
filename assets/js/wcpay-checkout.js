@@ -196,7 +196,7 @@ jQuery( function( $ ) {
 		stripe.confirmCardPayment( clientSecret )
 		.then( function( result ) {
 			if ( result.error ) {
-				// TODO: Handle error.
+				throw result.error;
 			}
 			if ( result.paymentIntent ) {
 				// eslint-disable-next-line camelcase
@@ -211,6 +211,10 @@ jQuery( function( $ ) {
 					window.location = r.return_url;
 				} );
 			}
+		} )
+		.catch( function( error ) {
+			$( 'form.checkout' ).removeClass( 'processing' ).unblock();
+			showError( error.message );
 		} );
 	};
 
