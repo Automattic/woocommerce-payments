@@ -793,8 +793,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ) );
 			}
 
-			$order_id  = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
-			$order     = wc_get_order( $order_id );
+			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
+			$order    = wc_get_order( $order_id );
+			if ( ! $order ) {
+				throw new Exception( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ) );
+			}
+
 			$intent_id = $order->get_meta( '_intent_id', true );
 			$intent    = $this->payments_api_client->get_intent( $intent_id );
 			$status    = $intent->get_status();
