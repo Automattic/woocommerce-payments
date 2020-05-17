@@ -368,8 +368,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
-				$transaction_id = $intent->get_id();
-				$status         = $intent->get_status();
+				$intent_id = $intent->get_id();
+				$status    = $intent->get_status();
 
 				switch ( $status ) {
 					case 'succeeded':
@@ -383,10 +383,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							wc_price( $amount ),
-							$transaction_id
+							$intent_id
 						);
 						$order->add_order_note( $note );
-						$order->payment_complete( $transaction_id );
+						$order->payment_complete( $intent_id );
 						break;
 					case 'requires_capture':
 						$note = sprintf(
@@ -399,13 +399,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								]
 							),
 							wc_price( $amount ),
-							$transaction_id
+							$intent_id
 						);
 						$order->update_status( 'on-hold', $note );
-						$order->set_transaction_id( $transaction_id );
+						$order->set_transaction_id( $intent_id );
 						break;
 				}
 
+				$order->update_meta_data( '_intent_id', $intent_id );
 				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
 				$order->update_meta_data( '_intention_status', $status );
 				$order->save();
