@@ -200,21 +200,32 @@ jQuery( function( $ ) {
 			}
 			if ( result.paymentIntent ) {
 				// eslint-disable-next-line camelcase
-				jQuery.post( wcpay_config.ajaxUrl, {
+				return jQuery.post( wcpay_config.ajaxUrl, {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
 					// eslint-disable-next-line camelcase
 					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
-				}, function( response ) {
-					var r = JSON.parse( response );
-					window.location = r.return_url;
 				} );
 			}
 		} )
+		.then( function( response ) {
+			var result = JSON.parse( response );
+			window.location = result.return_url;
+		} )
 		.catch( function( error ) {
 			$( 'form.checkout' ).removeClass( 'processing' ).unblock();
-			showError( error.message );
+
+			var errorMessage = error.message;
+
+			// If this is a generic error, we probably don't want to display the error message to the user,
+			// so display a generic message instead.
+			if ( error instanceof Error ) {
+				// eslint-disable-next-line camelcase
+				errorMessage = wcpay_config.genericErrorMessage;
+			}
+
+			showError( errorMessage );
 		} );
 	};
 

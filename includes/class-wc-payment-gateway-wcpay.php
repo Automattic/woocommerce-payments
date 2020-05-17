@@ -251,6 +251,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'accountId'              => $this->account->get_stripe_account_id(),
 				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
 				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+				'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
 			];
 
 			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
