@@ -157,6 +157,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Assert: Order has correct intention status meta data.
 		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
+
+		// Assert: Order has correct intent ID.
+		$this->assertEquals( $order->get_meta( '_intent_id' ), $intent_id );
 	}
 
 	/**
@@ -229,6 +232,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Assert: Order has correct intention status meta data.
 		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
+
+		// Assert: Order has correct intent ID.
+		$this->assertEquals( $order->get_meta( '_intent_id' ), $intent_id );
 	}
 
 	public function test_exception_thrown() {
@@ -274,7 +280,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( $order->get_meta( '_charge_id' ), '' );
 
 		// Assert: Order does not have intention status meta data.
-		$this->assertEquals( $order->get_meta( '_intention_status' ), null );
+		$this->assertEquals( $order->get_meta( '_intention_status' ), '' );
+
+		// Assert: Order does not have intent ID meta data.
+		$this->assertEquals( $order->get_meta( '_intent_id' ), '' );
 
 		// Assert: There is no order note added.
 		$notes             = wc_get_order_notes(
