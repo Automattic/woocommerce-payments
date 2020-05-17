@@ -195,19 +195,26 @@ jQuery( function( $ ) {
 	var showAuthenticationModal = function( orderId, clientSecret ) {
 		stripe.confirmCardPayment( clientSecret )
 		.then( function( result ) {
-			if ( result.error ) {
-				throw result.error;
-			}
-			if ( result.paymentIntent ) {
+			return [
 				// eslint-disable-next-line camelcase
-				return jQuery.post( wcpay_config.ajaxUrl, {
+				jQuery.post( wcpay_config.ajaxUrl, {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
 					// eslint-disable-next-line camelcase
 					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
-				} );
+			} ), result.error ];
+		} )
+		.then( function( [ response, originalError ] ) {
+			// If there was a prblem with the paymeent, we can show the
+			// error message to the user immediately, and we don't need
+			// to wait for the `update_order_status` request to complete.
+			if ( originalError ) {
+				throw originalError;
 			}
+
+			// Otherwise, we are waiting for the `update_order_status` request to complete.
+			return response;
 		} )
 		.then( function( response ) {
 			var result = JSON.parse( response );
