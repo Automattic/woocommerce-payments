@@ -783,66 +783,83 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * This function is used to update the order status after the user has
 	 * been asked to authenticate their payment.
+	 *
+	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
-		check_ajax_referer( 'wcpay_update_order_status_nonce' );
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception( __( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ) );
+			}
 
-		$order_id  = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
-		$order     = wc_get_order( $order_id );
-		$intent_id = $order->get_meta( '_intent_id', true );
-		$intent    = $this->payments_api_client->get_intent( $intent_id );
-		$status    = $intent->get_status();
-		$intent_id = $intent->get_id();
-		$amount    = $order->get_total();
+			$order_id  = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
+			$order     = wc_get_order( $order_id );
+			$intent_id = $order->get_meta( '_intent_id', true );
+			$intent    = $this->payments_api_client->get_intent( $intent_id );
+			$status    = $intent->get_status();
+			$intent_id = $intent->get_id();
+			$amount    = $order->get_total();
 
-		switch ( $status ) {
-			case 'succeeded':
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
-					),
-					wc_price( $amount ),
-					$intent_id
+			switch ( $status ) {
+				case 'succeeded':
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->add_order_note( $note );
+					$order->payment_complete( $intent_id );
+					break;
+				case 'requires_capture':
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->update_status( 'on-hold', $note );
+					$order->set_transaction_id( $intent_id );
+					break;
+			}
+
+			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
+				// The order is successful, so update it to reflect that.
+				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+				$order->update_meta_data( '_intention_status', $status );
+				$order->save();
+
+				wc_reduce_stock_levels( $order_id );
+				WC()->cart->empty_cart();
+
+				// Send back redirect URL in the successful case.
+				echo wp_json_encode(
+					[
+						'return_url' => $this->get_return_url( $order ),
+					]
 				);
-				$order->add_order_note( $note );
-				$order->payment_complete( $intent_id );
-				break;
-			case 'requires_capture':
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
-					),
-					wc_price( $amount ),
-					$intent_id
-				);
-				$order->update_status( 'on-hold', $note );
-				$order->set_transaction_id( $intent_id );
-				break;
-		}
-
-		if ( 'succeeded' === $status || 'requires_capture' === $status ) {
-			// The order is successful, so update it to reflect that.
-			$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-			$order->update_meta_data( '_intention_status', $status );
-			$order->save();
-
-			wc_reduce_stock_levels( $order_id );
-			WC()->cart->empty_cart();
-
-			// Send back redirect URL in the successful case.
+				wp_die();
+			}
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
 			echo wp_json_encode(
 				[
-					'return_url' => $this->get_return_url( $order ),
+					'error' => [
+						'message' => $e->getMessage(),
+					],
 				]
 			);
 			wp_die();
