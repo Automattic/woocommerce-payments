@@ -211,6 +211,11 @@ jQuery( function( $ ) {
 		} )
 		.then( function( response ) {
 			var result = JSON.parse( response );
+
+			if ( result.error ) {
+				throw result.error;
+			}
+
 			window.location = result.return_url;
 		} )
 		.catch( function( error ) {
