@@ -838,6 +838,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->update_status( 'on-hold', $note );
 					$order->set_transaction_id( $intent_id );
 					break;
+				case 'requires_payment_method':
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->update_status( 'failed', $note );
+					break;
 			}
 
 			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
