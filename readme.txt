@@ -42,8 +42,7 @@ Our global support team is available to answer questions you may have about WooC
 
 * United States-based business.
 * WordPress 5.3 or newer.
-* WooCommerce 3.9 or newer.
-* WooCommerce Admin 1.0 or newer (if running a WooCommerce version less than 4.0)
+* WooCommerce 4.0 or newer.
 * [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
