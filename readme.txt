@@ -8,23 +8,21 @@ Stable tag: 0.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments
+Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments.
 
 == Description ==
 
-Securely accept major credit and debit cards on your WooCommerce site. View and manage your transactions without leaving your WordPress dashboard.
+Get paid with [WooCommerce Payments](https://woocommerce.com/payments/). The only payments plugin designed exclusively for WooCommerce stores.
 
-The only payments plugin designed exclusively for WooCommerce, by WooCommerce.
+**Manage payments from your store's dashboard**
 
-Currently in public beta.
+With WooCommerce Payments, you can see payments, track cash flow into your bank account, manage refunds, and stay on top of disputes - all from the comfort of your store.
 
-**See and manage all transactions in your WooCommerce Payments integrated dashboard**
-
-Features normally only available at your payment provider's website are now part of your site's dashboard.
+Features normally only available at your payment provider's website are now part of your site with the **integrated payments dashboard**.
 
 - View the details of [payments, refunds and other transactions](https://docs.woocommerce.com/document/payments/#section-4)
 - View and respond to [disputes / chargebacks](https://docs.woocommerce.com/document/payments/disputes/)
-- [View deposits](https://docs.woocommerce.com/document/payments/#section-5) from your account balance to your bank account or debit card
+- Track [deposits](https://docs.woocommerce.com/document/payments/#section-5) to your bank account or debit card
 
 **Accept all major credit and debit cards**
 
@@ -32,7 +30,7 @@ Increase conversion rates by securely accepting all major credit and debit cards
 
 **Pay as you go**
 
-No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards. See all the [fees](https://docs.woocommerce.com/document/payments/faq/fees/).
+Free to install with no set up fees or monthly fees. Payment processing fees start at 2.9% + $0.30/transaction for U.S.-issued cards. See all the [fees](https://docs.woocommerce.com/document/payments/faq/fees/).
 
 == Getting Started ==
 
@@ -47,7 +45,7 @@ No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issue
 
 == Installation ==
 
-Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com
+Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com.
 
 1. Log in to your WordPress dashboard.
 1. Go to: Plugins > Add New.
@@ -60,11 +58,11 @@ Install and activate the WooCommerce and Jetpack plugins, if you haven't already
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world in USD. [Learn more](https://docs.woocommerce.com/document/payments/countries/).
+If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world in USD.
 
-= This works with WooCommerce, right? =
+We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
 
-Yep! WooCommerce version 3.9 or newer, please.
+[Learn more](https://docs.woocommerce.com/document/payments/countries/).
 
 = Why is a WordPress.com account and connection required? =
 
