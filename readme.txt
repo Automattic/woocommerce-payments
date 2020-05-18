@@ -46,6 +46,10 @@ Our global support team is available to answer questions you may have about WooC
 * [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
+= Try it now =
+
+To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
+
 == Installation ==
 
 Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com.
