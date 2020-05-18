@@ -80,6 +80,11 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Screenshots ==
 
+1. View Transactions
+2. View Transaction Details
+3. Track Deposits
+4. Manage Disputes
+
 == Changelog ==
 
 = 0.9.2 - 2020-xx-xx =
