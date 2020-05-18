@@ -32,6 +32,10 @@ Increase conversion rates by securely accepting all major credit and debit cards
 
 Free to install with no set up fees or monthly fees. Payment processing fees start at 2.9% + $0.30/transaction for U.S.-issued cards. See all the [fees](https://docs.woocommerce.com/document/payments/faq/fees/).
 
+**Supported by the WooCommerce team**
+
+Our global support team is available to answer questions you may have about WooCommerce Payments installation, set up, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
+
 == Getting Started ==
 
 = Requirements =
