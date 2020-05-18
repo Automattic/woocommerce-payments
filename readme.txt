@@ -58,7 +58,7 @@ Install and activate the WooCommerce and Jetpack plugins, if you haven't already
 1. Go to: Plugins > Add New.
 1. Enter "WooCommerce Payments" in the Search field.
 1. Click "Install Now".
-1. Go to: Payments
+1. Go to: Payments.
 1. Create your WooCommerce Payments account.
 
 == Frequently Asked Questions ==
