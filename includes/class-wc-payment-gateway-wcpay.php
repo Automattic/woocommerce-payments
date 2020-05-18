@@ -835,7 +835,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						wc_price( $amount ),
 						$intent_id
 					);
-					$order->update_status( 'on-hold', $note );
+					// Save the note separately because if there is no change in status
+					// then the note is not saved using WC_Order::update_status.
+					$order->add_order_note( $note );
+					$order->update_status( 'on-hold' );
 					$order->set_transaction_id( $intent_id );
 					break;
 				case 'requires_payment_method':
@@ -851,7 +854,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						wc_price( $amount ),
 						$intent_id
 					);
-					$order->update_status( 'failed', $note );
+					// Save the note separately because if there is no change in status
+					// then the note is not saved using WC_Order::update_status.
+					$order->add_order_note( $note );
+					$order->update_status( 'failed' );
 					break;
 			}
 
