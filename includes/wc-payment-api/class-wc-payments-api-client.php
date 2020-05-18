@@ -96,6 +96,7 @@ class WC_Payments_API_Client {
 	 * @param string $customer_id       - ID of the customer making the payment.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3            - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -106,7 +107,8 @@ class WC_Payments_API_Client {
 		$payment_method_id,
 		$customer_id,
 		$manual_capture = false,
-		$metadata = []
+		$metadata = [],
+		$level3 = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -117,8 +119,9 @@ class WC_Payments_API_Client {
 		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
+		$request['level3']         = $level3;
 
-		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -167,15 +170,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
 	 * @param int    $amount       - Amount to capture.
+	 * @param array  $level3       - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount ) {
+	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
 		$request                      = array();
 		$request['amount_to_capture'] = $amount;
+		$request['level3']            = $level3;
 
-		$response_array = $this->request(
+		$response_array = $this->request_with_level3_data(
 			$request,
 			self::INTENTIONS_API . '/' . $intention_id . '/capture',
 			self::POST
@@ -638,6 +643,48 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Handles issues with level3 data and retries requests when necessary.
+	 *
+	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
+	 * @param string $api              - The API endpoint to call.
+	 * @param string $method           - The HTTP method to make the request with.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
+	 */
+	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
+		// If level3 data is not present for some reason, simply proceed normally.
+		if ( ! isset( $params['level3'] ) ) {
+			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+
+		try {
+			return $this->request( $params, $api, $method, $is_site_specific );
+		} catch ( WC_Payments_API_Exception $e ) {
+			if ( 'invalid_request_error' !== $e->get_error_code() ) {
+				throw $e;
+			}
+
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+			// Log the issue so we could debug it.
+			Logger::error(
+				'Level3 data error: ' . PHP_EOL
+				. print_r( $e->getMessage(), true ) . PHP_EOL
+				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+				. print_r( $params['level3'], true )
+			);
+
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+			// Retry without level3 data.
+			unset( $params['level3'] );
+			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+	}
+
+	/**
 	 * From a given response extract the body. Invalid HTTP codes will result in an error.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
@@ -669,6 +716,10 @@ class WC_Payments_API_Client {
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'];
 				$error_message = $response_body['error']['message'];
+
+				if ( is_null( $error_code ) && ! empty( $response_body['error']['type'] ) ) {
+					$error_code = $response_body['error']['type'];
+				}
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];

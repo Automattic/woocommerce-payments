@@ -339,12 +339,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
-					round( (float) $amount * 100 ),
+					WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
 					'usd',
 					$payment_method,
 					$customer_id,
 					$manual_capture,
-					$metadata
+					$metadata,
+					$this->get_level3_data_from_order( $order )
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
@@ -461,7 +462,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( is_null( $amount ) ) {
 				$refund = $this->payments_api_client->refund_charge( $charge_id );
 			} else {
-				$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
+				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, 'USD' ) );
 			}
 		} catch ( Exception $e ) {
 
@@ -605,7 +606,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount = $order->get_total();
 		$intent = $this->payments_api_client->capture_intention(
 			$order->get_transaction_id(),
-			round( (float) $amount * 100 )
+			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+			$this->get_level3_data_from_order( $order )
 		);
 		$status = $intent->get_status();
 
@@ -664,5 +666,59 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Create the level 3 data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The level 3 data to send to Stripe.
+	 */
+	public function get_level3_data_from_order( $order ) {
+		// Get the order items. Don't need their keys, only their values.
+		// Order item IDs are used as keys in the original order items array.
+		$order_items = array_values( $order->get_items() );
+		$currency    = $order->get_currency();
+
+		$process_item  = function( $item ) use ( $currency ) {
+			$description     = substr( $item->get_name(), 0, 26 );
+			$quantity        = $item->get_quantity();
+			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
+			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total(), $currency );
+			$product_id      = $item->get_variation_id()
+				? $item->get_variation_id()
+				: $item->get_product_id();
+
+			return (object) array(
+				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
+				'product_description' => $description, // Up to 26 characters long describing the product.
+				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
+				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
+				'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
+				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
+			);
+		};
+		$items_to_send = array_map( $process_item, $order_items );
+
+		$level3_data = array(
+			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
+			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
+			'line_items'         => $items_to_send,
+		);
+
+		// The customer’s U.S. shipping ZIP code.
+		$shipping_address_zip = $order->get_shipping_postcode();
+		if ( WC_Payments_Utils::is_valid_us_zip_code( $shipping_address_zip ) ) {
+			$level3_data['shipping_address_zip'] = $shipping_address_zip;
+		}
+
+		// The merchant’s U.S. shipping ZIP code.
+		$store_postcode = get_option( 'woocommerce_store_postcode' );
+		if ( WC_Payments_Utils::is_valid_us_zip_code( $store_postcode ) ) {
+			$level3_data['shipping_from_zip'] = $store_postcode;
+		}
+
+		return $level3_data;
 	}
 }
