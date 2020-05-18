@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.0
+Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
 Stable tag: 0.9.2
