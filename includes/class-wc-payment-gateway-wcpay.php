@@ -129,13 +129,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Check if the payment gateway is connected. This method is also used by
+	 * external plugins to check if a connection has been established.
+	 */
+	public function is_connected() {
+		return $this->account->is_stripe_connected( false );
+	}
+
+	/**
 	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
 	 *
 	 * @see WC_Payment_Gateway::needs_setup
 	 * @return bool
 	 */
 	public function needs_setup() {
-		if ( ! $this->account->is_stripe_connected( false ) ) {
+		if ( ! $this->is_connected() ) {
 			return true;
 		}
 
@@ -507,7 +515,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Checkbox markup or empty string.
 	 */
 	public function generate_checkbox_html( $key, $data ) {
-		if ( 'enabled' === $key && ! $this->account->is_stripe_connected( false ) ) {
+		if ( 'enabled' === $key && ! $this->is_connected() ) {
 			return '';
 		}
 		return parent::generate_checkbox_html( $key, $data );
@@ -519,7 +527,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Container markup or empty if the account is not connected.
 	 */
 	public function generate_account_status_html() {
-		if ( ! $this->account->is_stripe_connected( false ) ) {
+		if ( ! $this->is_connected() ) {
 			return '';
 		}
 
