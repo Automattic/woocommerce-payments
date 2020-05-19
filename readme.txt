@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 0.9.2
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,8 +98,29 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 0.9.2 - 2020-xx-xx =
-* Fix - Remove unused variable
+= 1.0.0 - 2020-05-19 =
+* Add - Level 3 data to payment requests
+* Update - Expose public method for checking connection status
+* Fix - Pending requirements state for improved messaging
+* Fix - Dispute details typo
+* Remove - Unused POST /charges endpoint
+* Remove - "Beta" messaging
+
+= 0.9.2 - 2020-05-14 =
+* Add - Customer ID to payment intent
+* Update - Register and enqueue js.stripe.com on WCPay admin pages
+* Update - Override needs_setup to redirect from Payments settings
+* Update - Copy and image on Connect Account screen
+* Add - Add deposits overview component
+* Add - URL to pass for prefilling OAuth form
+* Add - Test card details in Checkout
+* Add - Task list redirect upon return from OAuth flow
+* Add - Handling for failed refund and other webhooks
+* Add - Transaction list sorting
+* Update - Disable gateway when payments are disabled on the account
+* Update - Make table rows clickable
+* Add - Prompt before navigating away from unsaved dispute evidence changes
+* Update - Labels to sentence case
 * Update - Automated testing
 * Add - Metadata when creating payment intent
 * Update - PHP versions supported
