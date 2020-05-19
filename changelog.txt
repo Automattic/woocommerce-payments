@@ -1,12 +1,17 @@
 *** WooCommerce Payments Changelog ***
 
+= 1.0.0 - 2020-05-19 =
+* Add - Level 3 data to payment requests
+* Remove - Unused POST /charges endpoint
+* Remove - "Beta" messaging
+
 = 0.9.2 - 2020-05-14 =
 * Add - Customer ID to payment intent
 * Update - Register and enqueue js.stripe.com on WCPay admin pages
 * Update - Override needs_setup to redirect from Payments settings
 * Update - Copy and image on Connect Account screen
 * Add - Add deposits overview component
-* Add - URL to pass for prefilling OAuth from
+* Add - URL to pass for prefilling OAuth form
 * Add - Test card details in Checkout
 * Add - Task list redirect upon return from OAuth flow
 * Add - Handling for failed refund and other webhooks
