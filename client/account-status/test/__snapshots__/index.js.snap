@@ -205,6 +205,49 @@ exports[`AccountStatus renders restricted account 1`] = `
   <div
     className="account-status__desc"
   >
+    Payments and deposits are disabled for this account until business information is verified by the payment processor.
+  </div>
+</div>
+`;
+
+exports[`AccountStatus renders restricted account with overdue requirements 1`] = `
+<div>
+  <div>
+    <Chip
+      isCompact={true}
+      message="Restricted"
+      type="alert"
+    />
+    <span
+      className="account-status__info"
+    >
+      Payments:
+      <span
+        className="account-status__info__red"
+      >
+        <Component
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+    <span
+      className="account-status__info"
+    >
+      Deposits:
+      <span
+        className="account-status__info__red"
+      >
+        <Component
+          size={18}
+        />
+        Disabled
+      </span>
+    </span>
+  </div>
+  <div
+    className="account-status__desc"
+  >
     Payments and deposits are disabled for this account until missing business information is updated. 
     <a
       href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1"

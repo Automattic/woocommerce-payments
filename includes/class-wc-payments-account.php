@@ -147,6 +147,7 @@ class WC_Payments_Account {
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
+			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
 		);
 	}
@@ -223,10 +224,13 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			$this->add_notice_to_settings_page(
-				__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
-				'notice-success'
-			);
+			$account_status = $this->get_account_status_data();
+			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
+				$message = __( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' );
+			} else {
+				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
+			}
+			$this->add_notice_to_settings_page( $message, 'notice-success' );
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {

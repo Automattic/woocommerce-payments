@@ -35,13 +35,26 @@ describe( 'AccountStatus', () => {
 		expect( accountStatus ).toMatchSnapshot();
 	} );
 
+	test( 'renders restricted account with overdue requirements', () => {
+		const accountStatus = renderAccountStatus( {
+			status: 'restricted',
+			paymentsEnabled: false,
+			depositsStatus: 'disabled',
+			currentDeadline: 1583844589,
+			pastDue: true,
+			accountLink: '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
+		} );
+		expect( accountStatus ).toMatchSnapshot();
+	} );
+
 	test( 'renders restricted account', () => {
 		const accountStatus = renderAccountStatus( {
 			status: 'restricted',
 			paymentsEnabled: false,
 			depositsStatus: 'disabled',
 			currentDeadline: 1583844589,
-			accountLink: '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
+			pastDue: false,
+			accountLink: '',
 		} );
 		expect( accountStatus ).toMatchSnapshot();
 	} );
