@@ -18,7 +18,7 @@ export const reasons = {
 	credit_not_processed: {
 		display: __( 'Credit not processed', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If your customer was not refunded appropriately, you will need to accept the dispute, or resolve the issue with your customer. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -41,7 +41,7 @@ export const reasons = {
 	duplicate: {
 		display: __( 'Duplicate', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If there were duplicate payments, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -60,7 +60,7 @@ export const reasons = {
 	fraudulent: {
 		display: __( 'Fraudulent', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -78,7 +78,7 @@ export const reasons = {
 	general: {
 		display: __( 'General', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 		],
 		summary: [
 			__( 'This is an uncategorized dispute, so you should contact the customer for additional details to find out why the payment was disputed.', 'woocommerce-payments' ),
@@ -93,7 +93,7 @@ export const reasons = {
 	product_not_received: {
 		display: __( 'Product not received', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer received their product or service, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -110,7 +110,7 @@ export const reasons = {
 	product_unacceptable: {
 		display: __( 'Product unacceptable', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer received their product or service as described, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -130,7 +130,7 @@ export const reasons = {
 	subscription_canceled: {
 		display: __( 'Subscription canceled', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [
@@ -148,7 +148,7 @@ export const reasons = {
 	unrecognized: {
 		display: __( 'Unrecognized', 'woocommerce-payments' ),
 		overview: [
-			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.', 'woocommerce-payments' ),
+			__( 'If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.', 'woocommerce-payments' ),
 			__( 'If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.', 'woocommerce-payments' ),
 		],
 		summary: [

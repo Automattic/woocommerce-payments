@@ -483,7 +483,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If your customer was not refunded appropriately, you will need to accept the dispute, or resolve the issue with your customer. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -1052,7 +1052,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If there were duplicate payments, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -1265,7 +1265,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
@@ -1475,7 +1475,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <div
           class="woocommerce-card__footer"
@@ -2024,7 +2024,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If you can not prove the customer received their product or service, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -2231,7 +2231,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If you can not prove the customer received their product or service as described, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -2447,7 +2447,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
@@ -2657,7 +2657,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
           </div>
         </div>
         <p>
-          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next the next screen.
+          If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
         <p>
           If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
