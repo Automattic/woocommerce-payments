@@ -100,6 +100,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 = 1.0.0 - 2020-05-19 =
 * Add - Level 3 data to payment requests
+* Update - Expose public method for checking connection status
+* Fix - Pending requirements state for improved messaging
+* Fix - Dispute details typo
 * Remove - Unused POST /charges endpoint
 * Remove - "Beta" messaging
 
