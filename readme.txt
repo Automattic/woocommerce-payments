@@ -12,29 +12,27 @@ Securely accept credit and debit cards on your site. Manage transactions without
 
 == Description ==
 
-Get paid with [WooCommerce Payments](https://woocommerce.com/payments/). The only payments plugin designed exclusively for WooCommerce stores.
+**Payments made simple, with no monthly fees – designed exclusively for WooCommerce stores.**
 
-**Manage payments from your store's dashboard**
+Securely accept major credit and debit cards, and allow customers to pay you directly without leaving your WooCommerce store. View and manage transactions from one convenient place – your WordPress dashboard.
 
-With WooCommerce Payments, you can see payments, track cash flow into your bank account, manage refunds, and stay on top of disputes - all from the comfort of your store.
+See payments, track cash flow into your bank account, manage refunds, and stay on top of disputes without the hassle of having to log into a separate payment processor.
 
-Features normally only available at your payment provider's website are now part of your site with the **integrated payments dashboard**.
+**Manage transactions from the comfort of your store**
 
-- View the details of [payments, refunds and other transactions](https://docs.woocommerce.com/document/payments/#section-4)
-- View and respond to [disputes / chargebacks](https://docs.woocommerce.com/document/payments/disputes/)
-- Track [deposits](https://docs.woocommerce.com/document/payments/#section-5) to your bank account or debit card
+Features previously only available on your payment provider’s website are now part of your store’s **integrated payments dashboard**. This enables you to:
 
-**Accept all major credit and debit cards**
-
-Increase conversion rates by securely accepting all major credit and debit cards directly on your site.
+- View the details of [payments, refunds, and other transactions](https://docs.woocommerce.com/document/payments/#section-4).
+- View and respond to [disputes and chargebacks](https://docs.woocommerce.com/document/payments/disputes/).
+- [Track deposits](https://docs.woocommerce.com/document/payments/#section-5) into your bank account or debit card.
 
 **Pay as you go**
 
-Free to install with no set up fees or monthly fees. Payment processing fees start at 2.9% + $0.30/transaction for U.S.-issued cards. See all the [fees](https://docs.woocommerce.com/document/payments/faq/fees/).
+WooCommerce Payments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://docs.woocommerce.com/document/payments/faq/fees/).
 
 **Supported by the WooCommerce team**
 
-Our global support team is available to answer questions you may have about WooCommerce Payments installation, set up, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
+Our global support team is available to answer questions you may have about WooCommerce Payments installation, setup, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
 
 == Getting Started ==
 
@@ -79,7 +77,7 @@ WooCommerce Payments uses the WordPress.com connection to authenticate each requ
 
 If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://docs.woocommerce.com/document/payments/#section-3).
 
-After the store set up has been completed, you can use [Test Mode](https://docs.woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
+After the store setup has been completed, you can use [Test Mode](https://docs.woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
 
 If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://docs.woocommerce.com/document/payments/testing/dev-mode/#section-1).
 
