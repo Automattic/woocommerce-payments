@@ -304,4 +304,84 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// That's why it's being cast to Boolean for the test.
 		$this->assertFalse( (bool) $latest_wcpay_note );
 	}
+
+	/**
+	 * Test processing payment with the status "requires_action".
+	 * This is the status returned when the payment requires
+	 * further authentication with 3DS.
+	 */
+	public function test_intent_status_requires_action() {
+		// Arrange: Reusable data.
+		$intent_id = 'pi_123';
+		$charge_id = 'ch_123';
+		$status    = 'requires_action';
+		$secret    = 'client_secret_123';
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Return a 'requires_action' response from create_and_confirm_intention().
+		$intent = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			new DateTime(),
+			$status,
+			$charge_id,
+			$secret
+		);
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// Assert: The order note contains all the information we want:
+		// - status
+		// - intention id
+		// - amount charged.
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$latest_wcpay_note = current(
+			array_filter(
+				$notes,
+				function( $note ) {
+					return false !== strpos( $note->content, 'WooCommerce Payments' );
+				}
+			)
+		);
+		$this->assertContains( 'started', $latest_wcpay_note->content );
+		$this->assertContains( $intent_id, $latest_wcpay_note->content );
+		$this->assertContains( $order->get_total(), $latest_wcpay_note->content );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals(
+			'#wcpay-confirm-pi:' . $order->get_id() . ':' . $secret,
+			$result['redirect']
+		);
+
+		// Assert: Order has correct  status.
+		// Need to get the order again to see the correct order status.
+		$updated_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( $updated_order->get_status(), 'pending' );
+
+		// Assert: Order does not have transaction IsD set.
+		$this->assertEquals( $updated_order->get_transaction_id(), '' );
+
+		// Assert: Order does not have charge id meta data.
+		$this->assertEquals( $order->get_meta( '_charge_id' ), '' );
+
+		// Assert: Order does not have intention status meta data.
+		$this->assertEquals( $order->get_meta( '_intention_status' ), 'requires_action' );
+
+		// Assert: Order has correct intent ID.
+		$this->assertEquals( $order->get_meta( '_intent_id' ), $intent_id );
+	}
 }
