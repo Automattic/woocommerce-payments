@@ -800,6 +800,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$intent_id = $order->get_meta( '_intent_id', true );
+			// An exception is thrown if an intent can't be found for the given intent ID.
 			$intent    = $this->payments_api_client->get_intent( $intent_id );
 			$status    = $intent->get_status();
 			$intent_id = $intent->get_id();
