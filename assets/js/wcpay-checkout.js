@@ -225,4 +225,22 @@ jQuery( function( $ ) {
 			return handleOnPaymentFormSubmit( $( '#order_review' ) );
 		}
 	} );
+
+	// Handle hash change - used when authenticating payment with SCA.
+	window.addEventListener( 'hashchange', function( event ) {
+		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
+			var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
+
+			var orderId = partials[ 1 ];
+			var clientSecret = partials[ 2 ];
+
+			// Cleanup the URL.
+			// https://stackoverflow.com/questions/1397329/
+			// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
+			// 5298684#5298684
+			history.replaceState( '', document.title, window.location.pathname + window.location.search );
+
+			showAuthenticationModal( orderId, clientSecret );
+		}
+	} );
 } );
