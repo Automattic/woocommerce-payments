@@ -409,6 +409,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$order->update_status( 'on-hold', $note );
 						$order->set_transaction_id( $intent_id );
 						break;
+					case 'requires_action':
+						// Add a note in case the customer does not complete the payment (exits the page),
+						// so the store owner has some information about what happened to create an order.
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						$order->add_order_note( $note );
+
+						$order->update_meta_data( '_intent_id', $intent_id );
+						$order->update_meta_data( '_intention_status', $status );
+						$order->save();
+
+						return [
+							'result'   => 'success',
+							'redirect' => sprintf( '#wcpay-confirm-pi:%s:%s', $order_id, $intent->get_client_secret() ),
+						];
 				}
 
 				$order->update_meta_data( '_intent_id', $intent_id );
