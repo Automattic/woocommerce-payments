@@ -192,6 +192,28 @@ jQuery( function( $ ) {
 		return false;
 	};
 
+	var showAuthenticationModal = function( orderId, clientSecret ) {
+		stripe.confirmCardPayment( clientSecret )
+		.then( function( result ) {
+			if ( result.error ) {
+				// TODO: Handle error.
+			}
+			if ( result.paymentIntent ) {
+				// eslint-disable-next-line camelcase
+				jQuery.post( wcpay_config.ajaxUrl, {
+					action: 'update_order_status',
+					// eslint-disable-next-line camelcase
+					order_id: orderId,
+					// eslint-disable-next-line camelcase
+					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
+				}, function( response ) {
+					var r = JSON.parse( response );
+					window.location = r.return_url;
+				} );
+			}
+		} );
+	};
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		return handleOnPaymentFormSubmit( $( this ) );
