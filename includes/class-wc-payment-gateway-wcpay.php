@@ -137,6 +137,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+
+		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
+		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 	}
 
 	/**
@@ -244,8 +247,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			// Add JavaScript for the payment form.
 			$js_config = [
-				'publishableKey' => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-				'accountId'      => $this->account->get_stripe_account_id(),
+				'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+				'accountId'              => $this->account->get_stripe_account_id(),
+				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
+				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			];
 
 			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
@@ -745,5 +750,76 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $level3_data;
+	}
+
+	/**
+	 * Handle AJAX request after authenticating payment at checkout.
+	 *
+	 * This function is used to update the order status after the user has
+	 * been asked to authenticate their payment.
+	 */
+	public function update_order_status() {
+		check_ajax_referer( 'wcpay_update_order_status_nonce' );
+
+		$order_id  = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
+		$order     = wc_get_order( $order_id );
+		$intent_id = $order->get_meta( '_intent_id', true );
+		$intent    = $this->payments_api_client->get_intent( $intent_id );
+		$status    = $intent->get_status();
+		$intent_id = $intent->get_id();
+		$amount    = $order->get_total();
+
+		switch ( $status ) {
+			case 'succeeded':
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					wc_price( $amount ),
+					$intent_id
+				);
+				$order->add_order_note( $note );
+				$order->payment_complete( $intent_id );
+				break;
+			case 'requires_capture':
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					wc_price( $amount ),
+					$intent_id
+				);
+				$order->update_status( 'on-hold', $note );
+				$order->set_transaction_id( $intent_id );
+				break;
+		}
+
+		if ( 'succeeded' === $status || 'requires_capture' === $status ) {
+			// The order is successful, so update it to reflect that.
+			$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
+
+			wc_reduce_stock_levels( $order_id );
+			WC()->cart->empty_cart();
+
+			// Send back redirect URL in the successful case.
+			echo wp_json_encode(
+				[
+					'return_url' => $this->get_return_url( $order ),
+				]
+			);
+			wp_die();
+		}
 	}
 }
