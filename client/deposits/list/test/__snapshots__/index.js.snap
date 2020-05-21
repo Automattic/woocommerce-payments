@@ -166,7 +166,7 @@ exports[`Deposits list renders correctly 1`] = `
                   data-link-type="wc-admin"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                 >
-                  Jan 2, 2020 / 12:46PM
+                  Jan 2, 2020
                 </a>
               </td>
               <td
@@ -249,7 +249,7 @@ exports[`Deposits list renders correctly 1`] = `
                   data-link-type="wc-admin"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                 >
-                  Jan 3, 2020 / 12:46PM
+                  Jan 3, 2020
                 </a>
               </td>
               <td

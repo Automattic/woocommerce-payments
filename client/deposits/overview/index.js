@@ -18,7 +18,7 @@ import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
-const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ).local() );
+const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
 const getAmount = ( obj ) => currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
 const getDepositDate = ( deposit ) => deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
