@@ -172,7 +172,7 @@ class WC_Payments_Account {
 	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * TODO: Add back the tests for this function (figure out how to test a function that ends in a redirect + die()).
+	 * @return bool True if the account is connected properly.
 	 */
 	public function check_stripe_account_status() {
 		if ( wp_doing_ajax() ) {
@@ -183,7 +183,7 @@ class WC_Payments_Account {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
 			// Return early. The exceptions have been logged in the http client.
-			return;
+			return false;
 		}
 
 		if ( empty( $account ) ) {
@@ -193,7 +193,9 @@ class WC_Payments_Account {
 				update_option( 'wcpay_redirected_to_onboarding', true );
 				$this->redirect_to_onboarding_page();
 			}
+			return false;
 		}
+		return true;
 	}
 
 	/**
