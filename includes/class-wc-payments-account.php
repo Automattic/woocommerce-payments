@@ -276,9 +276,9 @@ class WC_Payments_Account {
 			}
 
 			try {
-				$this->init_oauth( $wcpay_connect_param );
+				$this->init_stripe_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
-				Logger::error( 'Init oauth flow failed. ' . $e );
+				Logger::error( 'Init Stripe oauth flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
 					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
 					'notice-error'
@@ -392,7 +392,7 @@ class WC_Payments_Account {
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
-	private function init_oauth( $wcpay_connect_from ) {
+	private function init_stripe_oauth( $wcpay_connect_from ) {
 		// Clear account transient when generating Stripe's oauth data.
 		$this->clear_cache();
 
@@ -420,7 +420,7 @@ class WC_Payments_Account {
 			exit;
 		}
 
-		set_transient( 'wcpay_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
+		set_transient( 'wcpay_stripe_oauth_state', $oauth_data['state'], DAY_IN_SECONDS );
 
 		wp_safe_redirect( $oauth_data['url'] );
 		exit;
@@ -433,14 +433,14 @@ class WC_Payments_Account {
 	 * @param string $mode Mode in which this account has been connected. Either 'test' or 'live'.
 	 */
 	private function finalize_connection( $state, $mode ) {
-		if ( get_transient( 'wcpay_oauth_state' ) !== $state ) {
+		if ( get_transient( 'wcpay_stripe_oauth_state' ) !== $state ) {
 			$this->add_notice_to_settings_page(
 				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
 				'notice-error'
 			);
 			return;
 		}
-		delete_transient( 'wcpay_oauth_state' );
+		delete_transient( 'wcpay_stripe_oauth_state' );
 		$this->clear_cache();
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
