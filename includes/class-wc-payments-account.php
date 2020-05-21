@@ -264,6 +264,7 @@ class WC_Payments_Account {
 				$this->redirect_to_onboarding_page(
 					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
 				);
+				return;
 			}
 
 			try {
@@ -273,6 +274,7 @@ class WC_Payments_Account {
 				/* translators: error message. */
 					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
 				);
+				return;
 			}
 
 			try {
