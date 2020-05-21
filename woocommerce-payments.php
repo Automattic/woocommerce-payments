@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WooCommerce Payments
- * Plugin URI: https://github.com/Automattic/woocommerce-payments
+ * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
  * Author URI: https://woocommerce.com/
@@ -13,8 +13,6 @@
  * Version: 1.0.0
  *
  * @package WooCommerce\Payments
- *
- * Woo: 5278104:8ed5c1451e548223478370a6b0652bd4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
