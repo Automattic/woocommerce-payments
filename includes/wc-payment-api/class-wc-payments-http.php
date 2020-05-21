@@ -45,21 +45,21 @@ class WC_Payments_Http {
 	 * @throws WC_Payments_API_Exception - If not connected or request failed.
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
+		// Make sure we're not sending requests if Jetpack is not connected.
+		if ( ! $this->is_connected() ) {
+			Logger::error( 'HTTP_REQUEST_ERROR Site is not connected to WordPress.com' );
+			throw new WC_Payments_API_Exception(
+				__( 'Site is not connected to WordPress.com', 'woocommerce-payments' ),
+				'wcpay_wpcom_not_connected',
+				409 // HTTP Conflict status code.
+			);
+		}
+
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
 		$args['user_id'] = Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER;
 
 		if ( $is_site_specific ) {
 			$args['url'] = sprintf( $args['url'], $args['blog_id'] );
-		}
-
-		// Make sure we're not sending requests if Jetpack is not connected.
-		if ( ! $this->is_connected() ) {
-			Logger::error( 'HTTP_REQUEST_ERROR Jetpack is not connected' );
-			throw new WC_Payments_API_Exception(
-				__( 'Jetpack is not connected', 'woocommerce-payments' ),
-				'wcpay_jetpack_not_connected',
-				409 // HTTP Conflict status code.
-			);
 		}
 
 		return self::make_request( $args, $body );
