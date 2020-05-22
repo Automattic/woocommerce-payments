@@ -16,6 +16,7 @@ describe( 'Disputes list', () => {
 				{
 					id: 'dp_asdfghjkl',
 					amount: 1000,
+					currency: 'usd',
 					created: 1572590800,
 					// eslint-disable-next-line camelcase
 					evidence_details: {
@@ -49,6 +50,7 @@ describe( 'Disputes list', () => {
 				{
 					id: 'dp_zxcvbnm',
 					amount: 1050,
+					currency: 'usd',
 					created: 1572480800,
 					// eslint-disable-next-line camelcase
 					evidence_details: {

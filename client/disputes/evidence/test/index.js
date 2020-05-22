@@ -14,6 +14,7 @@ import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
 	amount: 1000,
+	currency: 'usd',
 	created: 1572590800,
 	evidence: {
 		customer_purchase_ip: '127.0.0.1',
@@ -29,6 +30,7 @@ const disputeNeedsResponse = {
 const disputeNoNeedForResponse = {
 	id: 'dp_zxcvbnm',
 	amount: 1050,
+	currency: 'usd',
 	created: 1572480800,
 	evidence: {
 		customer_purchase_ip: '127.0.0.1',

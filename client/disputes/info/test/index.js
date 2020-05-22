@@ -15,6 +15,7 @@ describe( 'Dispute info', () => {
 		/* eslint-disable camelcase */
 		const dispute = {
 			amount: 1000,
+			currency: 'usd',
 			created: 1572590800,
 			evidence_details: {
 				due_by: 1573199200,
