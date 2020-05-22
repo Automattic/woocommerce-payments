@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -16,10 +15,9 @@ import OrderLink from 'components/order-link';
 import { getDetailsURL } from 'components/details-link';
 import { reasons } from '../strings';
 import { formatStringValue } from '../../util';
+import getCurrency from 'utils/format-currency';
 import './style.scss';
 import Loadable from 'components/loadable';
-
-const { formatCurrency } = Currency();
 
 const fields = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
@@ -42,6 +40,8 @@ const composeDisputeReason = dispute => {
 };
 
 const Info = ( { dispute, isLoading } ) => {
+	const { formatCurrency } = getCurrency( dispute.currency );
+
 	const data = isLoading ? {
 			created: 'Created date',
 			amount: 'Amount',

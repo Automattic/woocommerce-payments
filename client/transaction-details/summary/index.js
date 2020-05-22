@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -18,17 +17,19 @@ import {
 	isTransactionRefunded,
 	isTransactionPartiallyRefunded,
 	isTransactionFullyRefunded,
-} from '../../utils/transaction';
-import PaymentStatusChip from '../../components/payment-status-chip';
-import OrderLink from '../../components/order-link';
-import PaymentMethodDetails from '../../components/payment-method-details';
-import HorizontalList from '../../components/horizontal-list';
+} from 'utils/transaction';
+import getCurrency from 'utils/format-currency';
+import PaymentStatusChip from 'components/payment-status-chip';
+import OrderLink from 'components/order-link';
+import PaymentMethodDetails from 'components/payment-method-details';
+import HorizontalList from 'components/horizontal-list';
 import './style.scss';
-
-const { formatCurrency } = Currency();
 
 const TransactionSummaryDetails = ( props ) => {
 	const { transaction } = props;
+
+	const { formatCurrency } = getCurrency( transaction.currency );
+
 	return (
 		<Card className="transaction-summary-details">
 			<div className="transaction-summary">

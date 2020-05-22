@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -15,14 +14,13 @@ import { get } from 'lodash';
  * Internal dependencies.
  */
 import { getChargeAmounts } from 'utils/charge';
+import getCurrency from 'utils/format-currency';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import './style.scss';
-
-const { formatCurrency } = Currency();
 
 const placeholderValues = {
 	net: 0,
@@ -60,6 +58,8 @@ const composePaymentSummaryItems = ( { charge } ) =>
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const { net, fee, refunded } = charge.amount ? getChargeAmounts( charge ) : placeholderValues;
+
+	const { formatCurrency } = getCurrency( charge.currency );
 
 	return (
 		<Card className="payment-details-summary-details">

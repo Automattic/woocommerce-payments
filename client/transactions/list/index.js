@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
@@ -18,12 +17,11 @@ import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
+import getCurrency from 'utils/format-currency';
 import { displayType } from './strings';
 import { formatStringValue } from '../../util';
 import Deposit from './deposit';
 import './style.scss';
-
-const { formatCurrency } = Currency();
 
 const columns = [
 	{ key: 'details', label: '', required: true },
@@ -123,6 +121,8 @@ export const TransactionsList = ( props ) => {
 	}
 
 	const rows = transactions.map( ( txn ) => {
+		const { formatCurrency } = getCurrency( txn.currency );
+
 		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
 		const clickable = ( children ) => <ClickableCell href={ detailsURL }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
@@ -158,6 +158,7 @@ export const TransactionsList = ( props ) => {
 		return columnsToDisplay.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
+	const { formatCurrency } = getCurrency();
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{ label: 'total', value: `${ formatCurrency( transactionsSummary.total / 100 ) }` },

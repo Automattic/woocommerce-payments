@@ -8,7 +8,6 @@ import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 
 /**
@@ -21,8 +20,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
-
-const { formatCurrency } = Currency();
+import getCurrency from 'utils/format-currency';
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
@@ -43,6 +41,8 @@ export const DisputesList = ( props ) => {
 	const disputesData = disputes.data || [];
 
 	const rows = disputesData.map( ( dispute ) => {
+		const { formatCurrency } = getCurrency( dispute.currency );
+
 		const order = dispute.order ? {
 			value: dispute.order.number,
 			display: <OrderLink order={ dispute.order } />,

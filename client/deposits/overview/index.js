@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { SummaryListPlaceholder, SummaryList, SummaryNumber } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import Gridicon from 'gridicons';
@@ -16,13 +15,16 @@ import './style.scss';
 import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
+import getCurrency from 'utils/format-currency';
 
-const { formatCurrency } = Currency();
+// TODO Retrieve currency from server response, and pass to getCurrency.
+const { formatCurrency } = getCurrency();
 const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
 const getAmount = ( obj ) => formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
 const getDepositDate = ( deposit ) => deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
 	sprintf( _n( '%d deposit', '%d deposits', balance.deposits_count, 'woocommerce-payments' ), balance.deposits_count );
+
 const getNextDepositLabelFormatted = ( deposit ) => {
 	const baseLabel = ( deposit ) ? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate( 'M j, Y', deposit.date ) }` : '—';
 	if ( deposit && 'in_transit' === deposit.status ) {
@@ -86,6 +88,7 @@ const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule,
 
 const DepositsOverview = () => {
 	const { overview, isLoading } = useDepositsOverview();
+
 	return (
 		<div className="wcpay-deposits-overview">
 			<p className="wcpay-deposits-overview__schedule">

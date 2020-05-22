@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
@@ -18,8 +17,7 @@ import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-
-const { formatCurrency } = Currency();
+import getCurrency from 'utils/format-currency';
 
 // TODO make date, amount sortable - when date is sortable, the background of the info buttons should match
 const columns = [
@@ -43,6 +41,8 @@ export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
+		const { formatCurrency } = getCurrency( deposit.currency );
+
 		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
 

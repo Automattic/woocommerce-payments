@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { Card, OrderStatus } from '@woocommerce/components';
 
 /**
@@ -17,9 +16,8 @@ import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import Loadable from 'components/loadable';
+import getCurrency from 'utils/format-currency';
 import './style.scss';
-
-const { formatCurrency } = Currency();
 
 const Status = ( { status } ) => (
 	// Re-purpose order status indicator for deposit status.
@@ -28,6 +26,8 @@ const Status = ( { status } ) => (
 
 export const DepositOverview = ( { depositId } ) => {
 	const { deposit = {}, isLoading } = useDeposit( depositId );
+
+	const { formatCurrency } = getCurrency( deposit.currency );
 
 	return (
 		<Card className="wcpay-deposit-overview">
