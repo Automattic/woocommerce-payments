@@ -33,6 +33,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		// Set the request as if the user was in the Payments onboarding page so the "wp_redirect(); exit();" code doesn't run.
+		$_GET = array(
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		);
+
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->getMock();
@@ -43,6 +49,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function tearDown() {
 		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
+		unset( $_GET );
 		parent::tearDown();
 	}
 
