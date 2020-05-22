@@ -25,7 +25,7 @@ import PaymentMethodDetails from '../../components/payment-method-details';
 import HorizontalList from '../../components/horizontal-list';
 import './style.scss';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 const TransactionSummaryDetails = ( props ) => {
 	const { transaction } = props;
@@ -34,7 +34,7 @@ const TransactionSummaryDetails = ( props ) => {
 			<div className="transaction-summary">
 				<div className="transaction-summary__section">
 					<p className="transaction-summary__amount">
-						{ currency.formatCurrency( ( transaction.amount || 0 ) / 100 ) }
+						{ formatCurrency( ( transaction.amount || 0 ) / 100 ) }
 						<span className="transaction-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
 						<PaymentStatusChip transaction={ transaction } />
 					</p>
@@ -42,16 +42,16 @@ const TransactionSummaryDetails = ( props ) => {
 						{ isTransactionRefunded( transaction )
 							? <p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
+								{ formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
 							</p>
 							: '' }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( -transaction.fee || 0 ) / 100 ) }
+							{ formatCurrency( ( -transaction.fee || 0 ) / 100 ) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( transaction.net || 0 ) / 100 ) }
+							{ formatCurrency( ( transaction.net || 0 ) / 100 ) }
 						</p>
 					</div>
 				</div>

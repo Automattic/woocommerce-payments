@@ -17,9 +17,9 @@ import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
-const getAmount = ( obj ) => currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
+const getAmount = ( obj ) => formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
 const getDepositDate = ( deposit ) => deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
 	sprintf( _n( '%d deposit', '%d deposits', balance.deposits_count, 'woocommerce-payments' ), balance.deposits_count );

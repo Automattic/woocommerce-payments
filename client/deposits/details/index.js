@@ -19,7 +19,7 @@ import Page from 'components/page';
 import Loadable from 'components/loadable';
 import './style.scss';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 const Status = ( { status } ) => (
 	// Re-purpose order status indicator for deposit status.
@@ -53,7 +53,7 @@ export const DepositOverview = ( { depositId } ) => {
 			<div className="wcpay-deposit-hero">
 				<div className="wcpay-deposit-amount">
 					<Loadable isLoading={ isLoading } placeholder="Amount" display="inline">
-						{ currency.formatCurrency( deposit.amount / 100 ) }
+						{ formatCurrency( deposit.amount / 100 ) }
 					</Loadable>
 				</div>
 			</div>

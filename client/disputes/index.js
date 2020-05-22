@@ -22,7 +22,7 @@ import Page from 'components/page';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
@@ -60,7 +60,7 @@ export const DisputesList = ( props ) => {
 		const customer = charge.billing_details || {};
 
 		const data = {
-			amount: { value: dispute.amount / 100, display: clickable( currency.formatCurrency( dispute.amount / 100 ) ) },
+			amount: { value: dispute.amount / 100, display: clickable( formatCurrency( dispute.amount / 100 ) ) },
 			status: { value: dispute.status, display: clickable( <DisputeStatusChip status={ dispute.status } /> ) },
 			reason: { value: dispute.reason, display: clickable( reasonDisplay ) },
 			source: {

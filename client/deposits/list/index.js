@@ -19,7 +19,7 @@ import { formatStringValue } from 'util';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 // TODO make date, amount sortable - when date is sortable, the background of the info buttons should match
 const columns = [
@@ -57,7 +57,7 @@ export const DepositsList = () => {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
 			type: { value: deposit.type, display: clickable( displayType[ deposit.type ] ) },
-			amount: { value: deposit.amount / 100, display: clickable( currency.formatCurrency( deposit.amount / 100 ) ) },
+			amount: { value: deposit.amount / 100, display: clickable( formatCurrency( deposit.amount / 100 ) ) },
 			status: { value: deposit.status, display: clickable( displayStatus[ deposit.status ] || formatStringValue( deposit.status ) ) },
 			bankAccount: { value: deposit.bankAccount, display: clickable( deposit.bankAccount ) },
 		};

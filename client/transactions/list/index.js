@@ -23,7 +23,7 @@ import { formatStringValue } from '../../util';
 import Deposit from './deposit';
 import './style.scss';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 const columns = [
 	{ key: 'details', label: '', required: true },
@@ -146,10 +146,10 @@ export const TransactionsList = ( props ) => {
 			customer_email: { value: txn.customer_email, display: clickable( txn.customer_email ) },
 			// eslint-disable-next-line camelcase
 			customer_country: { value: txn.customer_country, display: clickable( txn.customer_country ) },
-			amount: { value: txn.amount / 100, display: clickable( currency.formatCurrency( txn.amount / 100 ) ) },
+			amount: { value: txn.amount / 100, display: clickable( formatCurrency( txn.amount / 100 ) ) },
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fees: { value: txn.fees / 100, display: clickable( currency.formatCurrency( ( txn.fees / 100 ) * -1 ) ) },
-			net: { value: txn.net / 100, display: clickable( currency.formatCurrency( txn.net / 100 ) ) },
+			fees: { value: txn.fees / 100, display: clickable( formatCurrency( ( txn.fees / 100 ) * -1 ) ) },
+			net: { value: txn.net / 100, display: clickable( formatCurrency( txn.net / 100 ) ) },
 			// eslint-disable-next-line camelcase
 			risk_level: { value: txn.risk_level, display: clickable( riskLevel ) },
 			deposit: { value: txn.deposit_id, display: deposit },
@@ -160,9 +160,9 @@ export const TransactionsList = ( props ) => {
 
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
-		{ label: 'total', value: `${ currency.formatCurrency( transactionsSummary.total / 100 ) }` },
-		{ label: 'fees', value: `${ currency.formatCurrency( transactionsSummary.fees / 100 ) }` },
-		{ label: 'net', value: `${ currency.formatCurrency( transactionsSummary.net / 100 ) }` },
+		{ label: 'total', value: `${ formatCurrency( transactionsSummary.total / 100 ) }` },
+		{ label: 'fees', value: `${ formatCurrency( transactionsSummary.fees / 100 ) }` },
+		{ label: 'net', value: `${ formatCurrency( transactionsSummary.net / 100 ) }` },
 	];
 
 	return (

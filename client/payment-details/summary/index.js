@@ -22,7 +22,7 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import './style.scss';
 
-const currency = new Currency();
+const { formatCurrency } = Currency();
 
 const placeholderValues = {
 	net: 0,
@@ -67,7 +67,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 				<div className="payment-details-summary__section">
 					<p className="payment-details-summary__amount">
 						<Loadable isLoading={ isLoading } placeholder="Amount placeholder" >
-							{ currency.formatCurrency( ( charge.amount || 0 ) / 100 ) }
+							{ formatCurrency( ( charge.amount || 0 ) / 100 ) }
 							<span className="payment-details-summary__amount-currency">
 								{ charge.currency || 'cur' }
 							</span>
@@ -78,7 +78,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						{ refunded ? (
 							<p>
 								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -refunded / 100 ) }
+								{ formatCurrency( -refunded / 100 ) }
 							</p>
 						) : (
 							''
@@ -86,13 +86,13 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						<p>
 							<Loadable isLoading={ isLoading } placeholder="Fee amount" >
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -fee / 100 ) }
+								{ formatCurrency( -fee / 100 ) }
 							</Loadable>
 						</p>
 						<p>
 							<Loadable isLoading={ isLoading } placeholder="Net amount" >
 								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( net / 100 ) }
+								{ formatCurrency( net / 100 ) }
 							</Loadable>
 						</p>
 					</div>
