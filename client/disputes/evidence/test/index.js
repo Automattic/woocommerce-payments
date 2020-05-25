@@ -79,7 +79,7 @@ describe( 'Dispute evidence form', () => {
 	} );
 
 	test( 'not needing response, renders correctly', () => {
-        const { container: form } = render(
+		const { container: form } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNoNeedForResponse.evidence }
