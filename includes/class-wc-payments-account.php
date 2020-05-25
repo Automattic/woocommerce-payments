@@ -34,8 +34,8 @@ class WC_Payments_Account {
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 
+		add_action( 'admin_init', array( $this, 'maybe_handle_oauth' ) );
 		add_action( 'admin_init', array( $this, 'check_stripe_account_status' ) );
-		add_action( 'woocommerce_init', array( $this, 'maybe_handle_oauth' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'allowed_redirect_hosts' ) );
 	}
 
@@ -147,16 +147,39 @@ class WC_Payments_Account {
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
 			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
+			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'     => $this->get_login_url(),
 		);
 	}
 
 	/**
-	 * Checks if Stripe account is connected and displays admin notices if it is not.
+	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
+	 * Note that this function immediately ends the execution.
+	 */
+	private function redirect_to_onboarding_page() {
+		$params = array(
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		);
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+			// We are already in the onboarding page, do nothing.
+			return;
+		}
+
+		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+		exit();
+	}
+
+	/**
+	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the account is connected properly.
 	 */
 	public function check_stripe_account_status() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		try {
 			$account = $this->get_cached_account_data();
 		} catch ( Exception $e ) {
@@ -165,28 +188,14 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			if ( ! self::is_on_boarding_disabled() ) {
-				$message = self::get_connection_message_html();
-			} else {
-				// On-boarding has been disabled on the server, so show a message to that effect.
-				$message = esc_html__(
-					'Thank you for installing and activating WooCommerce Payments! We\'ve temporarily paused new account creation. We\'ll notify you when we resume!',
-					'woocommerce-payments'
-				);
+			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
+				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) )
+			) {
+				update_option( 'wcpay_redirected_to_onboarding', true );
+				$this->redirect_to_onboarding_page();
 			}
-
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					WC_Payments::display_admin_notice(
-						$message,
-						'notice-success'
-					);
-				}
-			);
 			return false;
 		}
-
 		return true;
 	}
 
@@ -223,15 +232,19 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			$this->add_notice_to_settings_page(
-				__( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' ),
-				'notice-success'
-			);
+			$account_status = $this->get_account_status_data();
+			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
+				$message = __( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' );
+			} else {
+				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
+			}
+			$this->add_notice_to_settings_page( $message, 'notice-success' );
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			try {
-				$this->init_oauth();
+				$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+				$this->init_oauth( $wcpay_connect_param );
 			} catch ( Exception $e ) {
 				Logger::error( 'Init oauth flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
@@ -251,39 +264,6 @@ class WC_Payments_Account {
 			$this->finalize_connection( $state, $mode );
 			return;
 		}
-	}
-
-	/**
-	 * Returns html markup containing the connection message.
-	 *
-	 * @return string Connection message.
-	 */
-	public static function get_connection_message_html() {
-		ob_start();
-		?>
-		<p>
-			<?php
-			esc_html_e(
-				'Accept credit cards online using WooCommerce Payments. Simply verify your business details to get started.',
-				'woocommerce-payments'
-			);
-			?>
-		</p>
-		<p>
-			<?php
-			echo WC_Payments_Utils::esc_interpolated_html(
-				__( 'By clicking “Verify details,” you agree to the <a>Terms of Service</a>.', 'woocommerce-payments' ),
-				[ 'a' => '<a href="https://wordpress.com/tos">' ]
-			);
-			?>
-		</p>
-		<p>
-			<a href="<?php echo esc_attr( self::get_connect_url() ); ?>" class="button">
-				<?php esc_html_e( ' Verify details', 'woocommerce-payments' ); ?>
-			</a>
-		</p>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**
@@ -334,27 +314,44 @@ class WC_Payments_Account {
 
 	/**
 	 * Initializes the OAuth flow by fetching the URL from the API and redirecting to it
+	 *
+	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 */
-	private function init_oauth() {
+	private function init_oauth( $wcpay_connect_from ) {
 		// Clear account transient when generating Stripe's oauth data.
 		delete_transient( self::ACCOUNT_TRANSIENT );
 
 		$current_user = wp_get_current_user();
 
+		// Usually the return URL is the WCPay plugin settings page.
+		// But if connection originated on the WCADMIN payment task page, return there.
+		$return_url = WC_Payment_Gateway_WCPay::get_settings_url();
+		if ( strcmp( $wcpay_connect_from, 'WCADMIN_PAYMENT_TASK' ) === 0 ) {
+			$return_url = add_query_arg(
+				array(
+					'page' => 'wc-admin',
+					'task' => 'payments',
+				),
+				admin_url( 'admin.php' )
+			);
+		}
+
 		$oauth_data = $this->payments_api_client->get_oauth_data(
-			WC_Payment_Gateway_WCPay::get_settings_url(),
+			$return_url,
 			array(
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
+				'url'           => get_home_url(),
 			)
 		);
 
+		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			wp_safe_redirect(
 				add_query_arg(
 					array( 'wcpay-connection-success' => '1' ),
-					WC_Payment_Gateway_WCPay::get_settings_url()
+					$return_url
 				)
 			);
 			exit;
@@ -388,8 +385,14 @@ class WC_Payments_Account {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'wcpay-connection-success' => '1' ),
-				WC_Payment_Gateway_WCPay::get_settings_url()
+				[
+					'wcpay-state'                => false,
+					'wcpay-account-id'           => false,
+					'wcpay-live-publishable-key' => false,
+					'wcpay-test-publishable-key' => false,
+					'wcpay-mode'                 => false,
+					'wcpay-connection-success'   => '1',
+				]
 			)
 		);
 		exit;
@@ -431,8 +434,29 @@ class WC_Payments_Account {
 		}
 
 		// Cache the account details so we don't call the server every time.
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+		$this->cache_account( $account );
 		return $account;
+	}
+
+	/**
+	 * Caches account data for two hours
+	 *
+	 * @param array $account - Account data to cache.
+	 */
+	private function cache_account( $account ) {
+		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Refetches account data.
+	 */
+	public function refresh_account_data() {
+		try {
+			delete_transient( self::ACCOUNT_TRANSIENT );
+			$this->get_cached_account_data();
+		} catch ( Exception $e ) {
+			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+		}
 	}
 
 	/**

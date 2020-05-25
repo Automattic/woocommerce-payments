@@ -94,4 +94,26 @@ class WC_Payments_Utils {
 
 		return $result;
 	}
+
+	/**
+	 * Returns an API-ready amount based on a currency.
+	 *
+	 * @param float  $amount   The base amount.
+	 * @param string $currency The currency for the amount.
+	 *
+	 * @return int The amount in cents.
+	 */
+	public static function prepare_amount( $amount, $currency = 'USD' ) {
+		return round( (float) $amount * 100 );
+	}
+
+	/**
+	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
+	 *
+	 * @param string $zip The ZIP code to verify.
+	 * @return boolean
+	 */
+	public static function is_valid_us_zip_code( $zip ) {
+		return ! empty( $zip ) && preg_match( '/^\d{5,5}(-\d{4,4})?$/', $zip );
+	}
 }

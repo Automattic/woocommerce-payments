@@ -17,6 +17,7 @@ import { useDeposits } from 'data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
+import ClickableCell from 'components/clickable-cell';
 
 const currency = new Currency();
 
@@ -42,11 +43,12 @@ export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
+		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>{ children }</ClickableCell>;
 		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
 
 		const dateDisplay = (
 			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-				{ dateI18n( 'M j, Y / g:iA', moment.utc( deposit.date ).local() ) }
+				{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
 			</Link>
 		);
 
@@ -54,10 +56,10 @@ export const DepositsList = () => {
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
-			type: { value: deposit.type, display: displayType[ deposit.type ] },
-			amount: { value: deposit.amount / 100, display: currency.formatCurrency( deposit.amount / 100 ) },
-			status: { value: deposit.status, display: displayStatus[ deposit.status ] || formatStringValue( deposit.status ) },
-			bankAccount: { value: deposit.bankAccount, display: deposit.bankAccount },
+			type: { value: deposit.type, display: clickable( displayType[ deposit.type ] ) },
+			amount: { value: deposit.amount / 100, display: clickable( currency.formatCurrency( deposit.amount / 100 ) ) },
+			status: { value: deposit.status, display: clickable( displayStatus[ deposit.status ] || formatStringValue( deposit.status ) ) },
+			bankAccount: { value: deposit.bankAccount, display: clickable( deposit.bankAccount ) },
 		};
 
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );

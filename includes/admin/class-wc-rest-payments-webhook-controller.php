@@ -38,14 +38,23 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_db;
 
 	/**
+	 * WC Payments Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payments_DB         $wcpay_db   WC_Payments_DB instance.
+	 * @param WC_Payments_Account    $account    WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db, WC_Payments_Account $account ) {
 		parent::__construct( $api_client );
 		$this->wcpay_db = $wcpay_db;
+		$this->account  = $account;
 	}
 
 	/**
@@ -75,13 +84,17 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			// Extract information about the webhook event.
-			$event_type   = $this->read_rest_property( $body, 'type' );
-			$event_data   = $this->read_rest_property( $body, 'data' );
-			$event_object = $this->read_rest_property( $event_data, 'object' );
+			$event_type = $this->read_rest_property( $body, 'type' );
+
+			Logger::debug( 'Webhook recieved: ' . $event_type );
+			Logger::debug( 'Webhook body: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
-					$this->process_webhook_refund_updated( $event_object );
+					$this->process_webhook_refund_updated( $body );
+					break;
+				case 'account.updated':
+					$this->account->refresh_account_data();
 					break;
 			}
 		} catch ( WC_Payments_Rest_Request_Exception $e ) {
@@ -98,12 +111,15 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Process webhook refund updated.
 	 *
-	 * @param array $event_object The event that triggered the webhook.
+	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
 	 * @throws Exception                  Unable to resolve charge ID to order.
 	 */
-	private function process_webhook_refund_updated( $event_object ) {
+	private function process_webhook_refund_updated( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
 		// First, check the reason for the update. We're only interesting in a status of failed.
 		$status = $this->read_rest_property( $event_object, 'status' );
 		if ( 'failed' !== $status ) {

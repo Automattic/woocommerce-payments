@@ -24,6 +24,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const GATEWAY_ID = 'woocommerce_payments';
 
 	/**
+	 * Set of parameters to build the URL to the gateway's settings page.
+	 *
+	 * @var string[]
+	 */
+	private static $settings_url_params = array(
+		'page'    => 'wc-settings',
+		'tab'     => 'checkout',
+		'section' => self::GATEWAY_ID,
+	);
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -38,45 +49,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $account;
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
+	 * WC_Payments_Customer instance for working with customer information
 	 *
-	 * @return bool
+	 * @var WC_Payments_Customer_Service
 	 */
-	public function is_in_dev_mode() {
-		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		if ( $this->is_in_dev_mode() ) {
-			return true;
-		}
-
-		return 'yes' === $this->get_option( 'test_mode' );
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . self::GATEWAY_ID );
-	}
+	private $customer_service;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account    $account - Account class instance.
+	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account          $account             - Account class instance.
+	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		WC_Payments_Customer_Service $customer_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+		$this->customer_service    = $customer_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -147,6 +140,69 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Check if the payment gateway is connected. This method is also used by
+	 * external plugins to check if a connection has been established.
+	 */
+	public function is_connected() {
+		return $this->account->is_stripe_connected( false );
+	}
+
+	/**
+	 * Returns true if the gateway needs additional configuration, false if it's ready to use.
+	 *
+	 * @see WC_Payment_Gateway::needs_setup
+	 * @return bool
+	 */
+	public function needs_setup() {
+		if ( ! $this->is_connected() ) {
+			return true;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
+	}
+
+	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
+	}
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
+	}
+
+	/**
+	 * Returns whether test_mode or dev_mode is active for the gateway
+	 *
+	 * @return boolean Test mode enabled if true, disabled if false
+	 */
+	public function is_in_test_mode() {
+		if ( $this->is_in_dev_mode() ) {
+			return true;
+		}
+
+		return 'yes' === $this->get_option( 'test_mode' );
+	}
+
+	/**
 	 * Checks if the gateway is enabled, and also if it's configured enough to accept payments from customers.
 	 *
 	 * Use parent method value alongside other business rules to make the decision.
@@ -158,7 +214,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return parent::is_available() && $this->account->is_stripe_connected( false );
+		return parent::is_available() && ! $this->needs_setup();
 	}
 
 	/**
@@ -233,7 +289,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<?php
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-							__( '<strong>Test mode:</strong> use test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
+							__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
 								'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
@@ -273,64 +329,81 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$amount = $order->get_total();
 
-			$transaction_id = '';
-
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
 				$payment_method = $this->get_payment_method_from_request();
 				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email          = sanitize_email( $order->get_billing_email() );
+
+				// Determine the customer making the payment, create one if we don't have one already.
+				$user        = wp_get_current_user();
+				$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+				if ( null === $customer_id ) {
+					// Create a new customer.
+					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+				} else {
+					// Update the existing customer with the current details. In the event the old customer can't be
+					// found a new one is created, so we update the customer ID here as well.
+					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+				}
 
 				$metadata = [
 					'customer_name'  => $name,
-					'customer_email' => sanitize_email( $order->get_billing_email() ),
+					'customer_email' => $email,
 					'site_url'       => esc_url( get_site_url() ),
 					'order_id'       => $order->get_id(),
 				];
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
-					round( (float) $amount * 100 ),
+					WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
 					'usd',
 					$payment_method,
+					$customer_id,
 					$manual_capture,
-					$metadata
+					$metadata,
+					$this->get_level3_data_from_order( $order )
 				);
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$transaction_id = $intent->get_id();
 				$status         = $intent->get_status();
 
-				if ( 'requires_capture' === $status ) {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$transaction_id
-					);
-					$order->update_status( 'on-hold', $note );
-					$order->set_transaction_id( $transaction_id );
-				} else {
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$transaction_id
-					);
-					$order->add_order_note( $note );
-					$order->payment_complete( $transaction_id );
+				switch ( $status ) {
+					case 'succeeded':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$transaction_id
+						);
+						$order->add_order_note( $note );
+						$order->payment_complete( $transaction_id );
+						break;
+					case 'requires_capture':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$transaction_id
+						);
+						$order->update_status( 'on-hold', $note );
+						$order->set_transaction_id( $transaction_id );
+						break;
 				}
 
 				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
@@ -411,7 +484,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( is_null( $amount ) ) {
 				$refund = $this->payments_api_client->refund_charge( $charge_id );
 			} else {
-				$refund = $this->payments_api_client->refund_charge( $charge_id, round( (float) $amount * 100 ) );
+				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, 'USD' ) );
 			}
 		} catch ( Exception $e ) {
 
@@ -456,7 +529,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Checkbox markup or empty string.
 	 */
 	public function generate_checkbox_html( $key, $data ) {
-		if ( 'enabled' === $key && ! $this->account->is_stripe_connected( false ) ) {
+		if ( 'enabled' === $key && ! $this->is_connected() ) {
 			return '';
 		}
 		return parent::generate_checkbox_html( $key, $data );
@@ -468,7 +541,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Container markup or empty if the account is not connected.
 	 */
 	public function generate_account_status_html() {
-		if ( ! $this->account->is_stripe_connected( false ) ) {
+		if ( ! $this->is_connected() ) {
 			return '';
 		}
 
@@ -501,7 +574,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					]
 				);
 			} else {
-				$description = WC_Payments_Account::get_connection_message_html();
+				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
+				// @see WC_Payments_Account::check_stripe_account_status.
+				$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
 			}
 		} catch ( Exception $e ) {
 			// do not render the actions if the server is unreachable.
@@ -555,7 +630,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount = $order->get_total();
 		$intent = $this->payments_api_client->capture_intention(
 			$order->get_transaction_id(),
-			round( (float) $amount * 100 )
+			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+			$this->get_level3_data_from_order( $order )
 		);
 		$status = $intent->get_status();
 
@@ -614,5 +690,59 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Create the level 3 data array to send to Stripe when making a purchase.
+	 *
+	 * @param WC_Order $order The order that is being paid for.
+	 * @return array          The level 3 data to send to Stripe.
+	 */
+	public function get_level3_data_from_order( $order ) {
+		// Get the order items. Don't need their keys, only their values.
+		// Order item IDs are used as keys in the original order items array.
+		$order_items = array_values( $order->get_items() );
+		$currency    = $order->get_currency();
+
+		$process_item  = function( $item ) use ( $currency ) {
+			$description     = substr( $item->get_name(), 0, 26 );
+			$quantity        = $item->get_quantity();
+			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
+			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total(), $currency );
+			$product_id      = $item->get_variation_id()
+				? $item->get_variation_id()
+				: $item->get_product_id();
+
+			return (object) array(
+				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
+				'product_description' => $description, // Up to 26 characters long describing the product.
+				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
+				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
+				'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
+				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
+			);
+		};
+		$items_to_send = array_map( $process_item, $order_items );
+
+		$level3_data = array(
+			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
+			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
+			'line_items'         => $items_to_send,
+		);
+
+		// The customer’s U.S. shipping ZIP code.
+		$shipping_address_zip = $order->get_shipping_postcode();
+		if ( WC_Payments_Utils::is_valid_us_zip_code( $shipping_address_zip ) ) {
+			$level3_data['shipping_address_zip'] = $shipping_address_zip;
+		}
+
+		// The merchant’s U.S. shipping ZIP code.
+		$store_postcode = get_option( 'woocommerce_store_postcode' );
+		if ( WC_Payments_Utils::is_valid_us_zip_code( $store_postcode ) ) {
+			$level3_data['shipping_from_zip'] = $store_postcode;
+		}
+
+		return $level3_data;
 	}
 }

@@ -1,38 +1,38 @@
 === WooCommerce Payments ===
 Contributors: automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.0
+Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 0.9.1
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments
+Securely accept credit and debit cards on your site. Manage transactions without leaving your WordPress dashboard. Only with WooCommerce Payments.
 
 == Description ==
 
-Securely accept major credit and debit cards on your WooCommerce site. View and manage your transactions without leaving your WordPress dashboard.
+**Payments made simple, with no monthly fees – designed exclusively for WooCommerce stores.**
 
-The only payments plugin designed exclusively for WooCommerce, by WooCommerce.
+Securely accept major credit and debit cards, and allow customers to pay you directly without leaving your WooCommerce store. View and manage transactions from one convenient place – your WordPress dashboard.
 
-Currently in public beta.
+See payments, track cash flow into your bank account, manage refunds, and stay on top of disputes without the hassle of having to log into a separate payment processor.
 
-**See and manage all transactions in your WooCommerce Payments integrated dashboard**
+**Manage transactions from the comfort of your store**
 
-Features normally only available at your payment provider's website are now part of your site's dashboard.
+Features previously only available on your payment provider’s website are now part of your store’s **integrated payments dashboard**. This enables you to:
 
-- View the details of [payments, refunds and other transactions](https://docs.woocommerce.com/document/payments/#section-4)
-- View and respond to [disputes / chargebacks](https://docs.woocommerce.com/document/payments/disputes/)
-- [View deposits](https://docs.woocommerce.com/document/payments/#section-5) from your account balance to your bank account or debit card
-
-**Accept all major credit and debit cards**
-
-Increase conversion rates by securely accepting all major credit and debit cards directly on your site.
+- View the details of [payments, refunds, and other transactions](https://docs.woocommerce.com/document/payments/#section-4).
+- View and respond to [disputes and chargebacks](https://docs.woocommerce.com/document/payments/disputes/).
+- [Track deposits](https://docs.woocommerce.com/document/payments/#section-5) into your bank account or debit card.
 
 **Pay as you go**
 
-No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards. See all the [fees](https://docs.woocommerce.com/document/payments/faq/fees/).
+WooCommerce Payments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://docs.woocommerce.com/document/payments/faq/fees/).
+
+**Supported by the WooCommerce team**
+
+Our global support team is available to answer questions you may have about WooCommerce Payments installation, setup, or use. For assistance, [open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
 
 == Getting Started ==
 
@@ -40,35 +40,46 @@ No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issue
 
 * United States-based business.
 * WordPress 5.3 or newer.
-* WooCommerce 3.9 or newer.
-* WooCommerce Admin 1.0 or newer (if running a WooCommerce version less than 4.0)
+* WooCommerce 4.0 or newer.
 * [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
+= Try it now =
+
+To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
+
 == Installation ==
 
-Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com
+Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com.
 
 1. Log in to your WordPress dashboard.
 1. Go to: Plugins > Add New.
 1. Enter "WooCommerce Payments" in the Search field.
 1. Click "Install Now".
-1. Go to: Payments
+1. Go to: Payments.
 1. Create your WooCommerce Payments account.
 
 == Frequently Asked Questions ==
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world in USD. [Learn more](https://docs.woocommerce.com/document/payments/countries/).
+If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world in USD.
 
-= This works with WooCommerce, right? =
+We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
 
-Yep! WooCommerce version 3.9 or newer, please.
+[Learn more](https://docs.woocommerce.com/document/payments/countries/).
 
 = Why is a WordPress.com account and connection required? =
 
 WooCommerce Payments uses the WordPress.com connection to authenticate each request, connecting your store with our payments partner.
+
+= How do I set up a store for a client? =
+
+If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://docs.woocommerce.com/document/payments/#section-3).
+
+After the store setup has been completed, you can use [Test Mode](https://docs.woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
+
+If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://docs.woocommerce.com/document/payments/testing/dev-mode/#section-1).
 
 = How is WooCommerce Payments related to Stripe? =
 
@@ -80,10 +91,36 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Screenshots ==
 
+1. View Transactions
+2. View Transaction Details
+3. Track Deposits
+4. Manage Disputes
+
 == Changelog ==
 
-= 0.9.2 - 2020-xx-xx =
-* Fix - Remove unused variable
+= 1.0.0 - 2020-05-19 =
+* Add - Level 3 data to payment requests
+* Update - Expose public method for checking connection status
+* Fix - Pending requirements state for improved messaging
+* Fix - Dispute details typo
+* Remove - Unused POST /charges endpoint
+* Remove - "Beta" messaging
+
+= 0.9.2 - 2020-05-14 =
+* Add - Customer ID to payment intent
+* Update - Register and enqueue js.stripe.com on WCPay admin pages
+* Update - Override needs_setup to redirect from Payments settings
+* Update - Copy and image on Connect Account screen
+* Add - Add deposits overview component
+* Add - URL to pass for prefilling OAuth form
+* Add - Test card details in Checkout
+* Add - Task list redirect upon return from OAuth flow
+* Add - Handling for failed refund and other webhooks
+* Add - Transaction list sorting
+* Update - Disable gateway when payments are disabled on the account
+* Update - Make table rows clickable
+* Add - Prompt before navigating away from unsaved dispute evidence changes
+* Update - Labels to sentence case
 * Update - Automated testing
 * Add - Metadata when creating payment intent
 * Update - PHP versions supported

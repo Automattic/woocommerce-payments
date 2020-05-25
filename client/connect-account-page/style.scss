@@ -12,18 +12,18 @@
 				font-weight: 300;
 				margin: 16px 0 8px;
 			}
-			.gridicons-credit-card {
-				height: 144px;
-				width: 144px;
-				fill: $studio-gray-30;
-			}
 		}
 
 		svg {
-			// Counteract the Card 16px padding
-			margin-top: -16px;
-			margin-left: -16px;
+			margin: 16px auto 24px;
 			display: block;
+		}
+
+		.connect-account__description {
+			margin: 0 0 16px;
+			font-weight: 300;
+			font-size: 14px;
+			color: $studio-gray-60;
 		}
 
 		.connect-account__terms {

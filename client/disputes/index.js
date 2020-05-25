@@ -14,9 +14,11 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import OrderLink from '../components/order-link';
-import DisputeStatusChip from '../components/dispute-status-chip';
-import DetailsLink from '../components/details-link';
+import OrderLink from 'components/order-link';
+import DisputeStatusChip from 'components/dispute-status-chip';
+import ClickableCell from 'components/clickable-cell';
+import DetailsLink, { getDetailsURL } from 'components/details-link';
+import Page from 'components/page';
 import { reasons } from './strings';
 import { formatStringValue } from '../util';
 
@@ -46,6 +48,8 @@ export const DisputesList = ( props ) => {
 			display: <OrderLink order={ dispute.order } />,
 		} : null;
 
+		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( dispute.id, 'disputes' ) }>{ children }</ClickableCell>;
+
 		const detailsLink = <DetailsLink id={ dispute.id } parentSegment="disputes" />;
 
 		const reasonMapping = reasons[ dispute.reason ];
@@ -56,22 +60,22 @@ export const DisputesList = ( props ) => {
 		const customer = charge.billing_details || {};
 
 		const data = {
-			amount: { value: dispute.amount / 100, display: currency.formatCurrency( dispute.amount / 100 ) },
-			status: { value: dispute.status, display: <DisputeStatusChip status={ dispute.status } /> },
-			reason: { value: dispute.reason, display: reasonDisplay },
+			amount: { value: dispute.amount / 100, display: clickable( currency.formatCurrency( dispute.amount / 100 ) ) },
+			status: { value: dispute.status, display: clickable( <DisputeStatusChip status={ dispute.status } /> ) },
+			reason: { value: dispute.reason, display: clickable( reasonDisplay ) },
 			source: {
 				value: source,
-				display: <span className={ `payment-method__brand payment-method__brand--${ source }` } />,
+				display: clickable( <span className={ `payment-method__brand payment-method__brand--${ source }` } /> ),
 			},
-			created: { value: dispute.created * 1000, display: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ) },
+			created: { value: dispute.created * 1000, display: clickable( dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ) ) },
 			dueBy: {
 				value: dispute.evidence_details.due_by * 1000,
-				display: dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
+				display: clickable( dateI18n( 'M j, Y / g:iA', moment( dispute.evidence_details.due_by * 1000 ) ) ),
 			},
 			order,
-			customer: { value: customer.name, display: customer.name },
-			email: { value: customer.email, display: customer.email },
-			country: { value: ( customer.address || {} ).country, display: ( customer.address || {} ).country },
+			customer: { value: customer.name, display: clickable( customer.name ) },
+			email: { value: customer.email, display: clickable( customer.email ) },
+			country: { value: ( customer.address || {} ).country, display: clickable( ( customer.address || {} ).country ) },
 			details: { value: dispute.id, display: detailsLink },
 		};
 
@@ -79,14 +83,16 @@ export const DisputesList = ( props ) => {
 	} );
 
 	return (
-		<TableCard
-			title={ __( 'Disputes', 'woocommerce-payments' ) }
-			isLoading={ showPlaceholder }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
-			headers={ headers }
-			rows={ rows }
-		/>
+		<Page>
+			<TableCard
+				title={ __( 'Disputes', 'woocommerce-payments' ) }
+				isLoading={ showPlaceholder }
+				rowsPerPage={ 10 }
+				totalRows={ 10 }
+				headers={ headers }
+				rows={ rows }
+			/>
+		</Page>
 	);
 };
 

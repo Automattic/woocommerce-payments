@@ -166,28 +166,56 @@ exports[`Deposits list renders correctly 1`] = `
                   data-link-type="wc-admin"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                 >
-                  Jan 2, 2020 / 12:46PM
+                  Jan 2, 2020
                 </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Deposit
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  tabindex="-1"
+                >
+                  Deposit
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $20.00
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  tabindex="-1"
+                >
+                  $20.00
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Paid
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  tabindex="-1"
+                >
+                  Paid
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                MOCK BANK •••• 1234 (USD)
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                  tabindex="-1"
+                >
+                  MOCK BANK •••• 1234 (USD)
+                </a>
               </td>
             </tr>
             <tr>
@@ -221,28 +249,56 @@ exports[`Deposits list renders correctly 1`] = `
                   data-link-type="wc-admin"
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                 >
-                  Jan 3, 2020 / 12:46PM
+                  Jan 3, 2020
                 </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Withdrawal
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  tabindex="-1"
+                >
+                  Withdrawal
+                </a>
               </td>
               <td
                 class="woocommerce-table__item is-numeric"
               >
-                $30.00
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  tabindex="-1"
+                >
+                  $30.00
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                Pending
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  tabindex="-1"
+                >
+                  Pending
+                </a>
               </td>
               <td
                 class="woocommerce-table__item"
               >
-                MOCK BANK •••• 1234 (USD)
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                  tabindex="-1"
+                >
+                  MOCK BANK •••• 1234 (USD)
+                </a>
               </td>
             </tr>
           </tbody>

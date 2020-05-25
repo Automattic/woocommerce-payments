@@ -94,7 +94,7 @@ const renderDepositsStatus = ( depositsStatus ) => {
 };
 
 const renderAccountStatusDescription = ( accountStatus ) => {
-	const { status, currentDeadline, accountLink } = accountStatus;
+	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	if ( 'complete' === status ) {
 		return '';
 	}
@@ -113,7 +113,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( 'restricted' === status ) {
+	} else if ( 'restricted' === status && pastDue ) {
 		description = createInterpolateElement(
 			/* translators: <a> - dashboard login URL */
 			__(
@@ -123,7 +123,12 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} if ( 'rejected.fraud' === status ) {
+	} else if ( 'restricted' === status ) {
+		description = __(
+			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',
+			'woocommerce-payments'
+		);
+	} else if ( 'rejected.fraud' === status ) {
 		description = __( 'This account has been rejected because of suspected fraudulent activity.', 'woocommerce-payments' );
 	} else if ( 'rejected.terms_of_service' === status ) {
 		description = __( 'This account has been rejected due to a Terms of Service violation.', 'woocommerce-payments' );
@@ -132,7 +137,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 	}
 
 	if ( ! description ) {
-		return '';
+		return null;
 	}
 
 	return ( <div className="account-status__desc">{ description }</div> );

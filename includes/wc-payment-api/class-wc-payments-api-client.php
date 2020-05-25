@@ -23,6 +23,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API     = 'accounts';
 	const CHARGES_API      = 'charges';
+	const CUSTOMERS_API    = 'customers';
 	const INTENTIONS_API   = 'intentions';
 	const REFUNDS_API      = 'refunds';
 	const DEPOSITS_API     = 'deposits';
@@ -67,33 +68,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create a charge
-	 *
-	 * @param int    $amount    - Amount to charge.
-	 * @param string $source_id - ID of the source to associate with charge.
-	 *
-	 * @return WC_Payments_API_Charge
-	 * @throws WC_Payments_API_Exception - Exception thrown on payment failure.
-	 */
-	public function create_charge( $amount, $source_id ) {
-
-		$request           = array();
-		$request['amount'] = $amount;
-		$request['source'] = $source_id;
-
-		$response_array = $this->request( $request, self::CHARGES_API, self::POST );
-
-		return $this->deserialize_charge_object_from_array( $response_array );
-	}
-
-	/**
 	 * Create an intention, and automatically confirm it.
 	 *
 	 * @param int    $amount            - Amount to charge.
 	 * @param string $currency_code     - Currency to charge in.
 	 * @param string $payment_method_id - ID of payment method to process charge with.
+	 * @param string $customer_id       - ID of the customer making the payment.
 	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
 	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3            - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -102,8 +85,10 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_method_id,
+		$customer_id,
 		$manual_capture = false,
-		$metadata = []
+		$metadata = [],
+		$level3 = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = array();
@@ -111,10 +96,12 @@ class WC_Payments_API_Client {
 		$request['currency']       = $currency_code;
 		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
+		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
+		$request['level3']         = $level3;
 
-		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -163,15 +150,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
 	 * @param int    $amount       - Amount to capture.
+	 * @param array  $level3       - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention capture failure.
 	 */
-	public function capture_intention( $intention_id, $amount ) {
+	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
 		$request                      = array();
 		$request['amount_to_capture'] = $amount;
+		$request['level3']            = $level3;
 
-		$response_array = $this->request(
+		$response_array = $this->request_with_level3_data(
 			$request,
 			self::INTENTIONS_API . '/' . $intention_id . '/capture',
 			self::POST
@@ -247,15 +236,19 @@ class WC_Payments_API_Client {
 	 *
 	 * @param int    $page       The requested page.
 	 * @param int    $page_size  The size of the requested page.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
 	 * @param string $deposit_id The deposit to filter on.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
-	public function list_transactions( $page = 0, $page_size = 25, $deposit_id = null ) {
+	public function list_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $deposit_id = null ) {
 		$query = [
 			'page'       => $page,
 			'pagesize'   => $page_size,
+			'sort'       => $sort,
+			'direction'  => $direction,
 			'deposit_id' => $deposit_id,
 		];
 
@@ -506,6 +499,61 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a customer.
+	 *
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @return string The created customer's ID
+	 *
+	 * @throws WC_Payments_API_Exception Error creating customer.
+	 */
+	public function create_customer( $name = null, $email = null, $description = null ) {
+		$customer_array = $this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API,
+			self::POST
+		);
+
+		return $customer_array['id'];
+	}
+
+	/**
+	 * Update a customer.
+	 *
+	 * @param string      $customer_id ID of customer to update.
+	 * @param string|null $name        Customer's full name.
+	 * @param string|null $email       Customer's email address.
+	 * @param string|null $description Description of customer.
+	 *
+	 * @throws WC_Payments_API_Exception Error updating customer.
+	 */
+	public function update_customer( $customer_id, $name = null, $email = null, $description = null ) {
+		if ( null === $customer_id || '' === trim( $customer_id ) ) {
+			throw new WC_Payments_API_Exception(
+				__( 'Customer ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_customer_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			],
+			self::CUSTOMERS_API . '/' . $customer_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -517,7 +565,7 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
 	 */
 	private function request( $params, $api, $method, $is_site_specific = true ) {
-		// Apply the default params that can be overriden by the calling method.
+		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
 			array(
@@ -575,6 +623,48 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Handles issues with level3 data and retries requests when necessary.
+	 *
+	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
+	 * @param string $api              - The API endpoint to call.
+	 * @param string $method           - The HTTP method to make the request with.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - If the account ID hasn't been set.
+	 */
+	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
+		// If level3 data is not present for some reason, simply proceed normally.
+		if ( ! isset( $params['level3'] ) ) {
+			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+
+		try {
+			return $this->request( $params, $api, $method, $is_site_specific );
+		} catch ( WC_Payments_API_Exception $e ) {
+			if ( 'invalid_request_error' !== $e->get_error_code() ) {
+				throw $e;
+			}
+
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+			// Log the issue so we could debug it.
+			Logger::error(
+				'Level3 data error: ' . PHP_EOL
+				. print_r( $e->getMessage(), true ) . PHP_EOL
+				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+				. print_r( $params['level3'], true )
+			);
+
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+			// Retry without level3 data.
+			unset( $params['level3'] );
+			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+	}
+
+	/**
 	 * From a given response extract the body. Invalid HTTP codes will result in an error.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
@@ -606,6 +696,10 @@ class WC_Payments_API_Client {
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'];
 				$error_message = $response_body['error']['message'];
+
+				if ( is_null( $error_code ) && ! empty( $response_body['error']['type'] ) ) {
+					$error_code = $response_body['error']['type'];
+				}
 			} elseif ( isset( $response_body['code'] ) ) {
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
@@ -706,5 +800,4 @@ class WC_Payments_API_Client {
 
 		return $intent;
 	}
-
 }
