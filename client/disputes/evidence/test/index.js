@@ -93,7 +93,7 @@ describe( 'Dispute evidence form', () => {
 		window.confirm = jest.fn();
 
 		// We have to mount component to select button for click.
-		const { getAllByText } = render(
+		const { getByRole } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
@@ -102,8 +102,7 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		// There are multiple submit buttons in the form. Use the last one.
-		const submitButton = getAllByText( /submit.*/i ).pop();
+		const submitButton = getByRole( 'button', { name: /submit.*/i } );
 		fireEvent.click( submitButton );
 		expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 		expect( window.confirm ).toHaveBeenCalledWith(
@@ -116,7 +115,7 @@ describe( 'Dispute evidence form', () => {
 		const onSave = jest.fn();
 
 		// We have to mount component to select button for click.
-		const { getAllByText } = render(
+		const { getByRole } = render(
 			<DisputeEvidenceForm
 				fields={ fields }
 				evidence={ disputeNeedsResponse.evidence }
@@ -125,8 +124,7 @@ describe( 'Dispute evidence form', () => {
 			/>
 		);
 
-		// There are multiple submit buttons in the form. Use the last one.
-		const submitButton = getAllByText( /submit.*/i ).pop();
+		const submitButton = getByRole( 'button', { name: /submit.*/i } );
 
 		window.confirm = jest.fn();
 		window.confirm
