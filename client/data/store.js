@@ -12,7 +12,7 @@ import * as deposits from './deposits';
 import * as transactions from './transactions';
 import * as charges from './charges';
 
-// Extract store registration into its own module to use it inside tests.
+// Extracted into wrapper function to facilitate testing.
 export const initStore = () => registerStore( STORE_NAME, {
 	reducer: combineReducers( {
 		deposits: deposits.reducer,
