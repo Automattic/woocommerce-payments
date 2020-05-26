@@ -21,6 +21,12 @@ To start a local development environment with the plugin locally enter this comm
 
 `npm run dev`
 
+Install and activate WooCommerce and Jetpack:
+
+```
+docker-compose exec -u www-data wordpress wp plugin install woocommerce jetpack --activate
+```
+
 After this succeeds you can access the local site at
 
 http://localhost:8082/
