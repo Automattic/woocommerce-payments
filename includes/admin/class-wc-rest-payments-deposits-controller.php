@@ -36,11 +36,11 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/overview',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_deposits_overview' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_deposits_overview' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 
 		register_rest_route(
