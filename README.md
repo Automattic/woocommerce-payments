@@ -35,7 +35,11 @@ See the instruction here to connect the client to the server.
 
 https://github.com/Automattic/woocommerce-payments-server/tree/master/local
 
+To get your blog ID run:
 
+```
+docker-compose exec -u www-data wordpress wp eval 'echo Jetpack_Options::get_option( "id" );'
+```
 
 ## Setup
 Install The following plugins
