@@ -31,6 +31,12 @@ After this succeeds you can access the local site at
 
 http://localhost:8082/
 
+See the instruction here to connect the client to the server.
+
+https://github.com/Automattic/woocommerce-payments-server/tree/master/local
+
+
+
 ## Setup
 Install The following plugins
 - Jetpack
