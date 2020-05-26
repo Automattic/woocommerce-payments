@@ -67,7 +67,7 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
-			add_filter( 'admin_notices', array( __CLASS__, 'check_plugin_dependencies' ) );
+			add_filter( 'admin_notices', [ __CLASS__, 'check_plugin_dependencies' ] );
 			return;
 		}
 
@@ -75,7 +75,7 @@ class WC_Payments {
 			return;
 		};
 
-		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), array( __CLASS__, 'add_plugin_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -91,9 +91,9 @@ class WC_Payments {
 
 		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service );
 
-		add_filter( 'woocommerce_payment_gateways', array( __CLASS__, 'register_gateway' ) );
-		add_filter( 'option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 2 );
-		add_filter( 'default_option_woocommerce_gateway_order', array( __CLASS__, 'set_gateway_top_of_list' ), 3 );
+		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -101,7 +101,7 @@ class WC_Payments {
 			new WC_Payments_Admin( self::$gateway, self::$account );
 		}
 
-		add_action( 'rest_api_init', array( __CLASS__, 'init_rest_api' ) );
+		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 	}
 
 	/**
@@ -139,14 +139,14 @@ class WC_Payments {
 		if ( null === self::$plugin_headers ) {
 			self::$plugin_headers = get_file_data(
 				WCPAY_PLUGIN_FILE,
-				array(
+				[
 					// Mirrors the functionality on WooCommerce core: https://github.com/woocommerce/woocommerce/blob/ff2eadeccec64aa76abd02c931bf607dd819bbf0/includes/wc-core-functions.php#L1916 .
 					'WCRequires' => 'WC requires at least',
 					// The "Requires WP" plugin header is proposed and being implemented here: https://core.trac.wordpress.org/ticket/43992
 					// TODO: Check before release if the "Requires WP" header name has been accepted, or we should use a header on the readme.txt file instead.
 					'RequiresWP' => 'Requires WP',
 					'Version'    => 'Version',
-				)
+				]
 			);
 		}
 		return self::$plugin_headers;
@@ -174,26 +174,26 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
-		$plugin_dependencies = array(
-			array(
+		$plugin_dependencies = [
+			[
 				'name'  => 'WooCommerce',
 				'class' => 'WooCommerce',
 				'slug'  => 'woocommerce',
 				'file'  => 'woocommerce/woocommerce.php',
-			),
-			array(
+			],
+			[
 				'name'  => 'WooCommerce Admin',
 				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
 				'slug'  => 'woocommerce-admin',
 				'file'  => 'woocommerce-admin/woocommerce-admin.php',
-			),
-			array(
+			],
+			[
 				'name'  => 'Jetpack',
 				'class' => 'Jetpack',
 				'slug'  => 'jetpack',
 				'file'  => 'jetpack/jetpack.php',
-			),
-		);
+			],
+		];
 
 		// Check if WooCommerce and other dependencies are  installed and active.
 		foreach ( $plugin_dependencies as $plugin_data ) {
@@ -400,9 +400,9 @@ class WC_Payments {
 	 * @return array The list of links that will be rendered, after adding some links specific to this plugin.
 	 */
 	public static function add_plugin_links( $links ) {
-		$plugin_links = array(
+		$plugin_links = [
 			'<a href="' . esc_attr( WC_Payment_Gateway_WCPay::get_settings_url() ) . '">' . esc_html__( 'Settings', 'woocommerce-payments' ) . '</a>',
-		);
+		];
 
 		return array_merge( $plugin_links, $links );
 	}

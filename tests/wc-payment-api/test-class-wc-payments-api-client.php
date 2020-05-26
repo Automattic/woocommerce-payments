@@ -39,7 +39,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->mock_http_client = $this->getMockBuilder( 'WC_Payments_Http' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'remote_request' ) )
+			->setMethods( [ 'remote_request' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( 'WC_Payments_DB' )
@@ -64,7 +64,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			200,
-			array(
+			[
 				'id'      => 'test_intention_id',
 				'amount'  => $expected_amount,
 				'created' => 1557224304,
@@ -80,7 +80,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-			)
+			]
 		);
 
 		$result = $this->payments_api_client->create_and_confirm_intention(
@@ -108,21 +108,21 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
-					array(
-						'headers'  => array(),
+					[
+						'headers'  => [],
 						'body'     => wp_json_encode(
-							array(
+							[
 								'id'     => 'test_refund_id',
 								'amount' => $expected_amount,
 								'status' => 'succeeded',
-							)
+							]
 						),
-						'response' => array(
+						'response' => [
 							'code' => 200,
-						),
-						'cookies'  => array(),
+						],
+						'cookies'  => [],
 						'filename' => null,
-					)
+					]
 				)
 			);
 
@@ -144,7 +144,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			200,
-			array(
+			[
 				'id'      => 'test_intention_id',
 				'amount'  => $expected_amount,
 				'created' => 1557224304,
@@ -160,7 +160,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-			)
+			]
 		);
 
 		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789', true );
@@ -179,7 +179,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			200,
-			array(
+			[
 				'id'              => 'test_intention_id',
 				'amount'          => 123,
 				'amount_captured' => $expected_amount,
@@ -196,7 +196,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-			)
+			]
 		);
 
 		$result = $this->payments_api_client->capture_intention( 'test_intention_id', $expected_amount );
@@ -213,7 +213,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			200,
-			array(
+			[
 				'id'      => 'test_intention_id',
 				'amount'  => 123,
 				'created' => 1557224304,
@@ -229,7 +229,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 					],
 				],
-			)
+			]
 		);
 
 		$result = $this->payments_api_client->cancel_intention( 'test_intention_id' );
@@ -246,11 +246,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			200,
-			array(
+			[
 				'id'        => $transaction_id,
 				'type'      => 'charge',
 				'charge_id' => 'ch_ji3djhabvh23',
-			)
+			]
 		);
 
 		$transaction = $this->payments_api_client->get_transaction( $transaction_id );
@@ -269,12 +269,12 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->set_http_mock_response(
 			404,
-			array(
-				'error' => array(
+			[
+				'error' => [
 					'code'    => $error_code,
 					'message' => $error_message,
-				),
-			)
+				],
+			]
 		);
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( "Error: $error_message" );
@@ -417,22 +417,22 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @param array $headers headers for the mocked response.
 	 * @param array $cookies cookies to be used in the mocked response.
 	 */
-	private function set_http_mock_response( $status_code, $body = array(), $headers = array(), $cookies = array() ) {
+	private function set_http_mock_response( $status_code, $body = [], $headers = [], $cookies = [] ) {
 		$this->mock_http_client
 			->expects( $this->any() )
 			->method( 'remote_request' )
 			->will(
 				$this->returnValue(
-					array(
+					[
 						'headers'  => $headers,
 						'body'     => wp_json_encode( $body ),
-						'response' => array(
+						'response' => [
 							'code'    => $status_code,
 							'message' => 'OK',
-						),
+						],
 						'cookies'  => $cookies,
 						'filename' => null,
-					)
+					]
 				)
 			);
 	}

@@ -64,11 +64,11 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			array(
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'handle_webhook' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'handle_webhook' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 
@@ -99,13 +99,13 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			}
 		} catch ( WC_Payments_Rest_Request_Exception $e ) {
 			Logger::error( $e );
-			return new WP_REST_Response( array( 'result' => self::RESULT_BAD_REQUEST ), 400 );
+			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
-			return new WP_REST_Response( array( 'result' => self::RESULT_ERROR ), 500 );
+			return new WP_REST_Response( [ 'result' => self::RESULT_ERROR ], 500 );
 		}
 
-		return new WP_REST_Response( array( 'result' => self::RESULT_SUCCESS ) );
+		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
 
 	/**
@@ -147,10 +147,10 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the refund amount, %2: ID of the refund */
 				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-				array(
+				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
-				)
+				]
 			),
 			wc_price( $amount / 100 ),
 			$refund_id

@@ -49,11 +49,11 @@ class WC_REST_Payments_Timeline_Controller extends WP_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<intention_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_timeline' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_timeline' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 

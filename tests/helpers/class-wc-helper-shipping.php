@@ -18,17 +18,17 @@ class WC_Helper_Shipping {
 	 * @since 2.3
 	 */
 	public static function create_simple_flat_rate() {
-		$flat_rate_settings = array(
+		$flat_rate_settings = [
 			'enabled'      => 'yes',
 			'title'        => 'Flat rate',
 			'availability' => 'all',
 			'countries'    => '',
 			'tax_status'   => 'taxable',
 			'cost'         => '10',
-		);
+		];
 
 		update_option( 'woocommerce_flat_rate_settings', $flat_rate_settings );
-		update_option( 'woocommerce_flat_rate', array() );
+		update_option( 'woocommerce_flat_rate', [] );
 		WC_Cache_Helper::get_transient_version( 'shipping', true );
 		WC()->shipping()->load_shipping_methods();
 	}

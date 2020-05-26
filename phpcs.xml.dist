@@ -20,7 +20,11 @@
 
 		<!-- This rule is currently generating some false positives, it would be worth retrying after PHPCS upgrades -->
 		<exclude name="Squiz.Commenting.FunctionCommentThrowTag.WrongNumber"/>
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
+
+	<!-- Disallow long array syntax -->
+	<rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
@@ -47,6 +51,11 @@
 	</rule>
 
 	<rule ref="Squiz.Commenting.FunctionComment">
+		<exclude-pattern>tests/</exclude-pattern>
+	</rule>
+
+	<!-- We don't need to do nonce checks in unit test code -->
+	<rule ref="WordPress.Security.NonceVerification.Recommended">
 		<exclude-pattern>tests/</exclude-pattern>
 	</rule>
 </ruleset>

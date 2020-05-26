@@ -52,7 +52,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( array( 'order_from_charge_id' ) )
+			->setMethods( [ 'order_from_charge_id' ] )
 			->getMock();
 
 		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account );
@@ -66,12 +66,12 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request->set_header( 'Content-Type', 'application/json' );
 
 		// Build the test request data.
-		$event_object = array();
+		$event_object = [];
 
-		$event_data           = array();
+		$event_data           = [];
 		$event_data['object'] = $event_object;
 
-		$this->request_body         = array();
+		$this->request_body         = [];
 		$this->request_body['data'] = $event_data;
 	}
 
@@ -90,7 +90,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'success' ), $response_data );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
 
 	/**
@@ -107,7 +107,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'bad_request' ), $response_data );
+		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
 	/**
@@ -126,7 +126,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'bad_request' ), $response_data );
+		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
 	/**
@@ -145,7 +145,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 400, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'bad_request' ), $response_data );
+		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
 	/**
@@ -154,18 +154,18 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook() {
 		// Setup test request data.
 		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = array(
+		$this->request_body['data']['object'] = [
 			'status' => 'failed',
 			'charge' => 'test_charge_id',
 			'id'     => 'test_refund_id',
 			'amount' => 999,
-		);
+		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
-			->setMethods( array( 'add_order_note' ) )
+			->setMethods( [ 'add_order_note' ] )
 			->getMock();
 
 		$mock_order
@@ -188,7 +188,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'success' ), $response_data );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
 
 	/**
@@ -197,12 +197,12 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook_with_unknown_charge_id() {
 		// Setup test request data.
 		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = array(
+		$this->request_body['data']['object'] = [
 			'status' => 'failed',
 			'charge' => 'unknown_charge_id',
 			'id'     => 'test_refund_id',
 			'amount' => 999,
-		);
+		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
@@ -219,7 +219,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 500, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'error' ), $response_data );
+		$this->assertEquals( [ 'result' => 'error' ], $response_data );
 	}
 
 	/**
@@ -228,12 +228,12 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	public function test_non_failed_refund_update_webhook() {
 		// Setup test request data.
 		$this->request_body['type']           = 'charge.refund.updated';
-		$this->request_body['data']['object'] = array(
+		$this->request_body['data']['object'] = [
 			'status' => 'updated',
 			'charge' => 'test_charge_id',
 			'id'     => 'test_refund_id',
 			'amount' => 999,
-		);
+		];
 
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
@@ -248,6 +248,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( array( 'result' => 'success' ), $response_data );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
 }
