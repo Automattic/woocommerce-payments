@@ -31,7 +31,9 @@ class WC_Payments_Http {
 		$args['user_id'] = JETPACK_MASTER_USER;
 
 		if ( $is_site_specific ) {
-			$args['url'] = sprintf( $args['url'], $args['blog_id'] );
+			$url         = explode( '?', $args['url'], 2 );
+			$url[0]      = sprintf( $url[0], $args['blog_id'] );
+			$args['url'] = sprintf( '%s?%s', $url[0], $url[1] );
 		}
 
 		// Make sure we're not sendign requests if Jetpack is not connected.

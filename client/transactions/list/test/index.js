@@ -3,16 +3,18 @@
 /**
  * External dependencies
  */
-import { render, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from '../../data';
+import { useTransactions, useTransactionsSummary } from 'data';
 
-jest.mock( '../../data', () => ( {
+jest.mock( 'data', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
@@ -80,8 +82,8 @@ describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		// the query string is preserved across tests, so we need to reset it
-		if ( '' !== window.location.search ) {
-			updateQueryString( {} );
+		if ( ! isEmpty( getQuery() ) ) {
+			updateQueryString( {}, '/', {} );
 		}
 	} );
 
@@ -109,7 +111,7 @@ describe( 'Transactions list', () => {
 	} );
 
 	describe( 'when not filtered by deposit', () => {
-		let container, getAllByText, rerender;
+		let container, rerender;
 		beforeEach( () => {
 			useTransactions.mockReturnValue( {
 				transactions: mockTransactions,
@@ -126,7 +128,7 @@ describe( 'Transactions list', () => {
 				isLoading: false,
 			} );
 
-			( { container, rerender, getAllByText } = render( <TransactionsList /> ) );
+			( { container, rerender } = render( <TransactionsList /> ) );
 		} );
 
 		test( 'renders correctly', () => {
@@ -134,10 +136,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by default field date', () => {
-			sortBy( 'Date / Time' );
+			sortBy( 'Date and time' );
 			expectSortingToBe( 'date', 'asc' );
 
-			sortBy( 'Date / Time' );
+			sortBy( 'Date and time' );
 			expectSortingToBe( 'date', 'desc' );
 		} );
 
@@ -166,8 +168,7 @@ describe( 'Transactions list', () => {
 		} );
 
 		function sortBy( field ) {
-			const sortButton = getAllByText( field )[ 0 ];
-			fireEvent.click( sortButton, { preventDefault: () => {} } );
+			user.click( screen.getByRole( 'button', { name: field } ) );
 			rerender( <TransactionsList /> );
 		}
 

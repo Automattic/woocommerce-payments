@@ -14,7 +14,7 @@ import { Card, OrderStatus } from '@woocommerce/components';
  */
 import { useDeposit } from 'data';
 import { displayStatus } from '../strings';
-import TransactionsList from 'transactions';
+import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import Loadable from 'components/loadable';
 import './style.scss';
