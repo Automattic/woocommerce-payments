@@ -206,6 +206,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get overview of deposits.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_overview() {
+		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
+	}
+
+	/**
 	 * Fetch a single deposit with provided id.
 	 *
 	 * @param string $deposit_id id of requested deposit.
