@@ -1,49 +1,61 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Chip renders a light chip 1`] = `
-<span
-  className="chip chip-light"
->
-  Light message
-</span>
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Light message
+  </span>
+</div>
 `;
 
 exports[`Chip renders a primary chip 1`] = `
-<span
-  className="chip chip-primary"
->
-  Primary message
-</span>
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Primary message
+  </span>
+</div>
 `;
 
 exports[`Chip renders a primary chip by default 1`] = `
-<span
-  className="chip chip-primary"
->
-  Message
-</span>
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Message
+  </span>
+</div>
 `;
 
 exports[`Chip renders a warning chip 1`] = `
-<span
-  className="chip chip-warning"
->
-  Alert message
-</span>
+<div>
+  <span
+    class="chip chip-warning"
+  >
+    Alert message
+  </span>
+</div>
 `;
 
 exports[`Chip renders an alert chip 1`] = `
-<span
-  className="chip chip-alert"
->
-  Alert message
-</span>
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Alert message
+  </span>
+</div>
 `;
 
 exports[`Chip renders default if type is invalid 1`] = `
-<span
-  className="chip chip-primary"
->
-  Message
-</span>
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Message
+  </span>
+</div>
 `;

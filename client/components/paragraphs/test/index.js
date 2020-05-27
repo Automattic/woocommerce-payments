@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -13,15 +13,18 @@ import Paragraphs from '../';
 describe( 'Paragraphs', () => {
 	test( 'renders set of strings correctly.', () => {
 		const strings = [ 'Paragraph 1', 'Paragraph 2', 'Paragraph 3' ];
-		expect( shallow( <Paragraphs>{ strings }</Paragraphs> ) ).toMatchSnapshot();
+		const { container } = render( <Paragraphs>{ strings }</Paragraphs> );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders empty set of strings correctly', () => {
 		const strings = [];
-		expect( shallow( <Paragraphs>{ strings }</Paragraphs> ) ).toMatchSnapshot();
+		const { container } = render( <Paragraphs>{ strings }</Paragraphs> );
+		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders missing strings correctly', () => {
-		expect( shallow( <Paragraphs /> ) ).toMatchSnapshot();
+		const { container } = render( <Paragraphs /> );
+		expect( container ).toMatchSnapshot();
 	} );
 } );

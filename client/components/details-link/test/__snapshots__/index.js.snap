@@ -1,27 +1,49 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Details link empty render with no ID 1`] = `""`;
+exports[`Details link empty render with no ID 1`] = `<div />`;
 
 exports[`Details link renders dispute details with ID 1`] = `
-<Link
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_mock"
-  type="wc-admin"
->
-  <t
-    icon="info-outline"
-    size={18}
-  />
-</Link>
+<div>
+  <a
+    data-link-type="wc-admin"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_mock"
+  >
+    <svg
+      class="gridicon gridicons-info-outline needs-offset"
+      height="18"
+      viewBox="0 0 24 24"
+      width="18"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+        />
+      </g>
+    </svg>
+  </a>
+</div>
 `;
 
 exports[`Details link renders transaction details with charge ID 1`] = `
-<Link
-  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
-  type="wc-admin"
->
-  <t
-    icon="info-outline"
-    size={18}
-  />
-</Link>
+<div>
+  <a
+    data-link-type="wc-admin"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
+  >
+    <svg
+      class="gridicon gridicons-info-outline needs-offset"
+      height="18"
+      viewBox="0 0 24 24"
+      width="18"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+        />
+      </g>
+    </svg>
+  </a>
+</div>
 `;

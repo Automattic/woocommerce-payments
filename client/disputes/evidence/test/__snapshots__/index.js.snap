@@ -1,193 +1,439 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
-<Fragment>
-  <Card
-    key="general"
-    title="General evidence"
+<div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={false}
-      key="product_description"
-      label="Product description"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={false}
-      key="customer_name"
-      label="Customer name"
-      onChange={[Function]}
-      value=""
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={false}
-      field={
-        Object {
-          "key": "customer_signature",
-          "label": "Customer signature",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="customer_signature"
-    />
-  </Card>
-  <Card>
-    <p>
-      When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
-    </p>
-    <p>
-      <strong>
-        Evidence submission is final.
-      </strong>
-       
-      You can also save this evidence for later instead of submitting it immediately.
-       
-      <strong>
-        We will automatically submit any saved evidence at the due date.
-      </strong>
-    </p>
-    <CardFooter>
-      <ForwardRef(Button)
-        isLarge={true}
-        isPrimary={true}
-        onClick={[Function]}
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
       >
-        Submit evidence
-      </ForwardRef(Button)>
-      <ForwardRef(Button)
-        isDefault={true}
-        isLarge={true}
-        onClick={[Function]}
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          General evidence
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
       >
-        Save for later
-      </ForwardRef(Button)>
-    </CardFooter>
-  </Card>
-</Fragment>
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-0"
+          >
+            Product description
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            id="inspector-textarea-control-0"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-0"
+          >
+            Customer name
+          </label>
+          <input
+            class="components-text-control__input"
+            id="inspector-text-control-0"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_signature"
+          >
+            Customer signature
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                id="form-file-upload-customer_signature"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="woocommerce-card"
+  >
+    <div
+      class="woocommerce-card__body"
+    >
+      <p>
+        When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
+      </p>
+      <p>
+        <strong>
+          Evidence submission is final.
+        </strong>
+         
+        You can also save this evidence for later instead of submitting it immediately.
+         
+        <strong>
+          We will automatically submit any saved evidence at the due date.
+        </strong>
+      </p>
+      <div
+        class="woocommerce-card__footer"
+      >
+        <button
+          class="components-button is-button is-primary is-large"
+          type="button"
+        >
+          Submit evidence
+        </button>
+        <button
+          class="components-button is-button is-default is-large"
+          type="button"
+        >
+          Save for later
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 `;
 
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
-<Fragment>
-  <Card
-    key="general"
-    title="General evidence"
+<div>
+  <div
+    class="woocommerce-card"
   >
-    <WithInstanceId(TextareaControl)
-      disabled={true}
-      key="product_description"
-      label="Product description"
-      onChange={[Function]}
-      value=""
-    />
-    <WithInstanceId(TextControl)
-      disabled={true}
-      key="customer_name"
-      label="Customer name"
-      onChange={[Function]}
-      value=""
-    />
-    <FileUploadControl
-      accept=".pdf, image/png, image/jpeg"
-      disabled={true}
-      field={
-        Object {
-          "key": "customer_signature",
-          "label": "Customer signature",
-          "type": "file",
-        }
-      }
-      fileName=""
-      isDone={false}
-      key="customer_signature"
-    />
-  </Card>
-</Fragment>
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          General evidence
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-textarea-control-1"
+          >
+            Product description
+          </label>
+          <textarea
+            class="components-textarea-control__input"
+            disabled=""
+            id="inspector-textarea-control-1"
+            rows="4"
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="inspector-text-control-1"
+          >
+            Customer name
+          </label>
+          <input
+            class="components-text-control__input"
+            disabled=""
+            id="inspector-text-control-1"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <div
+        class="components-base-control"
+      >
+        <div
+          class="components-base-control__field"
+        >
+          <label
+            class="components-base-control__label"
+            for="form-file-upload-base-control-customer_signature"
+          >
+            Customer signature
+          </label>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button components-icon-button has-text is-button is-primary is-large"
+                disabled=""
+                id="form-file-upload-customer_signature"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            <span
+              class="upload-message"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 `;
 
 exports[`Dispute evidence page renders correctly 1`] = `
-<Page
-  className="wcpay-dispute-evidence"
-  isNarrow={true}
->
-  <Card
-    title={
-      <Loadable
-        value="Challenge dispute"
-      />
-    }
+<div>
+  <div
+    class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
-    <Info
-      dispute={
-        Object {
-          "amount": 1000,
-          "created": 1572590800,
-          "evidence": Object {
-            "customer_purchase_ip": "127.0.0.1",
-            "uncategorized_text": "",
-          },
-          "evidence_details": Object {
-            "due_by": 1573199200,
-          },
-          "id": "dp_asdfghjkl",
-          "reason": "fraudulent",
-          "status": "needs_response",
-        }
-      }
-    />
-  </Card>
-  <Card
-    title={
-      <Loadable
-        value="Product type"
-      />
-    }
-  >
-    <LoadableBlock
-      numLines={2}
+    <div
+      class="woocommerce-card"
     >
-      <WithInstanceId(SelectControl)
-        disabled={false}
-        options={
-          Array [
-            Object {
-              "disabled": true,
-              "label": "Select one…",
-              "value": "",
-            },
-            Object {
-              "label": "Physical product",
-              "value": "physical_product",
-            },
-            Object {
-              "label": "Digital product or service",
-              "value": "digital_product_or_service",
-            },
-            Object {
-              "label": "Offline service",
-              "value": "offline_service",
-            },
-            Object {
-              "label": "Multiple product types",
-              "value": "multiple",
-            },
-          ]
-        }
-      />
-    </LoadableBlock>
-  </Card>
-  <DisputeEvidenceForm
-    evidence={
-      Object {
-        "customer_purchase_ip": "127.0.0.1",
-        "uncategorized_text": "",
-      }
-    }
-    readOnly={false}
-    showPlaceholder={false}
-  />
-</Page>
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Challenge dispute
+          </h2>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          class="wcpay-dispute-info"
+        >
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Dispute date: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 1, 2019
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Disputed amount: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              $10.00 USD
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Respond by: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Nov 8, 2019 - 2:46AM
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Reason: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              Fraudulent
+            </span>
+          </div>
+          <div
+            class="wcpay-dispute-info-item"
+          >
+            <span
+              class="wcpay-dispute-info-key"
+            >
+              Transaction ID: 
+            </span>
+            <span
+              class="wcpay-dispute-info-value"
+            >
+              <a
+                data-link-type="wc-admin"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails"
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Product type
+          </h2>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          class="components-base-control"
+        >
+          <div
+            class="components-base-control__field"
+          >
+            <select
+              class="components-select-control__input"
+              id="inspector-select-control-0"
+            >
+              <option
+                disabled=""
+                value=""
+              >
+                Select one…
+              </option>
+              <option
+                value="physical_product"
+              >
+                Physical product
+              </option>
+              <option
+                value="digital_product_or_service"
+              >
+                Digital product or service
+              </option>
+              <option
+                value="offline_service"
+              >
+                Offline service
+              </option>
+              <option
+                value="multiple"
+              >
+                Multiple product types
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 `;

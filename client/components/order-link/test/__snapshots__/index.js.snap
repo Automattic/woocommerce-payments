@@ -1,16 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`OrderLink renders a dash if no order was provided 1`] = `
-<span>
-  –
-</span>
+<div>
+  <span>
+    –
+  </span>
+</div>
 `;
 
 exports[`OrderLink renders a link to a valid order 1`] = `
-<Link
-  href="https://automattic.com/"
-  type="external"
->
-  45891
-</Link>
+<div>
+  <a
+    data-link-type="external"
+    href="https://automattic.com/"
+  >
+    45891
+  </a>
+</div>
 `;

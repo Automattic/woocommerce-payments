@@ -1,73 +1,91 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DisputeStatusChip renders charge_refunded status 1`] = `
-<Chip
-  isCompact={true}
-  message="Charge refunded"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Charge refunded
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders default appearance if status is unrecognized 1`] = `
-<Chip
-  isCompact={true}
-  message="Mock status"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Mock status
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders lost status 1`] = `
-<Chip
-  isCompact={true}
-  message="Lost"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Lost
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders needs_response status 1`] = `
-<Chip
-  isCompact={true}
-  message="Needs response"
-  type="primary"
-/>
+<div>
+  <span
+    class="chip chip-primary is-compact"
+  >
+    Needs response
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders under_review status 1`] = `
-<Chip
-  isCompact={true}
-  message="Under review"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Under review
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders warning_closed status 1`] = `
-<Chip
-  isCompact={true}
-  message="Inquiry: Closed"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Inquiry: Closed
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
-<Chip
-  isCompact={true}
-  message="Inquiry: Needs response"
-  type="primary"
-/>
+<div>
+  <span
+    class="chip chip-primary is-compact"
+  >
+    Inquiry: Needs response
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders warning_under_review status 1`] = `
-<Chip
-  isCompact={true}
-  message="Inquiry: Under review"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Inquiry: Under review
+  </span>
+</div>
 `;
 
 exports[`DisputeStatusChip renders won status 1`] = `
-<Chip
-  isCompact={true}
-  message="Won"
-  type="light"
-/>
+<div>
+  <span
+    class="chip chip-light is-compact"
+  >
+    Won
+  </span>
+</div>
 `;
