@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 3 ]; then
-	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
-	exit 1
-fi
-
-DB_NAME=$1
-DB_USER=$2
-DB_PASS=$3
-DB_HOST=${4-localhost}
+DB_NAME=${1-wcpay_tests}
+DB_USER=${2-root}
+DB_PASS=${3-$MYSQL_ROOT_PASSWORD}
+DB_HOST=${4-$WORDPRESS_DB_HOST}
 WP_VERSION=${5-latest}
 SKIP_DB_CREATE=${6-false}
 
@@ -51,7 +46,7 @@ else
 	fi
 	WP_TESTS_TAG="tags/$LATEST_VERSION"
 fi
-set -ex
+set -e
 
 install_wp() {
 
@@ -145,6 +140,11 @@ install_db() {
 			EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
+
+	# drop database if exists
+	set +e
+	mysqladmin drop --force $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA &> /dev/null
+	set -e
 
 	# create database
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
