@@ -31,6 +31,7 @@ describe( 'Dispute details screen', () => {
 		const dispute = {
 			id: 'dp_asdfghjkl',
 			amount: 1000,
+			currency: 'usd',
 			created: 1572590800,
 			// eslint-disable-next-line camelcase
 			evidence_details: {
