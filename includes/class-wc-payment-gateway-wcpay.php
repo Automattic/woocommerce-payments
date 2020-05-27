@@ -28,11 +28,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var string[]
 	 */
-	private static $settings_url_params = array(
+	private static $settings_url_params = [
 		'page'    => 'wc-settings',
 		'tab'     => 'checkout',
 		'section' => self::GATEWAY_ID,
-	);
+	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -78,50 +78,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
 		$this->title              = __( 'Credit card', 'woocommerce-payments' );
 		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = array(
+		$this->supports           = [
 			'products',
 			'refunds',
-		);
+		];
 
 		// Define setting fields.
-		$this->form_fields = array(
-			'enabled'         => array(
+		$this->form_fields = [
+			'enabled'         => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
-			),
-			'account_details' => array(
+			],
+			'account_details' => [
 				'type' => 'account_actions',
-			),
-			'account_status'  => array(
+			],
+			'account_status'  => [
 				'type' => 'account_status',
-			),
-			'manual_capture'  => array(
+			],
+			'manual_capture'  => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
-			),
-			'test_mode'       => array(
+			],
+			'test_mode'       => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Simulate transactions using test card numbers.', 'woocommerce-payments' ),
 				'default'     => 'no',
 				'desc_tip'    => true,
-			),
-			'enable_logging'  => array(
+			],
+			'enable_logging'  => [
 				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
-			),
-		);
+			],
+		];
 
 		if ( $this->is_in_dev_mode() ) {
 			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
@@ -133,10 +133,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
-		add_action( 'woocommerce_order_action_capture_charge', array( $this, 'capture_charge' ) );
-		add_action( 'woocommerce_order_action_cancel_authorization', array( $this, 'cancel_authorization' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
+		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 	}
 
 	/**
@@ -168,7 +168,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -243,10 +243,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function payment_fields() {
 		try {
 			// Add JavaScript for the payment form.
-			$js_config = array(
+			$js_config = [
 				'publishableKey' => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
-			);
+			];
 
 			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
 			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
@@ -254,7 +254,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_register_script(
 				'stripe',
 				'https://js.stripe.com/v3/',
-				array(),
+				[],
 				'3.0',
 				true
 			);
@@ -262,7 +262,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_register_script(
 				'wcpay-checkout',
 				plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
-				array( 'stripe', 'wc-checkout' ),
+				[ 'stripe', 'wc-checkout' ],
 				WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
 				true
 			);
@@ -273,7 +273,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_enqueue_style(
 				'wcpay-checkout',
 				plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
-				array(),
+				[],
 				WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
 			);
 
@@ -416,20 +416,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_reduce_stock_levels( $order_id );
 			WC()->cart->empty_cart();
 
-			return array(
+			return [
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),
-			);
+			];
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			$order->update_status( 'failed' );
 
-			return array(
+			return [
 				'result'   => 'fail',
 				'redirect' => '',
-			);
+			];
 		}
 	}
 
@@ -440,14 +440,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - If no payment method is found.
 	 */
 	private function get_payment_method_from_request() {
-		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		if ( ! isset( $_POST['wcpay-payment-method'] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
 		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		// phpcs:enable WordPress.Security.NonceVerification.NoNonceVerification
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		return $payment_method;
 	}
@@ -613,10 +613,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		$new_actions = array(
+		$new_actions = [
 			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
 			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
-		);
+		];
 
 		return array_merge( $new_actions, $actions );
 	}
@@ -714,22 +714,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				? $item->get_variation_id()
 				: $item->get_product_id();
 
-			return (object) array(
+			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
 				'product_description' => $description, // Up to 26 characters long describing the product.
 				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
 				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
 				'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
 				'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
-			);
+			];
 		};
 		$items_to_send = array_map( $process_item, $order_items );
 
-		$level3_data = array(
+		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'shipping_amount'    => WC_Payments_Utils::prepare_amount( (float) $order->get_shipping_total() + (float) $order->get_shipping_tax(), $currency ), // The shipping cost, in cents, as a non-negative integer.
 			'line_items'         => $items_to_send,
-		);
+		];
 
 		// The customer’s U.S. shipping ZIP code.
 		$shipping_address_zip = $order->get_shipping_postcode();

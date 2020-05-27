@@ -54,7 +54,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
     "@testing-library/react": "^9.4.1",
     "@testing-library/jest-dom": "^4.2.3",
-    "@testing-library/user-event": "^10.0.0",
+    "@testing-library/user-event": "^10.1.0",
     "@woocommerce/components": "^3.2.0",
     "@woocommerce/currency": "^2.0.0",
     "@woocommerce/date": "^1.2.1",

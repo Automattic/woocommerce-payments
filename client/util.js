@@ -4,6 +4,8 @@
  */
 import { addQueryArgs } from '@wordpress/url';
 import { capitalize } from 'lodash';
+import moment from 'moment';
+import { dateI18n } from '@wordpress/date';
 
 /**
  * Returns true if WooCommerce Payments is in test mode, false otherwise.
@@ -43,3 +45,20 @@ export const getPaymentSettingsUrl = () => {
  * @return {string} Display string for rendering.
  */
 export const formatStringValue = ( value ) => capitalize( value ).replace( /_/g, ' ' );
+
+/**
+ * Basic formatting function to convert local date string to UTC.
+ *
+ * We want the selected date to be included in upper bound selections, so we need to make its time 11:59:59 PM.
+ *
+ * @param {string} date       date string to be formatted.
+ * @param {bool}   upperBound flag to include the selected day for upper bound dates.
+ *
+ * @return {string} Formatted date string to use in server query.
+ */
+export const formatDateValue = ( date, upperBound = false ) => {
+	const adjustedDate = upperBound
+		? moment( date ).endOf( 'day' ).utc()
+		: moment( date ).startOf( 'day' ).utc();
+	return date && dateI18n( 'Y-m-d H:i:s', adjustedDate );
+};

@@ -34,10 +34,10 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		// Set the request as if the user was in the Payments onboarding page so the "wp_redirect(); exit();" code doesn't run.
-		$_GET = array(
+		$_GET = [
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
-		);
+		];
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -88,14 +88,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_check_stripe_account_status_returns_true() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_test_',
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -105,14 +105,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_check_stripe_account_status_caches_the_account() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_test_',
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -140,13 +140,13 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 						);
 					}
 
-					return array(
+					return [
 						'account_id'               => 'acc_test',
 						'live_publishable_key'     => 'pk_test_',
 						'test_publishable_key'     => 'pk_live_',
 						'has_pending_requirements' => true,
 						'current_deadline'         => 12345,
-					);
+					];
 				}
 			);
 
@@ -165,14 +165,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_test_',
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -200,14 +200,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_test_',
 					'test_publishable_key'     => 'pk_live_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -233,14 +233,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_get_publishable_key_returns_for_live() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_live_',
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -250,14 +250,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_get_publishable_key_returns_for_test() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_live_',
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -277,14 +277,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_get_stripe_account_id() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
-				array(
+				[
 					'account_id'               => 'acc_test',
 					'live_publishable_key'     => 'pk_live_',
 					'test_publishable_key'     => 'pk_test_',
 					'has_pending_requirements' => true,
 					'current_deadline'         => 12345,
 					'is_live'                  => true,
-				)
+				]
 			)
 		);
 
@@ -308,14 +308,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// cache a dev account.
 		set_transient(
 			WC_Payments_Account::ACCOUNT_TRANSIENT,
-			array(
+			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
 				'test_publishable_key'     => 'pk_live_',
 				'has_pending_requirements' => true,
 				'current_deadline'         => 12345,
 				'is_live'                  => false,
-			)
+			]
 		);
 
 		// cached value should be used and the api should never be called.
@@ -333,14 +333,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// cache a dev account.
 		set_transient(
 			WC_Payments_Account::ACCOUNT_TRANSIENT,
-			array(
+			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
 				'test_publishable_key'     => 'pk_live_',
 				'has_pending_requirements' => true,
 				'current_deadline'         => 12345,
 				'is_live'                  => false,
-			)
+			]
 		);
 
 		// cached value should be ignored and the api should return not-connected.
@@ -360,14 +360,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// cache a live account.
 		set_transient(
 			WC_Payments_Account::ACCOUNT_TRANSIENT,
-			array(
+			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
 				'test_publishable_key'     => 'pk_live_',
 				'has_pending_requirements' => true,
 				'current_deadline'         => 12345,
 				'is_live'                  => true,
-			)
+			]
 		);
 
 		// cached live account should be used and the api shouldn't be called.

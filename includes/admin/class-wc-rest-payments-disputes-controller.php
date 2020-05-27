@@ -26,49 +26,49 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_disputes' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_disputes' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_dispute' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'get_dispute' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
-			array(
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'update_dispute' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'update_dispute' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/payments/file',
-			array(
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'upload_evidence' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'upload_evidence' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
-			array(
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'close_dispute' ),
-				'permission_callback' => array( $this, 'check_permission' ),
-			)
+				'callback'            => [ $this, 'close_dispute' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
 		);
 	}
 
