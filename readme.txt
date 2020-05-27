@@ -98,6 +98,13 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.0.1 - 2020-05-29 =
+* Add - Deposit delay notice to deposit schedule
+* Add - Transaction date and type filters to transactions list
+* Add - WooCommerce and Jetpack install instructions
+* Update - Redirect fo the "Connect" page on plugin activation or when trying to navigate to the settings screen
+* Fix - Avoid localizing deposit date or displaying time-of-day precision
+
 = 1.0.0 - 2020-05-19 =
 * Add - Level 3 data to payment requests
 * Update - Expose public method for checking connection status
