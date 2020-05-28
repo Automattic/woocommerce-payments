@@ -17,7 +17,7 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 
 ## Setup
 
-If you're using the docker environment see setup instructions here:
+If you're using the Docker environment see setup instructions here:
 https://github.com/Automattic/woocommerce-payments/blob/master/docker/README.md
 
 Install The following plugins
