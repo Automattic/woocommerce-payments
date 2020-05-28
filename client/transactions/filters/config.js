@@ -6,7 +6,7 @@ import { __, _x } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import transactionTypes from './types';
+import transactionTypes from 'transactions/types';
 
 export const filters = 	[
 	{
