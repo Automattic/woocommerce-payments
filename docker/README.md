@@ -13,7 +13,7 @@ docker-compose exec -u www-data wordpress wp plugin install woocommerce jetpack 
 Install dev tools plugin:
 https://github.com/automattic/woocommerce-payments-dev-tools
 
-If you will be using our local docker server environment as well, be sure to  Enable API request redirection in the dev mode settings
+If you will be using our local Docker server environment as well, be sure check "Enable API request redirection" in the dev mode settings
 
 ### Connect Jetpack by using Ngrok
 You don't need a paid plan for this.
