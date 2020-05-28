@@ -17,6 +17,8 @@ export const transactionTypes = {
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 };
 
-export const transactionTypesOptions = Object.entries( transactionTypes ).map(
-	( [ type, label ] ) => ( { label: label, value: type } )
-);
+export const transactionTypesOptions = Object.entries( transactionTypes )
+	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.
+	// TODO: Remove line below when implementing APMs to support filtering by them.
+	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
+	.map( ( [ type, label ] ) => ( { label: label, value: type } ) );
