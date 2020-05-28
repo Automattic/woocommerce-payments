@@ -44,8 +44,8 @@ Activate Jetpack and setup WCPay.
 Turn off Ngrok by running:
 
 ```
-docker-compose exec -u www-data wordpress wp option update home http://localhost
-docker-compose exec -u www-data wordpress wp option update siteurl http://localhost
+docker-compose exec -u www-data wordpress wp option update home http://localhost:8082
+docker-compose exec -u www-data wordpress wp option update siteurl http://localhost:8082
 ```
 
 After this succeeds you can access the local site at
