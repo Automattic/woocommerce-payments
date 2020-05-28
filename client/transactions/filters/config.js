@@ -6,7 +6,13 @@ import { __, _x } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { transactionTypesOptions } from 'transactions/types';
+import { displayType } from 'transactions/strings';
+
+const transactionTypesOptions = Object.entries( displayType )
+	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.
+	// TODO: Remove line below when implementing APMs to support filtering by them.
+	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
+	.map( ( [ type, label ] ) => ( { label: label, value: type } ) );
 
 export const filters = 	[
 	{
