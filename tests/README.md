@@ -2,7 +2,12 @@
 
 This guide follows the [WooCommerce guide to unit tests](https://github.com/woocommerce/woocommerce/tree/master/tests).
 
-## Initial Setup
+## Setup for running tests in the docker containers
+
+1. From the plugin directory, run `npm run up` or `docker-compose up -d`
+2. Once the containers are up, run the tests from the plugin root directory using `bin/run-tests.sh`
+
+## Initial Setup for running tests locally
 
 1. From the plugin directory, run `composer install` if you have not already:
 
