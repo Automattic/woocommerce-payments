@@ -74,6 +74,11 @@ describe( 'Transactions filters', () => {
 			ruleSelector = screen.getByRole( 'combobox', { name: /transaction type filter/i } );
 		} );
 
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', { name: /transaction type$/i } );
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
 		test( 'should filter by is', () => {
 			user.selectOptions( ruleSelector, 'is' );
 

@@ -18,7 +18,7 @@ import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
-import { displayType } from './strings';
+import { displayType } from 'transactions/strings';
 import { formatStringValue } from '../../util';
 import Deposit from './deposit';
 import './style.scss';
