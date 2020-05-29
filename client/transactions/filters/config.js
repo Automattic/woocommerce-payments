@@ -12,7 +12,7 @@ const transactionTypesOptions = Object.entries( displayType )
 	// Currently, we do not support APMs from the shopper's experience, so we can hide those filters.
 	// TODO: Remove line below when implementing APMs to support filtering by them.
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
-	.map( ( [ type, label ] ) => ( { label: label, value: type } ) );
+	.map( ( [ type, label ] ) => ( { label, value: type } ) );
 
 export const filters = 	[
 	{
