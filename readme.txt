@@ -98,11 +98,11 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.0.1 - 2020-05-29 =
-* Add - Deposit delay notice to deposit schedule
+= 1.0.1 - 2020-06-01 =
 * Add - Support 3D Secure verification
 * Add - Transaction date and type filters to transactions list
 * Update - Redirect to the "Connect" page on plugin activation or when trying to navigate to the settings screen
+* Fix - Add deposit delay notice to deposit schedule
 * Fix - Avoid localizing deposit date or displaying time-of-day precision
 * Fix - Display dispute currency code in dispute info
 
