@@ -99,7 +99,7 @@ class WC_Payments_API_Client {
 	 */
 	public function create_charge( $amount, $source_id ) {
 
-		$request           = array();
+		$request           = [];
 		$request['amount'] = $amount;
 		$request['source'] = $source_id;
 

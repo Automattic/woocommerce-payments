@@ -347,11 +347,11 @@ class WC_Payments_Account {
 		}
 
 		$redirect = add_query_arg(
-			array(
+			[
 				'wcpay-connect'                 => $wcpay_connect_from,
 				'wcpay-connect-jetpack-success' => '1',
 				'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
-			),
+			],
 			$this->get_oauth_return_url( $wcpay_connect_from )
 		);
 		$this->payments_api_client->start_server_connection( $redirect );
