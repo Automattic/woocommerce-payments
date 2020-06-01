@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,14 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 4. Manage Disputes
 
 == Changelog ==
+
+= 1.0.1 - 2020-06-01 =
+* Add - Support 3D Secure verification
+* Add - Transaction date and type filters to transactions list
+* Update - Redirect to the "Connect" page on plugin activation or when trying to navigate to the settings screen
+* Fix - Add deposit delay notice to deposit schedule
+* Fix - Avoid localizing deposit date or displaying time-of-day precision
+* Fix - Display dispute currency code in dispute info
 
 = 1.0.0 - 2020-05-19 =
 * Add - Level 3 data to payment requests
