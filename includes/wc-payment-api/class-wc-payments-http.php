@@ -33,7 +33,7 @@ class WC_Payments_Http {
 		if ( $is_site_specific ) {
 			$url         = explode( '?', $args['url'], 2 );
 			$url[0]      = sprintf( $url[0], $args['blog_id'] );
-			$args['url'] = sprintf( '%s?%s', $url[0], $url[1] );
+			$args['url'] = implode( '?', $url );
 		}
 
 		// Make sure we're not sendign requests if Jetpack is not connected.
