@@ -4,7 +4,7 @@ exports[`mapTimelineEvents formats authorization_expired events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585691920,
+    "date": 2020-03-31T21:58:40.000Z,
     "headline": "Authorization for $86.00 expired",
     "icon": <t
       className="is-error"
@@ -14,7 +14,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585691920,
+    "date": 2020-03-31T21:58:40.000Z,
     "headline": "Payment status changed to Authorization Expired",
     "hideTimestamp": true,
     "icon": <t
@@ -30,7 +30,7 @@ exports[`mapTimelineEvents formats authorization_voided events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585652279,
+    "date": 2020-03-31T10:57:59.000Z,
     "headline": "Authorization for $59.00 was voided",
     "icon": <t
       className="is-warning"
@@ -40,7 +40,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585652279,
+    "date": 2020-03-31T10:57:59.000Z,
     "headline": "Payment status changed to Authorization Voided",
     "hideTimestamp": true,
     "icon": <t
@@ -56,7 +56,7 @@ exports[`mapTimelineEvents formats authorized events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585589596,
+    "date": 2020-03-30T17:33:16.000Z,
     "headline": "A payment of $79.00 was successfully authorized",
     "icon": <t
       className="is-warning"
@@ -66,7 +66,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585589596,
+    "date": 2020-03-30T17:33:16.000Z,
     "headline": "Payment status changed to Authorized",
     "hideTimestamp": true,
     "icon": <t
@@ -85,7 +85,7 @@ Array [
       "Fee: $3.50",
       "Net deposit: $59.50",
     ],
-    "datetime": 1585751874,
+    "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 was successfully charged",
     "icon": <t
       className="is-success"
@@ -95,7 +95,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585751874,
+    "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
       $59.50 was added to your 
       <a
@@ -113,7 +113,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585751874,
+    "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid",
     "hideTimestamp": true,
     "icon": <t
@@ -129,7 +129,7 @@ exports[`mapTimelineEvents formats card_declined events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585712113,
+    "date": 2020-04-01T03:35:13.000Z,
     "headline": "A payment of $77.00 failed",
     "icon": <t
       className="is-error"
@@ -139,7 +139,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585712113,
+    "date": 2020-04-01T03:35:13.000Z,
     "headline": "Payment status changed to Failed",
     "hideTimestamp": true,
     "icon": <t
@@ -155,7 +155,7 @@ exports[`mapTimelineEvents formats dispute_in_review events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585859207,
+    "date": 2020-04-02T20:26:47.000Z,
     "headline": "Challenge evidence submitted",
     "icon": <t
       className="is-success"
@@ -165,7 +165,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585859207,
+    "date": 2020-04-02T20:26:47.000Z,
     "headline": "Payment status changed to Disputed: In Review",
     "hideTimestamp": true,
     "icon": <t
@@ -181,7 +181,7 @@ exports[`mapTimelineEvents formats dispute_lost events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1586055370,
+    "date": 2020-04-05T02:56:10.000Z,
     "headline": "Dispute lost. The bank ruled favor of your customer",
     "icon": <t
       className="is-error"
@@ -191,7 +191,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1586055370,
+    "date": 2020-04-05T02:56:10.000Z,
     "headline": "Payment status changed to Disputed: Lost",
     "hideTimestamp": true,
     "icon": <t
@@ -213,7 +213,7 @@ Array [
         View dispute
       </a>,
     ],
-    "datetime": 1585793174,
+    "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Fraudulent",
     "icon": <t
       className="is-error"
@@ -226,7 +226,7 @@ Array [
       "Disputed amount: $95.00",
       "Fee: $15.00",
     ],
-    "datetime": 1585793174,
+    "date": 2020-04-02T02:06:14.000Z,
     "headline": "$110.00 will be deducted from a future deposit",
     "hideTimestamp": true,
     "icon": <t
@@ -237,7 +237,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585793174,
+    "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs Response",
     "hideTimestamp": true,
     "icon": <t
@@ -253,7 +253,7 @@ exports[`mapTimelineEvents formats dispute_won events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1586017250,
+    "date": 2020-04-04T16:20:50.000Z,
     "headline": "Dispute won! The bank ruled in your favor",
     "icon": <t
       className="is-success"
@@ -266,7 +266,7 @@ Array [
       "Disputed amount: $100.00",
       "Fee: $15.00",
     ],
-    "datetime": 1586017250,
+    "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
       $115.00 was added to your 
       <a
@@ -284,7 +284,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1586017250,
+    "date": 2020-04-04T16:20:50.000Z,
     "headline": "Payment status changed to Disputed: Won",
     "hideTimestamp": true,
     "icon": <t
@@ -300,7 +300,7 @@ exports[`mapTimelineEvents formats full_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1586008266,
+    "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 was successfully refunded",
     "icon": <t
       className="is-success"
@@ -310,7 +310,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1586008266,
+    "date": 2020-04-04T13:51:06.000Z,
     "headline": "$100.00 will be deducted from a future deposit",
     "hideTimestamp": true,
     "icon": <t
@@ -321,7 +321,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1586008266,
+    "date": 2020-04-04T13:51:06.000Z,
     "headline": "Payment status changed to Refunded",
     "hideTimestamp": true,
     "icon": <t
@@ -337,7 +337,7 @@ exports[`mapTimelineEvents formats partial_refund events 1`] = `
 Array [
   Object {
     "body": Array [],
-    "datetime": 1585940281,
+    "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of $50.00 was successfully refunded",
     "icon": <t
       className="is-success"
@@ -347,7 +347,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585940281,
+    "date": 2020-04-03T18:58:01.000Z,
     "headline": "$50.00 will be deducted from a future deposit",
     "hideTimestamp": true,
     "icon": <t
@@ -358,7 +358,7 @@ Array [
   },
   Object {
     "body": Array [],
-    "datetime": 1585940281,
+    "date": 2020-04-03T18:58:01.000Z,
     "headline": "Payment status changed to Partial Refund",
     "hideTimestamp": true,
     "icon": <t

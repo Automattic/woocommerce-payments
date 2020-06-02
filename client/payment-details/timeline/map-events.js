@@ -54,7 +54,7 @@ const getIcon = ( icon, className = '' ) => <Gridicon icon={ icon } className={ 
  */
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
-		datetime: event.datetime,
+		date: new Date( event.datetime * 1000 ),
 		icon: getIcon( 'sync' ),
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
@@ -114,7 +114,7 @@ const getDepositTimelineItem = ( event, formattedAmount, isPositive, body = [] )
 	}
 
 	return {
-		datetime: event.datetime,
+		date: new Date( event.datetime * 1000 ),
 		icon: getIcon( isPositive ? 'plus' : 'minus' ),
 		headline,
 		body,
@@ -134,7 +134,7 @@ const getDepositTimelineItem = ( event, formattedAmount, isPositive, body = [] )
  * @return {Object} Formatted main item
  */
 const getMainTimelineItem = ( event, headline, icon, iconClass, body = [] ) => ( {
-	datetime: event.datetime,
+	date: new Date( event.datetime * 1000 ),
 	headline,
 	icon: getIcon( icon, iconClass ),
 	body,
