@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ $# -lt 3 ] && [ -z $WCPAY_DIR ]; then
+	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
+	exit 1
+fi
+
 DB_NAME=${1-wcpay_tests}
 DB_USER=${2-root}
 DB_PASS=${3-$MYSQL_ROOT_PASSWORD}
