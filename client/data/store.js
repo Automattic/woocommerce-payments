@@ -11,6 +11,7 @@ import { STORE_NAME } from './constants';
 import * as deposits from './deposits';
 import * as transactions from './transactions';
 import * as charges from './charges';
+import * as timeline from './timeline';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () => registerStore( STORE_NAME, {
@@ -18,22 +19,26 @@ export const initStore = () => registerStore( STORE_NAME, {
 		deposits: deposits.reducer,
 		transactions: transactions.reducer,
 		charges: charges.reducer,
+		timeline: timeline.reducer,
 	} ),
 	actions: {
 		...deposits.actions,
 		...transactions.actions,
 		...charges.actions,
+		...timeline.actions,
 	},
 	controls,
 	selectors: {
 		...deposits.selectors,
 		...transactions.selectors,
 		...charges.selectors,
+		...timeline.selectors,
 	},
 	resolvers: {
 		...deposits.resolvers,
 		...transactions.resolvers,
 		...charges.resolvers,
+		...timeline.resolvers,
 	},
 } );
 
