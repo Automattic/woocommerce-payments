@@ -293,6 +293,15 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get Stripe onboarding url
+	 *
+	 * @return string Stripe account onboarding url.
+	 */
+	public static function get_onboarding_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-onboarding' => '1' ] ), 'wcpay-onboarding' );
+	}
+
+	/**
 	 * Get Stripe connect url
 	 *
 	 * @return string Stripe account login url.
@@ -366,7 +375,7 @@ class WC_Payments_Account {
 		$url = $account_data['url'];
 		if ( false === $url ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
-			$url = add_query_arg( array( 'wcpay-connection-success' => '1' ), $settings_url );
+			$url = add_query_arg( [ 'wcpay-connection-success' => '1' ], $settings_url );
 		}
 
 		set_transient( 'wcpay_oauth_state', $account_data['state'], DAY_IN_SECONDS );
