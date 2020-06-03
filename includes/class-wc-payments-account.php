@@ -406,6 +406,15 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get Stripe onboarding url
+	 *
+	 * @return string Stripe account onboarding url.
+	 */
+	public static function get_onboarding_url() {
+		return wp_nonce_url( add_query_arg( [ 'wcpay-onboarding' => '1' ] ), 'wcpay-onboarding' );
+	}
+
+	/**
 	 * Get Stripe connect url
 	 *
 	 * @return string Stripe account login url.
