@@ -14,7 +14,9 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  */
 class Tracker {
 	/**
-	 * @var array $admin_events A key value array event_name => properties.
+	 * A key value array event_name => properties.
+	 *
+	 * @var array $admin_events
 	 */
 	protected static $admin_events = [];
 
