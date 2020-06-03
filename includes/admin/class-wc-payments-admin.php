@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Tracker;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -163,6 +165,7 @@ class WC_Payments_Admin {
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : null;
+		Tracker::track_admin( 'admin_page_viewed' );
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
