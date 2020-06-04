@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
+import { uniq } from 'lodash';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { TableCard, Search } from '@woocommerce/components';
+import { onQueryChange, getQuery, getSearchWords, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -239,13 +240,26 @@ export const TransactionsList = ( props ) => {
 		},
 	];
 
+	const searchWords = getSearchWords( getQuery() );
+	const searchedLabels = searchWords.map( ( v ) => ( {
+		key: v,
+		label: v,
+	} ) );
+
+	const onSearchChange = ( values ) => {
+		// A comma is used as a separator between search terms, so we want to escape any comma they contain.
+		const labels = values.map( ( v ) => v.label.replace( ',', '%2C' ) );
+		updateQueryString( {
+			search: labels.length ? uniq( labels ).join( ',' ) : undefined,
+		} );
+	};
+
 	return (
 		<TableCard
-			className="transactions-list"
-			title={
-				props.depositId
-					? __( 'Deposit transactions', 'woocommerce-payments' )
-					: __( 'Transactions', 'woocommerce-payments' )
+			className="transactions-list woocommerce-report-table has-search"
+			title={ props.depositId
+				? __( 'Deposit transactions', 'woocommerce-payments' )
+				: __( 'Transactions', 'woocommerce-payments' )
 			}
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
@@ -255,6 +269,20 @@ export const TransactionsList = ( props ) => {
 			summary={ isSummaryLoading ? null : summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
+			actions={ [
+				<Search
+					allowFreeTextSearch={ true }
+					inlineTags
+					key="search"
+					onChange={ onSearchChange }
+					placeholder={
+						__( 'Search by customer name or email', 'woocommerce-admin' )
+					}
+					selected={ searchedLabels }
+					showClearButton={ true }
+					type="customers"
+				/>,
+			] }
 		/>
 	);
 };
