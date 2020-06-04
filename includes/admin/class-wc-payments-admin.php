@@ -223,6 +223,14 @@ class WC_Payments_Admin {
 			]
 		);
 
+		wp_register_script(
+			'WCPAY_ADMIN_ORDER_ACTIONS',
+			plugins_url( 'assets/js/wcpay-order.js', WCPAY_PLUGIN_FILE ),
+			[ 'jquery-tiptip' ],
+			WC_Payments::get_file_version( 'assets/js/wcpay-order.js' ),
+			true
+		);
+
 		wp_register_style(
 			'WCPAY_ADMIN_SETTINGS',
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
@@ -248,6 +256,21 @@ class WC_Payments_Admin {
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
+		}
+
+		$screen = get_current_screen();
+		if ( 'shop_order' === $screen->id ) {
+			$order = wc_get_order();
+
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+				$order_actions_config = [
+					'disableManualRefunds' => ! $this->wcpay_gateway->has_refund_failed( $order ),
+					'manualRefundsTip'     => __( 'Refunds are available only through WooCommerce Payments.', 'woocommerce-payments' ),
+				];
+
+				wp_localize_script( 'WCPAY_ADMIN_ORDER_ACTIONS', 'wcpay_order_config', $order_actions_config );
+				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
+			}
 		}
 	}
 }

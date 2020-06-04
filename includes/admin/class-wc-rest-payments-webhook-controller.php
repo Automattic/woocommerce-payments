@@ -156,6 +156,8 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			$refund_id
 		);
 		$order->add_order_note( $note );
+		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
+		$order->save();
 	}
 
 	/**

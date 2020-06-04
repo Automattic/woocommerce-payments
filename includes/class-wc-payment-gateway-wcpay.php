@@ -171,7 +171,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -478,8 +478,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
-		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
+		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 		return $payment_method;
 	}
@@ -491,7 +490,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function can_refund_order( $order ) {
-		return $order && $order->get_meta( '_charge_id', true );
+		return $order
+			&& $order->get_meta( '_charge_id', true )
+			&& 'failed' !== $order->get_meta( '_wcpay_refund_status', true );
 	}
 
 	/**
@@ -529,6 +530,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			Logger::log( $note );
 			$order->add_order_note( $note );
+			$order->update_meta_data( '_wcpay_refund_status', 'failed' );
 
 			return new WP_Error( $e->getMessage() );
 		}
@@ -548,8 +550,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 		$order->add_order_note( $note );
+		$order->update_meta_data( '_wcpay_refund_status', 'successful' );
+		$order->save();
 
 		return true;
+	}
+
+	/**
+	 * Checks whether a refund through the gateway has already failed.
+	 *
+	 * @param WC_Order $order The order to check.
+	 * @return boolean
+	 */
+	public function has_refund_failed( $order ) {
+		return 'failed' === $order->get_meta( '_wcpay_refund_status', true );
 	}
 
 	/**
