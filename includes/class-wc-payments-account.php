@@ -260,21 +260,23 @@ class WC_Payments_Account {
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
-			if ( ! $this->payments_api_client->is_server_connected() && isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$this->redirect_to_onboarding_page(
-					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
-				);
-				return;
-			}
-
-			try {
-				$this->maybe_init_jetpack_connection( $wcpay_connect_param );
-			} catch ( Exception $e ) {
-				$this->redirect_to_onboarding_page(
-				/* translators: error message. */
-					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
-				);
-				return;
+			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
+				if ( ! $this->payments_api_client->is_server_connected() ) {
+					$this->redirect_to_onboarding_page(
+						__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
+					);
+					return;
+				}
+			} else {
+				try {
+					$this->init_jetpack_connection( $wcpay_connect_param );
+				} catch ( Exception $e ) {
+					$this->redirect_to_onboarding_page(
+					/* translators: error message. */
+						sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
+					);
+					return;
+				}
 			}
 
 			try {
@@ -335,17 +337,12 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Starts the Jetpack connection flow if it's not already fully connected.
+	 * Starts the Jetpack connection flow, even if already fully connected.
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 * @throws WC_Payments_API_Exception If there was an error when registering the site on WP.com.
 	 */
-	private function maybe_init_jetpack_connection( $wcpay_connect_from ) {
-		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected();
-		if ( $is_jetpack_fully_connected ) {
-			return;
-		}
-
+	private function init_jetpack_connection( $wcpay_connect_from ) {
 		$redirect = add_query_arg(
 			[
 				'wcpay-connect'                 => $wcpay_connect_from,
