@@ -30,6 +30,7 @@ const formatQueryFilters = ( query ) => ( {
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
 	deposit_id: query.depositId,
+	search: query.search,
 } );
 /*eslint-enable camelcase*/
 
