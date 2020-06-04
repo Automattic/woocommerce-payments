@@ -102,6 +102,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'date_between' => $request->get_param( 'date_between' ),
 				'type_is'      => $request->get_param( 'type_is' ),
 				'type_is_not'  => $request->get_param( 'type_is_not' ),
+				'search'       => $request->get_param( 'search' ),
 			],
 			function ( $filter ) {
 				return null !== $filter;
