@@ -22,6 +22,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from '../../util';
 import Deposit from './deposit';
+import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
 const currency = new Currency();
@@ -280,7 +281,8 @@ export const TransactionsList = ( props ) => {
 					}
 					selected={ searchedLabels }
 					showClearButton={ true }
-					type="customers"
+					type="custom"
+					autocompleter={ autocompleter }
 				/>,
 			] }
 		/>
