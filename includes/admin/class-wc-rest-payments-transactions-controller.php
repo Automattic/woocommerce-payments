@@ -43,6 +43,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/search',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_transactions_search' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -86,6 +95,16 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$deposit_id = $request->get_param( 'deposit_id' );
 		$filters    = $this->get_transactions_filters( $request );
 		return $this->forward_request( 'get_transactions_summary', [ $filters, $deposit_id ] );
+	}
+
+	/**
+	 * Retrieve transactions search options to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_transactions_search( $request ) {
+		$query = $request->get_param( 'query' );
+		return $this->forward_request( 'get_transactions_search', [ $query ] );
 	}
 
 	/**

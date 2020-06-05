@@ -354,6 +354,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch transactions search options for provided query.
+	 *
+	 * @param string $query Query.
+	 * @return array|WP_Error Search results.
+	 */
+	public function get_transactions_search( $query ) {
+		return $this->request( [ 'query' => $query ], self::TRANSACTIONS_API . '/search', self::GET );
+	}
+
+	/**
 	 * Fetch a single charge with provided id.
 	 *
 	 * @param string $charge_id id of requested charge.
