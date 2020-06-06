@@ -180,6 +180,7 @@ class WC_Payments_Admin {
 			'wcpaySettings',
 			[
 				'connectUrl'         => WC_Payments_Account::get_connect_url(),
+				'onboardingUrl'      => WC_Payments_Account::get_onboarding_url(),
 				'testMode'           => $this->wcpay_gateway->is_in_test_mode(),
 				'onBoardingDisabled' => $on_boarding_disabled,
 			]

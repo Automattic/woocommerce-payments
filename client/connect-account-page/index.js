@@ -39,7 +39,7 @@ const ConnectAccountPage = () => {
 				</p>
 				<hr className="full-width" />
 				<p className="connect-account__action">
-					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Set up', 'woocommerce-payments' ) }</Button>
+					<Button isPrimary isLarge href={ wcpaySettings.onboardingUrl }>{ __( 'Set up', 'woocommerce-payments' ) }</Button>
 				</p>
 				</>
 				) : (
