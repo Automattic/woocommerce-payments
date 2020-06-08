@@ -360,8 +360,10 @@ class WC_Payments_API_Client {
 	 * @return array|WP_Error Search results.
 	 */
 	public function get_transactions_search( $query ) {
+		$order = wc_get_order( $query );
+
 		$search_results = $this->request( [ 'query' => $query ], self::TRANSACTIONS_API . '/search', self::GET );
-		return array_map(
+		$results        = array_map(
 			function ( $result ) {
 				return [
 					'label' => $result['customer_name'] . ' (' . $result['customer_email'] . ')',
@@ -369,6 +371,12 @@ class WC_Payments_API_Client {
 			},
 			$search_results
 		);
+
+		if ( $order ) {
+			array_unshift( $results, [ 'label' => __( 'Order #', 'woocommerce-payments' ) . $query ] );
+		}
+
+		return $results;
 	}
 
 	/**
