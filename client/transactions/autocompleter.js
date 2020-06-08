@@ -60,16 +60,14 @@ export default {
 		const query = name ? { query: name } : {};
 		return apiFetch( {
 			path: addQueryArgs( '/wc/v3/payments/transactions/search', query ),
-		} )
-		// Transform customer name and email to be of format 'Name (email)'.
-		.then( options => options.map( option => ( { customer: `${ option.customer_name } (${ option.customer_email })` } ) ) );
+		} );
 	},
 	isDebounced: true,
 	getOptionIdentifier( option ) {
-		return option.customer;
+		return option.label;
 	},
 	getOptionKeywords( option ) {
-		return [ option.customer ];
+		return [ option.label ];
 	},
 	getFreeTextOptions( query ) {
 		const label = (
@@ -93,18 +91,18 @@ export default {
 			key: 'name',
 			label,
 			// eslint-disable-next-line camelcase
-			value: { customer: query },
+			value: { label: query },
 		};
 
 		return [ nameOption ];
 	},
 	getOptionLabel( option, query ) {
-		const match = computeSuggestionMatch( option.customer, query );
+		const match = computeSuggestionMatch( option.label, query );
 		return (
 			<span
 				key="name"
 				className="woocommerce-search__result-name"
-				aria-label={ option.customer }
+				aria-label={ option.label }
 			>
 				{ match.suggestionBeforeMatch }
 				<strong className="components-form-token-field__suggestion-match">
@@ -118,8 +116,8 @@ export default {
 	// of replace/insertion, so we can just return the value.
 	getOptionCompletion( option ) {
 		return {
-			key: option.customer,
-			label: option.customer,
+			key: option.label,
+			label: option.label,
 		};
 	},
 };
