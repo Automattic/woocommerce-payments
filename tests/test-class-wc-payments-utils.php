@@ -155,4 +155,37 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		);
 		$this->assertEquals( 'Hello <strong>there, <em>John Doe</em> <img src="test"/></strong>', $result );
 	}
+
+	public function test_get_charge_id_from_search_term_returns_charge_id() {
+		$charge_id = 'ch_test_charge';
+
+		// Create an order with charge_id to test with.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'Order #' . $order->get_id() );
+		$this->assertEquals( $charge_id, $result );
+	}
+
+	public function test_get_charge_id_from_search_term_skips_invalid_terms() {
+		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'invalid term' );
+		$this->assertEquals( '', $result );
+	}
+
+	public function test_get_charge_id_from_search_term_handles_invalid_order() {
+		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'Order #897' );
+		$this->assertEquals( '', $result );
+	}
+
+	public function test_map_search_orders_to_charge_ids() {
+		$charge_id = 'ch_test_charge';
+		// Create an order with charge_id to test with.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( "First term,Order #{$order->get_id()},Another term" );
+		$this->assertEquals( "First term,$charge_id,Another term", $result );
+	}
 }

@@ -289,6 +289,11 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception Exception thrown on request failure.
 	 */
 	public function get_transactions_summary( $filters = [], $deposit_id = null ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
 		$query = array_merge(
 			$filters,
 			[
@@ -313,6 +318,11 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
 	public function list_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [], $deposit_id = null ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
 		$query = array_merge(
 			$filters,
 			[
