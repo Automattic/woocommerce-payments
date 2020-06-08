@@ -74,7 +74,7 @@ export default {
 			<span key="name" className="woocommerce-search__result-name">
 				{ interpolateComponents( {
 					mixedString: __(
-						'All transactions with transaction names or emails that include {{query /}}',
+						'All transactions with customer names or billing emails that include {{query /}}',
 						'woocommerce-admin'
 					),
 					components: {

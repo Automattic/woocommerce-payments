@@ -6,8 +6,8 @@
 
 /**
  * Sourced from https://github.com/woocommerce/woocommerce-admin/blob/ec36a00b77b5c0e313985a5a64c88aaec9eb154e/client/analytics/components/report-table/style.scss.
- * This styles are not loaded if not using the analytics components, so they need to be included here.
- * Once we switch to the Report components, we can remove them from here, as they would be loaded by wc-admin.
+ * Depending on the wc-admin version, these styles are not loaded if not using the analytics report components, so they need to be included here.
+ * If we switch to the Report components, we can remove them from here, as they would be loaded by wc-admin.
 */
 $gap: 16px;
 $gap-small: 12px;
