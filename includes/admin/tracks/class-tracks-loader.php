@@ -26,7 +26,7 @@ add_action(
 		 *
 		 * Setting up the wcpay prefix.
 		 */
-		class Core_Tracks_Wrapper extends WC_Tracks {
+		class Tracks_Loader extends WC_Tracks {
 
 			/**
 			 * Tracks event name prefix.
@@ -102,6 +102,20 @@ add_action(
 			Tracker::remove_admin_event( $event );
 		}
 
+	},
+	1
+);
+
+/**
+ * Send all events that were not handled in `admin_footer`.
+ */
+add_action(
+	'shutdown',
+	function() {
+		foreach ( Tracker::get_admin_events() as $event => $properties ) {
+			WC_Tracks_Client::record_event( $event );
+			Tracker::remove_admin_event( $event );
+		}
 	},
 	1
 );

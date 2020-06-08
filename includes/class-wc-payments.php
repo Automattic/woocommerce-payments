@@ -85,8 +85,8 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
-		include_once dirname( __FILE__ ) . '/tracks/class-tracker.php';
-		include_once dirname( __FILE__ ) . '/tracks/class-core-tracks-wrapper.php';
+		include_once dirname( __FILE__ ) . '/admin/tracks/class-tracker.php';
+		include_once dirname( __FILE__ ) . '/admin/tracks/class-tracks-loader.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-intent-authentication-exception.php';
 
