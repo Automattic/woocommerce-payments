@@ -8,6 +8,7 @@
 namespace WCPay;
 
 use WC_Tracks;
+use WC_Tracks_Client;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -83,39 +84,35 @@ add_action(
 				return $event_obj->record();
 			}
 		}
+
+		/**
+		 * Move all events from Tracker to Tracks loader
+		 * with priority 1 just before the admin_footer hook adds footer pixels
+		 */
+		add_action(
+			'admin_footer',
+			function() {
+				foreach ( Tracker::get_admin_events() as $event => $properties ) {
+					Tracks_Loader::record_event( $event, $properties );
+					Tracker::remove_admin_event( $event );
+				}
+			},
+			1
+		);
+
+		/**
+		 * Send all events that were not handled in `admin_footer`.
+		 */
+		add_action(
+			'shutdown',
+			function() {
+				foreach ( Tracker::get_admin_events() as $event => $properties ) {
+					Tracks_Loader::record_event( $event, $properties );
+					Tracker::remove_admin_event( $event );
+				}
+			},
+			1
+		);
 	}
 );
 
-/**
- * Move all events from Tracker to Core Tracker
- * with priority 1 just before the admin_footer hook adds footer pixels
- */
-add_action(
-	'admin_footer',
-	function() {
-		if ( ! class_exists( 'WCPay\Core_Tracks_Wrapper' ) ) {
-			return;
-		}
-
-		foreach ( Tracker::get_admin_events() as $event => $properties ) {
-			Core_Tracks_Wrapper::record_event( $event, $properties );
-			Tracker::remove_admin_event( $event );
-		}
-
-	},
-	1
-);
-
-/**
- * Send all events that were not handled in `admin_footer`.
- */
-add_action(
-	'shutdown',
-	function() {
-		foreach ( Tracker::get_admin_events() as $event => $properties ) {
-			WC_Tracks_Client::record_event( $event );
-			Tracker::remove_admin_event( $event );
-		}
-	},
-	1
-);
