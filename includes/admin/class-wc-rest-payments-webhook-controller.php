@@ -127,6 +127,12 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					$note = $this->read_rest_property( $body, 'data' );
 					$this->remote_note_service->put_note( $note );
 					break;
+				case 'charge.dispute.created':
+					$this->process_dispute_created( $body );
+					break;
+				case 'charge.dispute.closed':
+					$this->process_dispute_closed( $body );
+					break;
 			}
 
 			try {
@@ -227,6 +233,122 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		WC_Payments_Utils::mark_payment_expired( $order );
+	}
+
+	/**
+	 * Process a newly created dispute.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
+	 * @throws Exception                          Unable to resolve charge ID to order.
+	 */
+	private function process_dispute_created( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
+		// Fetch the details of the disputed order and move it to the "Disputed" status.
+		$dispute_id = $this->read_rest_property( $event_object, 'id' );
+		$charge_id  = $this->read_rest_property( $event_object, 'charge' );
+
+		// Look up the order related to this dispute (via the disputed charge).
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		// Store old status.
+		$current_status = $order->get_status();
+		$order->add_meta_data( '_pre_dispute_status', $current_status, true );
+
+		// Build link to dispute details.
+		// TODO: This uses the URL the WCPay server thinks we're at (so a Docker one for the dev environment).
+		$dispute_url = add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => rawurlencode( '/payments/disputes/details' ),
+				'id'   => rawurlencode( $dispute_id ),
+			],
+			admin_url( 'admin.php' )
+		);
+
+		$note = WC_Payments_Utils::esc_interpolated_html(
+			__(
+				'A dispute was created for this order. Response is needed. Please go to your <a>dashboard</a> to review this dispute.',
+				'woocommerce-payments'
+			),
+			[ 'a' => '<a title="Dispute Details" href="' . $dispute_url . '">' ]
+		);
+
+		$order->set_status( 'disputed', $note );
+		$order->save();
+	}
+
+	/**
+	 * Process the closure of a dispute.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
+	 * @throws Exception                          Unable to resolve charge ID to order.
+	 */
+	private function process_dispute_closed( $event_body ) {
+		// TODO: Break out some of this duplicate code.
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
+		// Fetch the details of the disputed order.
+		$charge_id         = $this->read_rest_property( $event_object, 'charge' );
+		$dispute_status    = $this->read_rest_property( $event_object, 'status' );
+		$dispute_meta_data = $this->read_rest_property( $event_object, 'metadata' );
+
+		// Look up the order related to this dispute (via the disputed charge).
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		switch ( $dispute_status ) {
+			case 'lost':
+				if ( isset( $dispute_meta_data['__closed_by_merchant'] ) && '1' === $dispute_meta_data['__closed_by_merchant'] ) {
+					// Dispute accepted by merchant.
+					// TODO: Only move to "Disputed - Accepted" if the current status is "Disputed"?
+					// TODO: Wording?
+					$order->update_status( 'disputed-accepted', __( 'The dispute was accepted.', 'woocommerce-payments' ) );
+				} else {
+					// Dispute was lost.
+					// TODO: Wording?
+					$order->update_status( 'disputed-lost', __( 'The dispute was lost.', 'woocommerce-payments' ) );
+				}
+				break;
+			case 'won':
+				// Dispute was won - get the pre-dispute status and reset the order status.
+				$old_status     = $order->get_meta( '_pre_dispute_status', true );
+				$current_status = $order->get_status();
+
+				// If the current status is "Disputed" and we have a pre-dispute status saved, then update the order
+				// status to whatever it was before the dispute.
+				if ( 'disputed' === $current_status && '' !== $old_status ) {
+					// TODO: Wording?
+					$order->update_status( $old_status, __( 'The dispute was won.', 'woocommerce-payments' ) );
+				} else {
+					// TODO: Wording?
+					$order->add_order_note( __( 'The dispute was won', 'woocommerce-payments' ) );
+				}
+				break;
+		}
 	}
 
 	/**
