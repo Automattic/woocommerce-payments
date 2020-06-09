@@ -101,7 +101,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			// Extract information about the webhook event.
 			$event_type = $this->read_rest_property( $body, 'type' );
 
-			Logger::debug( 'Webhook recieved: ' . $event_type );
+			Logger::debug( 'Webhook received: ' . $event_type );
 			Logger::debug(
 				'Webhook body: '
 				. var_export( WC_Payments_Utils::redact_array( $body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
