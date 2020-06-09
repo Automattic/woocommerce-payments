@@ -18,7 +18,7 @@ export const filters = 	[
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [],
+		staticParams: [ 'paged', 'per_page' ],
 		showFilters: () => true,
 		filters: [
 			{ label: __( 'All transactions', 'woocommerce-payments' ), value: 'all' },

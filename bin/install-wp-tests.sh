@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 3 ]; then
+if [ $# -lt 3 ] && [ -z $WCPAY_DIR ]; then
 	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
 	exit 1
 fi
 
-DB_NAME=$1
-DB_USER=$2
-DB_PASS=$3
-DB_HOST=${4-localhost}
+DB_NAME=${1-wcpay_tests}
+DB_USER=${2-root}
+DB_PASS=${3-$MYSQL_ROOT_PASSWORD}
+DB_HOST=${4-$WORDPRESS_DB_HOST}
 WP_VERSION=${5-latest}
 SKIP_DB_CREATE=${6-false}
 
@@ -51,7 +51,7 @@ else
 	fi
 	WP_TESTS_TAG="tags/$LATEST_VERSION"
 fi
-set -ex
+set -e
 
 install_wp() {
 
@@ -146,10 +146,49 @@ install_db() {
 		fi
 	fi
 
+	# drop database if exists
+	set +e
+	mysqladmin drop --force $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA &> /dev/null
+	set -e
+
 	# create database
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+}
+
+install_deps() {
+	WP_SITE_URL="http://local.wordpress.test"
+	WORKING_DIR="$PWD"
+
+	# copy WooCommerce files to plugins folder so databases can be created before the tests are run
+	if [[ ! -d "$WP_CORE_DIR/wp-content/plugins/woocommerce" ]]; then
+		if [[ ! -d "$WCPAY_DIR/vendor/woocommerce/woocommerce" ]]; then
+			echo "WooCommerce could not be found, installing composer dependencies..."
+			# install composer dependencies
+			cd $WCPAY_DIR
+			download https://getcomposer.org/composer-stable.phar  "$TMPDIR/composer.phar"
+			php "$TMPDIR/composer.phar" install
+		fi
+		cp -r "$WCPAY_DIR/vendor/woocommerce/woocommerce" "$WP_CORE_DIR/wp-content/plugins"
+	fi
+
+	# Set up WordPress and activate WooCommerce using wp-cli
+	# This is needed to create test databases before tests are run and avoid warnings when running them for the first time
+	download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
+
+	cd "$WP_CORE_DIR"
+	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
+		php "$TMPDIR/wp-cli.phar" core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_ --path=$WP_CORE_DIR --quiet
+	fi
+	php "$TMPDIR/wp-cli.phar" core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --path=$WP_CORE_DIR --skip-email --quiet
+	php "$TMPDIR/wp-cli.phar" plugin activate woocommerce --path=$WP_CORE_DIR --quiet
+
+	# Back to original dir
+	cd "$WORKING_DIR"
 }
 
 install_wp
 install_test_suite
 install_db
+if [[ ! -z $WCPAY_DIR ]]; then
+	install_deps
+fi

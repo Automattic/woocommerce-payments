@@ -256,7 +256,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
 			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-			// loading different versions however.
+			// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
+			// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
+			// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
+			// https://stripe.com/docs/stripe-js/elements/migrating).
 			wp_register_script(
 				'stripe',
 				'https://js.stripe.com/v3/',
@@ -391,6 +394,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							wc_price( $amount ),
 							$intent_id
 						);
+
+						$order->update_meta_data( '_intent_id', $intent_id );
+						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+						$order->update_meta_data( '_intention_status', $status );
+						$order->save();
+
 						$order->add_order_note( $note );
 						$order->payment_complete( $intent_id );
 						break;
@@ -407,8 +416,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							wc_price( $amount ),
 							$intent_id
 						);
+
 						$order->update_status( 'on-hold', $note );
 						$order->set_transaction_id( $intent_id );
+
+						$order->update_meta_data( '_intent_id', $intent_id );
+						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+						$order->update_meta_data( '_intention_status', $status );
+						$order->save();
+
 						break;
 					case 'requires_action':
 						// Add a note in case the customer does not complete the payment (exits the page),
@@ -436,11 +452,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'redirect' => sprintf( '#wcpay-confirm-pi:%s:%s', $order_id, $intent->get_client_secret() ),
 						];
 				}
-
-				$order->update_meta_data( '_intent_id', $intent_id );
-				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-				$order->update_meta_data( '_intention_status', $status );
-				$order->save();
 			} else {
 				$order->payment_complete();
 			}

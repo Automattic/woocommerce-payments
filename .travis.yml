@@ -54,7 +54,7 @@ before_install:
 install:
   - npm ci
   - composer install
-  - bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION false
+  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION false
 
 script:
   - bash bin/phpunit.sh
