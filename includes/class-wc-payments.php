@@ -164,6 +164,78 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+
+		// Setup dispute order statuses.
+		add_filter( 'woocommerce_register_shop_order_post_statuses', [ __CLASS__, 'register_dispute_order_statuses' ] );
+		add_filter( 'wc_order_statuses', [ __CLASS__, 'add_dispute_order_statuses' ] );
+	}
+
+	/**
+	 * Register dispute order statuses
+	 *
+	 * @param array $order_statuses - Existing order statuses.
+	 *
+	 * @return array
+	 */
+	public static function register_dispute_order_statuses( $order_statuses ) {
+		$order_statuses['wc-disputed'] = [
+			'label'                     => _x( 'Disputed', 'Order status', 'woocommerce-payments' ),
+			'public'                    => false,
+			'exclude_from_search'       => false,
+			'show_in_admin_all_list'    => true,
+			'show_in_admin_status_list' => true,
+			/* translators: %s: number of orders */
+			'label_count'               => _n_noop(
+				'Disputed <span class="count">(%s)</span>',
+				'Disputed <span class="count">(%s)</span>',
+				'woocommerce-payments'
+			),
+		];
+
+		$order_statuses['wc-disputed-accepted'] = [
+			'label'                     => _x( 'Disputed - Accepted', 'Order status', 'woocommerce-payments' ),
+			'public'                    => false,
+			'exclude_from_search'       => false,
+			'show_in_admin_all_list'    => true,
+			'show_in_admin_status_list' => true,
+			/* translators: %s: number of orders */
+			'label_count'               => _n_noop(
+				'Disputed - Accepted <span class="count">(%s)</span>',
+				'Disputed - Accepted <span class="count">(%s)</span>',
+				'woocommerce-payments'
+			),
+		];
+
+		$order_statuses['wc-disputed-lost'] = [
+			'label'                     => _x( 'Disputed - Lost', 'Order status', 'woocommerce-payments' ),
+			'public'                    => false,
+			'exclude_from_search'       => false,
+			'show_in_admin_all_list'    => true,
+			'show_in_admin_status_list' => true,
+			/* translators: %s: number of orders */
+			'label_count'               => _n_noop(
+				'Disputed - Lost <span class="count">(%s)</span>',
+				'Disputed - Lost <span class="count">(%s)</span>',
+				'woocommerce-payments'
+			),
+		];
+
+		return $order_statuses;
+	}
+
+	/**
+	 * Add dispute statuses to the WooCommerce "all statuses" list.
+	 *
+	 * @param array $order_statuses - Existing order statuses.
+	 *
+	 * @return array
+	 */
+	public static function add_dispute_order_statuses( $order_statuses ) {
+		$order_statuses['wc-disputed']          = _x( 'Disputed', 'Order status', 'woocommerce-payments' );
+		$order_statuses['wc-disputed-accepted'] = _x( 'Disputed - Accepted', 'Order status', 'woocommerce-payments' );
+		$order_statuses['wc-disputed-lost']     = _x( 'Disputed - Lost', 'Order status', 'woocommerce-payments' );
+
+		return $order_statuses;
 	}
 
 	/**
