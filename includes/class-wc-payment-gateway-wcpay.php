@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Tracker;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -680,6 +681,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order->update_meta_data( '_intention_status', $status );
 		$order->save();
+
+		Tracker::track_admin( 'merchant_captured_auth' );
 
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
