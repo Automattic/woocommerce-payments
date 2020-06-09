@@ -85,8 +85,6 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
-		include_once dirname( __FILE__ ) . '/admin/tracks/class-tracker.php';
-		include_once dirname( __FILE__ ) . '/admin/tracks/class-tracks-loader.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-intent-authentication-exception.php';
 
@@ -103,6 +101,9 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
+
+			include_once dirname( __FILE__ ) . '/admin/tracks/class-tracker.php';
+			include_once dirname( __FILE__ ) . '/admin/tracks/class-tracks-loader.php';
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
