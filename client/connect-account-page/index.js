@@ -4,7 +4,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
@@ -15,8 +16,15 @@ import Page from 'components/page';
 import HeroImage from './hero-image';
 
 const ConnectAccountPage = () => {
+	const [ isSubmitted, setSubmitted ] = useState( false );
+
 	return (
 		<Page isNarrow className="connect-account">
+			{ wcpaySettings.errorMessage &&
+				<Notice className="wcpay-connect-error-notice" status="error" isDismissible={ false }>
+					{ wcpaySettings.errorMessage }
+				</Notice>
+			}
 			<Card className="connect-account__card">
 				<HeroImage />
 				<h2> { __( 'WooCommerce Payments', 'woocommerce-payments' ) } </h2>
@@ -39,7 +47,15 @@ const ConnectAccountPage = () => {
 				</p>
 				<hr className="full-width" />
 				<p className="connect-account__action">
-					<Button isPrimary isLarge href={ wcpaySettings.connectUrl }>{ __( 'Set up', 'woocommerce-payments' ) }</Button>
+					<Button
+						isPrimary
+						isLarge
+						isBusy={ isSubmitted }
+						disabled={ isSubmitted }
+						onClick={ () => setSubmitted( true ) }
+						href={ wcpaySettings.connectUrl }>
+						{ __( 'Set up', 'woocommerce-payments' ) }
+					</Button>
 				</p>
 				</>
 				) : (
