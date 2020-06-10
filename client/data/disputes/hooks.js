@@ -22,6 +22,11 @@ export const useDispute = ( id ) => {
 	return { dispute, isLoading, doAccept };
 };
 
+export const useDisputeEvidence = () => {
+	const { updateDispute } = useDispatch( STORE_NAME );
+	return { updateDispute };
+};
+
 // eslint-disable-next-line camelcase
 export const useDisputes = ( { paged, per_page: perPage } ) => useSelect( select => {
 	const { getDisputes, isResolving } = select( STORE_NAME );

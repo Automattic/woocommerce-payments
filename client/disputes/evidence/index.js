@@ -17,6 +17,7 @@ import { merge, some, flatten, isMatchWith } from 'lodash';
  * Internal dependencies.
  */
 import '../style.scss';
+import { useDisputeEvidence } from 'data';
 import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
@@ -308,6 +309,8 @@ export default ( { query } ) => {
 		createErrorNotice( message );
 	};
 
+	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
+
 	const doSave = async submit => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
@@ -332,6 +335,7 @@ export default ( { query } ) => {
 			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
 			setEvidence( {} );
+			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
 			handleSaveError( submit );
 		} finally {
