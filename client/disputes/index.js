@@ -39,9 +39,13 @@ const headers = [
 ];
 
 export const DisputesList = () => {
-	const { disputes, isLoading } = useDisputes( getQuery() );
+	const { disputes, isLoading, isLoadingByDispute } = useDisputes( getQuery() );
 
 	const rows = disputes.map( ( dispute ) => {
+		if ( isLoadingByDispute[ dispute.id ] ) {
+			return headers.map( () => ( { display: <span className="is-placeholder" /> } ) );
+		}
+
 		const order = dispute.order ? {
 			value: dispute.order.number,
 			display: <OrderLink order={ dispute.order } />,

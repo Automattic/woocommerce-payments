@@ -39,5 +39,12 @@ export const useDisputes = ( { paged, per_page: perPage } ) => useSelect( select
 	const disputes = getDisputes( query );
 	const isLoading = isResolving( 'getDisputes', [ query ] );
 
-	return { disputes, isLoading };
+	const isLoadingByDispute = {};
+	if ( ! isLoading ) {
+		disputes.forEach( ( { id } ) => {
+			isLoadingByDispute[ id ] = isResolving( 'getDispute', [ id ] );
+		} );
+	}
+
+	return { disputes, isLoading, isLoadingByDispute };
 }, [ paged, perPage ] );

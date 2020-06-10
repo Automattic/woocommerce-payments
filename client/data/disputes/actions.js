@@ -33,6 +33,12 @@ export function* acceptDispute( id ) {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
 
+		// Redirect to Disputes list.
+		getHistory().push( addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/payments/disputes',
+		} ) );
+
 		const dispute = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ id }/close`,
 			method: 'post',
@@ -41,12 +47,6 @@ export function* acceptDispute( id ) {
 		yield updateDispute( dispute );
 		yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [ id ] );
 
-		// Redirect to Disputes list.
-		getHistory().push( addQueryArgs( 'admin.php', {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-		} ) );
-
 		const message = dispute.order
 			? sprintf( __( 'You have accepted the dispute for order #%s.', 'woocommerce-payments' ), dispute.order.number )
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
@@ -54,5 +54,12 @@ export function* acceptDispute( id ) {
 	} catch ( e ) {
 		const message = __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' );
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
+
+		// Redirect to back to Dispute Details.
+		getHistory().push( addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/payments/disputes/details',
+			id,
+		} ) );
 	}
 }
