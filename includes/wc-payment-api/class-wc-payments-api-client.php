@@ -408,7 +408,14 @@ class WC_Payments_API_Client {
 	 * @return array dispute object.
 	 */
 	public function close_dispute( $dispute_id ) {
-		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+
+		if ( is_wp_error( $dispute ) ) {
+			return $dispute;
+		}
+
+		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
+		return $this->add_order_info_to_object( $charge_id, $dispute );
 	}
 
 	/**

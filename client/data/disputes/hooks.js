@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useDispute = ( id ) => {
@@ -16,7 +16,10 @@ export const useDispute = ( id ) => {
 		};
 	}, [ id ] );
 
-	return { dispute, isLoading };
+	const { acceptDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptDispute( id );
+
+	return { dispute, isLoading, doAccept };
 };
 
 // eslint-disable-next-line camelcase
