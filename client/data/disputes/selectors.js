@@ -21,7 +21,7 @@ const getDisputesState = ( state ) => {
 	return state.disputes || {};
 };
 
-const getDispute = ( state, id ) => {
+export const getDispute = ( state, id ) => {
 	const disputeById = getDisputesState( state ).byId || {};
 	return disputeById[ id ];
 };

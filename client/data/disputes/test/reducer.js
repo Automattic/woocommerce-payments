@@ -21,6 +21,39 @@ describe( 'Disputes reducer tests', () => {
 		},
 	];
 
+	test( 'New individual disputes reduced correctly', () => {
+		const stateAfterOne = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_DISPUTE,
+				data: mockDisputes[ 0 ],
+			}
+		);
+
+		expect( stateAfterOne ).toStrictEqual( {
+			byId: {
+				dp_mock1: mockDisputes[ 0 ],
+			},
+			queries: {},
+		} );
+
+		const stateAfterTwo = reducer(
+			stateAfterOne,
+			{
+				type: types.SET_DISPUTE,
+				data: mockDisputes[ 1 ],
+			}
+		);
+
+		expect( stateAfterTwo ).toStrictEqual( {
+			byId: {
+				dp_mock1: mockDisputes[ 0 ],
+				dp_mock2: mockDisputes[ 1 ],
+			},
+			queries: {},
+		} );
+	} );
+
 	test( 'New disputes reduced correctly', () => {
 		const reduced = reducer(
 			undefined, // Default state.

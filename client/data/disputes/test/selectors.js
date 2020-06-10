@@ -5,12 +5,35 @@
  * Internal dependencies
  */
 import { getResourceId } from '../../util';
-import { getDisputes } from '../selectors';
+import { getDispute, getDisputes } from '../selectors';
 
 // Sections in initial state are empty.
 const emptyState = {
 	disputes: {},
 };
+
+describe( 'Dispute selector', () => {
+	const mockDispute = {
+		id: 'dp_mock1',
+		reason: 'product_unacceptable',
+	};
+
+	const filledState = {
+		disputes: {
+			byId: {
+				dp_mock1: mockDispute,
+			},
+		},
+	};
+
+	test( 'Returns undefined when dispute is not present', () => {
+		expect( getDispute( emptyState, 'dp_mock1' ) ).toStrictEqual( undefined );
+	} );
+
+	test( 'Returns dispute when it is present', () => {
+		expect( getDispute( filledState, 'dp_mock1' ) ).toStrictEqual( mockDispute );
+	} );
+} );
 
 describe( 'Disputes selectors', () => {
 	// Mock objects.

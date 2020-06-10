@@ -17,6 +17,11 @@ const receiveDisputes = ( state = defaultState, { type, query = {}, data = [] } 
 	const index = getResourceId( query );
 
 	switch ( type ) {
+		case TYPES.SET_DISPUTE:
+			return {
+				...state,
+				byId: { ...state.byId, [ data.id ]: data },
+			};
 		case TYPES.SET_DISPUTES:
 			return {
 				...state,
