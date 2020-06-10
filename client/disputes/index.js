@@ -3,17 +3,17 @@
 /**
  * External dependencies
  */
-import { useState, useEffect } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
+import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
+import { useDisputes } from 'data';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -38,11 +38,10 @@ const headers = [
 	{ key: 'dueBy', label: __( 'Respond by', 'woocommerce-payments' ), required: true },
 ];
 
-export const DisputesList = ( props ) => {
-	const { disputes, showPlaceholder } = props;
-	const disputesData = disputes.data || [];
+export const DisputesList = () => {
+	const { disputes, isLoading } = useDisputes( getQuery() );
 
-	const rows = disputesData.map( ( dispute ) => {
+	const rows = disputes.map( ( dispute ) => {
 		const order = dispute.order ? {
 			value: dispute.order.number,
 			display: <OrderLink order={ dispute.order } />,
@@ -86,37 +85,16 @@ export const DisputesList = ( props ) => {
 		<Page>
 			<TableCard
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
-				isLoading={ showPlaceholder }
+				isLoading={ isLoading }
 				rowsPerPage={ 10 }
 				totalRows={ 10 }
 				headers={ headers }
 				rows={ rows }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
 			/>
 		</Page>
 	);
 };
 
-// Temporary MVP data wrapper
-export default () => {
-	const [ disputes, setDisputes ] = useState( [] );
-	const [ loading, setLoading ] = useState( false );
-
-	const fetchDisputes = async () => {
-		setLoading( true );
-		try {
-			setDisputes( await apiFetch( { path: '/wc/v3/payments/disputes' } ) );
-		} finally {
-			setLoading( false );
-		}
-	};
-	useEffect( () => {
-		fetchDisputes();
-	}, [] );
-
-	return (
-		<DisputesList
-			disputes={ disputes }
-			showPlaceholder={ loading }
-		/>
-	);
-};
+export default DisputesList;
