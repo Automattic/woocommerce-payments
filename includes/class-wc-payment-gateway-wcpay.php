@@ -554,7 +554,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( $note );
 			$order->add_order_note( $note );
 
-			Tracker::track_admin( 'merchant_processed_refund_fail', [ 'reason' => $note ] );
+			Tracker::track_admin( 'edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( $e->getMessage() );
 		}
 
@@ -574,7 +574,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$order->add_order_note( $note );
-		Tracker::track_admin( 'merchant_processed_refund_success' );
+		Tracker::track_admin( 'edit_order_refund_success' );
 
 		return true;
 	}
