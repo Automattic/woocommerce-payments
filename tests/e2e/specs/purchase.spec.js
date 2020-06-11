@@ -12,14 +12,14 @@ import { fillCardDetails } from '../utils/payments';
 
 const TIMEOUT = 100000;
 
-describe( 'Successfull purchase', () => {
+describe( 'Successful purchase', () => {
 	beforeAll( async () => {
 		// Increase default value to avoid test failing due to timeouts.
 		page.setDefaultTimeout( 20000 );
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 	} );
 
-	it( 'successfull purchase', async () => {
+	it( 'successful purchase', async () => {
 		await CustomerFlow.goToShop();
 		await CustomerFlow.addToCartFromShopPage( 'Beanie' );
 		await CustomerFlow.goToCheckout();
