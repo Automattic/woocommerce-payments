@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e9d4e8a8fe700c23d3cebf0ebeda536",
+    "content-hash": "4539f448451acbd12abcd41f5c64ff86",
     "packages": [
         {
             "name": "automattic/jetpack-autoloader",
@@ -71,16 +71,16 @@
         },
         {
             "name": "automattic/jetpack-connection",
-            "version": "v1.13.0",
+            "version": "v1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-connection.git",
-                "reference": "ff39d64a7b4f6626431b11ccee331d321119a261"
+                "reference": "9039aaa4ddfac4ae87cbddd8cb8dae39b1ebd620"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/ff39d64a7b4f6626431b11ccee331d321119a261",
-                "reference": "ff39d64a7b4f6626431b11ccee331d321119a261",
+                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/9039aaa4ddfac4ae87cbddd8cb8dae39b1ebd620",
+                "reference": "9039aaa4ddfac4ae87cbddd8cb8dae39b1ebd620",
                 "shasum": ""
             },
             "require": {
@@ -107,7 +107,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
-            "time": "2020-05-26T13:37:36+00:00"
+            "time": "2020-06-01T09:03:16+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
@@ -2357,16 +2357,16 @@
         },
         {
             "name": "woocommerce/woocommerce",
-            "version": "4.2.0-RC.2",
+            "version": "4.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/woocommerce.git",
-                "reference": "038bfc8f707c592a96cb827a13758eb283b36c21"
+                "reference": "b2a0e738669ce9a9eb299180a02902a4322664b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/woocommerce/zipball/038bfc8f707c592a96cb827a13758eb283b36c21",
-                "reference": "038bfc8f707c592a96cb827a13758eb283b36c21",
+                "url": "https://api.github.com/repos/woocommerce/woocommerce/zipball/b2a0e738669ce9a9eb299180a02902a4322664b1",
+                "reference": "b2a0e738669ce9a9eb299180a02902a4322664b1",
                 "shasum": ""
             },
             "require": {
@@ -2425,7 +2425,7 @@
             ],
             "description": "An eCommerce toolkit that helps you sell anything. Beautifully.",
             "homepage": "https://woocommerce.com/",
-            "time": "2020-05-26T22:30:38+00:00"
+            "time": "2020-06-02T22:58:33+00:00"
         },
         {
             "name": "woocommerce/woocommerce-admin",
