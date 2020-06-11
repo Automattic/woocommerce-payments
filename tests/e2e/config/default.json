@@ -3,7 +3,7 @@
   "users": {
     "admin": {
       "username": "admin",
-      "password": "password"
+      "password": "admin"
     },
     "customer": {
       "username": "customer",
@@ -21,41 +21,41 @@
   "addresses": {
     "admin": {
       "store": {
-        "firstname": "John",
-        "lastname": "Doe",
+        "firstname": "I am",
+        "lastname": "Admin",
         "company": "Automattic",
         "country": "United States (US)",
-        "addressfirstline": "addr 1",
-        "addresssecondline": "addr 2",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "store",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94107"
+        "postcode": "94110"
       }
     },
     "customer": {
       "billing": {
-        "firstname": "John",
-        "lastname": "Doe",
+        "firstname": "I am",
+        "lastname": "Customer",
         "company": "Automattic",
         "country": "United States (US)",
-        "addressfirstline": "addr 1",
-        "addresssecondline": "addr 2",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "billing",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94107",
+        "postcode": "94110",
         "phone": "123456789",
-        "email": "john.doe@example.com"
+        "email": "e2e-wcpay-customer@woocommerce.com"
       },
       "shipping": {
-        "firstname": "John",
-        "lastname": "Doe",
+        "firstname": "I am",
+        "lastname": "Recipient",
         "company": "Automattic",
         "country": "United States (US)",
-        "addressfirstline": "addr 1",
-        "addresssecondline": "addr 2",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "shipping",
         "city": "San Francisco",
         "state": "CA",
-        "postcode": "94107"
+        "postcode": "94110"
       }
     }
   }
