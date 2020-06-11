@@ -21,7 +21,7 @@ describe( 'Successful purchase', () => {
 
 	it( 'successful purchase', async () => {
 		await CustomerFlow.goToShop();
-		await CustomerFlow.addToCartFromShopPage( 'Beanie' );
+		await CustomerFlow.addToCartFromShopPage( config.get( 'products.simple.name' ) );
 		await CustomerFlow.goToCheckout();
 		await uiUnblocked();
 		await CustomerFlow.fillBillingDetails(
