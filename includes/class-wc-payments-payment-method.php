@@ -23,6 +23,10 @@ class WC_Payments_Payment_Method extends AbstractPaymentMethodType {
 			'1.0.1',
 			true
 		);
+
+		$config = WC_Payments::get_gateway()->get_payment_fields_js_config();
+		wp_localize_script( 'wc-payment-method-wcpay', 'wcpay_config', $config );
+
 		return [ 'wc-payment-method-wcpay' ];
 	}
 

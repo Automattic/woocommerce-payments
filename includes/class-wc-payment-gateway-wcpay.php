@@ -239,6 +239,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Generates the configuration values, needed for payment fields.
+	 *
+	 * Isolated as a separate method in order to be avaiable both
+	 * during the classic checkout, as well as the checkout block.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		return [
+			'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'              => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
+			'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
+		];
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -246,14 +264,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function payment_fields() {
 		try {
 			// Add JavaScript for the payment form.
-			$js_config = [
-				'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-				'accountId'              => $this->account->get_stripe_account_id(),
-				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
-				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
-				'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
-			];
-
 			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
 			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
 			// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
@@ -276,7 +286,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				true
 			);
 
-			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $js_config );
+			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-checkout' );
 
 			wp_enqueue_style(
