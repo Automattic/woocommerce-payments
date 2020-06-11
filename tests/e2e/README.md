@@ -13,7 +13,7 @@ There are two modes for running tests:
 
 1. Headless mode: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is supposed to be used in CI environment in the future.
 
-2. Dev mode: `npm run test:e2e:dev`. Dev mode is interractive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeter` to run tests in dev mode.
+2. Dev mode: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeter` to run tests in dev mode.
 
 ## Writing tests
 
@@ -44,4 +44,3 @@ E2E_SLACK_TOKEN='<bot token, starts with xoxb- >'
 E2E_CHANNEL_NAME='<public slack channel name>'
 E2E_SLACKBOT_USER='<bot user name>'
 ```
-
