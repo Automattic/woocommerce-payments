@@ -52,7 +52,10 @@ const ConnectAccountPage = () => {
 						isLarge
 						isBusy={ isSubmitted }
 						disabled={ isSubmitted }
-						onClick={ () => setSubmitted( true ) }
+						onClick={ () => {
+							setSubmitted( true );
+							window.wcTracks.recordEvent( 'wcpay_connect_account_clicked' );
+						} }
 						href={ wcpaySettings.connectUrl }>
 						{ __( 'Set up', 'woocommerce-payments' ) }
 					</Button>
