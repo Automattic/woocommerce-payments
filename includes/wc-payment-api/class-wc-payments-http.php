@@ -100,7 +100,7 @@ class WC_Payments_Http {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public function is_connected() {
-		return $this->connection_manager->is_registered();
+		return $this->connection_manager->is_active();
 	}
 
 	/**
