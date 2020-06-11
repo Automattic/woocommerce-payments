@@ -4,8 +4,8 @@ At the moment E2E tests can be run only locally.
 
 ## Setup
 
-1. Make sure the site is up and running locally, including jetpack connection setup, test products and initial WC Payments plugin configuration.
-2. Update config file `tests/e2e/config/defaul.json` or create `test.json` file in the same folder with required params.
+1. Make sure the site is up and running locally, including Jetpack connection setup, test products and initial WC Payments plugin configuration.
+2. Update config file `tests/e2e/config/default.json` or create `test.json` file in the same folder with required params. For local testing create file `local.json` (ignored by version control) with `url` param matching local site under test, e.g. `http://localhost:8082`.
 
 ## Running tests
 
