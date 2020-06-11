@@ -100,6 +100,11 @@
 	background-color: $studio-yellow-5;
 }
 
+.wcpay-connect-error-notice.components-notice {
+	margin: 24px 0;
+	padding: 12px;
+}
+
 .wcpay-payment-details {
 	.woocommerce-card__header {
 		border-bottom: 1px solid $studio-gray-5;

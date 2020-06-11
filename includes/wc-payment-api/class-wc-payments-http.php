@@ -17,7 +17,25 @@ use WCPay\Logger;
 class WC_Payments_Http {
 
 	/**
-	 * Sends a remote request through Jetpack (?).
+	 * Jetpack connection handler.
+	 *
+	 * @var Automattic\Jetpack\Connection\Manager
+	 */
+	private $connection_manager;
+
+	/**
+	 * WC_Payments_Http constructor.
+	 *
+	 * @param Automattic\Jetpack\Connection\Manager $connection_manager - Jetpack connection handler.
+	 */
+	public function __construct( $connection_manager ) {
+		$this->connection_manager = $connection_manager;
+
+		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
+	}
+
+	/**
+	 * Sends a remote request through Jetpack.
 	 *
 	 * @param array  $args             - The arguments to passed to Jetpack.
 	 * @param string $body             - The body passed on to the HTTP request.
@@ -27,23 +45,24 @@ class WC_Payments_Http {
 	 * @throws WC_Payments_API_Exception - If not connected or request failed.
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
-		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
-		$args['user_id'] = JETPACK_MASTER_USER;
-
-		if ( $is_site_specific ) {
-			$url         = explode( '?', $args['url'], 2 );
-			$url[0]      = sprintf( $url[0], $args['blog_id'] );
-			$args['url'] = sprintf( '%s?%s', $url[0], $url[1] );
-		}
-
-		// Make sure we're not sendign requests if Jetpack is not connected.
-		if ( ! self::is_connected() ) {
-			Logger::error( 'HTTP_REQUEST_ERROR Jetpack is not connected' );
+		// Make sure we're not sending requests if Jetpack is not connected.
+		if ( ! $this->is_connected() ) {
+			Logger::error( 'HTTP_REQUEST_ERROR Site is not connected to WordPress.com' );
 			throw new WC_Payments_API_Exception(
-				__( 'Jetpack is not connected', 'woocommerce-payments' ),
-				'wcpay_jetpack_not_connected',
+				__( 'Site is not connected to WordPress.com', 'woocommerce-payments' ),
+				'wcpay_wpcom_not_connected',
 				409 // HTTP Conflict status code.
 			);
+		}
+
+		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
+		$args['user_id'] = Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER;
+
+		if ( $is_site_specific ) {
+			// We expect `url` to include a `%s` placeholder which will allow us inject the blog id.
+			$url         = explode( '?', $args['url'], 2 );
+			$url[0]      = sprintf( $url[0], $args['blog_id'] );
+			$args['url'] = implode( '?', $url );
 		}
 
 		return self::make_request( $args, $body );
@@ -59,13 +78,7 @@ class WC_Payments_Http {
 	 * @throws WC_Payments_API_Exception - If request returns WP_Error.
 	 */
 	private static function make_request( $args, $body ) {
-		$response = null;
-		// TODO: Either revamp this auth before releasing WCPay, or properly check that Jetpack is installed & connected.
-		if ( class_exists( 'Automattic\Jetpack\Connection\Client' ) ) {
-			$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
-		} else {
-			$response = Jetpack_Client::remote_request( $args, $body );
-		}
+		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
 
 		if ( is_wp_error( $response ) ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
@@ -87,16 +100,52 @@ class WC_Payments_Http {
 	 *
 	 * @return bool true if Jetpack connection has access token.
 	 */
-	public static function is_connected() {
-		if ( class_exists( 'Automattic\Jetpack\Connection\Manager' ) ) {
-			return ( new Automattic\Jetpack\Connection\Manager() )->is_active();
+	public function is_connected() {
+		return $this->connection_manager->is_registered();
+	}
+
+	/**
+	 * Starts the Jetpack connection process. Note that running this function will immediately redirect
+	 * to the Jetpack flow, so any PHP code after it will never be executed.
+	 *
+	 * @param string $redirect - URL to redirect to after the connection process is over.
+	 *
+	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
+	 */
+	public function start_connection( $redirect ) {
+		// First, register the site to wp.com.
+		if ( ! $this->connection_manager->get_access_token() ) {
+			$result = $this->connection_manager->register();
+			if ( is_wp_error( $result ) ) {
+				throw new WC_Payments_API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
+			}
 		}
 
-		if ( class_exists( 'Jetpack_Data' ) ) {
-			// Pass true as an argument to check user token rather than blog token.
-			return (bool) Jetpack_Data::get_access_token( true );
-		}
+		// Second, redirect the user to the Jetpack user connection flow.
+		add_filter( 'jetpack_use_iframe_authorization_flow', '__return_false' );
+		// Same logic as in WC-Admin.
+		$calypso_env = defined( 'WOOCOMMERCE_CALYPSO_ENVIRONMENT' ) && in_array( WOOCOMMERCE_CALYPSO_ENVIRONMENT, [ 'development', 'wpcalypso', 'horizon', 'stage' ], true ) ? WOOCOMMERCE_CALYPSO_ENVIRONMENT : 'production';
+		wp_safe_redirect(
+			add_query_arg(
+				[
+					'from'        => 'woocommerce-payments',
+					'calypso_env' => $calypso_env,
+				],
+				$this->connection_manager->get_authorization_url( null, $redirect )
+			)
+		);
+		exit;
+	}
 
-		return false;
+	/**
+	 * Filter function to add WP.com to the list of allowed redirect hosts
+	 *
+	 * @param array $hosts - array of allowed hosts.
+	 *
+	 * @return array allowed hosts
+	 */
+	public function allowed_redirect_hosts( $hosts ) {
+		$hosts[] = 'jetpack.wordpress.com';
+		return $hosts;
 	}
 }
