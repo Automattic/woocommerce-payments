@@ -65,6 +65,16 @@ class WC_Payments_Http {
 			$args['url'] = implode( '?', $url );
 		}
 
+		// Make sure we're not sendign requests if Jetpack is not connected.
+		if ( ! self::is_connected() ) {
+			Logger::error( 'HTTP_REQUEST_ERROR Jetpack is not connected' );
+			throw new WC_Payments_API_Exception(
+				__( 'Jetpack is not connected', 'woocommerce-payments' ),
+				'wcpay_jetpack_not_connected',
+				409 // HTTP Conflict status code.
+			);
+		}
+
 		return self::make_request( $args, $body );
 	}
 
