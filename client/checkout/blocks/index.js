@@ -1,79 +1,33 @@
 /**
  * External dependencies
  */
-import { Component } from 'react';
-import { useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-	Elements,
-	CardElement,
-	useElements,
-	ElementsConsumer,
-} from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
  */
+import { PAYMENT_METHOD_NAME } from '../constants.js';
+import { getConfig } from './../utils.js';
 import WCPayAPI from './../api';
-import generatePaymentMethod from './generate-payment-method.js';
-import confirmCardPayment from './confirm-card-payment.js';
+import WCPayFields from './fields.js';
 
-const PAYMENT_METHOD_NAME = 'woocommerce_payments';
-
+// Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI( {
-	publishableKey: wcpay_config.publishableKey,
-	accountId: wcpay_config.accountId,
+	publishableKey: getConfig( 'publishableKey' ),
+	accountId: getConfig( 'accountId' ),
 } );
-const stripe = api.getStripe();
 
-
-const WCPayFields = ( { elements, eventRegistration: { onPaymentProcessing, onCheckoutAfterProcessingWithSuccess } } ) => {
-	useEffect( () => {
-		return onPaymentProcessing( () => {
-			const paymentElements = {
-				card: elements.getElement( CardElement ),
-			};
-
-			return generatePaymentMethod( stripe, paymentElements );
-		} );
-	}, [ elements, stripe ] );
-
-	useEffect( () => {
-		return onCheckoutAfterProcessingWithSuccess( ( { processingResponse: { paymentDetails } } ) => {
-			return confirmCardPayment( stripe, paymentDetails );
-		} );
-	}, [ elements, stripe ] );
-
-	const options = {
-		hidePostalCode: true,
-		classes: {
-			base: 'wcpay-card-mounted',
-		},
-	};
-
-	return <CardElement options={ options } />;
-};
-
-const ConsumableWCPayFields = ( props ) => (
-	<Elements stripe={ stripe }>
-		<ElementsConsumer>
-			{ ( { elements } ) => (
-				<WCPayFields elements={ elements } { ...props } />
-			) }
-		</ElementsConsumer>
-	</Elements>
-);
-
+// Add the payment method to the blocks registry.
 registerPaymentMethod(
 	( PaymentMethodConfig ) => new PaymentMethodConfig( {
 		name: PAYMENT_METHOD_NAME,
-		content: <ConsumableWCPayFields />,
-		edit: <ConsumableWCPayFields />,
+		content: <WCPayFields api={ api } />,
+		edit: <WCPayFields api={ api } />,
+		// ToDo: Indicate that the gateway needs setup instead of blindly confirming it.
 		canMakePayment: () => true,
 		paymentMethodId: PAYMENT_METHOD_NAME,
-		label: 'Credit Card',
-		ariaLabel: 'Credit Card',
-		placeOrderButtonLabel: 'Place order with WCPay',
+		label: __( 'Credit Card', 'woocommerce-payments' ),
+		ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
 	} )
 );

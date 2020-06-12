@@ -1,6 +1,9 @@
-const PAYMENT_METHOD_NAME = 'woocommerce_payments';
+/**
+ * Internal dependencies
+ */
+import { PAYMENT_METHOD_NAME } from '../constants.js';
 
-export default function generatePaymentMethod( stripe, elements ) {
+const generatePaymentMethod = ( stripe, elements ) => {
 	const args = {
 		type: 'card',
 		// Elements contains all necessary inputs.
@@ -34,3 +37,5 @@ export default function generatePaymentMethod( stripe, elements ) {
 			throw error.message;
 		} );
 };
+
+export default generatePaymentMethod;
