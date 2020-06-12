@@ -34,7 +34,9 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 
 	return (
 		<CardFooter>
-			<Link href={ challengeUrl } className="components-button is-button is-primary is-large">
+			<Link
+				href={ challengeUrl } className="components-button is-button is-primary is-large"
+				onClick={ () => window.wcTracks.recordEvent( 'wcpay_dispute_challenge_clicked' ) }>
 				{ needsResponse
 					? __( 'Challenge dispute', 'woocommerce-payments' )
 					: __( 'View submitted evidence', 'woocommerce-payments' )

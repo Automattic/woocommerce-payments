@@ -105,6 +105,7 @@ export default ( { query } ) => {
 	}, [] );
 
 	const handleAcceptSuccess = () => {
+		window.wcTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = dispute.order
 			? sprintf( __( 'You have accepted the dispute for order #%s.', 'woocommerce-payments' ), dispute.order.number )
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
@@ -118,10 +119,13 @@ export default ( { query } ) => {
 	const doAccept = async () => {
 		setLoading( true );
 		try {
+			window.wcTracks.recordEvent( 'wcpay_dispute_accept_clicked' );
 			setDispute( await apiFetch( { path: `${ path }/close`, method: 'post' } ) );
 			handleAcceptSuccess();
 		} catch ( err ) {
-			createErrorNotice( __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' ) );
+			const notice = __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' );
+			window.wcTracks.recordEvent( 'wcpay_dispute_accept_failed', { message: notice } );
+			createErrorNotice( notice );
 		} finally {
 			setLoading( false );
 		}
