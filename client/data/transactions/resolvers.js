@@ -51,7 +51,20 @@ export function* getTransactions( query ) {
 	);
 
 	try {
-		const results = yield apiFetch( { path } );
+		// TODO include filters in prefetched path.
+		const unfilteredPath = addQueryArgs(
+			`${ NAMESPACE }/transactions`,
+			{
+				page: query.paged,
+				pagesize: query.perPage,
+				sort: query.orderby,
+				direction: query.order,
+				/* eslint-disable-next-line camelcase */
+				deposit_id: query.depositId,
+			}
+		);
+		const prefetched = window.wcpaySettings.prefetchedData[ unfilteredPath ];
+		const results = prefetched ? prefetched.data : yield apiFetch( { path } );
 		yield updateTransactions( query, results.data || [] );
 	} catch ( e ) {
 		yield updateErrorForTransactions( query, null, e );
@@ -70,7 +83,16 @@ export function* getTransactionsSummary( query ) {
 	);
 
 	try {
-		const summary = yield apiFetch( { path } );
+		// TODO include filters in prefetched path.
+		const unfilteredPath = addQueryArgs(
+			`${ NAMESPACE }/transactions/summary`,
+			{
+				/* eslint-disable-next-line camelcase */
+				deposit_id: query.depositId,
+			}
+		);
+		const prefetched = window.wcpaySettings.prefetchedData[ unfilteredPath ];
+		const summary = prefetched ? prefetched.data : yield apiFetch( { path } );
 		yield updateTransactionsSummary( query, summary );
 	} catch ( e ) {
 		yield updateErrorForTransactionsSummary( query, null, e );

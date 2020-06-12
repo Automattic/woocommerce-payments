@@ -41,7 +41,8 @@ export function* getDeposit( id ) {
 	const path = addQueryArgs( `${ NAMESPACE }/deposits/${ id }` );
 
 	try {
-		let result = yield apiFetch( { path } );
+		const prefetched = window.wcpaySettings.prefetchedData[ path ];
+		let result = prefetched ? prefetched.data : yield apiFetch( { path } );
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.
@@ -62,7 +63,8 @@ export function* getDepositsOverview() {
 	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview` );
 
 	try {
-		const result = yield apiFetch( { path } );
+		const prefetched = window.wcpaySettings.prefetchedData[ path ];
+		const result = prefetched ? prefetched.data : yield apiFetch( { path } );
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.
@@ -97,7 +99,8 @@ export function* getDeposits( query ) {
 	);
 
 	try {
-		const results = yield apiFetch( { path } ) || {};
+		const prefetched = window.wcpaySettings.prefetchedData[ path ];
+		const results = prefetched ? prefetched.data : yield apiFetch( { path } ) || {};
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.

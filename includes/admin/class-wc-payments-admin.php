@@ -27,14 +27,23 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account Account instance.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
-		$this->wcpay_gateway = $gateway;
-		$this->account       = $account;
+	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account, WC_Payments_API_Client $payments_api_client ) {
+		$this->wcpay_gateway       = $gateway;
+		$this->account             = $account;
+		$this->payments_api_client = $payments_api_client;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
@@ -177,6 +186,157 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
+		// TODO Move to own module.
+		$prefetch_by_route = [
+			'/payments/deposits' => function () {
+				$prefetched_data = [];
+
+				include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-rest-request-exception.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
+				$deposits_controller = new WC_REST_Payments_Deposits_Controller( $this->payments_api_client );
+
+				// Pre-fetch deposits overview.
+				$prefetched_data['/wc/v3/payments/deposits/overview'] = $deposits_controller->get_deposits_overview();
+
+				// Pre-fetch deposits list.
+				$request = new WP_REST_Request();
+				$request->set_param( 'page', isset( $_GET['paged'] ) ? $_GET['paged'] : '1' );
+				$request->set_param( 'pagesize', isset( $_GET['per_page'] ) ? $_GET['per_page'] : '25' );
+
+				$path = add_query_arg(
+					[
+						'page'       => $page,
+						'pagesize'   => $pagesize,
+					],
+					'/wc/v3/payments/deposits'
+				);
+
+				$prefetched_data[ $path ] = $deposits_controller->get_deposits( $request );
+
+				return $prefetched_data;
+			},
+			'/payments/deposits/details' => function () {
+				if ( isset( $_GET['filter'] ) && 'advanced' === $_GET['filter'] ) {
+					return [];
+				}
+
+				$prefetched_data = [];
+
+				include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-rest-request-exception.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+
+				$deposit_id = $_GET['id'];
+
+				// Pre-fetch deposit.
+				$deposits_controller = new WC_REST_Payments_Deposits_Controller( $this->payments_api_client );
+
+				$request = new WP_REST_Request();
+				$request->set_param( 'deposit_id', $deposit_id );
+
+				$prefetched_data[ "/wc/v3/payments/deposits/$deposit_id" ] =
+					$deposits_controller->get_deposit( $request );
+
+				// Pre-fetch transactions for deposit.
+				$transactions_controller = new WC_REST_Payments_Transactions_Controller( $this->payments_api_client );
+
+				$page      = isset( $_GET['paged'] ) ? $_GET['paged'] : '1';
+				$pagesize  = isset( $_GET['per_page'] ) ? $_GET['per_page'] : '25';
+				$sort      = isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date';
+				$direction = isset( $_GET['order'] ) ? $_GET['order'] : 'desc';
+
+				$request = new WP_REST_Request();
+				$request->set_param( 'page', $page );
+				$request->set_param( 'pagesize', $pagesize );
+				$request->set_param( 'sort', $sort );
+				$request->set_param( 'direction', $direction );
+				$request->set_param( 'deposit_id', $deposit_id );
+
+				$path = add_query_arg(
+					[
+						'page'       => $page,
+						'pagesize'   => $pagesize,
+						'sort'       => $sort,
+						'direction'  => $direction,
+						'deposit_id' => $deposit_id,
+					],
+					'/wc/v3/payments/transactions'
+				);
+
+				$prefetched_data[ $path ] = $transactions_controller->get_transactions( $request );
+
+				// Pre-fetch transactions summary for deposit.
+				$request = new WP_REST_Request();
+				$request->set_param( 'deposit_id', $deposit_id );
+
+				$path = add_query_arg(
+					[
+						'deposit_id' => $deposit_id,
+					],
+					'/wc/v3/payments/transactions/summary'
+				);
+
+				$prefetched_data[ $path ] = $transactions_controller->get_transactions_summary( $request );
+
+				return $prefetched_data;
+			},
+			'/payments/transactions' => function () {
+				if ( isset( $_GET['filter'] ) && 'advanced' === $_GET['filter'] ) {
+					return [];
+				}
+
+				$prefetched_data = [];
+
+				include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-rest-request-exception.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+				include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
+
+				// Pre-fetch transactions.
+				$transactions_controller = new WC_REST_Payments_Transactions_Controller( $this->payments_api_client );
+
+				$page      = isset( $_GET['paged'] ) ? $_GET['paged'] : '1';
+				$pagesize  = isset( $_GET['per_page'] ) ? $_GET['per_page'] : '25';
+				$sort      = isset( $_GET['orderby'] ) ? $_GET['orderby'] : 'date';
+				$direction = isset( $_GET['order'] ) ? $_GET['order'] : 'desc';
+
+				$request = new WP_REST_Request();
+				$request->set_param( 'page', $page );
+				$request->set_param( 'pagesize', $pagesize );
+				$request->set_param( 'sort', $sort );
+				$request->set_param( 'direction', $direction );
+				$request->set_param( 'deposit_id', $deposit_id );
+
+				$path = add_query_arg(
+					[
+						'page'       => $page,
+						'pagesize'   => $pagesize,
+						'sort'       => $sort,
+						'direction'  => $direction,
+					],
+					'/wc/v3/payments/transactions'
+				);
+
+				$prefetched_data[ $path ] = $transactions_controller->get_transactions( $request );
+
+				// Pre-fetch transactions summary.
+				$request = new WP_REST_Request();
+				$request->set_param( 'deposit_id', $deposit_id );
+
+				$path = '/wc/v3/payments/transactions/summary';
+
+				$prefetched_data[ $path ] = $transactions_controller->get_transactions_summary( $request );
+
+				return $prefetched_data;
+			},
+		];
+
+		$path = isset( $_GET['path'] ) ? $_GET['path'] : null;
+		if ( isset( $prefetch_by_route[ $path ] ) ) {
+			$prefetched_data = call_user_func( $prefetch_by_route[ $path ] );
+		}
+
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
@@ -185,6 +345,7 @@ class WC_Payments_Admin {
 				'testMode'           => $this->wcpay_gateway->is_in_test_mode(),
 				'onBoardingDisabled' => $on_boarding_disabled,
 				'errorMessage'       => $error_message,
+				'prefetchedData'     => isset( $prefetched_data ) ? $prefetched_data : [],
 			]
 		);
 
