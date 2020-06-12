@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Tracker;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
