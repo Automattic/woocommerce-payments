@@ -366,7 +366,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Fetch transactions search options for provided query.
 	 *
-	 * @param string $query Query.
+	 * @param string $query Query to be used to get search options - can be an order ID, or part of a name or email.
 	 * @return array|WP_Error Search results.
 	 */
 	public function get_transactions_search( $query ) {
