@@ -277,7 +277,7 @@ export const TransactionsList = ( props ) => {
 					key="search"
 					onChange={ onSearchChange }
 					placeholder={
-						__( 'Search by order number, customer name, or billing email', 'woocommerce-admin' )
+						__( 'Search by order number, customer name, or billing email', 'woocommerce-payments' )
 					}
 					selected={ searchedLabels }
 					showClearButton={ true }
