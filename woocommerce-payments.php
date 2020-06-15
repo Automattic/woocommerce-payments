@@ -30,7 +30,13 @@ require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
  */
 function wcpay_jetpack_init() {
 	$jetpack_config = new Automattic\Jetpack\Config();
-	$jetpack_config->ensure( 'connection' );
+	$jetpack_config->ensure(
+		'connection',
+		[
+			'slug' => 'woocommerce-payments',
+			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+		]
+	);
 }
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.

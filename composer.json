@@ -12,9 +12,9 @@
       }
     },
     "require": {
-      "automattic/jetpack-connection": "^1.11.0",
-      "automattic/jetpack-config": "^1.1.0",
-      "automattic/jetpack-autoloader": "^1.6.0"
+      "automattic/jetpack-connection": "^1.13.1",
+      "automattic/jetpack-config": "^1.2.0",
+      "automattic/jetpack-autoloader": "^1.7.0"
     },
     "require-dev": {
       "woocommerce/woocommerce": "^4.1.0",
