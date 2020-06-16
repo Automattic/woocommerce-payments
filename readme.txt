@@ -90,6 +90,13 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.1.0 - 2020-06-16 =
+
+* Add - Allow WooCommerce Payments set up without Jetpack plugin
+* Fix - Orders missing after payment processing error
+* Fix - Clearing pagination when selecting transactions advanced filters
+* Fix - After onboarding, redirect to the WCPay task of the task list, instead of to the task list
+
 = 1.0.1 - 2020-06-01 =
 * Add - Support 3D Secure verification
 * Add - Transaction date and type filters to transactions list
