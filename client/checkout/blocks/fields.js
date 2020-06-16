@@ -6,7 +6,10 @@ import {
 	ElementsConsumer,
 	CardElement,
 } from '@stripe/react-stripe-js';
-import { useEffect } from '@wordpress/element';
+import {
+	useEffect,
+	useState,
+} from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,19 +21,38 @@ const WCPayFields = ( {
 	api,
 	stripe,
 	elements,
+	billing: {
+		billingData,
+	},
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
 	},
 } ) => {
+	const [ state, setState ] = useState( {
+		errorMessage: null,
+	} );
+
+	const {
+		errorMessage,
+	} = state;
+
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() => onPaymentProcessing( () => {
+			if ( errorMessage ) {
+				return {
+					type: 'error',
+					message: errorMessage,
+				};
+			}
+
+			const cardElement = elements.getElement( CardElement );
 			const paymentElements = {
-				card: elements.getElement( CardElement ),
+				card: cardElement,
 			};
 
-			return generatePaymentMethod( stripe, paymentElements );
+			return generatePaymentMethod( api, paymentElements, billingData );
 		} ),
 	[ elements, stripe ] );
 
@@ -47,6 +69,12 @@ const WCPayFields = ( {
 		),
 	[ elements, stripe ] );
 
+	const checkForErrors = ( { error } ) => {
+		setState( {
+			errorMessage: error ? error.message : null,
+		} );
+	};
+
 	const elementOptions = {
 		hidePostalCode: true,
 		classes: {
@@ -54,7 +82,10 @@ const WCPayFields = ( {
 		},
 	};
 
-	return <CardElement options={ elementOptions } />;
+	return <CardElement
+		options={ elementOptions }
+		onChange={ checkForErrors }
+	/>;
 };
 
 /**

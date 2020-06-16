@@ -66,7 +66,14 @@ export default class WCPayAPI {
 			}
 
 			send() {
-				return stripe.createPaymentMethod( this.args );
+				return stripe.createPaymentMethod( this.args )
+					.then( ( paymentMethod ) => {
+						if ( paymentMethod.error ) {
+							throw paymentMethod.error;
+						}
+
+						return paymentMethod;
+					} );
 			}
 		}
 	}
@@ -82,6 +89,7 @@ export default class WCPayAPI {
 		const clientSecret = partials[ 2 ];
 
 		return this.getStripe().confirmCardPayment( clientSecret )
+			// ToDo: Switch to an async function once it works with webpack.
 			.then( ( result ) => {
 				const ajaxCall = jQuery.post( getConfig( 'ajaxUrl' ), {
 					action: 'update_order_status',
@@ -93,20 +101,20 @@ export default class WCPayAPI {
 
 				return [ ajaxCall, result.error ];
 			} )
-			.then( async ( [ verificationCall, originalError ] ) => {
+			.then( ( [ verificationCall, originalError ] ) => {
 				if ( originalError ) {
 					throw originalError;
 				}
 
-				const response = await verificationCall;
-				const result = JSON.parse( response );
-				console.log( response, result );
+				return verificationCall.then( ( response ) => {
+					const result = JSON.parse( response );
 
-				if ( result.error ) {
-					throw result.error;
-				}
+					if ( result.error ) {
+						throw result.error;
+					}
 
-				return result.return_url;
+					return result.return_url;
+				} );
 			} );
 	}
 }

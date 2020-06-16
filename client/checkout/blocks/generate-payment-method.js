@@ -3,39 +3,37 @@
  */
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 
-const generatePaymentMethod = ( stripe, elements ) => {
-	const args = {
-		type: 'card',
-		// Elements contains all necessary inputs.
-		...elements,
-		// eslint-disable-next-line camelcase
-		// billing_details: loadBillingDetails(),
-		// ToDo: Load billing details from the necessary props.
-	};
+const generatePaymentMethod = async ( api, elements, billingData ) => {
+	const request = api.generatePaymentMethodFromCard( elements );
+	request.setBillingDetail( 'name', ( billingData.first_name + ' ' + billingData.last_name ).trim() );
+	request.setBillingDetail( 'email', billingData.email );
+	request.setBillingDetail( 'phone', billingData.phone );
+	request.setAddressDetail( 'city', billingData.city );
+	request.setAddressDetail( 'country', billingData.country );
+	request.setAddressDetail( 'line1', billingData.address_1 );
+	request.setAddressDetail( 'line2', billingData.address_2 );
+	request.setAddressDetail( 'postal_code', billingData.postcode );
+	request.setAddressDetail( 'state', billingData.state );
 
-	return stripe.createPaymentMethod( args )
-		.then( function( { paymentMethod, error } ) {
-			if ( error ) {
-				throw error;
-			}
+	try {
+		const { paymentMethod: { id } } = await request.send();
 
-			return paymentMethod;
-		} )
-		.then( function( { id } ) {
-			return {
-				type: 'success',
-				meta: {
-					paymentMethodData: {
-						paymentMethod: PAYMENT_METHOD_NAME,
-						// eslint-disable-next-line camelcase
-						wcpay_payment_method: id,
-					},
+		return {
+			type: 'success',
+			meta: {
+				paymentMethodData: {
+					paymentMethod: PAYMENT_METHOD_NAME,
+					// eslint-disable-next-line camelcase
+					wcpay_payment_method: id,
 				},
-			};
-		} )
-		.catch( function( error ) {
-			throw error.message;
-		} );
+			},
+		};
+	} catch ( error ) {
+		return {
+			type: 'error',
+			message: error.message,
+		};
+	}
 };
 
 export default generatePaymentMethod;

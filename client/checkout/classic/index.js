@@ -6,7 +6,6 @@
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 import { getConfig } from './../utils.js';
 import WCPayAPI from './../api';
-import card from '@wordpress/components/build/card';
 
 jQuery( function( $ ) {
 	// Create an API object, which will be used throughout the checkout.
@@ -104,7 +103,7 @@ jQuery( function( $ ) {
 
 		const request = api.generatePaymentMethodFromCard( {
 			card: cardElement,
-		} );
+		}, preparedCustomerData );
 
 		// Populate the necessary billing details.
 		request.setBillingDetail( 'name', ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim() );
@@ -118,19 +117,7 @@ jQuery( function( $ ) {
 		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
 
 		request.send()
-			.then( function( result ) {
-				const paymentMethod = result.paymentMethod;
-				const error = result.error;
-
-				if ( error ) {
-					throw error;
-				}
-
-				return paymentMethod;
-			} )
-			.then( function( paymentMethod ) {
-				const id = paymentMethod.id;
-
+			.then( ( { paymentMethod: { id } } ) => {
 				// Flag that the payment method has been successfully generated so that we can allow the form
 				// submission next time.
 				paymentMethodGenerated = true;
@@ -163,6 +150,9 @@ jQuery( function( $ ) {
 		}
 	} );
 
+	/**
+	 * Listen to hash changes in order to show the authentication modal.
+	 */
 	window.addEventListener( 'hashchange', function( event ) {
 		const confirmation = api.confirmIntent( event.newURL );
 
@@ -179,7 +169,6 @@ jQuery( function( $ ) {
 
 		confirmation
 			.then( ( redirectUrl ) => {
-				console.log( redirectUrl );
 				window.location = redirectUrl;
 			} )
 			.catch( ( error ) => {
