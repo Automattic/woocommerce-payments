@@ -4,7 +4,8 @@
  *
  * @package WooCommerce\Payments
  */
-use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+
+ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -41,10 +42,6 @@ class WC_Payments_Payment_Method extends AbstractPaymentMethodType {
 			true
 		);
 
-		$config = WC_Payments::get_gateway()->get_payment_fields_js_config();
-		// ToDo: Use the `get_payment_method_data` method instead!
-		wp_localize_script( 'wc-payment-method-wcpay', 'wcpay_config', $config );
-
 		return [ 'wc-payment-method-wcpay' ];
 	}
 
@@ -54,9 +51,12 @@ class WC_Payments_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all cecessary values.
 	 */
 	public function get_payment_method_data() {
-		return [
-			'title'       => isset( $this->settings['title'] ) ? $this->settings['title'] : '',
-			'description' => isset( $this->settings['description'] ) ? $this->settings['description'] : '',
-		];
+		return array_merge(
+			[
+				'title'       => isset( $this->settings['title'] ) ? $this->settings['title'] : '',
+				'description' => isset( $this->settings['description'] ) ? $this->settings['description'] : '',
+			],
+			WC_Payments::get_gateway()->get_payment_fields_js_config()
+		);
 	}
 }

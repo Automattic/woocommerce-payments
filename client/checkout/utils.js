@@ -1,3 +1,5 @@
+/* global wcpay_config, wc */
+
 /**
  * Retrieves a configuration value.
  *
@@ -5,5 +7,11 @@
  * @returns {*}         The value of the parameter of null.
  */
 export const getConfig = ( name ) => {
-	return wcpay_config[ name ] || null;
-}
+	// eslint-disable-next-line camelcase
+	const config = ( 'undefined' !== typeof wcpay_config )
+		// eslint-disable-next-line camelcase
+		? wcpay_config // Classic checkout
+		: wc.wcSettings.getSetting( 'woocommerce_payments_data' ); // Blocks
+
+	return config[ name ] || null;
+};

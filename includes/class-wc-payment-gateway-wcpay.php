@@ -140,6 +140,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 	}
 
 	/**
@@ -257,6 +259,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Registers all scripts, necessary for the gateway.
+	 */
+	public function register_scripts() {
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			[],
+			'3.0',
+			true
+		);
+
+		wp_register_script(
+			'wcpay-checkout',
+			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
+			[ 'stripe', 'wc-checkout' ],
+			WC_Payments::get_file_version( 'dist/checkout.js' ),
+			true
+		);
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -270,22 +293,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
 			// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
 			// https://stripe.com/docs/stripe-js/elements/migrating).
-			wp_register_script(
-				'stripe',
-				'https://js.stripe.com/v3/',
-				[],
-				'3.0',
-				true
-			);
-
-			wp_register_script(
-				'wcpay-checkout',
-				plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-				[ 'stripe', 'wc-checkout' ],
-				WC_Payments::get_file_version( 'dist/checkout.js' ),
-				true
-			);
-
 			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-checkout' );
 
