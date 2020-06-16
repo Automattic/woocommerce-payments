@@ -24,7 +24,6 @@ registerPaymentMethod(
 		name: PAYMENT_METHOD_NAME,
 		content: <WCPayFields api={ api } />,
 		edit: <WCPayFields api={ api } />,
-		// ToDo: Indicate that the gateway needs setup instead of blindly confirming it.
 		canMakePayment: () => true,
 		paymentMethodId: PAYMENT_METHOD_NAME,
 		label: __( 'Credit Card', 'woocommerce-payments' ),
