@@ -15,8 +15,6 @@
  * @package WooCommerce\Payments
  */
 
-use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -36,19 +34,3 @@ function wcpay_init() {
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
-// add_action( 'woocommerce_blocks_loaded', function() {
-// 	$container = \Automattic\WooCommerce\Blocks\Package::container();
-// 	$container->register(
-// 		'WC_Payments_Payment_Method',
-// 		function() {
-// 			require_once dirname( __FILE__ ) . '/includes/class-wc-payments-payment-method.php';
-// 			return new WC_Payments_Payment_Method();
-// 		}
-// 	);
-// } );
-add_action( 'woocommerce_blocks_payment_method_type_registration', function ( PaymentMethodRegistry $payment_method_registry ) {
-	require_once dirname( __FILE__ ) . '/includes/class-wc-payments-payment-method.php';
-
-	$pm = new WC_Payments_Payment_Method();
-	$payment_method_registry->register( $pm );
-} );
