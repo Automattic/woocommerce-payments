@@ -59,16 +59,13 @@ const WCPayFields = ( {
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
 		() => onCheckoutAfterProcessingWithSuccess(
-			( {
-				processingResponse: {
-					paymentDetails,
-				},
-			} ) => (
+			( { processingResponse: { paymentDetails } } ) => (
 				confirmCardPayment( api, paymentDetails )
 			)
 		),
 	[ elements, stripe ] );
 
+	// Checks whether there are errors within a field, and saves them for later reporting.
 	const checkForErrors = ( { error } ) => {
 		setState( {
 			errorMessage: error ? error.message : null,

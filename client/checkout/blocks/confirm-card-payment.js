@@ -1,3 +1,10 @@
+/**
+ * Handles the confirmation of card payments (3DSv2 modals/SCA challenge).
+ *
+ * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
+ * @param {Object}   paymentDetails Details about the payment, received from the server.
+ * @returns {Object}                An object, which contains the result from the action.
+ */
 export default async function confirmCardPayment( api, paymentDetails ) {
 	const { redirect } = paymentDetails;
 
@@ -21,6 +28,6 @@ export default async function confirmCardPayment( api, paymentDetails ) {
 		return {
 			type: 'error',
 			message: error.message,
-		}
+		};
 	}
 }

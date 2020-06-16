@@ -3,8 +3,16 @@
  */
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 
+/**
+ * Handles the payment method generation action.
+ *
+ * @param {WCPayAPI} api The API class that is used to connect both with the server and Stripe.
+ * @param {Object} elements A hash, containing all Stripe card elements.
+ * @param {Object} billingData The billing data, which was collected from the checkout block.
+ */
 const generatePaymentMethod = async ( api, elements, billingData ) => {
 	const request = api.generatePaymentMethodFromCard( elements );
+
 	request.setBillingDetail( 'name', ( billingData.first_name + ' ' + billingData.last_name ).trim() );
 	request.setBillingDetail( 'email', billingData.email );
 	request.setBillingDetail( 'phone', billingData.phone );
