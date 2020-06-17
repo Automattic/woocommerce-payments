@@ -44,6 +44,10 @@ export const mapDisputeStatusToChargeStatus = ( status ) => {
 			return 'disputed_won';
 		case 'lost':
 			return 'disputed_lost';
+		case 'warning_closed':
+			return 'disputed_closed';
+		case 'charge_refunded':
+			return 'refunded_full';
 		default:
 			return 'disputed';
 	}

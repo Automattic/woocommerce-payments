@@ -32,18 +32,12 @@ const disputedChargeUnderReview = {
 };
 const disputedChargeWon = { disputed: true, dispute: { status: 'won' } };
 const disputedChargeLost = { disputed: true, dispute: { status: 'lost' } };
-const fullyRefundedCharge = {
-	amount: 1500,
-	refunded: true,
-	// eslint-disable-next-line camelcase
-	amount_refunded: 1500,
-};
-const partiallyRefundedCharge = {
-	amount: 1500,
-	refunded: false,
-	// eslint-disable-next-line camelcase
-	amount_refunded: 1200,
-};
+const disputedChargeClosed = { disputed: true, dispute: { status: 'warning_closed' } };
+const disputedChargeRefunded = { disputed: true, dispute: { status: 'charge_refunded' } };
+// eslint-disable-next-line camelcase
+const fullyRefundedCharge = { amount: 1500, refunded: true, amount_refunded: 1500 };
+// eslint-disable-next-line camelcase
+const partiallyRefundedCharge = { amount: 1500, refunded: false, amount_refunded: 1200 };
 
 describe( 'Charge utilities', () => {
 	test( 'should identify a captured successful charge as successful', () => {
@@ -160,6 +154,14 @@ describe( 'Charge utilities', () => {
 		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual(
 			'disputed_lost'
 		);
+	} );
+
+	test( 'should return status disputed_closed for closed disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeClosed ) ).toEqual( 'disputed_closed' );
+	} );
+
+	test( 'should return status refunded_full for charge refunded disputed charges', () => {
+		expect( utils.getChargeStatus( disputedChargeRefunded ) ).toEqual( 'refunded_full' );
 	} );
 
 	test( 'should return status refunded_full for fully refunded charges', () => {
