@@ -103,7 +103,7 @@ class WC_Payments {
 			new WC_Payments_Admin( self::$gateway, self::$account );
 
 			include_once dirname( __FILE__ ) . '/admin/tracks/class-tracker.php';
-			include_once dirname( __FILE__ ) . '/admin/tracks/class-tracks-loader.php';
+			include_once dirname( __FILE__ ) . '/admin/tracks/tracks-loader.php';
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
