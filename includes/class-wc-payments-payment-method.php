@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
- use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
