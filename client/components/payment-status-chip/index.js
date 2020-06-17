@@ -59,6 +59,11 @@ const statuses = {
 		type: 'light',
 		message: __( 'Disputed: Lost', 'woocommerce-payments' ),
 	},
+	// eslint-disable-next-line camelcase
+	disputed_closed: {
+		type: 'light',
+		message: __( 'Disputed: Inquiry closed', 'woocommerce-payments' ),
+	},
 	default: {
 		type: 'light',
 		message: '',

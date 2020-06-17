@@ -8,6 +8,16 @@ exports[`PaymentStatusChip renders a default light chip with no message if statu
 </div>
 `;
 
+exports[`PaymentStatusChip renders a light chip with dispute message if there's a closed dispute 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Inquiry closed
+  </span>
+</div>
+`;
+
 exports[`PaymentStatusChip renders a light chip with dispute message if there's a dispute in review 1`] = `
 <div>
   <span

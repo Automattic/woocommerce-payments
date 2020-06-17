@@ -69,6 +69,11 @@ describe( 'PaymentStatusChip', () => {
 		expect( renderPaymentStatus() ).toMatchSnapshot();
 	} );
 
+	test( 'renders a light chip with dispute message if there\'s a closed dispute', () => {
+		getChargeStatus.mockReturnValue( 'disputed_closed' );
+		expect( renderPaymentStatus() ).toMatchSnapshot();
+	} );
+
 	function renderPaymentStatus() {
 		return render( <PaymentStatusChip charge={ {} } /> ).container;
 	}
