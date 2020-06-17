@@ -92,7 +92,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
-			'wcpay-payment-method' => true,
+			'wcpay_payment_method' => true,
 		];
 	}
 
