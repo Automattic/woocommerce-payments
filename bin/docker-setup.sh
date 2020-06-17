@@ -59,9 +59,6 @@ cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --a
 echo "Installing and activating the WooCommerce Admin plugin..."
 cli wp plugin install woocommerce-admin --activate
 
-echo "Installing and activating the Jetpack plugin..."
-cli wp plugin install jetpack --activate
-
 echo "Activating the WooCommerce Payments plugin..."
 cli wp plugin activate woocommerce-payments
 

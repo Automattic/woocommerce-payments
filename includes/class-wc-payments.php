@@ -189,12 +189,6 @@ class WC_Payments {
 				'slug'  => 'woocommerce-admin',
 				'file'  => 'woocommerce-admin/woocommerce-admin.php',
 			],
-			[
-				'name'  => 'Jetpack',
-				'class' => 'Jetpack',
-				'slug'  => 'jetpack',
-				'file'  => 'jetpack/jetpack.php',
-			],
 		];
 
 		// Check if WooCommerce and other dependencies are  installed and active.
@@ -316,25 +310,6 @@ class WC_Payments {
 			return false;
 		}
 
-		// Check if Jetpack is connected.
-		if ( ! self::is_jetpack_connected() ) {
-			// Do not show an alert on Jetpack admin pages.
-			if ( ! $silent && ! self::is_at_jetpack_admin_page() ) {
-				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
-				$message    = WC_Payments_Utils::esc_interpolated_html(
-					sprintf(
-						/* translators: %1: WooCommerce Payments version */
-						__( 'To use WooCommerce Payments %1$s you\'ll need to <a>set up</a> the Jetpack plugin.', 'woocommerce-payments' ),
-						WCPAY_VERSION_NUMBER
-					),
-					[ 'a' => '<a href="' . $set_up_url . '">' ]
-				);
-				self::display_admin_error( $message );
-			}
-
-			return false;
-		}
-
 		return true;
 	}
 
@@ -346,26 +321,6 @@ class WC_Payments {
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
 		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
-	}
-
-	/**
-	 * Checks if current page is Jetpack admin page.
-	 *
-	 * @return bool True when current page is one of the Jetpack admin pages.
-	 */
-	private static function is_at_jetpack_admin_page() {
-		$cur_screen = get_current_screen();
-		return 'jetpack' === $cur_screen->parent_base;
-	}
-
-	/**
-	 * Checks if Jetpack is connected.
-	 *
-	 * @return bool true if Jetpack connection is available and authenticated.
-	 */
-	public static function is_jetpack_connected() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
-		return WC_Payments_Http::is_connected();
 	}
 
 	/**
@@ -453,7 +408,7 @@ class WC_Payments {
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http(),
+			new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) ),
 			self::$db_helper
 		);
 

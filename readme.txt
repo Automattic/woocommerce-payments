@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,6 @@ Our global support team is available to answer questions you may have about WooC
 * United States-based business.
 * WordPress 5.3 or newer.
 * WooCommerce 4.0 or newer.
-* [Jetpack](http://wordpress.org/plugins/jetpack) 5.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -50,14 +49,7 @@ To try WooCommerce Payments on your store, simply [install it](https://wordpress
 
 == Installation ==
 
-Install and activate the WooCommerce and Jetpack plugins, if you haven't already done so, and connect your site to WordPress.com.
-
-1. Log in to your WordPress dashboard.
-1. Go to: Plugins > Add New.
-1. Enter "WooCommerce Payments" in the Search field.
-1. Click "Install Now".
-1. Go to: Payments.
-1. Create your WooCommerce Payments account.
+Install and activate the WooCommerce and WooCommerce Payments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
 
 == Frequently Asked Questions ==
 
@@ -97,6 +89,13 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 4. Manage Disputes
 
 == Changelog ==
+
+= 1.1.0 - 2020-06-16 =
+
+* Add - Allow WooCommerce Payments set up without Jetpack plugin
+* Fix - Orders missing after payment processing error
+* Fix - Clearing pagination when selecting transactions advanced filters
+* Fix - After onboarding, redirect to the WCPay task of the task list, instead of to the task list
 
 = 1.0.1 - 2020-06-01 =
 * Add - Support 3D Secure verification

@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
@@ -13,9 +13,10 @@
     "wp_org_slug": "woocommerce-payments"
   },
   "scripts": {
-    "build": "NODE_ENV=production webpack",
-    "release": "rm -rf vendor && composer install --no-dev && node tasks/release.js",
-    "woorelease": "npm run release && mv release/$npm_package_name.zip .",
+    "build": "npm run build:deps && npm run build:release",
+    "build:client": "NODE_ENV=production webpack",
+    "build:deps": "rm -rf vendor && composer install --no-dev",
+    "build:release": "node tasks/release.js && mv release/$npm_package_name.zip .",
     "test": "wp-scripts test-unit-js --config tests/js/jest.config.json",
     "test:watch": "wp-scripts test-unit-js --config tests/js/jest.config.json --watch",
     "test:debug": "node --inspect node_modules/.bin/jest --config tests/js/jest.config.json --watch --runInBand",

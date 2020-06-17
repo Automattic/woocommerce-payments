@@ -28,7 +28,7 @@ Follow the instructions in the [tests readme](tests/README.md).
 
 After cloning the repo, install dependencies using `npm install`. You can build the files using one of these npm scripts:
 
-- `$ npm run build`: Build a production version
+- `$ npm run build:client`: Build a production version
 - `$ npm run watch`: Build a development version, and watch for file changes
 
 When enqueuing the app JavaScript, `wordpress` and `woocommerce` dependencies are handled by `@wordpress/dependency-extraction-webpack-plugin`. WordPress dependencies don't need to be added manually anywhere, including the `$deps` parameter in `wp_enqueue_script` or in `webpack.config`.
