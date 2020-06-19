@@ -192,6 +192,12 @@ jQuery( function( $ ) {
 		return false;
 	};
 
+	/**
+	 * Shows the authentication modal to the user and handles the outcome.
+	 *
+	 * @param {string} orderId      The ID of the order being paid for.
+	 * @param {string} clientSecret The client secret of the intent being used to pay for the order.
+	 */
 	var showAuthenticationModal = function( orderId, clientSecret ) {
 		stripe.confirmCardPayment( clientSecret )
 		.then( function( result ) {
@@ -241,6 +247,28 @@ jQuery( function( $ ) {
 		} );
 	};
 
+	/**
+	 * Displays the authentication modal to the user if needed.
+	 */
+	function maybeShowAuthenticationModal() {
+		var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
+
+		if ( ! partials ) {
+			return;
+		}
+
+		var orderId = partials[ 1 ];
+		var clientSecret = partials[ 2 ];
+
+		// Cleanup the URL.
+		// https://stackoverflow.com/questions/1397329/
+		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
+		// 5298684#5298684
+		history.replaceState( '', document.title, window.location.pathname + window.location.search );
+
+		showAuthenticationModal( orderId, clientSecret );
+	}
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		return handleOnPaymentFormSubmit( $( this ) );
@@ -253,21 +281,10 @@ jQuery( function( $ ) {
 		}
 	} );
 
-	// Handle hash change - used when authenticating payment with SCA.
+	// Handle hash change - used when authenticating payment with SCA on checkout page.
 	window.addEventListener( 'hashchange', function( event ) {
 		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
-			var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
-
-			var orderId = partials[ 1 ];
-			var clientSecret = partials[ 2 ];
-
-			// Cleanup the URL.
-			// https://stackoverflow.com/questions/1397329/
-			// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
-			// 5298684#5298684
-			history.replaceState( '', document.title, window.location.pathname + window.location.search );
-
-			showAuthenticationModal( orderId, clientSecret );
+			maybeShowAuthenticationModal();
 		}
 	} );
 } );
