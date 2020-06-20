@@ -241,6 +241,8 @@ jQuery( function( $ ) {
 		} )
 		.catch( function( error ) {
 			$( 'form.checkout' ).removeClass( 'processing' ).unblock();
+			$( '#order_review' ).removeClass( 'processing' ).unblock();
+			$( '#payment' ).show( 500 );
 
 			var errorMessage = error.message;
 
@@ -263,6 +265,11 @@ jQuery( function( $ ) {
 
 		if ( ! partials ) {
 			return;
+		}
+
+		if ( document.location.href.indexOf( 'pay_for_order' ) > 0 ) {
+			blockUI( $( '#order_review' ) );
+			$( '#payment' ).hide( 500 );
 		}
 
 		var orderId = partials[ 1 ];
