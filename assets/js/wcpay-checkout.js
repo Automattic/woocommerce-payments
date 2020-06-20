@@ -48,6 +48,21 @@ jQuery( function( $ ) {
 	} );
 
 	/**
+	 * Block UI to indicate processing and avoid duplicate submission.
+	 *
+	 * @param {object} $form The jQuery object for the form.
+	 */
+	var blockUI = function( $form ) {
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+	};
+
+	/**
 	 * Adds a customer value to an object if the value exists and is non-empty.
 	 *
 	 * @param {object} customerObj The object that the value should be loaded to.
@@ -142,14 +157,7 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		// Block UI to indicate processing and avoid duplicate submission.
-		$form.addClass( 'processing' ).block( {
-			message: null,
-			overlayCSS: {
-				background: '#fff',
-				opacity: 0.6,
-			},
-		} );
+		blockUI( $form );
 
 		var paymentMethodArgs = {
 			type: 'card',
