@@ -281,6 +281,10 @@ jQuery( function( $ ) {
 		}
 	} );
 
+	// On every page load, check to see whether we should display the authentication
+	// modal and display it if it should be displayed.
+	maybeShowAuthenticationModal();
+
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
 	window.addEventListener( 'hashchange', function( event ) {
 		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
