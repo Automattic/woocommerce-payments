@@ -1,15 +1,14 @@
-const { jestConfig: baseE2Econfig } = require( '@woocommerce/e2e-environment' );
+const path = require( 'path' );
 const { config } = require( 'dotenv' );
-const { jestConfig } = require( '@automattic/puppeteer-utils' );
+const { jestConfig: baseE2Econfig } = require( '@woocommerce/e2e-environment' );
 
-config( { path: './tests/e2e/config/.env' } );
-config( { path: './tests/e2e/config/local.env' } );
+config( { path: path.resolve( __dirname, '.env' ) } );
+config( { path: path.resolve( __dirname, 'local.env' ) } );
 
+// Note: changing rootDir breaks baseE2Econfig
 module.exports = {
-	...jestConfig,
 	...baseE2Econfig,
-	rootDir: '../../../',
 	roots: [
-		'<rootDir>/tests/e2e/specs',
+		path.resolve( __dirname, '../specs' ),
 	],
 };

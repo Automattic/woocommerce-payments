@@ -1,13 +1,15 @@
 {
-  "url": "https://verbal-trout.jurassic.ninja/wcpay-dev-e2e/",
+  "url": "http://localhost:8082",
   "users": {
     "admin": {
       "username": "admin",
-      "password": "admin"
+      "password": "admin",
+      "email": "admin@woocommercecoree2etestsuite.com"
     },
     "customer": {
       "username": "customer",
-      "password": "password"
+      "password": "password",
+      "email": "customer@woocommercecoree2etestsuite.com"
     }
   },
   "products": {
@@ -60,3 +62,4 @@
     }
   }
 }
+
