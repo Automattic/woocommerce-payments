@@ -3,7 +3,7 @@
   "users": {
     "admin": {
       "username": "admin",
-      "password": "admin",
+      "password": "password",
       "email": "admin@woocommercecoree2etestsuite.com"
     },
     "customer": {

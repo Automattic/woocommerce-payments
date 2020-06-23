@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  wordpress:
+    image: wordpress
+    container_name: wcp_e2e_wordpress
+    depends_on:
+      - db
+    links:
+      - db:mysql
+    ports:
+      - "8084:80"
+    env_file:
+      - ${E2E_ROOT}/env/default.env
+    volumes:
+      - ${E2E_ROOT}/docker/wordpress:/var/www/html/
+      - ${E2E_ROOT}/docker/logs/apache2/:/var/log/apache2
+      - ${WCP_ROOT}:/var/www/html/wp-content/plugins/woocommerce-payments
+  db:
+    container_name: wcp_e2e_mysql
+    image: mysql:5.7
+    ports:
+      - "5698:3306"
+    env_file:
+      - ${E2E_ROOT}/env/default.env
+    volumes:
+      - ${E2E_ROOT}/docker/data:/var/lib/mysql
