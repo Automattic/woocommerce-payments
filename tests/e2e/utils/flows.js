@@ -1,4 +1,3 @@
-/* global page */
 /**
  * @format
  */

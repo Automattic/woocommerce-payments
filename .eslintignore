@@ -8,3 +8,5 @@ docker/*
 includes/*
 vendor/*
 release/*
+tests/e2e/docker*
+tests/e2e/deps*
