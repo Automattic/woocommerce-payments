@@ -229,7 +229,6 @@ const mapEventToTimelineItems = ( event ) => {
 			getStatusChangeTimelineItem( event, __( 'Failed', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'dispute_needs_response' === type ) {
-		const formattedTotal = formatCurrency( Math.abs( event.amount ) + Math.abs( event.fee ) );
 		let reasonHeadline = __( 'Payment disputed', 'woocommerce-payments' );
 		if ( disputeReasons[ event.reason ] ) {
 			reasonHeadline = sprintf(
@@ -247,6 +246,28 @@ const mapEventToTimelineItems = ( event ) => {
 			}
 		);
 
+		let depositTimelineItem;
+		if ( null === event.amount ) {
+			depositTimelineItem = {
+				date: new Date( event.datetime * 1000 ),
+				icon: getIcon( 'info-outline' ),
+				headline: __( 'No funds have been withdrawn yet', 'woocommerce-payments' ),
+				body: [
+					__(
+						"The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
+						'woocommerce-services'
+					),
+				],
+				hideTimestamp: true,
+			};
+		} else {
+			const formattedTotal = formatCurrency( Math.abs( event.amount ) + Math.abs( event.fee ) );
+			depositTimelineItem = getDepositTimelineItem( event, formattedTotal, false, [
+				stringWithAmount( __( 'Disputed amount: %s', 'woocommerce-payments' ), event.amount ),
+				stringWithAmount( __( 'Fee: %s', 'woocommerce-payments' ), event.fee ),
+			] );
+		}
+
 		return [
 			getMainTimelineItem(
 				event,
@@ -255,10 +276,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error',
 				[ <a href={ disputeUrl }>{ __( 'View dispute', 'woocommerce-payments' ) }</a> ]
 			),
-			getDepositTimelineItem( event, formattedTotal, false, [
-				stringWithAmount( __( 'Disputed amount: %s', 'woocommerce-payments' ), event.amount ),
-				stringWithAmount( __( 'Fee: %s', 'woocommerce-payments' ), event.fee ),
-			] ),
+			depositTimelineItem,
 			getStatusChangeTimelineItem( event, __( 'Disputed: Needs Response', 'woocommerce-payments' ) ),
 		];
 	} else if ( 'dispute_in_review' === type ) {
@@ -290,6 +308,24 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 			getStatusChangeTimelineItem( event, __( 'Disputed: Lost', 'woocommerce-payments' ) ),
+		];
+	} else if ( 'dispute_warning_closed' === type ) {
+		return [
+			getMainTimelineItem(
+				event,
+				__( 'Dispute inquiry closed. The bank chose not to pursue this dispute.', 'woocommerce-payments' ),
+				'notice-outline',
+				'is-success'
+			),
+		];
+	} else if ( 'dispute_charge_refunded' === type ) {
+		return [
+			getMainTimelineItem(
+				event,
+				__( 'The disputed charge has been refunded.', 'woocommerce-payments' ),
+				'notice-outline',
+				'is-success'
+			),
 		];
 	}
 

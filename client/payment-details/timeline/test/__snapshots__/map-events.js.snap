@@ -151,6 +151,21 @@ Array [
 ]
 `;
 
+exports[`mapTimelineEvents formats dispute_charge_refunded events 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-02T02:06:14.000Z,
+    "headline": "The disputed charge has been refunded.",
+    "icon": <t
+      className="is-success"
+      icon="notice-outline"
+      size={24}
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents formats dispute_in_review events 1`] = `
 Array [
   Object {
@@ -243,6 +258,66 @@ Array [
     "icon": <t
       className=""
       icon="sync"
+      size={24}
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats dispute_needs_response events with no amount 1`] = `
+Array [
+  Object {
+    "body": Array [
+      <a
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=some_id"
+      >
+        View dispute
+      </a>,
+    ],
+    "date": 2020-04-02T02:06:14.000Z,
+    "headline": "Payment disputed as Fraudulent",
+    "icon": <t
+      className="is-error"
+      icon="cross"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [
+      "The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
+    ],
+    "date": 2020-04-02T02:06:14.000Z,
+    "headline": "No funds have been withdrawn yet",
+    "hideTimestamp": true,
+    "icon": <t
+      className=""
+      icon="info-outline"
+      size={24}
+    />,
+  },
+  Object {
+    "body": Array [],
+    "date": 2020-04-02T02:06:14.000Z,
+    "headline": "Payment status changed to Disputed: Needs Response",
+    "hideTimestamp": true,
+    "icon": <t
+      className=""
+      icon="sync"
+      size={24}
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents formats dispute_warning_closed events 1`] = `
+Array [
+  Object {
+    "body": Array [],
+    "date": 2020-04-02T02:06:14.000Z,
+    "headline": "Dispute inquiry closed. The bank chose not to pursue this dispute.",
+    "icon": <t
+      className="is-success"
+      icon="notice-outline"
       size={24}
     />,
   },

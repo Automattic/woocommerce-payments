@@ -156,4 +156,38 @@ describe( 'mapTimelineEvents', () => {
 			},
 		] ) ).toMatchSnapshot();
 	} );
+
+	test( 'formats dispute_needs_response events with no amount', () => {
+		expect( mapTimelineEvents( [
+			{
+				amount: null,
+				currency: null,
+				datetime: 1585793174,
+				deposit: null,
+				dispute_id: 'some_id',
+				evidence_due_by: 1585879574,
+				fee: null,
+				reason: 'fraudulent',
+				type: 'dispute_needs_response',
+			},
+		] ) ).toMatchSnapshot();
+	} );
+
+	test( 'formats dispute_warning_closed events', () => {
+		expect( mapTimelineEvents( [
+			{
+				datetime: 1585793174,
+				type: 'dispute_warning_closed',
+			},
+		] ) ).toMatchSnapshot();
+	} );
+
+	test( 'formats dispute_charge_refunded events', () => {
+		expect( mapTimelineEvents( [
+			{
+				datetime: 1585793174,
+				type: 'dispute_charge_refunded',
+			},
+		] ) ).toMatchSnapshot();
+	} );
 } );
