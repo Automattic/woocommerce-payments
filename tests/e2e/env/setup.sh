@@ -6,6 +6,7 @@ cwd=$(pwd)
 export WCP_ROOT=$cwd
 export E2E_ROOT="$cwd/tests/e2e"
 export WP_URL="localhost:8084"
+BLOG_ID=${E2E_BLOG_ID-111}
 
 step() {
 	echo
@@ -17,10 +18,9 @@ if [[ -f "local.env" ]]; then
 	. ./local.env
 fi
 
-SERVER_PATH="$E2E_ROOT/deps/wcp_server"
+SERVER_PATH="$E2E_ROOT/deps/wcp-server"
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	step "Fetching server"
-	echo $FORCE_E2E_DEPS_SETUP
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
 		echo "WCP_SERVER_REPO env variable is not defined"
@@ -29,13 +29,33 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 
 	rm -rf $SERVER_PATH
 	git clone --depth=1 $WCP_SERVER_REPO $SERVER_PATH
+
 else
 	echo "Using cached server at ${SERVER_PATH}"
 fi
 
-step "Starting server containers"
 cd $SERVER_PATH
+
+step "Creating server secrets"
+SECRETS="<?php
+define( 'WCPAY_STRIPE_TEST_PUBLIC_KEY', '$E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY' );
+define( 'WCPAY_STRIPE_TEST_SECRET_KEY', '$E2E_WCPAY_STRIPE_TEST_SECRET_KEY' );
+define( 'WCPAY_STRIPE_TEST_CLIENT_ID', '$E2E_WCPAY_STRIPE_TEST_CLIENT_ID' );
+define( 'WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY', '$E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY' );
+define( 'WCPAY_STRIPE_LIVE_PUBLIC_KEY', 'pk_live_XXXXXXX' );
+define( 'WCPAY_STRIPE_LIVE_SECRET_KEY', 'sk_live_XXXXXXX' );
+define( 'WCPAY_STRIPE_LIVE_CLIENT_ID', 'ca_live_XXXXXXX' );
+define( 'WCPAY_OAUTH_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYBYTES ) );
+"
+printf "$SECRETS" > "local/secrets.php"
+echo "Secrets created"
+
+step "Starting server containers"
 local/bin/start.sh
+
+step "Configuring server with stripe account"
+$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
+
 cd $cwd
 
 export DEV_TOOLS_DIR="wcp-dev-tools"
@@ -161,13 +181,11 @@ fi
 echo "Activating dev tools plugin"
 cli wp plugin activate $DEV_TOOLS_DIR
 
-# TODO: Move to single plugin cli command
-echo "Setting redirection to local server"
-cli wp option set wcpaydev_dev_mode "1"
-cli wp option set wcpaydev_redirect "1"
-cli wp option set wcpaydev_redirect_to "http://host.docker.internal:8086/wp-json/"
+echo "Setting Jetpack blog_id"
+cli wp wcpay_dev set_blog_id $BLOG_ID
 
-# TODO: Connect WCP Account
+echo "Setting redirection to local server"
+cli wcpay_dev redirect_to "http://host.docker.internal:8086/wp-json/"
 
 step "Creating ready page"
 cli wp post create --post_type=page --post_status=publish --post_title='Ready' --post_content='E2E-tests.'
