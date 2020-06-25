@@ -26,3 +26,10 @@ services:
       - ${E2E_ROOT}/env/default.env
     volumes:
       - ${E2E_ROOT}/docker/data:/var/lib/mysql
+  phpMyAdmin:
+    container_name: wcp_e2e_phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8093:80"
+    env_file:
+      - ${E2E_ROOT}/env/default.env

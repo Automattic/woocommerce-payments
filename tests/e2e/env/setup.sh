@@ -53,7 +53,10 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 fi
 
 step "Starting client containers"
-docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d
+docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
+if [[ -z $CI ]]; then
+	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
+fi
 
 echo
 step "Setting up client site"
