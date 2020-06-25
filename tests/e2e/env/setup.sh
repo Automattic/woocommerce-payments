@@ -18,9 +18,9 @@ if [[ -f "local.env" ]]; then
 fi
 
 SERVER_PATH="$E2E_ROOT/deps/wcp_server"
-if [[ $FORCE_E2E_SERVER_SETUP || ! -d $SERVER_PATH ]]; then
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	step "Fetching server"
-	echo $FORCE_E2E_SERVER_SETUP
+	echo $FORCE_E2E_DEPS_SETUP
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
 		echo "WCP_SERVER_REPO env variable is not defined"
@@ -38,17 +38,131 @@ cd $SERVER_PATH
 local/bin/start.sh
 cd $cwd
 
+export DEV_TOOLS_DIR="wcp-dev-tools"
+DEV_TOOLS_PATH="$E2E_ROOT/deps/$DEV_TOOLS_DIR"
+
+if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
+	step "Fetching dev tools"
+	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
+		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
+		exit 1;
+	fi
+
+	rm -rf $DEV_TOOLS_PATH
+	git clone --depth=1 $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
+fi
+
 step "Starting client containers"
-docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up -d
+docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d
 
 echo
 step "Setting up client site"
 # Need to use those credentials to comply with @woocommerce/e2e-environment
-export WP_ADMIN=admin
-export WP_ADMIN_PASSWORD=password
-. bin/docker-setup.sh wcp_e2e_wordpress
+WP_ADMIN=admin
+WP_ADMIN_PASSWORD=password
+WP_CONTAINER="wcp_e2e_wordpress"
+SITE_URL=$WP_URL
+SITE_TITLE="WooCommerce Payments E2E site"
 
-# TODO: Map client and server to workaround jetpack setup
+redirect_output() {
+	if [ -z "$DEBUG" ]; then
+        "$@" > /dev/null
+    else
+        "$@"
+    fi
+}
+
+# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
+# https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
+cli()
+{
+	redirect_output docker run -it --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
+}
+
+set +e
+# Wait for containers to be started up before the setup.
+# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+cli wp db check --path=/var/www/html --quiet > /dev/null
+while [[ $? -ne 0 ]]; do
+	echo "Waiting until the service is ready..."
+	sleep 5s
+	cli wp db check --path=/var/www/html --quiet > /dev/null
+done
+
+set -e
+
+echo
+echo "Setting up environment..."
+echo
+
+echo "Pulling the WordPress CLI docker image..."
+docker pull wordpress:cli > /dev/null
+
+echo "Setting up WordPress..."
+cli wp core install \
+	--path=/var/www/html \
+	--url="$SITE_URL" \
+	--title="$SITE_TITLE" \
+	--admin_name=${WP_ADMIN-admin} \
+	--admin_password=${WP_ADMIN_PASSWORD-password} \
+	--admin_email="${WP_ADMIN_EMAIL-admin@example.com}" \
+	--skip-email
+
+echo "Updating WordPress to the latest version..."
+cli wp core update --quiet
+
+echo "Updating the WordPress database..."
+cli wp core update-db --quiet
+
+echo "Updating permalink structure"
+cli wp rewrite structure '/%postname%/'
+
+echo "Installing and activating WooCommerce..."
+cli wp plugin install woocommerce --activate
+
+echo "Installing and activating Storefront theme..."
+cli wp theme install storefront --activate
+
+echo "Adding basic WooCommerce settings..."
+cli wp option set woocommerce_store_address "60 29th Street"
+cli wp option set woocommerce_store_address_2 "#343"
+cli wp option set woocommerce_store_city "San Francisco"
+cli wp option set woocommerce_default_country "US:CA"
+cli wp option set woocommerce_store_postcode "94110"
+cli wp option set woocommerce_currency "USD"
+cli wp option set woocommerce_product_type "both"
+cli wp option set woocommerce_allow_tracking "no"
+
+echo "Importing WooCommerce shop pages..."
+cli wp wc --user=admin tool run install_pages
+
+echo "Installing and activating the WordPress Importer plugin..."
+cli wp plugin install wordpress-importer --activate
+
+echo "Importing some sample data..."
+cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
+
+# TODO: Build a zip and use it to install plugin to make sure production build it under test.
+echo "Activating the WooCommerce Payments plugin..."
+cli wp plugin activate woocommerce-payments
+
+echo "Setting up WooCommerce Payments..."
+if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
+	echo "Creating WooCommerce Payments settings"
+	cli wp option add woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+else
+	echo "Updating WooCommerce Payments settings"
+	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+fi
+
+echo "Activating dev tools plugin"
+cli wp plugin activate $DEV_TOOLS_DIR
+
+# TODO: Move to single plugin cli command
+echo "Setting redirection to local server"
+cli wp option set wcpaydev_dev_mode "1"
+cli wp option set wcpaydev_redirect "1"
+cli wp option set wcpaydev_redirect_to "http://host.docker.internal:8086/wp-json/"
 
 # TODO: Connect WCP Account
 
