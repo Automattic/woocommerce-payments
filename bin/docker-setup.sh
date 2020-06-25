@@ -7,7 +7,7 @@ WP_CONTAINER=${1-woocommerce_payments_wordpress}
 SITE_URL=${WP_URL-"localhost:8082"}
 
 redirect_output() {
-	if [ -n "$DEBUG" ]; then
+	if [[ -z "$DEBUG" ]]; then
         "$@" > /dev/null
     else
         "$@"
