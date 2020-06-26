@@ -13,6 +13,21 @@ step() {
 	echo "===> $1"
 }
 
+redirect_output() {
+	if [ -z "$DEBUG" ]; then
+        "$@" > /dev/null
+    else
+        "$@"
+    fi
+}
+
+# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
+# https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
+cli()
+{
+	redirect_output docker run -it --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
+}
+
 if [[ -f "local.env" ]]; then
 	echo "Loading local env variables"
 	. ./local.env
@@ -51,10 +66,10 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting server containers"
-local/bin/start.sh
+redirect_output local/bin/start.sh
 
 step "Configuring server with stripe account"
-$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
+redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
 
 cd $cwd
 
@@ -73,7 +88,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 fi
 
 step "Starting client containers"
-docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
+redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
 fi
@@ -86,21 +101,6 @@ WP_ADMIN_PASSWORD=password
 WP_CONTAINER="wcp_e2e_wordpress"
 SITE_URL=$WP_URL
 SITE_TITLE="WooCommerce Payments E2E site"
-
-redirect_output() {
-	if [ -z "$DEBUG" ]; then
-        "$@" > /dev/null
-    else
-        "$@"
-    fi
-}
-
-# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
-# https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
-cli()
-{
-	redirect_output docker run -it --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
-}
 
 set +e
 # Wait for containers to be started up before the setup.
