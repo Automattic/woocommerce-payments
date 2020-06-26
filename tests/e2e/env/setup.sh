@@ -28,7 +28,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	fi
 
 	rm -rf $SERVER_PATH
-	git clone --depth=1 $WCP_SERVER_REPO $SERVER_PATH
+	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-master} $WCP_SERVER_REPO $SERVER_PATH
 
 else
 	echo "Using cached server at ${SERVER_PATH}"
@@ -69,7 +69,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 	fi
 
 	rm -rf $DEV_TOOLS_PATH
-	git clone --depth=1 $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
+	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-master} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
 fi
 
 step "Starting client containers"
@@ -192,3 +192,4 @@ cli wp post create --post_type=page --post_status=publish --post_title='Ready' -
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
+
