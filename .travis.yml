@@ -24,10 +24,8 @@ services:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
-  - name: test
-    if: type != cron
-  - name: e2e-test
-    if: type = cron
+  - test
+  - e2e-testing
 
 env:
   - WP_VERSION=latest
@@ -51,8 +49,11 @@ matrix:
     env: WP_VERSION=nightly
     stage: test
   - name: "E2E tests"
-    stage: e2e-test
-    script: npm run test:e2e
+    stage: e2e-testing
+    script:
+      - npm install jest --global
+      - npm run test:e2e-setup
+      - npm run test:e2e
 
 before_install:
   - npm i -g npm@>=6.13.0
