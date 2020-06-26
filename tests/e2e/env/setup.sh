@@ -185,7 +185,7 @@ echo "Setting Jetpack blog_id"
 cli wp wcpay_dev set_blog_id $BLOG_ID
 
 echo "Setting redirection to local server"
-cli wcpay_dev redirect_to "http://host.docker.internal:8086/wp-json/"
+cli wp wcpay_dev redirect_to "http://host.docker.internal:8086/wp-json/"
 
 step "Creating ready page"
 cli wp post create --post_type=page --post_status=publish --post_title='Ready' --post_content='E2E-tests.'
