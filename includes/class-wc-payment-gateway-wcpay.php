@@ -830,9 +830,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$intent_id = $intent->get_id();
-			$status    = $intent->get_status();
-			$amount    = $order->get_total();
+			$status = $intent->get_status();
+			$amount = $order->get_total();
 
 			switch ( $status ) {
 				case 'succeeded':
