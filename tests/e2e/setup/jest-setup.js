@@ -3,7 +3,6 @@
  */
 import { get } from 'lodash';
 import {
-	clearLocalStorage,
 	enablePageDialogAccept,
 	isOfflineMode,
 	setBrowserViewport,
@@ -29,7 +28,6 @@ const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 };
 
 async function setupBrowser() {
-	await clearLocalStorage();
 	await setBrowserViewport( 'large' );
 }
 
@@ -111,6 +109,10 @@ function observeConsoleLogging() {
 		// non - unique IDs.
 		// See: https://core.trac.wordpress.org/ticket/23165
 		if ( text.includes( 'elements with non-unique id #_wpnonce' ) ) {
+			return;
+		}
+
+		if ( text.includes( 'You may test your Stripe.js integration over HTTP.' ) ) {
 			return;
 		}
 
