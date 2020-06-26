@@ -86,6 +86,8 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-authentication-intent-mismatch-exception.php';
+
 		self::$account          = new WC_Payments_Account( self::$api_client );
 		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
 

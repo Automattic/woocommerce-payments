@@ -209,6 +209,8 @@ jQuery( function( $ ) {
 	var showAuthenticationModal = function( orderId, clientSecret ) {
 		stripe.confirmCardPayment( clientSecret )
 		.then( function( result ) {
+			var intentId = ( result.paymentIntent && result.paymentIntent.id ||
+				result.error && result.error.payment_intent && result.error.payment_intent.id );
 			return [
 				// eslint-disable-next-line camelcase
 				jQuery.post( wcpay_config.ajaxUrl, {
@@ -217,6 +219,8 @@ jQuery( function( $ ) {
 					order_id: orderId,
 					// eslint-disable-next-line camelcase
 					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
+					// eslint-disable-next-line camelcase
+					intent_id: intentId,
 			} ), result.error ];
 		} )
 		.then( function( [ response, originalError ] ) {

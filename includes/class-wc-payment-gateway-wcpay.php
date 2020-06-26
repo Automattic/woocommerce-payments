@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Exceptions\WC_Payments_Authentication_Intent_Mismatch_Exception;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -812,9 +813,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$intent_id = $order->get_meta( '_intent_id', true );
 			// An exception is thrown if an intent can't be found for the given intent ID.
-			$intent    = $this->payments_api_client->get_intent( $intent_id );
-			$status    = $intent->get_status();
+			$intent = $this->payments_api_client->get_intent( $intent_id );
+
+			// Check that the intent saved in the order matches the intent used as part of the
+			// authentication process. The ID of the intent used is sent with
+			// the AJAX request. We are about to use the status of the intent saved in
+			// the order, so we need to make sure the intent that was used for authentication
+			// is the same as the one we're using to update the status.
+			$intent_id_received = isset( $_POST['intent_id'] )
+				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+				/* translators: This will be used to indicate an unknown value for an ID. */
+				: __( 'unknown', 'woocommerce-payments' );
+			if ( $intent_id !== $intent_id_received ) {
+				throw new WC_Payments_Authentication_Intent_Mismatch_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' )
+				);
+			}
+
 			$intent_id = $intent->get_id();
+			$status    = $intent->get_status();
 			$amount    = $order->get_total();
 
 			switch ( $status ) {
@@ -890,6 +907,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				wp_die();
 			}
+		} catch ( WC_Payments_Authentication_Intent_Mismatch_Exception $e ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
+					__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				$intent_id_received
+			);
+			$order->add_order_note( $note );
+
+			// Send back error so it can be displayed to the customer.
+			echo wp_json_encode(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+			wp_die();
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			echo wp_json_encode(
