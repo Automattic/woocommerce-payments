@@ -52,8 +52,7 @@ matrix:
     stage: e2e-testing
     script:
       - npm install jest --global
-      - npm run test:e2e-setup
-      - npm run test:e2e
+      - npm run test:e2e-setup && npm run test:e2e
 
 before_install:
   - npm i -g npm@>=6.13.0
