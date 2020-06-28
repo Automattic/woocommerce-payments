@@ -181,12 +181,6 @@ class WC_Payments {
 				'slug'  => 'woocommerce',
 				'file'  => 'woocommerce/woocommerce.php',
 			],
-			[
-				'name'  => 'WooCommerce Admin',
-				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
-				'slug'  => 'woocommerce-admin',
-				'file'  => 'woocommerce-admin/woocommerce-admin.php',
-			],
 		];
 
 		// Check if WooCommerce and other dependencies are  installed and active.
