@@ -190,21 +190,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		}
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
-		$order->update_meta_data( '_intention_status', 'canceled' );
-		$order->update_status(
-			'cancelled',
-			sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: transaction ID of the payment */
-					__( 'Payment authorization has <strong>expired</strong> (<code>%1$s</code>).', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				$intent_id
-			)
-		);
+		WC_Payments_Utils::mark_payment_expired( $order );
 	}
 
 	/**

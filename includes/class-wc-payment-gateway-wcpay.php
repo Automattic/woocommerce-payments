@@ -671,37 +671,47 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function capture_charge( $order ) {
 		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention(
-			$order->get_transaction_id(),
-			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
-			$this->get_level3_data_from_order( $order )
-		);
-		$status = $intent->get_status();
 
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
+		try {
+			$intent = $this->payments_api_client->capture_intention(
+				$order->get_transaction_id(),
+				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+				$this->get_level3_data_from_order( $order )
+			);
 
-		if ( 'succeeded' === $status ) {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
+			$status = $intent->get_status();
+
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
+
+			if ( 'succeeded' === $status ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the successfully charged amount */
-					__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				),
-				wc_price( $amount )
-			);
-			$order->add_order_note( $note );
-			$order->payment_complete();
-		} else {
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
+						__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
+						[ 'strong' => '<strong>' ]
+					),
+					wc_price( $amount )
+				);
+				$order->add_order_note( $note );
+				$order->payment_complete();
+			} else {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the successfully charged amount */
-					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
-					[ 'strong' => '<strong>' ]
-				),
-				wc_price( $amount )
-			);
-			$order->add_order_note( $note );
+						__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
+						[ 'strong' => '<strong>' ]
+					),
+					wc_price( $amount )
+				);
+				$order->add_order_note( $note );
+			}
+		} catch ( WC_Payments_API_Exception $e ) {
+			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+			if ( 'canceled' === $intent->get_status() ) {
+				WC_Payments_Utils::mark_payment_expired( $order );
+			}
 		}
 	}
 
