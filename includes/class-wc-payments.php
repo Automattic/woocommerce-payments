@@ -249,17 +249,11 @@ class WC_Payments {
 					[ 'strong' => '<strong>' ]
 				);
 
-				if ( defined( 'WC_ADMIN_PACKAGE_EXISTS' ) ) { // Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
-					$message .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
-					if ( current_user_can( 'deactivate_plugins' ) ) {
-						$deactivate_url = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
-						$message       .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
-					}
-				} else {
-					if ( current_user_can( 'update_plugins' ) ) {
-						$update_url = wp_nonce_url( admin_url( 'update.php?action=upgrade-plugin&plugin=woocommerce-admin/woocommerce-admin.php' ), 'upgrade-plugin_woocommerce-admin/woocommerce-admin.php' );
-						$message   .= ' <a href="' . $update_url . '">' . __( 'Update WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
-					}
+				// Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
+				$message .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
+				if ( current_user_can( 'deactivate_plugins' ) ) {
+					$deactivate_url = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
+					$message       .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
 				}
 				self::display_admin_error( $message );
 			}
