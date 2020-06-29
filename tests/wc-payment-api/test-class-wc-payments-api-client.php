@@ -359,7 +359,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$this->payments_api_client->update_customer( 'cus_test12345', $name, $email, $description );
+		$this->payments_api_client->update_customer(
+			'cus_test12345',
+			[
+				'name'        => $name,
+				'email'       => $email,
+				'description' => $description,
+			]
+		);
 	}
 
 	/**

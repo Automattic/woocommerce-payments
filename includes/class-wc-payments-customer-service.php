@@ -98,7 +98,14 @@ class WC_Payments_Customer_Service {
 
 		try {
 			// Update the customer on the WCPay server.
-			$this->payments_api_client->update_customer( $customer_id, $name, $email, $description );
+			$this->payments_api_client->update_customer(
+				$customer_id,
+				[
+					'name'        => $name,
+					'email'       => $email,
+					'description' => $description,
+				]
+			);
 
 			// We successfully updated the existing customer, so return the passed in ID unchanged.
 			return $customer_id;

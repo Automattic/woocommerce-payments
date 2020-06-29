@@ -668,14 +668,12 @@ class WC_Payments_API_Client {
 	/**
 	 * Update a customer.
 	 *
-	 * @param string      $customer_id ID of customer to update.
-	 * @param string|null $name        Customer's full name.
-	 * @param string|null $email       Customer's email address.
-	 * @param string|null $description Description of customer.
+	 * @param string $customer_id   ID of customer to update.
+	 * @param array  $customer_data Data to be updated.
 	 *
 	 * @throws WC_Payments_API_Exception Error updating customer.
 	 */
-	public function update_customer( $customer_id, $name = null, $email = null, $description = null ) {
+	public function update_customer( $customer_id, $customer_data = [] ) {
 		if ( null === $customer_id || '' === trim( $customer_id ) ) {
 			throw new WC_Payments_API_Exception(
 				__( 'Customer ID is required', 'woocommerce-payments' ),
@@ -685,11 +683,7 @@ class WC_Payments_API_Client {
 		}
 
 		$this->request(
-			[
-				'name'        => $name,
-				'email'       => $email,
-				'description' => $description,
-			],
+			$customer_data,
 			self::CUSTOMERS_API . '/' . $customer_id,
 			self::POST
 		);

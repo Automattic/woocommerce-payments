@@ -112,7 +112,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Guest' );
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Guest',
+				]
+			);
 
 		$customer_id = $this->customer_service->update_customer_for_user(
 			'cus_test12345',
@@ -136,7 +143,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Username: testUser',
+				]
+			)
 			->willThrowException( new WC_Payments_API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		// Check that the API call to create customer happens.
@@ -167,7 +181,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Username: testUser',
+				]
+			)
 			->willThrowException( new WC_Payments_API_Exception( 'Generic Error Message', 'generic_error', 500 ) );
 
 		$this->expectException( WC_Payments_API_Exception::class );
