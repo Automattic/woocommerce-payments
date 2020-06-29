@@ -29,6 +29,8 @@ class WC_Payments_Token_Service {
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
+
+		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 	}
 
 	/**
@@ -51,5 +53,17 @@ class WC_Payments_Token_Service {
 		$token->save();
 
 		return $token;
+	}
+
+	/**
+	 * Delete token from Stripe.
+	 *
+	 * @param string           $token_id Token ID.
+	 * @param WC_Payment_Token $token    Token object.
+	 */
+	public function woocommerce_payment_token_deleted( $token_id, $token ) {
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+			$this->payments_api_client->detach_payment_method( $token->get_token() );
+		}
 	}
 }

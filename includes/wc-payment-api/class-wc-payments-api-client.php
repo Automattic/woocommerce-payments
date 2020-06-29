@@ -713,6 +713,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Detach a payment method from a customer.
+	 *
+	 * @param string $payment_method_id Payment method ID.
+	 *
+	 * @return array Payment method details.
+	 *
+	 * @throws WC_Payments_API_Exception If detachment fails.
+	 */
+	public function detach_payment_method( $payment_method_id ) {
+		return $this->request(
+			[],
+			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

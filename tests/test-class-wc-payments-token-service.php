@@ -84,4 +84,30 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( '06', $token->get_expiry_month() );
 		$this->assertEquals( '2026', $token->get_expiry_year() );
 	}
+
+	public function test_woocommerce_payment_token_deleted() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'detach_payment_method' )
+			->with( 'pm_mock' )
+			->will( $this->returnValue( [] ) );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+
+		$this->token_service->woocommerce_payment_token_deleted( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_deleted_other_gateway() {
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'detach_payment_method' );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'another_gateway' );
+		$token->set_token( 'pm_mock' );
+
+		$this->token_service->woocommerce_payment_token_deleted( 'pm_mock', $token );
+	}
 }
