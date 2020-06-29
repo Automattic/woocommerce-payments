@@ -124,6 +124,23 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Sets a payment method as default for a customer.
+	 *
+	 * @param string $customer_id       The customer ID.
+	 * @param string $payment_method_id The payment method ID.
+	 */
+	public function set_default_payment_method_for_customer( $customer_id, $payment_method_id ) {
+		$this->payments_api_client->update_customer(
+			$customer_id,
+			[
+				'invoice_settings' => [
+					'default_payment_method' => $payment_method_id,
+				],
+			]
+		);
+	}
+
+	/**
 	 * Build the customer description string.
 	 *
 	 * @param WP_User $user WordPress user.

@@ -27,6 +27,13 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Customer_Service.
+	 *
+	 * @var WC_Payments_Customer_Service|MockObject
+	 */
+	private $mock_customer_service;
+
+	/**
 	 * @var int
 	 */
 	private $user_id = 0;
@@ -40,9 +47,10 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->user_id = get_current_user_id();
 		wp_set_current_user( 1 );
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
-		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client );
+		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service );
 	}
 
 	/**
@@ -109,5 +117,58 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token->set_token( 'pm_mock' );
 
 		$this->token_service->woocommerce_payment_token_deleted( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_set_default() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'set_default_payment_method_for_customer' )
+			->with( 'cus_12345', 'pm_mock' );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_set_default_other_gateway() {
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'set_default_payment_method_for_customer' );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'another_gateway' );
+		$token->set_token( 'pm_mock' );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
+	}
+
+	public function test_woocommerce_payment_token_set_default_no_customer() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( null );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'set_default_payment_method_for_customer' );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+
+		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 	}
 }

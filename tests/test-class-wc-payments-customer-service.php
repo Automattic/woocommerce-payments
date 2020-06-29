@@ -201,4 +201,18 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 			'test.user@example.com'
 		);
 	}
+
+	public function test_set_default_payment_method_for_customer() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_customer' )
+			->with(
+				'cus_12345',
+				[
+					'invoice_settings' => [ 'default_payment_method' => 'pm_mock' ],
+				]
+			);
+
+			$this->customer_service->set_default_payment_method_for_customer( 'cus_12345', 'pm_mock' );
+	}
 }
