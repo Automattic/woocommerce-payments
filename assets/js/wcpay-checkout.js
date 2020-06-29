@@ -361,6 +361,11 @@ jQuery( function ( $ ) {
 		}
 	} );
 
+	// Handle the add payment method form for WooCommerce Payments.
+	$( 'form#add_payment_method' ).on( 'submit', function() {
+		return handleOnPaymentFormSubmit( $( 'form#add_payment_method' ) );
+	} );
+
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
 	maybeShowAuthenticationModal();

@@ -21,18 +21,19 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
-	const ACCOUNTS_API        = 'accounts';
-	const CHARGES_API         = 'charges';
-	const CUSTOMERS_API       = 'customers';
-	const INTENTIONS_API      = 'intentions';
-	const REFUNDS_API         = 'refunds';
-	const DEPOSITS_API        = 'deposits';
-	const TRANSACTIONS_API    = 'transactions';
-	const DISPUTES_API        = 'disputes';
-	const FILES_API           = 'files';
-	const OAUTH_API           = 'oauth';
-	const TIMELINE_API        = 'timeline';
-	const PAYMENT_METHODS_API = 'payment_methods';
+	const ACCOUNTS_API         = 'accounts';
+	const CHARGES_API          = 'charges';
+	const CUSTOMERS_API        = 'customers';
+	const INTENTIONS_API       = 'intentions';
+	const REFUNDS_API          = 'refunds';
+	const DEPOSITS_API         = 'deposits';
+	const TRANSACTIONS_API     = 'transactions';
+	const DISPUTES_API         = 'disputes';
+	const FILES_API            = 'files';
+	const OAUTH_API            = 'oauth';
+	const TIMELINE_API         = 'timeline';
+	const PAYMENT_METHODS_API  = 'payment_methods';
+	const SETUP_INTENTIONS_API = 'setup_intentions';
 
 	/**
 	 * User agent string to report in requests.
@@ -246,6 +247,25 @@ class WC_Payments_API_Client {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
 
 		return $this->deserialize_intention_object_from_array( $intent );
+	}
+
+	/**
+	 * Create a setup intention, and automatically confirm it.
+	 *
+	 * @param string $payment_method_id      - ID of payment method to be saved.
+	 * @param string $customer_id            - ID of the customer.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - Exception thrown on setup intention creation failure.
+	 */
+	public function create_and_confirm_setup_intention( $payment_method_id, $customer_id ) {
+		$request = [
+			'payment_method' => $payment_method_id,
+			'customer'       => $customer_id,
+			'confirm'        => 'true',
+		];
+
+		return $this->request( $request, self::SETUP_INTENTIONS_API, self::POST );
 	}
 
 	/**

@@ -94,6 +94,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'products',
 			'refunds',
 			'tokenization',
+			'add_payment_method',
 		];
 
 		// Define setting fields.
@@ -1039,6 +1040,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				]
 			);
 			wp_die();
+		}
+	}
+
+	/**
+	 * Add payment method via account screen.
+	 *
+	 * @throws Exception If payment method is missing.
+	 */
+	public function add_payment_method() {
+		try {
+			if ( ! isset( $_POST['wcpay-payment-method'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
+			}
+
+			$payment_method = $this->get_payment_method_from_request();
+
+			// Determine the customer making the payment, create one if we don't have one already.
+			$user        = wp_get_current_user();
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+			if ( null === $customer_id ) {
+				// Create a new customer.
+				$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+			}
+
+			// Create setup intention, try to confirm it & capture the charge (if 3DS is not required).
+			$setup_intent = $this->payments_api_client->create_and_confirm_setup_intention(
+				$payment_method,
+				$customer_id
+			);
+
+			$this->token_service->add_token_to_user( $payment_method, wp_get_current_user() );
+
+			return [
+				'result'   => 'success',
+				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+			];
+		} catch ( Exception $e ) {
+			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
+			return [
+				'result' => 'error',
+			];
 		}
 	}
 }
