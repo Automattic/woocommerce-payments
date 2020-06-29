@@ -53,10 +53,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		/** @var WC_Payments_Customer_Service|MockObject $mock_customer_service */
 		$mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
+		/** @var WC_Payments_Token_Service|MockObject $mock_token_service */
+		$mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->wcpay_account,
-			$mock_customer_service
+			$mock_customer_service,
+			$mock_token_service,
 		);
 	}
 

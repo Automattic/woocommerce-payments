@@ -24,6 +24,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_customer_service;
 
 	/**
+	 * Mock WC_Payments_Token_Service.
+	 *
+	 * @var WC_Payments_Token_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_token_service;
+
+	/**
 	 * Mock WC_Payments_API_Client.
 	 *
 	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
@@ -68,6 +75,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
+		$this->mock_token_service = $this->getMockBuilder( 'WC_Payments_Token_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -76,6 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_api_client,
 					$this->wcpay_account,
 					$this->mock_customer_service,
+					$this->mock_token_service,
 				]
 			)
 			->setMethods(
@@ -98,7 +111,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
-			'wcpay-payment-method' => true,
+			'wcpay-payment-method' => 'pm_mock',
 		];
 	}
 
@@ -483,5 +496,43 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			'#wcpay-confirm-pi:' . $order_id . ':' . $secret,
 			$result['redirect']
 		);
+	}
+
+	public function test_saved_card_at_checkout() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_token_to_user' )
+			->with( 'pm_mock', wp_get_current_user() );
+
+		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_not_saved_card_at_checkout() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), false, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_token_to_user' );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 }

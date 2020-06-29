@@ -21,17 +21,18 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
-	const ACCOUNTS_API     = 'accounts';
-	const CHARGES_API      = 'charges';
-	const CUSTOMERS_API    = 'customers';
-	const INTENTIONS_API   = 'intentions';
-	const REFUNDS_API      = 'refunds';
-	const DEPOSITS_API     = 'deposits';
-	const TRANSACTIONS_API = 'transactions';
-	const DISPUTES_API     = 'disputes';
-	const FILES_API        = 'files';
-	const OAUTH_API        = 'oauth';
-	const TIMELINE_API     = 'timeline';
+	const ACCOUNTS_API        = 'accounts';
+	const CHARGES_API         = 'charges';
+	const CUSTOMERS_API       = 'customers';
+	const INTENTIONS_API      = 'intentions';
+	const REFUNDS_API         = 'refunds';
+	const DEPOSITS_API        = 'deposits';
+	const TRANSACTIONS_API    = 'transactions';
+	const DISPUTES_API        = 'disputes';
+	const FILES_API           = 'files';
+	const OAUTH_API           = 'oauth';
+	const TIMELINE_API        = 'timeline';
+	const PAYMENT_METHODS_API = 'payment_methods';
 
 	/**
 	 * User agent string to report in requests.
@@ -111,13 +112,14 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention, and automatically confirm it.
 	 *
-	 * @param int    $amount            - Amount to charge.
-	 * @param string $currency_code     - Currency to charge in.
-	 * @param string $payment_method_id - ID of payment method to process charge with.
-	 * @param string $customer_id       - ID of the customer making the payment.
-	 * @param bool   $manual_capture    - Whether to capture funds via manual action.
-	 * @param array  $metadata          - Meta data values to be sent along with payment intent creation.
-	 * @param array  $level3            - Level 3 data.
+	 * @param int    $amount                 - Amount to charge.
+	 * @param string $currency_code          - Currency to charge in.
+	 * @param string $payment_method_id      - ID of payment method to process charge with.
+	 * @param string $customer_id            - ID of the customer making the payment.
+	 * @param bool   $manual_capture         - Whether to capture funds via manual action.
+	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
+	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3                 - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -128,6 +130,7 @@ class WC_Payments_API_Client {
 		$payment_method_id,
 		$customer_id,
 		$manual_capture = false,
+		$save_payment_method = false,
 		$metadata = [],
 		$level3 = []
 	) {
@@ -141,6 +144,10 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+
+		if ( $save_payment_method ) {
+			$request['setup_future_usage'] = 'off_session';
+		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
@@ -665,6 +672,23 @@ class WC_Payments_API_Client {
 			],
 			self::CUSTOMERS_API . '/' . $customer_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Get payment method details.
+	 *
+	 * @param string $payment_method_id Payment method ID.
+	 *
+	 * @return array Payment method details.
+	 *
+	 * @throws WC_Payments_API_Exception If payment method does not exist.
+	 */
+	public function get_payment_method( $payment_method_id ) {
+		return $this->request(
+			[],
+			self::PAYMENT_METHODS_API . '/' . $payment_method_id,
+			self::GET
 		);
 	}
 

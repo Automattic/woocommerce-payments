@@ -58,20 +58,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Token instance for working with customer tokens
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
 	 * @param WC_Payments_Account          $account             - Account class instance.
 	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
+	 * @param WC_Payments_Token_Service    $token_service       - Token class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->customer_service    = $customer_service;
+		$this->token_service       = $token_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -83,6 +93,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->supports           = [
 			'products',
 			'refunds',
+			'tokenization',
 		];
 
 		// Define setting fields.
@@ -240,12 +251,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Displays the save to account checkbox.
+	 */
+	public function save_payment_method_checkbox() {
+		printf(
+			'<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
+				<input id="wc-%1$s-new-payment-method" name="wc-%1$s-new-payment-method" type="checkbox" value="true" style="width:auto;" />
+				<label for="wc-%1$s-new-payment-method" style="display:inline;">%2$s</label>
+			</p>',
+			esc_attr( $this->id ),
+			esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) )
+		);
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
 		try {
+			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+
 			// Add JavaScript for the payment form.
 			$js_config = [
 				'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
@@ -309,9 +336,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					</p>
 				<?php endif; ?>
 
+				<?php
+				if ( $display_tokenization ) {
+					$this->tokenization_script();
+					echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				?>
+
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
+
+				<?php
+				if ( apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) && ! is_add_payment_method_page() ) {
+					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				?>
+
+
 			</fieldset>
 			<?php
 		} catch ( Exception $e ) {
@@ -353,10 +395,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
-				$payment_method = $this->get_payment_method_from_request();
-				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
-				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-				$email          = sanitize_email( $order->get_billing_email() );
+				$payment_method      = $this->get_payment_method_from_request();
+				$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
+				$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email               = sanitize_email( $order->get_billing_email() );
+				$save_payment_method = ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// Determine the customer making the payment, create one if we don't have one already.
 				$user        = wp_get_current_user();
@@ -385,9 +428,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_method,
 					$customer_id,
 					$manual_capture,
+					$save_payment_method,
 					$metadata,
 					$this->get_level3_data_from_order( $order )
 				);
+
+				if ( $save_payment_method ) {
+					$this->token_service->add_token_to_user( $payment_method, wp_get_current_user() );
+				}
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$intent_id = $intent->get_id();
