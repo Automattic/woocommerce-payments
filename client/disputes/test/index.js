@@ -2,12 +2,12 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { DisputesList } from '../';
+import DisputesList from '../';
 import { useDisputes } from 'data';
 
 jest.mock( 'data', () => ( {
@@ -70,9 +70,7 @@ describe( 'Disputes list', () => {
 			],
 		} );
 
-		const list = shallow(
-			<DisputesList />
-		);
+		const { container: list } = render( <DisputesList /> );
 		expect( list ).toMatchSnapshot();
 	} );
 } );

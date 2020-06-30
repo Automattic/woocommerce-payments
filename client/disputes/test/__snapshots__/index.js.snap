@@ -1,262 +1,488 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Disputes list renders correctly 1`] = `
-<Page>
-  <TableCard
-    baseSearchQuery={Object {}}
-    compareParam="filter"
-    downloadable={false}
-    headers={
-      Array [
-        Object {
-          "cellClassName": "info-button",
-          "key": "details",
-          "label": "",
-          "required": true,
-        },
-        Object {
-          "key": "amount",
-          "label": "Amount",
-          "required": true,
-        },
-        Object {
-          "key": "status",
-          "label": "Status",
-          "required": true,
-        },
-        Object {
-          "key": "reason",
-          "label": "Reason",
-          "required": true,
-        },
-        Object {
-          "key": "source",
-          "label": "Source",
-          "required": true,
-        },
-        Object {
-          "key": "order",
-          "label": "Order #",
-          "required": true,
-        },
-        Object {
-          "key": "customer",
-          "label": "Customer",
-        },
-        Object {
-          "key": "email",
-          "label": "Email",
-          "visible": false,
-        },
-        Object {
-          "key": "country",
-          "label": "Country",
-          "visible": false,
-        },
-        Object {
-          "key": "created",
-          "label": "Disputed on",
-          "required": true,
-        },
-        Object {
-          "key": "dueBy",
-          "label": "Respond by",
-          "required": true,
-        },
-      ]
-    }
-    isLoading={false}
-    onColumnsChange={[Function]}
-    onQueryChange={[Function]}
-    onSearch={[Function]}
-    query={Object {}}
-    rowHeader={0}
-    rows={
-      Array [
-        Array [
-          Object {
-            "display": <DetailsLink
-              id="dp_asdfghjkl"
-              parentSegment="disputes"
-            />,
-            "value": "dp_asdfghjkl",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+<div>
+  <div
+    class=" woocommerce-payments-page"
+  >
+    <div
+      class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Disputes
+          </h2>
+        </div>
+        <div
+          class="woocommerce-card__action woocommerce-card__header-item"
+        />
+        <div
+          class="woocommerce-card__menu woocommerce-card__header-item"
+        >
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div>
+              <button
+                aria-expanded="false"
+                class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+                title="Choose which values to display"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="dashicon dashicons-ellipsis"
+                  focusable="false"
+                  height="20"
+                  role="img"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          aria-hidden="false"
+          aria-labelledby="caption-0"
+          class="woocommerce-table__table"
+          role="group"
+        >
+          <table>
+            <caption
+              class="woocommerce-table__caption screen-reader-text"
+              id="caption-0"
             >
-              $10.00
-            </ClickableCell>,
-            "value": 10,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              <DisputeStatusChip
-                status="needs_response"
-              />
-            </ClickableCell>,
-            "value": "needs_response",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              Fraudulent
-            </ClickableCell>,
-            "value": "fraudulent",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              <span
-                className="payment-method__brand payment-method__brand--visa"
-              />
-            </ClickableCell>,
-            "value": "visa",
-          },
-          Object {
-            "display": <OrderLink
-              order={
-                Object {
-                  "number": "1",
-                  "url": "http://test.local/order/1",
-                }
-              }
-            />,
-            "value": "1",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              Mock customer
-            </ClickableCell>,
-            "value": "Mock customer",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              mock@customer.net
-            </ClickableCell>,
-            "value": "mock@customer.net",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              US
-            </ClickableCell>,
-            "value": "US",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              Nov 1, 2019
-            </ClickableCell>,
-            "value": 1572590800000,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-            >
-              Nov 8, 2019 / 2:46AM
-            </ClickableCell>,
-            "value": 1573199200000,
-          },
-        ],
-        Array [
-          Object {
-            "display": <DetailsLink
-              id="dp_zxcvbnm"
-              parentSegment="disputes"
-            />,
-            "value": "dp_zxcvbnm",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              $10.50
-            </ClickableCell>,
-            "value": 10.5,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              <DisputeStatusChip
-                status="under_review"
-              />
-            </ClickableCell>,
-            "value": "under_review",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              General
-            </ClickableCell>,
-            "value": "general",
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              <span
-                className="payment-method__brand payment-method__brand--undefined"
-              />
-            </ClickableCell>,
-            "value": undefined,
-          },
-          Object {
-            "display": null,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            />,
-            "value": undefined,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            />,
-            "value": undefined,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            />,
-            "value": undefined,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              Oct 30, 2019
-            </ClickableCell>,
-            "value": 1572480800000,
-          },
-          Object {
-            "display": <ClickableCell
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-            >
-              Nov 6, 2019 / 11:00PM
-            </ClickableCell>,
-            "value": 1573099200000,
-          },
-        ],
-      ]
-    }
-    rowsPerPage={10}
-    showMenu={true}
-    title="Disputes"
-    totalRows={10}
-  />
-</Page>
+              Disputes
+            </caption>
+            <tbody>
+              <tr>
+                <th
+                  class="woocommerce-table__header info-button"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  />
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Amount
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Status
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Reason
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Source
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Order #
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Customer
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Email
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Country
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Disputed on
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="false"
+                  >
+                    Respond by
+                  </span>
+                </th>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    $10.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-primary is-compact"
+                    >
+                      Needs response
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Fraudulent
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--visa"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="http://test.local/order/1"
+                  >
+                    1
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Mock customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    mock@customer.net
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    US
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Nov 1, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
+                    tabindex="-1"
+                  >
+                    Nov 8, 2019 / 2:46AM
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item info-button"
+                  scope="row"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                  >
+                    <svg
+                      class="gridicon gridicons-info-outline needs-offset"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g>
+                        <path
+                          d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                        />
+                      </g>
+                    </svg>
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    $10.50
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="chip chip-light is-compact"
+                    >
+                      Under review
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    General
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method__brand payment-method__brand--undefined"
+                    />
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                />
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  />
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  />
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  />
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    Oct 30, 2019
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
+                    tabindex="-1"
+                  >
+                    Nov 6, 2019 / 11:00PM
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 `;
