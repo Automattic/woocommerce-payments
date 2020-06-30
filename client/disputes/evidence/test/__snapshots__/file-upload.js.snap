@@ -1,187 +1,303 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FileUploadControl renders default file upload control 1`] = `
-<BaseControl
-  id="form-file-upload-base-control-field_key"
-  label="Upload file"
->
+<div>
   <div
-    className="file-upload"
+    class="components-base-control"
   >
-    <FormFileUpload
-      accept=".pdf, image/png, image/jpeg"
-      className={null}
-      disabled={false}
-      icon={
-        <t
-          icon="add-outline"
-          size={18}
-        />
-      }
-      id="form-file-upload-field_key"
-      isBusy={false}
-      isDestructive=""
-      isLarge={true}
-      isPrimary={true}
-      onChange={[Function]}
+    <div
+      class="components-base-control__field"
     >
-      Upload file
-    </FormFileUpload>
-    <span
-      className="upload-message"
-    />
+      <label
+        class="components-base-control__label"
+        for="form-file-upload-base-control-field_key"
+      >
+        Upload file
+      </label>
+      <div
+        class="file-upload"
+      >
+        <div
+          class="components-form-file-upload"
+        >
+          <button
+            class="components-button components-icon-button has-text is-button is-primary is-large"
+            id="form-file-upload-field_key"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-add-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                />
+              </g>
+            </svg>
+            Upload file
+          </button>
+          <input
+            accept=".pdf, image/png, image/jpeg"
+            style="display: none;"
+            type="file"
+          />
+        </div>
+        <span
+          class="upload-message"
+        />
+      </div>
+    </div>
   </div>
-</BaseControl>
+</div>
 `;
 
 exports[`FileUploadControl renders disabled state 1`] = `
-<BaseControl
-  id="form-file-upload-base-control-field_key"
-  label="Upload file"
->
+<div>
   <div
-    className="file-upload"
+    class="components-base-control"
   >
-    <FormFileUpload
-      accept=".pdf, image/png, image/jpeg"
-      className="is-success"
-      disabled={true}
-      icon={
-        <t
-          icon="checkmark"
-          size={18}
-        />
-      }
-      id="form-file-upload-field_key"
-      isBusy={false}
-      isDestructive=""
-      isLarge={true}
-      isPrimary={true}
-      onChange={[Function]}
+    <div
+      class="components-base-control__field"
     >
-      Upload file
-    </FormFileUpload>
-    <span
-      className="upload-message"
-    >
-      file.pdf
-    </span>
+      <label
+        class="components-base-control__label"
+        for="form-file-upload-base-control-field_key"
+      >
+        Upload file
+      </label>
+      <div
+        class="file-upload"
+      >
+        <div
+          class="components-form-file-upload"
+        >
+          <button
+            class="components-button components-icon-button is-success has-text is-button is-primary is-large"
+            disabled=""
+            id="form-file-upload-field_key"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-checkmark"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                />
+              </g>
+            </svg>
+            Upload file
+          </button>
+          <input
+            accept=".pdf, image/png, image/jpeg"
+            style="display: none;"
+            type="file"
+          />
+        </div>
+        <span
+          class="upload-message"
+        >
+          file.pdf
+        </span>
+      </div>
+    </div>
   </div>
-</BaseControl>
+</div>
 `;
 
 exports[`FileUploadControl renders loading state 1`] = `
-<BaseControl
-  id="form-file-upload-base-control-field_key"
-  label="Upload file"
->
+<div>
   <div
-    className="file-upload"
+    class="components-base-control"
   >
-    <FormFileUpload
-      accept=".pdf, image/png, image/jpeg"
-      className={null}
-      disabled={true}
-      icon={
-        <t
-          icon="add-outline"
-          size={18}
-        />
-      }
-      id="form-file-upload-field_key"
-      isBusy={true}
-      isDestructive=""
-      isLarge={true}
-      isPrimary={true}
-      onChange={[Function]}
+    <div
+      class="components-base-control__field"
     >
-      Upload file
-    </FormFileUpload>
-    <span
-      className="upload-message"
-    />
+      <label
+        class="components-base-control__label"
+        for="form-file-upload-base-control-field_key"
+      >
+        Upload file
+      </label>
+      <div
+        class="file-upload"
+      >
+        <div
+          class="components-form-file-upload"
+        >
+          <button
+            class="components-button components-icon-button has-text is-button is-primary is-large is-busy"
+            disabled=""
+            id="form-file-upload-field_key"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-add-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                />
+              </g>
+            </svg>
+            Upload file
+          </button>
+          <input
+            accept=".pdf, image/png, image/jpeg"
+            style="display: none;"
+            type="file"
+          />
+        </div>
+        <span
+          class="upload-message"
+        />
+      </div>
+    </div>
   </div>
-</BaseControl>
+</div>
 `;
 
 exports[`FileUploadControl renders upload done state 1`] = `
-<BaseControl
-  id="form-file-upload-base-control-field_key"
-  label="Upload file"
->
+<div>
   <div
-    className="file-upload"
+    class="components-base-control"
   >
-    <FormFileUpload
-      accept=".pdf, image/png, image/jpeg"
-      className="is-success"
-      disabled={false}
-      icon={
-        <t
-          icon="checkmark"
-          size={18}
-        />
-      }
-      id="form-file-upload-field_key"
-      isBusy={false}
-      isDestructive=""
-      isLarge={true}
-      isPrimary={true}
-      onChange={[Function]}
+    <div
+      class="components-base-control__field"
     >
-      Upload file
-    </FormFileUpload>
-    <span
-      className="upload-message"
-    >
-      file.pdf
-    </span>
-    <ForwardRef(IconButton)
-      className="delete-uploaded-file-button"
-      icon={
-        <t
-          icon="trash"
-          size={18}
-        />
-      }
-      onClick={[Function]}
-    />
+      <label
+        class="components-base-control__label"
+        for="form-file-upload-base-control-field_key"
+      >
+        Upload file
+      </label>
+      <div
+        class="file-upload"
+      >
+        <div
+          class="components-form-file-upload"
+        >
+          <button
+            class="components-button components-icon-button is-success has-text is-button is-primary is-large"
+            id="form-file-upload-field_key"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-checkmark"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M9 19.414l-6.707-6.707 1.414-1.414L9 16.586 20.293 5.293l1.414 1.414"
+                />
+              </g>
+            </svg>
+            Upload file
+          </button>
+          <input
+            accept=".pdf, image/png, image/jpeg"
+            style="display: none;"
+            type="file"
+          />
+        </div>
+        <span
+          class="upload-message"
+        >
+          file.pdf
+        </span>
+        <button
+          aria-label="Remove file"
+          class="components-button components-icon-button delete-uploaded-file-button"
+          type="button"
+        >
+          <svg
+            class="gridicon gridicons-trash"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M6.187 8h11.625l-.695 11.125C17.05 20.18 16.177 21 15.12 21H8.88c-1.057 0-1.93-.82-1.997-1.875L6.187 8zM19 5v2H5V5h3V4c0-1.105.895-2 2-2h4c1.105 0 2 .895 2 2v1h3zm-9 0h4V4h-4v1z"
+              />
+            </g>
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
-</BaseControl>
+</div>
 `;
 
 exports[`FileUploadControl renders upload failed state 1`] = `
-<BaseControl
-  id="form-file-upload-base-control-field_key"
-  label="Upload file"
->
+<div>
   <div
-    className="file-upload"
+    class="components-base-control"
   >
-    <FormFileUpload
-      accept=".pdf, image/png, image/jpeg"
-      className={null}
-      disabled={false}
-      icon={
-        <t
-          icon="add-outline"
-          size={18}
-        />
-      }
-      id="form-file-upload-field_key"
-      isBusy={false}
-      isDestructive={true}
-      isLarge={true}
-      isPrimary={true}
-      onChange={[Function]}
+    <div
+      class="components-base-control__field"
     >
-      Upload file
-    </FormFileUpload>
-    <span
-      className="upload-message is-destructive"
-    >
-      Error message
-    </span>
+      <label
+        class="components-base-control__label"
+        for="form-file-upload-base-control-field_key"
+      >
+        Upload file
+      </label>
+      <div
+        class="file-upload"
+      >
+        <div
+          class="components-form-file-upload"
+        >
+          <button
+            class="components-button components-icon-button has-text is-button is-primary is-large is-destructive"
+            id="form-file-upload-field_key"
+            type="button"
+          >
+            <svg
+              class="gridicon gridicons-add-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                />
+              </g>
+            </svg>
+            Upload file
+          </button>
+          <input
+            accept=".pdf, image/png, image/jpeg"
+            style="display: none;"
+            type="file"
+          />
+        </div>
+        <span
+          class="upload-message is-destructive"
+        >
+          Error message
+        </span>
+      </div>
+    </div>
   </div>
-</BaseControl>
+</div>
 `;
