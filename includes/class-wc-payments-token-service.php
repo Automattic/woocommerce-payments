@@ -41,6 +41,7 @@ class WC_Payments_Token_Service {
 
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
+		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 	}
 
 	/**
@@ -61,6 +62,45 @@ class WC_Payments_Token_Service {
 		$token->save();
 
 		return $token;
+	}
+
+	/**
+	 * Gets saved tokens from API if they don't already exist in WooCommerce.
+	 *
+	 * @param array  $tokens     Array of tokens.
+	 * @param string $user_id    WC user ID.
+	 * @param string $gateway_id WC gateway ID.
+	 * @return array
+	 */
+	public function woocommerce_get_customer_payment_tokens( $tokens = [], $user_id, $gateway_id ) {
+		if ( ! is_user_logged_in() || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) {
+			return $tokens;
+		}
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+
+		if ( null === $customer_id ) {
+			return $tokens;
+		}
+
+		$stored_tokens = [];
+
+		foreach ( $tokens as $token ) {
+			$stored_tokens[] = $token->get_token();
+		}
+
+		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
+
+		foreach ( $payment_methods as $payment_method ) {
+			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
+				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
+					$token                      = $this->add_token_to_user( $payment_method, wp_get_current_user() );
+					$tokens[ $token->get_id() ] = $token;
+				}
+			}
+		}
+
+		return $tokens;
 	}
 
 	/**

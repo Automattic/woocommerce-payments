@@ -215,4 +215,49 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 			$this->customer_service->set_default_payment_method_for_customer( 'cus_12345', 'pm_mock' );
 	}
+
+	public function test_get_payment_methods_for_customer_fetches_from_api() {
+		$mock_payment_methods = [
+			[ 'id' => 'pm_mock1' ],
+			[ 'id' => 'pm_mock2' ],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_methods' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ 'data' => $mock_payment_methods ] );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+
+		$this->assertEquals( $mock_payment_methods, $response );
+	}
+
+	public function test_get_payment_methods_for_customer_fetches_from_transient() {
+		$mock_payment_methods = [
+			[ 'id' => 'pm_mock1' ],
+			[ 'id' => 'pm_mock2' ],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_methods' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ 'data' => $mock_payment_methods ] );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$this->assertEquals( $mock_payment_methods, $response );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$this->assertEquals( $mock_payment_methods, $response );
+	}
+
+	public function test_get_payment_methods_for_customer_no_customer() {
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_payment_methods' );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( '' );
+		$this->assertEquals( [], $response );
+	}
 }

@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Customer_Service {
 
-	const WCPAY_CUSTOMER_ID_OPTION = '_wcpay_customer_id';
+	const WCPAY_CUSTOMER_ID_OPTION  = '_wcpay_customer_id';
+	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -138,6 +139,30 @@ class WC_Payments_Customer_Service {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Gets all payment methods for a customer.
+	 *
+	 * @param string $customer_id The customer ID.
+	 * @param string $type        Type of payment methods to fetch.
+	 */
+	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
+		if ( ! $customer_id ) {
+			return [];
+		}
+
+		$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+
+		if ( $payment_methods ) {
+			return $payment_methods;
+		}
+
+		$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
+
+		set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+
+		return $payment_methods;
 	}
 
 	/**

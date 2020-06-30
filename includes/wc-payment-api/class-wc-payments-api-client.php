@@ -707,6 +707,29 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get payment methods for customer.
+	 *
+	 * @param string $customer_id The customer ID.
+	 * @param string $type        Type of payment methods to fetch.
+	 * @param int    $limit       Amount of items to fetch.
+	 *
+	 * @return array Payment methods response.
+	 *
+	 * @throws WC_Payments_API_Exception If an error occurs.
+	 */
+	public function get_payment_methods( $customer_id, $type, $limit = 100 ) {
+		return $this->request(
+			[
+				'customer' => $customer_id,
+				'type'     => $type,
+				'limit'    => $limit,
+			],
+			self::PAYMENT_METHODS_API,
+			self::GET
+		);
+	}
+
+	/**
 	 * Detach a payment method from a customer.
 	 *
 	 * @param string $payment_method_id Payment method ID.
