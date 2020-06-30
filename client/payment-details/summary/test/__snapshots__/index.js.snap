@@ -1,697 +1,670 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
-<Card
-  className="payment-details-summary-details"
->
+<div>
   <div
-    className="payment-details-summary"
+    class="woocommerce-card payment-details-summary-details"
   >
     <div
-      className="payment-details-summary__section"
-    >
-      <p
-        className="payment-details-summary__amount"
-      >
-        <Loadable
-          isLoading={false}
-          placeholder="Amount placeholder"
-        >
-          $15.00
-          <span
-            className="payment-details-summary__amount-currency"
-          >
-            usd
-          </span>
-          <PaymentStatusChip
-            charge={
-              Object {
-                "amount": 1500,
-                "amount_refunded": 0,
-                "application_fee_amount": 70,
-                "billing_details": Object {
-                  "name": "Customer name",
-                },
-                "created": 1568928240,
-                "currency": "usd",
-                "dispute": null,
-                "disputed": false,
-                "fee": 74,
-                "id": "ch_38jdHA39KKA",
-                "net": 1426,
-                "order": Object {
-                  "number": 45981,
-                  "url": "https://somerandomorderurl.com/?edit_order=45981",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "type": "charge",
-              }
-            }
-          />
-        </Loadable>
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Fee amount"
-          >
-            Fee: 
-            $-0.70
-          </Loadable>
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Net amount"
-          >
-            Net: 
-            $14.30
-          </Loadable>
-        </p>
-      </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
+      class="woocommerce-card__body"
     >
       <div
-        className="payment-details-summary__actions"
+        class="payment-details-summary"
       >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          href="https://somerandomorderurl.com/?edit_order=45981"
-          isDefault={true}
-          isLarge={true}
+        <div
+          class="payment-details-summary__section"
         >
-          View order #45981
-        </ForwardRef(Button)>
+          <p
+            class="payment-details-summary__amount"
+          >
+            $15.00
+            <span
+              class="payment-details-summary__amount-currency"
+            >
+              usd
+            </span>
+            <span
+              class="chip chip-light"
+            />
+          </p>
+          <div
+            class="payment-details-summary__breakdown"
+          >
+            
+            <p>
+              Fee: 
+              $-0.70
+            </p>
+            <p>
+              Net: 
+              $14.30
+            </p>
+          </div>
+        </div>
+        <div
+          class="payment-details-summary__section"
+        >
+          <div
+            class="payment-details-summary__actions"
+          >
+            <a
+              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              href="https://somerandomorderurl.com/?edit_order=45981"
+            >
+              View order #45981
+            </a>
+          </div>
+        </div>
       </div>
+      <hr
+        class="full-width"
+      />
+      <ul
+        class="woocommerce-list woocommerce-list--horizontal"
+      >
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Date
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Customer
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Payment method
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Risk evaluation
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            />
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
-  <hr
-    className="full-width"
-  />
-  <LoadableBlock
-    isLoading={false}
-    numLines={4}
-  >
-    <HorizontalList
-      items={
-        Array [
-          Object {
-            "content": "Sep 19, 2019, 5:24pm",
-            "title": "Date",
-          },
-          Object {
-            "content": "Customer name",
-            "title": "Customer",
-          },
-          Object {
-            "content": <PaymentMethodDetails
-              payment={
-                Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                }
-              }
-            />,
-            "title": "Payment method",
-          },
-          Object {
-            "content": "Normal",
-            "title": "Risk evaluation",
-          },
-          Object {
-            "content": "ch_38jdHA39KKA",
-            "title": "",
-          },
-        ]
-      }
-    />
-  </LoadableBlock>
-</Card>
+</div>
 `;
 
 exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
-<Card
-  className="payment-details-summary-details"
->
+<div>
   <div
-    className="payment-details-summary"
+    class="woocommerce-card payment-details-summary-details"
   >
     <div
-      className="payment-details-summary__section"
-    >
-      <p
-        className="payment-details-summary__amount"
-      >
-        <Loadable
-          isLoading={false}
-          placeholder="Amount placeholder"
-        >
-          $15.00
-          <span
-            className="payment-details-summary__amount-currency"
-          >
-            usd
-          </span>
-          <PaymentStatusChip
-            charge={
-              Object {
-                "amount": 1500,
-                "amount_refunded": 1500,
-                "application_fee_amount": 70,
-                "billing_details": Object {
-                  "name": "Customer name",
-                },
-                "created": 1568928240,
-                "currency": "usd",
-                "dispute": null,
-                "disputed": false,
-                "fee": 74,
-                "id": "ch_38jdHA39KKA",
-                "net": 1426,
-                "order": Object {
-                  "number": 45981,
-                  "url": "https://somerandomorderurl.com/?edit_order=45981",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "refunded": true,
-                "type": "charge",
-              }
-            }
-          />
-        </Loadable>
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          Refunded: 
-          $-15.00
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Fee amount"
-          >
-            Fee: 
-            $-0.70
-          </Loadable>
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Net amount"
-          >
-            Net: 
-            $-0.70
-          </Loadable>
-        </p>
-      </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
+      class="woocommerce-card__body"
     >
       <div
-        className="payment-details-summary__actions"
+        class="payment-details-summary"
       >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          href="https://somerandomorderurl.com/?edit_order=45981"
-          isDefault={true}
-          isLarge={true}
+        <div
+          class="payment-details-summary__section"
         >
-          View order #45981
-        </ForwardRef(Button)>
+          <p
+            class="payment-details-summary__amount"
+          >
+            $15.00
+            <span
+              class="payment-details-summary__amount-currency"
+            >
+              usd
+            </span>
+            <span
+              class="chip chip-light"
+            >
+              Refunded
+            </span>
+          </p>
+          <div
+            class="payment-details-summary__breakdown"
+          >
+            <p>
+              Refunded: 
+              $-15.00
+            </p>
+            <p>
+              Fee: 
+              $-0.70
+            </p>
+            <p>
+              Net: 
+              $-0.70
+            </p>
+          </div>
+        </div>
+        <div
+          class="payment-details-summary__section"
+        >
+          <div
+            class="payment-details-summary__actions"
+          >
+            <a
+              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              href="https://somerandomorderurl.com/?edit_order=45981"
+            >
+              View order #45981
+            </a>
+          </div>
+        </div>
       </div>
+      <hr
+        class="full-width"
+      />
+      <ul
+        class="woocommerce-list woocommerce-list--horizontal"
+      >
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Date
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Customer
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Payment method
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Risk evaluation
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            />
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
-  <hr
-    className="full-width"
-  />
-  <LoadableBlock
-    isLoading={false}
-    numLines={4}
-  >
-    <HorizontalList
-      items={
-        Array [
-          Object {
-            "content": "Sep 19, 2019, 5:24pm",
-            "title": "Date",
-          },
-          Object {
-            "content": "Customer name",
-            "title": "Customer",
-          },
-          Object {
-            "content": <PaymentMethodDetails
-              payment={
-                Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                }
-              }
-            />,
-            "title": "Payment method",
-          },
-          Object {
-            "content": "Normal",
-            "title": "Risk evaluation",
-          },
-          Object {
-            "content": "ch_38jdHA39KKA",
-            "title": "",
-          },
-        ]
-      }
-    />
-  </LoadableBlock>
-</Card>
+</div>
 `;
 
 exports[`PaymentDetailsSummary renders loading state 1`] = `
-<Card
-  className="payment-details-summary-details"
->
+<div>
   <div
-    className="payment-details-summary"
+    class="woocommerce-card payment-details-summary-details"
   >
     <div
-      className="payment-details-summary__section"
+      class="woocommerce-card__body"
     >
-      <p
-        className="payment-details-summary__amount"
+      <div
+        class="payment-details-summary"
       >
-        <Loadable
-          isLoading={true}
-          placeholder="Amount placeholder"
+        <div
+          class="payment-details-summary__section"
         >
-          $0.00
-          <span
-            className="payment-details-summary__amount-currency"
+          <p
+            class="payment-details-summary__amount"
           >
-            cur
-          </span>
-          <PaymentStatusChip
-            charge={Object {}}
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder"
+            >
+              Amount placeholder
+            </span>
+          </p>
+          <div
+            class="payment-details-summary__breakdown"
+          >
+            
+            <p>
+              <span
+                aria-busy="true"
+                class="is-loadable-placeholder"
+              >
+                Fee amount
+              </span>
+            </p>
+            <p>
+              <span
+                aria-busy="true"
+                class="is-loadable-placeholder"
+              >
+                Net amount
+              </span>
+            </p>
+          </div>
+        </div>
+        <div
+          class="payment-details-summary__section"
+        >
+          <div
+            class="payment-details-summary__actions"
           />
-        </Loadable>
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          <Loadable
-            isLoading={true}
-            placeholder="Fee amount"
-          >
-            Fee: 
-            $0.00
-          </Loadable>
-        </p>
-        <p>
-          <Loadable
-            isLoading={true}
-            placeholder="Net amount"
-          >
-            Net: 
-            $0.00
-          </Loadable>
-        </p>
+        </div>
       </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
-    >
-      <div
-        className="payment-details-summary__actions"
+      <hr
+        class="full-width"
       />
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 4;"
+        >
+          Block placeholder
+        </p>
+      </span>
     </div>
   </div>
-  <hr
-    className="full-width"
-  />
-  <LoadableBlock
-    isLoading={true}
-    numLines={4}
-  >
-    <HorizontalList
-      items={
-        Array [
-          Object {
-            "content": "–",
-            "title": "Date",
-          },
-          Object {
-            "content": "–",
-            "title": "Customer",
-          },
-          Object {
-            "content": <PaymentMethodDetails />,
-            "title": "Payment method",
-          },
-          Object {
-            "content": "–",
-            "title": "Risk evaluation",
-          },
-          Object {
-            "content": "–",
-            "title": "",
-          },
-        ]
-      }
-    />
-  </LoadableBlock>
-</Card>
+</div>
 `;
 
 exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
-<Card
-  className="payment-details-summary-details"
->
+<div>
   <div
-    className="payment-details-summary"
+    class="woocommerce-card payment-details-summary-details"
   >
     <div
-      className="payment-details-summary__section"
-    >
-      <p
-        className="payment-details-summary__amount"
-      >
-        <Loadable
-          isLoading={false}
-          placeholder="Amount placeholder"
-        >
-          $15.00
-          <span
-            className="payment-details-summary__amount-currency"
-          >
-            usd
-          </span>
-          <PaymentStatusChip
-            charge={
-              Object {
-                "amount": 1500,
-                "amount_refunded": 1200,
-                "application_fee_amount": 70,
-                "billing_details": Object {
-                  "name": "Customer name",
-                },
-                "created": 1568928240,
-                "currency": "usd",
-                "dispute": null,
-                "disputed": false,
-                "fee": 74,
-                "id": "ch_38jdHA39KKA",
-                "net": 1426,
-                "order": Object {
-                  "number": 45981,
-                  "url": "https://somerandomorderurl.com/?edit_order=45981",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "refunded": false,
-                "type": "charge",
-              }
-            }
-          />
-        </Loadable>
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          Refunded: 
-          $-12.00
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Fee amount"
-          >
-            Fee: 
-            $-0.70
-          </Loadable>
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Net amount"
-          >
-            Net: 
-            $2.30
-          </Loadable>
-        </p>
-      </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
+      class="woocommerce-card__body"
     >
       <div
-        className="payment-details-summary__actions"
+        class="payment-details-summary"
       >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          href="https://somerandomorderurl.com/?edit_order=45981"
-          isDefault={true}
-          isLarge={true}
+        <div
+          class="payment-details-summary__section"
         >
-          View order #45981
-        </ForwardRef(Button)>
+          <p
+            class="payment-details-summary__amount"
+          >
+            $15.00
+            <span
+              class="payment-details-summary__amount-currency"
+            >
+              usd
+            </span>
+            <span
+              class="chip chip-light"
+            >
+              Partial refund
+            </span>
+          </p>
+          <div
+            class="payment-details-summary__breakdown"
+          >
+            <p>
+              Refunded: 
+              $-12.00
+            </p>
+            <p>
+              Fee: 
+              $-0.70
+            </p>
+            <p>
+              Net: 
+              $2.30
+            </p>
+          </div>
+        </div>
+        <div
+          class="payment-details-summary__section"
+        >
+          <div
+            class="payment-details-summary__actions"
+          >
+            <a
+              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              href="https://somerandomorderurl.com/?edit_order=45981"
+            >
+              View order #45981
+            </a>
+          </div>
+        </div>
       </div>
+      <hr
+        class="full-width"
+      />
+      <ul
+        class="woocommerce-list woocommerce-list--horizontal"
+      >
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Date
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Customer
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Payment method
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Risk evaluation
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            />
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
-  <hr
-    className="full-width"
-  />
-  <LoadableBlock
-    isLoading={false}
-    numLines={4}
-  >
-    <HorizontalList
-      items={
-        Array [
-          Object {
-            "content": "Sep 19, 2019, 5:24pm",
-            "title": "Date",
-          },
-          Object {
-            "content": "Customer name",
-            "title": "Customer",
-          },
-          Object {
-            "content": <PaymentMethodDetails
-              payment={
-                Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                }
-              }
-            />,
-            "title": "Payment method",
-          },
-          Object {
-            "content": "Normal",
-            "title": "Risk evaluation",
-          },
-          Object {
-            "content": "ch_38jdHA39KKA",
-            "title": "",
-          },
-        ]
-      }
-    />
-  </LoadableBlock>
-</Card>
+</div>
 `;
 
 exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
-<Card
-  className="payment-details-summary-details"
->
+<div>
   <div
-    className="payment-details-summary"
+    class="woocommerce-card payment-details-summary-details"
   >
     <div
-      className="payment-details-summary__section"
-    >
-      <p
-        className="payment-details-summary__amount"
-      >
-        <Loadable
-          isLoading={false}
-          placeholder="Amount placeholder"
-        >
-          $15.00
-          <span
-            className="payment-details-summary__amount-currency"
-          >
-            usd
-          </span>
-          <PaymentStatusChip
-            charge={
-              Object {
-                "amount": 1500,
-                "amount_refunded": 0,
-                "application_fee_amount": 70,
-                "billing_details": Object {
-                  "name": "Customer name",
-                },
-                "created": 1568928240,
-                "currency": "usd",
-                "dispute": Object {
-                  "amount": 1500,
-                },
-                "disputed": true,
-                "fee": 74,
-                "id": "ch_38jdHA39KKA",
-                "net": 1426,
-                "order": Object {
-                  "number": 45981,
-                  "url": "https://somerandomorderurl.com/?edit_order=45981",
-                },
-                "outcome": Object {
-                  "risk_level": "normal",
-                },
-                "payment_method_details": Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                },
-                "type": "charge",
-              }
-            }
-          />
-        </Loadable>
-      </p>
-      <div
-        className="payment-details-summary__breakdown"
-      >
-        <p>
-          Refunded: 
-          $-15.00
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Fee amount"
-          >
-            Fee: 
-            $-15.70
-          </Loadable>
-        </p>
-        <p>
-          <Loadable
-            isLoading={false}
-            placeholder="Net amount"
-          >
-            Net: 
-            $-15.70
-          </Loadable>
-        </p>
-      </div>
-    </div>
-    <div
-      className="payment-details-summary__section"
+      class="woocommerce-card__body"
     >
       <div
-        className="payment-details-summary__actions"
+        class="payment-details-summary"
       >
-        <ForwardRef(Button)
-          className="payment-details-summary__actions-item"
-          href="https://somerandomorderurl.com/?edit_order=45981"
-          isDefault={true}
-          isLarge={true}
+        <div
+          class="payment-details-summary__section"
         >
-          View order #45981
-        </ForwardRef(Button)>
+          <p
+            class="payment-details-summary__amount"
+          >
+            $15.00
+            <span
+              class="payment-details-summary__amount-currency"
+            >
+              usd
+            </span>
+            <span
+              class="chip chip-light"
+            />
+          </p>
+          <div
+            class="payment-details-summary__breakdown"
+          >
+            <p>
+              Refunded: 
+              $-15.00
+            </p>
+            <p>
+              Fee: 
+              $-15.70
+            </p>
+            <p>
+              Net: 
+              $-15.70
+            </p>
+          </div>
+        </div>
+        <div
+          class="payment-details-summary__section"
+        >
+          <div
+            class="payment-details-summary__actions"
+          >
+            <a
+              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              href="https://somerandomorderurl.com/?edit_order=45981"
+            >
+              View order #45981
+            </a>
+          </div>
+        </div>
       </div>
+      <hr
+        class="full-width"
+      />
+      <ul
+        class="woocommerce-list woocommerce-list--horizontal"
+      >
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Date
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Customer
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Payment method
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
+              Risk evaluation
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            />
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
-  <hr
-    className="full-width"
-  />
-  <LoadableBlock
-    isLoading={false}
-    numLines={4}
-  >
-    <HorizontalList
-      items={
-        Array [
-          Object {
-            "content": "Sep 19, 2019, 5:24pm",
-            "title": "Date",
-          },
-          Object {
-            "content": "Customer name",
-            "title": "Customer",
-          },
-          Object {
-            "content": <PaymentMethodDetails
-              payment={
-                Object {
-                  "card": Object {
-                    "brand": "visa",
-                    "last4": "4242",
-                  },
-                  "type": "card",
-                }
-              }
-            />,
-            "title": "Payment method",
-          },
-          Object {
-            "content": "Normal",
-            "title": "Risk evaluation",
-          },
-          Object {
-            "content": "ch_38jdHA39KKA",
-            "title": "",
-          },
-        ]
-      }
-    />
-  </LoadableBlock>
-</Card>
+</div>
 `;

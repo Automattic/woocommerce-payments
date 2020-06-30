@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -11,7 +11,7 @@ import PaymentDetailsSummary from '../';
 
 const getBaseCharge = () => ( {
 	id: 'ch_38jdHA39KKA',
-	/* Stripe data comes in seconds, instead of the default Date miliseconds */
+	/* Stripe data comes in seconds, instead of the default Date milliseconds */
 	created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
 	amount: 1500,
 	// eslint-disable-next-line camelcase
@@ -89,7 +89,8 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	function renderCharge( charge, isLoading = false ) {
-		return shallow( <PaymentDetailsSummary charge={ charge } isLoading={ isLoading } /> );
+		const { container } = render( <PaymentDetailsSummary charge={ charge } isLoading={ isLoading } /> );
+		return container;
 	}
 } );
 
