@@ -64,7 +64,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -509,10 +509,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
 			->will( $this->returnValue( $intent ) );
 
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn( [ 'id' => 'pm_mock' ] );
+
 		$this->mock_token_service
 			->expects( $this->once() )
 			->method( 'add_token_to_user' )
-			->with( 'pm_mock', wp_get_current_user() );
+			->with( [ 'id' => 'pm_mock' ], wp_get_current_user() );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );

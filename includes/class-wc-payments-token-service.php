@@ -44,16 +44,14 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Creates and add a token to an user, based on the payment_method_id
+	 * Creates and add a token to an user, based on the payment_method object
 	 *
-	 * @param string  $payment_method_id ID of the payment method to be added.
-	 * @param WP_User $user              User to attach payment method to.
+	 * @param array   $payment_method Payment method to be added.
+	 * @param WP_User $user           User to attach payment method to.
 	 */
-	public function add_token_to_user( $payment_method_id, $user ) {
-		$payment_method = $this->payments_api_client->get_payment_method( $payment_method_id );
-
+	public function add_token_to_user( $payment_method, $user ) {
 		$token = new WC_Payment_Token_CC();
-		$token->set_token( $payment_method_id );
+		$token->set_token( $payment_method['id'] );
 		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$token->set_card_type( strtolower( $payment_method['card']['brand'] ) );
 		$token->set_last4( $payment_method['card']['last4'] );

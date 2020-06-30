@@ -65,9 +65,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	 * Test add token to user.
 	 */
 	public function test_add_token_to_user() {
-		$mock_payment_method_id = 'pm_mock';
-		$mock_payment_method    = [
-			'id'   => $mock_payment_method_id,
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
 			'card' => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
@@ -76,17 +75,11 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			],
 		];
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_method' )
-			->with( $mock_payment_method_id )
-			->will( $this->returnValue( $mock_payment_method ) );
-
-		$token = $this->token_service->add_token_to_user( $mock_payment_method_id, wp_get_current_user() );
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
 		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
-		$this->assertEquals( $mock_payment_method_id, $token->get_token() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( 'visa', $token->get_card_type() );
 		$this->assertEquals( '4242', $token->get_last4() );
 		$this->assertEquals( '06', $token->get_expiry_month() );

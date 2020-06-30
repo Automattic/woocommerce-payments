@@ -435,7 +435,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				if ( $save_payment_method ) {
-					$this->token_service->add_token_to_user( $payment_method, wp_get_current_user() );
+					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
+					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
 				}
 
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
@@ -1070,7 +1071,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$customer_id
 			);
 
-			$this->token_service->add_token_to_user( $payment_method, wp_get_current_user() );
+			$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
+			$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
 
 			return [
 				'result'   => 'success',
