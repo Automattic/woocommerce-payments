@@ -279,6 +279,15 @@ jQuery( function( $ ) {
 		var orderId = partials[ 1 ];
 		var clientSecret = partials[ 2 ];
 
+		// If we're on the Pay for Order page, get the order ID
+		// directly from the URL instead of relying on the hash.
+		// The checkout URL has no digits, whereas the Pay for Order page
+		// has this format: '/checkout/order-pay-page-slug/189/'.
+		var orderIdPartials = window.location.pathname.match( /\d+/ );
+		if ( orderIdPartials ) {
+			orderId = orderIdPartials[ 0 ];
+		}
+
 		// Cleanup the URL.
 		// https://stackoverflow.com/questions/1397329/
 		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
