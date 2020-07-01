@@ -29,6 +29,9 @@ require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
  * Initialize the Jetpack connection functionality.
  */
 function wcpay_jetpack_init() {
+	if ( ! wcpay_check_old_jetpack_version() ) {
+		return;
+	}
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
@@ -53,3 +56,32 @@ function wcpay_init() {
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
+
+/**
+ * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old
+ * versions, the Jetpack Config initialization code would just crash the site.
+ * TODO: Remove this when Jetpack 8.1 (Released on January 2020) is so old we don't think anyone will run into this problem anymore.
+ *
+ * @return bool True if the plugin can keep initializing itself, false otherwise.
+ */
+function wcpay_check_old_jetpack_version() {
+	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) ) {
+		add_filter( 'admin_notices', 'wcpay_show_old_jetpack_notice' );
+		// Prevent the rest of the plugin from initializing.
+		remove_action( 'plugins_loaded', 'wcpay_init', 11 );
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Display an error notice if the installed Jetpack version is too old to even start initializing the plugin.
+ */
+function wcpay_show_old_jetpack_notice() {
+	?>
+	<div class="notice wcpay-notice notice-error">
+		<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
+		<p><?php echo esc_html( __( 'The version of Jetpack installed is too old to be used with WooCommerce Payments. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ); ?></p>
+	</div>
+	<?php
+}
