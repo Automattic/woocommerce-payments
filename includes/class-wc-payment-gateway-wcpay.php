@@ -796,6 +796,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * This function is used to update the order status after the user has
 	 * been asked to authenticate their payment.
 	 *
+	 * This function is used for both:
+	 * - regular checkout
+	 * - Pay for Order page
+	 *
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
