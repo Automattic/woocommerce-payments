@@ -21,19 +21,19 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
-	const ACCOUNTS_API         = 'accounts';
-	const CHARGES_API          = 'charges';
-	const CUSTOMERS_API        = 'customers';
-	const INTENTIONS_API       = 'intentions';
-	const REFUNDS_API          = 'refunds';
-	const DEPOSITS_API         = 'deposits';
-	const TRANSACTIONS_API     = 'transactions';
-	const DISPUTES_API         = 'disputes';
-	const FILES_API            = 'files';
-	const OAUTH_API            = 'oauth';
-	const TIMELINE_API         = 'timeline';
-	const PAYMENT_METHODS_API  = 'payment_methods';
-	const SETUP_INTENTIONS_API = 'setup_intentions';
+	const ACCOUNTS_API        = 'accounts';
+	const CHARGES_API         = 'charges';
+	const CUSTOMERS_API       = 'customers';
+	const INTENTIONS_API      = 'intentions';
+	const REFUNDS_API         = 'refunds';
+	const DEPOSITS_API        = 'deposits';
+	const TRANSACTIONS_API    = 'transactions';
+	const DISPUTES_API        = 'disputes';
+	const FILES_API           = 'files';
+	const OAUTH_API           = 'oauth';
+	const TIMELINE_API        = 'timeline';
+	const PAYMENT_METHODS_API = 'payment_methods';
+	const SETUP_INTENTS_API   = 'setup_intents';
 
 	/**
 	 * User agent string to report in requests.
@@ -258,14 +258,14 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on setup intention creation failure.
 	 */
-	public function create_and_confirm_setup_intention( $payment_method_id, $customer_id ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
 			'confirm'        => 'true',
 		];
 
-		return $this->request( $request, self::SETUP_INTENTIONS_API, self::POST );
+		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
 
 	/**
@@ -276,8 +276,8 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws WC_Payments_API_Exception - When fetch of setup intent fails.
 	 */
-	public function get_setup_intention( $setup_intent_id ) {
-		return $this->request( [], self::SETUP_INTENTIONS_API . '/' . $setup_intent_id, self::GET );
+	public function get_setup_intent( $setup_intent_id ) {
+		return $this->request( [], self::SETUP_INTENTS_API . '/' . $setup_intent_id, self::GET );
 	}
 
 	/**
