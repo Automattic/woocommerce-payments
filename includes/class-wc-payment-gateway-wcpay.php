@@ -811,25 +811,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ) );
 			}
 
-			$intent_id = $order->get_meta( '_intent_id', true );
-			// An exception is thrown if an intent can't be found for the given intent ID.
-			$intent = $this->payments_api_client->get_intent( $intent_id );
+			$intent_id          = $order->get_meta( '_intent_id', true );
+			$intent_id_received = isset( $_POST['intent_id'] )
+			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+			/* translators: This will be used to indicate an unknown value for an ID. */
+			: __( 'unknown', 'woocommerce-payments' );
+
+			if ( empty( $intent_id ) ) {
+				throw new WC_Payments_Intent_Authentication_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'empty_intent_id'
+				);
+			}
 
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
 			// the order, so we need to make sure the intent that was used for authentication
 			// is the same as the one we're using to update the status.
-			$intent_id_received = isset( $_POST['intent_id'] )
-				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
-				/* translators: This will be used to indicate an unknown value for an ID. */
-				: __( 'unknown', 'woocommerce-payments' );
 			if ( $intent_id !== $intent_id_received ) {
 				throw new WC_Payments_Intent_Authentication_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 					'intent_id_mismatch'
 				);
 			}
+
+			// An exception is thrown if an intent can't be found for the given intent ID.
+			$intent = $this->payments_api_client->get_intent( $intent_id );
 
 			$status = $intent->get_status();
 			$amount = $order->get_total();
@@ -912,6 +920,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			switch ( $error_code ) {
 				case 'intent_id_mismatch':
+				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
