@@ -547,12 +547,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		if ( ! isset( $_POST['wcpay-payment-method'] ) ) {
+		if ( empty( $_POST['wcpay-payment-method'] ) && empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
 		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+		if ( empty( $payment_method ) ) {
+			$token_id = wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$token    = WC_Payment_Tokens::get( $token_id );
+
+			if ( ! $token || self::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
+			}
+
+			$payment_method = $token->get_token();
+		}
+
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		return $payment_method;

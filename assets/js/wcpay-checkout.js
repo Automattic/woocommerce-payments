@@ -347,16 +347,18 @@ jQuery( function ( $ ) {
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	$( 'form.checkout' ).on(
-		'checkout_place_order_woocommerce_payments',
-		function () {
+	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
+		if ( $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' ) ) {
 			return handleOnPaymentFormSubmit( $( this ) );
 		}
-	);
+	} );
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', function () {
-		if ( $( '#payment_method_woocommerce_payments' ).is( ':checked' ) ) {
+	$( '#order_review' ).on( 'submit', function() {
+		if (
+			$( '#payment_method_woocommerce_payments' ).is( ':checked' ) &&
+			$( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
+		) {
 			return handleOnPaymentFormSubmit( $( '#order_review' ) );
 		}
 	} );
