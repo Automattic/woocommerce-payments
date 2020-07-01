@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Logger;
+
 /**
  * Handles and process WC payment tokens API.
  * Seen in checkout page and my account->add payment method page.
@@ -111,7 +113,11 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-			$this->payments_api_client->detach_payment_method( $token->get_token() );
+			try {
+				$this->payments_api_client->detach_payment_method( $token->get_token() );
+			} catch ( Exception $e ) {
+				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
+			}
 		}
 	}
 
