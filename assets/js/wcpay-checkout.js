@@ -167,12 +167,103 @@ jQuery( function ( $ ) {
 	var paymentMethodGenerated;
 
 	/**
-	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
+	 * Saves the payment method ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form The jQuery object for the form.
+	 * @param {object} $form         The jQuery object for the form.
+	 * @param {object} paymentMethod Payment method object.
+	 */
+	var handleOrderPayment = function( $form, paymentMethod ) {
+		var id = paymentMethod.id;
+
+		// Flag that the payment method has been successfully generated so that we can allow the form
+		// submission next time.
+		paymentMethodGenerated = true;
+
+		// Populate form with the payment method.
+		var paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
+		paymentMethodInput.value = id;
+
+		// Re-submit the form.
+		$form.removeClass( 'processing' ).submit();
+	};
+
+	/**
+	 * Saves the setup intent ID in a hidden input, and re-submits the form.
+	 *
+	 * @param {object} $form       The jQuery object for the form.
+	 * @param {object} setupIntent Setup intent object.
+	 */
+	var submitFormWithSetupIntent = function( $form, setupIntent ) {
+		// Populate form with the setup intent.
+		var setupIntentInput = $( '<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />' );
+		setupIntentInput.val( setupIntent.id );
+		$form.append( setupIntentInput );
+
+		// Re-submit the form.
+		$form.removeClass( 'processing' ).submit();
+	};
+
+	/**
+	 * Creates and authorizes a setup intent, saves its ID in a hidden input, and re-submits the form.
+	 *
+	 * @param {object} $form         The jQuery object for the form.
+	 * @param {object} paymentMethod Payment method object.
+	 */
+	var handleAddCard = function( $form, paymentMethod ) {
+		/* eslint-disable camelcase */
+		$.post( wcpay_config.ajaxUrl, {
+			action: 'create_setup_intent',
+			'wcpay-payment-method': paymentMethod.id,
+			_ajax_nonce: wcpay_config.createSetupIntentNonce,
+		} )
+		/* eslint-enable camelcase */
+			.then( function( response ) {
+				if ( ! response.success ) {
+					return $.Deferred().reject( response.data.error );
+				}
+
+				var setupIntent = response.data;
+
+				if ( 'succeeded' === setupIntent.status ) {
+					// Populate form with the payment method and re-submit.
+					submitFormWithSetupIntent( $form, setupIntent );
+					return;
+				}
+				// eslint-disable-next-line camelcase
+				stripe.confirmCardSetup( setupIntent.client_secret, { payment_method: paymentMethod.id } )
+					.then( function( result ) {
+						var confirmedSetupIntent = result.setupIntent;
+						var error = result.error;
+
+						if ( error ) {
+							throw error;
+						}
+
+						return confirmedSetupIntent;
+					} )
+					.then( function( confirmedSetupIntent ) {
+						// Populate form with the payment method and re-submit.
+						submitFormWithSetupIntent( $form, confirmedSetupIntent );
+					} )
+					.catch( function( error ) {
+						$form.removeClass( 'processing' ).unblock();
+						showError( error.message );
+					} );
+			} )
+			.fail( function( error ) {
+				$form.removeClass( 'processing' ).unblock();
+				showError( error.message );
+			} );
+	};
+
+	/**
+	 * Generates a payment method and executes the successHandler callback.
+	 *
+	 * @param {object}   $form          The jQuery object for the form.
+	 * @param {function} successHandler Callback to be executed when payment method is generated.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var handleOnPaymentFormSubmit = function ( $form ) {
+	var handlePaymentMethodCreation = function( $form, successHandler ) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
@@ -201,21 +292,8 @@ jQuery( function ( $ ) {
 
 				return paymentMethod;
 			} )
-			.then( function ( paymentMethod ) {
-				var id = paymentMethod.id;
-
-				// Flag that the payment method has been successfully generated so that we can allow the form
-				// submission next time.
-				paymentMethodGenerated = true;
-
-				// Populate form with the payment method.
-				var paymentMethodInput = document.getElementById(
-					'wcpay-payment-method'
-				);
-				paymentMethodInput.value = id;
-
-				// Re-submit the form.
-				$form.removeClass( 'processing' ).submit();
+			.then( function( paymentMethod ) {
+				successHandler( $form, paymentMethod );
 			} )
 			.catch( function ( error ) {
 				$form.removeClass( 'processing' ).unblock();
@@ -349,7 +427,7 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		if ( $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' ) ) {
-			return handleOnPaymentFormSubmit( $( this ) );
+			return handlePaymentMethodCreation( $( this ), handleOrderPayment );
 		}
 	} );
 
@@ -359,13 +437,15 @@ jQuery( function ( $ ) {
 			$( '#payment_method_woocommerce_payments' ).is( ':checked' ) &&
 			$( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
 		) {
-			return handleOnPaymentFormSubmit( $( '#order_review' ) );
+			return handlePaymentMethodCreation( $( '#order_review' ), handleOrderPayment );
 		}
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function() {
-		return handleOnPaymentFormSubmit( $( 'form#add_payment_method' ) );
+		if ( ! $( '#wcpay-setup-intent' ).val() ) {
+			return handlePaymentMethodCreation( $( 'form#add_payment_method' ), handleAddCard );
+		}
 	} );
 
 	// On every page load, check to see whether we should display the authentication

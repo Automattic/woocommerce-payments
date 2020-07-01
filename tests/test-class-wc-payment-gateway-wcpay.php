@@ -58,7 +58,17 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'get_account_data', 'is_server_connected', 'capture_intention', 'get_intent', 'create_and_confirm_setup_intention', 'get_payment_method' ] )
+			->setMethods(
+				[
+					'get_account_data',
+					'is_server_connected',
+					'capture_intention',
+					'get_intent',
+					'create_and_confirm_setup_intention',
+					'get_setup_intention',
+					'get_payment_method',
+				]
+			)
 			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 
@@ -410,7 +420,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'error', $result['result'] );
 	}
 
-	public function test_add_payment_method_existing_customer() {
+	public function test_create_setup_intent_existing_customer() {
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_customer_service
@@ -425,7 +435,61 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_setup_intention' )
-			->with( 'pm_mock', 'cus_12345' );
+			->with( 'pm_mock', 'cus_12345' )
+			->willReturn( [ 'id' => 'pm_mock' ] );
+
+		$result = $this->wcpay_gateway->create_setup_intent();
+
+		$this->assertEquals( 'pm_mock', $result['id'] );
+	}
+
+	public function test_create_setup_intent_no_customer() {
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( null ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_setup_intention' )
+			->with( 'pm_mock', 'cus_12345' )
+			->willReturn( [ 'id' => 'pm_mock' ] );
+
+		$result = $this->wcpay_gateway->create_setup_intent();
+
+		$this->assertEquals( 'pm_mock', $result['id'] );
+	}
+
+	public function test_add_payment_method_no_intent() {
+		$result = $this->wcpay_gateway->add_payment_method();
+		$this->assertEquals( 'error', $result['result'] );
+	}
+
+	public function test_add_payment_method_success() {
+		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_setup_intention' )
+			->with( 'sti_mock' )
+			->willReturn(
+				[
+					'status'         => 'succeeded',
+					'payment_method' => 'pm_mock',
+				]
+			);
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -444,36 +508,54 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_add_payment_method_no_customer() {
-		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
 
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( null ) );
 
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_setup_intention' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_payment_method' );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_token_to_user' );
+
+		$result = $this->wcpay_gateway->add_payment_method();
+
+		$this->assertEquals( 'error', $result['result'] );
+	}
+
+	public function test_add_payment_method_canceled_intent() {
+		$_POST = [ 'wcpay-setup-intent' => 'sti_mock' ];
+
 		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'create_customer_for_user' )
+			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intention' )
-			->with( 'pm_mock', 'cus_12345' );
+			->method( 'get_setup_intention' )
+			->with( 'sti_mock' )
+			->willReturn( [ 'status' => 'canceled' ] );
 
 		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_method' )
-			->with( 'pm_mock' )
-			->willReturn( [ 'id' => 'pm_mock' ] );
+			->expects( $this->never() )
+			->method( 'get_payment_method' );
 
 		$this->mock_token_service
-			->expects( $this->once() )
-			->method( 'add_token_to_user' )
-			->with( [ 'id' => 'pm_mock' ], wp_get_current_user() );
+			->expects( $this->never() )
+			->method( 'add_token_to_user' );
 
 		$result = $this->wcpay_gateway->add_payment_method();
 
-		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 'error', $result['result'] );
 	}
 }

@@ -269,6 +269,18 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch a setup intention details.
+	 *
+	 * @param string $setup_intent_id ID of the setup intention.
+	 *
+	 * @return array
+	 * @throws WC_Payments_API_Exception - When fetch of setup intent fails.
+	 */
+	public function get_setup_intention( $setup_intent_id ) {
+		return $this->request( [], self::SETUP_INTENTIONS_API . '/' . $setup_intent_id, self::GET );
+	}
+
+	/**
 	 * List deposits
 	 *
 	 * @param int $page      The requested page.

@@ -153,6 +153,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+
+		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 	}
 
 	/**
@@ -280,6 +283,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'accountId'              => $this->account->get_stripe_account_id(),
 				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
 				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+				'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 				'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
 			];
 
@@ -1063,25 +1067,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function add_payment_method() {
 		try {
-			if ( ! isset( $_POST['wcpay-payment-method'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
 				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
 			}
 
-			$payment_method = $this->get_payment_method_from_request();
+			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false; // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
-			// Determine the customer making the payment, create one if we don't have one already.
-			$user        = wp_get_current_user();
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-			if ( null === $customer_id ) {
-				// Create a new customer.
-				$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+
+			if ( ! $setup_intent_id || null === $customer_id ) {
+				throw new Exception( __( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ) );
 			}
 
-			// Create setup intention, try to confirm it & capture the charge (if 3DS is not required).
-			$setup_intent = $this->payments_api_client->create_and_confirm_setup_intention(
-				$payment_method,
-				$customer_id
-			);
+			$setup_intent   = $this->payments_api_client->get_setup_intention( $setup_intent_id );
+			$payment_method = $setup_intent['payment_method'];
+
+			if ( 'succeeded' !== $setup_intent['status'] ) {
+				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+			}
 
 			$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
 			$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
@@ -1096,6 +1099,54 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [
 				'result' => 'error',
 			];
+		}
+	}
+
+	/**
+	 * Create a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Exception - When an error occurs in setup intent creation.
+	 */
+	public function create_setup_intent() {
+		$payment_method = $this->get_payment_method_from_request();
+
+		// Determine the customer adding the payment method, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+		}
+
+		return $this->payments_api_client->create_and_confirm_setup_intention(
+			$payment_method,
+			$customer_id
+		);
+	}
+
+	/**
+	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_setup_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception( __( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ) );
+			}
+
+			$setup_intent = $this->create_setup_intent();
+
+			wp_send_json_success( $setup_intent, 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
 		}
 	}
 }
