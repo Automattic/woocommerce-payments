@@ -16,11 +16,11 @@ ReactDOM.render(
 );
 
 if ( isWCPaySettingsPage() ) {
-	const saveButton = document.querySelector( 'button[name="save"]' );
+	const settingsForm = document.querySelector( 'form#mainform' );
 	const manualCaptureCheckbox = document.getElementById( 'woocommerce_woocommerce_payments_manual_capture' );
 
-	if ( saveButton && manualCaptureCheckbox && ! manualCaptureCheckbox.checked ) {
-		saveButton.addEventListener( 'click', ( e ) => {
+	if ( settingsForm && manualCaptureCheckbox && ! manualCaptureCheckbox.checked ) {
+		settingsForm.addEventListener( 'submit', ( e ) => {
 			if ( manualCaptureCheckbox.checked ) {
 				const hasUserConfirmed = confirm(
 					__(
