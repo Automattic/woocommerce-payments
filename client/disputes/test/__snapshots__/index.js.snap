@@ -6,7 +6,7 @@ exports[`Disputes list renders correctly 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
-      class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+      class="woocommerce-card woocommerce-table has-menu"
     >
       <div
         class="woocommerce-card__header"
@@ -20,9 +20,6 @@ exports[`Disputes list renders correctly 1`] = `
             Disputes
           </h2>
         </div>
-        <div
-          class="woocommerce-card__action woocommerce-card__header-item"
-        />
         <div
           class="woocommerce-card__menu woocommerce-card__header-item"
         >
@@ -146,28 +143,6 @@ exports[`Disputes list renders correctly 1`] = `
                     aria-hidden="false"
                   >
                     Customer
-                  </span>
-                </th>
-                <th
-                  class="woocommerce-table__header"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <span
-                    aria-hidden="false"
-                  >
-                    Email
-                  </span>
-                </th>
-                <th
-                  class="woocommerce-table__header"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <span
-                    aria-hidden="false"
-                  >
-                    Country
                   </span>
                 </th>
                 <th
@@ -302,30 +277,6 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    mock@customer.net
-                  </a>
-                </td>
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
-                  >
-                    US
-                  </a>
-                </td>
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
-                    tabindex="-1"
-                  >
                     Nov 1, 2019
                   </a>
                 </td>
@@ -423,26 +374,6 @@ exports[`Disputes list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item"
                 />
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-                    tabindex="-1"
-                  />
-                </td>
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
-                    tabindex="-1"
-                  />
-                </td>
                 <td
                   class="woocommerce-table__item"
                 >

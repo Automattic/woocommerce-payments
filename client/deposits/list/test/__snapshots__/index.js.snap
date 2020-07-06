@@ -3,7 +3,7 @@
 exports[`Deposits list renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    class="woocommerce-card woocommerce-table has-menu"
   >
     <div
       class="woocommerce-card__header"
@@ -17,9 +17,6 @@ exports[`Deposits list renders correctly 1`] = `
           Deposit history
         </h2>
       </div>
-      <div
-        class="woocommerce-card__action woocommerce-card__header-item"
-      />
       <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >

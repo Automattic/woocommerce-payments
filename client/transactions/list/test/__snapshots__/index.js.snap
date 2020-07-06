@@ -3,7 +3,7 @@
 exports[`Transactions list renders correctly when filtered to deposit 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    class="woocommerce-card woocommerce-table transactions-list has-menu"
   >
     <div
       class="woocommerce-card__header"
@@ -17,9 +17,6 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
           Deposit transactions
         </h2>
       </div>
-      <div
-        class="woocommerce-card__action woocommerce-card__header-item"
-      />
       <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >
@@ -311,54 +308,6 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   Customer
                 </span>
               </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Email
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Email
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Country
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Country
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Risk level
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Risk level
-                </span>
-              </th>
             </tr>
             <tr>
               <th
@@ -478,46 +427,6 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   tabindex="-1"
                 >
                   My name
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  a@b.com
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  US
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  <span
-                    style="color: red;"
-                  >
-                    Highest
-                  </span>
                 </a>
               </td>
             </tr>
@@ -1402,7 +1311,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
 exports[`Transactions list when not filtered by deposit renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    class="woocommerce-card woocommerce-table transactions-list has-menu"
   >
     <div
       class="woocommerce-card__header"
@@ -1416,9 +1325,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           Transactions
         </h2>
       </div>
-      <div
-        class="woocommerce-card__action woocommerce-card__header-item"
-      />
       <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >
@@ -1711,54 +1617,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </span>
               </th>
               <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Email
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Email
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Country
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Country
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Risk level
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Risk level
-                </span>
-              </th>
-              <th
                 class="woocommerce-table__header deposit"
                 role="columnheader"
                 scope="col"
@@ -1896,46 +1754,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </a>
               </td>
               <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  another@customer.com
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  US
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  <span
-                    style="color: green;"
-                  >
-                    Normal
-                  </span>
-                </a>
-              </td>
-              <td
                 class="woocommerce-table__item deposit"
               >
                 Pending
@@ -2059,46 +1877,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   tabindex="-1"
                 >
                   My name
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  a@b.com
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  US
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  <span
-                    style="color: red;"
-                  >
-                    Highest
-                  </span>
                 </a>
               </td>
               <td
