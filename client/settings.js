@@ -24,8 +24,8 @@ if ( isWCPaySettingsPage() ) {
 			if ( manualCaptureCheckbox.checked ) {
 				const hasUserConfirmed = confirm(
 					__(
-						'When manual capture is enabled, you need to capture funds manually within 7 days of the order being placed, \
-otherwise the authorization will be canceled alongside the order. Are you sure you want to enable it?',
+						'When manual capture is enabled, charges must be captured within 7 days of authorization, otherwise the \
+authorization and order will be canceled. Are you sure you want to enable it?',
 						'woocommerce-payments'
 					)
 				);
