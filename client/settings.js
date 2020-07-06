@@ -20,28 +20,24 @@ if ( isWCPaySettingsPage() ) {
 	const manualCaptureCheckbox = document.getElementById( 'woocommerce_woocommerce_payments_manual_capture' );
 
 	if ( saveButton && manualCaptureCheckbox && ! manualCaptureCheckbox.checked ) {
-		addCheckboxConfirmation( saveButton, manualCaptureCheckbox );
+		saveButton.addEventListener( 'click', ( e ) => {
+			if ( manualCaptureCheckbox.checked ) {
+				const hasUserConfirmed = confirm(
+					__(
+						'When manual capture is enabled, you need to capture funds manually within 7 days of the order being placed, \
+otherwise the authorization will be canceled alongside the order. Are you sure you want to enable it?',
+						'woocommerce-payments'
+					)
+				);
+				if ( ! hasUserConfirmed ) {
+					e.preventDefault();
+				}
+			}
+		} );
 	}
 }
 
 function isWCPaySettingsPage() {
 	const { page, tab, section } = getQuery();
 	return 'wc-settings' === page && 'checkout' === tab && 'woocommerce_payments' === section;
-}
-
-function addCheckboxConfirmation( saveButton, checkbox ) {
-	saveButton.addEventListener( 'click', ( e ) => {
-		if ( checkbox.checked ) {
-			const hasUserConfirmed = confirm(
-				__(
-					'When manual capture is enabled, you need to capture funds manually within 7 days of the order being placed, \
-otherwise the authorization will be canceled alongside the order. Are you sure you want to enable it?',
-					'woocommerce-payments'
-				)
-			);
-			if ( ! hasUserConfirmed ) {
-				e.preventDefault();
-			}
-		}
-	} );
 }
