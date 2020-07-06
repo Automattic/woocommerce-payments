@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { DepositDetails, DepositOverview } from '../';
+import { DepositOverview } from '../';
 import { useDeposit } from 'data';
 
 jest.mock( 'data', () => ( {
@@ -35,18 +35,9 @@ describe( 'Deposit overview', () => {
 			isLoading: false,
 		} );
 
-		const overview = shallow(
+		const { container: overview } = render(
 			<DepositOverview depositId="po_mock" />
 		);
 		expect( overview ).toMatchSnapshot();
-	} );
-} );
-
-describe( 'Deposit details page', () => {
-	test( 'renders correctly', () => {
-		const page = shallow(
-			<DepositDetails query={ { id: 'po_mock' } } />
-		);
-		expect( page ).toMatchSnapshot();
 	} );
 } );

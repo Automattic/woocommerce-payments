@@ -1,71 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit details page renders correctly 1`] = `
-<Page>
-  <DepositOverview
-    depositId="po_mock"
-  />
-  <TransactionsList
-    depositId="po_mock"
-  />
-</Page>
-`;
-
 exports[`Deposit overview renders correctly 1`] = `
-<Card
-  className="wcpay-deposit-overview"
->
+<div>
   <div
-    className="wcpay-deposit-detail"
+    class="woocommerce-card wcpay-deposit-overview"
   >
     <div
-      className="wcpay-deposit-date"
+      class="woocommerce-card__body"
     >
-      <Loadable
-        isLoading={false}
-        placeholder="Date placeholder"
+      <div
+        class="wcpay-deposit-detail"
       >
-        Deposit date: 
-        Jan 2, 2020
-      </Loadable>
-    </div>
-    <div
-      className="wcpay-deposit-status"
-    >
-      <Loadable
-        isLoading={false}
-        placeholder="Status"
+        <div
+          class="wcpay-deposit-date"
+        >
+          Deposit date: 
+          Jan 2, 2020
+        </div>
+        <div
+          class="wcpay-deposit-status"
+        >
+          <div
+            class="woocommerce-order-status"
+          >
+            <span
+              class="woocommerce-order-status__indicator is-paid"
+            />
+            Paid
+          </div>
+        </div>
+        <div
+          class="wcpay-deposit-bank-account"
+        >
+          MOCK BANK •••• 1234 (USD)
+        </div>
+      </div>
+      <div
+        class="wcpay-deposit-hero"
       >
-        <Status
-          status="paid"
-        />
-      </Loadable>
-    </div>
-    <div
-      className="wcpay-deposit-bank-account"
-    >
-      <Loadable
-        isLoading={false}
-        placeholder="Bank account placeholder"
-      >
-        MOCK BANK •••• 1234 (USD)
-      </Loadable>
-    </div>
-  </div>
-  <div
-    className="wcpay-deposit-hero"
-  >
-    <div
-      className="wcpay-deposit-amount"
-    >
-      <Loadable
-        display="inline"
-        isLoading={false}
-        placeholder="Amount"
-      >
-        $20.00
-      </Loadable>
+        <div
+          class="wcpay-deposit-amount"
+        >
+          $20.00
+        </div>
+      </div>
     </div>
   </div>
-</Card>
+</div>
 `;
