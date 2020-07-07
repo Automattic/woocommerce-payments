@@ -277,11 +277,15 @@ export const TransactionsList = ( props ) => {
 					key="search"
 					onChange={ onSearchChange }
 					placeholder={
-						__( 'Search by order number, customer name, or billing email', 'woocommerce-payments' )
+						wcpaySettings.featureFlags.customSearch
+							? __( 'Search by order number, customer name, or billing email', 'woocommerce-payments' )
+							: __( 'Search by customer name', 'woocommerce-payments' )
 					}
 					selected={ searchedLabels }
 					showClearButton={ true }
-					type="custom"
+					type={
+						wcpaySettings.featureFlags.customSearch ? 'custom' : 'customers'
+					}
 					autocompleter={ autocompleter }
 				/>,
 			] }
