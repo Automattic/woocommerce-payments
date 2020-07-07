@@ -191,7 +191,12 @@ echo "Setting Jetpack blog_id"
 cli wp wcpay_dev set_blog_id $BLOG_ID
 
 echo "Setting redirection to local server"
-cli wp wcpay_dev redirect_to "http://host.docker.internal:8086/wp-json/"
+
+# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
+if [[ -n $CI ]]; then
+	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+fi
+cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8086/wp-json/"
 
 step "Creating ready page"
 cli wp post create --post_type=page --post_status=publish --post_title='Ready' --post_content='E2E-tests.'
