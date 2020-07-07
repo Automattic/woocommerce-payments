@@ -46,7 +46,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 			'/' . $this->rest_base . '/search',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_transactions_search' ],
+				'callback'            => [ $this, 'get_transactions_search_autocomplete' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -102,9 +102,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_transactions_search( $request ) {
-		$query = $request->get_param( 'query' );
-		return $this->forward_request( 'get_transactions_search', [ $query ] );
+	public function get_transactions_search_autocomplete( $request ) {
+		$search_term = $request->get_param( 'search_term' );
+		return $this->forward_request( 'get_transactions_search_autocomplete', [ $search_term ] );
 	}
 
 	/**

@@ -56,8 +56,9 @@ export function computeSuggestionMatch( suggestion, query ) {
 export default {
 	name: 'transactions',
 	className: 'woocommerce-search__transactions-result',
-	options( name ) {
-		const query = name ? { query: name } : {};
+	options( term ) {
+		// eslint-disable-next-line camelcase
+		const query = term ? { search_term: term } : {};
 		return apiFetch( {
 			path: addQueryArgs( '/wc/v3/payments/transactions/search', query ),
 		} );
@@ -88,10 +89,8 @@ export default {
 			</span>
 		);
 		const nameOption = {
-			key: 'name',
+			key: 'all',
 			label,
-			// eslint-disable-next-line camelcase
-			value: { label: query },
 		};
 
 		return [ nameOption ];

@@ -366,13 +366,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Fetch transactions search options for provided query.
 	 *
-	 * @param string $query Query to be used to get search options - can be an order ID, or part of a name or email.
+	 * @param string $search_term Query to be used to get search options - can be an order ID, or part of a name or email.
 	 * @return array|WP_Error Search results.
 	 */
-	public function get_transactions_search( $query ) {
-		$order = wc_get_order( $query );
+	public function get_transactions_search_autocomplete( $search_term ) {
+		$order = wc_get_order( $search_term );
 
-		$search_results = $this->request( [ 'query' => $query ], self::TRANSACTIONS_API . '/search', self::GET );
+		$search_results = $this->request( [ 'search_term' => $search_term ], self::TRANSACTIONS_API . '/search', self::GET );
 		$results        = array_map(
 			function ( $result ) {
 				return [
