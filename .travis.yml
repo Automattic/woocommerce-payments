@@ -24,8 +24,7 @@ services:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
-  # TODO: Enable test stage before merging
-  # - test
+  - test
   - e2e-testing
 
 env:
@@ -73,6 +72,3 @@ script:
 branches:
   only:
     - master
-     # TODO: Disable e2e/woo test stage before merging
-    - add/e2e-tests
-
