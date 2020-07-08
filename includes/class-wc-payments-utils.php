@@ -177,7 +177,6 @@ class WC_Payments_Utils {
 	 */
 	public static function map_search_orders_to_charge_ids( $search ) {
 		// Map Order # terms to the actual charge id to be used in the server.
-		$terms = explode( ',', $search );
 		$terms = array_map(
 			function ( $term ) {
 				$charge_id = self::get_charge_id_from_search_term( $term );
@@ -187,8 +186,8 @@ class WC_Payments_Utils {
 					return $term;
 				}
 			},
-			$terms
+			$search
 		);
-		return implode( ',', $terms );
+		return $terms;
 	}
 }

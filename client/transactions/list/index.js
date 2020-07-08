@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Search } from '@woocommerce/components';
-import { onQueryChange, getQuery, getSearchWords, updateQueryString } from '@woocommerce/navigation';
+import { onQueryChange, getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -241,17 +241,14 @@ export const TransactionsList = ( props ) => {
 		},
 	];
 
-	const searchWords = getSearchWords( getQuery() );
-	const searchedLabels = searchWords.map( ( v ) => ( {
+	const searchedLabels = getQuery().search && getQuery().search.map( ( v ) => ( {
 		key: v,
 		label: v,
 	} ) );
 
 	const onSearchChange = ( values ) => {
-		// A comma is used as a separator between search terms, so we want to escape any comma they contain.
-		const labels = values.map( ( v ) => v.label.replace( ',', '%2C' ) );
 		updateQueryString( {
-			search: labels.length ? uniq( labels ).join( ',' ) : undefined,
+			search: values.length ? uniq( values.map( v => v.label ) ) : undefined,
 		} );
 	};
 

@@ -185,7 +185,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( "First term,Order #{$order->get_id()},Another term" );
-		$this->assertEquals( "First term,$charge_id,Another term", $result );
+		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( [ 'First term', "Order #{$order->get_id()}", 'Another term' ] );
+		$this->assertEquals( [ 'First term', $charge_id, 'Another term' ], $result );
 	}
 }
