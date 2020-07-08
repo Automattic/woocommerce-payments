@@ -383,7 +383,7 @@ class WC_Payments_API_Client {
 		);
 
 		if ( $order ) {
-			array_unshift( $results, [ 'label' => __( 'Order #', 'woocommerce-payments' ) . $query ] );
+			array_unshift( $results, [ 'label' => __( 'Order #', 'woocommerce-payments' ) . $search_term ] );
 		}
 
 		return $results;
