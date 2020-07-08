@@ -3,7 +3,6 @@ const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
-const { webpackAlias: coreE2EAlias } = require( '@woocommerce/e2e-environment' );
 
 const webpackConfig = {
 	mode: NODE_ENV,
@@ -52,7 +51,6 @@ const webpackConfig = {
 	resolve: {
 		extensions: [ '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
-		alias: { ...coreE2EAlias },
 	},
 	plugins: [
 		new MiniCssExtractPlugin( 'css/[name].css' ),

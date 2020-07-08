@@ -52,8 +52,7 @@ matrix:
   - name: "E2E tests"
     stage: e2e-testing
     script:
-      - npm install jest --global
-      - npm run test:e2e-setup && npm run test:e2e
+      - npm run build:client && npm run test:e2e-setup && npm run test:e2e
 
 before_install:
   - nvm install lts/erbium
