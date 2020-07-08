@@ -29,7 +29,7 @@ describe( 'Successful purchase', () => {
 		await uiUnblocked();
 		await expect( page ).toClick( '.wc_payment_method.payment_method_woocommerce_payments' );
 		const card = {
-			number: '4242424242424241',
+			number: '4242424242424242',
 			expires: {
 				month: '02',
 				year: '24',
