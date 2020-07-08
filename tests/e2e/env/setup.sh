@@ -171,7 +171,7 @@ cli wp plugin install wordpress-importer --activate
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
-# TODO: Build a zip and use it to install plugin to make sure production build it under test.
+# TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
 cli wp plugin activate woocommerce-payments
 
