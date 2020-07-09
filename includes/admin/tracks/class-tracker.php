@@ -10,7 +10,8 @@ namespace WCPay;
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
- * A wrapper class interacting with WC_Tracks.
+ * An API for adding track events that will get unloaded
+ * at a later stage and pushed to WP.com.
  */
 class Tracker {
 	/**
