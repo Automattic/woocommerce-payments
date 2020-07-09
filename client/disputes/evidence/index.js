@@ -299,7 +299,9 @@ export default ( { query } ) => {
 			path: '/payments/disputes',
 		} );
 
-		window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_success' );
+		submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_success' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_success' );
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
@@ -313,7 +315,10 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
 			: __( 'Failed to save evidence!', 'woocommerce-payments' );
-		window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_failed' );
+
+		submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_failed' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_failed' );
 		createErrorNotice( message );
 	};
 
