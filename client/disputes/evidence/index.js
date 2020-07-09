@@ -17,6 +17,7 @@ import { merge, some, flatten, isMatchWith } from 'lodash';
  * Internal dependencies.
  */
 import '../style.scss';
+import { useDisputeEvidence } from 'data';
 import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
@@ -251,6 +252,8 @@ export default ( { query } ) => {
 			return;
 		}
 
+		window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_started', { type: key } );
+
 		const body = new FormData();
 		body.append( 'file', file );
 		body.append( 'purpose', 'dispute_evidence' );
@@ -272,7 +275,11 @@ export default ( { query } ) => {
 				isUploading: { [ key ]: false },
 			} );
 			updateEvidence( key, uploadedFile.id );
+
+			window.wcTracks.recordEvent( 'wcpay_dipute_file_upload_success', { type: key } );
 		} catch ( err ) {
+			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_failed', { message: err.message } );
+
 			updateDispute( {
 				isUploading: { [ key ]: false },
 				uploadingErrors: { [ key ]: err.message },
@@ -292,6 +299,9 @@ export default ( { query } ) => {
 			path: '/payments/disputes',
 		} );
 
+		submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_success' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_success' );
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
@@ -305,8 +315,14 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
 			: __( 'Failed to save evidence!', 'woocommerce-payments' );
+
+		submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_failed' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_failed' );
 		createErrorNotice( message );
 	};
+
+	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 
 	const doSave = async submit => {
 		// Prevent submit if upload is in progress.
@@ -318,6 +334,10 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
+			submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_clicked' );
+
 			const { metadata } = dispute;
 			const updatedDispute = await apiFetch( {
 				path,
@@ -332,6 +352,7 @@ export default ( { query } ) => {
 			setDispute( updatedDispute );
 			handleSaveSuccess( submit );
 			setEvidence( {} );
+			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
 			handleSaveError( submit );
 		} finally {
@@ -340,7 +361,13 @@ export default ( { query } ) => {
 	};
 
 	const productType = getDisputeProductType( dispute );
-	const updateProductType = ( newProductType ) => updateDispute( { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } );
+	const updateProductType = ( newProductType ) => {
+		const properties = {
+			selection: newProductType,
+		};
+		window.wcTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
+		updateDispute( { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } );
+	};
 
 	const fieldsToDisplay = useMemo(
 		() => evidenceFields( dispute && dispute.reason, productType ),

@@ -1,11 +1,42 @@
 /** @format **/
 
 /**
- * Internal dependencies.
+ * External dependencies
  */
+import { __ } from '@wordpress/i18n';
+import { Card, Timeline } from '@woocommerce/components';
 
-const PaymentDetailsTimeline = () => {
-	return null; // TODO: not implemented yet
+/**
+ * Internal dependencies
+ */
+import { useTimeline } from 'data';
+import mapTimelineEvents from './map-events';
+import Loadable, { LoadableBlock } from 'components/loadable';
+
+const PaymentDetailsTimeline = ( { chargeId } ) => {
+	if ( ! wcpaySettings.featureFlags.paymentTimeline ) {
+		return null;
+	}
+
+	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
+	const items = mapTimelineEvents( timeline );
+
+	return (
+		<Card
+			title={ <Loadable isLoading={ isLoading } value={ __( 'Timeline', 'woocommerce-payments' ) } /> }
+			className="payment-details__timeline" >
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
+				{
+				timelineError instanceof Error
+					? __( 'Error while loading timeline', 'woocommerce-payments' )
+					: <Timeline items={ items } />
+				}
+			</LoadableBlock>
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+		</Card>
+	);
 };
 
 export default PaymentDetailsTimeline;

@@ -14,3 +14,4 @@ export * from './deposits';
 export * from './transactions';
 export * from './charges';
 export * from './timeline';
+export * from './disputes';

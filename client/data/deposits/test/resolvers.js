@@ -18,7 +18,7 @@ import {
 } from '../actions';
 import { getDepositsOverview, getDeposit, getDeposits } from '../resolvers';
 
-const stripePayouts = [	{
+const stripePayouts = [ {
 	id: 'test_po_1',
 	object: 'payout',
 	amount: 3930,
