@@ -47,12 +47,14 @@ export function* acceptDispute( id ) {
 			path: '/payments/disputes',
 		} ) );
 
+		window.wcTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = dispute.order
 			? sprintf( __( 'You have accepted the dispute for order #%s.', 'woocommerce-payments' ), dispute.order.number )
 			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
 		yield dispatch( 'core/notices', 'createSuccessNotice', message );
 	} catch ( e ) {
 		const message = __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' );
+		window.wcTracks.recordEvent( 'wcpay_dispute_accept_failed' );
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	}
 }
