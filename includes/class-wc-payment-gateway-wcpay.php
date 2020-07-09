@@ -542,7 +542,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( $note );
 			$order->add_order_note( $note );
 
-			Tracker::track_admin( 'edit_order_refund_failure', [ 'reason' => $note ] );
+			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( $e->getMessage() );
 		}
 
@@ -562,7 +562,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$order->add_order_note( $note );
-		Tracker::track_admin( 'edit_order_refund_success' );
+		Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 
 		return true;
 	}
@@ -685,7 +685,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_intention_status', $status );
 		$order->save();
 
-		Tracker::track_admin( 'merchant_captured_auth' );
+		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
