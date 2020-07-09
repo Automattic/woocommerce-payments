@@ -59,6 +59,7 @@ export default {
 		const nameOption = {
 			key: 'all',
 			label,
+			value: { label: query },
 		};
 
 		return [ nameOption ];
