@@ -5,9 +5,10 @@ E2E tests can be run locally or in Travis CI.
 ## Setup
 
 Setup script requires the following env variables to be configured:
+
 ```
-WCP_SERVER_REPO='http://github.com/server-repo.git'
-WCP_DEV_TOOLS_REPO='http://github.com/dev-tools-repo.git'
+WCP_SERVER_REPO='https://github.com/server-repo.git'
+WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git'
 
 // Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
@@ -20,10 +21,15 @@ E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
 DEBUG=true
 ```
 
-Create file `local.env` in the repository root folder to setup variables locally.
-For local environment make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+For local setup:
 
-Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+1. Create file `local.env` in the `tests/e2e/config` folder with required values.
+
+1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+
+1. If running server docker containers locally stop them to avoid naming and port conflicts.
+
+1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 ## Running tests
 

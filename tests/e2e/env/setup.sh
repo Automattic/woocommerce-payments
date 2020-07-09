@@ -28,9 +28,9 @@ cli()
 	redirect_output docker run -it --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
 }
 
-if [[ -f "local.env" ]]; then
+if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	echo "Loading local env variables"
-	. ./local.env
+	. "$E2E_ROOT/config/local.env"
 fi
 
 SERVER_PATH="$E2E_ROOT/deps/wcp-server"
