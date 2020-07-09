@@ -36,6 +36,12 @@ add_action(
 
 		/**
 		 * Send all events that were not handled in `admin_footer`.
+		 *
+		 * Between shutdown and admin footer many things can happen. Admin footer loads
+		 * scripts in the markup images that will call tracks from the browsers
+		 * side (which means it's faster as we're not doing network calls to wp.com server
+		 * side). Anything that is added afterward must be sent from the 
+		 * server, but doing it on shutdown means it's not blocking anything.		 
 		 */
 		add_action(
 			'shutdown',
