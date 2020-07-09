@@ -100,8 +100,8 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
 
-			include_once dirname( __FILE__ ) . '/admin/tracks/class-tracker.php';
-			include_once dirname( __FILE__ ) . '/admin/tracks/tracks-loader.php';
+			include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
+			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
