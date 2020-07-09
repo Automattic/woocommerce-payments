@@ -264,7 +264,7 @@ class WC_Payments_Admin {
 	 */
 	private function get_frontend_feature_flags() {
 		return [
-			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 		];
 	}
 
