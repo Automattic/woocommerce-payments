@@ -30,6 +30,10 @@ const wooCommercePackages = [
 	'number',
 ];
 
+global.window.wcTracks = {
+	recordEvent: () => null,
+};
+
 wordPressPackages.forEach( lib => {
 	Object.defineProperty( global.wp, lib, {
 		get: () => require( `@wordpress/${ lib }` ),
