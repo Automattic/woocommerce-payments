@@ -326,7 +326,10 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
-			window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' );
+			submit
+			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' )
+			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_clicked' );
+
 			const { metadata } = dispute;
 			const updatedDispute = await apiFetch( {
 				path,
