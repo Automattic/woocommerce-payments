@@ -4,16 +4,12 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
-import { useDispatch } from '@wordpress/data';
-import { addQueryArgs } from '@wordpress/url';
-import { getHistory } from '@woocommerce/navigation';
-import apiFetch from '@wordpress/api-fetch';
 import { Card } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
+import { useDispute } from 'data';
 import { reasons } from '../strings';
 import Actions from './actions';
 import Info from '../info';
@@ -22,14 +18,16 @@ import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import '../style.scss';
 
-export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
+const DisputeDetails = ( { query: { id: disputeId } } ) => {
+	const { dispute = {}, isLoading, doAccept } = useDispute( disputeId );
+
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
 	const actions = disputeIsAvailable && <Actions
 			id={ dispute.id }
 			needsResponse={ 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status }
 			isSubmitted={ dispute.evidence_details && dispute.evidence_details.submission_count > 0 }
-			onAccept={ onAccept }
+			onAccept={ doAccept }
 		/>;
 
 	const mapping = reasons[ dispute.reason ] || {};
@@ -84,58 +82,4 @@ export const DisputeDetails = ( { isLoading, dispute = {}, onAccept } ) => {
 	);
 };
 
-// Temporary MVP data wrapper
-export default ( { query } ) => {
-	const path = `/wc/v3/payments/disputes/${ query.id }`;
-
-	const [ dispute, setDispute ] = useState();
-	const [ loading, setLoading ] = useState( true );
-	const { createSuccessNotice, createErrorNotice } = useDispatch( 'core/notices' );
-
-	const fetchDispute = async () => {
-		setLoading( true );
-		try {
-			setDispute( await apiFetch( { path } ) );
-		} finally {
-			setLoading( false );
-		}
-	};
-	useEffect( () => {
-		fetchDispute();
-	}, [] );
-
-	const handleAcceptSuccess = () => {
-		window.wcTracks.recordEvent( 'wcpay_dispute_accept_success' );
-		const message = dispute.order
-			? sprintf( __( 'You have accepted the dispute for order #%s.', 'woocommerce-payments' ), dispute.order.number )
-			: __( 'You have accepted the dispute.', 'woocommerce-payments' );
-		createSuccessNotice( message );
-		getHistory().push( addQueryArgs( 'admin.php', {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-		} ) );
-	};
-
-	const doAccept = async () => {
-		setLoading( true );
-		try {
-			window.wcTracks.recordEvent( 'wcpay_dispute_accept_clicked' );
-			setDispute( await apiFetch( { path: `${ path }/close`, method: 'post' } ) );
-			handleAcceptSuccess();
-		} catch ( err ) {
-			const notice = __( 'There has been an error accepting the dispute. Please try again later.', 'woocommerce-payments' );
-			window.wcTracks.recordEvent( 'wcpay_dispute_accept_failed', { message: notice } );
-			createErrorNotice( notice );
-		} finally {
-			setLoading( false );
-		}
-	};
-
-	return (
-		<DisputeDetails
-			isLoading={ loading }
-			dispute={ dispute }
-			onAccept={ doAccept }
-		/>
-	);
-};
+export default DisputeDetails;

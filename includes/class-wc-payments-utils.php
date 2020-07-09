@@ -116,4 +116,29 @@ class WC_Payments_Utils {
 	public static function is_valid_us_zip_code( $zip ) {
 		return ! empty( $zip ) && preg_match( '/^\d{5,5}(-\d{4,4})?$/', $zip );
 	}
+
+	/**
+	 * Updates the order when the payment authorization has expired without being captured.
+	 * It updates the order status, adds an order note, and updates the metadata so the "Capture" action
+	 * button isn't displayed anymore.
+	 *
+	 * @param WC_Order $order Order object.
+	 */
+	public static function mark_payment_expired( $order ) {
+		$order->update_meta_data( '_intention_status', 'canceled' );
+		$order->update_status(
+			'cancelled',
+			sprintf(
+				self::esc_interpolated_html(
+				/* translators: %1: transaction ID of the payment */
+					__( 'Payment authorization has <strong>expired</strong> (<code>%1$s</code>).', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				$order->get_transaction_id()
+			)
+		);
+	}
 }

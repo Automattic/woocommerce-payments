@@ -7,7 +7,12 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { DisputeDetails } from '../';
+import DisputeDetails from '../';
+import { useDispute } from 'data';
+
+jest.mock( 'data', () => ( {
+	useDispute: jest.fn(),
+} ) );
 
 describe( 'Dispute details screen', () => {
 	const reasons = [
@@ -46,11 +51,10 @@ describe( 'Dispute details screen', () => {
 			},
 		};
 
+		useDispute.mockReturnValue( { dispute, isLoading: false } );
+
 		const { container } = render(
-			<DisputeDetails
-				dispute={ dispute }
-				showPlaceholder={ false }
-			/>
+			<DisputeDetails query={ { id: 'dp_asdfghjkl' } } />
 		);
 		expect( container ).toMatchSnapshot();
 	} );

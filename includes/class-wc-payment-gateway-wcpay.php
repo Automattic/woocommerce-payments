@@ -100,11 +100,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 			'manual_capture'  => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
+				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
-				'desc_tip'    => true,
 			],
 			'test_mode'       => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
@@ -670,21 +669,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to capture charge on.
 	 */
 	public function capture_charge( $order ) {
-		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention(
-			$order->get_transaction_id(),
-			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
-			$this->get_level3_data_from_order( $order )
-		);
-		$status = $intent->get_status();
+		$amount                   = $order->get_total();
+		$is_authorization_expired = false;
+		$status                   = null;
 
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
+		try {
+			$intent = $this->payments_api_client->capture_intention(
+				$order->get_transaction_id(),
+				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+				$this->get_level3_data_from_order( $order )
+			);
+
+			$status = $intent->get_status();
+
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
+		} catch ( WC_Payments_API_Exception $e ) {
+			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+			if ( 'canceled' === $intent->get_status() ) {
+				$is_authorization_expired = true;
+			}
+		}
 
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
@@ -695,13 +706,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
+		}
+
+		if ( $is_authorization_expired ) {
+			WC_Payments_Utils::mark_payment_expired( $order );
 		}
 	}
 

@@ -10,6 +10,10 @@ import { render, fireEvent } from '@testing-library/react';
  */
 import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 
+jest.mock( 'data', () => ( {
+	useDisputeEvidence: jest.fn(),
+} ) );
+
 /* eslint-disable camelcase */
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
