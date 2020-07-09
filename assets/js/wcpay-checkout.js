@@ -271,7 +271,10 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		if ( document.location.href.indexOf( 'pay_for_order' ) > 0 ) {
+		var orderPayIndex = document.location.href.indexOf( 'order-pay' );
+		var isOrderPage = orderPayIndex > -1;
+
+		if ( isOrderPage ) {
 			blockUI( $( '#order_review' ) );
 			$( '#payment' ).hide( 500 );
 		}
@@ -281,9 +284,15 @@ jQuery( function( $ ) {
 
 		// If we're on the Pay for Order page, get the order ID
 		// directly from the URL instead of relying on the hash.
-		// The checkout URL has no digits, whereas the Pay for Order page
-		// has this format: '/checkout/order-pay-page-slug/189/'.
-		var orderIdPartials = window.location.pathname.match( /\d+/ );
+		// The checkout URL does not contain the string 'order-pay'.
+		// The Pay for Order page contains the string 'order-pay' and
+		// can have these formats:
+		// Plain permalinks:
+		// /?page_id=7&order-pay=189&pay_for_order=true&key=wc_order_key
+		// Non-plain permalinks:
+		// /checkout/order-pay/189/
+		// Match for consecutive digits after the string 'order-pay' to get the order ID.
+		var orderIdPartials = isOrderPage && window.location.href.substring( orderPayIndex ).match( /\d+/ );
 		if ( orderIdPartials ) {
 			orderId = orderIdPartials[ 0 ];
 		}
