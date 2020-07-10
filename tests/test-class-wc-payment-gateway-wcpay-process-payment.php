@@ -127,6 +127,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'get_total' )
 			->willReturn( $total );
 
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
 			$intent_id,
@@ -184,8 +187,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'payment_complete' );
 
+		// Assert: empty_cart() was called.
+		$mock_cart
+			->expects( $this->once() )
+			->method( 'empty_cart' );
+
 		// Act: process a successful payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -216,6 +224,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Return a 'requires_capture' response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
@@ -278,8 +289,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'set_transaction_id' )
 			->with( $intent_id );
 
+		// Assert: empty_cart() was called.
+		$mock_cart
+			->expects( $this->once() )
+			->method( 'empty_cart' );
+
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -304,6 +320,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$this->mock_api_client
@@ -343,8 +362,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 0 ) )
 			->method( 'add_order_note' );
 
+		// Assert: empty_cart() was not called.
+		$mock_cart
+			->expects( $this->exactly( 0 ) )
+			->method( 'empty_cart' );
+
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
@@ -380,6 +404,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
 
 		// Arrange: Return a 'requires_action' response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
@@ -442,8 +469,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 0 ) )
 			->method( 'set_transaction_id' );
 
+		// Assert: empty_cart() was not called.
+		$mock_cart
+			->expects( $this->exactly( 0 ) )
+			->method( 'empty_cart' );
+
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );

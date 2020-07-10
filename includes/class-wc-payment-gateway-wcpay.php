@@ -333,17 +333,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
-		return $this->process_payment_for_order( $order );
+		return $this->process_payment_for_order( $order, WC()->cart );
 	}
 
 	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Order $order Order to process the payment for.
+	 * @param WC_Cart  $cart The WC_Cart object.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment_for_order( $order ) {
+	public function process_payment_for_order( $order, $cart ) {
 		try {
 			$order_id = $order->get_id();
 			$amount   = $order->get_total();
@@ -467,7 +468,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			wc_reduce_stock_levels( $order_id );
-			WC()->cart->empty_cart();
+			$cart->empty_cart();
 
 			return [
 				'result'   => 'success',
