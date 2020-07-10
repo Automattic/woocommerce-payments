@@ -78,7 +78,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_customer_service,
 				]
 			)
-			->setMethods( [ 'get_return_url' ] )
+			->setMethods(
+				[
+					'get_return_url',
+					'mark_payment_complete_for_order',
+					'get_level3_data_from_order', // To avoid needing to mock the order items.
+				]
+			)
 			->getMock();
 
 		// Arrange: Set the return value of get_return_url() so it can be used in a test later.
@@ -97,6 +103,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test processing payment with the status 'succeeded'.
 	 */
 	public function test_intent_status_success() {
 		// Arrange: Reusable data.
@@ -104,9 +111,21 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$charge_id = 'ch_123';
 		$status    = 'succeeded';
 		$secret    = 'client_secret_123';
+		$order_id  = 123;
+		$total     = 12.23;
 
 		// Arrange: Create an order to test with.
-		$order = WC_Helper_Order::create_order();
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
 
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
@@ -124,42 +143,53 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				$this->returnValue( $intent )
 			);
 
-		// Act: process a successful payment.
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
-
-		// Assert: Returning correct array.
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
+		// Assert: Order has correct charge id meta data.
+		// Assert: Order has correct intention status meta data.
+		// Assert: Order has correct intent ID.
+		// This test is a little brittle because we don't really care about the order
+		// in which the different calls are made, but it's not possible to write it
+		// otherwise for now.
+		// There's an issue open for that here:
+		// https://github.com/sebastianbergmann/phpunit/issues/4026.
+		$mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $intent_id ],
+				[ '_charge_id', $charge_id ],
+				[ '_intention_status', $status ]
+			);
 
 		// Assert: The order note contains all the information we want:
 		// - status
 		// - intention id
 		// - amount charged.
-		$notes             = wc_get_order_notes(
-			[
-				'order_id' => $order->get_id(),
-			]
-		);
-		$latest_wcpay_note = current(
-			array_filter(
-				$notes,
-				function( $note ) {
-					return false !== strpos( $note->content, 'WooCommerce Payments' );
-				}
-			)
-		);
-		$this->assertContains( 'successfully charged', $latest_wcpay_note->content );
-		$this->assertContains( $intent_id, $latest_wcpay_note->content );
-		$this->assertContains( $order->get_total(), $latest_wcpay_note->content );
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->callback(
+					function( $note ) use ( $intent_id, $total ) {
+						return (
+						strpos( $note, 'successfully charged' )
+						&& strpos( $note, $intent_id )
+						&& strpos( $note, strval( $total ) )
+						);
+					}
+				)
+			);
 
-		// Assert: Order has correct charge id meta data.
-		$this->assertEquals( $order->get_meta( '_charge_id' ), $charge_id );
+		// Assert: `payment_complete` is called.
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
 
-		// Assert: Order has correct intention status meta data.
-		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
 
-		// Assert: Order has correct intent ID.
-		$this->assertEquals( $order->get_meta( '_intent_id' ), $intent_id );
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $this->return_url, $result['redirect'] );
 	}
 
 	/**

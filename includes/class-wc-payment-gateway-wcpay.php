@@ -329,13 +329,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int $order_id Order ID to process the payment for.
 	 *
-	 * @return array|null
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
+		return $this->process_payment_for_order( $order );
+	}
 
+	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param WC_Order $order Order to process the payment for.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
+	public function process_payment_for_order( $order ) {
 		try {
-			$amount = $order->get_total();
+			$order_id = $order->get_id();
+			$amount   = $order->get_total();
 
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
