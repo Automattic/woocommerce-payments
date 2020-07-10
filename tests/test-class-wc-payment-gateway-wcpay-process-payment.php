@@ -201,9 +201,21 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$charge_id = 'ch_123';
 		$status    = 'requires_capture';
 		$secret    = 'client_secret_123';
+		$order_id  = 123;
+		$total     = 12.23;
 
 		// Arrange: Create an order to test with.
-		$order = WC_Helper_Order::create_order();
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
 
 		// Arrange: Return a 'requires_capture' response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
@@ -221,50 +233,57 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				$this->returnValue( $intent )
 			);
 
-		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
-
-		// Assert: Returning correct array.
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
+		// Assert: Order has correct charge id meta data.
+		// Assert: Order has correct intention status meta data.
+		// Assert: Order has correct intent ID.
+		// This test is a little brittle because we don't really care about the order
+		// in which the different calls are made, but it's not possible to write it
+		// otherwise for now.
+		// There's an issue open for that here:
+		// https://github.com/sebastianbergmann/phpunit/issues/4026.
+		$mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $intent_id ],
+				[ '_charge_id', $charge_id ],
+				[ '_intention_status', $status ]
+			);
 
 		// Assert: The order note contains all the information we want:
 		// - status
 		// - intention id
 		// - amount charged.
-		$notes             = wc_get_order_notes(
-			[
-				'order_id' => $order->get_id(),
-			]
-		);
-		$latest_wcpay_note = current(
-			array_filter(
-				$notes,
-				function( $note ) {
-					return false !== strpos( $note->content, 'WooCommerce Payments' );
-				}
-			)
-		);
-		$this->assertContains( 'authorized', $latest_wcpay_note->content );
-		$this->assertContains( $intent_id, $latest_wcpay_note->content );
-		$this->assertContains( $order->get_total(), $latest_wcpay_note->content );
-
-		// Assert: Order has correct  status.
-		// Need to get the order again to see the correct order status.
-		$updated_order = wc_get_order( $order->get_id() );
-		$this->assertEquals( $updated_order->get_status(), 'on-hold' );
+		// Note that the note and the order status are updated at the same
+		// time using `update_status()`.
+		$mock_order
+			->expects( $this->exactly( 1 ) )
+			->method( 'update_status' )
+			->with(
+				'on-hold',
+				$this->callback(
+					function( $note ) use ( $intent_id, $total ) {
+						return (
+						strpos( $note, 'authorized' )
+						&& strpos( $note, $intent_id )
+						&& strpos( $note, strval( $total ) )
+						);
+					}
+				)
+			);
 
 		// Assert: Order has correct transaction ID set.
-		$this->assertEquals( $updated_order->get_transaction_id(), $intent_id );
+		$mock_order
+			->expects( $this->exactly( 1 ) )
+			->method( 'set_transaction_id' )
+			->with( $intent_id );
 
-		// Assert: Order has correct charge id meta data.
-		$this->assertEquals( $order->get_meta( '_charge_id' ), $charge_id );
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
 
-		// Assert: Order has correct intention status meta data.
-		$this->assertEquals( $order->get_meta( '_intention_status' ), $status );
-
-		// Assert: Order has correct intent ID.
-		$this->assertEquals( $order->get_meta( '_intent_id' ), $intent_id );
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $this->return_url, $result['redirect'] );
 	}
 
 	public function test_exception_thrown() {
