@@ -42,7 +42,9 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-wc-payments-rest-request-exception.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-payments-rest-controller.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-webhook-controller.php';
+	require_once dirname( __FILE__ ) . '/../includes/admin/tracks/class-tracker.php';
 }
+
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Start up the WP testing environment.
