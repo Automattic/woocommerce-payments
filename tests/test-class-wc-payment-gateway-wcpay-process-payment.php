@@ -289,9 +289,21 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_exception_thrown() {
 		// Arrange: Reusable data.
 		$error_message = 'Error: No such customer: 123';
+		$order_id      = 123;
+		$total         = 12.23;
 
 		// Arrange: Create an order to test with.
-		$order = WC_Helper_Order::create_order();
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
 		$this->mock_api_client
@@ -307,51 +319,39 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
+		// Assert: Order status was updated.
+		$mock_order
+			->expects( $this->exactly( 1 ) )
+			->method( 'update_status' )
+			->with( 'failed' );
+
+		// Assert: Order transaction ID was not set.
+		$mock_order
+			->expects( $this->exactly( 0 ) )
+			->method( 'set_transaction_id' );
+
+		// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
+		$mock_order
+		->expects( $this->exactly( 0 ) )
+		->method( 'update_meta_data' );
+
+		// Assert: No order note was added.
+		// - status
+		// - intention id
+		// - amount charged.
+		$mock_order
+			->expects( $this->exactly( 0 ) )
+			->method( 'add_order_note' );
+
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order );
 
-		// Assert: A notice has been added.
+		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
-
-		// Assert: Order has correct  status.
-		// Need to get the order again to see the correct order status.
-		$updated_order = wc_get_order( $order->get_id() );
-		$this->assertEquals( $updated_order->get_status(), 'failed' );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'fail', $result['result'] );
 		$this->assertEquals( '', $result['redirect'] );
-
-		// Assert: Order does not have transaction ID set.
-		$this->assertEquals( $updated_order->get_transaction_id(), '' );
-
-		// Assert: Order does not have charge id meta data.
-		$this->assertEquals( $order->get_meta( '_charge_id' ), '' );
-
-		// Assert: Order does not have intention status meta data.
-		$this->assertEquals( $order->get_meta( '_intention_status' ), '' );
-
-		// Assert: Order does not have intent ID meta data.
-		$this->assertEquals( $order->get_meta( '_intent_id' ), '' );
-
-		// Assert: There is no order note added.
-		$notes             = wc_get_order_notes(
-			[
-				'order_id' => $order->get_id(),
-			]
-		);
-		$latest_wcpay_note = current(
-			array_filter(
-				$notes,
-				function( $note ) {
-					return false !== strpos( $note->content, 'WooCommerce Payments' );
-				}
-			)
-		);
-		// Note that for empty arrays, current() may return
-		// Boolean FALSE, but may also return a non-Boolean value which evaluates to FALSE.
-		// That's why it's being cast to Boolean for the test.
-		$this->assertFalse( (bool) $latest_wcpay_note );
 	}
 
 	/**
