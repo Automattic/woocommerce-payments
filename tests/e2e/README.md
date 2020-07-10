@@ -7,8 +7,8 @@ E2E tests can be run locally or in Travis CI.
 Setup script requires the following env variables to be configured:
 
 ```
-WCP_SERVER_REPO='https://github.com/server-repo.git'
-WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git'
+WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
 // Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
