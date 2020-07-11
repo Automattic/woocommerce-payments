@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -810,6 +811,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * This function is used to update the order status after the user has
 	 * been asked to authenticate their payment.
 	 *
+	 * This function is used for both:
+	 * - regular checkout
+	 * - Pay for Order page
+	 *
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
@@ -825,12 +830,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ) );
 			}
 
-			$intent_id = $order->get_meta( '_intent_id', true );
+			$intent_id          = $order->get_meta( '_intent_id', true );
+			$intent_id_received = isset( $_POST['intent_id'] )
+			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+			/* translators: This will be used to indicate an unknown value for an ID. */
+			: __( 'unknown', 'woocommerce-payments' );
+
+			if ( empty( $intent_id ) ) {
+				throw new WC_Payments_Intent_Authentication_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'empty_intent_id'
+				);
+			}
+
+			// Check that the intent saved in the order matches the intent used as part of the
+			// authentication process. The ID of the intent used is sent with
+			// the AJAX request. We are about to use the status of the intent saved in
+			// the order, so we need to make sure the intent that was used for authentication
+			// is the same as the one we're using to update the status.
+			if ( $intent_id !== $intent_id_received ) {
+				throw new WC_Payments_Intent_Authentication_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'intent_id_mismatch'
+				);
+			}
+
 			// An exception is thrown if an intent can't be found for the given intent ID.
-			$intent    = $this->payments_api_client->get_intent( $intent_id );
-			$status    = $intent->get_status();
-			$intent_id = $intent->get_id();
-			$amount    = $order->get_total();
+			$intent = $this->payments_api_client->get_intent( $intent_id );
+
+			$status = $intent->get_status();
+			$amount = $order->get_total();
 
 			switch ( $status ) {
 				case 'succeeded':
@@ -905,6 +934,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				wp_die();
 			}
+		} catch ( WC_Payments_Intent_Authentication_Exception $e ) {
+			$error_code = $e->get_error_code();
+
+			switch ( $error_code ) {
+				case 'intent_id_mismatch':
+				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
+							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
+							[
+								'code' => '<code>',
+							]
+						),
+						$intent_id_received
+					);
+					$order->add_order_note( $note );
+					break;
+			}
+
+			// Send back error so it can be displayed to the customer.
+			echo wp_json_encode(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+			wp_die();
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			echo wp_json_encode(

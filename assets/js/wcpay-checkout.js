@@ -48,6 +48,21 @@ jQuery( function( $ ) {
 	} );
 
 	/**
+	 * Block UI to indicate processing and avoid duplicate submission.
+	 *
+	 * @param {object} $form The jQuery object for the form.
+	 */
+	var blockUI = function( $form ) {
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+	};
+
+	/**
 	 * Adds a customer value to an object if the value exists and is non-empty.
 	 *
 	 * @param {object} customerObj The object that the value should be loaded to.
@@ -142,14 +157,7 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		// Block UI to indicate processing and avoid duplicate submission.
-		$form.addClass( 'processing' ).block( {
-			message: null,
-			overlayCSS: {
-				background: '#fff',
-				opacity: 0.6,
-			},
-		} );
+		blockUI( $form );
 
 		var paymentMethodArgs = {
 			type: 'card',
@@ -192,9 +200,17 @@ jQuery( function( $ ) {
 		return false;
 	};
 
+	/**
+	 * Shows the authentication modal to the user and handles the outcome.
+	 *
+	 * @param {string} orderId      The ID of the order being paid for.
+	 * @param {string} clientSecret The client secret of the intent being used to pay for the order.
+	 */
 	var showAuthenticationModal = function( orderId, clientSecret ) {
 		stripe.confirmCardPayment( clientSecret )
 		.then( function( result ) {
+			var intentId = ( result.paymentIntent && result.paymentIntent.id ||
+				result.error && result.error.payment_intent && result.error.payment_intent.id );
 			return [
 				// eslint-disable-next-line camelcase
 				jQuery.post( wcpay_config.ajaxUrl, {
@@ -203,6 +219,8 @@ jQuery( function( $ ) {
 					order_id: orderId,
 					// eslint-disable-next-line camelcase
 					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
+					// eslint-disable-next-line camelcase
+					intent_id: intentId,
 			} ), result.error ];
 		} )
 		.then( function( [ response, originalError ] ) {
@@ -227,6 +245,8 @@ jQuery( function( $ ) {
 		} )
 		.catch( function( error ) {
 			$( 'form.checkout' ).removeClass( 'processing' ).unblock();
+			$( '#order_review' ).removeClass( 'processing' ).unblock();
+			$( '#payment' ).show( 500 );
 
 			var errorMessage = error.message;
 
@@ -241,6 +261,51 @@ jQuery( function( $ ) {
 		} );
 	};
 
+	/**
+	 * Displays the authentication modal to the user if needed.
+	 */
+	function maybeShowAuthenticationModal() {
+		var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
+
+		if ( ! partials ) {
+			return;
+		}
+
+		var orderPayIndex = document.location.href.indexOf( 'order-pay' );
+		var isOrderPage = orderPayIndex > -1;
+
+		if ( isOrderPage ) {
+			blockUI( $( '#order_review' ) );
+			$( '#payment' ).hide( 500 );
+		}
+
+		var orderId = partials[ 1 ];
+		var clientSecret = partials[ 2 ];
+
+		// If we're on the Pay for Order page, get the order ID
+		// directly from the URL instead of relying on the hash.
+		// The checkout URL does not contain the string 'order-pay'.
+		// The Pay for Order page contains the string 'order-pay' and
+		// can have these formats:
+		// Plain permalinks:
+		// /?page_id=7&order-pay=189&pay_for_order=true&key=wc_order_key
+		// Non-plain permalinks:
+		// /checkout/order-pay/189/
+		// Match for consecutive digits after the string 'order-pay' to get the order ID.
+		var orderIdPartials = isOrderPage && window.location.href.substring( orderPayIndex ).match( /\d+/ );
+		if ( orderIdPartials ) {
+			orderId = orderIdPartials[ 0 ];
+		}
+
+		// Cleanup the URL.
+		// https://stackoverflow.com/questions/1397329/
+		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
+		// 5298684#5298684
+		history.replaceState( '', document.title, window.location.pathname + window.location.search );
+
+		showAuthenticationModal( orderId, clientSecret );
+	}
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
 		return handleOnPaymentFormSubmit( $( this ) );
@@ -253,21 +318,14 @@ jQuery( function( $ ) {
 		}
 	} );
 
-	// Handle hash change - used when authenticating payment with SCA.
+	// On every page load, check to see whether we should display the authentication
+	// modal and display it if it should be displayed.
+	maybeShowAuthenticationModal();
+
+	// Handle hash change - used when authenticating payment with SCA on checkout page.
 	window.addEventListener( 'hashchange', function( event ) {
 		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
-			var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
-
-			var orderId = partials[ 1 ];
-			var clientSecret = partials[ 2 ];
-
-			// Cleanup the URL.
-			// https://stackoverflow.com/questions/1397329/
-			// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
-			// 5298684#5298684
-			history.replaceState( '', document.title, window.location.pathname + window.location.search );
-
-			showAuthenticationModal( orderId, clientSecret );
+			maybeShowAuthenticationModal();
 		}
 	} );
 } );
