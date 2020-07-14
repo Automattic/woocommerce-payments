@@ -25,7 +25,9 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </span>
             <span
               class="chip chip-light"
-            />
+            >
+              Paid
+            </span>
           </p>
           <div
             class="payment-details-summary__breakdown"
@@ -545,7 +547,9 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             </span>
             <span
               class="chip chip-light"
-            />
+            >
+              Disputed
+            </span>
           </p>
           <div
             class="payment-details-summary__breakdown"

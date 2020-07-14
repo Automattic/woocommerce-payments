@@ -14,7 +14,7 @@ import { get } from 'lodash';
 /**
  * Internal dependencies.
  */
-import { getChargeAmounts } from 'utils/charge';
+import { getChargeAmounts, getChargeStatus } from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
@@ -77,7 +77,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							<span className="payment-details-summary__amount-currency">
 								{ charge.currency || 'cur' }
 							</span>
-							<PaymentStatusChip charge={ charge } />
+							<PaymentStatusChip status={ getChargeStatus( charge ) } />
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
