@@ -578,7 +578,7 @@ class WC_Payments_Account {
 			delete_transient( self::ACCOUNT_TRANSIENT );
 			$this->get_cached_account_data();
 		} catch ( Exception $e ) {
-			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+			Logger::error( "Failed to refresh account data. Error: $e" );
 		}
 	}
 
