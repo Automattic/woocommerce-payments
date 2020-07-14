@@ -26,7 +26,9 @@ describe( 'PaymentStatusChip', () => {
 		'disputed_under_review',
 		'disputed_won',
 		'disputed_lost',
-		'disputed_closed',
+		'disputed_warning_needs_response',
+		'disputed_warning_under_review',
+		'disputed_warning_closed',
 	];
 
 	test.each( statuses )( 'renders %s status', ( status ) => {

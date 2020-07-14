@@ -30,16 +30,6 @@ exports[`PaymentStatusChip renders default appearance if status is unrecognized 
 </div>
 `;
 
-exports[`PaymentStatusChip renders disputed_closed status 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Disputed: Inquiry closed
-  </span>
-</div>
-`;
-
 exports[`PaymentStatusChip renders disputed_lost status 1`] = `
 <div>
   <span
@@ -65,7 +55,37 @@ exports[`PaymentStatusChip renders disputed_under_review status 1`] = `
   <span
     class="chip chip-light"
   >
-    Disputed: In review
+    Disputed: Under review
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_closed status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Inquiry: Closed
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_needs_response status 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Inquiry: Needs response
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_under_review status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Inquiry: Under review
   </span>
 </div>
 `;

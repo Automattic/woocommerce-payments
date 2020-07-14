@@ -548,7 +548,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             <span
               class="chip chip-light"
             >
-              Disputed
+              Disputed: Under review
             </span>
           </p>
           <div

@@ -4,7 +4,26 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import disputeStatuses from 'components/dispute-status-chip/mappings';
+
+const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
+	( statuses, [ status, mapping ] ) => {
+		statuses[ 'disputed_' + status ] = {
+			type: mapping.type,
+			message: status.startsWith( 'warning_' )
+				? mapping.message
+				/** translators: %s dispute status, e.g. Won, Lost, Under review, etc. */
+				: sprintf( __( 'Disputed: %s', 'woocommerce-payments' ), mapping.message ),
+		};
+		return statuses;
+	},
+	{}
+);
 
 /* TODO: implement other payment statuses (SCA and authorizations) */
 export default {
@@ -32,24 +51,5 @@ export default {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
-	disputed_needs_response: {
-		type: 'primary',
-		message: __( 'Disputed: Needs response', 'woocommerce-payments' ),
-	},
-	disputed_under_review: {
-		type: 'light',
-		message: __( 'Disputed: In review', 'woocommerce-payments' ),
-	},
-	disputed_won: {
-		type: 'light',
-		message: __( 'Disputed: Won', 'woocommerce-payments' ),
-	},
-	disputed_lost: {
-		type: 'light',
-		message: __( 'Disputed: Lost', 'woocommerce-payments' ),
-	},
-	disputed_closed: {
-		type: 'light',
-		message: __( 'Disputed: Inquiry closed', 'woocommerce-payments' ),
-	},
+	...formattedDisputeStatuses,
 };

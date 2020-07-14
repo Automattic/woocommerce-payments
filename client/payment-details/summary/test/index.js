@@ -77,6 +77,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.disputed = true;
 		charge.dispute = {
 			amount: 1500,
+			status: 'under_review',
 		};
 
 		const paymentDetailsSummary = renderCharge( charge );
