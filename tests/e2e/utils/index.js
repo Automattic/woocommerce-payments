@@ -1,5 +1,3 @@
-/* global page */
-
 /**
  * External dependencies
  */

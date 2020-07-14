@@ -1,13 +1,18 @@
+const path = require( 'path' );
 const { config } = require( 'dotenv' );
 const { jestConfig } = require( '@automattic/puppeteer-utils' );
 
-config( { path: './tests/e2e/config/.env' } );
-config( { path: './tests/e2e/config/local.env' } );
+config( { path: path.resolve( __dirname, '.env' ) } );
+config( { path: path.resolve( __dirname, 'local.env' ) } );
 
 module.exports = {
 	...jestConfig,
-	rootDir: '../../../',
+	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: [
-		'<rootDir>/tests/e2e/specs',
+		path.resolve( __dirname, '../specs' ),
+	],
+	setupFilesAfterEnv: [
+		path.resolve( __dirname, '../setup/jest-setup.js' ),
+		...jestConfig.setupFilesAfterEnv,
 	],
 };

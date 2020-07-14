@@ -1,17 +1,41 @@
 # WooCommerce Payments End-to-end tests
 
-At the moment E2E tests can be run only locally.
+E2E tests can be run locally or in Travis CI.
 
 ## Setup
 
-1. Make sure the site is up and running locally, including Jetpack connection setup, test products and initial WC Payments plugin configuration.
-2. Update config file `tests/e2e/config/default.json` or create `test.json` file in the same folder with required params. For local testing create file `local.json` (ignored by version control) with `url` param matching local site under test, e.g. `http://localhost:8082`.
+Setup script requires the following env variables to be configured:
+
+```
+WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
+
+// Stripe account data. Need to support level 3 data to run tests successfully.
+E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
+E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
+E2E_WCPAY_STRIPE_TEST_CLIENT_ID=<stripe ca_xxx>
+E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
+E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
+
+// Optional to see verbose output
+DEBUG=true
+```
+
+For local setup:
+
+1. Create file `local.env` in the `tests/e2e/config` folder with required values.
+
+1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
+
+1. If running server docker containers locally stop them to avoid naming and port conflicts.
+
+1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 ## Running tests
 
 There are two modes for running tests:
 
-1. Headless mode: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is supposed to be used in CI environment in the future.
+1. Headless mode: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
 
 2. Dev mode: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeter` to run tests in dev mode.
 
@@ -26,7 +50,7 @@ Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true
 
 ## Slack integration
 
-Slack reporter requires custom jest config provided by `@automattic/puppeteer-utils` package. This config is only applied in with `npm run test:e2e` command.
+Slack reporter requires custom jest config provided by `@automattic/puppeteer-utils` package. This config is only applied with `npm run test:e2e` command.
 
 **Configuration steps:**
 

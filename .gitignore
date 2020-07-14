@@ -46,6 +46,8 @@ tests/cli/vendor
 /tests/e2e/config/local-*.json
 /tests/e2e/config/local.json
 /tests/e2e/config/local.env
+/tests/e2e/docker
+/tests/e2e/deps
 phpcs.xml
 phpunit.xml
 
