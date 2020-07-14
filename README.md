@@ -13,6 +13,7 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 ### NPM
 
 - `npm install`
+- `composer install`
 - `npm run build:client`
 
 ## Setup
