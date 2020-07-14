@@ -99,27 +99,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = [
-			'enabled'         => [
+			'enabled'                      => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_details' => [
+			'account_details'              => [
 				'type' => 'account_actions',
 			],
-			'account_status'  => [
+			'account_status'               => [
 				'type' => 'account_status',
 			],
-			'manual_capture'  => [
+			'account_statement_descriptor' => [
+				'type'  => 'account_statement_descriptor',
+				'title' => __( 'Statement Descriptor', 'woocommerce-payments' ),
+				'label' => __( 'Statement descriptor to display in receipt', 'woocommerce-payments' ),
+			],
+			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
 			],
-			'test_mode'       => [
+			'test_mode'                    => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -127,7 +132,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			],
-			'enable_logging'  => [
+			'enable_logging'               => [
 				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -146,6 +151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
+		// TODO: override/hook into 'process_admin_options' to update option value in connected account.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
@@ -715,6 +721,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generates markup for account statement descriptor field.
+	 *
+	 * @param string $key Field key.
+	 * @param array  $data Field data.
+	 *
+	 * @return string
+	 */
+	public function generate_account_statement_descriptor_html( $key, $data ) {
+		if ( ! $this->is_connected() ) {
+			return '';
+		}
+
+		try {
+			$descriptor = $this->account->get_statement_descriptor();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to render statement descriptor input. ' . $e );
+			return '';
+		}
+
+		// Value from option is used as input value. Update option to make sure proper value is displayed.
+		$this->update_option( $key, $descriptor );
+		return parent::generate_text_html( $key, $data );
 	}
 
 	/**

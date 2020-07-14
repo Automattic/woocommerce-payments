@@ -163,6 +163,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 * @throws WC_Payments_API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_statement_descriptor() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
