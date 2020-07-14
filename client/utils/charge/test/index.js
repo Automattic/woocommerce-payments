@@ -108,18 +108,28 @@ describe( 'Charge utilities', () => {
 			expect( utils.getChargeStatus( charge ) ).toEqual( status );
 		} );
 
-		const disputedStatuses = [
-			'disputed_needs_response',
-			'disputed_under_review',
-			'disputed_won',
-			'disputed_lost',
-			'disputed_warning_needs_response',
-			'disputed_warning_under_review',
-			'disputed_warning_closed',
+		const disputeStatuses = [
+			'needs_response',
+			'under_review',
+			'won',
+			'lost',
+			'warning_needs_response',
+			'warning_under_review',
+			'warning_closed',
 		];
 
-		test.each( disputedStatuses )( 'returns disputed status for %s', ( status ) => {
+		test.each( disputeStatuses )( 'returns disputed status for %s', ( status ) => {
 			expect( utils.getChargeStatus( getDisputedChargeWithStatus( status ) ) ).toEqual( 'disputed_' + status );
+		} );
+
+		test.each( disputeStatuses )( 'disputed statuses take precedence over refunds', ( status ) => {
+			const charge = {
+				...getDisputedChargeWithStatus( status ),
+				...fullyRefundedCharge,
+			};
+			expect( utils.getChargeStatus( charge ) ).toEqual( 'disputed_' + status );
+			expect( charge.refunded ).toEqual( true );
+			expect( charge.amount_refunded ).toEqual( 1500 );
 		} );
 	} );
 } );
