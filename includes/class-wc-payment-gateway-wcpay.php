@@ -1079,13 +1079,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ) );
 			}
 
-			$setup_intent   = $this->payments_api_client->get_setup_intent( $setup_intent_id );
-			$payment_method = $setup_intent['payment_method'];
+			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 
 			if ( 'succeeded' !== $setup_intent['status'] ) {
 				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
 			}
 
+			$payment_method        = $setup_intent['payment_method'];
 			$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
 			$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
 
