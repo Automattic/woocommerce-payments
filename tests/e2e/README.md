@@ -31,6 +31,12 @@ For local setup:
 
 1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
+Handy utility scripts for managing environment:
+
+* `npm run test:e2e-down` Stops E2E environment containers.
+* `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes
+* `npm run test:e2e-reset` Stops containers and performs cleanup.
+
 ## Running tests
 
 There are two modes for running tests:

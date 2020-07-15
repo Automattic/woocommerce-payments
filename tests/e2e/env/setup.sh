@@ -2,38 +2,15 @@
 
 set -e
 
-cwd=$(pwd)
-export WCP_ROOT=$cwd
-export E2E_ROOT="$cwd/tests/e2e"
-export WP_URL="localhost:8084"
+. ./tests/e2e/env/shared.sh
+
 BLOG_ID=${E2E_BLOG_ID-111}
-
-step() {
-	echo
-	echo "===> $1"
-}
-
-redirect_output() {
-	if [ -z "$DEBUG" ]; then
-        "$@" > /dev/null
-    else
-        "$@"
-    fi
-}
-
-# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
-# https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
-cli()
-{
-	redirect_output docker run -it --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
-}
 
 if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	echo "Loading local env variables"
 	. "$E2E_ROOT/config/local.env"
 fi
 
-SERVER_PATH="$E2E_ROOT/deps/wcp-server"
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	step "Fetching server"
 
@@ -72,9 +49,6 @@ step "Configuring server with stripe account"
 redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
 
 cd $cwd
-
-export DEV_TOOLS_DIR="wcp-dev-tools"
-DEV_TOOLS_PATH="$E2E_ROOT/deps/$DEV_TOOLS_DIR"
 
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 	step "Fetching dev tools"
