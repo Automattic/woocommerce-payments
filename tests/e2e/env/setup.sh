@@ -198,9 +198,6 @@ if [[ -n $CI ]]; then
 fi
 cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8086/wp-json/"
 
-step "Creating ready page"
-cli wp post create --post_type=page --post_status=publish --post_title='Ready' --post_content='E2E-tests.'
-
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
 
