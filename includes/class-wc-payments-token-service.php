@@ -53,6 +53,9 @@ class WC_Payments_Token_Service {
 	 * @param WP_User $user           User to attach payment method to.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
+		// Clear cached payment methods.
+		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+
 		$token = new WC_Payment_Token_CC();
 		$token->set_token( $payment_method['id'] );
 		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
@@ -115,6 +118,8 @@ class WC_Payments_Token_Service {
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
 			try {
 				$this->payments_api_client->detach_payment_method( $token->get_token() );
+				// Clear cached payment methods.
+				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			} catch ( Exception $e ) {
 				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 			}
@@ -132,6 +137,8 @@ class WC_Payments_Token_Service {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
+				// Clear cached payment methods.
+				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
 	}

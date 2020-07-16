@@ -166,6 +166,16 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Clear payment methods cache for a user.
+	 *
+	 * @param int $user_id WC user ID.
+	 */
+	public function clear_cached_payment_methods_for_user( $user_id ) {
+		$customer_id = $this->get_customer_id_by_user_id( $user_id );
+		delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+	}
+
+	/**
 	 * Build the customer description string.
 	 *
 	 * @param WP_User $user WordPress user.
