@@ -64,7 +64,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'is_server_connected',
 					'capture_intention',
 					'get_intent',
-					'create_and_confirm_setup_intent',
+					'create_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
 				]
@@ -434,7 +434,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
+			->method( 'create_setup_intent' )
 			->with( 'pm_mock', 'cus_12345' )
 			->willReturn( [ 'id' => 'pm_mock' ] );
 
@@ -458,7 +458,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
+			->method( 'create_setup_intent' )
 			->with( 'pm_mock', 'cus_12345' )
 			->willReturn( [ 'id' => 'pm_mock' ] );
 

@@ -185,30 +185,6 @@ jQuery( function ( $ ) {
 
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
-
-		// Restore default value for ignoreIfBlocked.
-		$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
-	};
-
-	/**
-	 * Saves the setup intent ID in a hidden input, and re-submits the form.
-	 *
-	 * @param {object} $form       The jQuery object for the form.
-	 * @param {object} setupIntent Setup intent object.
-	 */
-	var submitFormWithSetupIntent = function( $form, setupIntent ) {
-		// WC core also calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
-		// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-		var defaultIgnoreIfBlocked = $.blockUI.defaults.ignoreIfBlocked;
-		$.blockUI.defaults.ignoreIfBlocked = true;
-
-		// Populate form with the setup intent.
-		var setupIntentInput = $( '<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />' );
-		setupIntentInput.val( setupIntent.id );
-		$form.append( setupIntentInput );
-
-		// Re-submit the form.
-		$form.removeClass( 'processing' ).submit();
 	};
 
 	/**
@@ -232,11 +208,6 @@ jQuery( function ( $ ) {
 
 				var setupIntent = response.data;
 
-				if ( 'succeeded' === setupIntent.status ) {
-					// Populate form with the payment method and re-submit.
-					submitFormWithSetupIntent( $form, setupIntent );
-					return;
-				}
 				// eslint-disable-next-line camelcase
 				stripe.confirmCardSetup( setupIntent.client_secret, { payment_method: paymentMethod.id } )
 					.then( function( result ) {
@@ -250,8 +221,21 @@ jQuery( function ( $ ) {
 						return confirmedSetupIntent;
 					} )
 					.then( function( confirmedSetupIntent ) {
-						// Populate form with the payment method and re-submit.
-						submitFormWithSetupIntent( $form, confirmedSetupIntent );
+						// Populate form with the setup intent and re-submit.
+						var setupIntentInput = $( '<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />' );
+						setupIntentInput.val( confirmedSetupIntent.id );
+						$form.append( setupIntentInput );
+
+						// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
+						// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
+						var defaultIgnoreIfBlocked = $.blockUI.defaults.ignoreIfBlocked;
+						$.blockUI.defaults.ignoreIfBlocked = true;
+
+						// Re-submit the form.
+						$form.removeClass( 'processing' ).submit();
+
+						// Restore default value for ignoreIfBlocked.
+						$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
 					} )
 					.catch( function( error ) {
 						$form.removeClass( 'processing' ).unblock();

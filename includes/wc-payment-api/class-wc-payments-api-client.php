@@ -250,28 +250,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create a setup intention, and automatically confirm it.
+	 * Create a setup intent.
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
 	 *
 	 * @return array
-	 * @throws WC_Payments_API_Exception - Exception thrown on setup intention creation failure.
+	 * @throws WC_Payments_API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
-			'confirm'        => 'true',
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
 
 	/**
-	 * Fetch a setup intention details.
+	 * Fetch a setup intent details.
 	 *
-	 * @param string $setup_intent_id ID of the setup intention.
+	 * @param string $setup_intent_id ID of the setup intent.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - When fetch of setup intent fails.
