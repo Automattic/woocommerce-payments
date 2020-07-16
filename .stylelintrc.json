@@ -14,7 +14,7 @@
 		"max-line-length": null,
 		"media-feature-parentheses-space-inside": "always",
 		"no-descending-specificity": null,
-    "no-duplicate-selectors": null,
+		"no-duplicate-selectors": null,
 		"rule-empty-line-before": null,
 		"selector-class-pattern": null,
 		"selector-pseudo-class-parentheses-space-inside": "always",
