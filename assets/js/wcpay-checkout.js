@@ -251,11 +251,12 @@ jQuery( function ( $ ) {
 	/**
 	 * Generates a payment method and executes the successHandler callback.
 	 *
-	 * @param {object}   $form          The jQuery object for the form.
-	 * @param {function} successHandler Callback to be executed when payment method is generated.
+	 * @param {object}   $form             The jQuery object for the form.
+	 * @param {function} successHandler    Callback to be executed when payment method is generated.
+	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var handlePaymentMethodCreation = function( $form, successHandler ) {
+	var handlePaymentMethodCreation = function( $form, successHandler, useBillingDetails = true ) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
@@ -268,13 +269,15 @@ jQuery( function ( $ ) {
 		var paymentMethodArgs = {
 			type: 'card',
 			card: cardElement,
-			// eslint-disable-next-line camelcase
-			billing_details: loadBillingDetails(),
 		};
 
-		stripe
-			.createPaymentMethod( paymentMethodArgs )
-			.then( function ( result ) {
+		if ( useBillingDetails ) {
+			// eslint-disable-next-line camelcase
+			paymentMethodArgs.billing_details = loadBillingDetails();
+		}
+
+		stripe.createPaymentMethod( paymentMethodArgs )
+			.then( function( result ) {
 				var paymentMethod = result.paymentMethod;
 				var error = result.error;
 
@@ -436,7 +439,7 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function() {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
-			return handlePaymentMethodCreation( $( 'form#add_payment_method' ), handleAddCard );
+			return handlePaymentMethodCreation( $( 'form#add_payment_method' ), handleAddCard, false );
 		}
 	} );
 
