@@ -49,8 +49,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx}": "npm run lint:js",
-    "*.{scss,css}": "npm run lint:css",
+    "*.{js,jsx,scss,css}": "npm run format",
     "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors"
   },
   "dependencies": {
