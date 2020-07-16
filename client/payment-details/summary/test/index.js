@@ -89,6 +89,16 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( paymentDetailsSummary ).toMatchSnapshot();
 	} );
 
+	test( 'renders fallback customer_name from metadata', () => {
+		const charge = getBaseCharge();
+		charge.billing_details.name = null;
+		// eslint-disable-next-line camelcase
+		charge.metadata = { customer_name: 'Metadata Customer Name' };
+
+		const paymentDetailsSummary = renderCharge( charge );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
+	} );
+
 	function renderCharge( charge, isLoading = false ) {
 		const { container } = render(
 			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
