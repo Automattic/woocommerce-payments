@@ -39,9 +39,10 @@
     "lint:js": "eslint . --ext=js,jsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
-    "format": "prettier --write",
-    "format:js": "npm run format 'assets/**/*.js' 'client/**/*.js'",
-    "format:css": "npm run format 'client/**/*.scss' 'assets/**/*.css'"
+    "format": "npm run format:js && npm run format:css",
+    "format:js": "npm run format:provided 'assets/**/*.js' 'client/**/*.js'",
+    "format:css": "npm run format:provided 'client/**/*.scss' 'assets/**/*.css'",
+    "format:provided": "prettier --write"
   },
   "husky": {
     "hooks": {
@@ -49,7 +50,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,scss,css}": "npm run format",
+    "*.{js,jsx,scss,css}": "npm run format:provided",
     "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors"
   },
   "dependencies": {
