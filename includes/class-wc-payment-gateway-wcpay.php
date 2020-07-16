@@ -404,6 +404,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
 				$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 				$email               = sanitize_email( $order->get_billing_email() );
+				$country             = sanitize_text_field( $order->get_billing_country() );
 				$save_payment_method = ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// Determine the customer making the payment, create one if we don't have one already.
@@ -420,10 +421,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				$metadata = [
-					'customer_name'  => $name,
-					'customer_email' => $email,
-					'site_url'       => esc_url( get_site_url() ),
-					'order_id'       => $order->get_id(),
+					'customer_name'    => $name,
+					'customer_email'   => $email,
+					'customer_country' => $country,
+					'site_url'         => esc_url( get_site_url() ),
+					'order_id'         => $order->get_id(),
 				];
 
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
