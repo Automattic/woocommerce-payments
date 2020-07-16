@@ -9,6 +9,7 @@
 	font-weight: normal;
 	font-style: normal;
 }
+<<<<<<< HEAD
 /* stylelint-disable selector-id-pattern */
 #adminmenu
 	#toplevel_page_wc-admin-path--payments-deposits
@@ -18,6 +19,12 @@
 	#toplevel_page_wc-admin-path--payments-connect
 	.menu-icon-generic
 	div.wp-menu-image::before {
+=======
+
+/* stylelint-disable selector-id-pattern */
+#adminmenu #toplevel_page_wc-admin-path--payments-deposits .menu-icon-generic div.wp-menu-image::before,
+#adminmenu #toplevel_page_wc-admin-path--payments-connect .menu-icon-generic div.wp-menu-image::before {
+>>>>>>> Fix css linting errors that conflict with prettier
 	font-family: 'WCPay' !important;
 	content: '\e900';
 	width: 24px;
