@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
+use WCPay\Tracker;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -541,6 +542,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, 'USD' ) );
 			}
+			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
@@ -553,6 +555,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( $note );
 			$order->add_order_note( $note );
 
+			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( $e->getMessage() );
 		}
 
@@ -570,6 +573,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$reason
 			);
 		}
+
 		$order->add_order_note( $note );
 
 		return true;
@@ -704,6 +708,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$is_authorization_expired = true;
 			}
 		}
+
+		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
