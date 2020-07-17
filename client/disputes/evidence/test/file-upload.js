@@ -3,8 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
-import { FormFileUpload, IconButton } from '@wordpress/components';
+import { render, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -32,36 +31,40 @@ describe( 'FileUploadControl', () => {
 	} );
 
 	test( 'renders default file upload control', () => {
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders loading state', () => {
 		props.isLoading = true;
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload done state', () => {
 		props.isDone = true;
 		props.fileName = 'file.pdf';
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload failed state', () => {
 		props.error = 'Error message';
 		props.fileName = 'file.pdf';
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'triggers onFileChange', () => {
 		props.onFileChange = jest.fn();
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		const fakeFile = {};
 		const fakeEvent = { target: { files: [ fakeFile ] } };
-		control.find( FormFileUpload ).simulate( 'change', fakeEvent );
+
+		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
+		const input = control.querySelector( 'input[type="file"]' );
+		fireEvent.change( input, fakeEvent );
+
 		expect( props.onFileChange ).toHaveBeenCalledTimes( 1 );
 		expect( props.onFileChange ).toHaveBeenCalledWith( field.key, fakeFile );
 	} );
@@ -70,8 +73,8 @@ describe( 'FileUploadControl', () => {
 		props.fileName = 'file.pdf';
 		props.isDone = true;
 		props.onFileRemove = jest.fn();
-		const control = shallow( <FileUploadControl { ...props } /> );
-		control.find( IconButton ).simulate( 'click', {} );
+		const { getByRole } = render( <FileUploadControl { ...props } /> );
+		fireEvent.click( getByRole( 'button', { name: /remove file/i } ) );
 		expect( props.onFileRemove ).toHaveBeenCalledTimes( 1 );
 		expect( props.onFileRemove ).toHaveBeenCalledWith( field.key );
 	} );
@@ -80,7 +83,7 @@ describe( 'FileUploadControl', () => {
 		props.disabled = true;
 		props.isDone = true;
 		props.fileName = 'file.pdf';
-		const control = shallow( <FileUploadControl { ...props } /> );
+		const { container: control } = render( <FileUploadControl { ...props } /> );
 		expect( control ).toMatchSnapshot();
 	} );
 } );

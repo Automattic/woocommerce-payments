@@ -53,15 +53,16 @@ global.wcSettings = {
 	// date: {
 	// 	dow: 0,
 	// },
-	// orderStatuses: {
-	// 	pending: 'Pending payment',
-	// 	processing: 'Processing',
-	// 	'on-hold': 'On hold',
-	// 	completed: 'Completed',
-	// 	cancelled: 'Cancelled',
-	// 	refunded: 'Refunded',
-	// 	failed: 'Failed',
-	// },
+	orderStatuses: {
+		pending: 'Pending payment',
+		processing: 'Processing',
+		'on-hold': 'On hold',
+		completed: 'Completed',
+		cancelled: 'Cancelled',
+		refunded: 'Refunded',
+		failed: 'Failed',
+		paid: 'Paid',
+	},
 	l10n: {
 		userLocale: 'en_US',
 		weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
