@@ -55,6 +55,7 @@ function wcpay_init() {
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
+// If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
 
 /**
@@ -81,7 +82,7 @@ function wcpay_show_old_jetpack_notice() {
 	?>
 	<div class="notice wcpay-notice notice-error">
 		<p><b><?php echo esc_html( __( 'WooCommerce Payments', 'woocommerce-payments' ) ); ?></b></p>
-		<p><?php echo esc_html( __( 'The version of Jetpack installed is too old to be used with WooCommerce Payments. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ); ?></p>
+		<p><?php echo esc_html( __( 'The version of Jetpack installed is too old to be used with WooCommerce Payments. WooCommerce Payments has been disabled. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ); ?></p>
 	</div>
 	<?php
 }
