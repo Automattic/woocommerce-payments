@@ -9,7 +9,7 @@ import { apiFetch } from '@wordpress/data-controls';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateCharge, updateErrorForCharge } from './actions';
+import { updateCharge, updateErrorForCharge } from './actions.bs';
 
 export function* getCharge( id ) {
 	try {
