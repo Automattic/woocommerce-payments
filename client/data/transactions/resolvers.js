@@ -21,8 +21,8 @@ import { formatDateValue } from '../../util';
 /*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
-	date_before: formatDateValue( query.dateBefore ),
-	date_after: formatDateValue( query.dateAfter, true ),
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
 	date_between: query.dateBetween && [
 		formatDateValue( query.dateBetween[ 0 ] ),
 		formatDateValue( query.dateBetween[ 1 ], true ),

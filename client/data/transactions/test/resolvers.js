@@ -38,7 +38,7 @@ describe( 'getTransactions resolver', () => {
 	const successfulResponse = { data: [] };
 	const query = { ...paginationQuery, ...filterQuery };
 	const expectedQueryString = 'page=1&pagesize=25&sort=date&direction=desc' +
-		'&match=all&date_before=2020-04-28%2004%3A00%3A00&date_after=2020-04-30%2003%3A59%3A59' +
+		'&match=all&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00' +
 		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&type_is=charge' +
 		'&type_is_not=dispute&deposit_id=mock_po_id';
 	let generator = null;
@@ -68,7 +68,7 @@ describe( 'getTransactions resolver', () => {
 describe( 'getTransactionsSummary resolver', () => {
 	const successfulResponse = {};
 	const query = filterQuery;
-	const expectedQueryString = 'match=all&date_before=2020-04-28%2004%3A00%3A00&date_after=2020-04-30%2003%3A59%3A59' +
+	const expectedQueryString = 'match=all&date_before=2020-04-29%2003%3A59%3A59&date_after=2020-04-29%2004%3A00%3A00' +
 		'&date_between%5B0%5D=2020-04-28%2004%3A00%3A00&date_between%5B1%5D=2020-04-30%2003%3A59%3A59&type_is=charge' +
 		'&type_is_not=dispute&deposit_id=mock_po_id';
 	let generator = null;
