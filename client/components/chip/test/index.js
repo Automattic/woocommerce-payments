@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import Chip from '../';
+import Chip from '../chip.bs';
 
 describe( 'Chip', () => {
 	test( 'renders an alert chip', () => {
@@ -41,6 +41,6 @@ describe( 'Chip', () => {
 	} );
 
 	function renderChip( type, message ) {
-		return render( <Chip type={ type } message={ message } /> );
+		return render( <Chip chipType={ type } message={ message } /> );
 	}
 } );
