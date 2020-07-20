@@ -1,13 +1,17 @@
 let getCharge = (state: Types.Reducer.state, id: Types.Charge.id) => {
-  switch (Js.Dict.get(state.charges, id)) {
-  | None => None
-  | Some(data) => Some(data.data)
-  };
+  Belt.Map.String.getWithDefault(
+    state.charges,
+    id,
+    {data: None, error: None},
+  ).
+    data;
 };
 
 let getChargeError = (state: Types.Reducer.state, id: Types.Charge.id) => {
-  switch (Js.Dict.get(state.charges, id)) {
-  | None => None
-  | Some(data) => Some(data.error)
-  };
+  Belt.Map.String.getWithDefault(
+    state.charges,
+    id,
+    {data: None, error: None},
+  ).
+    error;
 };

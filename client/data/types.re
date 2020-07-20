@@ -108,7 +108,7 @@ module Charge = {
       error: option(chargeError),
     };
 
-    type state = Js.Dict.t(chargeStateEntry);
+    type state = Belt.Map.String.t(chargeStateEntry);
   };
 };
 
