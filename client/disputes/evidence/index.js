@@ -276,7 +276,7 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			window.wcTracks.recordEvent( 'wcpay_dipute_file_upload_success', { type: key } );
+			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_success', { type: key } );
 		} catch ( err ) {
 			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_failed', { message: err.message } );
 
