@@ -1,5 +1,13 @@
 *** WooCommerce Payments Changelog ***
 
+= 1.2.0 - 2020-07-xx =
+* Add - 3DS support when using the pay for order page
+* Add - Display confirmation dialog when enabling manual captures
+* Add - Update the order when an authorised payment has expired
+* Add - Timeline view in transactions detail, requires WooCommerce 4.4
+* Add - Tracking for basic user action events
+* Fix - Admin UI styling tweaks
+
 = 1.1.0 - 2020-06-16 =
 * Add - Allow WooCommerce Payments set up without Jetpack plugin
 * Fix - Orders missing after payment processing error
