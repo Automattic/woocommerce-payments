@@ -20,7 +20,7 @@ var types = {
   }
 };
 
-function Chip$default(Props) {
+function Chip(Props) {
   var message = Props.message;
   var chipType = Props.chipType;
   var isCompatOpt = Props.isCompat;
@@ -41,10 +41,8 @@ function Chip$default(Props) {
             }, message);
 }
 
-var $$default = Chip$default;
+var make = Chip;
 
 exports.types = types;
-exports.$$default = $$default;
-exports.default = $$default;
-exports.__esModule = true;
+exports.make = make;
 /* react Not a pure module */

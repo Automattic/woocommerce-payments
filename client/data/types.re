@@ -52,6 +52,13 @@ module Charge = {
     total_count: int,
     url: string,
   };
+  type outcome = {
+    [@bs.as "type"]
+    type_: string,
+  };
+  type dispute = {
+    status: string,
+  };
 
   type charge = {
     id,
@@ -68,9 +75,12 @@ module Charge = {
     captured: bool,
     created: int,
     currency: string,
+    dispute: option(dispute),
     disputed: bool,
     level3,
     livemode: bool,
+    outcome: option(outcome),
+    paid: bool,
     payment_intent: string,
     payment_method: string,
     payment_method_details: paymentMethodDetails,

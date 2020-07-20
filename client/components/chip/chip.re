@@ -1,10 +1,11 @@
 let types = ["primary", "light", "warning", "alert"];
 
 [@react.component]
-let default = (~message, ~chipType, ~isCompat=false) => {
+let make = (~message, ~chipType, ~isCompat=false) => {
   let classNames = [|
     "chip",
-    "chip-" ++ (types |> List.exists(t => chipType == t) ? chipType : "primary"),
+    "chip-"
+    ++ (types |> List.exists(t => chipType == t) ? chipType : "primary"),
     isCompat ? "is-compat" : "",
   |];
 
