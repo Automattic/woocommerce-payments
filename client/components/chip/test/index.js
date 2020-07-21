@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import Chip from '../chip.bs';
+import Chip from '../';
 
 describe( 'Chip', () => {
 	test( 'renders an alert chip', () => {
