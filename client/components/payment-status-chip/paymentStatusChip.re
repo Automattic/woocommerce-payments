@@ -1,5 +1,8 @@
+[@genType.import "@wordpress/i18n"]
+external __: (string, string) => string = "__";
+
 type statusInfo = {
-  chipType: string,
+  chipType: Chip.t,
   message: string,
 };
 
@@ -7,24 +10,48 @@ let statusInfo = status =>
   switch (
     (status: Belt.Result.t(Util.paymentStatus, Util.paymentStatusError))
   ) {
-  | Error(_) => {chipType: "light", message: ""}
-  | Ok(PartiallyRefunded) => {chipType: "light", message: "Partial Refund"}
-  | Ok(FullyRefunded) => {chipType: "light", message: "Refunded"}
-  | Ok(Paid) => {chipType: "light", message: "Paid"}
-  | Ok(Authorized) => {chipType: "primary", message: "Payment Authorized"}
-  | Ok(Failed) => {chipType: "alert", message: "Payment failed"}
-  | Ok(Blocked) => {chipType: "alert", message: "Payment blocked"}
+  | Error(_) => {chipType: Light, message: ""}
+  | Ok(PartiallyRefunded) => {
+      chipType: Light,
+      message: __("Partial Refund", "woocommerce-payments"),
+    }
+  | Ok(FullyRefunded) => {
+      chipType: Light,
+      message: __("Refunded", "woocommerce-payments"),
+    }
+  | Ok(Paid) => {
+      chipType: Light,
+      message: __("Paid", "woocommerce-payments"),
+    }
+  | Ok(Authorized) => {
+      chipType: Primary,
+      message: __("Payment Authorized", "woocommerce-payments"),
+    }
+  | Ok(Failed) => {
+      chipType: Alert,
+      message: __("Payment failed", "woocommerce-payments"),
+    }
+  | Ok(Blocked) => {
+      chipType: Alert,
+      message: __("Payment blocked", "woocommerce-payments"),
+    }
   | Ok(DisputeNeedsResponse) => {
-      chipType: "primary",
-      message: "Disputed: Needs response",
+      chipType: Primary,
+      message: __("Disputed: Needs response", "woocommerce-payments"),
     }
   | Ok(DisputeUnderReview) => {
-      chipType: "light",
-      message: "Disputed: In review",
+      chipType: Light,
+      message: __("Disputed: In review", "woocommerce-payments"),
     }
-  | Ok(DisputeWon) => {chipType: "light", message: "Disputed: Won"}
-  | Ok(DisputeLost) => {chipType: "light", message: "Disputed: Lost"}
-  | Ok(Disputed) => {chipType: "light", message: ""}
+  | Ok(DisputeWon) => {
+      chipType: Light,
+      message: __("Disputed: Won", "woocommerce-payments"),
+    }
+  | Ok(DisputeLost) => {
+      chipType: Light,
+      message: __("Disputed: Lost", "woocommerce-payments"),
+    }
+  | Ok(Disputed) => {chipType: Light, message: ""}
   };
 
 [@react.component]
