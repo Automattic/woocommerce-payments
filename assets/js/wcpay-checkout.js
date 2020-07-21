@@ -419,9 +419,19 @@ jQuery( function ( $ ) {
 		showAuthenticationModal( orderId, clientSecret );
 	}
 
+	/**
+	 * Checks if the customer is using a saved payment method.
+	 *
+	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
+	 */
+	function isUsingSavedPaymentMethod() {
+		return $( '#wc-woocommerce_payments-payment-token-new' ).length &&
+			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' );
+	}
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
-		if ( $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' ) ) {
+		if ( ! isUsingSavedPaymentMethod() ) {
 			return handlePaymentMethodCreation( $( this ), handleOrderPayment );
 		}
 	} );
@@ -430,7 +440,7 @@ jQuery( function ( $ ) {
 	$( '#order_review' ).on( 'submit', function() {
 		if (
 			$( '#payment_method_woocommerce_payments' ).is( ':checked' ) &&
-			$( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
+			! isUsingSavedPaymentMethod()
 		) {
 			return handlePaymentMethodCreation( $( '#order_review' ), handleOrderPayment );
 		}
