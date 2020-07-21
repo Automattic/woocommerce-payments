@@ -151,7 +151,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
-		// TODO: override/hook into 'process_admin_options' to update option value in connected account.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
@@ -784,6 +783,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Handles plugin settings updates.
+	 *
+	 * @return bool was anything saved?
+	 */
+	public function process_admin_options() {
+		$saved = parent::process_admin_options();
+		if ( $saved ) {
+			$account_settings = [
+				'statement_descriptor' => $this->get_option( 'account_statement_descriptor' ),
+			];
+			$this->account->update_stripe_account( $account_settings );
+		}
+		return $saved;
 	}
 
 	/**

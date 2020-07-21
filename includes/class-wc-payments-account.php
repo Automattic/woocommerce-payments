@@ -628,4 +628,41 @@ class WC_Payments_Account {
 			}
 		);
 	}
+
+	/**
+	 * Updates Stripe account settings.
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 */
+	public function update_stripe_account( $stripe_account_settings ) {
+		try {
+			if ( ! $this->settings_changed( $stripe_account_settings ) ) {
+				Logger::info( 'Skip updating account settings. Nothing is changed.' );
+				return;
+			}
+			$updated_account = $this->payments_api_client->update_account( $stripe_account_settings );
+			$this->cache_account( $updated_account );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to update Stripe account ' . $e );
+		}
+	}
+
+	/**
+	 * Checks if account settings changed.
+	 *
+	 * @param array $changes Account settings changes.
+	 *
+	 * @return bool True if at least one parameter value is changed.
+	 */
+	private function settings_changed( $changes = [] ) {
+		$account = get_transient( self::ACCOUNT_TRANSIENT );
+
+		// Consider changes as valid if we don't have cached account data.
+		if ( ! $this->is_valid_cached_account( $account ) ) {
+			return true;
+		}
+
+		$diff = array_diff_assoc( $changes, $account );
+		return ! empty( $diff );
+	}
 }
