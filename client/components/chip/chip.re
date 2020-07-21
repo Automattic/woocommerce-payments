@@ -14,7 +14,7 @@ let chipClass = chipType => switch(chipType) {
 };
 
 [@react.component]
-let make = (~message, ~chipType=Default, ~isCompat=false) => {
+let make = (~message="", ~chipType=Default, ~isCompat=false) => {
   let classNames = [|
     "chip",
     chipClass(chipType),

@@ -21,9 +21,10 @@ function chipClass(chipType) {
 }
 
 function Chip(Props) {
-  var message = Props.message;
+  var messageOpt = Props.message;
   var chipTypeOpt = Props.chipType;
   var isCompatOpt = Props.isCompat;
+  var message = messageOpt !== undefined ? messageOpt : "";
   var chipType = chipTypeOpt !== undefined ? chipTypeOpt : /* Default */4;
   var isCompat = isCompatOpt !== undefined ? isCompatOpt : false;
   var classNames = [
