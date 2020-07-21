@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Chip (ReasonML) Renders a light chip 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Light message
+  </span>
+</div>
+`;
+
+exports[`Chip (ReasonML) Renders a primary chip 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Primary message
+  </span>
+</div>
+`;
+
+exports[`Chip (ReasonML) Renders a warning chip 1`] = `
+<div>
+  <span
+    class="chip chip-warning"
+  >
+    Alert message
+  </span>
+</div>
+`;
+
+exports[`Chip (ReasonML) Renders an alert chip 1`] = `
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Alert message
+  </span>
+</div>
+`;
+
+exports[`Chip (ReasonML) Renders primary when no type provided 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Message
+  </span>
+</div>
+`;
+
+exports[`Chip (ReasonML) Renders primary when using default type 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Message
+  </span>
+</div>
+`;

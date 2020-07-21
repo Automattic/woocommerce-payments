@@ -6,6 +6,11 @@
     {
       "dir": "client",
       "subdirs": true
+    },
+    {
+      "dir": "__tests__",
+      "type": "dev",
+      "subdirs": true
     }
   ],
   "package-specs": [
@@ -18,6 +23,10 @@
   "namespace": true,
   "bs-dependencies": [
     "reason-react"
+  ],
+  "bs-dev-dependencies": [
+    "@glennsl/bs-jest",
+    "bs-react-testing-library"
   ],
   "ppx-flags": [],
   "refmt": 3,
