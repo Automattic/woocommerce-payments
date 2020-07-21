@@ -6,11 +6,11 @@ type t =
   | Default;
 
 let chipClass = chipType => switch(chipType) {
+  | Default
   | Primary => "chip-primary"
   | Warning => "chip-warning"
   | Alert => "chip-alert"
-  | Light
-  | Default => "chip-light"
+  | Light => "chip-light"
 };
 
 [@react.component]

@@ -7,15 +7,15 @@ var $$String = require("bs-platform/lib/js/string.js");
 
 function chipClass(chipType) {
   switch (chipType) {
-    case /* Primary */0 :
-        return "chip-primary";
+    case /* Light */1 :
+        return "chip-light";
     case /* Warning */2 :
         return "chip-warning";
     case /* Alert */3 :
         return "chip-alert";
-    case /* Light */1 :
+    case /* Primary */0 :
     case /* Default */4 :
-        return "chip-light";
+        return "chip-primary";
     
   }
 }
