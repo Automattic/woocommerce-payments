@@ -12,7 +12,7 @@ jQuery( function( $ ) {
 	const api = new WCPayAPI( {
 		publishableKey: getConfig( 'publishableKey' ),
 		accountId: getConfig( 'accountId' ),
-	} );
+	}, jQuery.post );
 	const elements = api.getStripe().elements();
 
 	// In the future this object will be loaded with customer information through `wp_localize_script`.

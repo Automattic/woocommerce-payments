@@ -1,4 +1,4 @@
-/* global Stripe, jQuery */
+/* global Stripe */
 
 /**
  * Internal dependencies
@@ -12,11 +12,13 @@ export default class WCPayAPI {
 	/**
 	 * Prepares the API.
 	 *
-	 * @param {Object} options Options for the initialization.
+	 * @param {Object}   options Options for the initialization.
+	 * @param {Function} request A function to use for AJAX requests.
 	 */
-	constructor( options ) {
+	constructor( options, request ) {
 		this.options = options;
 		this.stripe = null;
+		this.request = request;
 	}
 
 	/**
@@ -144,7 +146,7 @@ export default class WCPayAPI {
 		return this.getStripe().confirmCardPayment( clientSecret )
 			// ToDo: Switch to an async function once it works with webpack.
 			.then( ( result ) => {
-				const ajaxCall = jQuery.post( getConfig( 'ajaxUrl' ), {
+				const ajaxCall = this.request( getConfig( 'ajaxUrl' ), {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
