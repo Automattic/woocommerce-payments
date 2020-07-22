@@ -62,13 +62,14 @@ export default class WCPayAPI {
 			}
 
 			/**
-			 * Sanitizes a value from inputs, or loads a default one.
+			 * Prepares a value that's been loaded from inputs,
+			 * uses a default value if none is present.
 			 *
 			 * @param {string} name The key of the value.
 			 * @param {mixed} value The value to sanitize.
 			 * @returns {mixed}     The sanitized value, `undefined` if not present.
 			 */
-			sanitizeValue( name, value ) {
+			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
 				if ( ( 'undefined' === typeof value ) || 0 === value.length ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
@@ -86,9 +87,9 @@ export default class WCPayAPI {
 			 * @param {string} value The actual value.
 			 */
 			setBillingDetail( name, value ) {
-				const sanitizedValue = this.sanitizeValue( name, value );
-				if ( 'undefined' !== typeof sanitizedValue ) {
-					this.args.billing_details[ name ] = sanitizedValue;
+				const preparedValue = this.prepareValue( name, value );
+				if ( 'undefined' !== typeof preparedValue ) {
+					this.args.billing_details[ name ] = preparedValue;
 				}
 			}
 
@@ -99,9 +100,9 @@ export default class WCPayAPI {
 			 * @param {string} value The actual value.
 			 */
 			setAddressDetail( name, value ) {
-				const sanitizedValue = this.sanitizeValue( name, value );
-				if ( 'undefined' !== typeof sanitizedValue ) {
-					this.args.billing_details.address[ name ] = sanitizedValue;
+				const preparedValue = this.prepareValue( name, value );
+				if ( 'undefined' !== typeof preparedValue ) {
+					this.args.billing_details.address[ name ] = preparedValue;
 				}
 			}
 
