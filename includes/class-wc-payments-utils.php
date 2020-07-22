@@ -141,4 +141,53 @@ class WC_Payments_Utils {
 			)
 		);
 	}
+
+	/**
+	 * Returns a charge_id for an "Order #" search term.
+	 *
+	 * @param string $term Search term.
+	 *
+	 * @return string The charge_id for the order, or empty if no order is found.
+	 */
+	public static function get_charge_id_from_search_term( $term ) {
+		$order_term = 'Order #';
+		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
+			$term_parts = explode( '#', $term, 2 );
+			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
+		}
+		if ( ! isset( $order_id ) || empty( $order_id ) ) {
+			return '';
+		}
+
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return '';
+		}
+
+		return $order->get_meta( '_charge_id' );
+	}
+
+	/**
+	 * Swaps "Order #" search terms with available charge_ids.
+	 *
+	 * @param string $search Search query.
+	 *
+	 * @return string Processed search string.
+	 */
+	public static function map_search_orders_to_charge_ids( $search ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		$terms = array_map(
+			function ( $term ) {
+				$charge_id = self::get_charge_id_from_search_term( $term );
+				if ( ! empty( $charge_id ) ) {
+					return $charge_id;
+				} else {
+					return $term;
+				}
+			},
+			$search
+		);
+		return $terms;
+	}
 }

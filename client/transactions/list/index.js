@@ -3,12 +3,17 @@
 /**
  * External dependencies
  */
+import { uniq } from 'lodash';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { TableCard, Search } from '@woocommerce/components';
+import {
+	onQueryChange,
+	getQuery,
+	updateQueryString,
+} from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -21,6 +26,7 @@ import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from '../../util';
 import Deposit from './deposit';
+import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
 const currency = new Currency();
@@ -239,9 +245,24 @@ export const TransactionsList = ( props ) => {
 		},
 	];
 
+	const searchedLabels =
+		getQuery().search &&
+		getQuery().search.map( ( v ) => ( {
+			key: v,
+			label: v,
+		} ) );
+
+	const onSearchChange = ( values ) => {
+		updateQueryString( {
+			search: values.length
+				? uniq( values.map( ( v ) => v.label ) )
+				: undefined,
+		} );
+	};
+
 	return (
 		<TableCard
-			className="transactions-list"
+			className="transactions-list woocommerce-report-table has-search"
 			title={
 				props.depositId
 					? __( 'Deposit transactions', 'woocommerce-payments' )
@@ -255,6 +276,33 @@ export const TransactionsList = ( props ) => {
 			summary={ isSummaryLoading ? null : summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
+			actions={ [
+				<Search
+					allowFreeTextSearch={ true }
+					inlineTags
+					key="search"
+					onChange={ onSearchChange }
+					placeholder={
+						wcpaySettings.featureFlags.customSearch
+							? __(
+									'Search by order number, customer name, or billing email',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Search by customer name',
+									'woocommerce-payments'
+							  )
+					}
+					selected={ searchedLabels }
+					showClearButton={ true }
+					type={
+						wcpaySettings.featureFlags.customSearch
+							? 'custom'
+							: 'customers'
+					}
+					autocompleter={ autocompleter }
+				/>,
+			] }
 		/>
 	);
 };

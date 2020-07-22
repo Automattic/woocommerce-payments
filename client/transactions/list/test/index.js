@@ -85,6 +85,11 @@ describe( 'Transactions list', () => {
 		if ( ! isEmpty( getQuery() ) ) {
 			updateQueryString( {}, '/', {} );
 		}
+		global.wcpaySettings = {
+			featureFlags: {
+				customSearch: true,
+			},
+		};
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {
