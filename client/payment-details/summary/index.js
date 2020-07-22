@@ -40,7 +40,7 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: get( charge, 'billing_details.name' ) || get( charge, 'metadata.customer_name' ) || '–',
+			content: get( charge, 'billing_details.name' ) || '–',
 		},
 		{
 			title: __( 'Payment method', 'woocommerce-payments' ),
