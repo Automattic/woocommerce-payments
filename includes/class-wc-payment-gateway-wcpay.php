@@ -567,7 +567,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
-		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$payment_method = ! empty( $_POST['wcpay-payment-method'] ) ? wc_clean( $_POST['wcpay-payment-method'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 		if ( empty( $payment_method ) ) {
 			$token_id = wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
