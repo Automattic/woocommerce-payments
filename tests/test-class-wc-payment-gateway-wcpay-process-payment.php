@@ -542,7 +542,26 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_does_not_update_new_payment_method() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'update_payment_method' );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
 	public function test_updates_payment_method_full_billing_details() {
+		$_POST = $this->setup_saved_payment_method();
+
 		$billing_details = [
 			'billing_first_name' => 'Customer',
 			'billing_last_name'  => 'Test',
@@ -593,6 +612,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	}
 
 	public function test_updates_payment_method_partial_billing_details() {
+		$_POST = $this->setup_saved_payment_method();
+
 		$billing_details = [
 			'billing_first_name' => 'Customer',
 			'billing_last_name'  => 'Test',
@@ -637,6 +658,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	}
 
 	public function test_does_not_update_payment_method_no_billing_details() {
+		$_POST = $this->setup_saved_payment_method();
+
 		$order = WC_Helper_Order::create_order();
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
@@ -651,5 +674,21 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'update_payment_method' );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	private function setup_saved_payment_method() {
+		$token = new WC_Payment_Token_CC();
+		$token->set_token( 'pm_mock' );
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_expiry_month( 6 );
+		$token->set_expiry_year( 2026 );
+		$token->set_user_id( get_current_user_id() );
+		$token->save();
+
+		return [
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
+		];
 	}
 }

@@ -405,6 +405,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 				$email               = sanitize_email( $order->get_billing_email() );
 				$save_payment_method = ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$is_saved_method     = empty( $_POST['wcpay-payment-method'] ) && ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// Determine the customer making the payment, create one if we don't have one already.
 				$user        = wp_get_current_user();
@@ -419,9 +420,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
 				}
 
-				// Update payment method information with checkout values, as some saved methods might not have billing details.
+				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 				$billing_details = $this->get_billing_details_from_request();
-				if ( ! empty( $billing_details ) ) {
+				if ( $is_saved_method && ! empty( $billing_details ) ) {
 					$this->payments_api_client->update_payment_method(
 						$payment_method,
 						[
