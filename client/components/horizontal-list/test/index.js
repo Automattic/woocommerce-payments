@@ -29,4 +29,3 @@ describe( 'HorizontalList', () => {
 		return render( <HorizontalList items={ items } /> );
 	}
 } );
-

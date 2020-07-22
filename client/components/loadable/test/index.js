@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
 import Loadable from '..';
 
 describe( 'Loadable', () => {
-	const ChildComponent = () => ( <div>Loaded content</div> );
+	const ChildComponent = () => <div>Loaded content</div>;
 	let loadableProps;
 
 	describe( 'when active', () => {
@@ -61,7 +61,10 @@ describe( 'Loadable', () => {
 		} );
 
 		test( 'renders nothing when neither children nor value passed', () => {
-			const { container, queryByText } = renderLoadable( loadableProps, null );
+			const { container, queryByText } = renderLoadable(
+				loadableProps,
+				null
+			);
 			expect( queryByText( /loaded content/i ) ).not.toBeInTheDocument();
 			expect( container.innerHTML ).toBe( '' );
 		} );

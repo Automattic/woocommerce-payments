@@ -27,20 +27,33 @@ describe( 'acceptDispute action', () => {
 		const generator = acceptDispute( 'dp_mock1' );
 
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'startResolution', 'getDispute', [ 'dp_mock1' ] )
+			dispatch( 'wc/payments', 'startResolution', 'getDispute', [
+				'dp_mock1',
+			] )
 		);
 		expect( generator.next().value ).toEqual(
-			apiFetch( { path: '/wc/v3/payments/disputes/dp_mock1/close', method: 'post' } )
+			apiFetch( {
+				path: '/wc/v3/payments/disputes/dp_mock1/close',
+				method: 'post',
+			} )
 		);
-		expect( generator.next( mockDispute ).value ).toEqual( updateDispute( mockDispute ) );
+		expect( generator.next( mockDispute ).value ).toEqual(
+			updateDispute( mockDispute )
+		);
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'finishResolution', 'getDispute', [ 'dp_mock1' ] )
+			dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
+				'dp_mock1',
+			] )
 		);
 
 		const noticeAction = generator.next().value;
 		expect( getHistory.mock.calls.length ).toEqual( 1 );
 		expect( noticeAction ).toEqual(
-			dispatch( 'core/notices', 'createSuccessNotice', expect.any( String ) )
+			dispatch(
+				'core/notices',
+				'createSuccessNotice',
+				expect.any( String )
+			)
 		);
 		expect( generator.next().done ).toStrictEqual( true );
 	} );
@@ -50,7 +63,11 @@ describe( 'acceptDispute action', () => {
 
 		generator.next();
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
-			dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
+			dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
 		);
 	} );
 } );

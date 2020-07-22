@@ -68,9 +68,7 @@ const statuses = {
 const PaymentStatusChip = ( props ) => {
 	const { charge } = props;
 	const status = statuses[ getChargeStatus( charge ) ] || statuses.default;
-	return (
-		<Chip message={ status.message } type={ status.type } />
-	);
+	return <Chip message={ status.message } type={ status.type } />;
 };
 
 export default PaymentStatusChip;

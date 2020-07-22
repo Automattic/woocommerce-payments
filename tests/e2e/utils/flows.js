@@ -42,7 +42,7 @@ const MY_ACCOUNT_DOWNLOADS = baseUrl + 'my-account/downloads';
 const MY_ACCOUNT_ADDRESSES = baseUrl + 'my-account/edit-address';
 const MY_ACCOUNT_ACCOUNT_DETAILS = baseUrl + 'my-account/edit-account';
 
-const getProductColumnExpression = productTitle =>
+const getProductColumnExpression = ( productTitle ) =>
 	'td[@class="product-name" and ' +
 	`a[contains(text(), "${ productTitle }")]` +
 	']';
@@ -57,7 +57,7 @@ const getQtyInputExpression = ( args = {} ) => {
 	return 'input[contains(@class, "input-text")' + qtyValue + ']';
 };
 
-const getQtyColumnExpression = args =>
+const getQtyColumnExpression = ( args ) =>
 	'td[@class="product-quantity" and ' +
 	'.//' +
 	getQtyInputExpression( args ) +
@@ -81,7 +81,7 @@ const CustomerFlow = {
 		] );
 	},
 
-	addToCartFromShopPage: async productTitle => {
+	addToCartFromShopPage: async ( productTitle ) => {
 		const addToCartXPath =
 			`//li[contains(@class, "type-product") and a/h2[contains(text(), "${ productTitle }")]]` +
 			'//a[contains(@class, "add_to_cart_button") and contains(@class, "ajax_add_to_cart")';
@@ -89,7 +89,9 @@ const CustomerFlow = {
 		const [ addToCartButton ] = await page.$x( addToCartXPath + ']' );
 		addToCartButton.click();
 
-		await page.waitFor( addToCartXPath + ' and contains(@class, "added")]' );
+		await page.waitFor(
+			addToCartXPath + ' and contains(@class, "added")]'
+		);
 	},
 
 	goToCheckout: async () => {
@@ -122,7 +124,7 @@ const CustomerFlow = {
 		} );
 	},
 
-	goToProduct: async postID => {
+	goToProduct: async ( postID ) => {
 		await page.goto( SHOP_PRODUCT_PAGE + postID, {
 			waitUntil: 'networkidle0',
 		} );
@@ -185,12 +187,15 @@ const CustomerFlow = {
 
 	productIsInCart: async ( productTitle, quantity = null ) => {
 		const cartItemArgs = quantity ? { qty: quantity } : {};
-		const cartItemXPath = getCartItemExpression( productTitle, cartItemArgs );
+		const cartItemXPath = getCartItemExpression(
+			productTitle,
+			cartItemArgs
+		);
 
 		await expect( page.$x( cartItemXPath ) ).resolves.toHaveLength( 1 );
 	},
 
-	fillBillingDetails: async customerBillingDetails => {
+	fillBillingDetails: async ( customerBillingDetails ) => {
 		await expect( page ).toFill(
 			'#billing_first_name',
 			customerBillingDetails.firstname
@@ -215,7 +220,10 @@ const CustomerFlow = {
 			'#billing_address_2',
 			customerBillingDetails.addresssecondline
 		);
-		await expect( page ).toFill( '#billing_city', customerBillingDetails.city );
+		await expect( page ).toFill(
+			'#billing_city',
+			customerBillingDetails.city
+		);
 		await expect( page ).toSelect(
 			'#billing_state',
 			customerBillingDetails.state
@@ -234,7 +242,7 @@ const CustomerFlow = {
 		);
 	},
 
-	fillShippingDetails: async customerShippingDetails => {
+	fillShippingDetails: async ( customerShippingDetails ) => {
 		await expect( page ).toFill(
 			'#shipping_first_name',
 			customerShippingDetails.firstname
@@ -273,7 +281,7 @@ const CustomerFlow = {
 		);
 	},
 
-	removeFromCart: async productTitle => {
+	removeFromCart: async ( productTitle ) => {
 		const cartItemXPath = getCartItemExpression( productTitle );
 		const removeItemXPath = cartItemXPath + '//' + getRemoveExpression();
 

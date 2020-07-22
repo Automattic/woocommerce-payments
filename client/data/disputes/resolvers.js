@@ -25,7 +25,11 @@ export function* getDispute( id ) {
 		const result = yield apiFetch( { path } );
 		yield updateDispute( result );
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving dispute.', 'woocommerce-payments' ) );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving dispute.', 'woocommerce-payments' )
+		);
 	}
 }
 
@@ -35,13 +39,10 @@ export function* getDispute( id ) {
  * @param {string} query Data on which to parameterize the selection.
  */
 export function* getDisputes( query ) {
-	const path = addQueryArgs(
-		`${ NAMESPACE }/disputes`,
-		{
-			page: query.paged,
-			pagesize: query.perPage,
-		}
-	);
+	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
+		page: query.paged,
+		pagesize: query.perPage,
+	} );
 
 	try {
 		const results = yield apiFetch( { path } ) || {};
@@ -49,9 +50,15 @@ export function* getDisputes( query ) {
 
 		// Update resolution state on getDispute selector for each result.
 		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [ results.data[ i ].id ] );
+			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
+				results.data[ i ].id,
+			] );
 		}
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving disputes.', 'woocommerce-payments' ) );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving disputes.', 'woocommerce-payments' )
+		);
 	}
 }

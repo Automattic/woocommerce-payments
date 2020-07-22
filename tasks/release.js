@@ -33,16 +33,29 @@ mkdir( targetFolder );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
-const output = fs.createWriteStream( releaseFolder + '/' + pluginSlug + '.zip' );
+const output = fs.createWriteStream(
+	releaseFolder + '/' + pluginSlug + '.zip'
+);
 const archive = archiver( 'zip' );
 
 output.on( 'close', () => {
-	console.log( colors.green( 'All done: Release is built in the ' + releaseFolder + ' folder.' ) );
+	console.log(
+		colors.green(
+			'All done: Release is built in the ' + releaseFolder + ' folder.'
+		)
+	);
 } );
 
 archive.on( 'error', ( err ) => {
-	console.error( colors.red( 'An error occured while creating the zip: ' + err +
-		'\nYou can still probably create the zip manually from the ' + targetFolder + ' folder.' ) );
+	console.error(
+		colors.red(
+			'An error occured while creating the zip: ' +
+				err +
+				'\nYou can still probably create the zip manually from the ' +
+				targetFolder +
+				' folder.'
+		)
+	);
 } );
 
 archive.pipe( output );

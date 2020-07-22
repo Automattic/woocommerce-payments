@@ -6,10 +6,7 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import {
-	getPaymentSettingsUrl,
-	isInTestMode,
-} from '../../../util';
+import { getPaymentSettingsUrl, isInTestMode } from '../../../util';
 import {
 	topics,
 	getPaymentsSettingsUrlComponent,
@@ -45,19 +42,26 @@ describe( 'Test mode notification', () => {
 
 	test( 'Returns correct URL component', () => {
 		const expected = (
-			<a href={ getPaymentSettingsUrl() }>{ 'View WooCommerce Payments settings.' }</a>
+			<a href={ getPaymentSettingsUrl() }>
+				{ 'View WooCommerce Payments settings.' }
+			</a>
 		);
 
 		expect( getPaymentsSettingsUrlComponent() ).toStrictEqual( expected );
 	} );
 
-	test.each( listTopics )( 'Returns right notice message for list topics', ( topic ) => {
-		const expected = (
-			<span>{ topic } { getPaymentsSettingsUrlComponent( topic ) }</span>
-		);
+	test.each( listTopics )(
+		'Returns right notice message for list topics',
+		( topic ) => {
+			const expected = (
+				<span>
+					{ topic } { getPaymentsSettingsUrlComponent( topic ) }
+				</span>
+			);
 
-		expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
-	} );
+			expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
+		}
+	);
 
 	test( 'Notice details are correct for details topics', () => {
 		expect( getTopicDetails( topics.depositDetails ) ).toBe(
@@ -73,19 +77,28 @@ describe( 'Test mode notification', () => {
 		);
 	} );
 
-	test.each( detailsTopics )( 'Returns right notice message for details topics', ( topic ) => {
-		const topicDetails = getTopicDetails( topic );
-		const urlComponent = getPaymentsSettingsUrlComponent( topic );
-		const expected = (
-			<span><b>{ topic }</b> { topicDetails } { urlComponent }</span>
-		);
+	test.each( detailsTopics )(
+		'Returns right notice message for details topics',
+		( topic ) => {
+			const topicDetails = getTopicDetails( topic );
+			const urlComponent = getPaymentsSettingsUrlComponent( topic );
+			const expected = (
+				<span>
+					<b>{ topic }</b> { topicDetails } { urlComponent }
+				</span>
+			);
 
-		expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
-	} );
+			expect( getNoticeMessage( topic ) ).toStrictEqual( expected );
+		}
+	);
 
 	test.each( allTopics )( 'Returns correct notice', ( topic ) => {
 		const expected = (
-			<Notice className="wcpay-test-mode-notice" status="warning" isDismissible={ false }>
+			<Notice
+				className="wcpay-test-mode-notice"
+				status="warning"
+				isDismissible={ false }
+			>
 				{ getNoticeMessage( topic ) }
 			</Notice>
 		);
@@ -108,7 +121,9 @@ describe( 'Test mode notification', () => {
 				</div>
 			);
 
-			expect( withTestNotice( wrappedComponent, topic )() ).toStrictEqual( expected );
+			expect( withTestNotice( wrappedComponent, topic )() ).toStrictEqual(
+				expected
+			);
 		}
 	);
 
@@ -128,7 +143,9 @@ describe( 'Test mode notification', () => {
 				</div>
 			);
 
-			expect( withTestNotice( wrappedComponent, topic )( propToPass ) ).toStrictEqual( expected );
+			expect(
+				withTestNotice( wrappedComponent, topic )( propToPass )
+			).toStrictEqual( expected );
 		}
 	);
 
@@ -140,7 +157,10 @@ describe( 'Test mode notification', () => {
 			const mockProps = { text: 'test prop' };
 			const mockOwnProps = { text: 'test ownProp' };
 			const wrappedComponent = ( props, ownProps ) => (
-				<p>This component with { props.text } and { ownProps.text } will be wrapped.</p>
+				<p>
+					This component with { props.text } and { ownProps.text }{ ' ' }
+					will be wrapped.
+				</p>
 			);
 			const expected = (
 				<div>
@@ -149,8 +169,12 @@ describe( 'Test mode notification', () => {
 				</div>
 			);
 
-			expect( withTestNotice( wrappedComponent, topic )( mockProps, mockOwnProps ) )
-				.toStrictEqual( expected );
+			expect(
+				withTestNotice( wrappedComponent, topic )(
+					mockProps,
+					mockOwnProps
+				)
+			).toStrictEqual( expected );
 		}
 	);
 } );

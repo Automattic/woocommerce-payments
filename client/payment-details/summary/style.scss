@@ -56,7 +56,9 @@
 	}
 }
 
-.payment-details-summary-details .woocommerce-list--horizontal .woocommerce-list__item:last-child {
+.payment-details-summary-details
+	.woocommerce-list--horizontal
+	.woocommerce-list__item:last-child {
 	flex-grow: 1;
 	border-left: 0;
 	.woocommerce-list__item-text {
@@ -72,7 +74,13 @@
 	}
 }
 
-.payment-details-summary-details .woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-title,
-.payment-details-summary-details .woocommerce-list--horizontal .woocommerce-list__item-inner .woocommerce-list__item-content {
+.payment-details-summary-details
+	.woocommerce-list--horizontal
+	.woocommerce-list__item-inner
+	.woocommerce-list__item-title,
+.payment-details-summary-details
+	.woocommerce-list--horizontal
+	.woocommerce-list__item-inner
+	.woocommerce-list__item-content {
 	@include font-size( 14 );
 }

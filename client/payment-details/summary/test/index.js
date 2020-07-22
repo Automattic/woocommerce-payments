@@ -89,8 +89,9 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	function renderCharge( charge, isLoading = false ) {
-		const { container } = render( <PaymentDetailsSummary charge={ charge } isLoading={ isLoading } /> );
+		const { container } = render(
+			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+		);
 		return container;
 	}
 } );
-

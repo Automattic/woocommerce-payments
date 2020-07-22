@@ -40,14 +40,20 @@ describe( 'getDispute resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with dispute data', () => {
-			expect( generator.next( mockDisputes[ 0 ] ).value ).toEqual( updateDispute( mockDisputes[ 0 ] ) );
+			expect( generator.next( mockDisputes[ 0 ] ).value ).toEqual(
+				updateDispute( mockDisputes[ 0 ] )
+			);
 		} );
 	} );
 
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
 			);
 		} );
 	} );
@@ -70,11 +76,14 @@ describe( 'getDisputes resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with disputes data', () => {
-			expect( generator.next( { data: mockDisputes } ).value )
-				.toEqual( updateDisputes( query, mockDisputes ) );
-			mockDisputes.forEach( dispute => {
+			expect( generator.next( { data: mockDisputes } ).value ).toEqual(
+				updateDisputes( query, mockDisputes )
+			);
+			mockDisputes.forEach( ( dispute ) => {
 				expect( generator.next().value ).toEqual(
-					dispatch( 'wc/payments', 'finishResolution', 'getDispute', [ dispute.id ] )
+					dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
+						dispute.id,
+					] )
 				);
 			} );
 		} );
@@ -83,7 +92,11 @@ describe( 'getDisputes resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch( 'core/notices', 'createErrorNotice', expect.any( String ) )
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
 			);
 		} );
 	} );

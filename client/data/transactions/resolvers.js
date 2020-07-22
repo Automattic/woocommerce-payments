@@ -39,16 +39,13 @@ const formatQueryFilters = ( query ) => ( {
  * @param {string} query Data on which to parameterize the selection.
  */
 export function* getTransactions( query ) {
-	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions`,
-		{
-			page: query.paged,
-			pagesize: query.perPage,
-			sort: query.orderby,
-			direction: query.order,
-			...formatQueryFilters( query ),
-		}
-	);
+	const path = addQueryArgs( `${ NAMESPACE }/transactions`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
 
 	try {
 		const results = yield apiFetch( { path } );
@@ -66,7 +63,7 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		formatQueryFilters( query ),
+		formatQueryFilters( query )
 	);
 
 	try {

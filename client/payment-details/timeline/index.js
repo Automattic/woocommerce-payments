@@ -23,14 +23,20 @@ const PaymentDetailsTimeline = ( { chargeId } ) => {
 
 	return (
 		<Card
-			title={ <Loadable isLoading={ isLoading } value={ __( 'Timeline', 'woocommerce-payments' ) } /> }
-			className="payment-details__timeline" >
+			title={
+				<Loadable
+					isLoading={ isLoading }
+					value={ __( 'Timeline', 'woocommerce-payments' ) }
+				/>
+			}
+			className="payment-details__timeline"
+		>
 			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
-				{
-				timelineError instanceof Error
-					? __( 'Error while loading timeline', 'woocommerce-payments' )
-					: <Timeline items={ items } />
-				}
+				{ timelineError instanceof Error ? (
+					__( 'Error while loading timeline', 'woocommerce-payments' )
+				) : (
+					<Timeline items={ items } />
+				) }
 			</LoadableBlock>
 			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
 			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />

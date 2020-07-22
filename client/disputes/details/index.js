@@ -23,12 +23,20 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
-	const actions = disputeIsAvailable && <Actions
+	const actions = disputeIsAvailable && (
+		<Actions
 			id={ dispute.id }
-			needsResponse={ 'needs_response' === dispute.status || 'warning_needs_response' === dispute.status }
-			isSubmitted={ dispute.evidence_details && dispute.evidence_details.submission_count > 0 }
+			needsResponse={
+				'needs_response' === dispute.status ||
+				'warning_needs_response' === dispute.status
+			}
+			isSubmitted={
+				dispute.evidence_details &&
+				dispute.evidence_details.submission_count > 0
+			}
 			onAccept={ doAccept }
-		/>;
+		/>
+	);
 
 	const mapping = reasons[ dispute.reason ] || {};
 
@@ -36,7 +44,9 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
 				<Card>
-					<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+					<div>
+						{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
+					</div>
 				</Card>
 			</Page>
 		);
@@ -44,7 +54,17 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Dispute overview', 'woocommerce-payments' ) } /> }>
+			<Card
+				title={
+					<Loadable
+						isLoading={ isLoading }
+						value={ __(
+							'Dispute overview',
+							'woocommerce-payments'
+						) }
+					/>
+				}
+			>
 				<Info dispute={ dispute } isLoading={ isLoading } />
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Paragraphs>{ mapping.overview }</Paragraphs>
@@ -54,26 +74,47 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 				</LoadableBlock>
 			</Card>
 			<Card
-				title={ <Loadable
-					isLoading={ isLoading }
-					value={ mapping.display
-						/* translators: heading for dispute category information section */
-						? sprintf( __( 'Dispute: %s', 'woocommerce-payments' ), mapping.display )
-						: __( 'Dispute type', 'woocommerce-payments' )
-					}
-				/> }
+				title={
+					<Loadable
+						isLoading={ isLoading }
+						value={
+							mapping.display
+								? /* translators: heading for dispute category information section */
+								  sprintf(
+										__(
+											'Dispute: %s',
+											'woocommerce-payments'
+										),
+										mapping.display
+								  )
+								: __( 'Dispute type', 'woocommerce-payments' )
+						}
+					/>
+				}
 			>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Paragraphs>{ mapping.summary }</Paragraphs>
 				</LoadableBlock>
 
 				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-					{ mapping.required && ( <h3> { __( 'Required to overturn dispute', 'woocommerce-payments' ) } </h3> ) }
+					{ mapping.required && (
+						<h3>
+							{ ' ' }
+							{ __(
+								'Required to overturn dispute',
+								'woocommerce-payments'
+							) }{ ' ' }
+						</h3>
+					) }
 					<Paragraphs>{ mapping.required }</Paragraphs>
 				</LoadableBlock>
 
 				<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-					{ mapping.respond && ( <h3>{ __( 'How to respond', 'woocommerce-payments' ) }</h3> ) }
+					{ mapping.respond && (
+						<h3>
+							{ __( 'How to respond', 'woocommerce-payments' ) }
+						</h3>
+					) }
 					<Paragraphs>{ mapping.respond }</Paragraphs>
 					{ actions }
 				</LoadableBlock>

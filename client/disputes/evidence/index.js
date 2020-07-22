@@ -9,7 +9,12 @@ import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, TextControl, TextareaControl, SelectControl } from '@wordpress/components';
+import {
+	Button,
+	TextControl,
+	TextareaControl,
+	SelectControl,
+} from '@wordpress/components';
 import { Card } from '@woocommerce/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
 
@@ -30,28 +35,45 @@ const PRODUCT_TYPE_META_KEY = '__product_type';
 
 /* If description is an array, separate with newline elements. */
 const expandHelp = ( description ) => {
-	return Array.isArray( description ) ? flatten( description.map( ( line, i ) => [ line, <br key={ i } /> ] ) ) : description;
+	return Array.isArray( description )
+		? flatten(
+				description.map( ( line, i ) => [ line, <br key={ i } /> ] )
+		  )
+		: description;
 };
 
-export const DisputeEvidenceForm = props => {
-	const { fields, evidence, onChange, onFileChange, onFileRemove, onSave, readOnly } = props;
+export const DisputeEvidenceForm = ( props ) => {
+	const {
+		fields,
+		evidence,
+		onChange,
+		onFileChange,
+		onFileRemove,
+		onSave,
+		readOnly,
+	} = props;
 
 	if ( ! fields || ! fields.length ) {
 		return null;
 	}
 
-	const composeDefaultControlProps = field => ( {
+	const composeDefaultControlProps = ( field ) => ( {
 		label: field.label,
 		value: evidence[ field.key ] || '',
-		onChange: value => onChange( field.key, value ),
+		onChange: ( value ) => onChange( field.key, value ),
 		disabled: readOnly,
 		help: expandHelp( field.description ),
 	} );
 
-	const composeFileUploadProps = field => {
-		const fileName = ( evidence.metadata && evidence.metadata[ field.key ] ) || '';
-		const isLoading = evidence.isUploading && ( evidence.isUploading[ field.key ] || false );
-		const error = evidence.uploadingErrors && ( evidence.uploadingErrors[ field.key ] || '' );
+	const composeFileUploadProps = ( field ) => {
+		const fileName =
+			( evidence.metadata && evidence.metadata[ field.key ] ) || '';
+		const isLoading =
+			evidence.isUploading &&
+			( evidence.isUploading[ field.key ] || false );
+		const error =
+			evidence.uploadingErrors &&
+			( evidence.uploadingErrors[ field.key ] || '' );
 		const isDone = ! isLoading && fileName.length > 0;
 		const accept = '.pdf, image/png, image/jpeg';
 		return {
@@ -68,18 +90,33 @@ export const DisputeEvidenceForm = props => {
 		};
 	};
 
-	const composeFieldControl = field => {
+	const composeFieldControl = ( field ) => {
 		switch ( field.type ) {
 			case 'file':
-				return <FileUploadControl key={ field.key } { ...composeFileUploadProps( field ) } />;
+				return (
+					<FileUploadControl
+						key={ field.key }
+						{ ...composeFileUploadProps( field ) }
+					/>
+				);
 			case 'text':
-				return <TextControl key={ field.key } { ...composeDefaultControlProps( field ) } />;
+				return (
+					<TextControl
+						key={ field.key }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
 			default:
-				return <TextareaControl key={ field.key } { ...composeDefaultControlProps( field ) } />;
+				return (
+					<TextareaControl
+						key={ field.key }
+						{ ...composeDefaultControlProps( field ) }
+					/>
+				);
 		}
 	};
 
-	const evidenceSections = fields.map( section => {
+	const evidenceSections = fields.map( ( section ) => {
 		return (
 			<Card key={ section.key } title={ section.title }>
 				{ section.description && <p>{ section.description }</p> }
@@ -92,7 +129,8 @@ export const DisputeEvidenceForm = props => {
 		"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
 		'woocommerce-payments'
 	);
-	const handleSubmit = () => window.confirm( confirmMessage ) && onSave( true );
+	const handleSubmit = () =>
+		window.confirm( confirmMessage ) && onSave( true );
 
 	return (
 		<>
@@ -104,18 +142,24 @@ export const DisputeEvidenceForm = props => {
 							// eslint-disable-next-line max-len
 							"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
 							'woocommerce-payments'
-							) }
+						) }
 					</p>
 					<p>
-						<strong>{ __( 'Evidence submission is final.', 'woocommerce-payments' ) }</strong>
-						{ ' ' }
+						<strong>
+							{ __(
+								'Evidence submission is final.',
+								'woocommerce-payments'
+							) }
+						</strong>{ ' ' }
 						{ __(
 							'You can also save this evidence for later instead of submitting it immediately.',
 							'woocommerce-payments'
-							) }
-						{ ' ' }
+						) }{ ' ' }
 						<strong>
-							{ __( 'We will automatically submit any saved evidence at the due date.', 'woocommerce-payments' ) }
+							{ __(
+								'We will automatically submit any saved evidence at the due date.',
+								'woocommerce-payments'
+							) }
 						</strong>
 					</p>
 
@@ -123,7 +167,11 @@ export const DisputeEvidenceForm = props => {
 						<Button isPrimary isLarge onClick={ handleSubmit }>
 							{ __( 'Submit evidence', 'woocommerce-payments' ) }
 						</Button>
-						<Button isDefault isLarge onClick={ () => onSave( false ) }>
+						<Button
+							isDefault
+							isLarge
+							onClick={ () => onSave( false ) }
+						>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
 						</Button>
 					</CardFooter>
@@ -133,43 +181,108 @@ export const DisputeEvidenceForm = props => {
 	);
 };
 
-export const DisputeEvidencePage = props => {
-	const { isLoading, dispute = {}, productType, onChangeProductType, ...evidenceFormProps } = props;
-	const readOnly = dispute && 'needs_response' !== dispute.status && 'warning_needs_response' !== dispute.status;
+export const DisputeEvidencePage = ( props ) => {
+	const {
+		isLoading,
+		dispute = {},
+		productType,
+		onChangeProductType,
+		...evidenceFormProps
+	} = props;
+	const readOnly =
+		dispute &&
+		'needs_response' !== dispute.status &&
+		'warning_needs_response' !== dispute.status;
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
-				<div>{ __( 'Dispute not loaded', 'woocommerce-payments' ) }</div>
+				<div>
+					{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
+				</div>
 			</Page>
 		);
 	}
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Challenge dispute', 'woocommerce-payments' ) } /> }>
+			<Card
+				title={
+					<Loadable
+						isLoading={ isLoading }
+						value={ __(
+							'Challenge dispute',
+							'woocommerce-payments'
+						) }
+					/>
+				}
+			>
 				<Info dispute={ dispute } isLoading={ isLoading } />
 			</Card>
-			<Card title={ <Loadable isLoading={ isLoading } value={ __( 'Product type', 'woocommerce-payments' ) } /> }>
+			<Card
+				title={
+					<Loadable
+						isLoading={ isLoading }
+						value={ __( 'Product type', 'woocommerce-payments' ) }
+					/>
+				}
+			>
 				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 					<SelectControl
 						value={ productType }
 						onChange={ onChangeProductType }
 						options={ [
-							{ label: __( 'Select one…', 'woocommerce-payments' ), disabled: true, value: '' },
-							{ label: __( 'Physical product', 'woocommerce-payments' ), value: 'physical_product' },
-							{ label: __( 'Digital product or service', 'woocommerce-payments' ), value: 'digital_product_or_service' },
-							{ label: __( 'Offline service', 'woocommerce-payments' ), value: 'offline_service' },
-							{ label: __( 'Multiple product types', 'woocommerce-payments' ), value: 'multiple' },
+							{
+								label: __(
+									'Select one…',
+									'woocommerce-payments'
+								),
+								disabled: true,
+								value: '',
+							},
+							{
+								label: __(
+									'Physical product',
+									'woocommerce-payments'
+								),
+								value: 'physical_product',
+							},
+							{
+								label: __(
+									'Digital product or service',
+									'woocommerce-payments'
+								),
+								value: 'digital_product_or_service',
+							},
+							{
+								label: __(
+									'Offline service',
+									'woocommerce-payments'
+								),
+								value: 'offline_service',
+							},
+							{
+								label: __(
+									'Multiple product types',
+									'woocommerce-payments'
+								),
+								value: 'multiple',
+							},
 						] }
 						disabled={ readOnly }
 					/>
 				</LoadableBlock>
 			</Card>
-			{	// Don't render the form placeholder while the dispute is being loaded.
+			{
+				// Don't render the form placeholder while the dispute is being loaded.
 				// The form content depends on the selected product type, hence placeholder might disappear after loading.
-				! isLoading && <DisputeEvidenceForm { ...evidenceFormProps } readOnly={ readOnly } />
+				! isLoading && (
+					<DisputeEvidenceForm
+						{ ...evidenceFormProps }
+						readOnly={ readOnly }
+					/>
+				)
 			}
 		</Page>
 	);
@@ -181,7 +294,7 @@ export const DisputeEvidencePage = props => {
  * @param {Object?} dispute Dispute object
  * @returns {string} dispute product type
  */
-const getDisputeProductType = dispute => {
+const getDisputeProductType = ( dispute ) => {
 	if ( ! dispute ) {
 		return '';
 	}
@@ -189,7 +302,11 @@ const getDisputeProductType = dispute => {
 	let productType = dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
 
 	// Fallback to `multiple` when evidence submitted but no product type meta.
-	if ( ! productType && dispute.evidence_details && dispute.evidence_details.has_evidence ) {
+	if (
+		! productType &&
+		dispute.evidence_details &&
+		dispute.evidence_details.has_evidence
+	) {
 		productType = 'multiple';
 	}
 
@@ -203,14 +320,24 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
-	const { createSuccessNotice, createErrorNotice, createInfoNotice } = useDispatch( 'core/notices' );
+	const {
+		createSuccessNotice,
+		createErrorNotice,
+		createInfoNotice,
+	} = useDispatch( 'core/notices' );
 
-	const pristine = ! dispute || isMatchWith( dispute.evidence, evidence, ( disputeValue, formValue ) => {
-		// Treat null and '' as equal values.
-		if ( null === disputeValue && ! formValue ) {
-			return true;
-		}
-	} );
+	const pristine =
+		! dispute ||
+		isMatchWith(
+			dispute.evidence,
+			evidence,
+			( disputeValue, formValue ) => {
+				// Treat null and '' as equal values.
+				if ( null === disputeValue && ! formValue ) {
+					return true;
+				}
+			}
+		);
 
 	useConfirmNavigation( () => {
 		if ( pristine ) {
@@ -235,8 +362,10 @@ export default ( { query } ) => {
 		fetchDispute();
 	}, [] );
 
-	const updateEvidence = ( key, value ) => setEvidence( e => ( { ...e, [ key ]: value } ) );
-	const updateDispute = ( updates = {} ) => setDispute( d => merge( {}, d, updates ) );
+	const updateEvidence = ( key, value ) =>
+		setEvidence( ( e ) => ( { ...e, [ key ]: value } ) );
+	const updateDispute = ( updates = {} ) =>
+		setDispute( ( d ) => merge( {}, d, updates ) );
 	const isUploadingEvidence = () => some( dispute.isUploading );
 
 	const doRemoveFile = ( key ) => {
@@ -252,7 +381,9 @@ export default ( { query } ) => {
 			return;
 		}
 
-		window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_started', { type: key } );
+		window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
+			type: key,
+		} );
 
 		const body = new FormData();
 		body.append( 'file', file );
@@ -268,7 +399,11 @@ export default ( { query } ) => {
 		updateEvidence( key, '' );
 
 		try {
-			const uploadedFile = await apiFetch( { path: '/wc/v3/payments/file', method: 'post', body } );
+			const uploadedFile = await apiFetch( {
+				path: '/wc/v3/payments/file',
+				method: 'post',
+				body,
+			} );
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			updateDispute( {
 				metadata: { [ key ]: uploadedFile.filename },
@@ -276,9 +411,13 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_success', { type: key } );
+			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
+				type: key,
+			} );
 		} catch ( err ) {
-			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_failed', { message: err.message } );
+			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
+				message: err.message,
+			} );
 
 			updateDispute( {
 				isUploading: { [ key ]: false },
@@ -290,7 +429,7 @@ export default ( { query } ) => {
 		}
 	};
 
-	const handleSaveSuccess = submit => {
+	const handleSaveSuccess = ( submit ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
@@ -300,8 +439,12 @@ export default ( { query } ) => {
 		} );
 
 		submit
-			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_success' )
-			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_success' );
+			? window.wcTracks.recordEvent(
+					'wcpay_dispute_submit_evidence_success'
+			  )
+			: window.wcTracks.recordEvent(
+					'wcpay_dispute_save_evidence_success'
+			  );
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
@@ -311,23 +454,30 @@ export default ( { query } ) => {
 		getHistory().push( href );
 	};
 
-	const handleSaveError = submit => {
+	const handleSaveError = ( submit ) => {
 		const message = submit
 			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
 			: __( 'Failed to save evidence!', 'woocommerce-payments' );
 
 		submit
-			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_failed' )
-			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_failed' );
+			? window.wcTracks.recordEvent(
+					'wcpay_dispute_submit_evidence_failed'
+			  )
+			: window.wcTracks.recordEvent(
+					'wcpay_dispute_save_evidence_failed'
+			  );
 		createErrorNotice( message );
 	};
 
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 
-	const doSave = async submit => {
+	const doSave = async ( submit ) => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
-			createInfoNotice( __( 'Please wait until file upload is finished' ), 'woocommerce-payments' );
+			createInfoNotice(
+				__( 'Please wait until file upload is finished' ),
+				'woocommerce-payments'
+			);
 			return;
 		}
 
@@ -335,8 +485,12 @@ export default ( { query } ) => {
 
 		try {
 			submit
-			? window.wcTracks.recordEvent( 'wcpay_dispute_submit_evidence_clicked' )
-			: window.wcTracks.recordEvent( 'wcpay_dispute_save_evidence_clicked' );
+				? window.wcTracks.recordEvent(
+						'wcpay_dispute_submit_evidence_clicked'
+				  )
+				: window.wcTracks.recordEvent(
+						'wcpay_dispute_save_evidence_clicked'
+				  );
 
 			const { metadata } = dispute;
 			const updatedDispute = await apiFetch( {
@@ -365,8 +519,13 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		window.wcTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
-		updateDispute( { metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType } } );
+		window.wcTracks.recordEvent(
+			'wcpay_dispute_product_selected',
+			properties
+		);
+		updateDispute( {
+			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
+		} );
 	};
 
 	const fieldsToDisplay = useMemo(
@@ -380,13 +539,14 @@ export default ( { query } ) => {
 			dispute={ dispute }
 			evidence={
 				dispute
-				? {
-					...dispute.evidence,
-					...evidence,
-					metadata: dispute.metadata || {},
-					isUploading: dispute.isUploading || {},
-					uploadingErrors: dispute.uploadingErrors || {} }
-				: {}
+					? {
+							...dispute.evidence,
+							...evidence,
+							metadata: dispute.metadata || {},
+							isUploading: dispute.isUploading || {},
+							uploadingErrors: dispute.uploadingErrors || {},
+					  }
+					: {}
 			}
 			onChange={ updateEvidence }
 			onFileChange={ doUploadFile }
