@@ -32,23 +32,6 @@ export const isChargeFullyRefunded = ( charge = {} ) =>
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
 
-export const mapDisputeStatusToChargeStatus = ( status ) => {
-	switch ( status ) {
-		case 'warning_needs_response':
-		case 'needs_response':
-			return 'disputed_needs_response';
-		case 'warning_under_review':
-		case 'under_review':
-			return 'disputed_under_review';
-		case 'won':
-			return 'disputed_won';
-		case 'lost':
-			return 'disputed_lost';
-		default:
-			return 'disputed';
-	}
-};
-
 /* TODO: implement authorization and SCA charge statuses */
 export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeFailed( charge ) ) {
@@ -58,9 +41,7 @@ export const getChargeStatus = ( charge = {} ) => {
 		return 'blocked';
 	}
 	if ( isChargeDisputed( charge ) ) {
-		return mapDisputeStatusToChargeStatus(
-			getDisputeStatus( charge.dispute )
-		);
+		return 'disputed_' + getDisputeStatus( charge.dispute );
 	}
 	if ( isChargePartiallyRefunded( charge ) ) {
 		return 'refunded_partial';
@@ -71,7 +52,7 @@ export const getChargeStatus = ( charge = {} ) => {
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
 	}
-	return '';
+	return charge.status;
 };
 
 /**

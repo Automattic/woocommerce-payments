@@ -1,74 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentStatusChip renders a default light chip with no message if status does not match 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  />
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with dispute message if there's a dispute in review 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Disputed: In review
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with dispute message if there's a lost dispute 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Disputed: Lost
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with dispute message if there's a won dispute 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Disputed: Won
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with fully refunded message if there's a full refund 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Refunded
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with paid message if it is paid 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Paid
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a light chip with partially refunded message if there's a partial refund 1`] = `
-<div>
-  <span
-    class="chip chip-light"
-  >
-    Partial refund
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders a primary chip with authorized message if payment was not captured 1`] = `
+exports[`PaymentStatusChip renders authorized status 1`] = `
 <div>
   <span
     class="chip chip-primary"
@@ -78,17 +10,7 @@ exports[`PaymentStatusChip renders a primary chip with authorized message if pay
 </div>
 `;
 
-exports[`PaymentStatusChip renders a primary chip with dispute message if there's a dispute needing response 1`] = `
-<div>
-  <span
-    class="chip chip-primary"
-  >
-    Disputed: Needs response
-  </span>
-</div>
-`;
-
-exports[`PaymentStatusChip renders an alert chip with failed message if payment status is blocked 1`] = `
+exports[`PaymentStatusChip renders blocked status 1`] = `
 <div>
   <span
     class="chip chip-alert"
@@ -98,12 +20,122 @@ exports[`PaymentStatusChip renders an alert chip with failed message if payment 
 </div>
 `;
 
-exports[`PaymentStatusChip renders an alert chip with failed message if payment status is failed 1`] = `
+exports[`PaymentStatusChip renders default appearance if status is unrecognized 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Mock status
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_lost status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Lost
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_needs_response status 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Disputed: Needs response
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_under_review status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Under review
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_closed status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Inquiry: Closed
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_needs_response status 1`] = `
+<div>
+  <span
+    class="chip chip-primary"
+  >
+    Inquiry: Needs response
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_warning_under_review status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Inquiry: Under review
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders disputed_won status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Disputed: Won
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders failed status 1`] = `
 <div>
   <span
     class="chip chip-alert"
   >
     Payment failed
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders paid status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Paid
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders refunded_full status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Refunded
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders refunded_partial status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Partial refund
   </span>
 </div>
 `;
