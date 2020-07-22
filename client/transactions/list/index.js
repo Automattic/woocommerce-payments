@@ -9,7 +9,11 @@ import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
 import { TableCard, Search } from '@woocommerce/components';
-import { onQueryChange, getQuery, updateQueryString } from '@woocommerce/navigation';
+import {
+	onQueryChange,
+	getQuery,
+	updateQueryString,
+} from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -241,23 +245,28 @@ export const TransactionsList = ( props ) => {
 		},
 	];
 
-	const searchedLabels = getQuery().search && getQuery().search.map( ( v ) => ( {
-		key: v,
-		label: v,
-	} ) );
+	const searchedLabels =
+		getQuery().search &&
+		getQuery().search.map( ( v ) => ( {
+			key: v,
+			label: v,
+		} ) );
 
 	const onSearchChange = ( values ) => {
 		updateQueryString( {
-			search: values.length ? uniq( values.map( v => v.label ) ) : undefined,
+			search: values.length
+				? uniq( values.map( ( v ) => v.label ) )
+				: undefined,
 		} );
 	};
 
 	return (
 		<TableCard
 			className="transactions-list woocommerce-report-table has-search"
-			title={ props.depositId
-				? __( 'Deposit transactions', 'woocommerce-payments' )
-				: __( 'Transactions', 'woocommerce-payments' )
+			title={
+				props.depositId
+					? __( 'Deposit transactions', 'woocommerce-payments' )
+					: __( 'Transactions', 'woocommerce-payments' )
 			}
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
@@ -275,13 +284,21 @@ export const TransactionsList = ( props ) => {
 					onChange={ onSearchChange }
 					placeholder={
 						wcpaySettings.featureFlags.customSearch
-							? __( 'Search by order number, customer name, or billing email', 'woocommerce-payments' )
-							: __( 'Search by customer name', 'woocommerce-payments' )
+							? __(
+									'Search by order number, customer name, or billing email',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Search by customer name',
+									'woocommerce-payments'
+							  )
 					}
 					selected={ searchedLabels }
 					showClearButton={ true }
 					type={
-						wcpaySettings.featureFlags.customSearch ? 'custom' : 'customers'
+						wcpaySettings.featureFlags.customSearch
+							? 'custom'
+							: 'customers'
 					}
 					autocompleter={ autocompleter }
 				/>,

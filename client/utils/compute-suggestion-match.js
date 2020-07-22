@@ -28,13 +28,14 @@ export default function computeSuggestionMatch( suggestion, query ) {
 	}
 
 	return {
-		suggestionBeforeMatch: decodeEntities( suggestion.substring( 0, indexOfMatch ) ),
-		suggestionMatch: decodeEntities( suggestion.substring(
-			indexOfMatch,
-			indexOfMatch + query.length
-		) ),
-		suggestionAfterMatch: decodeEntities( suggestion.substring(
-			indexOfMatch + query.length
-		) ),
+		suggestionBeforeMatch: decodeEntities(
+			suggestion.substring( 0, indexOfMatch )
+		),
+		suggestionMatch: decodeEntities(
+			suggestion.substring( indexOfMatch, indexOfMatch + query.length )
+		),
+		suggestionAfterMatch: decodeEntities(
+			suggestion.substring( indexOfMatch + query.length )
+		),
 	};
 }
