@@ -30,33 +30,32 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge } ) =>
-	[
-		{
-			title: __( 'Date', 'woocommerce-payments' ),
-			content: charge.created
-				? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
-				: '–',
-		},
-		{
-			title: __( 'Customer', 'woocommerce-payments' ),
-			content: get( charge, 'billing_details.name' ) || '–',
-		},
-		{
-			title: __( 'Payment method', 'woocommerce-payments' ),
-			content: (
-				<PaymentMethodDetails payment={ charge.payment_method_details } />
-			),
-		},
-		{
-			title: __( 'Risk evaluation', 'woocommerce-payments' ),
-			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
-		},
-		{
-			title: '',
-			content: charge.id || '–',
-		},
-	];
+const composePaymentSummaryItems = ( { charge } ) => [
+	{
+		title: __( 'Date', 'woocommerce-payments' ),
+		content: charge.created
+			? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
+			: '–',
+	},
+	{
+		title: __( 'Customer', 'woocommerce-payments' ),
+		content: get( charge, 'billing_details.name' ) || '–',
+	},
+	{
+		title: __( 'Payment method', 'woocommerce-payments' ),
+		content: (
+			<PaymentMethodDetails payment={ charge.payment_method_details } />
+		),
+	},
+	{
+		title: __( 'Risk evaluation', 'woocommerce-payments' ),
+		content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
+	},
+	{
+		title: '',
+		content: charge.id || '–',
+	},
+];
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const { net, fee, refunded } = charge.amount

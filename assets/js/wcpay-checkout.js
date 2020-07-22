@@ -172,7 +172,7 @@ jQuery( function ( $ ) {
 	 * @param {object} $form         The jQuery object for the form.
 	 * @param {object} paymentMethod Payment method object.
 	 */
-	var handleOrderPayment = function( $form, paymentMethod ) {
+	var handleOrderPayment = function ( $form, paymentMethod ) {
 		var id = paymentMethod.id;
 
 		// Flag that the payment method has been successfully generated so that we can allow the form
@@ -180,7 +180,9 @@ jQuery( function ( $ ) {
 		paymentMethodGenerated = true;
 
 		// Populate form with the payment method.
-		var paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
+		var paymentMethodInput = document.getElementById(
+			'wcpay-payment-method'
+		);
 		paymentMethodInput.value = id;
 
 		// Re-submit the form.
@@ -193,24 +195,27 @@ jQuery( function ( $ ) {
 	 * @param {object} $form         The jQuery object for the form.
 	 * @param {object} paymentMethod Payment method object.
 	 */
-	var handleAddCard = function( $form, paymentMethod ) {
+	var handleAddCard = function ( $form, paymentMethod ) {
 		/* eslint-disable camelcase */
 		$.post( wcpay_config.ajaxUrl, {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethod.id,
 			_ajax_nonce: wcpay_config.createSetupIntentNonce,
 		} )
-		/* eslint-enable camelcase */
-			.then( function( response ) {
+			/* eslint-enable camelcase */
+			.then( function ( response ) {
 				if ( ! response.success ) {
 					return $.Deferred().reject( response.data.error );
 				}
 
 				var setupIntent = response.data;
 
-				// eslint-disable-next-line camelcase
-				stripe.confirmCardSetup( setupIntent.client_secret, { payment_method: paymentMethod.id } )
-					.then( function( result ) {
+				stripe
+					.confirmCardSetup( setupIntent.client_secret, {
+						// eslint-disable-next-line camelcase
+						payment_method: paymentMethod.id,
+					} )
+					.then( function ( result ) {
 						var confirmedSetupIntent = result.setupIntent;
 						var error = result.error;
 
@@ -220,15 +225,18 @@ jQuery( function ( $ ) {
 
 						return confirmedSetupIntent;
 					} )
-					.then( function( confirmedSetupIntent ) {
+					.then( function ( confirmedSetupIntent ) {
 						// Populate form with the setup intent and re-submit.
-						var setupIntentInput = $( '<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />' );
+						var setupIntentInput = $(
+							'<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />'
+						);
 						setupIntentInput.val( confirmedSetupIntent.id );
 						$form.append( setupIntentInput );
 
 						// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
 						// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-						var defaultIgnoreIfBlocked = $.blockUI.defaults.ignoreIfBlocked;
+						var defaultIgnoreIfBlocked =
+							$.blockUI.defaults.ignoreIfBlocked;
 						$.blockUI.defaults.ignoreIfBlocked = true;
 
 						// Re-submit the form.
@@ -237,12 +245,12 @@ jQuery( function ( $ ) {
 						// Restore default value for ignoreIfBlocked.
 						$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
 					} )
-					.catch( function( error ) {
+					.catch( function ( error ) {
 						$form.removeClass( 'processing' ).unblock();
 						showError( error.message );
 					} );
 			} )
-			.fail( function( error ) {
+			.fail( function ( error ) {
 				$form.removeClass( 'processing' ).unblock();
 				showError( error.message );
 			} );
@@ -256,7 +264,11 @@ jQuery( function ( $ ) {
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var handlePaymentMethodCreation = function( $form, successHandler, useBillingDetails = true ) {
+	var handlePaymentMethodCreation = function (
+		$form,
+		successHandler,
+		useBillingDetails = true
+	) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
@@ -276,8 +288,9 @@ jQuery( function ( $ ) {
 			paymentMethodArgs.billing_details = loadBillingDetails();
 		}
 
-		stripe.createPaymentMethod( paymentMethodArgs )
-			.then( function( result ) {
+		stripe
+			.createPaymentMethod( paymentMethodArgs )
+			.then( function ( result ) {
 				var paymentMethod = result.paymentMethod;
 				var error = result.error;
 
@@ -287,7 +300,7 @@ jQuery( function ( $ ) {
 
 				return paymentMethod;
 			} )
-			.then( function( paymentMethod ) {
+			.then( function ( paymentMethod ) {
 				successHandler( $form, paymentMethod );
 			} )
 			.catch( function ( error ) {
@@ -425,31 +438,46 @@ jQuery( function ( $ ) {
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
 	function isUsingSavedPaymentMethod() {
-		return $( '#wc-woocommerce_payments-payment-token-new' ).length &&
-			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' );
+		return (
+			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
+			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
+		);
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
-		if ( ! isUsingSavedPaymentMethod() ) {
-			return handlePaymentMethodCreation( $( this ), handleOrderPayment );
+	$( 'form.checkout' ).on(
+		'checkout_place_order_woocommerce_payments',
+		function () {
+			if ( ! isUsingSavedPaymentMethod() ) {
+				return handlePaymentMethodCreation(
+					$( this ),
+					handleOrderPayment
+				);
+			}
 		}
-	} );
+	);
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', function() {
+	$( '#order_review' ).on( 'submit', function () {
 		if (
 			$( '#payment_method_woocommerce_payments' ).is( ':checked' ) &&
 			! isUsingSavedPaymentMethod()
 		) {
-			return handlePaymentMethodCreation( $( '#order_review' ), handleOrderPayment );
+			return handlePaymentMethodCreation(
+				$( '#order_review' ),
+				handleOrderPayment
+			);
 		}
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
-	$( 'form#add_payment_method' ).on( 'submit', function() {
+	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
-			return handlePaymentMethodCreation( $( 'form#add_payment_method' ), handleAddCard, false );
+			return handlePaymentMethodCreation(
+				$( 'form#add_payment_method' ),
+				handleAddCard,
+				false
+			);
 		}
 	} );
 
