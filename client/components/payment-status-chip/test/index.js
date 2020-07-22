@@ -11,7 +11,9 @@ import PaymentStatusChip from '../';
 
 describe( 'PaymentStatusChip', () => {
 	test( 'renders default appearance if status is unrecognized', () => {
-		const { container } = render( <PaymentStatusChip status="mock_status" /> );
+		const { container } = render(
+			<PaymentStatusChip status="mock_status" />
+		);
 		expect( container ).toMatchSnapshot();
 	} );
 

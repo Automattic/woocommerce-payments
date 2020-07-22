@@ -22,11 +22,22 @@ const blockedCharge = {
 	outcome: { type: 'blocked' },
 };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
-const getDisputedChargeWithStatus = status => ( { disputed: true, dispute: { status: status } } );
-// eslint-disable-next-line camelcase
-const fullyRefundedCharge = { amount: 1500, refunded: true, amount_refunded: 1500 };
-// eslint-disable-next-line camelcase
-const partiallyRefundedCharge = { amount: 1500, refunded: false, amount_refunded: 1200 };
+const getDisputedChargeWithStatus = ( status ) => ( {
+	disputed: true,
+	dispute: { status: status },
+} );
+const fullyRefundedCharge = {
+	amount: 1500,
+	refunded: true,
+	// eslint-disable-next-line camelcase
+	amount_refunded: 1500,
+};
+const partiallyRefundedCharge = {
+	amount: 1500,
+	refunded: false,
+	// eslint-disable-next-line camelcase
+	amount_refunded: 1200,
+};
 
 describe( 'Charge utilities', () => {
 	describe( 'isCharge methods', () => {
@@ -35,7 +46,9 @@ describe( 'Charge utilities', () => {
 		} );
 
 		test( 'should identify a not captured successful charge as successful', () => {
-			expect( utils.isChargeSuccessful( authorizedCharge ) ).toEqual( true );
+			expect( utils.isChargeSuccessful( authorizedCharge ) ).toEqual(
+				true
+			);
 		} );
 
 		test( 'should identify a captured successful charge as captured', () => {
@@ -43,7 +56,9 @@ describe( 'Charge utilities', () => {
 		} );
 
 		test( 'should not identify a not captured successful charge as captured', () => {
-			expect( utils.isChargeCaptured( authorizedCharge ) ).toEqual( false );
+			expect( utils.isChargeCaptured( authorizedCharge ) ).toEqual(
+				false
+			);
 		} );
 
 		test( 'should not identify a failed charge as successful', () => {
@@ -51,7 +66,9 @@ describe( 'Charge utilities', () => {
 		} );
 
 		test( 'should not identify a blocked charge as successful', () => {
-			expect( utils.isChargeSuccessful( blockedCharge ) ).toEqual( false );
+			expect( utils.isChargeSuccessful( blockedCharge ) ).toEqual(
+				false
+			);
 		} );
 
 		test( 'should identify a failed charge as failed', () => {
@@ -71,27 +88,39 @@ describe( 'Charge utilities', () => {
 		} );
 
 		test( 'should identify a fully refunded charge as fully refunded', () => {
-			expect( utils.isChargeFullyRefunded( fullyRefundedCharge ) ).toEqual( true );
+			expect(
+				utils.isChargeFullyRefunded( fullyRefundedCharge )
+			).toEqual( true );
 		} );
 
 		test( 'should not identify a partially refunded charge as fully refunded', () => {
-			expect( utils.isChargeFullyRefunded( partiallyRefundedCharge ) ).toEqual( false );
+			expect(
+				utils.isChargeFullyRefunded( partiallyRefundedCharge )
+			).toEqual( false );
 		} );
 
 		test( 'should not identify a successful charge as fully refunded', () => {
-			expect( utils.isChargeFullyRefunded( paidCharge ) ).toEqual( false );
+			expect( utils.isChargeFullyRefunded( paidCharge ) ).toEqual(
+				false
+			);
 		} );
 
 		test( 'should identify a partially refunded charge as partially refunded', () => {
-			expect( utils.isChargePartiallyRefunded( partiallyRefundedCharge ) ).toEqual( true );
+			expect(
+				utils.isChargePartiallyRefunded( partiallyRefundedCharge )
+			).toEqual( true );
 		} );
 
 		test( 'should not identify a fully refunded charge as partially refunded', () => {
-			expect( utils.isChargePartiallyRefunded( fullyRefundedCharge ) ).toEqual( false );
+			expect(
+				utils.isChargePartiallyRefunded( fullyRefundedCharge )
+			).toEqual( false );
 		} );
 
 		test( 'should not identify a successful charge as partially refunded', () => {
-			expect( utils.isChargePartiallyRefunded( paidCharge ) ).toEqual( false );
+			expect( utils.isChargePartiallyRefunded( paidCharge ) ).toEqual(
+				false
+			);
 		} );
 	} );
 
@@ -104,9 +133,12 @@ describe( 'Charge utilities', () => {
 			[ 'refunded_partial', partiallyRefundedCharge ],
 		];
 
-		test.each( chargeStatuses )( 'returns %s status for charge', ( status, charge ) => {
-			expect( utils.getChargeStatus( charge ) ).toEqual( status );
-		} );
+		test.each( chargeStatuses )(
+			'returns %s status for charge',
+			( status, charge ) => {
+				expect( utils.getChargeStatus( charge ) ).toEqual( status );
+			}
+		);
 
 		const disputeStatuses = [
 			'needs_response',
@@ -118,19 +150,31 @@ describe( 'Charge utilities', () => {
 			'warning_closed',
 		];
 
-		test.each( disputeStatuses )( 'returns disputed status for %s', ( status ) => {
-			expect( utils.getChargeStatus( getDisputedChargeWithStatus( status ) ) ).toEqual( 'disputed_' + status );
-		} );
+		test.each( disputeStatuses )(
+			'returns disputed status for %s',
+			( status ) => {
+				expect(
+					utils.getChargeStatus(
+						getDisputedChargeWithStatus( status )
+					)
+				).toEqual( 'disputed_' + status );
+			}
+		);
 
-		test.each( disputeStatuses )( 'disputed statuses take precedence over refunds', ( status ) => {
-			const charge = {
-				...getDisputedChargeWithStatus( status ),
-				...fullyRefundedCharge,
-			};
-			expect( utils.getChargeStatus( charge ) ).toEqual( 'disputed_' + status );
-			expect( charge.refunded ).toEqual( true );
-			expect( charge.amount_refunded ).toEqual( 1500 );
-		} );
+		test.each( disputeStatuses )(
+			'disputed statuses take precedence over refunds',
+			( status ) => {
+				const charge = {
+					...getDisputedChargeWithStatus( status ),
+					...fullyRefundedCharge,
+				};
+				expect( utils.getChargeStatus( charge ) ).toEqual(
+					'disputed_' + status
+				);
+				expect( charge.refunded ).toEqual( true );
+				expect( charge.amount_refunded ).toEqual( 1500 );
+			}
+		);
 	} );
 } );
 

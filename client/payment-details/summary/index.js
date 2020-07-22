@@ -77,7 +77,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							<span className="payment-details-summary__amount-currency">
 								{ charge.currency || 'cur' }
 							</span>
-							<PaymentStatusChip status={ getChargeStatus( charge ) } />
+							<PaymentStatusChip
+								status={ getChargeStatus( charge ) }
+							/>
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
