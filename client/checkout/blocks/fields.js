@@ -28,6 +28,7 @@ const WCPayFields = ( {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
 	},
+	emitResponse,
 } ) => {
 	const [ state, setState ] = useState( {
 		errorMessage: null,
@@ -60,7 +61,7 @@ const WCPayFields = ( {
 	useEffect(
 		() => onCheckoutAfterProcessingWithSuccess(
 			( { processingResponse: { paymentDetails } } ) => (
-				confirmCardPayment( api, paymentDetails )
+				confirmCardPayment( api, paymentDetails, emitResponse )
 			)
 		),
 	[ elements, stripe ] );
