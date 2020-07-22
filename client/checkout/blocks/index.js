@@ -24,7 +24,7 @@ registerPaymentMethod(
 		name: PAYMENT_METHOD_NAME,
 		content: <WCPayFields api={ api } />,
 		edit: <WCPayFields api={ api } />,
-		canMakePayment: () => true,
+		canMakePayment: () => !! api.getStripe(),
 		paymentMethodId: PAYMENT_METHOD_NAME,
 		label: __( 'Credit Card', 'woocommerce-payments' ),
 		ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
