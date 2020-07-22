@@ -4,7 +4,7 @@
 
 /* Fix top padding when layout breaks at 782px */
 .woocommerce-layout .woocommerce-layout__main {
-	@media screen and (max-width: 782px) {
+	@media screen and ( max-width: 782px ) {
 		padding-top: 16px;
 		padding-bottom: 16px;
 	}
@@ -38,13 +38,12 @@
 		&:focus {
 			color: $dark-gray-700;
 			border-color: $studio-woocommerce-purple-60;
-			box-shadow: 0 0 2px rgba($studio-woocommerce-purple-60, 0.8);
+			box-shadow: 0 0 2px rgba( $studio-woocommerce-purple-60, 0.8 );
 		}
 	}
 }
 
 .woocommerce-table {
-
 	font-weight: 300;
 	letter-spacing: 0.012rem;
 	color: $studio-gray-60;
@@ -115,7 +114,7 @@
 	display: flex;
 	align-items: flex-start;
 
-	@media screen and (max-width: 1023px) {
+	@media screen and ( max-width: 1023px ) {
 		display: block;
 	}
 

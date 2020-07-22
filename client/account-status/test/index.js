@@ -31,7 +31,8 @@ describe( 'AccountStatus', () => {
 			paymentsEnabled: true,
 			depositsStatus: 'daily',
 			currentDeadline: 1583844589,
-			accountLink: '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
+			accountLink:
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
 		} );
 		expect( accountStatus ).toMatchSnapshot();
 	} );
@@ -43,7 +44,8 @@ describe( 'AccountStatus', () => {
 			depositsStatus: 'disabled',
 			currentDeadline: 1583844589,
 			pastDue: true,
-			accountLink: '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
+			accountLink:
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
 		} );
 		expect( accountStatus ).toMatchSnapshot();
 	} );

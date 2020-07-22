@@ -26,7 +26,12 @@ const PaymentDetails = ( props ) => {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
 				<Card>
-					<div>{ __( 'Payment details not loaded', 'woocommerce-payments' ) }</div>
+					<div>
+						{ __(
+							'Payment details not loaded',
+							'woocommerce-payments'
+						) }
+					</div>
 				</Card>
 			</Page>
 		);
@@ -36,11 +41,18 @@ const PaymentDetails = ( props ) => {
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
 			<PaymentDetailsTimeline chargeId={ chargeId } />
-			{ // Hidden for the beta.
-				false && <PaymentDetailsPayment charge={ charge } /> }
-			<PaymentDetailsPaymentMethod charge={ charge } isLoading={ isLoading } />
-			{ // Hidden for the beta.
-				false && <PaymentDetailsSession charge={ charge } /> }
+			{
+				// Hidden for the beta.
+				false && <PaymentDetailsPayment charge={ charge } />
+			}
+			<PaymentDetailsPaymentMethod
+				charge={ charge }
+				isLoading={ isLoading }
+			/>
+			{
+				// Hidden for the beta.
+				false && <PaymentDetailsSession charge={ charge } />
+			}
 		</Page>
 	);
 };

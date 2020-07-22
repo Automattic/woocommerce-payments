@@ -112,7 +112,11 @@ function observeConsoleLogging() {
 			return;
 		}
 
-		if ( text.includes( 'You may test your Stripe.js integration over HTTP.' ) ) {
+		if (
+			text.includes(
+				'You may test your Stripe.js integration over HTTP.'
+			)
+		) {
 			return;
 		}
 

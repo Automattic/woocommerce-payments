@@ -27,11 +27,15 @@ describe( 'Dispute selector', () => {
 	};
 
 	test( 'Returns undefined when dispute is not present', () => {
-		expect( getDispute( emptyState, 'dp_mock1' ) ).toStrictEqual( undefined );
+		expect( getDispute( emptyState, 'dp_mock1' ) ).toStrictEqual(
+			undefined
+		);
 	} );
 
 	test( 'Returns dispute when it is present', () => {
-		expect( getDispute( filledState, 'dp_mock1' ) ).toStrictEqual( mockDispute );
+		expect( getDispute( filledState, 'dp_mock1' ) ).toStrictEqual(
+			mockDispute
+		);
 	} );
 } );
 
@@ -70,6 +74,8 @@ describe( 'Disputes selectors', () => {
 
 	test( 'Returns disputes list from state', () => {
 		const expected = mockDisputes;
-		expect( getDisputes( filledSuccessState, mockQuery ) ).toStrictEqual( expected );
+		expect( getDisputes( filledSuccessState, mockQuery ) ).toStrictEqual(
+			expected
+		);
 	} );
 } );

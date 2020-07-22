@@ -13,7 +13,10 @@ import { getResourceId } from '../util';
 
 const defaultState = { byId: {}, queries: {} };
 
-const receiveDisputes = ( state = defaultState, { type, query = {}, data = [] } ) => {
+const receiveDisputes = (
+	state = defaultState,
+	{ type, query = {}, data = [] }
+) => {
 	const index = getResourceId( query );
 
 	switch ( type ) {
@@ -25,7 +28,7 @@ const receiveDisputes = ( state = defaultState, { type, query = {}, data = [] } 
 		case TYPES.SET_DISPUTES:
 			return {
 				...state,
-				byId: { ...state.byId, ...( keyBy( data, 'id' ) ) },
+				byId: { ...state.byId, ...keyBy( data, 'id' ) },
 				queries: {
 					...state.queries,
 					[ index ]: {

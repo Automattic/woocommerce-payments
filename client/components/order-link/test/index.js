@@ -11,7 +11,10 @@ import OrderLink from '../';
 
 describe( 'OrderLink', () => {
 	test( 'renders a link to a valid order', () => {
-		const { container: orderLink } = renderOrder( { url: 'https://automattic.com/', number: '45891' } );
+		const { container: orderLink } = renderOrder( {
+			url: 'https://automattic.com/',
+			number: '45891',
+		} );
 		expect( orderLink ).toMatchSnapshot();
 	} );
 
@@ -24,4 +27,3 @@ describe( 'OrderLink', () => {
 		return render( <OrderLink order={ order } /> );
 	}
 } );
-

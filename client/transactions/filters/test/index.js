@@ -23,8 +23,12 @@ describe( 'Transactions filters', () => {
 		const { rerender } = render( <TransactionsFilters /> );
 
 		// select advanced filter view
-		user.click( screen.getByRole( 'button', { name: /All transactions/i } ) );
-		user.click( screen.getByRole( 'button', { name: /Advanced filters/i } ) );
+		user.click(
+			screen.getByRole( 'button', { name: /All transactions/i } )
+		);
+		user.click(
+			screen.getByRole( 'button', { name: /Advanced filters/i } )
+		);
 		rerender( <TransactionsFilters /> );
 	} );
 
@@ -33,13 +37,18 @@ describe( 'Transactions filters', () => {
 
 		beforeEach( () => {
 			addFilter( 'Date' );
-			ruleSelector = screen.getByRole( 'combobox', { name: /transaction date filter/i } );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction date filter/i,
+			} );
 		} );
 
 		test( 'should filter by before', () => {
 			user.selectOptions( ruleSelector, 'before' );
 
-			user.type( screen.getByRole( 'textbox', { name: /Choose a date/i } ), '04/29/2020' );
+			user.type(
+				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
+				'04/29/2020'
+			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
@@ -48,7 +57,10 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by after', () => {
 			user.selectOptions( ruleSelector, 'after' );
 
-			user.type( screen.getByRole( 'textbox', { name: /Choose a date/i } ), '04/29/2020' );
+			user.type(
+				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
+				'04/29/2020'
+			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_after ).toEqual( '2020-04-29' );
@@ -57,12 +69,17 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by between', () => {
 			user.selectOptions( ruleSelector, 'between' );
 
-			const dateInputs = screen.getAllByRole( 'textbox', { name: /Choose a date/i } );
+			const dateInputs = screen.getAllByRole( 'textbox', {
+				name: /Choose a date/i,
+			} );
 			user.type( dateInputs[ 0 ], '04/19/2020' );
 			user.type( dateInputs[ 1 ], '04/29/2020' );
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
-			expect( getQuery().date_between ).toEqual( [ '2020-04-19', '2020-04-29' ] );
+			expect( getQuery().date_between ).toEqual( [
+				'2020-04-19',
+				'2020-04-29',
+			] );
 		} );
 	} );
 
@@ -71,11 +88,15 @@ describe( 'Transactions filters', () => {
 
 		beforeEach( () => {
 			addFilter( 'Type' );
-			ruleSelector = screen.getByRole( 'combobox', { name: /transaction type filter/i } );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction type filter/i,
+			} );
 		} );
 
 		test( 'should render all types', () => {
-			const typeSelect = screen.getByRole( 'combobox', { name: /transaction type$/i } );
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /transaction type$/i,
+			} );
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
@@ -83,7 +104,10 @@ describe( 'Transactions filters', () => {
 			user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions( screen.getByRole( 'combobox', { name: /transaction type$/i } ), 'charge' );
+			user.selectOptions(
+				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
+				'charge'
+			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'charge' );
@@ -93,7 +117,10 @@ describe( 'Transactions filters', () => {
 			user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions( screen.getByRole( 'combobox', { name: /transaction type$/i } ), 'dispute' );
+			user.selectOptions(
+				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
+				'dispute'
+			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is_not ).toEqual( 'dispute' );
@@ -103,7 +130,10 @@ describe( 'Transactions filters', () => {
 			user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions( screen.getByRole( 'combobox', { name: /transaction type$/i } ), 'refund' );
+			user.selectOptions(
+				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
+				'refund'
+			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'refund' );

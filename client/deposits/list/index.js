@@ -32,9 +32,22 @@ const columns = [
 		defaultOrder: 'desc',
 		cellClassName: 'date-time',
 	},
-	{ key: 'type', label: __( 'Type', 'woocommerce-payments' ), required: true },
-	{ key: 'amount', label: __( 'Amount', 'woocommerce-payments' ), isNumeric: true, required: true },
-	{ key: 'status', label: __( 'Status', 'woocommerce-payments' ), required: true },
+	{
+		key: 'type',
+		label: __( 'Type', 'woocommerce-payments' ),
+		required: true,
+	},
+	{
+		key: 'amount',
+		label: __( 'Amount', 'woocommerce-payments' ),
+		isNumeric: true,
+		required: true,
+	},
+	{
+		key: 'status',
+		label: __( 'Status', 'woocommerce-payments' ),
+		required: true,
+	},
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{ key: 'bankAccount', label: __( 'Bank account', 'woocommerce-payments' ) },
 ];
@@ -43,8 +56,14 @@ export const DepositsList = () => {
 	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
-		const clickable = ( children ) => <ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>{ children }</ClickableCell>;
-		const detailsLink = <DetailsLink id={ deposit.id } parentSegment="deposits" />;
+		const clickable = ( children ) => (
+			<ClickableCell href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				{ children }
+			</ClickableCell>
+		);
+		const detailsLink = (
+			<DetailsLink id={ deposit.id } parentSegment="deposits" />
+		);
 
 		const dateDisplay = (
 			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
@@ -56,10 +75,27 @@ export const DepositsList = () => {
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
-			type: { value: deposit.type, display: clickable( displayType[ deposit.type ] ) },
-			amount: { value: deposit.amount / 100, display: clickable( currency.formatCurrency( deposit.amount / 100 ) ) },
-			status: { value: deposit.status, display: clickable( displayStatus[ deposit.status ] || formatStringValue( deposit.status ) ) },
-			bankAccount: { value: deposit.bankAccount, display: clickable( deposit.bankAccount ) },
+			type: {
+				value: deposit.type,
+				display: clickable( displayType[ deposit.type ] ),
+			},
+			amount: {
+				value: deposit.amount / 100,
+				display: clickable(
+					currency.formatCurrency( deposit.amount / 100 )
+				),
+			},
+			status: {
+				value: deposit.status,
+				display: clickable(
+					displayStatus[ deposit.status ] ||
+						formatStringValue( deposit.status )
+				),
+			},
+			bankAccount: {
+				value: deposit.bankAccount,
+				display: clickable( deposit.bankAccount ),
+			},
 		};
 
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );

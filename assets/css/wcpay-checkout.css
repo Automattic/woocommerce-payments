@@ -1,4 +1,8 @@
-#payment .payment_methods li .payment_box.payment_method_woocommerce_payments fieldset {
+#payment
+	.payment_methods
+	li
+	.payment_box.payment_method_woocommerce_payments
+	fieldset {
 	padding: 0;
 }
 

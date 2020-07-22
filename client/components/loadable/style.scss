@@ -3,7 +3,7 @@
 	background-color: $light-gray-500;
 	color: transparent;
 
-	@media screen and (prefers-reduced-motion: reduce) {
+	@media screen and ( prefers-reduced-motion: reduce ) {
 		animation: none;
 	}
 	display: inline-block;

@@ -46,7 +46,10 @@ const detailsTopics = [
 export const getPaymentsSettingsUrlComponent = () => {
 	return (
 		<a href={ getPaymentSettingsUrl() }>
-			{ __( 'View WooCommerce Payments settings.', 'woocommerce-payments' ) }
+			{ __(
+				'View WooCommerce Payments settings.',
+				'woocommerce-payments'
+			) }
 		</a>
 	);
 };
@@ -82,12 +85,16 @@ export const getNoticeMessage = ( topic ) => {
 
 	if ( detailsTopics.includes( topic ) ) {
 		return (
-			<span><b>{ topic }</b> { getTopicDetails( topic ) } { urlComponent }</span>
+			<span>
+				<b>{ topic }</b> { getTopicDetails( topic ) } { urlComponent }
+			</span>
 		);
 	}
 
 	return (
-		<span>{ topic } { urlComponent }</span>
+		<span>
+			{ topic } { urlComponent }
+		</span>
 	);
 };
 
@@ -100,7 +107,11 @@ export const getNoticeMessage = ( topic ) => {
  */
 export const getNotice = ( topic ) => {
 	return (
-		<Notice className="wcpay-test-mode-notice" status="warning" isDismissible={ false }>
+		<Notice
+			className="wcpay-test-mode-notice"
+			status="warning"
+			isDismissible={ false }
+		>
 			{ getNoticeMessage( topic ) }
 		</Notice>
 	);

@@ -9,17 +9,41 @@
 import * as utils from '../';
 
 const paidCharge = { status: 'succeeded', paid: true, captured: true };
-const failedCharge = { status: 'failed', paid: false, captured: false, outcome: { type: 'issuer_declined' } };
-const blockedCharge = { status: 'failed', paid: false, captured: false, outcome: { type: 'blocked' } };
+const failedCharge = {
+	status: 'failed',
+	paid: false,
+	captured: false,
+	outcome: { type: 'issuer_declined' },
+};
+const blockedCharge = {
+	status: 'failed',
+	paid: false,
+	captured: false,
+	outcome: { type: 'blocked' },
+};
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
-const disputedChargeNeedsResponse = { disputed: true, dispute: { status: 'needs_response' } };
-const disputedChargeUnderReview = { disputed: true, dispute: { status: 'under_review' } };
+const disputedChargeNeedsResponse = {
+	disputed: true,
+	dispute: { status: 'needs_response' },
+};
+const disputedChargeUnderReview = {
+	disputed: true,
+	dispute: { status: 'under_review' },
+};
 const disputedChargeWon = { disputed: true, dispute: { status: 'won' } };
 const disputedChargeLost = { disputed: true, dispute: { status: 'lost' } };
-// eslint-disable-next-line camelcase
-const fullyRefundedCharge = { amount: 1500, refunded: true, amount_refunded: 1500 };
-// eslint-disable-next-line camelcase
-const partiallyRefundedCharge = { amount: 1500, refunded: false, amount_refunded: 1200 };
+const fullyRefundedCharge = {
+	amount: 1500,
+	refunded: true,
+	// eslint-disable-next-line camelcase
+	amount_refunded: 1500,
+};
+const partiallyRefundedCharge = {
+	amount: 1500,
+	refunded: false,
+	// eslint-disable-next-line camelcase
+	amount_refunded: 1200,
+};
 
 describe( 'Charge utilities', () => {
 	test( 'should identify a captured successful charge as successful', () => {
@@ -67,11 +91,15 @@ describe( 'Charge utilities', () => {
 	} );
 
 	test( 'should identify a fully refunded charge as fully refunded', () => {
-		expect( utils.isChargeFullyRefunded( fullyRefundedCharge ) ).toEqual( true );
+		expect( utils.isChargeFullyRefunded( fullyRefundedCharge ) ).toEqual(
+			true
+		);
 	} );
 
 	test( 'should not identify a partially refunded charge as fully refunded', () => {
-		expect( utils.isChargeFullyRefunded( partiallyRefundedCharge ) ).toEqual( false );
+		expect(
+			utils.isChargeFullyRefunded( partiallyRefundedCharge )
+		).toEqual( false );
 	} );
 
 	test( 'should not identify a successful charge as fully refunded', () => {
@@ -79,15 +107,21 @@ describe( 'Charge utilities', () => {
 	} );
 
 	test( 'should identify a partially refunded charge as partially refunded', () => {
-		expect( utils.isChargePartiallyRefunded( partiallyRefundedCharge ) ).toEqual( true );
+		expect(
+			utils.isChargePartiallyRefunded( partiallyRefundedCharge )
+		).toEqual( true );
 	} );
 
 	test( 'should not identify a fully refunded charge as partilly refunded', () => {
-		expect( utils.isChargePartiallyRefunded( fullyRefundedCharge ) ).toEqual( false );
+		expect(
+			utils.isChargePartiallyRefunded( fullyRefundedCharge )
+		).toEqual( false );
 	} );
 
 	test( 'should not identify a successful charge as partilly refunded', () => {
-		expect( utils.isChargePartiallyRefunded( paidCharge ) ).toEqual( false );
+		expect( utils.isChargePartiallyRefunded( paidCharge ) ).toEqual(
+			false
+		);
 	} );
 
 	test( 'should return status paid for captured successful charges', () => {
@@ -95,7 +129,9 @@ describe( 'Charge utilities', () => {
 	} );
 
 	test( 'should return status authorized for not captured successful charges', () => {
-		expect( utils.getChargeStatus( authorizedCharge ) ).toEqual( 'authorized' );
+		expect( utils.getChargeStatus( authorizedCharge ) ).toEqual(
+			'authorized'
+		);
 	} );
 
 	test( 'should return status failed for failed charges', () => {
@@ -103,27 +139,39 @@ describe( 'Charge utilities', () => {
 	} );
 
 	test( 'should return status disputed_needs_response for disputed charges that needs response', () => {
-		expect( utils.getChargeStatus( disputedChargeNeedsResponse ) ).toEqual( 'disputed_needs_response' );
+		expect( utils.getChargeStatus( disputedChargeNeedsResponse ) ).toEqual(
+			'disputed_needs_response'
+		);
 	} );
 
 	test( 'should return status disputed_under_review for disputed charges in review', () => {
-		expect( utils.getChargeStatus( disputedChargeUnderReview ) ).toEqual( 'disputed_under_review' );
+		expect( utils.getChargeStatus( disputedChargeUnderReview ) ).toEqual(
+			'disputed_under_review'
+		);
 	} );
 
 	test( 'should return status disputed_won for won disputed charges', () => {
-		expect( utils.getChargeStatus( disputedChargeWon ) ).toEqual( 'disputed_won' );
+		expect( utils.getChargeStatus( disputedChargeWon ) ).toEqual(
+			'disputed_won'
+		);
 	} );
 
 	test( 'should return status disputed_lost for lost disputed charges', () => {
-		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual( 'disputed_lost' );
+		expect( utils.getChargeStatus( disputedChargeLost ) ).toEqual(
+			'disputed_lost'
+		);
 	} );
 
 	test( 'should return status refunded_full for fully refunded charges', () => {
-		expect( utils.getChargeStatus( fullyRefundedCharge ) ).toEqual( 'refunded_full' );
+		expect( utils.getChargeStatus( fullyRefundedCharge ) ).toEqual(
+			'refunded_full'
+		);
 	} );
 
 	test( 'should return status refunded_partial for partially refunded charges', () => {
-		expect( utils.getChargeStatus( partiallyRefundedCharge ) ).toEqual( 'refunded_partial' );
+		expect( utils.getChargeStatus( partiallyRefundedCharge ) ).toEqual(
+			'refunded_partial'
+		);
 	} );
 } );
 
@@ -152,7 +200,10 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			net: charge.amount - charge.application_fee_amount - charge.amount_refunded,
+			net:
+				charge.amount -
+				charge.application_fee_amount -
+				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
 		} );
@@ -168,7 +219,10 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			net: charge.amount - charge.application_fee_amount - charge.amount_refunded,
+			net:
+				charge.amount -
+				charge.application_fee_amount -
+				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
 		} );

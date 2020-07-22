@@ -59,7 +59,9 @@ const permalinkSettingsPageSaveChanges = async () => {
 const setCheckbox = async ( selector ) => {
 	await page.focus( selector );
 	const checkbox = await page.$( selector );
-	const checkboxStatus = ( await ( await checkbox.getProperty( 'checked' ) ).jsonValue() );
+	const checkboxStatus = await (
+		await checkbox.getProperty( 'checked' )
+	 ).jsonValue();
 	if ( checkboxStatus !== true ) {
 		await page.click( selector );
 	}
@@ -73,7 +75,9 @@ const setCheckbox = async ( selector ) => {
 const unsetCheckbox = async ( selector ) => {
 	await page.focus( selector );
 	const checkbox = await page.$( selector );
-	const checkboxStatus = ( await ( await checkbox.getProperty( 'checked' ) ).jsonValue() );
+	const checkboxStatus = await (
+		await checkbox.getProperty( 'checked' )
+	 ).jsonValue();
 	if ( checkboxStatus === true ) {
 		await page.click( selector );
 	}
@@ -83,7 +87,9 @@ const unsetCheckbox = async ( selector ) => {
  * Wait for UI blocking to end.
  */
 const uiUnblocked = async () => {
-	await page.waitForFunction( () => ! Boolean( document.querySelector( '.blockUI' ) ) );
+	await page.waitForFunction(
+		() => ! Boolean( document.querySelector( '.blockUI' ) )
+	);
 };
 
 /**
@@ -94,7 +100,12 @@ const uiUnblocked = async () => {
  * @param {string} publishVerification Publish verification
  * @param {string} trashVerification Trash verification
  */
-const verifyPublishAndTrash = async ( button, publishNotice, publishVerification, trashVerification ) => {
+const verifyPublishAndTrash = async (
+	button,
+	publishNotice,
+	publishVerification,
+	trashVerification
+) => {
 	// Wait for auto save
 	await page.waitFor( 2000 );
 
@@ -103,13 +114,19 @@ const verifyPublishAndTrash = async ( button, publishNotice, publishVerification
 	await page.waitForSelector( publishNotice );
 
 	// Verify
-	await expect( page ).toMatchElement( publishNotice, { text: publishVerification } );
+	await expect( page ).toMatchElement( publishNotice, {
+		text: publishVerification,
+	} );
 	if ( button === '.order_actions li .save_order' ) {
-		await expect( page ).toMatchElement( '#select2-order_status-container', { text: 'Processing' } );
+		await expect( page ).toMatchElement(
+			'#select2-order_status-container',
+			{ text: 'Processing' }
+		);
 		await expect( page ).toMatchElement(
 			'#woocommerce-order-notes .note_content',
 			{
-				text: 'Order status changed from Pending payment to Processing.',
+				text:
+					'Order status changed from Pending payment to Processing.',
 			}
 		);
 	}
@@ -119,7 +136,9 @@ const verifyPublishAndTrash = async ( button, publishNotice, publishVerification
 	await page.waitForSelector( '#message' );
 
 	// Verify
-	await expect( page ).toMatchElement( publishNotice, { text: trashVerification } );
+	await expect( page ).toMatchElement( publishNotice, {
+		text: trashVerification,
+	} );
 };
 
 /**
@@ -130,7 +149,9 @@ const verifyPublishAndTrash = async ( button, publishNotice, publishVerification
 const verifyCheckboxIsSet = async ( selector ) => {
 	await page.focus( selector );
 	const checkbox = await page.$( selector );
-	const checkboxStatus = ( await ( await checkbox.getProperty( 'checked' ) ).jsonValue() );
+	const checkboxStatus = await (
+		await checkbox.getProperty( 'checked' )
+	 ).jsonValue();
 	await expect( checkboxStatus ).toBe( true );
 };
 
@@ -142,7 +163,9 @@ const verifyCheckboxIsSet = async ( selector ) => {
 const verifyCheckboxIsUnset = async ( selector ) => {
 	await page.focus( selector );
 	const checkbox = await page.$( selector );
-	const checkboxStatus = ( await ( await checkbox.getProperty( 'checked' ) ).jsonValue() );
+	const checkboxStatus = await (
+		await checkbox.getProperty( 'checked' )
+	 ).jsonValue();
 	await expect( checkboxStatus ).not.toBe( true );
 };
 
@@ -155,7 +178,7 @@ const verifyCheckboxIsUnset = async ( selector ) => {
 const verifyValueOfInputField = async ( selector, value ) => {
 	await page.focus( selector );
 	const field = await page.$( selector );
-	const fieldValue = ( await ( await field.getProperty( 'value' ) ).jsonValue() );
+	const fieldValue = await ( await field.getProperty( 'value' ) ).jsonValue();
 	await expect( fieldValue ).toBe( value );
 };
 

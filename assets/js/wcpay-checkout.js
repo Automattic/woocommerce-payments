@@ -1,6 +1,6 @@
 /* eslint-disable strict, no-var */
 /* global jQuery, Stripe, wcpay_config */
-jQuery( function( $ ) {
+jQuery( function ( $ ) {
 	'use strict';
 
 	/* eslint-disable-next-line camelcase */
@@ -22,7 +22,7 @@ jQuery( function( $ ) {
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', function() {
+	$( document.body ).on( 'updated_checkout', function () {
 		// Don't re-mount if already mounted in DOM.
 		if ( $( '#wcpay-card-element' ).children().length ) {
 			return;
@@ -32,16 +32,21 @@ jQuery( function( $ ) {
 		cardElement.mount( '#wcpay-card-element' );
 	} );
 
-	if ( $( 'form#add_payment_method' ).length || $( 'form#order_review' ).length ) {
+	if (
+		$( 'form#add_payment_method' ).length ||
+		$( 'form#order_review' ).length
+	) {
 		cardElement.mount( '#wcpay-card-element' );
 	}
 
 	// Update the validation state based on the element's state.
-	cardElement.addEventListener( 'change', function( event ) {
+	cardElement.addEventListener( 'change', function ( event ) {
 		var displayError = jQuery( '#wcpay-errors' );
 		if ( event.error ) {
-			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' ).text( event.error.message );
+			displayError
+				.html( '<ul class="woocommerce-error"><li /></ul>' )
+				.find( 'li' )
+				.text( event.error.message );
 		} else {
 			displayError.empty();
 		}
@@ -52,7 +57,7 @@ jQuery( function( $ ) {
 	 *
 	 * @param {object} $form The jQuery object for the form.
 	 */
-	var blockUI = function( $form ) {
+	var blockUI = function ( $form ) {
 		$form.addClass( 'processing' ).block( {
 			message: null,
 			overlayCSS: {
@@ -69,24 +74,28 @@ jQuery( function( $ ) {
 	 * @param {string} prop        The name of the prop in the object.
 	 * @param {string} inputId     The ID of the input on the page (or the data, preloaded by the server.)
 	 */
-	var setCustomerValue = function( customerObj, prop, inputId ) {
+	var setCustomerValue = function ( customerObj, prop, inputId ) {
 		var value;
 
 		// Try to load the value from the fields on the page.
 		if ( 'name' === inputId ) {
 			// If and whenever the first/last name fields do not exist on the page, this will be an empty string.
-			value = ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim();
+			value = (
+				$( '#billing_first_name' ).val() +
+				' ' +
+				$( '#billing_last_name' ).val()
+			).trim();
 		} else {
 			// No need to check whether the element exists, `$.fn.val()` would return `undefined`.
 			value = $( '#' + inputId ).val();
 		}
 
 		// Fall back to the value in `preparedCustomerData`.
-		if ( ( 'undefined' === typeof value ) || 0 === value.length ) {
+		if ( 'undefined' === typeof value || 0 === value.length ) {
 			value = preparedCustomerData[ inputId ]; // `undefined` if not set.
 		}
 
-		if ( ( 'undefined' !== typeof value ) && 0 < value.length ) {
+		if ( 'undefined' !== typeof value && 0 < value.length ) {
 			customerObj[ prop ] = value;
 		}
 	};
@@ -96,7 +105,7 @@ jQuery( function( $ ) {
 	 *
 	 * @return {object} An object, containing email, name, phone & an address.
 	 */
-	var loadBillingDetails = function() {
+	var loadBillingDetails = function () {
 		var billingDetails = {},
 			billingAddress = {};
 
@@ -118,18 +127,32 @@ jQuery( function( $ ) {
 	};
 
 	// Show error notice at top of checkout form.
-	var showError = function( errorMessage ) {
-		var messageWrapper = '<ul class="woocommerce-error" role="alert">' + errorMessage + '</ul>';
-		var $container = $( '.woocommerce-notices-wrapper, form.checkout' ).first();
+	var showError = function ( errorMessage ) {
+		var messageWrapper =
+			'<ul class="woocommerce-error" role="alert">' +
+			errorMessage +
+			'</ul>';
+		var $container = $(
+			'.woocommerce-notices-wrapper, form.checkout'
+		).first();
 
 		if ( ! $container.length ) {
 			return;
 		}
 
 		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
-		$( '.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message' ).remove();
-		$container.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' + messageWrapper + '</div>' );
-		$container.find( '.input-text, select, input:checkbox' ).trigger( 'validate' ).blur();
+		$(
+			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
+		).remove();
+		$container.prepend(
+			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
+				messageWrapper +
+				'</div>'
+		);
+		$container
+			.find( '.input-text, select, input:checkbox' )
+			.trigger( 'validate' )
+			.blur();
 
 		var scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
 		if ( ! scrollElement.length ) {
@@ -149,7 +172,7 @@ jQuery( function( $ ) {
 	 * @param {object} $form The jQuery object for the form.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var handleOnPaymentFormSubmit = function( $form ) {
+	var handleOnPaymentFormSubmit = function ( $form ) {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
 		if ( paymentMethodGenerated ) {
@@ -166,8 +189,9 @@ jQuery( function( $ ) {
 			billing_details: loadBillingDetails(),
 		};
 
-		stripe.createPaymentMethod( paymentMethodArgs )
-			.then( function( result ) {
+		stripe
+			.createPaymentMethod( paymentMethodArgs )
+			.then( function ( result ) {
 				var paymentMethod = result.paymentMethod;
 				var error = result.error;
 
@@ -177,7 +201,7 @@ jQuery( function( $ ) {
 
 				return paymentMethod;
 			} )
-			.then( function( paymentMethod ) {
+			.then( function ( paymentMethod ) {
 				var id = paymentMethod.id;
 
 				// Flag that the payment method has been successfully generated so that we can allow the form
@@ -185,13 +209,15 @@ jQuery( function( $ ) {
 				paymentMethodGenerated = true;
 
 				// Populate form with the payment method.
-				var paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
+				var paymentMethodInput = document.getElementById(
+					'wcpay-payment-method'
+				);
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
 				$form.removeClass( 'processing' ).submit();
 			} )
-			.catch( function( error ) {
+			.catch( function ( error ) {
 				$form.removeClass( 'processing' ).unblock();
 				showError( error.message );
 			} );
@@ -206,66 +232,74 @@ jQuery( function( $ ) {
 	 * @param {string} orderId      The ID of the order being paid for.
 	 * @param {string} clientSecret The client secret of the intent being used to pay for the order.
 	 */
-	var showAuthenticationModal = function( orderId, clientSecret ) {
-		stripe.confirmCardPayment( clientSecret )
-		.then( function( result ) {
-			var intentId = ( result.paymentIntent && result.paymentIntent.id ||
-				result.error && result.error.payment_intent && result.error.payment_intent.id );
-			return [
-				// eslint-disable-next-line camelcase
-				jQuery.post( wcpay_config.ajaxUrl, {
-					action: 'update_order_status',
+	var showAuthenticationModal = function ( orderId, clientSecret ) {
+		stripe
+			.confirmCardPayment( clientSecret )
+			.then( function ( result ) {
+				var intentId =
+					( result.paymentIntent && result.paymentIntent.id ) ||
+					( result.error &&
+						result.error.payment_intent &&
+						result.error.payment_intent.id );
+				return [
 					// eslint-disable-next-line camelcase
-					order_id: orderId,
+					jQuery.post( wcpay_config.ajaxUrl, {
+						action: 'update_order_status',
+						// eslint-disable-next-line camelcase
+						order_id: orderId,
+						// eslint-disable-next-line camelcase
+						_ajax_nonce: wcpay_config.updateOrderStatusNonce,
+						// eslint-disable-next-line camelcase
+						intent_id: intentId,
+					} ),
+					result.error,
+				];
+			} )
+			.then( function ( [ response, originalError ] ) {
+				// If there was a prblem with the paymeent, we can show the
+				// error message to the user immediately, and we don't need
+				// to wait for the `update_order_status` request to complete.
+				if ( originalError ) {
+					throw originalError;
+				}
+
+				// Otherwise, we are waiting for the `update_order_status` request to complete.
+				return response;
+			} )
+			.then( function ( response ) {
+				var result = JSON.parse( response );
+
+				if ( result.error ) {
+					throw result.error;
+				}
+
+				window.location = result.return_url;
+			} )
+			.catch( function ( error ) {
+				$( 'form.checkout' ).removeClass( 'processing' ).unblock();
+				$( '#order_review' ).removeClass( 'processing' ).unblock();
+				$( '#payment' ).show( 500 );
+
+				var errorMessage = error.message;
+
+				// If this is a generic error, we probably don't want to display the error message to the user,
+				// so display a generic message instead.
+				if ( error instanceof Error ) {
 					// eslint-disable-next-line camelcase
-					_ajax_nonce: wcpay_config.updateOrderStatusNonce,
-					// eslint-disable-next-line camelcase
-					intent_id: intentId,
-			} ), result.error ];
-		} )
-		.then( function( [ response, originalError ] ) {
-			// If there was a prblem with the paymeent, we can show the
-			// error message to the user immediately, and we don't need
-			// to wait for the `update_order_status` request to complete.
-			if ( originalError ) {
-				throw originalError;
-			}
+					errorMessage = wcpay_config.genericErrorMessage;
+				}
 
-			// Otherwise, we are waiting for the `update_order_status` request to complete.
-			return response;
-		} )
-		.then( function( response ) {
-			var result = JSON.parse( response );
-
-			if ( result.error ) {
-				throw result.error;
-			}
-
-			window.location = result.return_url;
-		} )
-		.catch( function( error ) {
-			$( 'form.checkout' ).removeClass( 'processing' ).unblock();
-			$( '#order_review' ).removeClass( 'processing' ).unblock();
-			$( '#payment' ).show( 500 );
-
-			var errorMessage = error.message;
-
-			// If this is a generic error, we probably don't want to display the error message to the user,
-			// so display a generic message instead.
-			if ( error instanceof Error ) {
-				// eslint-disable-next-line camelcase
-				errorMessage = wcpay_config.genericErrorMessage;
-			}
-
-			showError( errorMessage );
-		} );
+				showError( errorMessage );
+			} );
 	};
 
 	/**
 	 * Displays the authentication modal to the user if needed.
 	 */
 	function maybeShowAuthenticationModal() {
-		var partials = window.location.hash.match( /^#wcpay-confirm-pi:(.+):(.+)$/ );
+		var partials = window.location.hash.match(
+			/^#wcpay-confirm-pi:(.+):(.+)$/
+		);
 
 		if ( ! partials ) {
 			return;
@@ -292,7 +326,9 @@ jQuery( function( $ ) {
 		// Non-plain permalinks:
 		// /checkout/order-pay/189/
 		// Match for consecutive digits after the string 'order-pay' to get the order ID.
-		var orderIdPartials = isOrderPage && window.location.href.substring( orderPayIndex ).match( /\d+/ );
+		var orderIdPartials =
+			isOrderPage &&
+			window.location.href.substring( orderPayIndex ).match( /\d+/ );
 		if ( orderIdPartials ) {
 			orderId = orderIdPartials[ 0 ];
 		}
@@ -301,18 +337,25 @@ jQuery( function( $ ) {
 		// https://stackoverflow.com/questions/1397329/
 		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
 		// 5298684#5298684
-		history.replaceState( '', document.title, window.location.pathname + window.location.search );
+		history.replaceState(
+			'',
+			document.title,
+			window.location.pathname + window.location.search
+		);
 
 		showAuthenticationModal( orderId, clientSecret );
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	$( 'form.checkout' ).on( 'checkout_place_order_woocommerce_payments', function() {
-		return handleOnPaymentFormSubmit( $( this ) );
-	} );
+	$( 'form.checkout' ).on(
+		'checkout_place_order_woocommerce_payments',
+		function () {
+			return handleOnPaymentFormSubmit( $( this ) );
+		}
+	);
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', function() {
+	$( '#order_review' ).on( 'submit', function () {
 		if ( $( '#payment_method_woocommerce_payments' ).is( ':checked' ) ) {
 			return handleOnPaymentFormSubmit( $( '#order_review' ) );
 		}
@@ -323,7 +366,7 @@ jQuery( function( $ ) {
 	maybeShowAuthenticationModal();
 
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
-	window.addEventListener( 'hashchange', function( event ) {
+	window.addEventListener( 'hashchange', function ( event ) {
 		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
 			maybeShowAuthenticationModal();
 		}

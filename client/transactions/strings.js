@@ -10,7 +10,10 @@ import { __ } from '@wordpress/i18n';
 export const displayType = {
 	charge: __( 'Charge', 'woocommerce-payments' ),
 	payment: __( 'Payment', 'woocommerce-payments' ),
-	payment_failure_refund: __( 'Payment failure refund', 'woocommerce-payments' ),
+	payment_failure_refund: __(
+		'Payment failure refund',
+		'woocommerce-payments'
+	),
 	payment_refund: __( 'Payment refund', 'woocommerce-payments' ),
 	refund: __( 'Refund', 'woocommerce-payments' ),
 	refund_failure: __( 'Refund failure', 'woocommerce-payments' ),

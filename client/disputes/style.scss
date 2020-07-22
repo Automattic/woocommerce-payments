@@ -85,7 +85,7 @@
 		align-items: center;
 
 		// Selector here is super specific to ensure styles are overwritten.
-		.components-icon-button.is-primary:not(:disabled):not([aria-disabled='true']) {
+		.components-icon-button.is-primary:not( :disabled ):not( [aria-disabled='true'] ) {
 			// Fix primary button hover.
 			&:hover {
 				background-color: $studio-pink-60;
@@ -113,7 +113,7 @@
 			}
 		}
 
-		.components-icon-button.delete-uploaded-file-button:not(:disabled):not([aria-disabled='true']) {
+		.components-icon-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
 			&:hover {
 				color: $studio-red-60;
 				box-shadow: none;

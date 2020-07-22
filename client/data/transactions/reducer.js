@@ -8,7 +8,10 @@ import { getResourceId } from '../util';
 
 const defaultState = { summary: {} };
 
-const receiveTransactions = ( state = defaultState, { type, query = {}, data = [], error } ) => {
+const receiveTransactions = (
+	state = defaultState,
+	{ type, query = {}, data = [], error }
+) => {
 	const index = getResourceId( query );
 
 	switch ( type ) {

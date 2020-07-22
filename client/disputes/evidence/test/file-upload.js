@@ -31,33 +31,43 @@ describe( 'FileUploadControl', () => {
 	} );
 
 	test( 'renders default file upload control', () => {
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders loading state', () => {
 		props.isLoading = true;
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload done state', () => {
 		props.isDone = true;
 		props.fileName = 'file.pdf';
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload failed state', () => {
 		props.error = 'Error message';
 		props.fileName = 'file.pdf';
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'triggers onFileChange', () => {
 		props.onFileChange = jest.fn();
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		const fakeFile = {};
 		const fakeEvent = { target: { files: [ fakeFile ] } };
 
@@ -66,7 +76,10 @@ describe( 'FileUploadControl', () => {
 		fireEvent.change( input, fakeEvent );
 
 		expect( props.onFileChange ).toHaveBeenCalledTimes( 1 );
-		expect( props.onFileChange ).toHaveBeenCalledWith( field.key, fakeFile );
+		expect( props.onFileChange ).toHaveBeenCalledWith(
+			field.key,
+			fakeFile
+		);
 	} );
 
 	test( 'triggers onFileRemove', () => {
@@ -83,7 +96,9 @@ describe( 'FileUploadControl', () => {
 		props.disabled = true;
 		props.isDone = true;
 		props.fileName = 'file.pdf';
-		const { container: control } = render( <FileUploadControl { ...props } /> );
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
 		expect( control ).toMatchSnapshot();
 	} );
 } );

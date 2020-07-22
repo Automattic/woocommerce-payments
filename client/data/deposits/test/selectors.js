@@ -33,11 +33,15 @@ describe( 'Deposit selector', () => {
 	};
 
 	test( 'Returns undefined when deposit is not present', () => {
-		expect( getDeposit( emptyState, 'po_mock1' ) ).toStrictEqual( undefined );
+		expect( getDeposit( emptyState, 'po_mock1' ) ).toStrictEqual(
+			undefined
+		);
 	} );
 
 	test( 'Returns deposit when it is present', () => {
-		expect( getDeposit( filledState, 'po_mock1' ) ).toStrictEqual( mockDeposit );
+		expect( getDeposit( filledState, 'po_mock1' ) ).toStrictEqual(
+			mockDeposit
+		);
 	} );
 } );
 
@@ -89,16 +93,22 @@ describe( 'Deposits selectors', () => {
 
 	test( 'Returns deposits list from state', () => {
 		const expected = mockDeposits;
-		expect( getDeposits( filledSuccessState, mockQuery ) ).toStrictEqual( expected );
+		expect( getDeposits( filledSuccessState, mockQuery ) ).toStrictEqual(
+			expected
+		);
 	} );
 
 	test( 'Returns empty deposits query error when error is empty', () => {
-		expect( getDepositQueryError( emptyState, mockQuery ) ).toStrictEqual( {} );
+		expect( getDepositQueryError( emptyState, mockQuery ) ).toStrictEqual(
+			{}
+		);
 	} );
 
 	test( 'Returns deposits query error from state', () => {
 		const expected = mockError;
-		expect( getDepositQueryError( filledErrorState, mockQuery ) ).toBe( expected );
+		expect( getDepositQueryError( filledErrorState, mockQuery ) ).toBe(
+			expected
+		);
 	} );
 } );
 
@@ -130,14 +140,20 @@ describe( 'Deposits overview selectors', () => {
 	} );
 
 	test( 'Returns undefined when overview error is not present', () => {
-		expect( getDepositsOverviewError( emptyState ) ).toStrictEqual( undefined );
+		expect( getDepositsOverviewError( emptyState ) ).toStrictEqual(
+			undefined
+		);
 	} );
 
 	test( 'Returns deposits overview from state', () => {
-		expect( getDepositsOverview( filledSuccessState ) ).toStrictEqual( filledSuccessState.deposits.overview.data );
+		expect( getDepositsOverview( filledSuccessState ) ).toStrictEqual(
+			filledSuccessState.deposits.overview.data
+		);
 	} );
 
 	test( 'Returns deposits overview error from state', () => {
-		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual( filledErrorState.deposits.overview.error );
+		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual(
+			filledErrorState.deposits.overview.error
+		);
 	} );
 } );

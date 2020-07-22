@@ -37,13 +37,10 @@ describe( 'Disputes reducer tests', () => {
 			queries: {},
 		} );
 
-		const stateAfterTwo = reducer(
-			stateAfterOne,
-			{
-				type: types.SET_DISPUTE,
-				data: mockDisputes[ 1 ],
-			}
-		);
+		const stateAfterTwo = reducer( stateAfterOne, {
+			type: types.SET_DISPUTE,
+			data: mockDisputes[ 1 ],
+		} );
 
 		expect( stateAfterTwo ).toStrictEqual( {
 			byId: {
@@ -91,14 +88,11 @@ describe( 'Disputes reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			before,
-			{
-				type: types.SET_DISPUTES,
-				data: mockDisputes.slice( 1 ),
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( before, {
+			type: types.SET_DISPUTES,
+			data: mockDisputes.slice( 1 ),
+			query: mockQuery,
+		} );
 
 		const after = {
 			byId: {

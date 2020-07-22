@@ -34,24 +34,42 @@ const TransactionSummaryDetails = ( props ) => {
 			<div className="transaction-summary">
 				<div className="transaction-summary__section">
 					<p className="transaction-summary__amount">
-						{ currency.formatCurrency( ( transaction.amount || 0 ) / 100 ) }
-						<span className="transaction-summary__amount-currency">{ ( transaction.currency || 'cur' ) }</span>
+						{ currency.formatCurrency(
+							( transaction.amount || 0 ) / 100
+						) }
+						<span className="transaction-summary__amount-currency">
+							{ transaction.currency || 'cur' }
+						</span>
 						<PaymentStatusChip transaction={ transaction } />
 					</p>
 					<div className="transaction-summary__breakdown">
-						{ isTransactionRefunded( transaction )
-							? <p>
-								{ `${ __( 'Refunded', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( ( -get( transaction, 'source.amount_refunded' ) || 0 ) / 100 ) }
+						{ isTransactionRefunded( transaction ) ? (
+							<p>
+								{ `${ __(
+									'Refunded',
+									'woocommerce-payments'
+								) }: ` }
+								{ currency.formatCurrency(
+									( -get(
+										transaction,
+										'source.amount_refunded'
+									) || 0 ) / 100
+								) }
 							</p>
-							: '' }
+						) : (
+							''
+						) }
 						<p>
 							{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( -transaction.fee || 0 ) / 100 ) }
+							{ currency.formatCurrency(
+								( -transaction.fee || 0 ) / 100
+							) }
 						</p>
 						<p>
 							{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-							{ currency.formatCurrency( ( transaction.net || 0 ) / 100 ) }
+							{ currency.formatCurrency(
+								( transaction.net || 0 ) / 100
+							) }
 						</p>
 					</div>
 				</div>
@@ -59,12 +77,20 @@ const TransactionSummaryDetails = ( props ) => {
 					{ /* TODO: implement control buttons depending on the transaction status */ }
 					{ /* E.g. if transaction is under dispute display Accept Dispute and Respond to Dispute buttons */ }
 					<div className="transaction-summary__actions">
-						<Button className="transaction-summary__actions-item"
+						<Button
+							className="transaction-summary__actions-item"
 							isDefault
 							isLarge
-							disabled={ ! get( transaction, 'order.url' ) ||	isTransactionFullyRefunded( transaction ) }
-							href={ `${ get( transaction, 'order.url' ) }#woocommerce-order-items` }>
-							{ ( isTransactionPartiallyRefunded( transaction ) )
+							disabled={
+								! get( transaction, 'order.url' ) ||
+								isTransactionFullyRefunded( transaction )
+							}
+							href={ `${ get(
+								transaction,
+								'order.url'
+							) }#woocommerce-order-items` }
+						>
+							{ isTransactionPartiallyRefunded( transaction )
 								? __( 'Refund more', 'woocommerce-payments' )
 								: __( 'Refund', 'woocommerce-payments' ) }
 						</Button>
@@ -72,31 +98,49 @@ const TransactionSummaryDetails = ( props ) => {
 				</div>
 			</div>
 			<hr className="full-width" />
-			<HorizontalList items={ [
-				{
-					title: __( 'Date', 'woocommerce-payments' ),
-					content: transaction.created ? dateI18n( 'M j, Y, g:ia', moment( transaction.created * 1000 ) ) : '–',
-				},
-				{
-					title: __( 'Order no.', 'woocommerce-payments' ),
-					content: <OrderLink order={ transaction.order } />,
-				},
-				{
-					title: __( 'Customer', 'woocommerce-payments' ),
-					content: get( transaction, 'source.billing_details.name' ) || '–',
-				},
-				{
-					title: __( 'Payment method', 'woocommerce-payments' ),
-					content: <PaymentMethodDetails payment={ get( transaction, 'source.payment_method_details' ) } />,
-				},
-				{
-					title: __( 'Risk evaluation', 'woocommerce-payments' ),
-					content: get( transaction, 'source.outcome.risk_level' ) || '–',
-				},
-				{
-					content: transaction.id || '–',
-				},
-			] } />
+			<HorizontalList
+				items={ [
+					{
+						title: __( 'Date', 'woocommerce-payments' ),
+						content: transaction.created
+							? dateI18n(
+									'M j, Y, g:ia',
+									moment( transaction.created * 1000 )
+							  )
+							: '–',
+					},
+					{
+						title: __( 'Order no.', 'woocommerce-payments' ),
+						content: <OrderLink order={ transaction.order } />,
+					},
+					{
+						title: __( 'Customer', 'woocommerce-payments' ),
+						content:
+							get( transaction, 'source.billing_details.name' ) ||
+							'–',
+					},
+					{
+						title: __( 'Payment method', 'woocommerce-payments' ),
+						content: (
+							<PaymentMethodDetails
+								payment={ get(
+									transaction,
+									'source.payment_method_details'
+								) }
+							/>
+						),
+					},
+					{
+						title: __( 'Risk evaluation', 'woocommerce-payments' ),
+						content:
+							get( transaction, 'source.outcome.risk_level' ) ||
+							'–',
+					},
+					{
+						content: transaction.id || '–',
+					},
+				] }
+			/>
 		</Card>
 	);
 };

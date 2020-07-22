@@ -89,7 +89,9 @@ describe( 'Transactions list', () => {
 
 	test( 'renders correctly when filtered to deposit', () => {
 		useTransactions.mockReturnValue( {
-			transactions: mockTransactions.filter( ( txn ) => txn.deposit_id === 'po_mock' ),
+			transactions: mockTransactions.filter(
+				( txn ) => txn.deposit_id === 'po_mock'
+			),
 			isLoading: false,
 		} );
 
@@ -175,7 +177,10 @@ describe( 'Transactions list', () => {
 		function expectSortingToBe( field, direction ) {
 			expect( getQuery().orderby ).toEqual( field );
 			expect( getQuery().order ).toEqual( direction );
-			const useTransactionsCall = useTransactions.mock.calls[ useTransactions.mock.calls.length - 1 ];
+			const useTransactionsCall =
+				useTransactions.mock.calls[
+					useTransactions.mock.calls.length - 1
+				];
 			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
 			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
 		}
