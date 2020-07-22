@@ -152,6 +152,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
+		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -796,7 +797,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$account_settings = [
 				'statement_descriptor' => $this->get_option( 'account_statement_descriptor' ),
 			];
-			$this->account->update_stripe_account( $account_settings );
+			$error_message    = $this->account->update_stripe_account( $account_settings );
+
+			if ( is_string( $error_message ) ) {
+				$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+				$this->add_error( $msg );
+			}
 		}
 		return $saved;
 	}

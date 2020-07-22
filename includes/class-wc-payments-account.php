@@ -633,6 +633,8 @@ class WC_Payments_Account {
 	 * Updates Stripe account settings.
 	 *
 	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return null|string Error message if update failed.
 	 */
 	public function update_stripe_account( $stripe_account_settings ) {
 		try {
@@ -644,6 +646,7 @@ class WC_Payments_Account {
 			$this->cache_account( $updated_account );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to update Stripe account ' . $e );
+			return $e->getMessage();
 		}
 	}
 
