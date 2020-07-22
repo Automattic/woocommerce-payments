@@ -420,6 +420,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
 				}
 
+				// Update payment method information with checkout values, as some saved methods might not have billing details.
+				$billing_details = $this->get_billing_details_from_request();
+				if ( ! empty( $billing_details ) ) {
+					$this->payments_api_client->update_payment_method(
+						$payment_method,
+						[
+							'billing_details' => $billing_details,
+						]
+					);
+				}
+
 				$metadata = [
 					'customer_name'    => $name,
 					'customer_email'   => $email,
@@ -574,6 +585,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		return $payment_method;
+	}
+
+	/**
+	 * Extract the billing details from the request's POST variables
+	 *
+	 * @return array
+	 */
+	private function get_billing_details_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$first_name      = ! empty( $_POST['billing_first_name'] ) ? wc_clean( $_POST['billing_first_name'] ) : '';
+		$last_name       = ! empty( $_POST['billing_last_name'] ) ? wc_clean( $_POST['billing_last_name'] ) : '';
+		$name            = trim( $first_name . ' ' . $last_name );
+		$billing_details = [
+			'address' => [
+				'city'        => ! empty( $_POST['billing_city'] ) ? wc_clean( $_POST['billing_city'] ) : null,
+				'country'     => ! empty( $_POST['billing_country'] ) ? wc_clean( $_POST['billing_country'] ) : null,
+				'line1'       => ! empty( $_POST['billing_address_1'] ) ? wc_clean( $_POST['billing_address_1'] ) : null,
+				'line2'       => ! empty( $_POST['billing_address_2'] ) ? wc_clean( $_POST['billing_address_2'] ) : null,
+				'postal_code' => ! empty( $_POST['billing_postcode'] ) ? wc_clean( $_POST['billing_postcode'] ) : null,
+				'state'       => ! empty( $_POST['billing_state'] ) ? wc_clean( $_POST['billing_state'] ) : null,
+			],
+			'email'   => ! empty( $_POST['billing_email'] ) ? wc_clean( $_POST['billing_email'] ) : null,
+			'name'    => ! empty( $name ) ? $name : null,
+			'phone'   => ! empty( $_POST['billing_phone'] ) ? wc_clean( $_POST['billing_phone'] ) : null,
+		];
+		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+		$remove_empty_entries = function ( $value ) {
+			return ! empty( $value );
+		};
+
+		$billing_details['address'] = array_filter( $billing_details['address'], $remove_empty_entries );
+		return array_filter( $billing_details, $remove_empty_entries );
 	}
 
 	/**
@@ -1069,11 +1113,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function add_payment_method() {
 		try {
-			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) { // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification
+
+			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
 			}
 
-			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false; // phpcs:ignore WordPress.CSRF.NonceVerification.NoNonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false;
+			// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
 

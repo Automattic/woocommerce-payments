@@ -64,7 +64,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'update_payment_method' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -540,5 +540,116 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'add_token_to_user' );
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_updates_payment_method_full_billing_details() {
+		$billing_details = [
+			'billing_first_name' => 'Customer',
+			'billing_last_name'  => 'Test',
+			'billing_email'      => 'customer.test@email.com',
+			'billing_city'       => 'San Francisco',
+			'billing_country'    => 'US',
+			'billing_address_1'  => '60 29th Street',
+			'billing_address_2'  => '#343',
+			'billing_postcode'   => '94110',
+			'billing_state'      => 'California',
+			'billing_phone'      => '555555555',
+		];
+
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'city'        => $billing_details['billing_city'],
+							'country'     => $billing_details['billing_country'],
+							'line1'       => $billing_details['billing_address_1'],
+							'line2'       => $billing_details['billing_address_2'],
+							'postal_code' => $billing_details['billing_postcode'],
+							'state'       => $billing_details['billing_state'],
+						],
+						'email'   => $billing_details['billing_email'],
+						'name'    => 'Customer Test',
+						'phone'   => $billing_details['billing_phone'],
+					],
+				]
+			);
+
+		$_POST = array_merge( $_POST, $billing_details ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_updates_payment_method_partial_billing_details() {
+		$billing_details = [
+			'billing_first_name' => 'Customer',
+			'billing_last_name'  => 'Test',
+			'billing_email'      => 'customer.test@email.com',
+			'billing_country'    => 'US',
+			'billing_address_1'  => '60 29th Street',
+			'billing_postcode'   => '94110',
+			'billing_state'      => 'California',
+		];
+
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'country'     => $billing_details['billing_country'],
+							'line1'       => $billing_details['billing_address_1'],
+							'postal_code' => $billing_details['billing_postcode'],
+							'state'       => $billing_details['billing_state'],
+						],
+						'email'   => $billing_details['billing_email'],
+						'name'    => 'Customer Test',
+					],
+				]
+			);
+
+		$_POST = array_merge( $_POST, $billing_details ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_does_not_update_payment_method_no_billing_details() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'update_payment_method' );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 }

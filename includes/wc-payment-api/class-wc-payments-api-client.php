@@ -718,6 +718,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update payment method data.
+	 *
+	 * @param string $payment_method_id Payment method ID.
+	 * @param array  $payment_method_data Payment method updated data.
+	 *
+	 * @return array Payment method details.
+	 *
+	 * @throws WC_Payments_API_Exception If payment method update fails.
+	 */
+	public function update_payment_method( $payment_method_id, $payment_method_data = [] ) {
+		return $this->request(
+			$payment_method_data,
+			self::PAYMENT_METHODS_API . '/' . $payment_method_id,
+			self::POST
+		);
+	}
+
+	/**
 	 * Get payment methods for customer.
 	 *
 	 * @param string $customer_id The customer ID.
