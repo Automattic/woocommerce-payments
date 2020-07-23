@@ -48,7 +48,7 @@ export default class WCPayAPI {
 	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
 	 * @returns {Object} A request object, which will be prepared and then `.send()`.
 	 */
-	generatePaymentMethodFromCard( elements, preparedCustomerData = {} ) {
+	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
 
 		return new class {

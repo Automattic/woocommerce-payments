@@ -11,7 +11,7 @@ import { PAYMENT_METHOD_NAME } from '../constants.js';
  * @param {Object} billingData The billing data, which was collected from the checkout block.
  */
 const generatePaymentMethod = async ( api, elements, billingData ) => {
-	const request = api.generatePaymentMethodFromCard( elements );
+	const request = api.generatePaymentMethodRequest( elements );
 
 	request.setBillingDetail( 'name', ( billingData.first_name + ' ' + billingData.last_name ).trim() );
 	request.setBillingDetail( 'email', billingData.email );
