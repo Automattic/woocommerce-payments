@@ -5,28 +5,25 @@ type t =
   | Alert
   | Default;
 
-let chipClass = chipType => switch(chipType) {
+let chipClass = chipType =>
+  switch (chipType) {
   | Default
   | Primary => "chip-primary"
   | Warning => "chip-warning"
   | Alert => "chip-alert"
   | Light => "chip-light"
-};
+  };
 
 [@react.component]
 let make = (~message="", ~chipType=Default, ~isCompat=false) => {
-  let classNames = [|
-    "chip",
-    chipClass(chipType),
-    isCompat ? "is-compat" : "",
-  |];
+  let classNames = ["chip", chipType->chipClass, isCompat ? "is-compat" : ""];
 
   <span
     className={
       classNames
-      |> Array.fold_left((acc, curr) => acc ++ " " ++ curr, "")
-      |> String.trim
+      ->Belt.List.reduce("", (acc, curr) => acc ++ " " ++ curr)
+      ->String.trim
     }>
-    {ReasonReact.string(message)}
+    message->React.string
   </span>;
 };

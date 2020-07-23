@@ -10,12 +10,12 @@ let getChargeOutcomeType = (charge: Types.Charge.charge) => {
 
 let isChargeBlocked = (charge: Types.Charge.charge) => {
   "failed" == charge.status
-  && List.exists(t => getChargeOutcomeType(charge) == t, blockedOutcomeTypes);
+  && List.exists(t => charge->getChargeOutcomeType == t, blockedOutcomeTypes);
 };
 
 let isChargeFailed = (charge: Types.Charge.charge) => {
   "failed" == charge.status
-  && List.exists(t => getChargeOutcomeType(charge) == t, failedOutcomeTypes);
+  && List.exists(t => charge->getChargeOutcomeType == t, failedOutcomeTypes);
 };
 
 let isChargeDisputed = (charge: Types.Charge.charge) => {
@@ -28,7 +28,7 @@ let isChargeRefunded = (charge: Types.Charge.charge) =>
 let isChargeFullyRefunded = (charge: Types.Charge.charge) => charge.refunded;
 
 let isChargePartiallyRefunded = (charge: Types.Charge.charge) =>
-  isChargeRefunded(charge) && !isChargeFullyRefunded(charge);
+  charge->isChargeRefunded && !charge->isChargeFullyRefunded;
 
 let isChargeSuccessful = (charge: Types.Charge.charge) => {
   "succeeded" == charge.status && charge.paid;
@@ -63,21 +63,21 @@ let mapDisputeStatusToChargeStatus = status => {
 };
 
 let getChargeStatus = charge =>
-  if (isChargeFailed(charge)) {
-    Ok(Failed);
+  if (charge->isChargeFailed) {
+    Failed->Ok;
   } else if (isChargeBlocked(charge)) {
-    Ok(Blocked);
+    Blocked->Ok;
   } else if (charge.disputed) {
     switch (charge.dispute) {
-    | None => Ok(Disputed)
+    | None => Disputed->Ok
     | Some(d) => d.status->mapDisputeStatusToChargeStatus->Ok
     };
-  } else if (isChargePartiallyRefunded(charge)) {
-    Ok(PartiallyRefunded);
-  } else if (isChargeFullyRefunded(charge)) {
-    Ok(FullyRefunded);
-  } else if (isChargeSuccessful(charge)) {
-    charge.captured ? Ok(Paid) : Ok(Authorized);
+  } else if (charge->isChargePartiallyRefunded) {
+    PartiallyRefunded->Ok;
+  } else if (charge->isChargeFullyRefunded) {
+    FullyRefunded->Ok;
+  } else if (charge->isChargeSuccessful) {
+    charge.captured ? Paid->Ok : Authorized->Ok;
   } else {
-    Error(NoPaymentStatus);
+    NoPaymentStatus->Error;
   };
