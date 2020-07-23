@@ -544,4 +544,36 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'error', $result['result'] );
 	}
+
+	/**
+	 * Tests account statement descriptor validator
+	 *
+	 * @dataProvider account_statement_descriptor_validation_provider
+	 */
+	public function test_validate_account_statement_descriptor_field( $is_valid, $value ) {
+		$key = 'account_statement_descriptor';
+		if ( $is_valid ) {
+			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+			$this->assertNotEmpty( $validated_value );
+		} else {
+			$this->expectExceptionMessage( 'Invalid Statement descriptor.' );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
+		}
+	}
+
+	public function account_statement_descriptor_validation_provider() {
+		return [
+			'valid'         => [ true, 'WCPAY dev' ],
+			'allow_digits'  => [ true, 'WCPay dev 2020' ],
+			'allow_special' => [ true, 'WCPay-Dev_2020' ],
+			'empty'         => [ false, '' ],
+			'short'         => [ false, 'WCP' ],
+			'long'          => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
+			'no_*'          => [ false, 'WCPay * dev' ],
+			'no_sqt'        => [ false, 'WCPay \'dev\'' ],
+			'no_dqt'        => [ false, 'WCPay "dev"' ],
+			'req_latin'     => [ false, 'дескриптор' ],
+			'req_letter'    => [ false, '123456' ],
+		];
+	}
 }

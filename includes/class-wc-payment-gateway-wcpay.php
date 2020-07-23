@@ -749,6 +749,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Validates statement descriptor value
+	 *
+	 * @param  string $key Field key.
+	 * @param  string $value Posted Value.
+	 *
+	 * @return string Sanitized statement descriptor.
+	 * @throws Exception When statement descriptor is invalid.
+	 */
+	public function validate_account_statement_descriptor_field( $key, $value ) {
+		$sanitized_value = $this->validate_text_field( $key, $value );
+
+		// Validation can be done with a single regex but splitting into multiple for better readability.
+		$valid_length   = '/^.{5,22}$/';
+		$has_one_letter = '/^.*[a-zA-Z]+/';
+		$no_specials    = '/^[^*"\']*$/';
+
+		if (
+			! preg_match( $valid_length, $sanitized_value ) ||
+			! preg_match( $has_one_letter, $sanitized_value ) ||
+			! preg_match( $no_specials, $sanitized_value )
+		) {
+			throw new Exception(
+				__( 'Invalid Statement descriptor. Statement descriptor should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " *', 'woocommerce-payments' )
+			);
+		}
+		return $value;
+	}
+
+	/**
 	 * Generate markup for account actions
 	 */
 	public function generate_account_actions_html() {
