@@ -5,7 +5,7 @@ describe("Chip (ReasonML)", () => {
   open ReactTestingLibrary;
 
   let renderChip = (chipType, message) => {
-    <Chip chipType message /> |> render |> container;
+    <Chip chipType message /> |> render(_) |> container;
   };
 
   test("Renders an alert chip", () => {
@@ -30,7 +30,7 @@ describe("Chip (ReasonML)", () => {
 
   test("Renders primary when no type provided", () => {
     <Chip message="Message" />
-    |> render
+    |> render(_)
     |> container
     |> expect
     |> toMatchSnapshot
