@@ -79,8 +79,8 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 						isLoading={ isLoading }
 						value={
 							mapping.display
-								? /* translators: heading for dispute category information section */
-								  sprintf(
+								? sprintf(
+										/* translators: heading for dispute category information section */
 										__(
 											'Dispute: %s',
 											'woocommerce-payments'

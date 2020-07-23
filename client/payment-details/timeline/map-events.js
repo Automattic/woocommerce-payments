@@ -183,6 +183,7 @@ const mapEventToTimelineItems = ( event ) => {
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
+					/* translators: %s is a monetary amount */
 					__(
 						'A payment of %s was successfully authorized',
 						'woocommerce-payments'
@@ -203,6 +204,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event,
 				stringWithAmount(
 					__(
+						/* translators: %s is a monetary amount */
 						'Authorization for %s was voided',
 						'woocommerce-payments'
 					),
@@ -222,6 +224,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event,
 				stringWithAmount(
 					__(
+						/* translators: %s is a monetary amount */
 						'Authorization for %s expired',
 						'woocommerce-payments'
 					),
@@ -242,6 +245,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event,
 				stringWithAmount(
 					__(
+						/* translators: %s is a monetary amount */
 						'A payment of %s was successfully charged',
 						'woocommerce-payments'
 					),
@@ -251,10 +255,12 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success',
 				[
 					stringWithAmount(
+						/* translators: %s is a monetary amount */
 						__( 'Fee: %s', 'woocommerce-payments' ),
 						event.fee
 					),
 					sprintf(
+						/* translators: %s is a monetary amount */
 						__( 'Net deposit: %s', 'woocommerce-payments' ),
 						formattedNet
 					),
@@ -273,6 +279,7 @@ const mapEventToTimelineItems = ( event ) => {
 				event,
 				sprintf(
 					__(
+						/* translators: %s is a monetary amount */
 						'A payment of %s was successfully refunded',
 						'woocommerce-payments'
 					),
@@ -294,6 +301,7 @@ const mapEventToTimelineItems = ( event ) => {
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
+					/* translators: %s is a monetary amount */
 					__( 'A payment of %s failed', 'woocommerce-payments' ),
 					event.amount
 				),
@@ -309,6 +317,7 @@ const mapEventToTimelineItems = ( event ) => {
 		let reasonHeadline = __( 'Payment disputed', 'woocommerce-payments' );
 		if ( disputeReasons[ event.reason ] ) {
 			reasonHeadline = sprintf(
+				/* translators: %s is a monetary amount */
 				__( 'Payment disputed as %s', 'woocommerce-payments' ),
 				disputeReasons[ event.reason ].display
 			);
@@ -347,10 +356,12 @@ const mapEventToTimelineItems = ( event ) => {
 				false,
 				[
 					stringWithAmount(
+						/* translators: %s is a monetary amount */
 						__( 'Disputed amount: %s', 'woocommerce-payments' ),
 						event.amount
 					),
 					stringWithAmount(
+						/* translators: %s is a monetary amount */
 						__( 'Fee: %s', 'woocommerce-payments' ),
 						event.fee
 					),
@@ -399,10 +410,12 @@ const mapEventToTimelineItems = ( event ) => {
 			),
 			getDepositTimelineItem( event, formattedTotal, true, [
 				stringWithAmount(
+					/* translators: %s is a monetary amount */
 					__( 'Disputed amount: %s', 'woocommerce-payments' ),
 					event.amount
 				),
 				stringWithAmount(
+					/* translators: %s is a monetary amount */
 					__( 'Fee: %s', 'woocommerce-payments' ),
 					event.fee
 				),
