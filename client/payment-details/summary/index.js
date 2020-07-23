@@ -18,7 +18,8 @@ import { getChargeAmounts, getChargeStatus } from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
-import Loadable, { LoadableBlock } from 'components/loadable';
+import Loadable from 'components/loadable/loadable.gen';
+import LoadableBlock from 'components/loadable/loadable_block.gen';
 import riskMappings from 'components/risk-level/strings';
 import './style.scss';
 
