@@ -9,6 +9,7 @@ import { PAYMENT_METHOD_NAME } from '../constants.js';
  * @param {WCPayAPI} api The API class that is used to connect both with the server and Stripe.
  * @param {Object} elements A hash, containing all Stripe card elements.
  * @param {Object} billingData The billing data, which was collected from the checkout block.
+ * @returns {Object} The `onPaymentProcessing` response object, including a type and meta data/error message.
  */
 const generatePaymentMethod = async ( api, elements, billingData ) => {
 	const request = api.generatePaymentMethodRequest( elements );
