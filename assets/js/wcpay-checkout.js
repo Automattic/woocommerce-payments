@@ -322,6 +322,12 @@ jQuery( function ( $ ) {
 		stripe
 			.confirmCardPayment( clientSecret )
 			.then( function ( result ) {
+				var paymentMethodId = document.getElementById(
+					'wcpay-payment-method'
+				).value;
+				var savePaymentMethod = document.getElementById(
+					'wc-woocommerce_payments-new-payment-method'
+				).checked;
 				var intentId =
 					( result.paymentIntent && result.paymentIntent.id ) ||
 					( result.error &&
@@ -337,6 +343,10 @@ jQuery( function ( $ ) {
 						_ajax_nonce: wcpay_config.updateOrderStatusNonce,
 						// eslint-disable-next-line camelcase
 						intent_id: intentId,
+						// eslint-disable-next-line camelcase
+						payment_method_id: savePaymentMethod
+							? paymentMethodId
+							: null,
 					} ),
 					result.error,
 				];

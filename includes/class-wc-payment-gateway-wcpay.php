@@ -450,14 +450,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$this->get_level3_data_from_order( $order )
 				);
 
-				if ( $save_payment_method ) {
-					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
-					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
-				}
-
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$intent_id = $intent->get_id();
 				$status    = $intent->get_status();
+
+				if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
+					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
+					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				}
 
 				switch ( $status ) {
 					case 'succeeded':
@@ -972,6 +972,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
+
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -1054,6 +1056,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
+
+				if ( ! empty( $payment_method_id ) ) {
+					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
+					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				}
 
 				// Send back redirect URL in the successful case.
 				echo wp_json_encode(
