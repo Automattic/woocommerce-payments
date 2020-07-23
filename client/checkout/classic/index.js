@@ -8,9 +8,16 @@ import { getConfig } from './../utils.js';
 import WCPayAPI from './../api';
 
 jQuery( function( $ ) {
+	const publishableKey = getConfig( 'publishableKey' );
+
+	if ( ! publishableKey ) {
+		// If no configuration is present, probably this is not the checkout page.
+		return;
+	}
+
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI( {
-		publishableKey: getConfig( 'publishableKey' ),
+		publishableKey,
 		accountId: getConfig( 'accountId' ),
 	}, jQuery.post );
 	const elements = api.getStripe().elements();
