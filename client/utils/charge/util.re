@@ -62,6 +62,7 @@ let mapDisputeStatusToChargeStatus = status => {
   };
 };
 
+[@genType]
 let getChargeStatus = charge =>
   if (charge->isChargeFailed) {
     Failed->Ok;

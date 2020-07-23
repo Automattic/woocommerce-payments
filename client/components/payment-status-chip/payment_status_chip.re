@@ -54,6 +54,7 @@ let statusInfo = status =>
   | Ok(Disputed) => {chipType: Light, message: ""}
   };
 
+[@genType]
 [@react.component]
 let make = (~charge) => {
   let statusInfo = charge->Util.getChargeStatus->statusInfo;

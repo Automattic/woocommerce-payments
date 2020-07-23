@@ -14,6 +14,7 @@ let chipClass = chipType =>
   | Light => "chip-light"
   };
 
+[@genType]
 [@react.component]
 let make = (~message="", ~chipType=Default, ~isCompat=false) => {
   let classNames = ["chip", chipType->chipClass, isCompat ? "is-compat" : ""];
