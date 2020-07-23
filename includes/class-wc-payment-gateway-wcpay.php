@@ -829,7 +829,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$error_message    = $this->account->update_stripe_account( $account_settings );
 
 			if ( is_string( $error_message ) ) {
-				$msg = __( 'Failed to update statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+				$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
 				$this->add_error( $msg );
 			}
 		}
