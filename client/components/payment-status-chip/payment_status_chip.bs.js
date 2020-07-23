@@ -2,12 +2,12 @@
 'use strict';
 
 var React = require("react");
-var PaymentStatusChipGen = require("./paymentStatusChip.gen");
 var Chip$WoocommercePayments = require("../chip/chip.bs.js");
 var Util$WoocommercePayments = require("../../utils/charge/util.bs.js");
+var Payment_status_chipGen = require("./payment_status_chip.gen");
 
 function __(prim, prim$1) {
-  return PaymentStatusChipGen.__(prim, prim$1);
+  return Payment_status_chipGen.__(prim, prim$1);
 }
 
 function statusInfo(status) {
@@ -21,32 +21,32 @@ function statusInfo(status) {
     case /* Failed */0 :
         return {
                 chipType: /* Alert */3,
-                message: PaymentStatusChipGen.__("Payment failed", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Payment failed", "woocommerce-payments")
               };
     case /* Blocked */1 :
         return {
                 chipType: /* Alert */3,
-                message: PaymentStatusChipGen.__("Payment blocked", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Payment blocked", "woocommerce-payments")
               };
     case /* DisputeNeedsResponse */2 :
         return {
                 chipType: /* Primary */0,
-                message: PaymentStatusChipGen.__("Disputed: Needs response", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Disputed: Needs response", "woocommerce-payments")
               };
     case /* DisputeUnderReview */3 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Disputed: In review", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Disputed: In review", "woocommerce-payments")
               };
     case /* DisputeWon */4 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Disputed: Won", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Disputed: Won", "woocommerce-payments")
               };
     case /* DisputeLost */5 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Disputed: Lost", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Disputed: Lost", "woocommerce-payments")
               };
     case /* Disputed */6 :
         return {
@@ -56,28 +56,28 @@ function statusInfo(status) {
     case /* PartiallyRefunded */7 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Partial Refund", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Partial Refund", "woocommerce-payments")
               };
     case /* FullyRefunded */8 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Refunded", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Refunded", "woocommerce-payments")
               };
     case /* Paid */9 :
         return {
                 chipType: /* Light */1,
-                message: PaymentStatusChipGen.__("Paid", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Paid", "woocommerce-payments")
               };
     case /* Authorized */10 :
         return {
                 chipType: /* Primary */0,
-                message: PaymentStatusChipGen.__("Payment Authorized", "woocommerce-payments")
+                message: Payment_status_chipGen.__("Payment Authorized", "woocommerce-payments")
               };
     
   }
 }
 
-function PaymentStatusChip(Props) {
+function Payment_status_chip(Props) {
   var charge = Props.charge;
   var statusInfo$1 = statusInfo(Util$WoocommercePayments.getChargeStatus(charge));
   return React.createElement(Chip$WoocommercePayments.make, {
@@ -86,7 +86,7 @@ function PaymentStatusChip(Props) {
             });
 }
 
-var make = PaymentStatusChip;
+var make = Payment_status_chip;
 
 exports.__ = __;
 exports.statusInfo = statusInfo;
