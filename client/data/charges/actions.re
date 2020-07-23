@@ -1,11 +1,11 @@
-let updateCharge = (id, data): Types.Charge.Reducer.event => {
+let updateCharge = (id, data): Types.ChargeReducer.Event.t => {
   type_: "SET_CHARGE",
   id,
   data,
   error: None,
 };
 
-let updateErrorForCharge = (id, data, error): Types.Charge.Reducer.event => {
+let updateErrorForCharge = (id, data, error): Types.ChargeReducer.Event.t => {
   type_: "SET_ERROR_FOR_CHARGE",
   id,
   data,

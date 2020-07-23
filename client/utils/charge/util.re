@@ -1,36 +1,35 @@
 let failedOutcomeTypes = ["issuer_declined", "invalid"];
 let blockedOutcomeTypes = ["blocked"];
 
-let getChargeOutcomeType = (charge: Types.Charge.charge) => {
+let getChargeOutcomeType = (charge: Types.Charge.t) => {
   switch (charge.outcome) {
   | None => ""
   | Some(o) => o.type_
   };
 };
 
-let isChargeBlocked = (charge: Types.Charge.charge) => {
+let isChargeBlocked = (charge: Types.Charge.t) => {
   "failed" == charge.status
   && List.exists(t => charge->getChargeOutcomeType == t, blockedOutcomeTypes);
 };
 
-let isChargeFailed = (charge: Types.Charge.charge) => {
+let isChargeFailed = (charge: Types.Charge.t) => {
   "failed" == charge.status
   && List.exists(t => charge->getChargeOutcomeType == t, failedOutcomeTypes);
 };
 
-let isChargeDisputed = (charge: Types.Charge.charge) => {
+let isChargeDisputed = (charge: Types.Charge.t) => {
   charge.disputed === true;
 };
 
-let isChargeRefunded = (charge: Types.Charge.charge) =>
-  charge.amount_refunded > 0;
+let isChargeRefunded = (charge: Types.Charge.t) => charge.amount_refunded > 0;
 
-let isChargeFullyRefunded = (charge: Types.Charge.charge) => charge.refunded;
+let isChargeFullyRefunded = (charge: Types.Charge.t) => charge.refunded;
 
-let isChargePartiallyRefunded = (charge: Types.Charge.charge) =>
+let isChargePartiallyRefunded = (charge: Types.Charge.t) =>
   charge->isChargeRefunded && !charge->isChargeFullyRefunded;
 
-let isChargeSuccessful = (charge: Types.Charge.charge) => {
+let isChargeSuccessful = (charge: Types.Charge.t) => {
   "succeeded" == charge.status && charge.paid;
 };
 

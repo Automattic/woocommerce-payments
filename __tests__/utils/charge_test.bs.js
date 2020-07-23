@@ -2,559 +2,167 @@
 'use strict';
 
 var Jest = require("@glennsl/bs-jest/src/jest.js");
+var Caml_option = require("bs-platform/lib/js/caml_option.js");
 var Util$WoocommercePayments = require("../../client/utils/charge/util.bs.js");
+var Types$WoocommercePayments = require("../../client/data/types.bs.js");
 
-var paidCharge = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: true,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: "succeeded"
-};
+var paidCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "succeeded", undefined);
 
-var failedCharge = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: false,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: {
-    type: "issuer_declined"
-  },
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: "failed"
-};
+var failedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make("issuer_declined", undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "failed", undefined);
 
-var blockedCharge = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: false,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: {
-    type: "blocked"
-  },
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: "failed"
-};
+var blockedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make("blocked", undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "failed", undefined);
 
-var authorizedCharge = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: false,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: true,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: "succeeded"
-};
+var authorizedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "succeeded", undefined);
 
-var disputedChargeNeedsResponse = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: {
-    status: "needs_response"
-  },
-  disputed: true,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: ""
-};
+var fullyRefundedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1500, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined);
 
-var disputedChargeUnderReview = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: {
-    status: "under_review"
-  },
-  disputed: true,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: ""
-};
+var partiallyRefundedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1200, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined);
 
-var disputedChargeWon = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: {
-    status: "won"
-  },
-  disputed: true,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: ""
-};
-
-var disputedChargeLost = {
-  id: "",
-  object: "",
-  amount: 0,
-  amount_refunded: 0,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: {
-    status: "lost"
-  },
-  disputed: true,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: false,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: ""
-};
-
-var fullyRefundedCharge = {
-  id: "",
-  object: "",
-  amount: 1500,
-  amount_refunded: 1500,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: true,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: true,
-  refunds: undefined,
-  status: ""
-};
-
-var partiallyRefundedCharge = {
-  id: "",
-  object: "",
-  amount: 1500,
-  amount_refunded: 1200,
-  application: "",
-  application_fee: "",
-  application_fee_amount: 0,
-  balance_transaction: "",
-  billing_details: {
-    address: {
-      city: "",
-      country: "",
-      line1: "",
-      line2: undefined,
-      postal_code: "",
-      state: ""
-    },
-    email: "",
-    name: "",
-    phone: "",
-    formatted_address: ""
-  },
-  calculated_statement_descriptor: "",
-  captured: true,
-  created: 0,
-  currency: "",
-  dispute: undefined,
-  disputed: false,
-  level3: undefined,
-  livemode: false,
-  outcome: undefined,
-  paid: true,
-  payment_intent: "",
-  payment_method: "",
-  payment_method_details: undefined,
-  receipt_email: "",
-  receipt_number: "",
-  receipt_url: "",
-  refunded: false,
-  refunds: undefined,
-  status: ""
-};
+function getDisputedChargeWithStatus(status) {
+  return Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Dispute.make(status, undefined)), true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+}
 
 Jest.describe("Charge utilities (ReasonML)", (function (param) {
-        Jest.test("should identify a captured successful charge as successful", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(paidCharge)));
+        Jest.describe("isCharge methods", (function (param) {
+                Jest.test("should identify a captured successful charge as successful", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(paidCharge)));
+                      }));
+                Jest.test("should identify a not captured successful charge as successful", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(authorizedCharge)));
+                      }));
+                Jest.test("should not identify a failed charge as successful", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(failedCharge)));
+                      }));
+                Jest.test("should not identify a blocked charge as successful", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(blockedCharge)));
+                      }));
+                Jest.test("should identify a failed charge as failed", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeFailed(failedCharge)));
+                      }));
+                Jest.test("should identify a blocked charge as blocked", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeBlocked(blockedCharge)));
+                      }));
+                Jest.test("should not identify a successful charge as failed", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFailed(paidCharge)));
+                      }));
+                Jest.test("should not identify a successful charge as failed", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeBlocked(paidCharge)));
+                      }));
+                Jest.test("should identify a fully refunded charge as fully refunded", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(fullyRefundedCharge)));
+                      }));
+                Jest.test("should not identify a partially refunded charge as fully refunded", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(partiallyRefundedCharge)));
+                      }));
+                Jest.test("should not identify a successful charge as fully refunded", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(paidCharge)));
+                      }));
+                Jest.test("should identify a partially refunded charge as partially refunded", (function (param) {
+                        return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(partiallyRefundedCharge)));
+                      }));
+                Jest.test("should not identify a fully refunded charge as partially refunded", (function (param) {
+                        return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(fullyRefundedCharge)));
+                      }));
+                return Jest.test("should not identify a successful charge as partially refunded", (function (param) {
+                              return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(paidCharge)));
+                            }));
               }));
-        Jest.test("should identify a not captured successful charge as successful", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(authorizedCharge)));
-              }));
-        Jest.test("should not identify a failed charge as successful", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(failedCharge)));
-              }));
-        Jest.test("should not identify a blocked charge as successful", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeSuccessful(blockedCharge)));
-              }));
-        Jest.test("should identify a failed charge as failed", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeFailed(failedCharge)));
-              }));
-        Jest.test("should identify a blocked charge as blocked", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeBlocked(blockedCharge)));
-              }));
-        Jest.test("should not identify a successful charge as failed", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFailed(paidCharge)));
-              }));
-        Jest.test("should not identify a successful charge as failed", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeBlocked(paidCharge)));
-              }));
-        Jest.test("should identify a disputed charge as disputed", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeDisputed(disputedChargeWon)));
-              }));
-        Jest.test("should identify a fully refunded charge as fully refunded", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(fullyRefundedCharge)));
-              }));
-        Jest.test("should not identify a partially refunded charge as fully refunded", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(partiallyRefundedCharge)));
-              }));
-        Jest.test("should not identify a successful charge as fully refunded", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargeFullyRefunded(paidCharge)));
-              }));
-        Jest.test("should identify a partially refunded charge as partially refunded", (function (param) {
-                return Jest.Expect.toEqual(true, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(partiallyRefundedCharge)));
-              }));
-        Jest.test("should not identify a fully refunded charge as partilly refunded", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(fullyRefundedCharge)));
-              }));
-        Jest.test("should not identify a successful charge as partilly refunded", (function (param) {
-                return Jest.Expect.toEqual(false, Jest.Expect.expect(Util$WoocommercePayments.isChargePartiallyRefunded(paidCharge)));
-              }));
-        Jest.test("should return status paid for captured successful charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* Paid */9
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(paidCharge)));
-              }));
-        Jest.test("should return status authorized for not captured successful charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* Authorized */10
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(authorizedCharge)));
-              }));
-        Jest.test("should return status failed for failed charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* Failed */0
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(failedCharge)));
-              }));
-        Jest.test("should return status disputed_needs_response for disputed charges that needs response", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* DisputeNeedsResponse */2
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(disputedChargeNeedsResponse)));
-              }));
-        Jest.test("should return status disputed_under_review for disputed charges in review", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* DisputeUnderReview */3
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(disputedChargeUnderReview)));
-              }));
-        Jest.test("should return status disputed_won for won disputed charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* DisputeWon */4
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(disputedChargeWon)));
-              }));
-        Jest.test("should return status disputed_lost for lost disputed charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* DisputeLost */5
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(disputedChargeLost)));
-              }));
-        Jest.test("should return status refunded_full for fully refunded charges", (function (param) {
-                return Jest.Expect.toEqual({
-                            TAG: /* Ok */0,
-                            _0: /* FullyRefunded */8
-                          }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(fullyRefundedCharge)));
-              }));
-        return Jest.test("should return status refunded_partial for partially refunded charges", (function (param) {
-                      return Jest.Expect.toEqual({
-                                  TAG: /* Ok */0,
-                                  _0: /* PartiallyRefunded */7
-                                }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(partiallyRefundedCharge)));
+        return Jest.describe("getChargeStatus", (function (param) {
+                      var chargeStatuses_0 = [
+                        /* Paid */9,
+                        paidCharge
+                      ];
+                      var chargeStatuses_1 = {
+                        hd: [
+                          /* Authorized */10,
+                          authorizedCharge
+                        ],
+                        tl: {
+                          hd: [
+                            /* Failed */0,
+                            failedCharge
+                          ],
+                          tl: {
+                            hd: [
+                              /* FullyRefunded */8,
+                              fullyRefundedCharge
+                            ],
+                            tl: {
+                              hd: [
+                                /* PartiallyRefunded */7,
+                                partiallyRefundedCharge
+                              ],
+                              tl: /* [] */0
+                            }
+                          }
+                        }
+                      };
+                      var chargeStatuses = {
+                        hd: chargeStatuses_0,
+                        tl: chargeStatuses_1
+                      };
+                      Jest.testAll("returns status for charge", chargeStatuses, (function (param) {
+                              return Jest.Expect.toEqual({
+                                          TAG: /* Ok */0,
+                                          _0: param[0]
+                                        }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(param[1])));
+                            }));
+                      var disputeStatuses = {
+                        hd: [
+                          "needs_response",
+                          /* DisputeNeedsResponse */2
+                        ],
+                        tl: {
+                          hd: [
+                            "under_review",
+                            /* DisputeUnderReview */3
+                          ],
+                          tl: {
+                            hd: [
+                              "won",
+                              /* DisputeWon */4
+                            ],
+                            tl: {
+                              hd: [
+                                "lost",
+                                /* DisputeLost */5
+                              ],
+                              tl: {
+                                hd: [
+                                  "warning_needs_response",
+                                  /* DisputeNeedsResponse */2
+                                ],
+                                tl: {
+                                  hd: [
+                                    "warning_under_review",
+                                    /* DisputeUnderReview */3
+                                  ],
+                                  tl: {
+                                    hd: [
+                                      "warning_closed",
+                                      /* Disputed */6
+                                    ],
+                                    tl: /* [] */0
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      };
+                      Jest.testAll("returns disputed status", disputeStatuses, (function (param) {
+                              return Jest.Expect.toEqual({
+                                          TAG: /* Ok */0,
+                                          _0: param[1]
+                                        }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(getDisputedChargeWithStatus(param[0]))));
+                            }));
+                      return Jest.testAll("disputed statuses take precedence over refunds", disputeStatuses, (function (param) {
+                                    var charge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1500, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Dispute.make(param[0], undefined)), true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined);
+                                    return Jest.Expect.toEqual({
+                                                TAG: /* Ok */0,
+                                                _0: param[1]
+                                              }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(charge)));
+                                  }));
                     }));
       }));
 
@@ -562,10 +170,7 @@ exports.paidCharge = paidCharge;
 exports.failedCharge = failedCharge;
 exports.blockedCharge = blockedCharge;
 exports.authorizedCharge = authorizedCharge;
-exports.disputedChargeNeedsResponse = disputedChargeNeedsResponse;
-exports.disputedChargeUnderReview = disputedChargeUnderReview;
-exports.disputedChargeWon = disputedChargeWon;
-exports.disputedChargeLost = disputedChargeLost;
 exports.fullyRefundedCharge = fullyRefundedCharge;
 exports.partiallyRefundedCharge = partiallyRefundedCharge;
-/*  Not a pure module */
+exports.getDisputedChargeWithStatus = getDisputedChargeWithStatus;
+/* paidCharge Not a pure module */

@@ -1,16 +1,16 @@
 type chargeStateFunctions = {
-  getCharge: (. Types.Charge.id) => option(Types.Charge.charge),
-  getChargeError: (. Types.Charge.id) => option(Types.Charge.chargeError),
-  isResolving: (. string, array(Types.Charge.id)) => bool,
+  getCharge: (. string) => option(Types.Charge.Request.t),
+  getChargeError: (. string) => option(Types.Charge.RequestError.t),
+  isResolving: (. string, array(string)) => bool,
 };
 
 [@genType.import "@wordpress/data"]
 external useSelect:
   (
-    (string => chargeStateFunctions) => Types.Charge.chargeRequest,
-    array(Types.Charge.id)
+    (string => chargeStateFunctions) => Types.Charge.Request.t,
+    array(string)
   ) =>
-  Types.Charge.chargeRequest =
+  Types.Charge.Request.t =
   "useSelect";
 
 let useCharge = chargeId =>

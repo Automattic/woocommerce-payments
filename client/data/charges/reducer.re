@@ -1,11 +1,11 @@
-let getChargeState = (state: Types.Charge.Reducer.state, id) =>
+let getChargeState = (state: Types.ChargeReducer.State.t, id) =>
   state->Belt.Map.String.getWithDefault(id, {data: None, error: None});
 
-let updateCharge = (state: Types.Charge.Reducer.state, id, data) => {
+let updateCharge = (state: Types.ChargeReducer.State.t, id, data) => {
   state->Belt.Map.String.set(id, {...state->getChargeState(id), data});
 };
 
-let updateChargeError = (state: Types.Charge.Reducer.state, id, error) => {
+let updateChargeError = (state: Types.ChargeReducer.State.t, id, error) => {
   state->Belt.Map.String.set(id, {...state->getChargeState(id), error});
 };
 
