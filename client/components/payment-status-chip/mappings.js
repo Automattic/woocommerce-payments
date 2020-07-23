@@ -17,8 +17,8 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 			type: mapping.type,
 			message: status.startsWith( 'warning_' )
 				? mapping.message
-				: /** translators: %s dispute status, e.g. Won, Lost, Under review, etc. */
-				  sprintf(
+				: sprintf(
+						/** translators: %s dispute status, e.g. Won, Lost, Under review, etc. */
 						__( 'Disputed: %s', 'woocommerce-payments' ),
 						mapping.message
 				  ),

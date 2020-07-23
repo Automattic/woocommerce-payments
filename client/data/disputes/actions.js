@@ -52,6 +52,7 @@ export function* acceptDispute( id ) {
 		window.wcTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = dispute.order
 			? sprintf(
+					/* translators: #%s is an order number, e.g. 15 */
 					__(
 						'You have accepted the dispute for order #%s.',
 						'woocommerce-payments'
