@@ -16,9 +16,11 @@ import {
  */
 import generatePaymentMethod from './generate-payment-method.js';
 import confirmCardPayment from './confirm-card-payment.js';
+import { PAYMENT_METHOD_NAME } from '../constants.js';
 
 const WCPayFields = ( {
 	api,
+	activePaymentMethod,
 	stripe,
 	elements,
 	billing: {
@@ -35,6 +37,10 @@ const WCPayFields = ( {
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() => onPaymentProcessing( () => {
+			if ( PAYMENT_METHOD_NAME !== activePaymentMethod ) {
+				return;
+			}
+
 			if ( errorMessage ) {
 				return {
 					type: 'error',
@@ -49,7 +55,7 @@ const WCPayFields = ( {
 
 			return generatePaymentMethod( api, paymentElements, billingData );
 		} ),
-	[ elements, stripe ] );
+	[ elements, stripe, activePaymentMethod ] );
 
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
