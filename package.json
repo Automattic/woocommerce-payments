@@ -64,6 +64,7 @@
     "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors"
   },
   "dependencies": {
+    "@glennsl/bs-json": "^5.0.2",
     "css-loader": "^2.1.1",
     "debug": "^4.1.1",
     "lodash": "^4.17.14",
