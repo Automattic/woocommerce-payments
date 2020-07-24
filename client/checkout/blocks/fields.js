@@ -32,7 +32,7 @@ const WCPayFields = ( {
 	},
 	emitResponse,
 } ) => {
-	const [ errorMessage, setState ] = useState( null );
+	const [ errorMessage, setErrorMessage ] = useState( null );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -68,7 +68,7 @@ const WCPayFields = ( {
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const checkForErrors = ( { error } ) => {
-		setState( error ? error.message : null );
+		setErrorMessage( error ? error.message : null );
 	};
 
 	const elementOptions = {
