@@ -3,10 +3,10 @@
 /**
  * Internal dependencies
  */
-import { receiveCharges as reducer } from './reducer.bs';
-import * as selectors from './selectors.bs';
-import * as actions from './actions.bs';
+import reducer from './reducer.gen';
+import * as selectors from './selectors.gen';
+import * as actions from './actions.gen';
 import * as resolvers from './resolvers';
 
 export { reducer, selectors, actions, resolvers };
-export * from './hooks.bs';
+export * from './hooks.gen';

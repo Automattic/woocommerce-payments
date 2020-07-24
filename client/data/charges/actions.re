@@ -1,3 +1,4 @@
+[@genType]
 let updateCharge = (id, data): Types.ChargeReducer.Event.t => {
   type_: "SET_CHARGE",
   id,
@@ -5,6 +6,7 @@ let updateCharge = (id, data): Types.ChargeReducer.Event.t => {
   error: None,
 };
 
+[@genType]
 let updateErrorForCharge = (id, data, error): Types.ChargeReducer.Event.t => {
   type_: "SET_ERROR_FOR_CHARGE",
   id,

@@ -46,12 +46,16 @@ function receiveCharges(state, $$event) {
   }
 }
 
+var $$default = receiveCharges;
+
 export {
   getChargeState ,
   updateCharge ,
   updateChargeError ,
   getState ,
   receiveCharges ,
+  $$default ,
+  $$default as default,
   
 }
 /* No side effect */

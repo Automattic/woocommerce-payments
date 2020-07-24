@@ -1,3 +1,4 @@
+[@genType]
 let getCharge = (state: Types.Reducer.state, id: string) => {
   state.charges
   ->Belt.Map.String.getWithDefault(
@@ -7,6 +8,7 @@ let getCharge = (state: Types.Reducer.state, id: string) => {
     data;
 };
 
+[@genType]
 let getChargeError = (state: Types.Reducer.state, id: string) => {
   state.charges
   ->Belt.Map.String.getWithDefault(id, {data: None, error: None}).

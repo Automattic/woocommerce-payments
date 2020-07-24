@@ -25,3 +25,6 @@ let receiveCharges = (state, event: Types.Reducer.event) => {
   | _ => state->getState
   };
 };
+
+[@genType]
+let default = receiveCharges;

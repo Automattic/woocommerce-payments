@@ -13,6 +13,7 @@ external useSelect:
   Types.Charge.Request.t =
   "useSelect";
 
+[@genType]
 let useCharge = chargeId =>
   useSelect(
     select => {
