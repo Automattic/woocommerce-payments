@@ -108,7 +108,7 @@ jQuery( function( $ ) {
 			},
 		} );
 
-		const request = api.generatePaymentMethodFromCard( {
+		const request = api.generatePaymentMethodRequest( {
 			card: cardElement,
 		}, preparedCustomerData );
 
