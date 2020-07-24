@@ -8,3 +8,6 @@ wordpress-org-assets
 
 tests/e2e/docker
 tests/e2e/deps
+
+# Ignore Reason output
+**/*.bs.js
