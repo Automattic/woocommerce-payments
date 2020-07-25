@@ -23,7 +23,6 @@ type paymentMethodDetailsFormat = {
 
 [@genType]
 let formatPaymentMethodDetails = (charge: Charge.t) => {
-  charge |> Js.log;
   let billingDetails = charge.billing_details;
   let payment_method = charge.payment_method;
   let card =

@@ -16,7 +16,6 @@ function sprintf(prim, prim$1, prim$2) {
 }
 
 function formatPaymentMethodDetails(charge) {
-  console.log(charge);
   var billingDetails = charge.billing_details;
   var payment_method = charge.payment_method;
   var card = Belt_Option.getWithDefault(charge.payment_method_details.card, Card$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined));
