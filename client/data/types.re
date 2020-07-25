@@ -118,19 +118,31 @@ module Level3 = {
 };
 
 module Dispute = {
-  type t = {status: string};
+  type t = {status: DisputeStatus.t};
 
-  let make = (~status="", ()) => {status: status};
+  let make = (~status=DisputeStatus.NotDisputed, ()) => {status: status};
+};
+
+module OutcomeType = {
+  type t =
+    | Authorized
+    | ManualReview
+    | IssuerDeclined
+    | Blocked
+    | Invalid;
 };
 
 module Outcome = {
   type t = {
     [@bs.as "type"]
-    type_: string,
+    type_: OutcomeType.t,
     risk_level: string,
   };
 
-  let make = (~type_="", ~risk_level="", ()) => {type_, risk_level};
+  let make = (~type_=OutcomeType.Authorized, ~risk_level="", ()) => {
+    type_,
+    risk_level,
+  };
 };
 
 module Refund = {
@@ -217,147 +229,4 @@ module PaymentMethodDetails = {
   };
 
   let make = (~card=Card.make(), ~type_="", ()): t => {card, type_};
-};
-
-module Charge = {
-  module Metadata = {
-    type t;
-  };
-
-  type t = {
-    id: string,
-    [@bs.as "object"]
-    object_: string,
-    amount: int,
-    amount_refunded: int,
-    application: option(string),
-    application_fee: option(string),
-    application_fee_amount: option(int),
-    balance_transaction: string,
-    billing_details: BillingDetails.t,
-    calculated_statement_descriptor: option(string),
-    captured: bool,
-    created: int,
-    currency: string,
-    dispute: option(Dispute.t),
-    disputed: bool,
-    level3: option(Level3.t),
-    livemode: bool,
-    outcome: option(Outcome.t),
-    paid: bool,
-    payment_intent: option(string),
-    payment_method: string,
-    payment_method_details: PaymentMethodDetails.t,
-    receipt_email: option(string),
-    receipt_number: option(string),
-    receipt_url: string,
-    refunded: bool,
-    refunds: option(Refunds.t),
-    status: string,
-  };
-
-  let make =
-      (
-        ~id="",
-        ~object_="",
-        ~amount=0,
-        ~amount_refunded=0,
-        ~application=None,
-        ~application_fee=None,
-        ~application_fee_amount=None,
-        ~balance_transaction="",
-        ~billing_details=BillingDetails.make(),
-        ~calculated_statement_descriptor=None,
-        ~captured=false,
-        ~created=0,
-        ~currency="",
-        ~dispute=None,
-        ~disputed=false,
-        ~level3=None,
-        ~livemode=false,
-        ~outcome=None,
-        ~paid=false,
-        ~payment_intent=None,
-        ~payment_method="",
-        ~payment_method_details=PaymentMethodDetails.make(),
-        ~receipt_email=None,
-        ~receipt_number=None,
-        ~receipt_url="",
-        ~refunded=false,
-        ~refunds=None,
-        ~status="",
-        (),
-      ) => {
-    id,
-    object_,
-    amount,
-    amount_refunded,
-    application,
-    application_fee,
-    application_fee_amount,
-    balance_transaction,
-    billing_details,
-    calculated_statement_descriptor,
-    captured,
-    created,
-    currency,
-    dispute,
-    disputed,
-    level3,
-    livemode,
-    outcome,
-    paid,
-    payment_intent,
-    payment_method,
-    payment_method_details,
-    receipt_email,
-    receipt_number,
-    receipt_url,
-    refunded,
-    refunds,
-    status,
-  };
-
-  module RequestError = {
-    type t = {
-      code: string,
-      message: string,
-      data: string,
-    };
-  };
-
-  module Request = {
-    type t = {
-      charge: option(t),
-      chargeError: option(RequestError.t),
-      isLoading: bool,
-    };
-  };
-};
-
-module ChargeReducer = {
-  module Event = {
-    type t = {
-      [@bs.as "type"]
-      type_: string,
-      id: string,
-      data: option(Charge.t),
-      error: option(Charge.RequestError.t),
-    };
-  };
-
-  type chargeStateEntry = {
-    data: option(Charge.t),
-    error: option(Charge.RequestError.t),
-  };
-
-  module State = {
-    type t = Belt.Map.String.t(chargeStateEntry);
-  };
-};
-
-module Reducer = {
-  type event = ChargeReducer.Event.t;
-
-  type state = {charges: ChargeReducer.State.t};
 };

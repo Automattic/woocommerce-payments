@@ -1,31 +1,31 @@
 /* Mocked charges for testing. */
 let paidCharge =
-  Types.Charge.make(~status="succeeded", ~paid=true, ~captured=true, ());
+  Charge.make(~status=Succeeded, ~paid=true, ~captured=true, ());
 let failedCharge =
-  Types.Charge.make(
-    ~status="failed",
+  Charge.make(
+    ~status=Failed,
     ~paid=false,
     ~captured=false,
-    ~outcome=Types.Outcome.make(~type_="issuer_declined", ())->Some,
+    ~outcome=Types.Outcome.make(~type_=IssuerDeclined, ())->Some,
     (),
   );
 let blockedCharge =
-  Types.Charge.make(
-    ~status="failed",
+  Charge.make(
+    ~status=Failed,
     ~paid=false,
     ~captured=false,
-    ~outcome=Types.Outcome.make(~type_="blocked", ())->Some,
+    ~outcome=Types.Outcome.make(~type_=Blocked, ())->Some,
     (),
   );
 let authorizedCharge =
-  Types.Charge.make(~status="succeeded", ~paid=true, ~captured=false, ());
+  Charge.make(~status=Succeeded, ~paid=true, ~captured=false, ());
 let fullyRefundedCharge =
-  Types.Charge.make(~amount=1500, ~refunded=true, ~amount_refunded=1500, ());
+  Charge.make(~amount=1500, ~refunded=true, ~amount_refunded=1500, ());
 let partiallyRefundedCharge =
-  Types.Charge.make(~amount=1500, ~refunded=false, ~amount_refunded=1200, ());
+  Charge.make(~amount=1500, ~refunded=false, ~amount_refunded=1200, ());
 
 let getDisputedChargeWithStatus = status => {
-  Types.Charge.make(
+  Charge.make(
     ~disputed=true,
     ~dispute=Types.Dispute.make(~status, ())->Some,
     (),
@@ -111,51 +111,30 @@ describe("Charge utilities (ReasonML)", () => {
 
   describe("getChargeStatus", () => {
     let chargeStatuses = [
-      (Util.Paid, paidCharge),
-      (Util.Authorized, authorizedCharge),
-      (Util.Failed, failedCharge),
-      (Util.FullyRefunded, fullyRefundedCharge),
-      (Util.PartiallyRefunded, partiallyRefundedCharge),
+      ("succeeded", ChargeStatus.Succeeded),
+      ("failed", Failed),
+      ("pending", Pending),
     ];
 
-    testAll("returns status for charge", chargeStatuses, ((status, charge)) => {
-      charge |> Util.getChargeStatus |> expect |> toEqual(status->Ok)
+    testAll(
+      "returns status for charge", chargeStatuses, ((statusString, status)) => {
+      statusString |> Util.getChargeStatus |> expect |> toEqual(status)
     });
 
     let disputeStatuses = [
-      ("needs_response", Util.DisputeNeedsResponse),
-      ("under_review", Util.DisputeUnderReview),
-      ("won", Util.DisputeWon),
-      ("lost", Util.DisputeLost),
-      ("warning_needs_response", Util.DisputeNeedsResponse),
-      ("warning_under_review", Util.DisputeUnderReview),
-      ("warning_closed", Util.Disputed),
+      ("needs_response", DisputeStatus.NeedsResponse),
+      ("under_review", UnderReview),
+      ("won", Won),
+      ("lost", Lost),
+      ("warning_needs_response", WarningNeedsResponse),
+      ("warning_under_review", WarningUnderReview),
+      ("warning_closed", WarningClosed),
+      ("charge_refunded", ChargeRefunded),
     ];
 
     testAll(
       "returns disputed status", disputeStatuses, ((statusString, status)) => {
-      statusString
-      |> getDisputedChargeWithStatus
-      |> Util.getChargeStatus
-      |> expect
-      |> toEqual(status->Ok)
+      statusString |> Util.getDisputeStatus |> expect |> toEqual(status)
     });
-
-    testAll(
-      "disputed statuses take precedence over refunds",
-      disputeStatuses,
-      ((statusString, status)) => {
-        let charge =
-          Types.Charge.make(
-            ~amount=1500,
-            ~refunded=true,
-            ~amount_refunded=1500,
-            ~disputed=true,
-            ~dispute=Types.Dispute.make(~status=statusString, ())->Some,
-            (),
-          );
-        charge |> Util.getChargeStatus |> expect |> toEqual(status->Ok);
-      },
-    );
   });
 });

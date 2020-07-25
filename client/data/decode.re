@@ -21,7 +21,10 @@ let billingDetails: 'a => Types.BillingDetails.t =
     };
 
 let dispute: 'a => Types.Dispute.t =
-  json => Json.Decode.{status: json |> field("status", string)};
+  json =>
+    Json.Decode.{
+      status: json |> field("status", string) |> Util.getDisputeStatus,
+    };
 
 let level3LineItem: 'a => Types.Level3LineItem.t =
   json =>
@@ -47,7 +50,7 @@ let level3: 'a => Types.Level3.t =
 let outcome: 'a => Types.Outcome.t =
   json =>
     Json.Decode.{
-      type_: json |> field("type", string),
+      type_: json |> field("type", string) |> Util.getOutcomeType,
       risk_level: json |> field("risk_level", string),
     };
 
@@ -91,7 +94,7 @@ let paymentMethodDetails: 'a => Types.PaymentMethodDetails.t =
       type_: json |> field("type", string),
     };
 
-let charge: 'a => Types.Charge.t =
+let charge: 'a => Charge.t =
   json =>
     Json.Decode.{
       id: json |> field("id", string),
@@ -124,5 +127,5 @@ let charge: 'a => Types.Charge.t =
       receipt_url: json |> field("receipt_url", string),
       refunded: json |> field("refunded", bool),
       refunds: json |> optional(field("refunds", refunds)),
-      status: json |> field("status", string),
+      status: json |> field("status", string) |> Util.getChargeStatus,
     };

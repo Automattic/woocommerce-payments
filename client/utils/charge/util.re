@@ -1,83 +1,68 @@
-let failedOutcomeTypes = ["issuer_declined", "invalid"];
-let blockedOutcomeTypes = ["blocked"];
+let failedOutcomeTypes = [Types.OutcomeType.IssuerDeclined, Invalid];
+let blockedOutcomeTypes = [Types.OutcomeType.Blocked];
 
-let getChargeOutcomeType = (charge: Types.Charge.t) => {
+let extractOutcomeType = (charge: Charge.t) =>
   switch (charge.outcome) {
-  | None => ""
   | Some(o) => o.type_
+  | None => Invalid
   };
+
+let isChargeBlocked = (charge: Charge.t) => {
+  ChargeStatus.Failed == charge.status
+  && List.exists(t => charge->extractOutcomeType == t, blockedOutcomeTypes);
 };
 
-let isChargeBlocked = (charge: Types.Charge.t) => {
-  "failed" == charge.status
-  && List.exists(t => charge->getChargeOutcomeType == t, blockedOutcomeTypes);
+let isChargeFailed = (charge: Charge.t) => {
+  ChargeStatus.Failed == charge.status
+  && List.exists(t => charge->extractOutcomeType == t, failedOutcomeTypes);
 };
 
-let isChargeFailed = (charge: Types.Charge.t) => {
-  "failed" == charge.status
-  && List.exists(t => charge->getChargeOutcomeType == t, failedOutcomeTypes);
-};
-
-let isChargeDisputed = (charge: Types.Charge.t) => {
+let isChargeDisputed = (charge: Charge.t) => {
   charge.disputed === true;
 };
 
-let isChargeRefunded = (charge: Types.Charge.t) => charge.amount_refunded > 0;
+let isChargeRefunded = (charge: Charge.t) => charge.amount_refunded > 0;
 
-let isChargeFullyRefunded = (charge: Types.Charge.t) => charge.refunded;
+let isChargeFullyRefunded = (charge: Charge.t) => charge.refunded;
 
-let isChargePartiallyRefunded = (charge: Types.Charge.t) =>
+let isChargePartiallyRefunded = (charge: Charge.t) =>
   charge->isChargeRefunded && !charge->isChargeFullyRefunded;
 
-let isChargeSuccessful = (charge: Types.Charge.t) => {
-  "succeeded" == charge.status && charge.paid;
+let isChargeSuccessful = (charge: Charge.t) => {
+  ChargeStatus.Succeeded == charge.status && charge.paid;
 };
 
-type paymentStatus =
-  | Failed
-  | Blocked
-  | DisputeNeedsResponse
-  | DisputeUnderReview
-  | DisputeWon
-  | DisputeLost
-  | Disputed
-  | PartiallyRefunded
-  | FullyRefunded
-  | Paid
-  | Authorized;
-
 type paymentStatusError =
-  | NoPaymentStatus;
+  | NoPaymentStatus(string);
 
-let mapDisputeStatusToChargeStatus = status => {
+let getDisputeStatus = status => {
   switch (status) {
-  | "warning_needs_response"
-  | "needs_response" => DisputeNeedsResponse
-  | "warning_under_review"
-  | "under_review" => DisputeUnderReview
-  | "won" => DisputeWon
-  | "lost" => DisputeLost
-  | _ => Disputed
+  | "warning_needs_response" => DisputeStatus.WarningNeedsResponse
+  | "warning_under_review" => WarningUnderReview
+  | "warning_closed" => WarningClosed
+  | "needs_response" => NeedsResponse
+  | "under_review" => UnderReview
+  | "charge_refunded" => ChargeRefunded
+  | "won" => Won
+  | "lost" => Lost
+  | _ => NotDisputed
   };
 };
 
-[@genType]
-let getChargeStatus = charge =>
-  if (charge->isChargeFailed) {
-    Failed->Ok;
-  } else if (isChargeBlocked(charge)) {
-    Blocked->Ok;
-  } else if (charge.disputed) {
-    switch (charge.dispute) {
-    | None => Disputed->Ok
-    | Some(d) => d.status->mapDisputeStatusToChargeStatus->Ok
-    };
-  } else if (charge->isChargePartiallyRefunded) {
-    PartiallyRefunded->Ok;
-  } else if (charge->isChargeFullyRefunded) {
-    FullyRefunded->Ok;
-  } else if (charge->isChargeSuccessful) {
-    charge.captured ? Paid->Ok : Authorized->Ok;
-  } else {
-    NoPaymentStatus->Error;
+let getChargeStatus = status =>
+  switch (status) {
+  | "succeeded" => ChargeStatus.Succeeded
+  | "failed" => Failed
+  | "pending" => Pending
+  | _ => Pending
+  };
+
+let getOutcomeType = type_ =>
+  switch (type_) {
+  | "authorized" => Types.OutcomeType.Authorized
+  | "manual_review" => ManualReview
+  | "issuer_declined" => IssuerDeclined
+  | "blocked" => Blocked
+  | "invalid" => Invalid
+  | _ => Invalid
   };

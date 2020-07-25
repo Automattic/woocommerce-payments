@@ -1,5 +1,5 @@
 [@genType]
-let updateCharge = (id, data): Types.ChargeReducer.Event.t => {
+let updateCharge = (id, data): ChargeReducer.Event.t => {
   type_: "SET_CHARGE",
   id,
   data: (data |> Decode.charge)->Some,
@@ -7,7 +7,7 @@ let updateCharge = (id, data): Types.ChargeReducer.Event.t => {
 };
 
 [@genType]
-let updateErrorForCharge = (id, data, error): Types.ChargeReducer.Event.t => {
+let updateErrorForCharge = (id, data, error): ChargeReducer.Event.t => {
   type_: "SET_ERROR_FOR_CHARGE",
   id,
   data,

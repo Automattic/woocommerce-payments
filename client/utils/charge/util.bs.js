@@ -3,31 +3,31 @@
 import * as List from "bs-platform/lib/es6/list.js";
 
 var failedOutcomeTypes = {
-  hd: "issuer_declined",
+  hd: /* IssuerDeclined */2,
   tl: {
-    hd: "invalid",
+    hd: /* Invalid */4,
     tl: /* [] */0
   }
 };
 
 var blockedOutcomeTypes = {
-  hd: "blocked",
+  hd: /* Blocked */3,
   tl: /* [] */0
 };
 
-function getChargeOutcomeType(charge) {
+function extractOutcomeType(charge) {
   var o = charge.outcome;
   if (o !== undefined) {
     return o.type;
   } else {
-    return "";
+    return /* Invalid */4;
   }
 }
 
 function isChargeBlocked(charge) {
-  if ("failed" === charge.status) {
+  if (/* Failed */2 === charge.status) {
     return List.exists((function (t) {
-                  return getChargeOutcomeType(charge) === t;
+                  return extractOutcomeType(charge) === t;
                 }), blockedOutcomeTypes);
   } else {
     return false;
@@ -35,9 +35,9 @@ function isChargeBlocked(charge) {
 }
 
 function isChargeFailed(charge) {
-  if ("failed" === charge.status) {
+  if (/* Failed */2 === charge.status) {
     return List.exists((function (t) {
-                  return getChargeOutcomeType(charge) === t;
+                  return extractOutcomeType(charge) === t;
                 }), failedOutcomeTypes);
   } else {
     return false;
@@ -65,91 +65,70 @@ function isChargePartiallyRefunded(charge) {
 }
 
 function isChargeSuccessful(charge) {
-  if ("succeeded" === charge.status) {
+  if (/* Succeeded */0 === charge.status) {
     return charge.paid;
   } else {
     return false;
   }
 }
 
-function mapDisputeStatusToChargeStatus(status) {
+function getDisputeStatus(status) {
   switch (status) {
+    case "charge_refunded" :
+        return /* ChargeRefunded */5;
     case "lost" :
-        return /* DisputeLost */5;
+        return /* Lost */7;
     case "needs_response" :
-    case "warning_needs_response" :
-        return /* DisputeNeedsResponse */2;
+        return /* NeedsResponse */3;
     case "under_review" :
+        return /* UnderReview */4;
+    case "warning_closed" :
+        return /* WarningClosed */2;
+    case "warning_needs_response" :
+        return /* WarningNeedsResponse */0;
     case "warning_under_review" :
-        return /* DisputeUnderReview */3;
+        return /* WarningUnderReview */1;
     case "won" :
-        return /* DisputeWon */4;
+        return /* Won */6;
     default:
-      return /* Disputed */6;
+      return /* NotDisputed */8;
   }
 }
 
-function getChargeStatus(charge) {
-  if (isChargeFailed(charge)) {
-    return {
-            TAG: /* Ok */0,
-            _0: /* Failed */0
-          };
+function getChargeStatus(status) {
+  switch (status) {
+    case "failed" :
+        return /* Failed */2;
+    case "pending" :
+        return /* Pending */1;
+    case "succeeded" :
+        return /* Succeeded */0;
+    default:
+      return /* Pending */1;
   }
-  if (isChargeBlocked(charge)) {
-    return {
-            TAG: /* Ok */0,
-            _0: /* Blocked */1
-          };
-  }
-  if (!charge.disputed) {
-    if (isChargePartiallyRefunded(charge)) {
-      return {
-              TAG: /* Ok */0,
-              _0: /* PartiallyRefunded */7
-            };
-    } else if (charge.refunded) {
-      return {
-              TAG: /* Ok */0,
-              _0: /* FullyRefunded */8
-            };
-    } else if (isChargeSuccessful(charge)) {
-      if (charge.captured) {
-        return {
-                TAG: /* Ok */0,
-                _0: /* Paid */9
-              };
-      } else {
-        return {
-                TAG: /* Ok */0,
-                _0: /* Authorized */10
-              };
-      }
-    } else {
-      return {
-              TAG: /* Error */1,
-              _0: /* NoPaymentStatus */0
-            };
-    }
-  }
-  var d = charge.dispute;
-  if (d !== undefined) {
-    return {
-            TAG: /* Ok */0,
-            _0: mapDisputeStatusToChargeStatus(d.status)
-          };
-  } else {
-    return {
-            TAG: /* Ok */0,
-            _0: /* Disputed */6
-          };
+}
+
+function getOutcomeType(type_) {
+  switch (type_) {
+    case "authorized" :
+        return /* Authorized */0;
+    case "blocked" :
+        return /* Blocked */3;
+    case "invalid" :
+        return /* Invalid */4;
+    case "issuer_declined" :
+        return /* IssuerDeclined */2;
+    case "manual_review" :
+        return /* ManualReview */1;
+    default:
+      return /* Invalid */4;
   }
 }
 
 export {
   failedOutcomeTypes ,
   blockedOutcomeTypes ,
-  getChargeOutcomeType ,
+  extractOutcomeType ,
   isChargeBlocked ,
   isChargeFailed ,
   isChargeDisputed ,
@@ -157,8 +136,9 @@ export {
   isChargeFullyRefunded ,
   isChargePartiallyRefunded ,
   isChargeSuccessful ,
-  mapDisputeStatusToChargeStatus ,
+  getDisputeStatus ,
   getChargeStatus ,
+  getOutcomeType ,
   
 }
 /* No side effect */

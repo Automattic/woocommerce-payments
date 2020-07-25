@@ -4,21 +4,22 @@ import * as Jest from "@glennsl/bs-jest/src/jest.js";
 import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
 import * as Util$WoocommercePayments from "../../client/utils/charge/util.bs.js";
 import * as Types$WoocommercePayments from "../../client/data/types.bs.js";
+import * as Charge$WoocommercePayments from "../../client/data/types/Charge.bs.js";
 
-var paidCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "succeeded", undefined);
+var paidCharge = Charge$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, /* Succeeded */0, undefined);
 
-var failedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make("issuer_declined", undefined, undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "failed", undefined);
+var failedCharge = Charge$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make(/* IssuerDeclined */2, undefined, undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, /* Failed */2, undefined);
 
-var blockedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make("blocked", undefined, undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "failed", undefined);
+var blockedCharge = Charge$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Outcome.make(/* Blocked */3, undefined, undefined)), false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, /* Failed */2, undefined);
 
-var authorizedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, "succeeded", undefined);
+var authorizedCharge = Charge$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, /* Succeeded */0, undefined);
 
-var fullyRefundedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1500, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined);
+var fullyRefundedCharge = Charge$WoocommercePayments.make(undefined, undefined, 1500, 1500, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined);
 
-var partiallyRefundedCharge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1200, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined);
+var partiallyRefundedCharge = Charge$WoocommercePayments.make(undefined, undefined, 1500, 1200, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined);
 
 function getDisputedChargeWithStatus(status) {
-  return Types$WoocommercePayments.Charge.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Dispute.make(status, undefined)), true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+  return Charge$WoocommercePayments.make(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Dispute.make(status, undefined)), true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
 }
 
 Jest.describe("Charge utilities (ReasonML)", (function (param) {
@@ -67,100 +68,77 @@ Jest.describe("Charge utilities (ReasonML)", (function (param) {
                             }));
               }));
         return Jest.describe("getChargeStatus", (function (param) {
-                      var chargeStatuses_0 = [
-                        /* Paid */9,
-                        paidCharge
-                      ];
-                      var chargeStatuses_1 = {
-                        hd: [
-                          /* Authorized */10,
-                          authorizedCharge
-                        ],
-                        tl: {
-                          hd: [
-                            /* Failed */0,
-                            failedCharge
-                          ],
-                          tl: {
+                      Jest.testAll("returns status for charge", {
                             hd: [
-                              /* FullyRefunded */8,
-                              fullyRefundedCharge
+                              "succeeded",
+                              /* Succeeded */0
                             ],
                             tl: {
                               hd: [
-                                /* PartiallyRefunded */7,
-                                partiallyRefundedCharge
-                              ],
-                              tl: /* [] */0
-                            }
-                          }
-                        }
-                      };
-                      var chargeStatuses = {
-                        hd: chargeStatuses_0,
-                        tl: chargeStatuses_1
-                      };
-                      Jest.testAll("returns status for charge", chargeStatuses, (function (param) {
-                              return Jest.Expect.toEqual({
-                                          TAG: /* Ok */0,
-                                          _0: param[0]
-                                        }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(param[1])));
-                            }));
-                      var disputeStatuses = {
-                        hd: [
-                          "needs_response",
-                          /* DisputeNeedsResponse */2
-                        ],
-                        tl: {
-                          hd: [
-                            "under_review",
-                            /* DisputeUnderReview */3
-                          ],
-                          tl: {
-                            hd: [
-                              "won",
-                              /* DisputeWon */4
-                            ],
-                            tl: {
-                              hd: [
-                                "lost",
-                                /* DisputeLost */5
+                                "failed",
+                                /* Failed */2
                               ],
                               tl: {
                                 hd: [
-                                  "warning_needs_response",
-                                  /* DisputeNeedsResponse */2
+                                  "pending",
+                                  /* Pending */1
                                 ],
-                                tl: {
+                                tl: /* [] */0
+                              }
+                            }
+                          }, (function (param) {
+                              return Jest.Expect.toEqual(param[1], Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(param[0])));
+                            }));
+                      return Jest.testAll("returns disputed status", {
                                   hd: [
-                                    "warning_under_review",
-                                    /* DisputeUnderReview */3
+                                    "needs_response",
+                                    /* NeedsResponse */3
                                   ],
                                   tl: {
                                     hd: [
-                                      "warning_closed",
-                                      /* Disputed */6
+                                      "under_review",
+                                      /* UnderReview */4
                                     ],
-                                    tl: /* [] */0
+                                    tl: {
+                                      hd: [
+                                        "won",
+                                        /* Won */6
+                                      ],
+                                      tl: {
+                                        hd: [
+                                          "lost",
+                                          /* Lost */7
+                                        ],
+                                        tl: {
+                                          hd: [
+                                            "warning_needs_response",
+                                            /* WarningNeedsResponse */0
+                                          ],
+                                          tl: {
+                                            hd: [
+                                              "warning_under_review",
+                                              /* WarningUnderReview */1
+                                            ],
+                                            tl: {
+                                              hd: [
+                                                "warning_closed",
+                                                /* WarningClosed */2
+                                              ],
+                                              tl: {
+                                                hd: [
+                                                  "charge_refunded",
+                                                  /* ChargeRefunded */5
+                                                ],
+                                                tl: /* [] */0
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
                                   }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      };
-                      Jest.testAll("returns disputed status", disputeStatuses, (function (param) {
-                              return Jest.Expect.toEqual({
-                                          TAG: /* Ok */0,
-                                          _0: param[1]
-                                        }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(getDisputedChargeWithStatus(param[0]))));
-                            }));
-                      return Jest.testAll("disputed statuses take precedence over refunds", disputeStatuses, (function (param) {
-                                    var charge = Types$WoocommercePayments.Charge.make(undefined, undefined, 1500, 1500, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Caml_option.some(Types$WoocommercePayments.Dispute.make(param[0], undefined)), true, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true, undefined, undefined, undefined);
-                                    return Jest.Expect.toEqual({
-                                                TAG: /* Ok */0,
-                                                _0: param[1]
-                                              }, Jest.Expect.expect(Util$WoocommercePayments.getChargeStatus(charge)));
+                                }, (function (param) {
+                                    return Jest.Expect.toEqual(param[1], Jest.Expect.expect(Util$WoocommercePayments.getDisputeStatus(param[0])));
                                   }));
                     }));
       }));

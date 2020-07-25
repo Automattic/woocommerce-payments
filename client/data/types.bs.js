@@ -96,7 +96,7 @@ var Level3 = {
 };
 
 function make$5(statusOpt, param) {
-  var status = statusOpt !== undefined ? statusOpt : "";
+  var status = statusOpt !== undefined ? statusOpt : /* NotDisputed */8;
   return {
           status: status
         };
@@ -106,8 +106,10 @@ var Dispute = {
   make: make$5
 };
 
+var OutcomeType = {};
+
 function make$6(type_Opt, risk_levelOpt, param) {
-  var type_ = type_Opt !== undefined ? type_Opt : "";
+  var type_ = type_Opt !== undefined ? type_Opt : /* Authorized */0;
   var risk_level = risk_levelOpt !== undefined ? risk_levelOpt : "";
   return {
           type: type_,
@@ -190,91 +192,6 @@ var PaymentMethodDetails = {
   make: make$9
 };
 
-var Metadata = {};
-
-function make$10(idOpt, object_Opt, amountOpt, amount_refundedOpt, applicationOpt, application_feeOpt, application_fee_amountOpt, balance_transactionOpt, billing_detailsOpt, calculated_statement_descriptorOpt, capturedOpt, createdOpt, currencyOpt, disputeOpt, disputedOpt, level3Opt, livemodeOpt, outcomeOpt, paidOpt, payment_intentOpt, payment_methodOpt, payment_method_detailsOpt, receipt_emailOpt, receipt_numberOpt, receipt_urlOpt, refundedOpt, refundsOpt, statusOpt, param) {
-  var id = idOpt !== undefined ? idOpt : "";
-  var object_ = object_Opt !== undefined ? object_Opt : "";
-  var amount = amountOpt !== undefined ? amountOpt : 0;
-  var amount_refunded = amount_refundedOpt !== undefined ? amount_refundedOpt : 0;
-  var application = applicationOpt !== undefined ? Caml_option.valFromOption(applicationOpt) : undefined;
-  var application_fee = application_feeOpt !== undefined ? Caml_option.valFromOption(application_feeOpt) : undefined;
-  var application_fee_amount = application_fee_amountOpt !== undefined ? Caml_option.valFromOption(application_fee_amountOpt) : undefined;
-  var balance_transaction = balance_transactionOpt !== undefined ? balance_transactionOpt : "";
-  var billing_details = billing_detailsOpt !== undefined ? billing_detailsOpt : make$1(undefined, undefined, undefined, undefined, undefined, undefined);
-  var calculated_statement_descriptor = calculated_statement_descriptorOpt !== undefined ? Caml_option.valFromOption(calculated_statement_descriptorOpt) : undefined;
-  var captured = capturedOpt !== undefined ? capturedOpt : false;
-  var created = createdOpt !== undefined ? createdOpt : 0;
-  var currency = currencyOpt !== undefined ? currencyOpt : "";
-  var dispute = disputeOpt !== undefined ? Caml_option.valFromOption(disputeOpt) : undefined;
-  var disputed = disputedOpt !== undefined ? disputedOpt : false;
-  var level3 = level3Opt !== undefined ? Caml_option.valFromOption(level3Opt) : undefined;
-  var livemode = livemodeOpt !== undefined ? livemodeOpt : false;
-  var outcome = outcomeOpt !== undefined ? Caml_option.valFromOption(outcomeOpt) : undefined;
-  var paid = paidOpt !== undefined ? paidOpt : false;
-  var payment_intent = payment_intentOpt !== undefined ? Caml_option.valFromOption(payment_intentOpt) : undefined;
-  var payment_method = payment_methodOpt !== undefined ? payment_methodOpt : "";
-  var payment_method_details = payment_method_detailsOpt !== undefined ? payment_method_detailsOpt : make$9(undefined, undefined, undefined);
-  var receipt_email = receipt_emailOpt !== undefined ? Caml_option.valFromOption(receipt_emailOpt) : undefined;
-  var receipt_number = receipt_numberOpt !== undefined ? Caml_option.valFromOption(receipt_numberOpt) : undefined;
-  var receipt_url = receipt_urlOpt !== undefined ? receipt_urlOpt : "";
-  var refunded = refundedOpt !== undefined ? refundedOpt : false;
-  var refunds = refundsOpt !== undefined ? Caml_option.valFromOption(refundsOpt) : undefined;
-  var status = statusOpt !== undefined ? statusOpt : "";
-  return {
-          id: id,
-          object: object_,
-          amount: amount,
-          amount_refunded: amount_refunded,
-          application: application,
-          application_fee: application_fee,
-          application_fee_amount: application_fee_amount,
-          balance_transaction: balance_transaction,
-          billing_details: billing_details,
-          calculated_statement_descriptor: calculated_statement_descriptor,
-          captured: captured,
-          created: created,
-          currency: currency,
-          dispute: dispute,
-          disputed: disputed,
-          level3: level3,
-          livemode: livemode,
-          outcome: outcome,
-          paid: paid,
-          payment_intent: payment_intent,
-          payment_method: payment_method,
-          payment_method_details: payment_method_details,
-          receipt_email: receipt_email,
-          receipt_number: receipt_number,
-          receipt_url: receipt_url,
-          refunded: refunded,
-          refunds: refunds,
-          status: status
-        };
-}
-
-var RequestError = {};
-
-var $$Request = {};
-
-var Charge = {
-  Metadata: Metadata,
-  make: make$10,
-  RequestError: RequestError,
-  $$Request: $$Request
-};
-
-var $$Event = {};
-
-var State = {};
-
-var ChargeReducer = {
-  $$Event: $$Event,
-  State: State
-};
-
-var Reducer = {};
-
 export {
   Address ,
   BillingDetails ,
@@ -282,14 +199,12 @@ export {
   Level3LineItem ,
   Level3 ,
   Dispute ,
+  OutcomeType ,
   Outcome ,
   Refund ,
   Refunds ,
   Card ,
   PaymentMethodDetails ,
-  Charge ,
-  ChargeReducer ,
-  Reducer ,
   
 }
 /* No side effect */
