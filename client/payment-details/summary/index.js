@@ -14,8 +14,9 @@ import { get } from 'lodash';
 /**
  * Internal dependencies.
  */
-import { getChargeAmounts, getChargeStatus } from 'utils/charge';
-import PaymentStatusChip from 'components/payment-status-chip';
+import { getChargeAmounts } from 'utils/charge';
+import * as paymentStatusUtil from 'data/types/PaymentStatus.gen';
+import PaymentStatusChip from 'components/payment-status-chip/payment_status_chip.gen';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
 import Loadable from 'components/loadable/loadable.gen';
@@ -79,7 +80,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								{ charge.currency || 'cur' }
 							</span>
 							<PaymentStatusChip
-								status={ getChargeStatus( charge ) }
+								status={ paymentStatusUtil.fromCharge(
+									charge
+								) }
 							/>
 						</Loadable>
 					</p>
