@@ -56,10 +56,10 @@ module BillingDetails = {
 module Order = {
   type t = {
     url: string,
-    number: int,
+    number: string,
   };
 
-  let make = (~url="", ~number=0, ()) => {url, number};
+  let make = (~url="", ~number="", ()) => {url, number};
 };
 
 module Level3LineItem = {
@@ -118,30 +118,14 @@ module Level3 = {
 };
 
 module Dispute = {
-  type t = {status: DisputeStatus.t};
-
-  let make = (~status=DisputeStatus.NotDisputed, ()) => {status: status};
-};
-
-module OutcomeType = {
-  type t =
-    | Authorized
-    | ManualReview
-    | IssuerDeclined
-    | Blocked
-    | Invalid;
-};
-
-module Outcome = {
   type t = {
-    [@bs.as "type"]
-    type_: OutcomeType.t,
-    risk_level: string,
+    status: DisputeStatus.t,
+    amount: int,
   };
 
-  let make = (~type_=OutcomeType.Authorized, ~risk_level="", ()) => {
-    type_,
-    risk_level,
+  let make = (~status=DisputeStatus.NotDisputed, ~amount=0, ()) => {
+    status,
+    amount,
   };
 };
 

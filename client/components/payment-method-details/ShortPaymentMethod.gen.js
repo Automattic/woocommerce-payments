@@ -3,14 +3,8 @@
 
 import * as ShortPaymentMethodBS from './ShortPaymentMethod.bs';
 
-export const make = function ( Arg1 ) {
-	const result = ShortPaymentMethodBS.make( Arg1.payment );
-	return result;
-};
+export const make = ShortPaymentMethodBS.make;
 
-export const $$default = function ( Arg1 ) {
-	const result = ShortPaymentMethodBS.default( Arg1.payment );
-	return result;
-};
+export const $$default = ShortPaymentMethodBS.default;
 
 export default $$default;

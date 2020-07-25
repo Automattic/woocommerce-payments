@@ -16,11 +16,11 @@ import { get } from 'lodash';
  */
 import { getChargeAmounts } from 'utils/charge';
 import * as paymentStatusUtil from 'data/types/PaymentStatus.gen';
-import PaymentStatusChip from 'components/payment-status-chip/payment_status_chip.gen';
+import PaymentStatusChip from 'components/payment-status-chip/PaymentStatusChip.gen';
 import PaymentMethodDetails from 'components/payment-method-details/ShortPaymentMethod.gen';
 import HorizontalList from 'components/horizontal-list/HorizontalList.gen';
 import Loadable from 'components/loadable/loadable.gen';
-import LoadableBlock from 'components/loadable/loadable_block.gen';
+import LoadableBlock from 'components/loadable/LoadableBlock.gen';
 import riskMappings from 'components/risk-level/strings';
 import './style.scss';
 

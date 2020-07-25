@@ -1,5 +1,5 @@
-let failedOutcomeTypes = [Types.OutcomeType.IssuerDeclined, Invalid];
-let blockedOutcomeTypes = [Types.OutcomeType.Blocked];
+let failedOutcomeTypes = [OutcomeType.IssuerDeclined, Invalid];
+let blockedOutcomeTypes = [OutcomeType.Blocked];
 
 let extractOutcomeType = (charge: Charge.t) =>
   switch (charge.outcome) {
@@ -59,7 +59,7 @@ let getChargeStatus = status =>
 
 let getOutcomeType = type_ =>
   switch (type_) {
-  | "authorized" => Types.OutcomeType.Authorized
+  | "authorized" => OutcomeType.Authorized
   | "manual_review" => ManualReview
   | "issuer_declined" => IssuerDeclined
   | "blocked" => Blocked

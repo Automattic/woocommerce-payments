@@ -14,7 +14,7 @@ let billingDetails: 'a => Types.BillingDetails.t =
     Json.Decode.{
       address: json |> field("address", address),
       email: json |> optional(field("email", string)),
-      name: json |> optional(field("email", string)),
+      name: json |> optional(field("name", string)),
       phone: json |> optional(field("phone", string)),
       formatted_address:
         json |> optional(field("formatted_address", string)),
@@ -24,6 +24,7 @@ let dispute: 'a => Types.Dispute.t =
   json =>
     Json.Decode.{
       status: json |> field("status", string) |> Util.getDisputeStatus,
+      amount: json |> field("amount", int),
     };
 
 let level3LineItem: 'a => Types.Level3LineItem.t =
@@ -47,11 +48,17 @@ let level3: 'a => Types.Level3.t =
       shipping_from_zip: json |> field("shipping_from_zip", string),
     };
 
-let outcome: 'a => Types.Outcome.t =
+let outcome: 'a => Outcome.t =
   json =>
     Json.Decode.{
       type_: json |> field("type", string) |> Util.getOutcomeType,
-      risk_level: json |> field("risk_level", string),
+      risk_level:
+        switch (json |> field("risk_level", string)) {
+        | "elevated" => Elevated
+        | "highets" => Highest
+        | "normal" => Normal
+        | _ => Unknown
+        },
     };
 
 let refunds: 'a => Types.Refunds.t =
@@ -97,6 +104,13 @@ let paymentMethodDetails: 'a => PaymentMethodDetails.t =
       type_: json |> field("type", paymentMethodType),
     };
 
+let order: 'a => Types.Order.t =
+  json =>
+    Json.Decode.{
+      url: json |> field("url", string),
+      number: json |> field("number", string),
+    };
+
 let charge: 'a => Charge.t =
   json =>
     Json.Decode.{
@@ -113,12 +127,13 @@ let charge: 'a => Charge.t =
       calculated_statement_descriptor:
         json |> optional(field("calculated_statement_descriptor", string)),
       captured: json |> field("captured", bool),
-      created: json |> field("created", int),
+      created: json |> field("created", Json.Decode.float),
       currency: json |> field("currency", string),
       dispute: json |> optional(field("dispute", dispute)),
       disputed: json |> field("disputed", bool),
       level3: json |> optional(field("level3", level3)),
       livemode: json |> field("livemode", bool),
+      order: json |> optional(field("order", order)),
       outcome: json |> optional(field("outcome", outcome)),
       paid: json |> field("paid", bool),
       payment_intent: json |> optional(field("payment_intent", string)),

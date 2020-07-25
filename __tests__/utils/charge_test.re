@@ -6,7 +6,7 @@ let failedCharge =
     ~status=Failed,
     ~paid=false,
     ~captured=false,
-    ~outcome=Types.Outcome.make(~type_=IssuerDeclined, ())->Some,
+    ~outcome=Outcome.make(~type_=IssuerDeclined, ())->Some,
     (),
   );
 let blockedCharge =
@@ -14,7 +14,7 @@ let blockedCharge =
     ~status=Failed,
     ~paid=false,
     ~captured=false,
-    ~outcome=Types.Outcome.make(~type_=Blocked, ())->Some,
+    ~outcome=Outcome.make(~type_=Blocked, ())->Some,
     (),
   );
 let authorizedCharge =

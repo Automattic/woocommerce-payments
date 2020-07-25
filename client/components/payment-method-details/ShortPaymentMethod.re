@@ -1,6 +1,7 @@
 [@bs.module "./style.scss"] external _style: string => string = "style";
 
 [@genType]
+[@react.component]
 let make = (~payment: PaymentMethodDetails.t) =>
   switch (payment.type_) {
   | Card =>

@@ -10,7 +10,7 @@ import { Card } from '@woocommerce/components';
  * Internal dependencies
  */
 import { useCharge } from '../data';
-import PaymentDetailsSummary from './summary';
+import PaymentDetailsSummary from './summary/PaymentDetailsSummary.gen';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPayment from './payment';
 import PaymentDetailsPaymentMethod from './payment-method';
