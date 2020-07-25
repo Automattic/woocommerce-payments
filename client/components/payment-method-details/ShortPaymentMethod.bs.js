@@ -5,7 +5,7 @@ var React = require("react");
 var Belt_Option = require("bs-platform/lib/js/belt_Option.js");
 var StyleScss = require("./style.scss");
 
-function _asdf(prim) {
+function _style(prim) {
   return StyleScss.style(prim);
 }
 
@@ -21,7 +21,7 @@ function make(payment) {
 
 var $$default = make;
 
-exports._asdf = _asdf;
+exports._style = _style;
 exports.make = make;
 exports.$$default = $$default;
 exports.default = $$default;

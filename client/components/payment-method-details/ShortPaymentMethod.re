@@ -1,4 +1,4 @@
-[@bs.module "./style.scss"] external _asdf: string => string = "style";
+[@bs.module "./style.scss"] external _style: string => string = "style";
 
 [@genType]
 let make = (~payment: PaymentMethodDetails.t) =>
