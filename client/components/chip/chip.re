@@ -5,6 +5,7 @@ type t =
   | Alert
   | Default;
 
+[@genType]
 let chipClass = chipType =>
   switch (chipType) {
   | Default

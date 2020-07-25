@@ -24,11 +24,5 @@
 		"<rootDir>/tests/e2e",
 		"<rootDir>/lib"
 	],
-	"transformIgnorePatterns": [
-		"/node_modules/(?!(@.*/)?(bs-.*|reason-.*)/).+\\.js$"
-	],
-	"transform": {
-		"^.+\\.js$": "<rootDir>/tests/js/jest-transform.js"
-	},
 	"verbose": true
 }
