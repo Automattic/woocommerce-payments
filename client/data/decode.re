@@ -64,7 +64,7 @@ let refunds: 'a => Types.Refunds.t =
       url: json |> field("url", string),
     };
 
-let checks: 'a => Types.Card.checks =
+let checks: 'a => Card.checks =
   json =>
     Json.Decode.{
       address_line1_check:
@@ -74,9 +74,10 @@ let checks: 'a => Types.Card.checks =
       cvc_check: json |> field("cvc_check", string),
     };
 
-let card: 'a => Types.Card.t =
+let card: 'a => Card.t =
   json =>
     Json.Decode.{
+      brand: json |> field("brand", string),
       checks: json |> field("checks", checks),
       country: json |> field("country", string),
       exp_month: json |> field("exp_month", int),
@@ -87,11 +88,13 @@ let card: 'a => Types.Card.t =
       network: json |> field("network", string),
     };
 
-let paymentMethodDetails: 'a => Types.PaymentMethodDetails.t =
+let paymentMethodType: 'a => PaymentMethodType.t = _json => Card;
+
+let paymentMethodDetails: 'a => PaymentMethodDetails.t =
   json =>
     Json.Decode.{
-      card: json |> field("card", card),
-      type_: json |> field("type", string),
+      card: json |> optional(field("card", card)),
+      type_: json |> field("type", paymentMethodType),
     };
 
 let charge: 'a => Charge.t =

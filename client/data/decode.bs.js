@@ -104,6 +104,7 @@ function checks(json) {
 
 function card(json) {
   return {
+          brand: Json_decode.field("brand", Json_decode.string, json),
           checks: Json_decode.field("checks", checks, json),
           country: Json_decode.field("country", Json_decode.string, json),
           exp_month: Json_decode.field("exp_month", Json_decode.$$int, json),
@@ -115,10 +116,16 @@ function card(json) {
         };
 }
 
+function paymentMethodType(_json) {
+  return /* Card */0;
+}
+
 function paymentMethodDetails(json) {
   return {
-          card: Json_decode.field("card", card, json),
-          type: Json_decode.field("type", Json_decode.string, json)
+          card: Json_decode.optional((function (param) {
+                  return Json_decode.field("card", card, param);
+                }), json),
+          type: Json_decode.field("type", paymentMethodType, json)
         };
 }
 
@@ -187,6 +194,7 @@ export {
   refunds ,
   checks ,
   card ,
+  paymentMethodType ,
   paymentMethodDetails ,
   charge ,
   

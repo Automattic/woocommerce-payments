@@ -2,6 +2,7 @@
 
 import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
 import * as Types$WoocommercePayments from "../types.bs.js";
+import * as PaymentMethodDetails$WoocommercePayments from "./PaymentMethodDetails.bs.js";
 
 var Metadata = {};
 
@@ -27,7 +28,7 @@ function make(idOpt, object_Opt, amountOpt, amount_refundedOpt, applicationOpt, 
   var paid = paidOpt !== undefined ? paidOpt : false;
   var payment_intent = payment_intentOpt !== undefined ? Caml_option.valFromOption(payment_intentOpt) : undefined;
   var payment_method = payment_methodOpt !== undefined ? payment_methodOpt : "";
-  var payment_method_details = payment_method_detailsOpt !== undefined ? payment_method_detailsOpt : Types$WoocommercePayments.PaymentMethodDetails.make(undefined, undefined, undefined);
+  var payment_method_details = payment_method_detailsOpt !== undefined ? payment_method_detailsOpt : PaymentMethodDetails$WoocommercePayments.make(undefined, undefined, undefined);
   var receipt_email = receipt_emailOpt !== undefined ? Caml_option.valFromOption(receipt_emailOpt) : undefined;
   var receipt_number = receipt_numberOpt !== undefined ? Caml_option.valFromOption(receipt_numberOpt) : undefined;
   var receipt_url = receipt_urlOpt !== undefined ? receipt_urlOpt : "";

@@ -142,56 +142,6 @@ var Refunds = {
   make: make$7
 };
 
-function make_checks(address_line1_checkOpt, address_postal_code_checkOpt, cvc_checkOpt, param) {
-  var address_line1_check = address_line1_checkOpt !== undefined ? Caml_option.valFromOption(address_line1_checkOpt) : undefined;
-  var address_postal_code_check = address_postal_code_checkOpt !== undefined ? Caml_option.valFromOption(address_postal_code_checkOpt) : undefined;
-  var cvc_check = cvc_checkOpt !== undefined ? cvc_checkOpt : "";
-  return {
-          address_line1_check: address_line1_check,
-          address_postal_code_check: address_postal_code_check,
-          cvc_check: cvc_check
-        };
-}
-
-function make$8(checksOpt, countryOpt, exp_monthOpt, exp_yearOpt, fingerprintOpt, fundingOpt, last4Opt, networkOpt, param) {
-  var checks = checksOpt !== undefined ? checksOpt : make_checks(undefined, undefined, undefined, undefined);
-  var country = countryOpt !== undefined ? countryOpt : "";
-  var exp_month = exp_monthOpt !== undefined ? exp_monthOpt : 0;
-  var exp_year = exp_yearOpt !== undefined ? exp_yearOpt : 0;
-  var fingerprint = fingerprintOpt !== undefined ? fingerprintOpt : "";
-  var funding = fundingOpt !== undefined ? fundingOpt : "";
-  var last4 = last4Opt !== undefined ? last4Opt : "";
-  var network = networkOpt !== undefined ? networkOpt : "";
-  return {
-          checks: checks,
-          country: country,
-          exp_month: exp_month,
-          exp_year: exp_year,
-          fingerprint: fingerprint,
-          funding: funding,
-          last4: last4,
-          network: network
-        };
-}
-
-var Card = {
-  make_checks: make_checks,
-  make: make$8
-};
-
-function make$9(cardOpt, type_Opt, param) {
-  var card = cardOpt !== undefined ? cardOpt : make$8(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined);
-  var type_ = type_Opt !== undefined ? type_Opt : "";
-  return {
-          card: card,
-          type: type_
-        };
-}
-
-var PaymentMethodDetails = {
-  make: make$9
-};
-
 export {
   Address ,
   BillingDetails ,
@@ -203,8 +153,6 @@ export {
   Outcome ,
   Refund ,
   Refunds ,
-  Card ,
-  PaymentMethodDetails ,
   
 }
 /* No side effect */

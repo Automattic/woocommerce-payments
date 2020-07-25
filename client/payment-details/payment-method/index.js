@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 
 /**
@@ -12,72 +12,7 @@ import { Card } from '@woocommerce/components';
 import Loadable from 'components/loadable';
 import PaymentDetailsPaymentMethodDetail from './detail';
 import PaymentDetailsPaymentMethodCheck from './check';
-
-/**
- * Extracts and formats payment method details from a charge.
- *
- * @param {object} charge The charge object.
- * @return {object}       A flat hash of all necessary values.
- */
-const formatPaymentMethodDetails = ( charge ) => {
-	const {
-		billing_details: billingDetails,
-		payment_method: id,
-		payment_method_details: { card },
-	} = charge;
-
-	const {
-		last4,
-		fingerprint,
-		exp_month: month,
-		exp_year: year,
-		funding,
-		network,
-		country: countryCode,
-		checks,
-	} = card;
-	const { name, email, formatted_address: formattedAddress } = billingDetails;
-	const {
-		cvc_check: cvcCheck,
-		address_line1_check: line1Check,
-		address_postal_code_check: postalCodeCheck,
-	} = checks;
-
-	// Format the date, MM/YYYY. No translations needed.
-	const date = month + ' / ' + year;
-
-	// Generate the full funding type.
-	const fundingTypes = {
-		credit: __( 'credit', 'woocommerce-payments' ),
-		debit: __( 'debit', 'woocommerce-payments' ),
-		prepaid: __( 'prepaid', 'woocommerce-payments' ),
-		unknown: __( 'unknown', 'woocommerce-payments' ),
-	};
-	const cardType = sprintf(
-		// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
-		__( '%1$s %2$s card', 'woocommerce-payments' ),
-		network.charAt( 0 ).toUpperCase() + network.slice( 1 ), // Brand
-		fundingTypes[ funding ]
-	);
-
-	// Use the full country name.
-	const country = wcSettings.countries[ countryCode ];
-
-	return {
-		last4,
-		fingerprint,
-		date,
-		cardType,
-		id,
-		name,
-		email,
-		country,
-		cvcCheck,
-		line1Check,
-		postalCodeCheck,
-		formattedAddress,
-	};
-};
+import { formatPaymentMethodDetails } from './PaymentMethod.gen';
 
 /**
  * Placeholders to display while loading.
