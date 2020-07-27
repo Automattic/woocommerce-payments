@@ -89,9 +89,6 @@ cli wp plugin install wordpress-importer --activate
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
-echo "Installing and activating the WooCommerce Admin plugin..."
-cli wp plugin install woocommerce-admin --activate
-
 echo "Activating the WooCommerce Payments plugin..."
 cli wp plugin activate woocommerce-payments
 
