@@ -421,14 +421,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-				$billing_details = $this->get_billing_details_from_order( $order );
-				if ( $is_saved_method && ! empty( $billing_details ) ) {
-					$this->payments_api_client->update_payment_method(
-						$payment_method,
-						[
-							'billing_details' => $billing_details,
-						]
-					);
+				try {
+					$billing_details = $this->get_billing_details_from_order( $order );
+					if ( $is_saved_method && ! empty( $billing_details ) ) {
+						$this->payments_api_client->update_payment_method(
+							$payment_method,
+							[
+								'billing_details' => $billing_details,
+							]
+						);
+					}
+				} catch ( Exception $e ) {
+					// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
+					Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
 				}
 
 				$metadata = [
@@ -454,9 +459,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_id = $intent->get_id();
 				$status    = $intent->get_status();
 
-				if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
-					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
-					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				try {
+					if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
+						$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
+						$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+					}
+				} catch ( Exception $e ) {
+					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 				}
 
 				switch ( $status ) {
@@ -1054,9 +1064,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
-				if ( ! empty( $payment_method_id ) ) {
-					$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
-					$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				try {
+					if ( ! empty( $payment_method_id ) ) {
+						$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
+						$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+					}
+				} catch ( Exception $e ) {
+					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 				}
 
 				// Send back redirect URL in the successful case.
