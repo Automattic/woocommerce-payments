@@ -166,6 +166,21 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Updates a customer payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param array  $billing_details   Billing details to be updated.
+	 */
+	public function update_payment_method_with_billing_details( $payment_method_id, $billing_details ) {
+		$this->payments_api_client->update_payment_method(
+			$payment_method_id,
+			[
+				'billing_details' => $billing_details,
+			]
+		);
+	}
+
+	/**
 	 * Clear payment methods cache for a user.
 	 *
 	 * @param int $user_id WC user ID.

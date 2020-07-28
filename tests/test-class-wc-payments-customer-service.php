@@ -260,4 +260,18 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$response = $this->customer_service->get_payment_methods_for_customer( '' );
 		$this->assertEquals( [], $response );
 	}
+
+	public function test_update_payment_method_billing_details() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [ 'address_1' => 'Address Line 1' ],
+				]
+			);
+
+			$this->customer_service->update_payment_method_with_billing_details( 'pm_mock', [ 'address_1' => 'Address Line 1' ] );
+	}
 }

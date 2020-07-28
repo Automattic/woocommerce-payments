@@ -64,7 +64,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'update_payment_method' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -552,9 +552,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->never() )
-			->method( 'update_payment_method' );
+			->method( 'update_payment_method_with_billing_details' );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
@@ -573,25 +573,23 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'update_payment_method' )
+			->method( 'update_payment_method_with_billing_details' )
 			->with(
 				'pm_mock',
 				[
-					'billing_details' => [
-						'address' => [
-							'city'        => 'WooCity',
-							'country'     => 'US',
-							'line1'       => 'WooAddress',
-							'line2'       => 'Address Line 2',
-							'postal_code' => '12345',
-							'state'       => 'NY',
-						],
-						'email'   => 'admin@example.org',
-						'name'    => 'Jeroen Sormani',
-						'phone'   => '555-32123',
+					'address' => [
+						'city'        => 'WooCity',
+						'country'     => 'US',
+						'line1'       => 'WooAddress',
+						'line2'       => 'Address Line 2',
+						'postal_code' => '12345',
+						'state'       => 'NY',
 					],
+					'email'   => 'admin@example.org',
+					'name'    => 'Jeroen Sormani',
+					'phone'   => '555-32123',
 				]
 			);
 
@@ -614,22 +612,20 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'update_payment_method' )
+			->method( 'update_payment_method_with_billing_details' )
 			->with(
 				'pm_mock',
 				[
-					'billing_details' => [
-						'address' => [
-							'country'     => 'US',
-							'line1'       => 'WooAddress',
-							'postal_code' => '12345',
-							'state'       => 'NY',
-						],
-						'email'   => 'admin@example.org',
-						'name'    => 'Jeroen Sormani',
+					'address' => [
+						'country'     => 'US',
+						'line1'       => 'WooAddress',
+						'postal_code' => '12345',
+						'state'       => 'NY',
 					],
+					'email'   => 'admin@example.org',
+					'name'    => 'Jeroen Sormani',
 				]
 			);
 
@@ -659,15 +655,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'update_payment_method' )
+			->method( 'update_payment_method_with_billing_details' )
 			->with(
 				'pm_mock',
 				[
-					'billing_details' => [
-						'email' => 'admin@example.org',
-					],
+					'email' => 'admin@example.org',
 				]
 			);
 
