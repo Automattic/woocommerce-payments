@@ -13,7 +13,7 @@ import { useCharge } from '../data';
 import PaymentDetailsSummary from './summary/PaymentDetailsSummary.gen';
 import PaymentDetailsTimeline from './timeline';
 import PaymentDetailsPayment from './payment';
-import PaymentDetailsPaymentMethod from './payment-method';
+import PaymentDetailsPaymentMethod from './payment-method/PaymentMethod.gen';
 import PaymentDetailsSession from './session';
 import Page from 'components/page';
 
