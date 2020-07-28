@@ -421,7 +421,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-				$billing_details = $this->get_billing_details_from_request();
+				$billing_details = $this->get_billing_details_from_order( $order );
 				if ( $is_saved_method && ! empty( $billing_details ) ) {
 					$this->payments_api_client->update_payment_method(
 						$payment_method,
@@ -587,29 +587,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the billing details from the request's POST variables
+	 * Extract the billing details from the WC order
+	 *
+	 * @param WC_Order $order Order to extract the billing details from.
 	 *
 	 * @return array
 	 */
-	private function get_billing_details_from_request() {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$first_name      = ! empty( $_POST['billing_first_name'] ) ? wc_clean( $_POST['billing_first_name'] ) : '';
-		$last_name       = ! empty( $_POST['billing_last_name'] ) ? wc_clean( $_POST['billing_last_name'] ) : '';
-		$name            = trim( $first_name . ' ' . $last_name );
+	private function get_billing_details_from_order( $order ) {
 		$billing_details = [
 			'address' => [
-				'city'        => ! empty( $_POST['billing_city'] ) ? wc_clean( $_POST['billing_city'] ) : null,
-				'country'     => ! empty( $_POST['billing_country'] ) ? wc_clean( $_POST['billing_country'] ) : null,
-				'line1'       => ! empty( $_POST['billing_address_1'] ) ? wc_clean( $_POST['billing_address_1'] ) : null,
-				'line2'       => ! empty( $_POST['billing_address_2'] ) ? wc_clean( $_POST['billing_address_2'] ) : null,
-				'postal_code' => ! empty( $_POST['billing_postcode'] ) ? wc_clean( $_POST['billing_postcode'] ) : null,
-				'state'       => ! empty( $_POST['billing_state'] ) ? wc_clean( $_POST['billing_state'] ) : null,
+				'city'        => $order->get_billing_city(),
+				'country'     => $order->get_billing_country(),
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'state'       => $order->get_billing_state(),
 			],
-			'email'   => ! empty( $_POST['billing_email'] ) ? wc_clean( $_POST['billing_email'] ) : null,
-			'name'    => ! empty( $name ) ? $name : null,
-			'phone'   => ! empty( $_POST['billing_phone'] ) ? wc_clean( $_POST['billing_phone'] ) : null,
+			'email'   => $order->get_billing_email(),
+			'name'    => trim( $order->get_formatted_billing_full_name() ),
+			'phone'   => $order->get_billing_phone(),
 		];
-		// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 		$remove_empty_entries = function ( $value ) {
 			return ! empty( $value );

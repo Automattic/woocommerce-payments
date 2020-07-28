@@ -562,20 +562,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_updates_payment_method_full_billing_details() {
 		$_POST = $this->setup_saved_payment_method();
 
-		$billing_details = [
-			'billing_first_name' => 'Customer',
-			'billing_last_name'  => 'Test',
-			'billing_email'      => 'customer.test@email.com',
-			'billing_city'       => 'San Francisco',
-			'billing_country'    => 'US',
-			'billing_address_1'  => '60 29th Street',
-			'billing_address_2'  => '#343',
-			'billing_postcode'   => '94110',
-			'billing_state'      => 'California',
-			'billing_phone'      => '555555555',
-		];
-
 		$order = WC_Helper_Order::create_order();
+		$order->set_billing_address_2( 'Address Line 2' );
+		$order->save();
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
@@ -592,21 +581,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[
 					'billing_details' => [
 						'address' => [
-							'city'        => $billing_details['billing_city'],
-							'country'     => $billing_details['billing_country'],
-							'line1'       => $billing_details['billing_address_1'],
-							'line2'       => $billing_details['billing_address_2'],
-							'postal_code' => $billing_details['billing_postcode'],
-							'state'       => $billing_details['billing_state'],
+							'city'        => 'WooCity',
+							'country'     => 'US',
+							'line1'       => 'WooAddress',
+							'line2'       => 'Address Line 2',
+							'postal_code' => '12345',
+							'state'       => 'NY',
 						],
-						'email'   => $billing_details['billing_email'],
-						'name'    => 'Customer Test',
-						'phone'   => $billing_details['billing_phone'],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
+						'phone'   => '555-32123',
 					],
 				]
 			);
-
-		$_POST = array_merge( $_POST, $billing_details ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
@@ -614,17 +601,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_updates_payment_method_partial_billing_details() {
 		$_POST = $this->setup_saved_payment_method();
 
-		$billing_details = [
-			'billing_first_name' => 'Customer',
-			'billing_last_name'  => 'Test',
-			'billing_email'      => 'customer.test@email.com',
-			'billing_country'    => 'US',
-			'billing_address_1'  => '60 29th Street',
-			'billing_postcode'   => '94110',
-			'billing_state'      => 'California',
-		];
-
 		$order = WC_Helper_Order::create_order();
+		$order->set_billing_address_2( '' );
+		$order->set_billing_city( '' );
+		$order->set_billing_phone( '' );
+		$order->save();
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
@@ -641,26 +622,35 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				[
 					'billing_details' => [
 						'address' => [
-							'country'     => $billing_details['billing_country'],
-							'line1'       => $billing_details['billing_address_1'],
-							'postal_code' => $billing_details['billing_postcode'],
-							'state'       => $billing_details['billing_state'],
+							'country'     => 'US',
+							'line1'       => 'WooAddress',
+							'postal_code' => '12345',
+							'state'       => 'NY',
 						],
-						'email'   => $billing_details['billing_email'],
-						'name'    => 'Customer Test',
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
 					],
 				]
 			);
 
-		$_POST = array_merge( $_POST, $billing_details ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_does_not_update_payment_method_no_billing_details() {
+	public function test_updates_payment_method_customer_email() {
 		$_POST = $this->setup_saved_payment_method();
 
 		$order = WC_Helper_Order::create_order();
+		$order->set_billing_address_1( '' );
+		$order->set_billing_address_2( '' );
+		$order->set_billing_first_name( '' );
+		$order->set_billing_last_name( '' );
+		$order->set_billing_country( '' );
+		$order->set_billing_city( '' );
+		$order->set_billing_state( '' );
+		$order->set_billing_postcode( '' );
+		$order->set_billing_phone( '' );
+		$order->set_billing_email( '' );
+		$order->save();
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
@@ -670,8 +660,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->will( $this->returnValue( $intent ) );
 
 		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'update_payment_method' );
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'email' => 'admin@example.org',
+					],
+				]
+			);
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
