@@ -1,4 +1,4 @@
-let getComponent = (~placeholder=?, ~children=?, ~value=?, ()) => {
+let getComponent = (~placeholder=None, ~children=None, ~value=None, ()) => {
   switch (placeholder, children, value) {
   | (Some(p), _, _) => p
   | (_, Some(c), _) => c
@@ -14,13 +14,7 @@ let getClass = display => {
 [@genType]
 [@react.component]
 let make =
-    (
-      ~isLoading=false,
-      ~display="",
-      ~placeholder=React.null,
-      ~value=React.null,
-      ~children=React.null,
-    ) => {
+    (~isLoading=false, ~display="", ~placeholder=?, ~value=?, ~children=?) => {
   isLoading
     ? <span className={display->getClass} ariaBusy=true>
         {getComponent(~placeholder, ~children, ~value, ())}
