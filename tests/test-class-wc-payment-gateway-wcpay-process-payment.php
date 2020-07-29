@@ -509,16 +509,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_method' )
-			->with( 'pm_mock' )
-			->willReturn( [ 'id' => 'pm_mock' ] );
-
 		$this->mock_token_service
 			->expects( $this->once() )
-			->method( 'add_token_to_user' )
-			->with( [ 'id' => 'pm_mock' ], wp_get_current_user() );
+			->method( 'add_payment_method_to_user' )
+			->with( 'pm_mock', wp_get_current_user() );
 
 		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -537,7 +531,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$this->mock_token_service
 			->expects( $this->never() )
-			->method( 'add_token_to_user' );
+			->method( 'add_payment_method_to_user' );
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}

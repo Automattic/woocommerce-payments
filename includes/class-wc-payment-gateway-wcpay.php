@@ -454,14 +454,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_id = $intent->get_id();
 				$status    = $intent->get_status();
 
-				try {
-					if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
-						$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
-						$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
+					try {
+						$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 					}
-				} catch ( Exception $e ) {
-					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 				}
 
 				switch ( $status ) {
@@ -1059,14 +1058,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
-				try {
-					if ( ! empty( $payment_method_id ) ) {
-						$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
-						$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+				if ( ! empty( $payment_method_id ) ) {
+					try {
+						$this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 					}
-				} catch ( Exception $e ) {
-					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 				}
 
 				// Send back redirect URL in the successful case.
@@ -1147,9 +1145,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
 			}
 
-			$payment_method        = $setup_intent['payment_method'];
-			$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method );
-			$this->token_service->add_token_to_user( $payment_method_object, wp_get_current_user() );
+			$payment_method = $setup_intent['payment_method'];
+			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
 
 			return [
 				'result'   => 'success',

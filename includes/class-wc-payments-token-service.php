@@ -70,6 +70,17 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Adds a payment method to a user.
+	 *
+	 * @param string  $payment_method_id Payment method to be added.
+	 * @param WP_User $user              User to attach payment method to.
+	 */
+	public function add_payment_method_to_user( $payment_method_id, $user ) {
+		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
+		return $this->add_token_to_user( $payment_method_object, wp_get_current_user() );
+	}
+
+	/**
 	 * Gets saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
