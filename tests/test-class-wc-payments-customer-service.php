@@ -261,17 +261,30 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( [], $response );
 	}
 
-	public function test_update_payment_method_billing_details() {
+	public function test_update_payment_method_with_billing_details_from_order() {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'update_payment_method' )
 			->with(
 				'pm_mock',
 				[
-					'billing_details' => [ 'address_1' => 'Address Line 1' ],
+					'billing_details' => [
+						'address' => [
+							'city'        => 'WooCity',
+							'country'     => 'US',
+							'line1'       => 'WooAddress',
+							'postal_code' => '12345',
+							'state'       => 'NY',
+						],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
+						'phone'   => '555-32123',
+					],
 				]
 			);
 
-			$this->customer_service->update_payment_method_with_billing_details( 'pm_mock', [ 'address_1' => 'Address Line 1' ] );
+		$order = WC_Helper_Order::create_order();
+
+		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
 	}
 }

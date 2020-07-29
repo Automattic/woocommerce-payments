@@ -421,14 +421,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-				try {
-					$billing_details = $this->get_billing_details_from_order( $order );
-					if ( $is_saved_method && ! empty( $billing_details ) ) {
-						$this->customer_service->update_payment_method_with_billing_details( $payment_method, $billing_details );
+				if ( $is_saved_method ) {
+					try {
+						$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+					} catch ( Exception $e ) {
+						// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
 					}
-				} catch ( Exception $e ) {
-					// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
-					Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
 				}
 
 				$metadata = [
@@ -588,36 +587,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		return $payment_method;
-	}
-
-	/**
-	 * Extract the billing details from the WC order
-	 *
-	 * @param WC_Order $order Order to extract the billing details from.
-	 *
-	 * @return array
-	 */
-	private function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
-		];
-
-		$remove_empty_entries = function ( $value ) {
-			return ! empty( $value );
-		};
-
-		$billing_details['address'] = array_filter( $billing_details['address'], $remove_empty_entries );
-		return array_filter( $billing_details, $remove_empty_entries );
 	}
 
 	/**

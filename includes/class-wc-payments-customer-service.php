@@ -168,16 +168,20 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Updates a customer payment method.
 	 *
-	 * @param string $payment_method_id The payment method ID.
-	 * @param array  $billing_details   Billing details to be updated.
+	 * @param string   $payment_method_id The payment method ID.
+	 * @param WC_Order $order             Order to be used on the update.
 	 */
-	public function update_payment_method_with_billing_details( $payment_method_id, $billing_details ) {
-		$this->payments_api_client->update_payment_method(
-			$payment_method_id,
-			[
-				'billing_details' => $billing_details,
-			]
-		);
+	public function update_payment_method_with_billing_details_from_order( $payment_method_id, $order ) {
+		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+
+		if ( ! empty( $billing_details ) ) {
+			$this->payments_api_client->update_payment_method(
+				$payment_method_id,
+				[
+					'billing_details' => $billing_details,
+				]
+			);
+		}
 	}
 
 	/**

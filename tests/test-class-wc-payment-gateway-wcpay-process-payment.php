@@ -548,17 +548,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$this->mock_customer_service
 			->expects( $this->never() )
-			->method( 'update_payment_method_with_billing_details' );
+			->method( 'update_payment_method_with_billing_details_from_order' );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_updates_payment_method_full_billing_details() {
+	public function test_updates_payment_method_billing_details() {
 		$_POST = $this->setup_saved_payment_method();
 
 		$order = WC_Helper_Order::create_order();
-		$order->set_billing_address_2( 'Address Line 2' );
-		$order->save();
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
@@ -569,94 +567,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'update_payment_method_with_billing_details' )
+			->method( 'update_payment_method_with_billing_details_from_order' )
 			->with(
 				'pm_mock',
-				[
-					'address' => [
-						'city'        => 'WooCity',
-						'country'     => 'US',
-						'line1'       => 'WooAddress',
-						'line2'       => 'Address Line 2',
-						'postal_code' => '12345',
-						'state'       => 'NY',
-					],
-					'email'   => 'admin@example.org',
-					'name'    => 'Jeroen Sormani',
-					'phone'   => '555-32123',
-				]
-			);
-
-		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
-	}
-
-	public function test_updates_payment_method_partial_billing_details() {
-		$_POST = $this->setup_saved_payment_method();
-
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_address_2( '' );
-		$order->set_billing_city( '' );
-		$order->set_billing_phone( '' );
-		$order->save();
-
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
-
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will( $this->returnValue( $intent ) );
-
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_payment_method_with_billing_details' )
-			->with(
-				'pm_mock',
-				[
-					'address' => [
-						'country'     => 'US',
-						'line1'       => 'WooAddress',
-						'postal_code' => '12345',
-						'state'       => 'NY',
-					],
-					'email'   => 'admin@example.org',
-					'name'    => 'Jeroen Sormani',
-				]
-			);
-
-		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
-	}
-
-	public function test_updates_payment_method_customer_email() {
-		$_POST = $this->setup_saved_payment_method();
-
-		$order = WC_Helper_Order::create_order();
-		$order->set_billing_address_1( '' );
-		$order->set_billing_address_2( '' );
-		$order->set_billing_first_name( '' );
-		$order->set_billing_last_name( '' );
-		$order->set_billing_country( '' );
-		$order->set_billing_city( '' );
-		$order->set_billing_state( '' );
-		$order->set_billing_postcode( '' );
-		$order->set_billing_phone( '' );
-		$order->set_billing_email( '' );
-		$order->save();
-
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
-
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will( $this->returnValue( $intent ) );
-
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_payment_method_with_billing_details' )
-			->with(
-				'pm_mock',
-				[
-					'email' => 'admin@example.org',
-				]
+				$this->callback(
+					function( $source_order ) use ( $order ) {
+						return $source_order->get_id() === $order->get_id();
+					}
+				)
 			);
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
