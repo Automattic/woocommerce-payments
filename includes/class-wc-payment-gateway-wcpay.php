@@ -58,20 +58,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Token instance for working with customer tokens
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
 	 * @param WC_Payments_Account          $account             - Account class instance.
 	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
+	 * @param WC_Payments_Token_Service    $token_service       - Token class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->customer_service    = $customer_service;
+		$this->token_service       = $token_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -83,6 +93,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->supports           = [
 			'products',
 			'refunds',
+			'tokenization',
+			'add_payment_method',
 		];
 
 		// Define setting fields.
@@ -141,6 +153,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+
+		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 	}
 
 	/**
@@ -240,18 +255,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Displays the save to account checkbox.
+	 */
+	public function save_payment_method_checkbox() {
+		printf(
+			'<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
+				<input id="wc-%1$s-new-payment-method" name="wc-%1$s-new-payment-method" type="checkbox" value="true" style="width:auto;" />
+				<label for="wc-%1$s-new-payment-method" style="display:inline;">%2$s</label>
+			</p>',
+			esc_attr( $this->id ),
+			esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) )
+		);
+	}
+
+	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
 		try {
+			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+
 			// Add JavaScript for the payment form.
 			$js_config = [
 				'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 				'accountId'              => $this->account->get_stripe_account_id(),
 				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
 				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+				'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 				'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
 			];
 
@@ -309,9 +341,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					</p>
 				<?php endif; ?>
 
+				<?php
+				if ( $display_tokenization ) {
+					$this->tokenization_script();
+					echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				?>
+
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
+
+				<?php
+				if ( apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) && ! is_add_payment_method_page() ) {
+					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+				?>
+
+
 			</fieldset>
 			<?php
 		} catch ( Exception $e ) {
@@ -353,10 +400,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
-				$payment_method = $this->get_payment_method_from_request();
-				$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
-				$name           = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-				$email          = sanitize_email( $order->get_billing_email() );
+				$payment_method      = $this->get_payment_method_from_request();
+				$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
+				$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+				$email               = sanitize_email( $order->get_billing_email() );
+				$save_payment_method = ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$is_saved_method     = empty( $_POST['wcpay-payment-method'] ) && ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// Determine the customer making the payment, create one if we don't have one already.
 				$user        = wp_get_current_user();
@@ -369,6 +418,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// Update the existing customer with the current details. In the event the old customer can't be
 					// found a new one is created, so we update the customer ID here as well.
 					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+				}
+
+				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
+				if ( $is_saved_method ) {
+					try {
+						$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+					} catch ( Exception $e ) {
+						// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
+					}
 				}
 
 				$metadata = [
@@ -385,6 +444,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_method,
 					$customer_id,
 					$manual_capture,
+					$save_payment_method,
 					$metadata,
 					$this->get_level3_data_from_order( $order )
 				);
@@ -392,6 +452,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$intent_id = $intent->get_id();
 				$status    = $intent->get_status();
+
+				if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
+					try {
+						$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					}
+				}
 
 				switch ( $status ) {
 					case 'succeeded':
@@ -497,12 +566,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function get_payment_method_from_request() {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		if ( ! isset( $_POST['wcpay-payment-method'] ) ) {
+		if ( empty( $_POST['wcpay-payment-method'] ) && empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
 
-		$payment_method = wc_clean( $_POST['wcpay-payment-method'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$payment_method = ! empty( $_POST['wcpay-payment-method'] ) ? wc_clean( $_POST['wcpay-payment-method'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+		if ( empty( $payment_method ) ) {
+			$token_id = wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$token    = WC_Payment_Tokens::get( $token_id );
+
+			if ( ! $token || self::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
+			}
+
+			$payment_method = $token->get_token();
+		}
+
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		return $payment_method;
@@ -861,6 +942,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
+
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -944,6 +1027,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
+				if ( ! empty( $payment_method_id ) ) {
+					try {
+						$this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					}
+				}
+
 				// Send back redirect URL in the successful case.
 				echo wp_json_encode(
 					[
@@ -991,6 +1083,98 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				]
 			);
 			wp_die();
+		}
+	}
+
+	/**
+	 * Add payment method via account screen.
+	 *
+	 * @throws Exception If payment method is missing.
+	 */
+	public function add_payment_method() {
+		try {
+
+			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
+				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
+			}
+
+			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false;
+			// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+
+			if ( ! $setup_intent_id || null === $customer_id ) {
+				throw new Exception( __( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ) );
+			}
+
+			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
+
+			if ( 'succeeded' !== $setup_intent['status'] ) {
+				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+			}
+
+			$payment_method = $setup_intent['payment_method'];
+			$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
+
+			return [
+				'result'   => 'success',
+				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+			];
+		} catch ( Exception $e ) {
+			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
+			Logger::log( 'Error when adding payment method: ' . $e->getMessage() );
+			return [
+				'result' => 'error',
+			];
+		}
+	}
+
+	/**
+	 * Create a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Exception - When an error occurs in setup intent creation.
+	 */
+	public function create_setup_intent() {
+		$payment_method = $this->get_payment_method_from_request();
+
+		// Determine the customer adding the payment method, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+		}
+
+		return $this->payments_api_client->create_setup_intent(
+			$payment_method,
+			$customer_id
+		);
+	}
+
+	/**
+	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_setup_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception( __( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ) );
+			}
+
+			$setup_intent = $this->create_setup_intent();
+
+			wp_send_json_success( $setup_intent, 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
 		}
 	}
 }

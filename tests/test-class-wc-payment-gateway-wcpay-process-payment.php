@@ -24,6 +24,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_customer_service;
 
 	/**
+	 * Mock WC_Payments_Token_Service.
+	 *
+	 * @var WC_Payments_Token_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_token_service;
+
+	/**
 	 * Mock WC_Payments_API_Client.
 	 *
 	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
@@ -57,7 +64,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -65,6 +72,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
+		$this->mock_token_service = $this->getMockBuilder( 'WC_Payments_Token_Service' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -76,6 +88,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->mock_api_client,
 					$this->wcpay_account,
 					$this->mock_customer_service,
+					$this->mock_token_service,
 				]
 			)
 			->setMethods(
@@ -98,7 +111,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
-			'wcpay-payment-method' => true,
+			'wcpay-payment-method' => 'pm_mock',
 		];
 	}
 
@@ -483,5 +496,103 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			'#wcpay-confirm-pi:' . $order_id . ':' . $secret,
 			$result['redirect']
 		);
+	}
+
+	public function test_saved_card_at_checkout() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( 'pm_mock', wp_get_current_user() );
+
+		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_not_saved_card_at_checkout() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), false, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_does_not_update_new_payment_method() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_payment_method_with_billing_details_from_order' );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_updates_payment_method_billing_details() {
+		$_POST = $this->setup_saved_payment_method();
+
+		$order = WC_Helper_Order::create_order();
+
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_payment_method_with_billing_details_from_order' )
+			->with(
+				'pm_mock',
+				$this->callback(
+					function( $source_order ) use ( $order ) {
+						return $source_order->get_id() === $order->get_id();
+					}
+				)
+			);
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	private function setup_saved_payment_method() {
+		$token = new WC_Payment_Token_CC();
+		$token->set_token( 'pm_mock' );
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_expiry_month( 6 );
+		$token->set_expiry_year( 2026 );
+		$token->set_user_id( get_current_user_id() );
+		$token->save();
+
+		return [
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
+		];
 	}
 }
