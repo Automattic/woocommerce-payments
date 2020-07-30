@@ -12,33 +12,38 @@ import * as deposits from './deposits';
 import * as transactions from './transactions';
 import * as charges from './charges';
 import * as timeline from './timeline';
+import * as disputes from './disputes';
 
 // Extracted into wrapper function to facilitate testing.
-export const initStore = () => registerStore( STORE_NAME, {
-	reducer: combineReducers( {
-		deposits: deposits.reducer,
-		transactions: transactions.reducer,
-		charges: charges.reducer,
-		timeline: timeline.reducer,
-	} ),
-	actions: {
-		...deposits.actions,
-		...transactions.actions,
-		...charges.actions,
-		...timeline.actions,
-	},
-	controls,
-	selectors: {
-		...deposits.selectors,
-		...transactions.selectors,
-		...charges.selectors,
-		...timeline.selectors,
-	},
-	resolvers: {
-		...deposits.resolvers,
-		...transactions.resolvers,
-		...charges.resolvers,
-		...timeline.resolvers,
-	},
-} );
-
+export const initStore = () =>
+	registerStore( STORE_NAME, {
+		reducer: combineReducers( {
+			deposits: deposits.reducer,
+			transactions: transactions.reducer,
+			charges: charges.reducer,
+			timeline: timeline.reducer,
+			disputes: disputes.reducer,
+		} ),
+		actions: {
+			...deposits.actions,
+			...transactions.actions,
+			...charges.actions,
+			...timeline.actions,
+			...disputes.actions,
+		},
+		controls,
+		selectors: {
+			...deposits.selectors,
+			...transactions.selectors,
+			...charges.selectors,
+			...timeline.selectors,
+			...disputes.selectors,
+		},
+		resolvers: {
+			...deposits.resolvers,
+			...transactions.resolvers,
+			...charges.resolvers,
+			...timeline.resolvers,
+			...disputes.resolvers,
+		},
+	} );

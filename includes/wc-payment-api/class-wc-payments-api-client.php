@@ -289,6 +289,11 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception Exception thrown on request failure.
 	 */
 	public function get_transactions_summary( $filters = [], $deposit_id = null ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
 		$query = array_merge(
 			$filters,
 			[
@@ -313,6 +318,11 @@ class WC_Payments_API_Client {
 	 * @throws WC_Payments_API_Exception - Exception thrown on request failure.
 	 */
 	public function list_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [], $deposit_id = null ) {
+		// Map Order # terms to the actual charge id to be used in the server.
+		if ( ! empty( $filters['search'] ) ) {
+			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
+		}
+
 		$query = array_merge(
 			$filters,
 			[
@@ -351,6 +361,32 @@ class WC_Payments_API_Client {
 		}
 
 		return $this->add_order_info_to_object( $transaction['charge_id'], $transaction );
+	}
+
+	/**
+	 * Fetch transactions search options for provided query.
+	 *
+	 * @param string $search_term Query to be used to get search options - can be an order ID, or part of a name or email.
+	 * @return array|WP_Error Search results.
+	 */
+	public function get_transactions_search_autocomplete( $search_term ) {
+		$order = wc_get_order( $search_term );
+
+		$search_results = $this->request( [ 'search_term' => $search_term ], self::TRANSACTIONS_API . '/search', self::GET );
+		$results        = array_map(
+			function ( $result ) {
+				return [
+					'label' => $result['customer_name'] . ' (' . $result['customer_email'] . ')',
+				];
+			},
+			$search_results
+		);
+
+		if ( $order ) {
+			array_unshift( $results, [ 'label' => __( 'Order #', 'woocommerce-payments' ) . $search_term ] );
+		}
+
+		return $results;
 	}
 
 	/**
@@ -449,7 +485,14 @@ class WC_Payments_API_Client {
 	 * @return array dispute object.
 	 */
 	public function close_dispute( $dispute_id ) {
-		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+
+		if ( is_wp_error( $dispute ) ) {
+			return $dispute;
+		}
+
+		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
+		return $this->add_order_info_to_object( $charge_id, $dispute );
 	}
 
 	/**

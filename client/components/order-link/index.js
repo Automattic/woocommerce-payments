@@ -11,9 +11,13 @@ import { Link } from '@woocommerce/components';
 
 const OrderLink = ( props ) => {
 	const { order } = props;
-    return order
-        ? <Link href={ order.url } type="external">{ order.number }</Link>
-        : <span>&ndash;</span>;
+	return order ? (
+		<Link href={ order.url } type="external">
+			{ order.number }
+		</Link>
+	) : (
+		<span>&ndash;</span>
+	);
 };
 
 export default OrderLink;

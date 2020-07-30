@@ -1,0 +1,10 @@
+bin
+dist
+docker
+node_modules
+release
+vendor
+wordpress-org-assets
+
+tests/e2e/docker
+tests/e2e/deps

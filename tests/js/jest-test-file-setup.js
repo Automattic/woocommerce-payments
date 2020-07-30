@@ -16,10 +16,7 @@ global.wp = {
 
 global.wc = {};
 
-const wordPressPackages = [
-	'element',
-	'date',
-];
+const wordPressPackages = [ 'element', 'date' ];
 
 const wooCommercePackages = [
 	'components',
@@ -30,13 +27,17 @@ const wooCommercePackages = [
 	'number',
 ];
 
-wordPressPackages.forEach( lib => {
+global.window.wcTracks = {
+	recordEvent: () => null,
+};
+
+wordPressPackages.forEach( ( lib ) => {
 	Object.defineProperty( global.wp, lib, {
 		get: () => require( `@wordpress/${ lib }` ),
 	} );
 } );
 
-wooCommercePackages.forEach( lib => {
+wooCommercePackages.forEach( ( lib ) => {
 	Object.defineProperty( global.wc, lib, {
 		get: () => require( `@woocommerce/${ lib }` ),
 	} );
@@ -49,15 +50,16 @@ global.wcSettings = {
 	// date: {
 	// 	dow: 0,
 	// },
-	// orderStatuses: {
-	// 	pending: 'Pending payment',
-	// 	processing: 'Processing',
-	// 	'on-hold': 'On hold',
-	// 	completed: 'Completed',
-	// 	cancelled: 'Cancelled',
-	// 	refunded: 'Refunded',
-	// 	failed: 'Failed',
-	// },
+	orderStatuses: {
+		pending: 'Pending payment',
+		processing: 'Processing',
+		'on-hold': 'On hold',
+		completed: 'Completed',
+		cancelled: 'Cancelled',
+		refunded: 'Refunded',
+		failed: 'Failed',
+		paid: 'Paid',
+	},
 	l10n: {
 		userLocale: 'en_US',
 		weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
@@ -71,4 +73,7 @@ global.wcSettings = {
 // const config = require( '../../config/development.json' );
 // window.wcAdminFeatures = config && config.features ? config.features : {};
 
-setLocaleData( { '': { domain: 'woocommerce-payments', lang: 'en_US' } }, 'woocommerce-payments' );
+setLocaleData(
+	{ '': { domain: 'woocommerce-payments', lang: 'en_US' } },
+	'woocommerce-payments'
+);

@@ -42,8 +42,12 @@ describe( 'Transactions reducer tests', () => {
 	};
 
 	test( 'Unrelated action is ignored', () => {
-		expect( reducer( emptyState, { type: 'WRONG-TYPE' } ) ).toBe( emptyState );
-		expect( reducer( filledState, { type: 'WRONG-TYPE' } ) ).toBe( filledState );
+		expect( reducer( emptyState, { type: 'WRONG-TYPE' } ) ).toBe(
+			emptyState
+		);
+		expect( reducer( filledState, { type: 'WRONG-TYPE' } ) ).toBe(
+			filledState
+		);
 	} );
 
 	test( 'New transactions reduced correctly', () => {
@@ -54,22 +58,16 @@ describe( 'Transactions reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			emptyState,
-			{
-				type: types.SET_TRANSACTIONS,
-				data: mockTransactions,
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( emptyState, {
+			type: types.SET_TRANSACTIONS,
+			data: mockTransactions,
+			query: mockQuery,
+		} );
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
 	test( 'Transactions updated correctly on updated info', () => {
-		const newTransactions = [
-			...mockTransactions,
-			...mockTransactions,
-		];
+		const newTransactions = [ ...mockTransactions, ...mockTransactions ];
 
 		const expected = {
 			...filledState,
@@ -78,14 +76,11 @@ describe( 'Transactions reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			filledState,
-			{
-				type: types.SET_TRANSACTIONS,
-				data: newTransactions,
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( filledState, {
+			type: types.SET_TRANSACTIONS,
+			data: newTransactions,
+			query: mockQuery,
+		} );
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
@@ -98,14 +93,11 @@ describe( 'Transactions reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			emptyState,
-			{
-				type: types.SET_TRANSACTIONS_SUMMARY,
-				data: mockSummary,
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( emptyState, {
+			type: types.SET_TRANSACTIONS_SUMMARY,
+			data: mockSummary,
+			query: mockQuery,
+		} );
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
@@ -125,14 +117,11 @@ describe( 'Transactions reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			filledState,
-			{
-				type: types.SET_TRANSACTIONS_SUMMARY,
-				data: newSummary,
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( filledState, {
+			type: types.SET_TRANSACTIONS_SUMMARY,
+			data: newSummary,
+			query: mockQuery,
+		} );
 		expect( reduced ).toStrictEqual( expected );
 	} );
 } );

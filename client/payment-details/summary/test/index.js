@@ -2,21 +2,20 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import PaymentDetailsSummary from '../';
 
+/* eslint-disable camelcase */
 const getBaseCharge = () => ( {
 	id: 'ch_38jdHA39KKA',
-	/* Stripe data comes in seconds, instead of the default Date miliseconds */
+	/* Stripe data comes in seconds, instead of the default Date milliseconds */
 	created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
 	amount: 1500,
-	// eslint-disable-next-line camelcase
 	amount_refunded: 0,
-	// eslint-disable-next-line camelcase
 	application_fee_amount: 70,
 	disputed: false,
 	dispute: null,
@@ -24,15 +23,16 @@ const getBaseCharge = () => ( {
 	net: 1426,
 	currency: 'usd',
 	type: 'charge',
+	status: 'succeeded',
+	paid: true,
+	captured: true,
 	order: {
 		number: 45981,
 		url: 'https://somerandomorderurl.com/?edit_order=45981',
 	},
-	// eslint-disable-next-line camelcase
 	billing_details: {
 		name: 'Customer name',
 	},
-	// eslint-disable-next-line camelcase
 	payment_method_details: {
 		card: {
 			brand: 'visa',
@@ -41,10 +41,10 @@ const getBaseCharge = () => ( {
 		type: 'card',
 	},
 	outcome: {
-		// eslint-disable-next-line camelcase
 		risk_level: 'normal',
 	},
 } );
+/* eslint-enable camelcase */
 
 describe( 'PaymentDetailsSummary', () => {
 	test( 'correctly renders a charge', () => {
@@ -77,6 +77,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.disputed = true;
 		charge.dispute = {
 			amount: 1500,
+			status: 'under_review',
 		};
 
 		const paymentDetailsSummary = renderCharge( charge );
@@ -89,7 +90,9 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	function renderCharge( charge, isLoading = false ) {
-		return shallow( <PaymentDetailsSummary charge={ charge } isLoading={ isLoading } /> );
+		const { container } = render(
+			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+		);
+		return container;
 	}
 } );
-

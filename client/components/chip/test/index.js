@@ -44,4 +44,3 @@ describe( 'Chip', () => {
 		return render( <Chip type={ type } message={ message } /> );
 	}
 } );
-

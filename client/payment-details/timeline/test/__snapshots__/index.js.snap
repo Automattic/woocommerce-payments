@@ -1,0 +1,130 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PaymentDetailsTimeline does not render when the feature flag is disabled 1`] = `<div />`;
+
+exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline component) 1`] = `
+<div>
+  <div
+    class="woocommerce-card payment-details__timeline"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Timeline
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div>
+        Mock timeline
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PaymentDetailsTimeline renders error 1`] = `
+<div>
+  <div
+    class="woocommerce-card payment-details__timeline"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Timeline
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      Error while loading timeline
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PaymentDetailsTimeline renders loading 1`] = `
+<div>
+  <div
+    class="woocommerce-card payment-details__timeline"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          <span
+            aria-busy="true"
+            class="is-loadable-placeholder"
+          >
+            Timeline
+          </span>
+        </h2>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 3;"
+        >
+          Block placeholder
+        </p>
+      </span>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 3;"
+        >
+          Block placeholder
+        </p>
+      </span>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 3;"
+        >
+          Block placeholder
+        </p>
+      </span>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 3;"
+        >
+          Block placeholder
+        </p>
+      </span>
+    </div>
+  </div>
+</div>
+`;

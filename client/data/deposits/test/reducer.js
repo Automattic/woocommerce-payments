@@ -43,13 +43,10 @@ describe( 'Deposits reducer tests', () => {
 			queries: {},
 		} );
 
-		const stateAfterTwo = reducer(
-			stateAfterOne,
-			{
-				type: types.SET_DEPOSIT,
-				data: mockDeposits[ 1 ],
-			}
-		);
+		const stateAfterTwo = reducer( stateAfterOne, {
+			type: types.SET_DEPOSIT,
+			data: mockDeposits[ 1 ],
+		} );
 
 		expect( stateAfterTwo ).toStrictEqual( {
 			byId: {
@@ -97,14 +94,11 @@ describe( 'Deposits reducer tests', () => {
 			},
 		};
 
-		const reduced = reducer(
-			before,
-			{
-				type: types.SET_DEPOSITS,
-				data: mockDeposits.slice( 1 ),
-				query: mockQuery,
-			}
-		);
+		const reduced = reducer( before, {
+			type: types.SET_DEPOSITS,
+			data: mockDeposits.slice( 1 ),
+			query: mockQuery,
+		} );
 
 		const after = {
 			byId: {

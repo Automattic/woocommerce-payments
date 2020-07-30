@@ -1,7 +1,11 @@
 /**
  * External dependencies
  */
-import { SummaryListPlaceholder, SummaryList, SummaryNumber } from '@woocommerce/components';
+import {
+	SummaryListPlaceholder,
+	SummaryList,
+	SummaryNumber,
+} from '@woocommerce/components';
 import Currency from '@woocommerce/currency';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
@@ -19,65 +23,125 @@ import { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
 const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
-const getAmount = ( obj ) => currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
-const getDepositDate = ( deposit ) => deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
+const getAmount = ( obj ) =>
+	currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
+const getDepositDate = ( deposit ) =>
+	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
-	sprintf( _n( '%d deposit', '%d deposits', balance.deposits_count, 'woocommerce-payments' ), balance.deposits_count );
+	sprintf(
+		_n(
+			'%d deposit',
+			'%d deposits',
+			balance.deposits_count,
+			'woocommerce-payments'
+		),
+		balance.deposits_count
+	);
 const getNextDepositLabelFormatted = ( deposit ) => {
-	const baseLabel = ( deposit ) ? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate( 'M j, Y', deposit.date ) }` : '—';
+	const baseLabel = deposit
+		? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate(
+				'M j, Y',
+				deposit.date
+		  ) }`
+		: '—';
 	if ( deposit && 'in_transit' === deposit.status ) {
-		return `${ baseLabel } - ${ __( 'In transit', 'woocommerce-payments' ) }`;
+		return `${ baseLabel } - ${ __(
+			'In transit',
+			'woocommerce-payments'
+		) }`;
 	}
 	return baseLabel;
 };
 
-const formatDepositSchedule = schedule => {
+const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'daily':
-			return __( 'Automatic, every business day', 'woocommerce-payments' );
+			return __(
+				'Automatic, every business day',
+				'woocommerce-payments'
+			);
 		case 'weekly':
 			return sprintf(
 				/** translators: %s day of the week e.g. Monday */
 				__( 'Automatic, every week on %s', 'woocommerce-payments' ),
 				// moment().day() is locale based when using strings. Since Stripe's response is in English,
 				// we need to temporarily set the locale to add the day before formatting
-				moment().locale( 'en' ).day( schedule.weekly_anchor ).locale( moment.locale() ).format( 'dddd' )
+				moment()
+					.locale( 'en' )
+					.day( schedule.weekly_anchor )
+					.locale( moment.locale() )
+					.format( 'dddd' )
 			);
 		case 'monthly':
 			// If locale is set up as en_US or en_GB the ordinal will not show up
 			// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
 			// Using 'en' as the locale should be enough to workaround it
 			// TODO: Remove workaround when issue is resolved
-			const fixedLocale = moment.locale().startsWith( 'en' ) ? 'en' : moment.locale();
+			const fixedLocale = moment.locale().startsWith( 'en' )
+				? 'en'
+				: moment.locale();
 			return sprintf(
 				/** translators: %s day of the month */
-				__( 'Automatic, every month on the %s', 'woocommerce-payments' ),
-				moment().locale( fixedLocale ).date( schedule.monthly_anchor ).format( 'Do' )
+				__(
+					'Automatic, every month on the %s',
+					'woocommerce-payments'
+				),
+				moment()
+					.locale( fixedLocale )
+					.date( schedule.monthly_anchor )
+					.format( 'Do' )
 			);
 	}
 };
 
-const getDepositScheduleDescriptor = ( { account: { deposits_schedule: schedule, deposits_disabled: disabled }, last_deposit: last } ) => {
+const getDepositScheduleDescriptor = ( {
+	account: { deposits_schedule: schedule, deposits_disabled: disabled },
+	last_deposit: last,
+} ) => {
 	if ( disabled || 'manual' === schedule.interval ) {
-		const learnMoreHref = 'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
+		const learnMoreHref =
+			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
-			__( 'Temporarily suspended (<a>learn more</a>)', 'woocommerce-payments' ),
-			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
+			__(
+				'Temporarily suspended (<a>learn more</a>)',
+				'woocommerce-payments'
+			),
+			{
+				a: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ learnMoreHref }
+						target="_blank"
+						rel="noopener noreferrer"
+					/>
+				),
+			}
 		);
 	}
 
 	if ( ! last ) {
-		const learnMoreHref = 'https://docs.woocommerce.com/document/payments/faq/deposit-schedule/';
+		const learnMoreHref =
+			'https://docs.woocommerce.com/document/payments/faq/deposit-schedule/';
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
-				__( '%s – your first deposit is held for seven days (<a>learn more</a>)', 'woocommerce-payments' ),
-				formatDepositSchedule( { interval: 'daily' } ),
+				__(
+					'%s – your first deposit is held for seven days (<a>learn more</a>)',
+					'woocommerce-payments'
+				),
+				formatDepositSchedule( { interval: 'daily' } )
 			),
-			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			{ a: <a href={ learnMoreHref } target="_blank" rel="noopener noreferrer" /> }
+			{
+				a: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ learnMoreHref }
+						target="_blank"
+						rel="noopener noreferrer"
+					/>
+				),
+			}
 		);
 	}
 
@@ -89,49 +153,97 @@ const DepositsOverview = () => {
 	return (
 		<div className="wcpay-deposits-overview">
 			<p className="wcpay-deposits-overview__schedule">
-				<Gridicon icon="calendar" className="wcpay-deposits-overview__schedule-icon" />
-				<span className="wcpay-deposits-overview__schedule-label">{ __( 'Deposit schedule:', 'woocommerce-payments' ) }</span>
-				{ ' ' }
+				<Gridicon
+					icon="calendar"
+					className="wcpay-deposits-overview__schedule-icon"
+				/>
+				<span className="wcpay-deposits-overview__schedule-label">
+					{ __( 'Deposit schedule:', 'woocommerce-payments' ) }
+				</span>{ ' ' }
 				<span className="wcpay-deposits-overview__schedule-value">
-					<Loadable isLoading={ isLoading || ! overview } display="inline" placeholder="Deposit schedule placeholder">
-						{ overview ? getDepositScheduleDescriptor( overview ) : '' }
+					<Loadable
+						isLoading={ isLoading || ! overview }
+						display="inline"
+						placeholder="Deposit schedule placeholder"
+					>
+						{ overview
+							? getDepositScheduleDescriptor( overview )
+							: '' }
 					</Loadable>
 				</span>
 			</p>
-			{ isLoading || ! overview
-				? <SummaryListPlaceholder numberOfItems={ 4 } />
-				: <SummaryList label={ __( 'Deposits overview', 'woocommerce-payments' ) }>
+			{ isLoading || ! overview ? (
+				<SummaryListPlaceholder numberOfItems={ 4 } />
+			) : (
+				<SummaryList
+					label={ __( 'Deposits overview', 'woocommerce-payments' ) }
+				>
 					{ () => {
 						return [
 							<SummaryNumber
 								key="lastDeposit"
-								label={ __( 'Last deposit', 'woocommerce-payments' ) }
+								label={ __(
+									'Last deposit',
+									'woocommerce-payments'
+								) }
 								value={ getAmount( overview.last_deposit ) }
-								prevLabel={ getDepositDate( overview.last_deposit ) }
-								href={ overview.last_deposit ? getDetailsURL( overview.last_deposit.id, 'deposits' ) : '' }
+								prevLabel={ getDepositDate(
+									overview.last_deposit
+								) }
+								href={
+									overview.last_deposit
+										? getDetailsURL(
+												overview.last_deposit.id,
+												'deposits'
+										  )
+										: ''
+								}
 							/>,
 							<SummaryNumber
 								key="nextDeposit"
-								label={ __( 'Next deposit', 'woocommerce-payments' ) }
+								label={ __(
+									'Next deposit',
+									'woocommerce-payments'
+								) }
 								value={ getAmount( overview.next_deposit ) }
-								prevLabel={ getNextDepositLabelFormatted( overview.next_deposit ) }
-								href={ overview.next_deposit ? getDetailsURL( overview.next_deposit.id, 'deposits' ) : '' }
+								prevLabel={ getNextDepositLabelFormatted(
+									overview.next_deposit
+								) }
+								href={
+									overview.next_deposit
+										? getDetailsURL(
+												overview.next_deposit.id,
+												'deposits'
+										  )
+										: ''
+								}
 							/>,
 							<SummaryNumber
 								key="pendingBalance"
-								label={ __( 'Pending balance', 'woocommerce-payments' ) }
+								label={ __(
+									'Pending balance',
+									'woocommerce-payments'
+								) }
 								value={ getAmount( overview.balance.pending ) }
-								prevLabel={ getBalanceDepositCount( overview.balance.pending ) }
+								prevLabel={ getBalanceDepositCount(
+									overview.balance.pending
+								) }
 							/>,
 							<SummaryNumber
 								key="availableBalance"
-								label={ __( 'Available balance', 'woocommerce-payments' ) }
-								value={ getAmount( overview.balance.available ) }
+								label={ __(
+									'Available balance',
+									'woocommerce-payments'
+								) }
+								value={ getAmount(
+									overview.balance.available
+								) }
 								prevLabel=""
 							/>,
 						];
 					} }
-				</SummaryList> }
+				</SummaryList>
+			) }
 		</div>
 	);
 };

@@ -13,7 +13,10 @@ import { getResourceId } from '../util';
 
 const defaultState = { byId: {}, queries: {} };
 
-const receiveDeposits = ( state = defaultState, { type, query = {}, data = [], error } ) => {
+const receiveDeposits = (
+	state = defaultState,
+	{ type, query = {}, data = [], error }
+) => {
 	const index = getResourceId( query );
 
 	switch ( type ) {
@@ -41,7 +44,7 @@ const receiveDeposits = ( state = defaultState, { type, query = {}, data = [], e
 		case TYPES.SET_DEPOSITS:
 			return {
 				...state,
-				byId: { ...state.byId, ...( keyBy( data, 'id' ) ) },
+				byId: { ...state.byId, ...keyBy( data, 'id' ) },
 				queries: {
 					...state.queries,
 					[ index ]: {

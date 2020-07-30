@@ -114,18 +114,13 @@ const sectionsByReasonAndProductType = {
 		digital_product_or_service: [
 			{
 				key: 'download_and_activity_logs',
-				fields: [
-					'access_activity_log',
-				],
+				fields: [ 'access_activity_log' ],
 			},
 		],
 		offline_service: [
 			{
 				key: 'service_details',
-				fields: [
-					'service_date',
-					'service_documentation',
-				],
+				fields: [ 'service_date', 'service_documentation' ],
 			},
 		],
 	},
@@ -145,18 +140,13 @@ const sectionsByReasonAndProductType = {
 		digital_product_or_service: [
 			{
 				key: 'download_and_activity_logs',
-				fields: [
-					'access_activity_log',
-				],
+				fields: [ 'access_activity_log' ],
 			},
 		],
 		offline_service: [
 			{
 				key: 'service_details',
-				fields: [
-					'service_date',
-					'service_documentation',
-				],
+				fields: [ 'service_date', 'service_documentation' ],
 			},
 		],
 	},
@@ -176,18 +166,13 @@ const sectionsByReasonAndProductType = {
 		digital_product_or_service: [
 			{
 				key: 'download_and_activity_logs',
-				fields: [
-					'access_activity_log',
-				],
+				fields: [ 'access_activity_log' ],
 			},
 		],
 		offline_service: [
 			{
 				key: 'service_details',
-				fields: [
-					'service_date',
-					'service_documentation',
-				],
+				fields: [ 'service_date', 'service_documentation' ],
 			},
 		],
 	},
@@ -213,9 +198,7 @@ const sectionsByReasonAndProductType = {
 			},
 			{
 				key: 'download_and_activity_logs',
-				fields: [
-					'access_activity_log',
-				],
+				fields: [ 'access_activity_log' ],
 			},
 		],
 		offline_service: [
@@ -229,10 +212,7 @@ const sectionsByReasonAndProductType = {
 			},
 			{
 				key: 'service_details',
-				fields: [
-					'service_date',
-					'service_documentation',
-				],
+				fields: [ 'service_date', 'service_documentation' ],
 			},
 		],
 	},
@@ -252,18 +232,13 @@ const sectionsByReasonAndProductType = {
 		digital_product_or_service: [
 			{
 				key: 'download_and_activity_logs',
-				fields: [
-					'access_activity_log',
-				],
+				fields: [ 'access_activity_log' ],
 			},
 		],
 		offline_service: [
 			{
 				key: 'service_details',
-				fields: [
-					'service_date',
-					'service_documentation',
-				],
+				fields: [ 'service_date', 'service_documentation' ],
 			},
 		],
 	},
@@ -276,23 +251,35 @@ const sectionsByReasonAndProductType = {
 /* eslint-enable camelcase */
 
 // Convert hierarchical structure into set of tuples accepted by test runner.
-const combinations = flatMap( sectionsByReasonAndProductType, ( byProductType, reason ) => {
-	return map( byProductType, ( sections, productType ) => [ reason, productType, sections ] );
-} );
+const combinations = flatMap(
+	sectionsByReasonAndProductType,
+	( byProductType, reason ) => {
+		return map( byProductType, ( sections, productType ) => [
+			reason,
+			productType,
+			sections,
+		] );
+	}
+);
 
 describe( 'Dispute evidence fields', () => {
 	test( 'with no reason or product type', () => {
 		expect( evidenceFields() ).toEqual( [] );
 	} );
 
-	test.each( combinations )( 'when %s with %s', ( reason, productType, sections ) => {
-		// Distill field data structure, preserving structure and keys.
-		const keys = evidenceFields( reason, productType ).map( ( section ) => ( {
-			key: section.key,
-			fields: section.fields.map( ( field ) => field.key ),
-		} ) );
+	test.each( combinations )(
+		'when %s with %s',
+		( reason, productType, sections ) => {
+			// Distill field data structure, preserving structure and keys.
+			const keys = evidenceFields( reason, productType ).map(
+				( section ) => ( {
+					key: section.key,
+					fields: section.fields.map( ( field ) => field.key ),
+				} )
+			);
 
-		// Verify conditional fields, and that universal fields are above and below.
-		expect( keys ).toEqual( [ general, ...sections, uncategorized ] );
-	} );
+			// Verify conditional fields, and that universal fields are above and below.
+			expect( keys ).toEqual( [ general, ...sections, uncategorized ] );
+		}
+	);
 } );

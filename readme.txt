@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,8 +90,15 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.1.0 - 2020-06-16 =
+= 1.2.0 - 2020-07-20 =
+* Add - 3DS support when using the pay for order page
+* Add - Display confirmation dialog when enabling manual captures
+* Add - Update the order when an authorised payment has expired
+* Add - Timeline view in transactions detail, requires WooCommerce 4.4
+* Add - Tracking for basic user action events
+* Fix - Admin UI styling tweaks
 
+= 1.1.0 - 2020-06-16 =
 * Add - Allow WooCommerce Payments set up without Jetpack plugin
 * Fix - Orders missing after payment processing error
 * Fix - Clearing pagination when selecting transactions advanced filters

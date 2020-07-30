@@ -1,14 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Clickable cell renders a clickable cell when a link is provided 1`] = `
-<Link
-  className="woocommerce-table__clickable-cell"
-  href="https://example.com"
-  tabIndex="-1"
-  type="wc-admin"
->
-  Content
-</Link>
+<div>
+  <a
+    class="woocommerce-table__clickable-cell"
+    data-link-type="wc-admin"
+    href="https://example.com"
+    tabindex="-1"
+  >
+    Content
+  </a>
+</div>
 `;
 
-exports[`Clickable cell renders a plain content when no link is provided 1`] = `"Content"`;
+exports[`Clickable cell renders a plain content when no link is provided 1`] = `
+<div>
+  Content
+</div>
+`;

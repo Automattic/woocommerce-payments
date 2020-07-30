@@ -21,8 +21,8 @@ import { formatDateValue } from '../../util';
 /*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
-	date_before: formatDateValue( query.dateBefore ),
-	date_after: formatDateValue( query.dateAfter, true ),
+	date_before: formatDateValue( query.dateBefore, true ),
+	date_after: formatDateValue( query.dateAfter ),
 	date_between: query.dateBetween && [
 		formatDateValue( query.dateBetween[ 0 ] ),
 		formatDateValue( query.dateBetween[ 1 ], true ),
@@ -30,6 +30,7 @@ const formatQueryFilters = ( query ) => ( {
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
 	deposit_id: query.depositId,
+	search: query.search,
 } );
 /*eslint-enable camelcase*/
 
@@ -39,16 +40,13 @@ const formatQueryFilters = ( query ) => ( {
  * @param {string} query Data on which to parameterize the selection.
  */
 export function* getTransactions( query ) {
-	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions`,
-		{
-			page: query.paged,
-			pagesize: query.perPage,
-			sort: query.orderby,
-			direction: query.order,
-			...formatQueryFilters( query ),
-		}
-	);
+	const path = addQueryArgs( `${ NAMESPACE }/transactions`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
 
 	try {
 		const results = yield apiFetch( { path } );
@@ -66,7 +64,7 @@ export function* getTransactions( query ) {
 export function* getTransactionsSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/summary`,
-		formatQueryFilters( query ),
+		formatQueryFilters( query )
 	);
 
 	try {

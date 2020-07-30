@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
+use WCPay\Tracker;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -100,11 +102,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 			'manual_capture'  => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
-				'label'       => __( 'Issue an authorization on checkout, and capture later', 'woocommerce-payments' ),
+				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Manually capture funds within 7 days after the customer authorizes payment on checkout.', 'woocommerce-payments' ),
+				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
-				'desc_tip'    => true,
 			],
 			'test_mode'       => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
@@ -347,13 +348,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int $order_id Order ID to process the payment for.
 	 *
-	 * @return array|null
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
+		return $this->process_payment_for_order( $order, WC()->cart );
+	}
 
+	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param WC_Order $order Order to process the payment for.
+	 * @param WC_Cart  $cart The WC_Cart object.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
+	public function process_payment_for_order( $order, $cart ) {
 		try {
-			$amount = $order->get_total();
+			$order_id = $order->get_id();
+			$amount   = $order->get_total();
 
 			if ( $amount > 0 ) {
 				// Get the payment method from the request (generated when the user entered their card details).
@@ -474,7 +487,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			wc_reduce_stock_levels( $order_id );
-			WC()->cart->empty_cart();
+			$cart->empty_cart();
 
 			return [
 				'result'   => 'success',
@@ -546,6 +559,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, 'USD' ) );
 			}
+			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
@@ -558,6 +572,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( $note );
 			$order->add_order_note( $note );
 
+			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( $e->getMessage() );
 		}
 
@@ -575,6 +590,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$reason
 			);
 		}
+
 		$order->add_order_note( $note );
 
 		return true;
@@ -687,21 +703,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to capture charge on.
 	 */
 	public function capture_charge( $order ) {
-		$amount = $order->get_total();
-		$intent = $this->payments_api_client->capture_intention(
-			$order->get_transaction_id(),
-			WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
-			$this->get_level3_data_from_order( $order )
-		);
-		$status = $intent->get_status();
+		$amount                   = $order->get_total();
+		$is_authorization_expired = false;
+		$status                   = null;
 
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
+		try {
+			$intent = $this->payments_api_client->capture_intention(
+				$order->get_transaction_id(),
+				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+				$this->get_level3_data_from_order( $order )
+			);
+
+			$status = $intent->get_status();
+
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
+		} catch ( WC_Payments_API_Exception $e ) {
+			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+			if ( 'canceled' === $intent->get_status() ) {
+				$is_authorization_expired = true;
+			}
+		}
+
+		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
@@ -712,13 +742,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
+		}
+
+		if ( $is_authorization_expired ) {
+			WC_Payments_Utils::mark_payment_expired( $order );
 		}
 	}
 
@@ -812,6 +846,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * This function is used to update the order status after the user has
 	 * been asked to authenticate their payment.
 	 *
+	 * This function is used for both:
+	 * - regular checkout
+	 * - Pay for Order page
+	 *
 	 * @throws Exception - If nonce is invalid.
 	 */
 	public function update_order_status() {
@@ -827,12 +865,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ) );
 			}
 
-			$intent_id = $order->get_meta( '_intent_id', true );
+			$intent_id          = $order->get_meta( '_intent_id', true );
+			$intent_id_received = isset( $_POST['intent_id'] )
+			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+			/* translators: This will be used to indicate an unknown value for an ID. */
+			: __( 'unknown', 'woocommerce-payments' );
+
+			if ( empty( $intent_id ) ) {
+				throw new WC_Payments_Intent_Authentication_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'empty_intent_id'
+				);
+			}
+
+			// Check that the intent saved in the order matches the intent used as part of the
+			// authentication process. The ID of the intent used is sent with
+			// the AJAX request. We are about to use the status of the intent saved in
+			// the order, so we need to make sure the intent that was used for authentication
+			// is the same as the one we're using to update the status.
+			if ( $intent_id !== $intent_id_received ) {
+				throw new WC_Payments_Intent_Authentication_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'intent_id_mismatch'
+				);
+			}
+
 			// An exception is thrown if an intent can't be found for the given intent ID.
-			$intent    = $this->payments_api_client->get_intent( $intent_id );
-			$status    = $intent->get_status();
-			$intent_id = $intent->get_id();
-			$amount    = $order->get_total();
+			$intent = $this->payments_api_client->get_intent( $intent_id );
+
+			$status = $intent->get_status();
+			$amount = $order->get_total();
 
 			switch ( $status ) {
 				case 'succeeded':
@@ -907,6 +969,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				wp_die();
 			}
+		} catch ( WC_Payments_Intent_Authentication_Exception $e ) {
+			$error_code = $e->get_error_code();
+
+			switch ( $error_code ) {
+				case 'intent_id_mismatch':
+				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
+							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
+							[
+								'code' => '<code>',
+							]
+						),
+						$intent_id_received
+					);
+					$order->add_order_note( $note );
+					break;
+			}
+
+			// Send back error so it can be displayed to the customer.
+			echo wp_json_encode(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+			wp_die();
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			echo wp_json_encode(

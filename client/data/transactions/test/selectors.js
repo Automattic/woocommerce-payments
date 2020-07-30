@@ -87,37 +87,56 @@ describe( 'Transactions selectors', () => {
 
 	test( 'Returns transactions list from state', () => {
 		const expected = mockTransactions;
-		expect( getTransactions( filledSuccessState, mockQuery ) ).toBe( expected );
+		expect( getTransactions( filledSuccessState, mockQuery ) ).toBe(
+			expected
+		);
 	} );
 
 	test( 'Returns empty transactions list error when error is empty', () => {
-		expect( getTransactionsError( emptyState, mockQuery ) ).toStrictEqual( {} );
+		expect( getTransactionsError( emptyState, mockQuery ) ).toStrictEqual(
+			{}
+		);
 	} );
 
 	test( 'Returns transactions list error from state', () => {
 		const expected = mockError;
-		expect( getTransactionsError( filledErrorState, mockQuery ) ).toBe( expected );
+		expect( getTransactionsError( filledErrorState, mockQuery ) ).toBe(
+			expected
+		);
 	} );
 
 	test( 'Returns empty transactions summary when transactions summary is empty', () => {
-		expect( getTransactionsSummary( emptyState, mockSummaryQuery ) ).toStrictEqual( {} );
+		expect(
+			getTransactionsSummary( emptyState, mockSummaryQuery )
+		).toStrictEqual( {} );
 	} );
 
 	test( 'Returns transactions summary from state', () => {
 		const expected = mockSummary;
-		expect( getTransactionsSummary( filledSuccessState, mockSummaryQuery ) ).toBe( expected );
+		expect(
+			getTransactionsSummary( filledSuccessState, mockSummaryQuery )
+		).toBe( expected );
 	} );
 
 	test( 'Returns empty transactions summary error when state is uninitialized', () => {
-		expect( getTransactionsSummaryError( emptyState, mockSummaryQuery ) ).toStrictEqual( {} );
+		expect(
+			getTransactionsSummaryError( emptyState, mockSummaryQuery )
+		).toStrictEqual( {} );
 	} );
 
 	test( 'Returns empty transactions summary error when error is empty', () => {
-		expect( getTransactionsSummaryError( emptySummaryErrorState, mockSummaryQuery ) ).toStrictEqual( {} );
+		expect(
+			getTransactionsSummaryError(
+				emptySummaryErrorState,
+				mockSummaryQuery
+			)
+		).toStrictEqual( {} );
 	} );
 
 	test( 'Returns transactions summary error from state', () => {
 		const expected = mockError;
-		expect( getTransactionsSummaryError( filledErrorState, mockSummaryQuery ) ).toBe( expected );
+		expect(
+			getTransactionsSummaryError( filledErrorState, mockSummaryQuery )
+		).toBe( expected );
 	} );
 } );

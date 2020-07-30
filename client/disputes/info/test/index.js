@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -35,12 +35,12 @@ describe( 'Dispute info', () => {
 		};
 		/* eslint-enable camelcase */
 
-		const info = shallow( <Info dispute={ dispute } /> );
+		const { container: info } = render( <Info dispute={ dispute } /> );
 		expect( info ).toMatchSnapshot();
 	} );
 
 	test( 'renders loading state', () => {
-		const info = shallow( <Info isLoading={ true } /> );
+		const { container: info } = render( <Info isLoading={ true } /> );
 		expect( info ).toMatchSnapshot();
 	} );
 } );

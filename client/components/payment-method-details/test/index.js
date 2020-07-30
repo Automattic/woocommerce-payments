@@ -11,7 +11,10 @@ import PaymentMethodDetails from '..';
 
 describe( 'PaymentMethodDetails', () => {
 	test( 'renders a valid card brand and last 4 digits', () => {
-		const { container: paymentMethodDetails } = renderCard( { brand: 'visa', last4: '4242' } );
+		const { container: paymentMethodDetails } = renderCard( {
+			brand: 'visa',
+			last4: '4242',
+		} );
 		expect( paymentMethodDetails ).toMatchSnapshot();
 	} );
 
@@ -21,7 +24,8 @@ describe( 'PaymentMethodDetails', () => {
 	} );
 
 	function renderCard( card ) {
-		return render( <PaymentMethodDetails payment={ { card: card, type: 'card' } } /> );
+		return render(
+			<PaymentMethodDetails payment={ { card: card, type: 'card' } } />
+		);
 	}
 } );
-

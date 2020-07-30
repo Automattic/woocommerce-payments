@@ -32,7 +32,7 @@ const renderStatusChip = ( status ) => {
 		type = 'light';
 	}
 
-	return ( <Chip message={ description } type={ type } isCompact /> );
+	return <Chip message={ description } type={ type } isCompact />;
 };
 
 const renderPaymentsStatus = ( paymentsEnabled ) => {
@@ -129,28 +129,33 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			'woocommerce-payments'
 		);
 	} else if ( 'rejected.fraud' === status ) {
-		description = __( 'This account has been rejected because of suspected fraudulent activity.', 'woocommerce-payments' );
+		description = __(
+			'This account has been rejected because of suspected fraudulent activity.',
+			'woocommerce-payments'
+		);
 	} else if ( 'rejected.terms_of_service' === status ) {
-		description = __( 'This account has been rejected due to a Terms of Service violation.', 'woocommerce-payments' );
+		description = __(
+			'This account has been rejected due to a Terms of Service violation.',
+			'woocommerce-payments'
+		);
 	} else if ( status.startsWith( 'rejected' ) ) {
-		description = __( 'This account has been rejected.', 'woocommerce-payments' );
+		description = __(
+			'This account has been rejected.',
+			'woocommerce-payments'
+		);
 	}
 
 	if ( ! description ) {
 		return null;
 	}
 
-	return ( <div className="account-status__desc">{ description }</div> );
+	return <div className="account-status__desc">{ description }</div>;
 };
 
 const AccountStatus = ( props ) => {
 	const { accountStatus } = props;
 	if ( accountStatus.error ) {
-		return (
-			<div>
-				{ __( 'Error determining the connection status.' ) }
-			</div>
-		);
+		return <div>{ __( 'Error determining the connection status.' ) }</div>;
 	}
 
 	return (

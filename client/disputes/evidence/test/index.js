@@ -10,6 +10,10 @@ import { render, fireEvent } from '@testing-library/react';
  */
 import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 
+jest.mock( 'data', () => ( {
+	useDisputeEvidence: jest.fn(),
+} ) );
+
 /* eslint-disable camelcase */
 const disputeNeedsResponse = {
 	id: 'dp_asdfghjkl',
@@ -110,8 +114,7 @@ describe( 'Dispute evidence form', () => {
 		expect( window.confirm ).toHaveBeenCalledWith(
 			"Are you sure you're ready to submit this evidence? Evidence submissions are final."
 		);
-	}
-	);
+	} );
 
 	test( 'onSave called after confirmation only', () => {
 		const onSave = jest.fn();
@@ -129,9 +132,7 @@ describe( 'Dispute evidence form', () => {
 		const submitButton = getByRole( 'button', { name: /submit.*/i } );
 
 		window.confirm = jest.fn();
-		window.confirm
-		.mockReturnValueOnce( false )
-		.mockReturnValueOnce( true );
+		window.confirm.mockReturnValueOnce( false ).mockReturnValueOnce( true );
 
 		// Test not confirmed case.
 		fireEvent.click( submitButton );

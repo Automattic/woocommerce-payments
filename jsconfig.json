@@ -13,6 +13,8 @@
     "docker",
     "includes",
     "node_modules",
-    "vendor"
+    "vendor",
+    "tests/e2e/docker",
+    "tests/e2e/deps",
   ]
 }

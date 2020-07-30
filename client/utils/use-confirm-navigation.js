@@ -23,7 +23,7 @@ const useConfirmNavigation = ( getMessage, deps ) => {
 			return;
 		}
 
-		const handler = event => {
+		const handler = ( event ) => {
 			event.preventDefault();
 			event.returnValue = '';
 		};

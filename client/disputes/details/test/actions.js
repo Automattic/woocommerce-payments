@@ -40,7 +40,8 @@ describe( 'Dispute details actions', () => {
 			/>
 		);
 
-		window.confirm = jest.fn()
+		window.confirm = jest
+			.fn()
 			.mockReturnValueOnce( false )
 			.mockReturnValueOnce( true );
 
@@ -52,14 +53,22 @@ describe( 'Dispute details actions', () => {
 
 	test( 'renders correctly for closed dispute', () => {
 		const { container } = render(
-			<Actions id="dp_mock" needsResponse={ false } isSubmitted={ false } />
+			<Actions
+				id="dp_mock"
+				needsResponse={ false }
+				isSubmitted={ false }
+			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders correctly for dispute with evidence submitted', () => {
 		const { container } = render(
-			<Actions id="dp_mock" needsResponse={ false } isSubmitted={ true } />
+			<Actions
+				id="dp_mock"
+				needsResponse={ false }
+				isSubmitted={ true }
+			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );

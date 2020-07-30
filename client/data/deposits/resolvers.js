@@ -25,11 +25,11 @@ const convertStripePayoutToDeposit = ( stripePayout ) => ( {
 	type: stripePayout.amount > 0 ? 'deposit' : 'withdrawal',
 	amount: stripePayout.amount,
 	status: stripePayout.status,
-	bankAccount: stripePayout.destination.bank_name && (
+	bankAccount:
+		stripePayout.destination.bank_name &&
 		`${ stripePayout.destination.bank_name } ` +
-		`•••• ${ stripePayout.destination.last4 } ` +
-		`(${ stripePayout.destination.currency.toUpperCase() })`
-	),
+			`•••• ${ stripePayout.destination.last4 } ` +
+			`(${ stripePayout.destination.currency.toUpperCase() })`,
 } );
 
 /**
@@ -51,7 +51,11 @@ export function* getDeposit( id ) {
 
 		yield updateDeposit( result );
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposit.', 'woocommerce-payments' ) );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving deposit.', 'woocommerce-payments' )
+		);
 	}
 }
 
@@ -68,16 +72,24 @@ export function* getDepositsOverview() {
 		// TODO Remove this mapping when these deposits are formatted by the server.
 		if ( result.last_deposit && result.last_deposit.object === 'payout' ) {
 			// eslint-disable-next-line camelcase
-			result.last_deposit = convertStripePayoutToDeposit( result.last_deposit );
+			result.last_deposit = convertStripePayoutToDeposit(
+				result.last_deposit
+			);
 		}
 		if ( result.next_deposit && result.next_deposit.object === 'payout' ) {
 			// eslint-disable-next-line camelcase
-			result.next_deposit = convertStripePayoutToDeposit( result.next_deposit );
+			result.next_deposit = convertStripePayoutToDeposit(
+				result.next_deposit
+			);
 		}
 
 		yield updateDepositsOverview( result );
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposits overview.', 'woocommerce-payments' ) );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving deposits overview.', 'woocommerce-payments' )
+		);
 		yield updateErrorForDepositsOverview( e );
 	}
 }
@@ -88,20 +100,21 @@ export function* getDepositsOverview() {
  * @param {string} query Data on which to parameterize the selection.
  */
 export function* getDeposits( query ) {
-	const path = addQueryArgs(
-		`${ NAMESPACE }/deposits`,
-		{
-			page: query.paged,
-			pagesize: query.perPage,
-		}
-	);
+	const path = addQueryArgs( `${ NAMESPACE }/deposits`, {
+		page: query.paged,
+		pagesize: query.perPage,
+	} );
 
 	try {
 		const results = yield apiFetch( { path } ) || {};
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.
-		if ( results.data && results.data.length && results.data[ 0 ].object === 'payout' ) {
+		if (
+			results.data &&
+			results.data.length &&
+			results.data[ 0 ].object === 'payout'
+		) {
 			results.data = results.data.map( convertStripePayoutToDeposit );
 		}
 
@@ -109,10 +122,16 @@ export function* getDeposits( query ) {
 
 		// Update resolution state on getDeposit selector for each result.
 		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDeposit', [ results.data[ i ].id ] );
+			yield dispatch( STORE_NAME, 'finishResolution', 'getDeposit', [
+				results.data[ i ].id,
+			] );
 		}
 	} catch ( e ) {
-		yield dispatch( 'core/notices', 'createErrorNotice', __( 'Error retrieving deposits.', 'woocommerce-payments' ) );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving deposits.', 'woocommerce-payments' )
+		);
 		yield updateErrorForDepositQuery( query, null, e );
 	}
 }
