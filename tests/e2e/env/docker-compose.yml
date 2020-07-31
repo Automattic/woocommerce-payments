@@ -3,7 +3,7 @@ version: '3'
 services:
   wordpress:
     build: ./wordpress-xdebug
-    image: wordpress-xdebug
+    image: wcp_e2e_wordpress
     container_name: wcp_e2e_wordpress
     depends_on:
       - db
