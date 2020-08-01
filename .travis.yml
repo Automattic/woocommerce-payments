@@ -39,14 +39,14 @@ matrix:
   include:
   - name: "Coding standard check"
     php: 7.2
-    env: WP_VERSION=latest RUN_PHPCS=1
+    env: WP_VERSION=latest WC_VERSION=4.3.0 RUN_PHPCS=1
     stage: test
   - php: 7.3
-    env: WP_VERSION=latest
+    env: WP_VERSION=latest WC_VERSION=4.3.0
     stage: test
   - name: "PHP 7.3 unit tests using WordPress nightly"
     php: 7.3
-    env: WP_VERSION=nightly
+    env: WP_VERSION=nightly WC_VERSION=4.3.0
     stage: test
   - name: "E2E tests"
     stage: e2e-testing
