@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ $# -lt 3 ] && [ -z $WCPAY_DIR ]; then
-	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
+	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [wc-version] [skip-database-creation]"
 	exit 1
 fi
 
@@ -10,7 +10,8 @@ DB_USER=${2-root}
 DB_PASS=${3-$MYSQL_ROOT_PASSWORD}
 DB_HOST=${4-$WORDPRESS_DB_HOST}
 WP_VERSION=${5-latest}
-SKIP_DB_CREATE=${6-false}
+WC_VERSION=${6-latest}
+SKIP_DB_CREATE=${7-false}
 
 TMPDIR=${TMPDIR-/tmp}
 TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
@@ -23,6 +24,18 @@ download() {
     elif [ `which wget` ]; then
         wget -nv -O "$2" "$1"
     fi
+}
+
+wp() {
+	WORKING_DIR="$PWD"
+	cd "$WP_CORE_DIR"
+
+	if [ ! -d $TMPDIR/wp-cli.phar ]; then
+		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
+	fi
+	php "$TMPDIR/wp-cli.phar" $@
+
+	cd "$WORKING_DIR"
 }
 
 if [[ $WP_VERSION =~ ^[0-9]+\.[0-9]+\-(beta|RC)[0-9]+$ ]]; then
@@ -54,45 +67,24 @@ fi
 set -e
 
 install_wp() {
-
 	if [ -d $WP_CORE_DIR ]; then
 		return;
 	fi
 
 	mkdir -p $WP_CORE_DIR
 
-	if [[ $WP_VERSION == 'nightly' || $WP_VERSION == 'trunk' ]]; then
-		mkdir -p $TMPDIR/wordpress-nightly
-		download https://wordpress.org/nightly-builds/wordpress-latest.zip  $TMPDIR/wordpress-nightly/wordpress-nightly.zip
-		unzip -q $TMPDIR/wordpress-nightly/wordpress-nightly.zip -d $TMPDIR/wordpress-nightly/
-		mv $TMPDIR/wordpress-nightly/wordpress/* $WP_CORE_DIR
-	else
-		if [ $WP_VERSION == 'latest' ]; then
-			local ARCHIVE_NAME='latest'
-		elif [[ $WP_VERSION =~ [0-9]+\.[0-9]+ ]]; then
-			# https serves multiple offers, whereas http serves single.
-			download https://api.wordpress.org/core/version-check/1.7/ $TMPDIR/wp-latest.json
-			if [[ $WP_VERSION =~ [0-9]+\.[0-9]+\.[0] ]]; then
-				# version x.x.0 means the first release of the major version, so strip off the .0 and download version x.x
-				LATEST_VERSION=${WP_VERSION%??}
-			else
-				# otherwise, scan the releases and get the most up to date minor version of the major release
-				local VERSION_ESCAPED=`echo $WP_VERSION | sed 's/\./\\\\./g'`
-				LATEST_VERSION=$(grep -o '"version":"'$VERSION_ESCAPED'[^"]*' $TMPDIR/wp-latest.json | sed 's/"version":"//' | head -1)
-			fi
-			if [[ -z "$LATEST_VERSION" ]]; then
-				local ARCHIVE_NAME="wordpress-$WP_VERSION"
-			else
-				local ARCHIVE_NAME="wordpress-$LATEST_VERSION"
-			fi
-		else
-			local ARCHIVE_NAME="wordpress-$WP_VERSION"
-		fi
-		download https://wordpress.org/${ARCHIVE_NAME}.tar.gz  $TMPDIR/wordpress.tar.gz
-		tar --strip-components=1 -zxmf $TMPDIR/wordpress.tar.gz -C $WP_CORE_DIR
-	fi
+	wp core download --version=$WP_VERSION
 
 	download https://raw.github.com/markoheijnen/wp-mysqli/master/db.php $WP_CORE_DIR/wp-content/db.php
+}
+
+configure_wp() {
+	WP_SITE_URL="http://local.wordpress.test"
+
+	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
+		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
+	fi
+	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
 
 install_test_suite() {
@@ -155,40 +147,26 @@ install_db() {
 	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
 }
 
-install_deps() {
-	WP_SITE_URL="http://local.wordpress.test"
-	WORKING_DIR="$PWD"
+install_woocommerce() {
+	WC_INSTALL_EXTRA=''
+	INSTALLED_WC_VERSION=$(wp plugin get woocommerce --field=version)
 
-	# copy WooCommerce files to plugins folder so databases can be created before the tests are run
-	if [[ ! -d "$WP_CORE_DIR/wp-content/plugins/woocommerce" ]]; then
-		if [[ ! -d "$WCPAY_DIR/vendor/woocommerce/woocommerce" ]]; then
-			echo "WooCommerce could not be found, installing composer dependencies..."
-			# install composer dependencies
-			cd $WCPAY_DIR
-			download https://getcomposer.org/composer-stable.phar  "$TMPDIR/composer.phar"
-			php "$TMPDIR/composer.phar" install
+	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then
+		# WooCommerce is already installed, we just must update it to the latest stable version
+		wp plugin update woocommerce
+	else
+		if [[ $INSTALLED_WC_VERSION != $WC_VERSION ]]; then
+			WC_INSTALL_EXTRA+=" --force"
 		fi
-		cp -r "$WCPAY_DIR/vendor/woocommerce/woocommerce" "$WP_CORE_DIR/wp-content/plugins"
+		if [[ $WC_VERSION != 'latest' ]]; then
+			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
+		fi
+		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
 	fi
-
-	# Set up WordPress and activate WooCommerce using wp-cli
-	# This is needed to create test databases before tests are run and avoid warnings when running them for the first time
-	download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
-
-	cd "$WP_CORE_DIR"
-	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
-		php "$TMPDIR/wp-cli.phar" core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_ --path=$WP_CORE_DIR --quiet
-	fi
-	php "$TMPDIR/wp-cli.phar" core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --path=$WP_CORE_DIR --skip-email --quiet
-	php "$TMPDIR/wp-cli.phar" plugin activate woocommerce --path=$WP_CORE_DIR --quiet
-
-	# Back to original dir
-	cd "$WORKING_DIR"
 }
 
 install_wp
+configure_wp
 install_test_suite
 install_db
-if [[ ! -z $WCPAY_DIR ]]; then
-	install_deps
-fi
+install_woocommerce

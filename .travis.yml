@@ -28,7 +28,7 @@ stages:
   - e2e-testing
 
 env:
-  - WP_VERSION=latest
+  - WP_VERSION=latest WC_VERSION=4.3.0
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
@@ -61,7 +61,7 @@ before_install:
 install:
   - npm ci
   - composer install
-  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION false
+  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
 
 script:
   - bash bin/phpunit.sh
