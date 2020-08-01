@@ -154,8 +154,10 @@ install_woocommerce() {
 	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then
 		# WooCommerce is already installed, we just must update it to the latest stable version
 		wp plugin update woocommerce
+		wp plugin activate woocommerce
 	else
 		if [[ $INSTALLED_WC_VERSION != $WC_VERSION ]]; then
+			# WooCommerce is installed but it's the wrong version, overwrite the installed version
 			WC_INSTALL_EXTRA+=" --force"
 		fi
 		if [[ $WC_VERSION != 'latest' ]]; then
