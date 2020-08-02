@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use \Automattic\WooCommerce\Admin\Features\Onboarding;
 
 /**
  * Class handling any account connection functionality
@@ -186,6 +187,49 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Whether to do a full-page redirect to the WCPay onboarding page. It has several exceptions, to prevent
+	 * "hijacking" the multiple WC/WC-Admin onboarding flows.
+	 * This function assumes that the Stripe account hasn't been setup yet.
+	 *
+	 * @return bool True if the user should be redirected to the WCPay onboarding page, false otherwise.
+	 */
+	private function should_redirect_to_onboarding() {
+		// If the user is in the WCPay settings screen and hasn't onboarded yet, always redirect.
+		if ( WC_Payment_Gateway_WCPay::is_current_page_settings() ) {
+			return true;
+		}
+
+		// If already redirected to onboarding in the past, don't do it again.
+		if ( get_option( 'wcpay_redirected_to_onboarding', false ) ) {
+			return false;
+		}
+
+		// If onboarding new accounts is disabled, so it's pointless to redirect users to the splash page.
+		if ( self::is_on_boarding_disabled() ) {
+			return false;
+		}
+
+		// Don't hijack WP-Admin if the user is bulk-activating plugins.
+		if ( isset( $_GET['activate-multi'] ) ) {
+			return false;
+		}
+
+		// Don't redirect if the user is in the WC setup wizard.
+		$current_page = isset( $_GET['page'] ) ? wp_unslash( $_GET['page'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( 'wc-setup' === $current_page ) {
+			return false;
+		}
+
+		// Don't redirect if the user is on the WC-Admin setup profiler or WC-Admin dashboard with the task list.
+		if ( 'wc-admin' === $current_page && empty( $_GET['path'] )
+			&& ( Onboarding::should_show_profiler() || Onboarding::should_show_tasks() ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the account is connected properly.
@@ -203,9 +247,7 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
-				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) )
-			) {
+			if ( $this->should_redirect_to_onboarding() ) {
 				update_option( 'wcpay_redirected_to_onboarding', true );
 				$this->redirect_to_onboarding_page();
 			}
