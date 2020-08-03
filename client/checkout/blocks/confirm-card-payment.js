@@ -6,7 +6,11 @@
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
  * @returns {Object}                An object, which contains the result from the action.
  */
-export default async function confirmCardPayment( api, paymentDetails, emitResponse ) {
+export default async function confirmCardPayment(
+	api,
+	paymentDetails,
+	emitResponse
+) {
 	const { redirect } = paymentDetails;
 
 	try {
@@ -20,7 +24,10 @@ export default async function confirmCardPayment( api, paymentDetails, emitRespo
 			};
 		}
 
-		const finalRedirect = await confirmation;
+		// `confirmIntent` also returns `isOrderPage`, but that's not supported in blocks yet.
+		const { request } = confirmation;
+
+		const finalRedirect = await request;
 		return {
 			type: 'success',
 			redirectUrl: finalRedirect,

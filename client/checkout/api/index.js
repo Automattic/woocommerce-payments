@@ -28,10 +28,7 @@ export default class WCPayAPI {
 	 */
 	getStripe() {
 		if ( ! this.stripe ) {
-			const {
-				publishableKey,
-				accountId,
-			} = this.options;
+			const { publishableKey, accountId } = this.options;
 
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
@@ -51,7 +48,7 @@ export default class WCPayAPI {
 	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
 
-		return new class {
+		return new ( class {
 			constructor() {
 				this.args = {
 					type: 'card',
@@ -73,11 +70,11 @@ export default class WCPayAPI {
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
-				if ( ( 'undefined' === typeof value ) || 0 === value.length ) {
+				if ( 'undefined' === typeof value || 0 === value.length ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
 				}
 
-				if ( ( 'undefined' !== typeof value ) && 0 < value.length ) {
+				if ( 'undefined' !== typeof value && 0 < value.length ) {
 					return value;
 				}
 			}
@@ -114,7 +111,8 @@ export default class WCPayAPI {
 			 * @return {Object} The payment method object if successfully loaded.
 			 */
 			send() {
-				return stripe.createPaymentMethod( this.args )
+				return stripe
+					.createPaymentMethod( this.args )
 					.then( ( paymentMethod ) => {
 						if ( paymentMethod.error ) {
 							throw paymentMethod.error;
@@ -123,7 +121,7 @@ export default class WCPayAPI {
 						return paymentMethod;
 					} );
 			}
-		};
+		} )();
 	}
 
 	/**
@@ -140,18 +138,47 @@ export default class WCPayAPI {
 			return true;
 		}
 
-		const orderId = partials[ 1 ];
+		let orderId = partials[ 1 ];
 		const clientSecret = partials[ 2 ];
 
-		return this.getStripe().confirmCardPayment( clientSecret )
+		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
+		const isOrderPage = orderPayIndex > -1;
+
+		// If we're on the Pay for Order page, get the order ID
+		// directly from the URL instead of relying on the hash.
+		// The checkout URL does not contain the string 'order-pay'.
+		// The Pay for Order page contains the string 'order-pay' and
+		// can have these formats:
+		// Plain permalinks:
+		// /?page_id=7&order-pay=189&pay_for_order=true&key=wc_order_key
+		// Non-plain permalinks:
+		// /checkout/order-pay/189/
+		// Match for consecutive digits after the string 'order-pay' to get the order ID.
+		const orderIdPartials =
+			isOrderPage &&
+			redirectUrl.substring( orderPayIndex ).match( /\d+/ );
+		if ( orderIdPartials ) {
+			orderId = orderIdPartials[ 0 ];
+		}
+
+		const request = this.getStripe()
+			.confirmCardPayment( clientSecret )
 			// ToDo: Switch to an async function once it works with webpack.
 			.then( ( result ) => {
+				const intentId =
+					( result.paymentIntent && result.paymentIntent.id ) ||
+					( result.error &&
+						result.error.payment_intent &&
+						result.error.payment_intent.id );
+
 				const ajaxCall = this.request( getConfig( 'ajaxUrl' ), {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
 					// eslint-disable-next-line camelcase
 					_ajax_nonce: getConfig( 'updateOrderStatusNonce' ),
+					// eslint-disable-next-line camelcase
+					intent_id: intentId,
 				} );
 
 				return [ ajaxCall, result.error ];
@@ -171,5 +198,10 @@ export default class WCPayAPI {
 					return result.return_url;
 				} );
 			} );
+
+		return {
+			request,
+			isOrderPage,
+		};
 	}
 }

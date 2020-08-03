@@ -7,7 +7,7 @@ import { PAYMENT_METHOD_NAME } from '../constants.js';
 import { getConfig } from './../utils.js';
 import WCPayAPI from './../api';
 
-jQuery( function( $ ) {
+jQuery( function ( $ ) {
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {
@@ -16,10 +16,13 @@ jQuery( function( $ ) {
 	}
 
 	// Create an API object, which will be used throughout the checkout.
-	const api = new WCPayAPI( {
-		publishableKey,
-		accountId: getConfig( 'accountId' ),
-	}, jQuery.post );
+	const api = new WCPayAPI(
+		{
+			publishableKey,
+			accountId: getConfig( 'accountId' ),
+		},
+		jQuery.post
+	);
 	const elements = api.getStripe().elements();
 
 	// In the future this object will be loaded with customer information through `wp_localize_script`.
@@ -34,7 +37,7 @@ jQuery( function( $ ) {
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', function() {
+	$( document.body ).on( 'updated_checkout', () => {
 		// Don't re-mount if already mounted in DOM.
 		if ( $( '#wcpay-card-element' ).children().length ) {
 			return;
@@ -44,34 +47,68 @@ jQuery( function( $ ) {
 		cardElement.mount( '#wcpay-card-element' );
 	} );
 
-	if ( $( 'form#add_payment_method' ).length || $( 'form#order_review' ).length ) {
+	if (
+		$( 'form#add_payment_method' ).length ||
+		$( 'form#order_review' ).length
+	) {
 		cardElement.mount( '#wcpay-card-element' );
 	}
 
 	// Update the validation state based on the element's state.
-	cardElement.addEventListener( 'change', function( event ) {
+	cardElement.addEventListener( 'change', ( event ) => {
 		const displayError = $( '#wcpay-errors' );
 		if ( event.error ) {
-			displayError.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' ).text( event.error.message );
+			displayError
+				.html( '<ul class="woocommerce-error"><li /></ul>' )
+				.find( 'li' )
+				.text( event.error.message );
 		} else {
 			displayError.empty();
 		}
 	} );
 
+	/**
+	 * Block UI to indicate processing and avoid duplicate submission.
+	 *
+	 * @param {object} $form The jQuery object for the form.
+	 */
+	const blockUI = ( $form ) => {
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+	};
+
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
-		const messageWrapper = '<ul class="woocommerce-error" role="alert">' + errorMessage + '</ul>';
-		const $container = $( '.woocommerce-notices-wrapper, form.checkout' ).first();
+		const messageWrapper =
+			'<ul class="woocommerce-error" role="alert">' +
+			errorMessage +
+			'</ul>';
+		const $container = $(
+			'.woocommerce-notices-wrapper, form.checkout'
+		).first();
 
 		if ( ! $container.length ) {
 			return;
 		}
 
 		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
-		$( '.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message' ).remove();
-		$container.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' + messageWrapper + '</div>' );
-		$container.find( '.input-text, select, input:checkbox' ).trigger( 'validate' ).blur();
+		$(
+			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
+		).remove();
+		$container.prepend(
+			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
+				messageWrapper +
+				'</div>'
+		);
+		$container
+			.find( '.input-text, select, input:checkbox' )
+			.trigger( 'validate' )
+			.blur();
 
 		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
 		if ( ! scrollElement.length ) {
@@ -99,44 +136,53 @@ jQuery( function( $ ) {
 			return;
 		}
 
-		// Block UI to indicate processing and avoid duplicate submission.
-		$form.addClass( 'processing' ).block( {
-			message: null,
-			overlayCSS: {
-				background: '#fff',
-				opacity: 0.6,
-			},
-		} );
+		blockUI( $form );
 
-		const request = api.generatePaymentMethodRequest( {
-			card: cardElement,
-		}, preparedCustomerData );
+		const request = api.generatePaymentMethodRequest(
+			{
+				card: cardElement,
+			},
+			preparedCustomerData
+		);
 
 		// Populate the necessary billing details.
-		request.setBillingDetail( 'name', ( $( '#billing_first_name' ).val() + ' ' + $( '#billing_last_name' ).val() ).trim() );
+		request.setBillingDetail(
+			'name',
+			(
+				$( '#billing_first_name' ).val() +
+				' ' +
+				$( '#billing_last_name' ).val()
+			).trim()
+		);
 		request.setBillingDetail( 'email', $( '#billing_email' ).val() );
 		request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
 		request.setAddressDetail( 'city', $( '#billing_city' ).val() );
 		request.setAddressDetail( 'country', $( '#billing_country' ).val() );
 		request.setAddressDetail( 'line1', $( '#billing_address_1' ).val() );
 		request.setAddressDetail( 'line2', $( '#billing_address_2' ).val() );
-		request.setAddressDetail( 'postal_code', $( '#billing_postcode' ).val() );
+		request.setAddressDetail(
+			'postal_code',
+			$( '#billing_postcode' ).val()
+		);
 		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
 
-		request.send()
+		request
+			.send()
 			.then( ( { paymentMethod: { id } } ) => {
 				// Flag that the payment method has been successfully generated so that we can allow the form
 				// submission next time.
 				paymentMethodGenerated = true;
 
 				// Populate form with the payment method.
-				const paymentMethodInput = document.getElementById( 'wcpay-payment-method' );
+				const paymentMethodInput = document.getElementById(
+					'wcpay-payment-method'
+				);
 				paymentMethodInput.value = id;
 
 				// Re-submit the form.
 				$form.removeClass( 'processing' ).submit();
 			} )
-			.catch( function( error ) {
+			.catch( ( error ) => {
 				$form.removeClass( 'processing' ).unblock();
 				showError( error.message );
 			} );
@@ -145,52 +191,78 @@ jQuery( function( $ ) {
 		return false;
 	};
 
-	// Handle the checkout form when WooCommerce Payments is chosen.
-	$( 'form.checkout' ).on( 'checkout_place_order_' + PAYMENT_METHOD_NAME, function() {
-		return handleOnPaymentFormSubmit( $( this ) );
-	} );
-
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', function() {
-		if ( $( '#payment_method_' + PAYMENT_METHOD_NAME ).is( ':checked' ) ) {
-			return handleOnPaymentFormSubmit( $( '#order_review' ) );
-		}
-	} );
-
 	/**
-	 * Listen to hash changes in order to show the authentication modal.
+	 * Displays the authentication modal to the user if needed.
 	 */
-	window.addEventListener( 'hashchange', function( event ) {
-		const confirmation = api.confirmIntent( event.newURL );
+	const maybeShowAuthenticationModal = () => {
+		const confirmation = api.confirmIntent( window.location.href );
 
 		// Boolean `true` means that there is nothing to confirm.
 		if ( true === confirmation ) {
 			return;
 		}
 
+		const { request, isOrderPage } = confirmation;
+
+		if ( isOrderPage ) {
+			blockUI( $( '#order_review' ) );
+			$( '#payment' ).hide( 500 );
+		}
+
 		// Cleanup the URL.
 		// https://stackoverflow.com/questions/1397329/
 		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
 		// 5298684#5298684
-		history.replaceState( '', document.title, window.location.pathname + window.location.search );
+		history.replaceState(
+			'',
+			document.title,
+			window.location.pathname + window.location.search
+		);
 
-		confirmation
+		request
 			.then( ( redirectUrl ) => {
 				window.location = redirectUrl;
 			} )
 			.catch( ( error ) => {
 				$( 'form.checkout' ).removeClass( 'processing' ).unblock();
+				$( '#order_review' ).removeClass( 'processing' ).unblock();
+				$( '#payment' ).show( 500 );
 
 				let errorMessage = error.message;
 
 				// If this is a generic error, we probably don't want to display the error message to the user,
 				// so display a generic message instead.
 				if ( error instanceof Error ) {
-					// eslint-disable-next-line camelcase
 					errorMessage = getConfig( 'genericErrorMessage' );
 				}
 
 				showError( errorMessage );
 			} );
+	};
+
+	// Handle the checkout form when WooCommerce Payments is chosen.
+	$( 'form.checkout' ).on(
+		'checkout_place_order_' + PAYMENT_METHOD_NAME,
+		() => {
+			return handleOnPaymentFormSubmit( $( this ) );
+		}
+	);
+
+	// Handle the Pay for Order form if WooCommerce Payments is chosen.
+	$( '#order_review' ).on( 'submit', () => {
+		if ( $( '#payment_method_woocommerce_payments' ).is( ':checked' ) ) {
+			return handleOnPaymentFormSubmit( $( '#order_review' ) );
+		}
+	} );
+
+	// On every page load, check to see whether we should display the authentication
+	// modal and display it if it should be displayed.
+	maybeShowAuthenticationModal();
+
+	// Handle hash change - used when authenticating payment with SCA on checkout page.
+	window.addEventListener( 'hashchange', ( event ) => {
+		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
+			maybeShowAuthenticationModal();
+		}
 	} );
 } );
