@@ -31,7 +31,7 @@
     "watch": "webpack --watch",
     "start": "npm run watch",
     "dev": "npm run up && npm run watch",
-    "up": "docker-compose up -d",
+    "up": "docker-compose up --build --force-recreate -d",
     "down": "docker-compose down",
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css",
