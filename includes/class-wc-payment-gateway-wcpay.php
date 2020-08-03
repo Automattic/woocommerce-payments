@@ -449,7 +449,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$this->get_level3_data_from_order( $order )
 				);
 
-				// TODO: We're not handling *all* sorts of things here. For example, redirecting to a 3DS auth flow.
 				$intent_id = $intent->get_id();
 				$status    = $intent->get_status();
 
