@@ -112,7 +112,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Guest' );
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Guest',
+				]
+			);
 
 		$customer_id = $this->customer_service->update_customer_for_user(
 			'cus_test12345',
@@ -136,7 +143,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Username: testUser',
+				]
+			)
 			->willThrowException( new WC_Payments_API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		// Check that the API call to create customer happens.
@@ -167,7 +181,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
-			->with( 'cus_test12345', 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Username: testUser',
+				]
+			)
 			->willThrowException( new WC_Payments_API_Exception( 'Generic Error Message', 'generic_error', 500 ) );
 
 		$this->expectException( WC_Payments_API_Exception::class );
@@ -179,5 +200,91 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 			'Test User',
 			'test.user@example.com'
 		);
+	}
+
+	public function test_set_default_payment_method_for_customer() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_customer' )
+			->with(
+				'cus_12345',
+				[
+					'invoice_settings' => [ 'default_payment_method' => 'pm_mock' ],
+				]
+			);
+
+			$this->customer_service->set_default_payment_method_for_customer( 'cus_12345', 'pm_mock' );
+	}
+
+	public function test_get_payment_methods_for_customer_fetches_from_api() {
+		$mock_payment_methods = [
+			[ 'id' => 'pm_mock1' ],
+			[ 'id' => 'pm_mock2' ],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_methods' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ 'data' => $mock_payment_methods ] );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+
+		$this->assertEquals( $mock_payment_methods, $response );
+	}
+
+	public function test_get_payment_methods_for_customer_fetches_from_transient() {
+		$mock_payment_methods = [
+			[ 'id' => 'pm_mock1' ],
+			[ 'id' => 'pm_mock2' ],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_methods' )
+			->with( 'cus_12345', 'card' )
+			->willReturn( [ 'data' => $mock_payment_methods ] );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$this->assertEquals( $mock_payment_methods, $response );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$this->assertEquals( $mock_payment_methods, $response );
+	}
+
+	public function test_get_payment_methods_for_customer_no_customer() {
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_payment_methods' );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( '' );
+		$this->assertEquals( [], $response );
+	}
+
+	public function test_update_payment_method_with_billing_details_from_order() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'city'        => 'WooCity',
+							'country'     => 'US',
+							'line1'       => 'WooAddress',
+							'postal_code' => '12345',
+							'state'       => 'NY',
+						],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
+						'phone'   => '555-32123',
+					],
+				]
+			);
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
 	}
 }

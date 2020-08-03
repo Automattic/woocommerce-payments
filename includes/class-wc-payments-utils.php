@@ -190,4 +190,34 @@ class WC_Payments_Utils {
 		);
 		return $terms;
 	}
+
+	/**
+	 * Extract the billing details from the WC order
+	 *
+	 * @param WC_Order $order Order to extract the billing details from.
+	 *
+	 * @return array
+	 */
+	public static function get_billing_details_from_order( $order ) {
+		$billing_details = [
+			'address' => [
+				'city'        => $order->get_billing_city(),
+				'country'     => $order->get_billing_country(),
+				'line1'       => $order->get_billing_address_1(),
+				'line2'       => $order->get_billing_address_2(),
+				'postal_code' => $order->get_billing_postcode(),
+				'state'       => $order->get_billing_state(),
+			],
+			'email'   => $order->get_billing_email(),
+			'name'    => trim( $order->get_formatted_billing_full_name() ),
+			'phone'   => $order->get_billing_phone(),
+		];
+
+		$remove_empty_entries = function ( $value ) {
+			return ! empty( $value );
+		};
+
+		$billing_details['address'] = array_filter( $billing_details['address'], $remove_empty_entries );
+		return array_filter( $billing_details, $remove_empty_entries );
+	}
 }

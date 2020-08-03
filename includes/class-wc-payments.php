@@ -52,6 +52,13 @@ class WC_Payments {
 	private static $customer_service;
 
 	/**
+	 * Instance of WC_Payments_Token_Service, created in init function.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private static $token_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -87,12 +94,14 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
+		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-intent-authentication-exception.php';
 
 		self::$account          = new WC_Payments_Account( self::$api_client );
 		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
+		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 
-		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service );
+		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
