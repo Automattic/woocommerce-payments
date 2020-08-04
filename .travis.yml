@@ -68,3 +68,8 @@ script:
   - bash bin/phpcs.sh
   - npm run lint
   - npm test
+
+branches:
+  only:
+    - master
+    - /^feature\/.*$/
