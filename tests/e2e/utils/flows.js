@@ -224,6 +224,23 @@ const CustomerFlow = {
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	},
 
+	selectNewPaymentMethod: async () => {
+		if (
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
+		) {
+			await expect( page ).toClick(
+				'#wc-woocommerce_payments-payment-token-new'
+			);
+		}
+	},
+
+	toggleSavePaymentMethod: async () => {
+		await expect( page ).toClick(
+			'#wc-woocommerce_payments-new-payment-method'
+		);
+	},
+
 	selectSavedPaymentMethod: async ( label ) => {
 		await expect( page ).toClick( 'label', { text: label } );
 	},
