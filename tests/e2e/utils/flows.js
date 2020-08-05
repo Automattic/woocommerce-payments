@@ -41,6 +41,7 @@ const MY_ACCOUNT_ORDERS = baseUrl + 'my-account/orders';
 const MY_ACCOUNT_DOWNLOADS = baseUrl + 'my-account/downloads';
 const MY_ACCOUNT_ADDRESSES = baseUrl + 'my-account/edit-address';
 const MY_ACCOUNT_ACCOUNT_DETAILS = baseUrl + 'my-account/edit-account';
+const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 
 const getProductColumnExpression = ( productTitle ) =>
 	'td[@class="product-name" and ' +
@@ -130,6 +131,12 @@ const CustomerFlow = {
 		} );
 	},
 
+	goToPaymentMethods: async () => {
+		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
 	goToShop: async () => {
 		await page.goto( SHOP_PAGE, {
 			waitUntil: 'networkidle0',
@@ -185,6 +192,20 @@ const CustomerFlow = {
 		] );
 	},
 
+	logout: async () => {
+		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await expect( page.title() ).resolves.toMatch( 'My account' );
+		await Promise.all( [
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			page.click(
+				'.woocommerce-MyAccount-navigation-link--customer-logout a'
+			),
+		] );
+	},
+
 	productIsInCart: async ( productTitle, quantity = null ) => {
 		const cartItemArgs = quantity ? { qty: quantity } : {};
 		const cartItemXPath = getCartItemExpression(
@@ -193,6 +214,18 @@ const CustomerFlow = {
 		);
 
 		await expect( page.$x( cartItemXPath ) ).resolves.toHaveLength( 1 );
+	},
+
+	deleteSavedPaymentMethod: async ( label ) => {
+		const [ paymentMethodRow ] = await page.$x(
+			`//tr[contains(., '${ label }')]`
+		);
+		await expect( paymentMethodRow ).toClick( '.button.delete' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	},
+
+	selectSavedPaymentMethod: async ( label ) => {
+		await expect( page ).toClick( 'label', { text: label } );
 	},
 
 	fillBillingDetails: async ( customerBillingDetails ) => {
