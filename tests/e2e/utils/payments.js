@@ -55,16 +55,14 @@ export async function confirmCardAuthentication(
 	await button.click();
 }
 
-export async function setupProductCheckout() {
+export async function setupProductCheckout( billingDetails ) {
 	await CustomerFlow.goToShop();
 	await CustomerFlow.addToCartFromShopPage(
 		config.get( 'products.simple.name' )
 	);
 	await CustomerFlow.goToCheckout();
 	await uiUnblocked();
-	await CustomerFlow.fillBillingDetails(
-		config.get( 'addresses.customer.billing' )
-	);
+	await CustomerFlow.fillBillingDetails( billingDetails );
 	await uiUnblocked();
 	await expect( page ).toClick(
 		'.wc_payment_method.payment_method_woocommerce_payments'

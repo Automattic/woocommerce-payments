@@ -125,6 +125,10 @@ const PaymentsCustomerFlow = {
 	selectSavedPaymentMethod: async ( label ) => {
 		await expect( page ).toClick( 'label', { text: label } );
 	},
+
+	toggleCreateAccount: async () => {
+		await expect( page ).toClick( '#createaccount' );
+	},
 };
 
 const CustomerFlow = {

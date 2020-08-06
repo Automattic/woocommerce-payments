@@ -10,6 +10,9 @@
       "username": "customer",
       "password": "password",
       "email": "customer@woocommercecoree2etestsuite.com"
+    },
+    "guest": {
+      "email": "guest@woocommercecoree2etestsuite.com"
     }
   },
   "products": {
