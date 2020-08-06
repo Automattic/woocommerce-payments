@@ -14,29 +14,9 @@ import {
 
 const TIMEOUT = 100000;
 
-const CARD_BASIC = {
-	number: '4242424242424242',
-	expires: {
-		month: '02',
-		year: '24',
-	},
-	cvc: '424',
-	label: 'Visa ending in 4242',
-};
-
-const CARD_3DS = {
-	number: '4000002760003184',
-	expires: {
-		month: '03',
-		year: '25',
-	},
-	cvc: '525',
-	label: 'Visa ending in 3184',
-};
-
 const cards = [
-	[ 'basic', CARD_BASIC ],
-	[ '3DS', CARD_3DS ],
+	[ 'basic', config.get( 'cards.basic' ) ],
+	[ '3DS', config.get( 'cards.3ds' ) ],
 ];
 
 describe( 'Saved cards ', () => {

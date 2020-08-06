@@ -34,14 +34,7 @@ describe( 'Successful purchase', () => {
 			await expect( page ).toClick(
 				'.wc_payment_method.payment_method_woocommerce_payments'
 			);
-			const card = {
-				number: '4242424242424242',
-				expires: {
-					month: '02',
-					year: '24',
-				},
-				cvc: '424',
-			};
+			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await CustomerFlow.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
