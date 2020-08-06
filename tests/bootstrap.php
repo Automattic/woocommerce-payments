@@ -37,6 +37,7 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
+	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
 
 	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-wc-payments-rest-request-exception.php';

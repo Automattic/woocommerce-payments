@@ -386,15 +386,34 @@ class WC_Payments {
 		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
 		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-exception.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+
+		$http_class = self::get_wc_payments_http();
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) ),
+			$http_class,
 			self::$db_helper
 		);
 
 		return $payments_api_client;
+	}
+
+	/**
+	 * Create the HTTP instantiation.
+	 *
+	 * @return WC_Payments_Http_Interface
+	 */
+	private static function get_wc_payments_http() {
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http-interface.php';
+		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+
+		$http_class = apply_filters( 'wc_payments_http', null );
+
+		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
+			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+		}
+
+		return $http_class;
 	}
 
 	/**
