@@ -204,4 +204,39 @@ export default class WCPayAPI {
 			isOrderPage,
 		};
 	}
+
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @returns {Promise} The final promise for the request to the server.
+	 */
+	setupIntent( paymentMethodId ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_setup_intent',
+			'wcpay-payment-method': paymentMethodId,
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+
+			// eslint-disable-next-line camelcase
+			const { client_secret } = response.data;
+			return this.getStripe()
+				.confirmCardSetup( client_secret, {
+					// eslint-disable-next-line camelcase
+					payment_method: paymentMethodId,
+				} )
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
+
+					return setupIntent;
+				} );
+		} );
+	}
 }
