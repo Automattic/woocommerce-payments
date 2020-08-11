@@ -145,10 +145,6 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 
-echo "Creating customer user..."
-cli wp user delete customer --yes
-cli wp user create customer customer@woocommercecoree2etestsuite.com --role=customer --user_pass=password
-
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 

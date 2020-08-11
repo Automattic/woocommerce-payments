@@ -1,6 +1,8 @@
 /**
  * External dependencies
  */
+import { spawnSync } from 'child_process';
+import config from 'config';
 import { get } from 'lodash';
 import {
 	enablePageDialogAccept,
@@ -158,6 +160,37 @@ function setTestTimeouts() {
 	jest.setTimeout( TIMEOUT );
 }
 
+async function createCustomerUser() {
+	const container = 'wcp_e2e_wordpress';
+	const username = config.get( 'users.customer.username' );
+	const email = config.get( 'users.customer.email' );
+	const password = config.get( 'users.customer.password' );
+
+	const args = [
+		'run',
+		'--rm',
+		'--user',
+		'xfs',
+		'--volumes-from',
+		container,
+		'--network',
+		`container:${ container }`,
+		'wordpress:cli',
+		'wp',
+	];
+	const createArgs = [
+		'user',
+		'create',
+		username,
+		email,
+		'--role=customer',
+		`--user_pass=${ password }`,
+	];
+	const deleteArgs = [ 'user', 'delete', username, '--yes' ];
+	spawnSync( 'docker', [ ...args, ...deleteArgs ] );
+	spawnSync( 'docker', [ ...args, ...createArgs ] );
+}
+
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
@@ -166,6 +199,7 @@ beforeAll( async () => {
 	enablePageDialogAccept();
 	observeConsoleLogging();
 	setTestTimeouts();
+	await createCustomerUser();
 	await setupBrowser();
 } );
 
