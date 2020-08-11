@@ -1,3 +1,13 @@
+/**
+ * External dependencies
+ */
+import config from 'config';
+
+/**
+ * Internal dependencies
+ */
+import { CustomerFlow, uiUnblocked } from '../utils';
+
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
 		'iframe[name^="__privateStripeFrame"]'
@@ -43,4 +53,20 @@ export async function confirmCardAuthentication(
 	}
 	const button = await challengeFrame.waitForSelector( target );
 	await button.click();
+}
+
+export async function setupProductCheckout() {
+	await CustomerFlow.goToShop();
+	await CustomerFlow.addToCartFromShopPage(
+		config.get( 'products.simple.name' )
+	);
+	await CustomerFlow.goToCheckout();
+	await uiUnblocked();
+	await CustomerFlow.fillBillingDetails(
+		config.get( 'addresses.customer.billing' )
+	);
+	await uiUnblocked();
+	await expect( page ).toClick(
+		'.wc_payment_method.payment_method_woocommerce_payments'
+	);
 }

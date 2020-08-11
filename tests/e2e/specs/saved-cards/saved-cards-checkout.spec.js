@@ -6,10 +6,11 @@ import config from 'config';
 /**
  * Internal dependencies
  */
-import { CustomerFlow, uiUnblocked } from '../../utils';
+import { CustomerFlow } from '../../utils';
 import {
 	fillCardDetails,
 	confirmCardAuthentication,
+	setupProductCheckout,
 } from '../../utils/payments';
 
 const cards = [
@@ -81,20 +82,4 @@ describe( 'Saved cards ', () => {
 			} );
 		}
 	);
-
-	async function setupProductCheckout() {
-		await CustomerFlow.goToShop();
-		await CustomerFlow.addToCartFromShopPage(
-			config.get( 'products.simple.name' )
-		);
-		await CustomerFlow.goToCheckout();
-		await uiUnblocked();
-		await CustomerFlow.fillBillingDetails(
-			config.get( 'addresses.customer.billing' )
-		);
-		await uiUnblocked();
-		await expect( page ).toClick(
-			'.wc_payment_method.payment_method_woocommerce_payments'
-		);
-	}
 } );
