@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { spawnSync } from 'child_process';
+import shell from 'shelljs';
 import config from 'config';
 import { get } from 'lodash';
 import {
@@ -166,29 +166,15 @@ async function createCustomerUser() {
 	const email = config.get( 'users.customer.email' );
 	const password = config.get( 'users.customer.password' );
 
-	const args = [
-		'run',
-		'--rm',
-		'--user',
-		'xfs',
-		'--volumes-from',
-		container,
-		'--network',
-		`container:${ container }`,
-		'wordpress:cli',
-		'wp',
-	];
-	const createArgs = [
-		'user',
-		'create',
-		username,
-		email,
-		'--role=customer',
-		`--user_pass=${ password }`,
-	];
-	const deleteArgs = [ 'user', 'delete', username, '--yes' ];
-	spawnSync( 'docker', [ ...args, ...deleteArgs ] );
-	spawnSync( 'docker', [ ...args, ...createArgs ] );
+	const wpCli = `docker run --rm --user xfs --volumes-from ${ container } --network container:${ container } wordpress:cli`;
+
+	shell.exec( `${ wpCli } wp user delete ${ username } --yes`, {
+		silent: true,
+	} );
+	shell.exec(
+		`${ wpCli } wp user create ${ username } ${ email } --role=customer --user_pass=${ password }`,
+		{ silent: true }
+	);
 }
 
 // Before every test suite run, delete all content created by the test. This ensures
