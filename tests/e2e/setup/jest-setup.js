@@ -149,6 +149,15 @@ function observeConsoleLogging() {
 	} );
 }
 
+function setTestTimeouts() {
+	const TIMEOUT = 100000;
+	// Increase default value to avoid test failing due to timeouts.
+	page.setDefaultTimeout( TIMEOUT );
+	// running the login flow takes more than the default timeout of 5 seconds,
+	// so we need to increase it to run the login in the beforeAll hook
+	jest.setTimeout( TIMEOUT );
+}
+
 // Before every test suite run, delete all content created by the test. This ensures
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
@@ -156,6 +165,7 @@ beforeAll( async () => {
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	observeConsoleLogging();
+	setTestTimeouts();
 	await setupBrowser();
 } );
 

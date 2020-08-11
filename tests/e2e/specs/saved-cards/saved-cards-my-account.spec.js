@@ -12,8 +12,6 @@ import {
 	confirmCardAuthentication,
 } from '../../utils/payments';
 
-const TIMEOUT = 100000;
-
 const cards = [
 	[ 'basic', config.get( 'cards.basic' ) ],
 	[ '3DS2', config.get( 'cards.3ds2' ) ],
@@ -24,11 +22,6 @@ describe( 'Saved cards ', () => {
 		'when using a %s card added through my account',
 		( cardType, card ) => {
 			beforeAll( async () => {
-				// Increase default value to avoid test failing due to timeouts.
-				page.setDefaultTimeout( 30000 );
-				// running the login flow takes more than the default timeout of 5 seconds,
-				// so we need to increase it to run the login in the beforeAll hook
-				jest.setTimeout( TIMEOUT );
 				await CustomerFlow.login();
 			} );
 
@@ -36,67 +29,55 @@ describe( 'Saved cards ', () => {
 				await CustomerFlow.logout();
 			} );
 
-			it(
-				'should save the card',
-				async () => {
-					await CustomerFlow.goToPaymentMethods();
-					await expect( page ).toClick( 'a', {
-						text: 'Add payment method',
-					} );
+			it( 'should save the card', async () => {
+				await CustomerFlow.goToPaymentMethods();
+				await expect( page ).toClick( 'a', {
+					text: 'Add payment method',
+				} );
+				await page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} );
+				await fillCardDetails( page, card );
+				await expect( page ).toClick( 'button', {
+					text: 'Add payment method',
+				} );
+
+				if ( 'basic' !== cardType ) {
+					await confirmCardAuthentication( page, cardType );
+				}
+				await page.waitForNavigation( {
+					waitUntil: 'networkidle0',
+				} );
+
+				await expect( page ).toMatch(
+					'Payment method successfully added'
+				);
+			} );
+
+			it( 'should process a payment with the saved card', async () => {
+				await setupProductCheckout();
+				await CustomerFlow.selectSavedPaymentMethod(
+					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
+				);
+
+				if ( 'basic' === cardType ) {
+					await CustomerFlow.placeOrder();
+				} else {
+					await expect( page ).toClick( '#place_order' );
+					await confirmCardAuthentication( page, cardType );
 					await page.waitForNavigation( {
 						waitUntil: 'networkidle0',
 					} );
-					await fillCardDetails( page, card );
-					await expect( page ).toClick( 'button', {
-						text: 'Add payment method',
-					} );
+				}
 
-					if ( 'basic' !== cardType ) {
-						await confirmCardAuthentication( page, cardType );
-					}
-					await page.waitForNavigation( {
-						waitUntil: 'networkidle0',
-					} );
+				await expect( page ).toMatch( 'Order received' );
+			} );
 
-					await expect( page ).toMatch(
-						'Payment method successfully added'
-					);
-				},
-				TIMEOUT
-			);
-
-			it(
-				'should process a payment with the saved card',
-				async () => {
-					await setupProductCheckout();
-					await CustomerFlow.selectSavedPaymentMethod(
-						`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
-					);
-
-					if ( 'basic' === cardType ) {
-						await CustomerFlow.placeOrder();
-					} else {
-						await expect( page ).toClick( '#place_order' );
-						await confirmCardAuthentication( page, cardType );
-						await page.waitForNavigation( {
-							waitUntil: 'networkidle0',
-						} );
-					}
-
-					await expect( page ).toMatch( 'Order received' );
-				},
-				TIMEOUT
-			);
-
-			it(
-				'should delete the card',
-				async () => {
-					await CustomerFlow.goToPaymentMethods();
-					await CustomerFlow.deleteSavedPaymentMethod( card.label );
-					await expect( page ).toMatch( 'Payment method deleted' );
-				},
-				TIMEOUT
-			);
+			it( 'should delete the card', async () => {
+				await CustomerFlow.goToPaymentMethods();
+				await CustomerFlow.deleteSavedPaymentMethod( card.label );
+				await expect( page ).toMatch( 'Payment method deleted' );
+			} );
 		}
 	);
 
