@@ -113,9 +113,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type' => 'account_status',
 			],
 			'account_statement_descriptor' => [
-				'type'  => 'account_statement_descriptor',
-				'title' => __( 'Statement Descriptor', 'woocommerce-payments' ),
-				'label' => __( 'Statement descriptor to display in receipt', 'woocommerce-payments' ),
+				'type'        => 'account_statement_descriptor',
+				'title'       => __( 'Statement Descriptor', 'woocommerce-payments' ),
+				'description' => __( 'Statement descriptor to display in receipt.', 'woocommerce-payments' ),
 			],
 			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
