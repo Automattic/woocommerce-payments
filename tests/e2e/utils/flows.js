@@ -41,6 +41,7 @@ const MY_ACCOUNT_ORDERS = baseUrl + 'my-account/orders';
 const MY_ACCOUNT_DOWNLOADS = baseUrl + 'my-account/downloads';
 const MY_ACCOUNT_ADDRESSES = baseUrl + 'my-account/edit-address';
 const MY_ACCOUNT_ACCOUNT_DETAILS = baseUrl + 'my-account/edit-account';
+const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 
 const getProductColumnExpression = ( productTitle ) =>
 	'td[@class="product-name" and ' +
@@ -72,6 +73,59 @@ const getCartItemExpression = ( productTitle, args ) =>
 
 const getRemoveExpression = () =>
 	'td[@class="product-remove"]//a[@class="remove"]';
+
+// The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
+// keeping our customizations grouped here so it's easier to extend the flows once the move happens.
+const PaymentsCustomerFlow = {
+	goToPaymentMethods: async () => {
+		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	logout: async () => {
+		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await expect( page.title() ).resolves.toMatch( 'My account' );
+		await Promise.all( [
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			page.click(
+				'.woocommerce-MyAccount-navigation-link--customer-logout a'
+			),
+		] );
+	},
+
+	deleteSavedPaymentMethod: async ( label ) => {
+		const [ paymentMethodRow ] = await page.$x(
+			`//tr[contains(., '${ label }')]`
+		);
+		await expect( paymentMethodRow ).toClick( '.button.delete' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	},
+
+	selectNewPaymentMethod: async () => {
+		if (
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
+			null
+		) {
+			await expect( page ).toClick(
+				'#wc-woocommerce_payments-payment-token-new'
+			);
+		}
+	},
+
+	toggleSavePaymentMethod: async () => {
+		await expect( page ).toClick(
+			'#wc-woocommerce_payments-new-payment-method'
+		);
+	},
+
+	selectSavedPaymentMethod: async ( label ) => {
+		await expect( page ).toClick( 'label', { text: label } );
+	},
+};
 
 const CustomerFlow = {
 	addToCart: async () => {
@@ -299,6 +353,8 @@ const CustomerFlow = {
 		await pressKeyWithModifier( 'primary', 'a' );
 		await quantityInput.type( quantityValue.toString() );
 	},
+
+	...PaymentsCustomerFlow,
 };
 
 const StoreOwnerFlow = {
