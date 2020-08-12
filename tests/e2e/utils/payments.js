@@ -6,7 +6,7 @@ import config from 'config';
 /**
  * Internal dependencies
  */
-import { CustomerFlow, uiUnblocked } from '../utils';
+import { CustomerFlow, uiUnblocked } from './index';
 
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
