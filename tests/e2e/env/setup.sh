@@ -43,7 +43,16 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting server containers"
-redirect_output local/bin/start.sh
+redirect_output docker-compose up --build --force-recreate -d
+
+if [[ -n $CI ]]; then
+	echo "Setting docker folder permissions"
+	redirect_output sudo chown www-data:www-data -R ./docker/wordpress
+	redirect_output ls -al ./docker
+fi
+
+step "Setting up server containers"
+redirect_output local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
 redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
