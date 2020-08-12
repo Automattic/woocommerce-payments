@@ -14,7 +14,7 @@
     "require": {
       "automattic/jetpack-connection": "^1.14.1",
       "automattic/jetpack-config": "^1.3.0",
-      "automattic/jetpack-autoloader": "^2.1.0"
+      "automattic/jetpack-autoloader": "^1.7.0"
     },
     "require-dev": {
       "composer/installers": "^1.7.0",
