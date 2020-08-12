@@ -74,6 +74,8 @@ const getCartItemExpression = ( productTitle, args ) =>
 const getRemoveExpression = () =>
 	'td[@class="product-remove"]//a[@class="remove"]';
 
+// The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
+// keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 const PaymentsCustomerFlow = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
