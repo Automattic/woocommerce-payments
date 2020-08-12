@@ -56,7 +56,9 @@ describe( 'Saved cards ', () => {
 			} );
 
 			it( 'should process a payment with the saved card', async () => {
-				await setupProductCheckout();
+				await setupProductCheckout(
+					config.get( 'addresses.customer.billing' )
+				);
 				await CustomerFlow.selectSavedPaymentMethod(
 					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 				);

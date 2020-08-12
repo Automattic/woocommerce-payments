@@ -394,7 +394,7 @@ jQuery( function ( $ ) {
 	 */
 	function maybeShowAuthenticationModal() {
 		var partials = window.location.hash.match(
-			/^#wcpay-confirm-pi:(.+):(.+)$/
+			/^#wcpay-confirm-pi:(.+):(.+):(.+)$/
 		);
 
 		if ( ! partials ) {
@@ -411,6 +411,10 @@ jQuery( function ( $ ) {
 
 		var orderId = partials[ 1 ];
 		var clientSecret = partials[ 2 ];
+		// Update the current order status nonce with the new one to ensure that the update
+		// order status call works when a guest user creates an account during checkout.
+		// eslint-disable-next-line camelcase
+		wcpay_config.updateOrderStatusNonce = partials[ 3 ];
 
 		// If we're on the Pay for Order page, get the order ID
 		// directly from the URL instead of relying on the hash.

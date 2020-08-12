@@ -493,7 +493,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-pi:' . $order_id . ':' . $secret,
+			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			$result['redirect']
 		);
 	}

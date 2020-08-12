@@ -156,6 +156,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+
+		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
+		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+	}
+
+	/**
+	 * Proceed with current request using new login session (to ensure consistent nonce).
+	 *
+	 * @param string $cookie New cookie value.
+	 */
+	public function set_cookie_on_current_request( $cookie ) {
+		$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
 	}
 
 	/**
@@ -530,7 +542,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 						return [
 							'result'   => 'success',
-							'redirect' => sprintf( '#wcpay-confirm-pi:%s:%s', $order_id, $intent->get_client_secret() ),
+							// Include a new nonce for update_order_status to ensure the update order
+							// status call works when a guest user creates an account during checkout.
+							'redirect' => sprintf(
+								'#wcpay-confirm-pi:%s:%s:%s',
+								$order_id,
+								$intent->get_client_secret(),
+								wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							),
 						];
 				}
 			} else {
