@@ -52,6 +52,13 @@ class WC_Payments {
 	private static $customer_service;
 
 	/**
+	 * Instance of WC_Payments_Token_Service, created in init function.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private static $token_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -86,10 +93,14 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
+		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-intent-authentication-exception.php';
+
 		self::$account          = new WC_Payments_Account( self::$api_client );
 		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
+		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 
-		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service );
+		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -99,6 +110,9 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
+
+			include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
+			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -154,7 +168,6 @@ class WC_Payments {
 
 	/**
 	 * Checks if all the dependencies needed to run this plugin are present
-	 * TODO: Before public launch, revisit these dependencies. We may need to bump the WC dependency so we require one where WC-Admin is already in Core.
 	 *
 	 * @param bool $silent True if the function should just return true/false, False if this function should display notice messages for failed dependencies.
 	 * @return bool True if all dependencies are met, false otherwise
@@ -174,59 +187,52 @@ class WC_Payments {
 		$wc_version = $plugin_headers['WCRequires'];
 		$wp_version = $plugin_headers['RequiresWP'];
 
-		$plugin_dependencies = [
-			[
-				'name'  => 'WooCommerce',
-				'class' => 'WooCommerce',
-				'slug'  => 'woocommerce',
-				'file'  => 'woocommerce/woocommerce.php',
-			],
-			[
-				'name'  => 'WooCommerce Admin',
-				'class' => '\Automattic\WooCommerce\Admin\FeaturePlugin',
-				'slug'  => 'woocommerce-admin',
-				'file'  => 'woocommerce-admin/woocommerce-admin.php',
-			],
-			[
-				'name'  => 'Jetpack',
-				'class' => 'Jetpack',
-				'slug'  => 'jetpack',
-				'file'  => 'jetpack/jetpack.php',
-			],
-		];
+		// Check if WooCommerce is installed and active.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			if ( ! $silent ) {
+				$message = WC_Payments_Utils::esc_interpolated_html(
+					__( 'WooCommerce Payments requires <a>WooCommerce</a> to be installed and active.', 'woocommerce-payments' ),
+					[ 'a' => '<a href="https://wordpress.org/plugins/woocommerce">' ]
+				);
 
-		// Check if WooCommerce and other dependencies are  installed and active.
-		foreach ( $plugin_dependencies as $plugin_data ) {
-			if ( ! class_exists( $plugin_data['class'] ) ) {
-				if ( ! $silent ) {
-					$message = WC_Payments_Utils::esc_interpolated_html(
-						sprintf(
-							/* translators: %1: plugin name */
-							__( 'WooCommerce Payments requires <a>%1$s</a> to be installed and active.', 'woocommerce-payments' ),
-							$plugin_data['name']
-						),
-						[ 'a' => '<a href="https://wordpress.org/plugins/' . trailingslashit( $plugin_data['slug'] ) . '">' ]
-					);
-
-					if ( current_user_can( 'install_plugins' ) ) {
-						if ( is_wp_error( validate_plugin( $plugin_data['file'] ) ) ) {
-							// The plugin is not installed.
-							$activate_url = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=' . $plugin_data['slug'] ), 'install-plugin_' . $plugin_data['slug'] );
-							/* translators: %1: plugin name */
-							$activate_text = sprintf( __( 'Install %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
-						} else {
-							// The plugin is installed, so it just needs to be enabled.
-							$activate_url = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=' . $plugin_data['file'] ), 'activate-plugin_' . $plugin_data['file'] );
-							/* translators: %1: plugin name */
-							$activate_text = sprintf( __( 'Activate %1$s', 'woocommerce-payments' ), $plugin_data['name'] );
-						}
-						$message .= ' <a href="' . $activate_url . '">' . $activate_text . '</a>';
+				if ( current_user_can( 'install_plugins' ) ) {
+					if ( is_wp_error( validate_plugin( 'woocommerce/woocommerce.php' ) ) ) {
+						// WooCommerce is not installed.
+						$activate_url  = wp_nonce_url( admin_url( 'update.php?action=install-plugin&plugin=woocommerce' ), 'install-plugin_woocommerce' );
+						$activate_text = __( 'Install WooCommerce', 'woocommerce-payments' );
+					} else {
+						// WooCommerce is installed, so it just needs to be enabled.
+						$activate_url  = wp_nonce_url( admin_url( 'plugins.php?action=activate&plugin=woocommerce/woocommerce.php' ), 'activate-plugin_woocommerce/woocommerce.php' );
+						$activate_text = __( 'Activate WooCommerce', 'woocommerce-payments' );
 					}
-
-					self::display_admin_error( $message );
+					$message .= ' <a href="' . $activate_url . '">' . $activate_text . '</a>';
 				}
-				return false;
+
+				self::display_admin_error( $message );
 			}
+			return false;
+		}
+
+		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
+		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
+			if ( ! $silent ) {
+				$message = WC_Payments_Utils::esc_interpolated_html(
+					sprintf(
+					/* translators: %1: required WC version number, %2: currently installed WC version number */
+						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
+						$wc_version,
+						WC_VERSION
+					),
+					[ 'strong' => '<strong>' ]
+				);
+				if ( current_user_can( 'update_plugins' ) ) {
+					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
+					// on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version.
+					$message .= ' <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>';
+				}
+				self::display_admin_error( $message );
+			}
+			return false;
 		}
 
 		// Check if the current WooCommerce version has WooCommerce Admin bundled (WC 4.0+) but it's disabled using a filter.
@@ -255,39 +261,11 @@ class WC_Payments {
 					[ 'strong' => '<strong>' ]
 				);
 
-				if ( defined( 'WC_ADMIN_PACKAGE_EXISTS' ) ) { // Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
-					$message .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
-					if ( current_user_can( 'deactivate_plugins' ) ) {
-						$deactivate_url = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
-						$message       .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
-					}
-				} else {
-					if ( current_user_can( 'update_plugins' ) ) {
-						$update_url = wp_nonce_url( admin_url( 'update.php?action=upgrade-plugin&plugin=woocommerce-admin/woocommerce-admin.php' ), 'upgrade-plugin_woocommerce-admin/woocommerce-admin.php' );
-						$message   .= ' <a href="' . $update_url . '">' . __( 'Update WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
-					}
-				}
-				self::display_admin_error( $message );
-			}
-			return false;
-		}
-
-		// Check if the version of WooCommerce is compatible with WooCommerce Payments.
-		if ( version_compare( WC_VERSION, $wc_version, '<' ) ) {
-			if ( ! $silent ) {
-				$message = WC_Payments_Utils::esc_interpolated_html(
-					sprintf(
-						/* translators: %1: required WC version number, %2: currently installed WC version number */
-						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
-						$wc_version,
-						WC_VERSION
-					),
-					[ 'strong' => '<strong>' ]
-				);
-				if ( current_user_can( 'update_plugins' ) ) {
-					// Take the user to the "plugins" screen instead of trying to update WooCommerce inline. WooCommerce adds important information
-					// on its plugin row regarding the currently installed extensions and their compatibility with the latest WC version.
-					$message .= ' <a href="' . admin_url( 'plugins.php' ) . '">' . __( 'Update WooCommerce', 'woocommerce-payments' ) . '</a>';
+				// Let's assume for now that any WC-Admin version bundled with WooCommerce will meet our minimum requirements.
+				$message .= ' ' . __( 'There is a newer version of WooCommerce Admin bundled with WooCommerce.', 'woocommerce-payments' );
+				if ( current_user_can( 'deactivate_plugins' ) ) {
+					$deactivate_url = wp_nonce_url( admin_url( 'plugins.php?action=deactivate&plugin=woocommerce-admin/woocommerce-admin.php' ), 'deactivate-plugin_woocommerce-admin/woocommerce-admin.php' );
+					$message       .= ' <a href="' . $deactivate_url . '">' . __( 'Use the bundled version of WooCommerce Admin', 'woocommerce-payments' ) . '</a>';
 				}
 				self::display_admin_error( $message );
 			}
@@ -314,25 +292,6 @@ class WC_Payments {
 			return false;
 		}
 
-		// Check if Jetpack is connected.
-		if ( ! self::is_jetpack_connected() ) {
-			// Do not show an alert on Jetpack admin pages.
-			if ( ! $silent && ! self::is_at_jetpack_admin_page() ) {
-				$set_up_url = wp_nonce_url( 'admin.php?page=jetpack' );
-				$message    = WC_Payments_Utils::esc_interpolated_html(
-					sprintf(
-						/* translators: %1: WooCommerce Payments version */
-						__( 'To use WooCommerce Payments %1$s you\'ll need to <a>set up</a> the Jetpack plugin.', 'woocommerce-payments' ),
-						WCPAY_VERSION_NUMBER
-					),
-					[ 'a' => '<a href="' . $set_up_url . '">' ]
-				);
-				self::display_admin_error( $message );
-			}
-
-			return false;
-		}
-
 		return true;
 	}
 
@@ -344,26 +303,6 @@ class WC_Payments {
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
 		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
-	}
-
-	/**
-	 * Checks if current page is Jetpack admin page.
-	 *
-	 * @return bool True when current page is one of the Jetpack admin pages.
-	 */
-	private static function is_at_jetpack_admin_page() {
-		$cur_screen = get_current_screen();
-		return 'jetpack' === $cur_screen->parent_base;
-	}
-
-	/**
-	 * Checks if Jetpack is connected.
-	 *
-	 * @return bool true if Jetpack connection is available and authenticated.
-	 */
-	public static function is_jetpack_connected() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
-		return WC_Payments_Http::is_connected();
 	}
 
 	/**
@@ -451,7 +390,7 @@ class WC_Payments {
 
 		$payments_api_client = new WC_Payments_API_Client(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			new WC_Payments_Http(),
+			new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) ),
 			self::$db_helper
 		);
 

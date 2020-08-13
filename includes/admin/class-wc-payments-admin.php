@@ -38,7 +38,6 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
-		add_action( 'init', [ $this, 'register_payments_scripts' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 	}
 
@@ -175,6 +174,9 @@ class WC_Payments_Admin {
 		// as appropriate.
 		$on_boarding_disabled = WC_Payments_Account::is_on_boarding_disabled();
 
+		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
+		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
+
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
@@ -182,6 +184,8 @@ class WC_Payments_Admin {
 				'connectUrl'         => WC_Payments_Account::get_connect_url(),
 				'testMode'           => $this->wcpay_gateway->is_in_test_mode(),
 				'onBoardingDisabled' => $on_boarding_disabled,
+				'errorMessage'       => $error_message,
+				'featureFlags'       => $this->get_frontend_feature_flags(),
 			]
 		);
 
@@ -243,6 +247,8 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
+		$this->register_payments_scripts();
+
 		global $current_tab, $current_section;
 		if ( $current_tab && $current_section
 			&& 'checkout' === $current_tab
@@ -272,5 +278,40 @@ class WC_Payments_Admin {
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
 		}
+	}
+
+	/**
+	 * Creates an array of features enabled only when external dependencies are of certain versions.
+	 *
+	 * @return array An associative array containing the flags as booleans.
+	 */
+	private function get_frontend_feature_flags() {
+		return [
+			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+		];
+	}
+
+	/**
+	 * A wrapper around version_compare to allow comparing two version numbers even when they are suffixed with a dash and a string, for example 1.3.0-beta.
+	 *
+	 * @param string $version1 First version number.
+	 * @param string $version2 Second version number.
+	 * @param string $operator A boolean operator to use when comparing.
+	 *
+	 * @return bool True if the relationship is the one specified by the operator.
+	 */
+	private static function version_compare( $version1, $version2, $operator ) {
+		// Attempt to extract version numbers.
+		$version_regex = '/^([\d\.]+)(-.*)?$/';
+		if ( ! preg_match( $version_regex, $version1, $matches1 )
+			|| ! preg_match( $version_regex, $version2, $matches2 ) ) {
+				// Fall back to comparing the two versions as they are.
+				return version_compare( $version1, $version2, $operator );
+		}
+		// Only compare the numeric parts of the versions, ignore the bit after the dash.
+		$version1 = $matches1[1];
+		$version2 = $matches2[1];
+		return version_compare( $version1, $version2, $operator );
 	}
 }

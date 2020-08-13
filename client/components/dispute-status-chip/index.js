@@ -12,9 +12,7 @@ const DisputeStatusChip = ( { status } ) => {
 	const message = mapping.message || formatStringValue( status );
 	const type = mapping.type || 'light';
 
-	return (
-		<Chip message={ message } type={ type } isCompact />
-	);
+	return <Chip message={ message } type={ type } isCompact />;
 };
 
 export default DisputeStatusChip;

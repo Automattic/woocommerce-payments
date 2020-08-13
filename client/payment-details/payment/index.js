@@ -13,9 +13,7 @@ const PaymentDetailsPayment = ( props ) => {
 	const { charge } = props;
 	// TODO: this is a placeholder card and does not require translation
 	return (
-		<Card title="Payment">
-			Payment details for charge { charge.id }.
-		</Card>
+		<Card title="Payment">Payment details for charge { charge.id }.</Card>
 	);
 };
 

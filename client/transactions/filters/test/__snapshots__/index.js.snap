@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transactions filters when filtering by type should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="charge"
+  >
+    Charge
+  </option>,
+  <option
+    value="refund"
+  >
+    Refund
+  </option>,
+  <option
+    value="refund_failure"
+  >
+    Refund failure
+  </option>,
+  <option
+    value="dispute"
+  >
+    Dispute
+  </option>,
+  <option
+    value="dispute_reversal"
+  >
+    Dispute reversal
+  </option>,
+]
+`;

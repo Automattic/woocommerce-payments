@@ -13,7 +13,11 @@ const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 
 	includeStripeJS();
 
-	return <div className={ classNames.join( ' ' ) } style={ customStyle }>{ children }</div>;
+	return (
+		<div className={ classNames.join( ' ' ) } style={ customStyle }>
+			{ children }
+		</div>
+	);
 };
 
 export default Page;

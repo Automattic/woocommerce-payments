@@ -93,6 +93,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $body );
 					break;
+				case 'charge.expired':
+					$this->process_webhook_expired_authorization( $body );
+					break;
 				case 'account.updated':
 					$this->account->refresh_account_data();
 					break;
@@ -158,6 +161,38 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$order->add_order_note( $note );
 		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
 		$order->save();
+	}
+
+	/**
+	 * Process webhook for an expired uncaptured payment.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws WC_Payments_Rest_Request_Exception Required parameters not found.
+	 * @throws Exception                  Unable to resolve charge ID to order.
+	 */
+	private function process_webhook_expired_authorization( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
+		// Fetch the details of the expired auth so that we can find the associated order.
+		$charge_id = $this->read_rest_property( $event_object, 'id' );
+		$intent_id = $this->read_rest_property( $event_object, 'payment_intent' );
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
+		WC_Payments_Utils::mark_payment_expired( $order );
 	}
 
 	/**

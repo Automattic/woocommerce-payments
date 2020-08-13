@@ -2,17 +2,23 @@
 /**
  * External dependencies
  */
-import { shallow } from 'enzyme';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import { DisputesList } from '../';
+import DisputesList from '../';
+import { useDisputes } from 'data';
+
+jest.mock( 'data', () => ( {
+	useDisputes: jest.fn(),
+} ) );
 
 describe( 'Disputes list', () => {
 	test( 'renders correctly', () => {
-		const disputes = {
-			data: [
+		useDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: [
 				{
 					id: 'dp_asdfghjkl',
 					amount: 1000,
@@ -62,14 +68,9 @@ describe( 'Disputes list', () => {
 					// dispute without order or charge information
 				},
 			],
-		};
+		} );
 
-		const list = shallow(
-			<DisputesList
-				disputes={ disputes }
-				showPlaceholder={ false }
-			/>
-		);
+		const { container: list } = render( <DisputesList /> );
 		expect( list ).toMatchSnapshot();
 	} );
 } );

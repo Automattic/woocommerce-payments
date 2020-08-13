@@ -3,12 +3,17 @@
 /**
  * External dependencies
  */
+import { uniq } from 'lodash';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import Currency from '@woocommerce/currency';
-import { TableCard } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { TableCard, Search } from '@woocommerce/components';
+import {
+	onQueryChange,
+	getQuery,
+	updateQueryString,
+} from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -18,9 +23,10 @@ import OrderLink from 'components/order-link';
 import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
-import { displayType } from './strings';
+import { displayType } from 'transactions/strings';
 import { formatStringValue } from '../../util';
 import Deposit from './deposit';
+import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
 const currency = new Currency();
@@ -84,7 +90,7 @@ const columns = [
 	},
 	{
 		key: 'customer_email',
-		label: __( 'Email',	'woocommerce-payments' ),
+		label: __( 'Email', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
 		visible: false,
 	},
@@ -109,13 +115,22 @@ const depositColumn = {
 };
 
 export const TransactionsList = ( props ) => {
-	const { transactions, isLoading } = useTransactions( getQuery(), props.depositId );
-	const { transactionsSummary, isLoading: isSummaryLoading } = useTransactionsSummary( getQuery(), props.depositId );
+	const { transactions, isLoading } = useTransactions(
+		getQuery(),
+		props.depositId
+	);
+	const {
+		transactionsSummary,
+		isLoading: isSummaryLoading,
+	} = useTransactionsSummary( getQuery(), props.depositId );
 
-	const columnsToDisplay = props.depositId ? columns : [ ...columns, depositColumn ];
+	const columnsToDisplay = props.depositId
+		? columns
+		: [ ...columns, depositColumn ];
 
 	// match background of details and date when sorting
-	const detailsColumn = columnsToDisplay.find( el => 'details' === el.key ) || {};
+	const detailsColumn =
+		columnsToDisplay.find( ( el ) => 'details' === el.key ) || {};
 	if ( ! getQuery().orderby || 'date' === getQuery().orderby ) {
 		detailsColumn.cellClassName = 'info-button is-sorted';
 	} else {
@@ -124,53 +139,134 @@ export const TransactionsList = ( props ) => {
 
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );
-		const clickable = ( children ) => <ClickableCell href={ detailsURL }>{ children }</ClickableCell>;
-		const detailsLink = <DetailsLink id={ txn.charge_id } parentSegment="transactions" />;
+		const clickable = ( children ) => (
+			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
+		);
+		const detailsLink = (
+			<DetailsLink id={ txn.charge_id } parentSegment="transactions" />
+		);
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
-		const deposit = <Deposit depositId={ txn.deposit_id } dateAvailable={ txn.date_available } />;
+		const deposit = (
+			<Deposit
+				depositId={ txn.deposit_id }
+				dateAvailable={ txn.date_available }
+			/>
+		);
 
 		// Map transaction into table row.
 		const data = {
 			details: { value: txn.transaction_id, display: detailsLink },
-			date: { value: txn.date, display: clickable( dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() ) ) },
-			type: { value: txn.type, display: clickable( displayType[ txn.type ] || formatStringValue( txn.type ) ) },
+			date: {
+				value: txn.date,
+				display: clickable(
+					dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() )
+				),
+			},
+			type: {
+				value: txn.type,
+				display: clickable(
+					displayType[ txn.type ] || formatStringValue( txn.type )
+				),
+			},
 			source: {
 				value: txn.source,
-				display: clickable( <span className={ `payment-method__brand payment-method__brand--${ txn.source }` } /> ),
+				display: clickable(
+					<span
+						className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+					/>
+				),
 			},
 			order: { value: txn.order_id, display: orderUrl },
 			// eslint-disable-next-line camelcase
-			customer_name: { value: txn.customer_name, display: clickable( txn.customer_name ) },
+			customer_name: {
+				value: txn.customer_name,
+				display: clickable( txn.customer_name ),
+			},
 			// eslint-disable-next-line camelcase
-			customer_email: { value: txn.customer_email, display: clickable( txn.customer_email ) },
+			customer_email: {
+				value: txn.customer_email,
+				display: clickable( txn.customer_email ),
+			},
 			// eslint-disable-next-line camelcase
-			customer_country: { value: txn.customer_country, display: clickable( txn.customer_country ) },
-			amount: { value: txn.amount / 100, display: clickable( currency.formatCurrency( txn.amount / 100 ) ) },
+			customer_country: {
+				value: txn.customer_country,
+				display: clickable( txn.customer_country ),
+			},
+			amount: {
+				value: txn.amount / 100,
+				display: clickable(
+					currency.formatCurrency( txn.amount / 100 )
+				),
+			},
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
-			fees: { value: txn.fees / 100, display: clickable( currency.formatCurrency( ( txn.fees / 100 ) * -1 ) ) },
-			net: { value: txn.net / 100, display: clickable( currency.formatCurrency( txn.net / 100 ) ) },
+			fees: {
+				value: txn.fees / 100,
+				display: clickable(
+					currency.formatCurrency( ( txn.fees / 100 ) * -1 )
+				),
+			},
+			net: {
+				value: txn.net / 100,
+				display: clickable( currency.formatCurrency( txn.net / 100 ) ),
+			},
 			// eslint-disable-next-line camelcase
-			risk_level: { value: txn.risk_level, display: clickable( riskLevel ) },
+			risk_level: {
+				value: txn.risk_level,
+				display: clickable( riskLevel ),
+			},
 			deposit: { value: txn.deposit_id, display: deposit },
 		};
 
-		return columnsToDisplay.map( ( { key } ) => data[ key ] || { display: null } );
+		return columnsToDisplay.map(
+			( { key } ) => data[ key ] || { display: null }
+		);
 	} );
 
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
-		{ label: 'total', value: `${ currency.formatCurrency( transactionsSummary.total / 100 ) }` },
-		{ label: 'fees', value: `${ currency.formatCurrency( transactionsSummary.fees / 100 ) }` },
-		{ label: 'net', value: `${ currency.formatCurrency( transactionsSummary.net / 100 ) }` },
+		{
+			label: 'total',
+			value: `${ currency.formatCurrency(
+				transactionsSummary.total / 100
+			) }`,
+		},
+		{
+			label: 'fees',
+			value: `${ currency.formatCurrency(
+				transactionsSummary.fees / 100
+			) }`,
+		},
+		{
+			label: 'net',
+			value: `${ currency.formatCurrency(
+				transactionsSummary.net / 100
+			) }`,
+		},
 	];
+
+	const searchedLabels =
+		getQuery().search &&
+		getQuery().search.map( ( v ) => ( {
+			key: v,
+			label: v,
+		} ) );
+
+	const onSearchChange = ( values ) => {
+		updateQueryString( {
+			search: values.length
+				? uniq( values.map( ( v ) => v.label ) )
+				: undefined,
+		} );
+	};
 
 	return (
 		<TableCard
-			className="transactions-list"
-			title={ props.depositId
-				? __( 'Deposit transactions', 'woocommerce-payments' )
-				: __( 'Transactions', 'woocommerce-payments' )
+			className="transactions-list woocommerce-report-table has-search"
+			title={
+				props.depositId
+					? __( 'Deposit transactions', 'woocommerce-payments' )
+					: __( 'Transactions', 'woocommerce-payments' )
 			}
 			isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
@@ -180,6 +276,33 @@ export const TransactionsList = ( props ) => {
 			summary={ isSummaryLoading ? null : summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
+			actions={ [
+				<Search
+					allowFreeTextSearch={ true }
+					inlineTags
+					key="search"
+					onChange={ onSearchChange }
+					placeholder={
+						wcpaySettings.featureFlags.customSearch
+							? __(
+									'Search by order number, customer name, or billing email',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Search by customer name',
+									'woocommerce-payments'
+							  )
+					}
+					selected={ searchedLabels }
+					showClearButton={ true }
+					type={
+						wcpaySettings.featureFlags.customSearch
+							? 'custom'
+							: 'customers'
+					}
+					autocompleter={ autocompleter }
+				/>,
+			] }
 		/>
 	);
 };

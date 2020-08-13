@@ -14,7 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Customer_Service {
 
-	const WCPAY_CUSTOMER_ID_OPTION = '_wcpay_customer_id';
+	const WCPAY_CUSTOMER_ID_OPTION  = '_wcpay_customer_id';
+	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -98,7 +99,14 @@ class WC_Payments_Customer_Service {
 
 		try {
 			// Update the customer on the WCPay server.
-			$this->payments_api_client->update_customer( $customer_id, $name, $email, $description );
+			$this->payments_api_client->update_customer(
+				$customer_id,
+				[
+					'name'        => $name,
+					'email'       => $email,
+					'description' => $description,
+				]
+			);
 
 			// We successfully updated the existing customer, so return the passed in ID unchanged.
 			return $customer_id;
@@ -114,6 +122,76 @@ class WC_Payments_Customer_Service {
 			// For any other type of exception, just re-throw.
 			throw $e;
 		}
+	}
+
+	/**
+	 * Sets a payment method as default for a customer.
+	 *
+	 * @param string $customer_id       The customer ID.
+	 * @param string $payment_method_id The payment method ID.
+	 */
+	public function set_default_payment_method_for_customer( $customer_id, $payment_method_id ) {
+		$this->payments_api_client->update_customer(
+			$customer_id,
+			[
+				'invoice_settings' => [
+					'default_payment_method' => $payment_method_id,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Gets all payment methods for a customer.
+	 *
+	 * @param string $customer_id The customer ID.
+	 * @param string $type        Type of payment methods to fetch.
+	 */
+	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
+		if ( ! $customer_id ) {
+			return [];
+		}
+
+		$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+
+		if ( $payment_methods ) {
+			return $payment_methods;
+		}
+
+		$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
+
+		set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+
+		return $payment_methods;
+	}
+
+	/**
+	 * Updates a customer payment method.
+	 *
+	 * @param string   $payment_method_id The payment method ID.
+	 * @param WC_Order $order             Order to be used on the update.
+	 */
+	public function update_payment_method_with_billing_details_from_order( $payment_method_id, $order ) {
+		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+
+		if ( ! empty( $billing_details ) ) {
+			$this->payments_api_client->update_payment_method(
+				$payment_method_id,
+				[
+					'billing_details' => $billing_details,
+				]
+			);
+		}
+	}
+
+	/**
+	 * Clear payment methods cache for a user.
+	 *
+	 * @param int $user_id WC user ID.
+	 */
+	public function clear_cached_payment_methods_for_user( $user_id ) {
+		$customer_id = $this->get_customer_id_by_user_id( $user_id );
+		delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
 	}
 
 	/**

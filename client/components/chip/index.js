@@ -12,15 +12,11 @@ const Chip = ( props ) => {
 
 	const classNames = [
 		'chip',
-		`chip-${ types.find( t => t === type ) || 'primary' }`,
+		`chip-${ types.find( ( t ) => t === type ) || 'primary' }`,
 		isCompact ? 'is-compact' : '',
 	];
 
-	return (
-		<span className={ classNames.join( ' ' ).trim() }>
-			{ message }
-		</span>
-	);
+	return <span className={ classNames.join( ' ' ).trim() }>{ message }</span>;
 };
 
 export default Chip;

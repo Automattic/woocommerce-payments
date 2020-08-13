@@ -1,4 +1,3 @@
-
 /**
  * External dependencies
  */
@@ -27,14 +26,11 @@ export const isInTestMode = ( fallback = false ) => {
  * @returns {string} URL to the WooCommerce Payments settings menu.
  */
 export const getPaymentSettingsUrl = () => {
-	return addQueryArgs(
-		'admin.php',
-		{
-			page: 'wc-settings',
-			tab: 'checkout',
-			section: 'woocommerce_payments',
-		}
-	);
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'checkout',
+		section: 'woocommerce_payments',
+	} );
 };
 
 /**
@@ -44,7 +40,8 @@ export const getPaymentSettingsUrl = () => {
  *
  * @return {string} Display string for rendering.
  */
-export const formatStringValue = ( value ) => capitalize( value ).replace( /_/g, ' ' );
+export const formatStringValue = ( value ) =>
+	capitalize( value ).replace( /_/g, ' ' );
 
 /**
  * Basic formatting function to convert local date string to UTC.

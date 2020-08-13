@@ -20,7 +20,8 @@
     "/vendor/",
     "<rootDir>/.*/build/",
     "<rootDir>/.*/build-module/",
-    "<rootDir>/docker/"
-  ],
-  "verbose": true
+    "<rootDir>/docker/",
+    "<rootDir>/tests/e2e"
+	],
+	"verbose": true
 }

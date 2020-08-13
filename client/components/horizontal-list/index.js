@@ -12,9 +12,7 @@ import './style.scss';
 
 const HorizontalList = ( props ) => {
 	const { items } = props;
-	return (
-		<List className="woocommerce-list--horizontal" items={ items } />
-	);
+	return <List className="woocommerce-list--horizontal" items={ items } />;
 };
 
 export default HorizontalList;

@@ -28,37 +28,59 @@ const fields = [
 	{ key: 'reason', label: __( 'Reason', 'woocommerce-payments' ) },
 	{ key: 'order', label: __( 'Order', 'woocommerce-payments' ) },
 	{ key: 'customer', label: __( 'Customer', 'woocommerce-payments' ) },
-	{ key: 'transactionId', label: __( 'Transaction ID', 'woocommerce-payments' ) },
+	{
+		key: 'transactionId',
+		label: __( 'Transaction ID', 'woocommerce-payments' ),
+	},
 ];
 
-const composeTransactionIdLink = dispute => {
-	const chargeId = typeof dispute.charge === 'object' ? dispute.charge.id : dispute.charge;
-	return <Link href={ getDetailsURL( chargeId, 'transactions' ) } >{ chargeId }</Link>;
+const composeTransactionIdLink = ( dispute ) => {
+	const chargeId =
+		typeof dispute.charge === 'object' ? dispute.charge.id : dispute.charge;
+	return (
+		<Link href={ getDetailsURL( chargeId, 'transactions' ) }>
+			{ chargeId }
+		</Link>
+	);
 };
 
-const composeDisputeReason = dispute => {
+const composeDisputeReason = ( dispute ) => {
 	const reasonMapping = reasons[ dispute.reason ];
-	return reasonMapping ? reasonMapping.display : formatStringValue( dispute.reason );
+	return reasonMapping
+		? reasonMapping.display
+		: formatStringValue( dispute.reason );
 };
 
 const Info = ( { dispute, isLoading } ) => {
-	const data = isLoading ? {
-			created: 'Created date',
-			amount: 'Amount',
-			dueBy: 'Due by date',
-			reason: 'Dispute reason',
-			order: 'Order link',
-			customer: 'Customer name',
-			transactionId: 'Transaction link',
-		} : {
-			created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
-			amount: `${ currency.formatCurrency( dispute.amount / 100 ) } ${ dispute.currency.toUpperCase() }`,
-			dueBy: dateI18n( 'M j, Y - g:iA', moment( dispute.evidence_details.due_by * 1000 ) ),
-			reason: composeDisputeReason( dispute ),
-			order: dispute.order ? ( <OrderLink order={ dispute.order } /> ) : null,
-			customer: typeof dispute.charge === 'object' ? dispute.charge.billing_details.name : null,
-			transactionId: composeTransactionIdLink( dispute ),
-		};
+	const data = isLoading
+		? {
+				created: 'Created date',
+				amount: 'Amount',
+				dueBy: 'Due by date',
+				reason: 'Dispute reason',
+				order: 'Order link',
+				customer: 'Customer name',
+				transactionId: 'Transaction link',
+		  }
+		: {
+				created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
+				amount: `${ currency.formatCurrency(
+					dispute.amount / 100
+				) } ${ dispute.currency.toUpperCase() }`,
+				dueBy: dateI18n(
+					'M j, Y - g:iA',
+					moment( dispute.evidence_details.due_by * 1000 )
+				),
+				reason: composeDisputeReason( dispute ),
+				order: dispute.order ? (
+					<OrderLink order={ dispute.order } />
+				) : null,
+				customer:
+					typeof dispute.charge === 'object'
+						? dispute.charge.billing_details.name
+						: null,
+				transactionId: composeTransactionIdLink( dispute ),
+		  };
 
 	return (
 		<div className="wcpay-dispute-info">

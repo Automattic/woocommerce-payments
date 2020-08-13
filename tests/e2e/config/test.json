@@ -1,0 +1,97 @@
+{
+  "url": "http://localhost:8084/",
+  "users": {
+    "admin": {
+      "username": "admin",
+      "password": "password",
+      "email": "admin@woocommercecoree2etestsuite.com"
+    },
+    "customer": {
+      "username": "customer",
+      "password": "password",
+      "email": "customer@woocommercecoree2etestsuite.com"
+    },
+    "guest": {
+      "email": "guest@woocommercecoree2etestsuite.com"
+    }
+  },
+  "products": {
+    "simple": {
+      "name": "Beanie"
+    },
+    "variable": {
+      "name": "Variable Product with Three Variations"
+    }
+  },
+  "addresses": {
+    "admin": {
+      "store": {
+        "firstname": "I am",
+        "lastname": "Admin",
+        "company": "Automattic",
+        "country": "United States (US)",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "store",
+        "city": "San Francisco",
+        "state": "CA",
+        "postcode": "94110"
+      }
+    },
+    "customer": {
+      "billing": {
+        "firstname": "I am",
+        "lastname": "Customer",
+        "company": "Automattic",
+        "country": "United States (US)",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "billing",
+        "city": "San Francisco",
+        "state": "CA",
+        "postcode": "94110",
+        "phone": "123456789",
+        "email": "e2e-wcpay-customer@woocommerce.com"
+      },
+      "shipping": {
+        "firstname": "I am",
+        "lastname": "Recipient",
+        "company": "Automattic",
+        "country": "United States (US)",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "shipping",
+        "city": "San Francisco",
+        "state": "CA",
+        "postcode": "94110"
+      }
+    }
+  },
+  "cards" : {
+    "basic": {
+      "number": "4242424242424242",
+      "expires": {
+        "month": "02",
+        "year": "24"
+      },
+      "cvc": "424",
+      "label": "Visa ending in 4242"
+    },
+    "3ds": {
+      "number": "4000002760003184",
+      "expires": {
+        "month": "03",
+        "year": "25"
+      },
+      "cvc": "525",
+      "label": "Visa ending in 3184"
+    },
+    "3ds2": {
+      "number": "4000000000003220",
+      "expires": {
+        "month": "04",
+        "year": "36"
+      },
+      "cvc": "626",
+      "label": "Visa ending in 3220"
+    }
+  }
+}
+
