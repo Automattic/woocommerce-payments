@@ -1,6 +1,6 @@
 [@genType]
 let updateCharge = (id, data): ChargeReducer.Event.t => {
-  type_: "SET_CHARGE",
+  type_: ChargeReducer.Event.reducerTypeToJs(`SetCharge),
   id,
   data: (data |> Decode.charge)->Some,
   error: None,
@@ -8,7 +8,7 @@ let updateCharge = (id, data): ChargeReducer.Event.t => {
 
 [@genType]
 let updateErrorForCharge = (id, data, error): ChargeReducer.Event.t => {
-  type_: "SET_ERROR_FOR_CHARGE",
+  type_: ChargeReducer.Event.reducerTypeToJs(`SetErrorForCharge),
   id,
   data,
   error,

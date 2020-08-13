@@ -18,9 +18,9 @@ let getState = state => {
 };
 
 let receiveCharges = (state, event: Reducer.event) => {
-  switch (event.type_) {
-  | "SET_CHARGE" => state->getState->updateCharge(event.id, event.data)
-  | "SET_ERROR_FOR_CHARGE" =>
+  switch (ChargeReducer.Event.reducerTypeFromJs(event.type_)) {
+  | Some(`SetCharge) => state->getState->updateCharge(event.id, event.data)
+  | Some(`SetErrorForCharge) =>
     state->getState->updateChargeError(event.id, event.error)
   | _ => state->getState
   };

@@ -1,4 +1,7 @@
 module Event = {
+  [@bs.deriving jsConverter]
+  type reducerType = [ | `SetCharge | `SetErrorForCharge];
+
   type t = {
     [@bs.as "type"]
     type_: string,
