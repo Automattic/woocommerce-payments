@@ -1,5 +1,13 @@
 *** WooCommerce Payments Changelog ***
 
+= 1.3.0 - 2020-xx-xx =
+* Add - Support for saved cards.
+* Add - Search bar for transactions.
+* Fix - Redirect to WC core onboarding instead of WC Payments onboarding when appropriate.
+* Fix - Creating an account during checkout with 3DS cards.
+* Fix - Missing payment statuses for certain disputes.
+* Fix - Missing translators comments.
+
 = 1.2.0 - 2020-07-20 =
 * Add - 3DS support when using the pay for order page
 * Add - Display confirmation dialog when enabling manual captures
