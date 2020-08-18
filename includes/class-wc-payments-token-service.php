@@ -77,7 +77,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
-		return $this->add_token_to_user( $payment_method_object, wp_get_current_user() );
+		return $this->add_token_to_user( $payment_method_object, $user );
 	}
 
 	/**
@@ -93,7 +93,7 @@ class WC_Payments_Token_Service {
 			return $tokens;
 		}
 
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
 		if ( null === $customer_id ) {
 			return $tokens;
@@ -110,7 +110,7 @@ class WC_Payments_Token_Service {
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
 				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
-					$token                      = $this->add_token_to_user( $payment_method, wp_get_current_user() );
+					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 					$tokens[ $token->get_id() ] = $token;
 				}
 			}
@@ -145,7 +145,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
 				// Clear cached payment methods.
