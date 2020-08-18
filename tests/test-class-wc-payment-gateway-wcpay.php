@@ -572,6 +572,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'no_*'          => [ false, 'WCPay * dev' ],
 			'no_sqt'        => [ false, 'WCPay \'dev\'' ],
 			'no_dqt'        => [ false, 'WCPay "dev"' ],
+			'no_lt'         => [ false, 'WCPay<dev' ],
+			'no_gt'         => [ false, 'WCPay>dev' ],
 			'req_latin'     => [ false, 'дескриптор' ],
 			'req_letter'    => [ false, '123456' ],
 		];

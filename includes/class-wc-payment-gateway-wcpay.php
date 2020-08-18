@@ -828,23 +828,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception When statement descriptor is invalid.
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
-		$sanitized_value = $this->validate_text_field( $key, $value );
-
 		// Validation can be done with a single regex but splitting into multiple for better readability.
 		$valid_length   = '/^.{5,22}$/';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
-		$no_specials    = '/^[^*"\']*$/';
+		$no_specials    = '/^[^*"\'<>]*$/';
 
 		if (
-			! preg_match( $valid_length, $sanitized_value ) ||
-			! preg_match( $has_one_letter, $sanitized_value ) ||
-			! preg_match( $no_specials, $sanitized_value )
+			! preg_match( $valid_length, $value ) ||
+			! preg_match( $has_one_letter, $value ) ||
+			! preg_match( $no_specials, $value )
 		) {
-			throw new Exception(
-				__( 'Invalid Statement descriptor. Statement descriptor should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " *', 'woocommerce-payments' )
-			);
+			throw new Exception( __( 'Invalid Statement descriptor. Statement descriptor should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
-		return $value;
+
+		// Perform text validation after own checks to prevent special characters like < > escaped before own validation.
+		return $this->validate_text_field( $key, $value );
 	}
 
 	/**
