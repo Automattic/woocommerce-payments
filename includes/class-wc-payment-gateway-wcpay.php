@@ -151,6 +151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -736,16 +737,85 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 
-		try {
-			$descriptor = $this->account->get_statement_descriptor();
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to render statement descriptor input. ' . $e );
-			return '';
+		return parent::generate_text_html( $key, $data );
+	}
+
+	/**
+	 * Get option from DB or connected account.
+	 *
+	 * Overrides parent method to retrieve some options from connected account.
+	 *
+	 * @param  string $key Option key.
+	 * @param  mixed  $empty_value Value when empty.
+	 * @return string The value specified for the option or a default value for the option.
+	 */
+	public function get_option( $key, $empty_value = null ) {
+		switch ( $key ) {
+			case 'account_statement_descriptor':
+				return $this->get_account_statement_descriptor();
+			default:
+				return parent::get_option( $key, $empty_value );
+		}
+	}
+
+	/**
+	 * Sanitizes plugin settings before saving them in site's DB.
+	 *
+	 * Filters out some values stored in connected account.
+	 *
+	 * @param array $settings Plugin settings.
+	 * @return array Sanitized settings.
+	 */
+	public function sanitize_plugin_settings( $settings ) {
+		if ( isset( $settings['account_statement_descriptor'] ) ) {
+			$this->update_statement_descriptor( $settings['account_statement_descriptor'] );
+			$settings['account_statement_descriptor'] = '';
 		}
 
-		// Value from option is used as input value. Update option to make sure proper value is displayed.
-		$this->update_option( $key, $descriptor );
-		return parent::generate_text_html( $key, $data );
+		return $settings;
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param mixed $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	private function get_account_statement_descriptor( $empty_value = null ) {
+		try {
+			if ( ! $this->is_connected() ) {
+				return $empty_value;
+			}
+
+			return $this->account->get_statement_descriptor();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+			return $empty_value;
+		}
+	}
+
+	/**
+	 * Handles statement descriptor update when plugin settings saved.
+	 *
+	 * Adds error message to display in admin notices in case of failure.
+	 *
+	 * @param string $statement_descriptor Statement descriptor value.
+	 */
+	private function update_statement_descriptor( $statement_descriptor ) {
+		if ( empty( $statement_descriptor ) ) {
+			return;
+		}
+
+		$account_settings = [
+			'statement_descriptor' => $statement_descriptor,
+		];
+		$error_message    = $this->account->update_stripe_account( $account_settings );
+
+		if ( is_string( $error_message ) ) {
+			$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$this->add_error( $msg );
+		}
 	}
 
 	/**
@@ -813,27 +883,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		</tr>
 		<?php
 		return ob_get_clean();
-	}
-
-	/**
-	 * Handles plugin settings updates.
-	 *
-	 * @return bool was anything saved?
-	 */
-	public function process_admin_options() {
-		$saved = parent::process_admin_options();
-		if ( $saved ) {
-			$account_settings = [
-				'statement_descriptor' => $this->get_option( 'account_statement_descriptor' ),
-			];
-			$error_message    = $this->account->update_stripe_account( $account_settings );
-
-			if ( is_string( $error_message ) ) {
-				$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
-				$this->add_error( $msg );
-			}
-		}
-		return $saved;
 	}
 
 	/**
