@@ -556,7 +556,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
 			$this->assertNotEmpty( $validated_value );
 		} else {
-			$this->expectExceptionMessage( 'Invalid Statement descriptor.' );
+			$this->expectExceptionMessage( 'Customer bank statement is invalid.' );
 			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
 		}
 	}
