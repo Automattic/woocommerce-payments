@@ -114,8 +114,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 			'account_statement_descriptor' => [
 				'type'        => 'account_statement_descriptor',
-				'title'       => __( 'Statement Descriptor', 'woocommerce-payments' ),
-				'description' => __( 'Statement descriptor to display in receipt.', 'woocommerce-payments' ),
+				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
+				'description' => __( 'Edit the way your store name appears on your customers’ bank statements.', 'woocommerce-payments' ),
 			],
 			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
@@ -838,7 +838,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new Exception( __( 'Invalid Statement descriptor. Statement descriptor should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
+			throw new Exception( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
 		// Perform text validation after own checks to prevent special characters like < > escaped before own validation.
