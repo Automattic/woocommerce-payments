@@ -769,7 +769,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function sanitize_plugin_settings( $settings ) {
 		if ( isset( $settings['account_statement_descriptor'] ) ) {
 			$this->update_statement_descriptor( $settings['account_statement_descriptor'] );
-			$settings['account_statement_descriptor'] = '';
+			unset( $settings['account_statement_descriptor'] );
 		}
 
 		return $settings;
