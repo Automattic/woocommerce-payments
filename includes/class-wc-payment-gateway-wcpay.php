@@ -395,181 +395,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int $order_id Order ID to process the payment for.
+	 * @param int  $order_id Order ID to process the payment for.
+	 * @param bool $is_recurring_payment Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
-		return $this->process_payment_for_order( $order, WC()->cart );
-	}
-
-	/**
-	 * Process the payment for a given order.
-	 *
-	 * @param WC_Order $order Order to process the payment for.
-	 * @param WC_Cart  $cart The WC_Cart object.
-	 *
-	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 */
-	public function process_payment_for_order( $order, $cart ) {
+	public function process_payment( $order_id, $is_recurring_payment = false ) {
 		try {
-			$order_id = $order->get_id();
-			$amount   = $order->get_total();
-
-			if ( $amount > 0 ) {
-				// Get the payment method from the request (generated when the user entered their card details).
-				$payment_method      = $this->get_payment_method_from_request();
-				$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
-				$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-				$email               = sanitize_email( $order->get_billing_email() );
-				$save_payment_method = ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$is_saved_method     = empty( $_POST['wcpay-payment-method'] ) && ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-				// Determine the customer making the payment, create one if we don't have one already.
-				$user        = wp_get_current_user();
-				$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-				if ( null === $customer_id ) {
-					// Create a new customer.
-					$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
-				} else {
-					// Update the existing customer with the current details. In the event the old customer can't be
-					// found a new one is created, so we update the customer ID here as well.
-					$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
-				}
-
-				// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-				if ( $is_saved_method ) {
-					try {
-						$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
-					} catch ( Exception $e ) {
-						// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
-						Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
-					}
-				}
-
-				$metadata = [
-					'customer_name'  => $name,
-					'customer_email' => $email,
-					'site_url'       => esc_url( get_site_url() ),
-					'order_id'       => $order->get_id(),
-				];
-
-				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->create_and_confirm_intention(
-					WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
-					'usd',
-					$payment_method,
-					$customer_id,
-					$manual_capture,
-					$save_payment_method,
-					$metadata,
-					$this->get_level3_data_from_order( $order )
-				);
-
-				$intent_id = $intent->get_id();
-				$status    = $intent->get_status();
-
-				if ( $save_payment_method && ( 'succeeded' === $status || 'requires_capture' === $status ) ) {
-					try {
-						$this->token_service->add_payment_method_to_user( $payment_method, wp_get_current_user() );
-					} catch ( Exception $e ) {
-						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-					}
-				}
-
-				switch ( $status ) {
-					case 'succeeded':
-						$note = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'code'   => '<code>',
-								]
-							),
-							wc_price( $amount ),
-							$intent_id
-						);
-
-						$order->update_meta_data( '_intent_id', $intent_id );
-						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-						$order->update_meta_data( '_intention_status', $status );
-						$order->save();
-
-						$order->add_order_note( $note );
-						$order->payment_complete( $intent_id );
-						break;
-					case 'requires_capture':
-						$note = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'code'   => '<code>',
-								]
-							),
-							wc_price( $amount ),
-							$intent_id
-						);
-
-						$order->update_status( 'on-hold', $note );
-						$order->set_transaction_id( $intent_id );
-
-						$order->update_meta_data( '_intent_id', $intent_id );
-						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-						$order->update_meta_data( '_intention_status', $status );
-						$order->save();
-
-						break;
-					case 'requires_action':
-						// Add a note in case the customer does not complete the payment (exits the page),
-						// so the store owner has some information about what happened to create an order.
-						$note = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'code'   => '<code>',
-								]
-							),
-							wc_price( $amount ),
-							$intent_id
-						);
-						$order->add_order_note( $note );
-
-						$order->update_meta_data( '_intent_id', $intent_id );
-						$order->update_meta_data( '_intention_status', $status );
-						$order->save();
-
-						return [
-							'result'   => 'success',
-							// Include a new nonce for update_order_status to ensure the update order
-							// status call works when a guest user creates an account during checkout.
-							'redirect' => sprintf(
-								'#wcpay-confirm-pi:%s:%s:%s',
-								$order_id,
-								$intent->get_client_secret(),
-								wp_create_nonce( 'wcpay_update_order_status_nonce' )
-							),
-						];
-				}
-			} else {
-				$order->payment_complete();
-			}
-
-			wc_reduce_stock_levels( $order_id );
-			$cart->empty_cart();
-
-			return [
-				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
-			];
+			$order = wc_get_order( $order_id );
+			return $this->process_payment_for_order(
+				[
+					'order'           => $order,
+					'cart'            => WC()->cart,
+					'manual_capture'  => 'yes' === $this->get_option( 'manual_capture' ),
+					'payment_method'  => $this->get_payment_method_from_request(),
+					'token'           => $this->get_token_from_request(),
+					'is_saved_method' => empty( $_POST['wcpay-payment-method'] ) && ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					'off_session'     => false,
+					'is_recurring'    => $is_recurring_payment,
+				]
+			);
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -581,6 +426,209 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => '',
 			];
 		}
+	}
+
+	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param array $args Arguments that define this payment.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @throws WC_Payments_API_Exception Error processing the payment.
+	 */
+	public function process_payment_for_order( $args ) {
+		// phpcs:disable Generic.Commenting.DocComment.MissingShort
+		$order           = $args['order'];           /** @var WC_Order $order The Order object. */
+		$cart            = $args['cart'];            /** @var WC_Cart $cart The Cart object, or NULL if the payment isn't made on a checkout context. */
+		$manual_capture  = $args['manual_capture'];  /** @var bool $manual_capture Whether to only authorize the payment (true) or automatically capture (false). */
+		$payment_method  = $args['payment_method'];  /** @var string $payment_method Payment Method ID. */
+		$token           = $args['token'];           /** @var WC_Payment_Token $token Token to use for the payment. */
+		$is_saved_method = $args['is_saved_method']; /** @var bool $is_saved_method Whether the payment is made using a saved card. */
+		$off_session     = $args['off_session'];     /** @var bool $off_session Whether this payment is merchant-initiated (true) of customer-initiated (false). */
+		$is_recurring    = $args['is_recurring'];    /** @var bool $is_recurring Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true). */
+		// phpcs:enable Generic.Commenting.DocComment.MissingShort
+		$save_payment_method = ! $is_saved_method && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $is_recurring ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$order_id = $order->get_id();
+		$amount   = $order->get_total();
+		$user     = $order->get_user() ?? wp_get_current_user();
+		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email    = sanitize_email( $order->get_billing_email() );
+		$metadata = [
+			'customer_name'  => $name,
+			'customer_email' => $email,
+			'site_url'       => esc_url( get_site_url() ),
+			'order_id'       => $order_id,
+		];
+		if ( $is_recurring ) {
+			$metadata['payment_type'] = 'recurring';
+		}
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+		if ( null === $customer_id ) {
+			// Create a new customer.
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+		} else {
+			// Update the existing customer with the current details. In the event the old customer can't be
+			// found a new one is created, so we update the customer ID here as well.
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+		}
+
+		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
+		if ( $is_saved_method ) {
+			try {
+				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+			} catch ( Exception $e ) {
+				// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
+				Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
+			}
+		}
+
+		$intent_failed = false;
+
+		if ( $amount > 0 ) {
+			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
+			$intent = $this->payments_api_client->create_and_confirm_intention(
+				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+				'usd',
+				$payment_method,
+				$customer_id,
+				$manual_capture,
+				$save_payment_method,
+				$metadata,
+				$this->get_level3_data_from_order( $order ),
+				$off_session
+			);
+
+			$intent_id = $intent->get_id();
+			$status    = $intent->get_status();
+
+			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
+				$intent_failed = true;
+			}
+
+			switch ( $status ) {
+				case 'succeeded':
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+
+					$order->update_meta_data( '_intent_id', $intent_id );
+					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_intention_status', $status );
+					$order->save();
+
+					$order->add_order_note( $note );
+					$order->payment_complete( $intent_id );
+					break;
+				case 'requires_capture':
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+
+					$order->update_status( 'on-hold', $note );
+					$order->set_transaction_id( $intent_id );
+
+					$order->update_meta_data( '_intent_id', $intent_id );
+					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_intention_status', $status );
+					$order->save();
+
+					break;
+				case 'requires_action':
+					// Add a note in case the customer does not complete the payment (exits the page),
+					// so the store owner has some information about what happened to create an order.
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->add_order_note( $note );
+
+					$order->update_meta_data( '_intent_id', $intent_id );
+					$order->update_meta_data( '_intention_status', $status );
+					$order->save();
+
+					return [
+						'result'   => 'success',
+						// Include a new nonce for update_order_status to ensure the update order
+						// status call works when a guest user creates an account during checkout.
+						'redirect' => sprintf(
+							'#wcpay-confirm-pi:%s:%s:%s',
+							$order_id,
+							$intent->get_client_secret(),
+							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+						),
+					];
+			}
+		} else {
+			$order->payment_complete();
+		}
+
+		if ( $save_payment_method && ! $intent_failed ) {
+			try {
+				$token = $this->token_service->add_payment_method_to_user( $payment_method, $user );
+			} catch ( Exception $e ) {
+				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+			}
+		}
+
+		if ( ! empty( $token ) && ! in_array( $token->get_id(), $order->get_payment_tokens(), true ) ) {
+			$order->add_payment_token( $token );
+		}
+
+		wc_reduce_stock_levels( $order_id );
+		if ( isset( $cart ) ) {
+			$cart->empty_cart();
+		}
+
+		return [
+			'result'   => 'success',
+			'redirect' => $this->get_return_url( $order ),
+		];
+	}
+
+	/**
+	 * Extract the payment token from the request's POST variables
+	 *
+	 * @return WC_Payment_Token|NULL
+	 */
+	private function get_token_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing
+		if ( ! isset( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ) {
+			return null;
+		}
+
+		return WC_Payment_Tokens::get( wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/**
@@ -599,8 +647,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = ! empty( $_POST['wcpay-payment-method'] ) ? wc_clean( $_POST['wcpay-payment-method'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 		if ( empty( $payment_method ) ) {
-			$token_id = wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$token    = WC_Payment_Tokens::get( $token_id );
+			$token = $this->get_token_from_request();
 
 			if ( ! $token || self::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
 				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
