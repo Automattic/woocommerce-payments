@@ -995,6 +995,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$intent_id
 					);
 					$order->add_order_note( $note );
+
+					// The order is successful, so update it to reflect that.
+					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_intention_status', $status );
+					$order->save();
+
 					$order->payment_complete( $intent_id );
 					break;
 				case 'requires_capture':
@@ -1013,6 +1019,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					// Save the note separately because if there is no change in status
 					// then the note is not saved using WC_Order::update_status.
 					$order->add_order_note( $note );
+
+					// The order is successful, so update it to reflect that.
+					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_intention_status', $status );
+					$order->save();
+
 					$order->update_status( 'on-hold' );
 					$order->set_transaction_id( $intent_id );
 					break;
@@ -1037,11 +1049,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
-				// The order is successful, so update it to reflect that.
-				$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-				$order->update_meta_data( '_intention_status', $status );
-				$order->save();
-
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
