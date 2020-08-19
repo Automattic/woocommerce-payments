@@ -7,3 +7,6 @@ RUN pecl install xdebug \
 	&& docker-php-ext-enable xdebug
 RUN apt-get update \
 	&& apt-get install --assume-yes --quiet --no-install-recommends gnupg2 subversion mariadb-client
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+	&& chmod +x wp-cli.phar \
+	&& mv wp-cli.phar /usr/local/bin/wp
