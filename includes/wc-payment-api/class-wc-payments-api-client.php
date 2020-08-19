@@ -260,14 +260,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
+	 * @param bool   $confirm                - Flag to confirm the intent on creation if true.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_setup_intent( $payment_method_id, $customer_id, $confirm = 'false' ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
+			'confirm'        => $confirm,
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );

@@ -582,6 +582,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					];
 			}
 		} else {
+			// For $0 orders, we need to save the payment method using a setup intent.
+			// We're confirming the intent right now, but this might change once we implement SCA support.
+			if ( $save_payment_method ) {
+				$setup_intent = $this->payments_api_client->create_setup_intent(
+					$payment_information->get_payment_method(),
+					$customer_id,
+					'true'
+				);
+
+				// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
+				// For now, since we're not supporting SCA cards, we can ignore that status.
+				if ( 'succeeded' !== $setup_intent['status'] ) {
+					throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+				}
+			}
 			$order->payment_complete();
 		}
 
