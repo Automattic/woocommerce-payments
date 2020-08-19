@@ -613,6 +613,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update Stripe account data
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return array Updated account data.
+	 */
+	public function update_account( $stripe_account_settings ) {
+		return $this->request(
+			$stripe_account_settings,
+			self::ACCOUNTS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
 	 * @param string $return_url    - URL to redirect to at the end of the flow.

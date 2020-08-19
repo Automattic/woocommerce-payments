@@ -99,27 +99,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = [
-			'enabled'         => [
+			'enabled'                      => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_details' => [
+			'account_details'              => [
 				'type' => 'account_actions',
 			],
-			'account_status'  => [
+			'account_status'               => [
 				'type' => 'account_status',
 			],
-			'manual_capture'  => [
+			'account_statement_descriptor' => [
+				'type'        => 'account_statement_descriptor',
+				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
+				'description' => __( 'Edit the way your store name appears on your customers’ bank statements.', 'woocommerce-payments' ),
+			],
+			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
 			],
-			'test_mode'       => [
+			'test_mode'                    => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -127,7 +132,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			],
-			'enable_logging'  => [
+			'enable_logging'               => [
 				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -146,7 +151,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Load the settings.
 		$this->init_settings();
 
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
+		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -715,6 +722,127 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generates markup for account statement descriptor field.
+	 *
+	 * @param string $key Field key.
+	 * @param array  $data Field data.
+	 *
+	 * @return string
+	 */
+	public function generate_account_statement_descriptor_html( $key, $data ) {
+		if ( ! $this->is_connected() ) {
+			return '';
+		}
+
+		return parent::generate_text_html( $key, $data );
+	}
+
+	/**
+	 * Get option from DB or connected account.
+	 *
+	 * Overrides parent method to retrieve some options from connected account.
+	 *
+	 * @param  string $key Option key.
+	 * @param  mixed  $empty_value Value when empty.
+	 * @return string The value specified for the option or a default value for the option.
+	 */
+	public function get_option( $key, $empty_value = null ) {
+		switch ( $key ) {
+			case 'account_statement_descriptor':
+				return $this->get_account_statement_descriptor();
+			default:
+				return parent::get_option( $key, $empty_value );
+		}
+	}
+
+	/**
+	 * Sanitizes plugin settings before saving them in site's DB.
+	 *
+	 * Filters out some values stored in connected account.
+	 *
+	 * @param array $settings Plugin settings.
+	 * @return array Sanitized settings.
+	 */
+	public function sanitize_plugin_settings( $settings ) {
+		if ( isset( $settings['account_statement_descriptor'] ) ) {
+			$this->update_statement_descriptor( $settings['account_statement_descriptor'] );
+			unset( $settings['account_statement_descriptor'] );
+		}
+
+		return $settings;
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param mixed $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	private function get_account_statement_descriptor( $empty_value = null ) {
+		try {
+			if ( ! $this->is_connected() ) {
+				return $empty_value;
+			}
+
+			return $this->account->get_statement_descriptor();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+			return $empty_value;
+		}
+	}
+
+	/**
+	 * Handles statement descriptor update when plugin settings saved.
+	 *
+	 * Adds error message to display in admin notices in case of failure.
+	 *
+	 * @param string $statement_descriptor Statement descriptor value.
+	 */
+	private function update_statement_descriptor( $statement_descriptor ) {
+		if ( empty( $statement_descriptor ) ) {
+			return;
+		}
+
+		$account_settings = [
+			'statement_descriptor' => $statement_descriptor,
+		];
+		$error_message    = $this->account->update_stripe_account( $account_settings );
+
+		if ( is_string( $error_message ) ) {
+			$msg = __( 'Failed to update Statement descriptor. ', 'woocommerce-payments' ) . $error_message;
+			$this->add_error( $msg );
+		}
+	}
+
+	/**
+	 * Validates statement descriptor value
+	 *
+	 * @param  string $key Field key.
+	 * @param  string $value Posted Value.
+	 *
+	 * @return string Sanitized statement descriptor.
+	 * @throws Exception When statement descriptor is invalid.
+	 */
+	public function validate_account_statement_descriptor_field( $key, $value ) {
+		// Validation can be done with a single regex but splitting into multiple for better readability.
+		$valid_length   = '/^.{5,22}$/';
+		$has_one_letter = '/^.*[a-zA-Z]+/';
+		$no_specials    = '/^[^*"\'<>]*$/';
+
+		if (
+			! preg_match( $valid_length, $value ) ||
+			! preg_match( $has_one_letter, $value ) ||
+			! preg_match( $no_specials, $value )
+		) {
+			throw new Exception( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
+		}
+
+		// Perform text validation after own checks to prevent special characters like < > escaped before own validation.
+		return $this->validate_text_field( $key, $value );
 	}
 
 	/**
