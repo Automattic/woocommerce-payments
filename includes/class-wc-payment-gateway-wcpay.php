@@ -584,6 +584,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			try {
 				$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
 				$order->add_payment_token( $token );
+
+				// Set payment token for subscriptions, so it can be used for renewals.
+				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+				foreach ( $subscriptions as $subscription ) {
+					$subscription->add_payment_token( $token );
+				}
 			} catch ( Exception $e ) {
 				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
