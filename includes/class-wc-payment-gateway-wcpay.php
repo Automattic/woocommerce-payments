@@ -481,6 +481,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$intent_failed = false;
 
+		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		if ( 0 === $amount && ! $save_payment_method ) {
+			$order->payment_complete();
+		}
+
 		if ( $amount > 0 ) {
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
@@ -497,9 +502,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$intent_id = $intent->get_id();
 			$status    = $intent->get_status();
+			$charge_id = $intent->get_charge_id();
+		} else {
+			// For $0 orders, we need to save the payment method using a setup intent.
+			$intent = $this->payments_api_client->create_setup_intent(
+				$payment_information->get_payment_method(),
+				$customer_id,
+				'true'
+			);
 
+			$intent_id = $intent['id'];
+			$status    = $intent['status'];
+			$charge_id = '';
+
+			// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
+			// For now, since we're not supporting SCA cards, we can ignore that status.
+			if ( 'succeeded' !== $status ) {
+				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+			}
+		}
+
+		if ( ! empty( $intent ) ) {
 			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
 				$intent_failed = true;
+			}
+
+			if ( $save_payment_method && ! $intent_failed ) {
+				try {
+					$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
+					$payment_information->set_token( $token );
+				} catch ( Exception $e ) {
+					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+				}
+			}
+
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				$token = $payment_information->get_payment_token();
+				$this->add_token_to_order( $order, $token );
 			}
 
 			switch ( $status ) {
@@ -518,7 +558,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 
 					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_charge_id', $charge_id );
 					$order->update_meta_data( '_intention_status', $status );
 					$order->save();
 
@@ -543,7 +583,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->set_transaction_id( $intent_id );
 
 					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_charge_id', $charge_id );
 					$order->update_meta_data( '_intention_status', $status );
 					$order->save();
 
@@ -581,38 +621,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						),
 					];
 			}
-		} else {
-			// For $0 orders, we need to save the payment method using a setup intent.
-			// We're confirming the intent right now, but this might change once we implement SCA support.
-			if ( $save_payment_method ) {
-				$setup_intent = $this->payments_api_client->create_setup_intent(
-					$payment_information->get_payment_method(),
-					$customer_id,
-					'true'
-				);
-
-				// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
-				// For now, since we're not supporting SCA cards, we can ignore that status.
-				if ( 'succeeded' !== $setup_intent['status'] ) {
-					throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
-				}
-			}
-			$order->payment_complete();
-		}
-
-		if ( $save_payment_method && ! $intent_failed ) {
-			try {
-				$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
-				$payment_information->set_token( $token );
-			} catch ( Exception $e ) {
-				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-			}
-		}
-
-		if ( $payment_information->is_using_saved_payment_method() ) {
-			$token = $payment_information->get_payment_token();
-			$this->add_token_to_order( $order, $token );
 		}
 
 		wc_reduce_stock_levels( $order_id );
