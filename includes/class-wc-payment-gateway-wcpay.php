@@ -1337,9 +1337,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @since 1.4.0
 	 *
 	 * @param WC_Order $order The context passed into this function when the user view the order details page in WordPress admin.
+	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
 		$charge_id = $order->get_meta( '_charge_id' );
+
+		if ( empty( $charge_id ) ) {
+			return '';
+		}
+
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
