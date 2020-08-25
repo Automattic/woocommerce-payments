@@ -90,6 +90,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.x.x - 2020-xx-xx =
+* Fix - Link from order details page to transaction details page.
+
 = 1.3.0 - 2020-08-17 =
 * Add - Support for saved cards.
 * Add - Search bar for transactions.
