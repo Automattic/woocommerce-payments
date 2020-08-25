@@ -101,7 +101,7 @@ class WC_Payments {
 		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
-		if ( class_exists( 'WC_Subscriptions' ) ) {
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '3.0.0', '>=' ) ) {
 			include_once dirname( __FILE__ ) . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
