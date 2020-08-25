@@ -562,7 +562,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->update_meta_data( '_intention_status', $status );
 					$order->save();
 
-					$order->add_order_note( $note );
+					if ( $amount > 0 ) {
+						$order->add_order_note( $note );
+					}
 					$order->payment_complete( $intent_id );
 					break;
 				case 'requires_capture':
