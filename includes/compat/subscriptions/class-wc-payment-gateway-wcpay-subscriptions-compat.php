@@ -46,10 +46,29 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 	}
 
+	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param int  $order_id Order ID to process the payment for.
+	 * @param bool $is_recurring_payment Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
 	public function process_payment( $order_id, $is_recurring_payment = false ) {
 		return parent::process_payment( $order_id, wcs_order_contains_subscription( $order_id ) );
 	}
 
+	/**
+	 * Returns a boolean value indicating whether the save payment checkbox should be
+	 * displayed during checkout.
+	 *
+	 * Returns `false` if the cart currently has a subscriptions. Returns the value in
+	 * `$display` otherwise.
+	 *
+	 * @param bool $display Bool indicating whether to show the save payment checkbox in the absence of subscriptions.
+	 *
+	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
+	 */
 	public function display_save_payment_method_checkbox( $display ) {
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
 			return false;
@@ -59,10 +78,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	}
 
 	/**
-	 * Scheduled_subscription_payment function.
+	 * Process a scheduled subscription payment.
 	 *
-	 * @param $amount float The amount to charge.
-	 * @param $renewal_order WC_Order A WC_Order object created to record the renewal payment.
+	 * @param float    $amount The amount to charge.
+	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
 		$order_tokens = WC_Payment_Tokens::get_order_tokens( $renewal_order );
@@ -93,6 +112,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 	}
 
+	/**
+	 * Retrieves the payment token from the subscription's parent order.
+	 *
+	 * @param WC_Order        $order The order that needs to be updated.
+	 * @param WC_Subscription $subscription The subscription used to find the parent order.
+	 *
+	 * @return WC_Order The order with the updated payment token, if a payment token was found.
+	 */
 	public function copy_token_from_parent_order( $order, $subscription ) {
 		$parent = $subscription->get_parent();
 		if ( $parent ) {
@@ -101,6 +128,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		return $order;
 	}
 
+	/**
+	 * Adds the payment token from a failed renewal order to the provided subscription.
+	 *
+	 * @param WC_Subscription $subscription The subscription to be updated.
+	 * @param WC_Order        $renewal_order The failed renewal order.
+	 */
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
 		$renewal_order_tokens = WC_Payment_Tokens::get_order_tokens( $renewal_order );
 		$renewal_token        = end( $renewal_order_tokens );
