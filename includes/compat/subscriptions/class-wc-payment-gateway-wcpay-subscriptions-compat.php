@@ -42,7 +42,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		);
 
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-		add_filter( 'wcs_new_order_created', [ $this, 'copy_token_from_parent_order' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 	}
@@ -102,22 +101,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 			$renewal_order->update_status( 'failed' );
 		}
-	}
-
-	/**
-	 * Retrieves the payment token from the subscription's parent order.
-	 *
-	 * @param WC_Order        $order The order that needs to be updated.
-	 * @param WC_Subscription $subscription The subscription used to find the parent order.
-	 *
-	 * @return WC_Order The order with the updated payment token, if a payment token was found.
-	 */
-	public function copy_token_from_parent_order( $order, $subscription ) {
-		$parent = $subscription->get_parent();
-		if ( $parent ) {
-			$order->update_meta_data( '_payment_tokens', $parent->get_payment_tokens() );
-		}
-		return $order;
 	}
 
 	/**
