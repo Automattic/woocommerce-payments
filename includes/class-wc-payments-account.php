@@ -237,6 +237,11 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// Don't redirect if the user is on Jetpack pages.
+		if ( 'jetpack' === $current_page ) {
+			return false;
+		}
+
 		return true;
 	}
 

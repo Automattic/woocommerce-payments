@@ -91,7 +91,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 == Changelog ==
 
 = 1.x.x - 2020-xx-xx =
+* Add - Allow merchant to edit statement descriptor
 * Fix - Link from order details page to transaction details page.
+* Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard
 
 = 1.3.0 - 2020-08-17 =
 * Add - Support for saved cards.
