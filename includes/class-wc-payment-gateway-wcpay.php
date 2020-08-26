@@ -402,19 +402,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment( $order_id, $is_recurring_payment = false ) {
 		try {
-			$order = wc_get_order( $order_id );
-			return $this->process_payment_for_order(
-				[
-					'order'           => $order,
-					'cart'            => WC()->cart,
-					'manual_capture'  => 'yes' === $this->get_option( 'manual_capture' ),
-					'payment_method'  => $this->get_payment_method_from_request(),
-					'token'           => $this->get_token_from_request(),
-					'is_saved_method' => empty( $_POST['wcpay-payment-method'] ) && ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
-					'off_session'     => false,
-					'is_recurring'    => $is_recurring_payment,
-				]
-			);
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment_information = WC_Payment_Information::from_payment_request( $_POST, $is_recurring_payment );
+			$order               = wc_get_order( $order_id );
+			$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
+
+			return $this->process_payment_for_order( $order, WC()->cart, $payment_information, $manual_capture );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -431,23 +424,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param array $args Arguments that define this payment.
+	 * @param WC_Order               $order Order.
+	 * @param WC_Cart                $cart Cart.
+	 * @param WC_Payment_Information $payment_information Payment info.
+	 * @param bool                   $manual_capture Indicates whether this payment is merchant-initiated (true) or customer-initated (false).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws WC_Payments_API_Exception Error processing the payment.
 	 */
-	public function process_payment_for_order( $args ) {
-		// phpcs:disable Generic.Commenting.DocComment.MissingShort
-		$order           = $args['order'];           /** @var WC_Order $order The Order object. */
-		$cart            = $args['cart'];            /** @var WC_Cart $cart The Cart object, or NULL if the payment isn't made on a checkout context. */
-		$manual_capture  = $args['manual_capture'];  /** @var bool $manual_capture Whether to only authorize the payment (true) or automatically capture (false). */
-		$payment_method  = $args['payment_method'];  /** @var string $payment_method Payment Method ID. */
-		$token           = $args['token'];           /** @var WC_Payment_Token $token Token to use for the payment. */
-		$is_saved_method = $args['is_saved_method']; /** @var bool $is_saved_method Whether the payment is made using a saved card. */
-		$off_session     = $args['off_session'];     /** @var bool $off_session Whether this payment is merchant-initiated (true) of customer-initiated (false). */
-		$is_recurring    = $args['is_recurring'];    /** @var bool $is_recurring Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true). */
-		// phpcs:enable Generic.Commenting.DocComment.MissingShort
-		$save_payment_method = ! $is_saved_method && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $is_recurring ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	public function process_payment_for_order( $order, $cart, $payment_information, $manual_capture ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$save_payment_method = ! $payment_information->is_using_saved_card() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $payment_information->is_first_installment() );
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -460,7 +447,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
 		];
-		if ( $is_recurring ) {
+		if ( $payment_information->is_first_installment() ) {
 			$metadata['payment_type'] = 'recurring';
 		}
 
@@ -479,7 +466,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 		if ( $is_saved_method ) {
 			try {
-				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->payment_method(), $order );
 			} catch ( Exception $e ) {
 				// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
@@ -493,13 +480,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->create_and_confirm_intention(
 				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
 				'usd',
-				$payment_method,
+				$payment_information->payment_method(),
 				$customer_id,
 				$manual_capture,
 				$save_payment_method,
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
-				$off_session
+				$payment_information->is_merchant_initiated()
 			);
 
 			$intent_id = $intent->get_id();
@@ -594,15 +581,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $save_payment_method && ! $intent_failed ) {
 			try {
-				$token = $this->token_service->add_payment_method_to_user( $payment_method, $user );
+				$token = $this->token_service->add_payment_method_to_user( $payment_information->payment_method(), $user );
 			} catch ( Exception $e ) {
 				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 			}
 		}
 
-		if ( ! empty( $token ) && ! in_array( $token->get_id(), $order->get_payment_tokens(), true ) ) {
-			$order->add_payment_token( $token );
+		if ( $payment_information->has_payment_token() && ! in_array( $payment_information->payment_token()->get_id(), $order->get_payment_tokens(), true ) ) {
+			$order->add_payment_token( $payment_information->payment_token() );
 		}
 
 		wc_reduce_stock_levels( $order_id );
