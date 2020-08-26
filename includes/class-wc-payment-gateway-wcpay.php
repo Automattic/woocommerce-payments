@@ -582,6 +582,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $save_payment_method && ! $intent_failed ) {
 			try {
 				$token = $this->token_service->add_payment_method_to_user( $payment_information->payment_method(), $user );
+				$order->add_payment_token( $token );
 			} catch ( Exception $e ) {
 				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
