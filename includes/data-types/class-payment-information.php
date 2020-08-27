@@ -30,13 +30,6 @@ class Payment_Information {
 	private $token;
 
 	/**
-	 * Indicates whether this payment was made using a saved card.
-	 *
-	 * @var bool
-	 */
-	private $is_saved_method;
-
-	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @var bool
@@ -48,22 +41,22 @@ class Payment_Information {
 	 *
 	 * @param string            $payment_method The ID of the payment method used for this payment.
 	 * @param \WC_Payment_Token $token The payment token used for this payment.
-	 * @param bool              $is_saved_method Indicates whether this payment was made using a saved card.
 	 * @param bool              $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
-	 * @throws Exception - If no payment method is found in the provided request.
+	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public function __construct(
 		string $payment_method,
 		\WC_Payment_Token $token = null,
-		bool $is_saved_method = false,
 		bool $off_session = false
 	) {
-		$this->payment_method  = $payment_method;
-		$this->token           = $token;
-		$this->is_saved_method = $is_saved_method;
-		$this->off_session     = $off_session;
+		if ( empty( $payment_method ) && empty( $token ) ) {
+			throw new \Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
+		}
 
+		$this->payment_method = $payment_method;
+		$this->token          = $token;
+		$this->off_session    = $off_session;
 	}
 
 	/**
@@ -132,23 +125,11 @@ class Payment_Information {
 		array $request,
 		bool $off_session = false
 	): Payment_Information {
-		$payment_method  = self::get_payment_method_from_request( $request );
-		$token           = self::get_token_from_request( $request );
-		$is_saved_method = self::is_request_made_with_saved_method( $request );
-		$off_session     = $off_session;
+		$payment_method = self::get_payment_method_from_request( $request );
+		$token          = self::get_token_from_request( $request );
+		$off_session    = $off_session;
 
-		return new Payment_Information( $payment_method, $token, $is_saved_method, $off_session );
-	}
-
-	/**
-	 * Extracts information on whether the payment request was made with a saved card or not.
-	 *
-	 * @param array $request Associative array containing payment request information.
-	 *
-	 * @return bool True if payment was made with a saved card, false otherwise.
-	 */
-	public static function is_request_made_with_saved_method( array $request ): bool {
-		return empty( $request['wcpay-payment-method'] ) && ! empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] );
+		return new Payment_Information( $payment_method, $token, $off_session );
 	}
 
 	/**
@@ -157,34 +138,16 @@ class Payment_Information {
 	 * @param array $request Associative array containing payment request information.
 	 *
 	 * @return string
-	 * @throws Exception - If no payment method is found.
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		if ( empty( $request['wcpay-payment-method'] ) && empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
-			// If no payment method is set then stop here with an error.
-			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
-		}
-
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$payment_method = ! empty( $request['wcpay-payment-method'] ) ? wc_clean( $request['wcpay-payment-method'] ) : null;
-
-		if ( empty( $payment_method ) ) {
-			$token = self::get_token_from_request( $request );
-
-			if ( ! $token || \WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
-				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
-			}
-
-			$payment_method = $token->get_token();
-		}
-
-		return $payment_method;
+		return ! empty( $request['wcpay-payment-method'] ) ? wc_clean( $request['wcpay-payment-method'] ) : '';
 	}
 
 	/**
 	 * Extract the payment token from the provided request.
 	 *
-	 * TODO: Once php requirement is bumped to >= 7.1.0 change return type to ?\WC_Payment_Token
+	 * TODO: Once php requirement is bumped to >= 7.1.0 set return type to ?\WC_Payment_Token
 	 * since the return type is nullable, as per
 	 * https://www.php.net/manual/en/functions.returning-values.php#functions.returning-values.type-declaration
 	 *
@@ -192,12 +155,22 @@ class Payment_Information {
 	 *
 	 * @return \WC_Payment_Token|NULL
 	 */
-	public static function get_token_from_request( array $request ): \WC_Payment_Token {
-		if ( ! isset( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
+	public static function get_token_from_request( array $request ) {
+		if (
+			! isset( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ||
+			'new' === $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ]
+		) {
 			return null;
 		}
 
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		return \WC_Payment_Tokens::get( wc_clean( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) );
+		$token = \WC_Payment_Tokens::get( wc_clean( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) );
+
+		// If the token doesn't belong to this gateway or the current user it's invalid.
+		if ( ! $token || \WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+			return null;
+		}
+
+		return $token;
 	}
 }
