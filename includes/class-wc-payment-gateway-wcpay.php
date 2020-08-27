@@ -626,51 +626,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Extract the payment token from the request's POST variables
-	 *
-	 * @return WC_Payment_Token|NULL
-	 */
-	private function get_token_from_request() {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		if ( ! isset( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ) {
-			return null;
-		}
-
-		return WC_Payment_Tokens::get( wc_clean( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
-	}
-
-	/**
-	 * Extract the payment method from the request's POST variables
-	 *
-	 * @return string
-	 * @throws Exception - If no payment method is found.
-	 */
-	private function get_payment_method_from_request() {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		if ( empty( $_POST['wcpay-payment-method'] ) && empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-payment-token' ] ) ) {
-			// If no payment method is set then stop here with an error.
-			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
-		}
-
-		$payment_method = ! empty( $_POST['wcpay-payment-method'] ) ? wc_clean( $_POST['wcpay-payment-method'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-
-		if ( empty( $payment_method ) ) {
-			$token = $this->get_token_from_request();
-
-			if ( ! $token || self::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
-				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
-			}
-
-			$payment_method = $token->get_token();
-		}
-
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
-
-		return $payment_method;
-	}
-
-	/**
 	 * Can the order be refunded?
 	 *
 	 * @param  WC_Order $order Order object.
@@ -1304,13 +1259,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function add_payment_method() {
 		try {
 
-			// phpcs:disable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
 			}
 
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false;
-			// phpcs:enable WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
 
@@ -1346,7 +1301,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - When an error occurs in setup intent creation.
 	 */
 	public function create_setup_intent() {
-		$payment_method = $this->get_payment_method_from_request();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = Payment_Information::from_payment_request( $_POST );
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user        = wp_get_current_user();
@@ -1356,7 +1312,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $this->payments_api_client->create_setup_intent(
-			$payment_method,
+			$payment_information->get_payment_method(),
 			$customer_id
 		);
 	}
