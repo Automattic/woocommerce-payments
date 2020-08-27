@@ -75,14 +75,6 @@ class Payment_Information {
 		$this->off_session     = $off_session;
 	}
 
-	/**
-	 * Returns true if payment was made with a saved card, false otherwise.
-	 *
-	 * @return bool True if payment was made with a saved card, false otherwise.
-	 */
-	public function is_using_saved_card(): bool {
-		return $this->is_saved_method;
-	}
 
 	/**
 	 * Returns true if this payment is the first installment of a recurring payment,
@@ -139,7 +131,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if payment token is not empty, false otherwise.
 	 */
-	public function has_payment_token(): bool {
+	public function is_using_saved_payment_method(): bool {
 		return ! empty( $this->token );
 	}
 

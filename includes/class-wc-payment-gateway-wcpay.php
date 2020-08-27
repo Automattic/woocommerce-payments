@@ -435,7 +435,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment_for_order( $order, $cart, $payment_information, $manual_capture ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$save_payment_method = ! $payment_information->is_using_saved_card() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $payment_information->is_first_installment() );
+		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $payment_information->is_first_installment() );
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -465,7 +465,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-		if ( $payment_information->is_using_saved_card() ) {
+		if ( $payment_information->is_using_saved_payment_method() ) {
 			try {
 				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->get_payment_method(), $order );
 			} catch ( Exception $e ) {
@@ -583,21 +583,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $save_payment_method && ! $intent_failed ) {
 			try {
 				$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
-				$order->add_payment_token( $token );
-
-				// Set payment token for subscriptions, so it can be used for renewals.
-				$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-				foreach ( $subscriptions as $subscription ) {
-					$subscription->add_payment_token( $token );
-				}
+				$payment_information->set_token( $token );
 			} catch ( Exception $e ) {
 				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
 			}
 		}
 
-		if ( $payment_information->has_payment_token() && ! in_array( $payment_information->get_payment_token()->get_id(), $order->get_payment_tokens(), true ) ) {
-			$order->add_payment_token( $payment_information->get_payment_token() );
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			$order->add_payment_token( $token );
+
+			// Set payment token for subscriptions, so it can be used for renewals.
+			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+			foreach ( $subscriptions as $subscription ) {
+				$subscription->add_payment_token( $token );
+			}
 		}
 
 		wc_reduce_stock_levels( $order_id );
