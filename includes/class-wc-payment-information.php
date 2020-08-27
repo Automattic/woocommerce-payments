@@ -100,7 +100,7 @@ class WC_Payment_Information {
 	 *
 	 * @return string The payment method ID.
 	 */
-	public function payment_method() {
+	public function get_payment_method() {
 		return $this->payment_method;
 	}
 
@@ -109,7 +109,7 @@ class WC_Payment_Information {
 	 *
 	 * @return WC_Payment_Token/NULL The payment token.
 	 */
-	public function payment_token() {
+	public function get_payment_token() {
 		return $this->token;
 	}
 

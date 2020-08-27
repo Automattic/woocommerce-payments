@@ -466,7 +466,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 		if ( $payment_information->is_using_saved_card() ) {
 			try {
-				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->payment_method(), $order );
+				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->get_payment_method(), $order );
 			} catch ( Exception $e ) {
 				// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
 				Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
@@ -480,7 +480,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->create_and_confirm_intention(
 				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
 				'usd',
-				$payment_information->payment_method(),
+				$payment_information->get_payment_method(),
 				$customer_id,
 				$manual_capture,
 				$save_payment_method,
@@ -581,7 +581,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $save_payment_method && ! $intent_failed ) {
 			try {
-				$token = $this->token_service->add_payment_method_to_user( $payment_information->payment_method(), $user );
+				$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
 				$order->add_payment_token( $token );
 			} catch ( Exception $e ) {
 				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
@@ -589,8 +589,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		if ( $payment_information->has_payment_token() && ! in_array( $payment_information->payment_token()->get_id(), $order->get_payment_tokens(), true ) ) {
-			$order->add_payment_token( $payment_information->payment_token() );
+		if ( $payment_information->has_payment_token() && ! in_array( $payment_information->get_payment_token()->get_id(), $order->get_payment_tokens(), true ) ) {
+			$order->add_payment_token( $payment_information->get_payment_token() );
 		}
 
 		wc_reduce_stock_levels( $order_id );
