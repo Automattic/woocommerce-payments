@@ -1238,6 +1238,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				if ( ! empty( $payment_method_id ) ) {
 					try {
+						// TODO: Add token to subscriptions related to this order.
 						$this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
