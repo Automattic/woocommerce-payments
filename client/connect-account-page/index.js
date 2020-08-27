@@ -68,11 +68,31 @@ const ConnectAccountPage = () => {
 								disabled={ isSubmitted }
 								onClick={ () => {
 									setSubmitted( true );
-									window.wcTracks.recordEvent(
-										'wcpay_connect_account_clicked'
-									);
+									// We have to manually update location to wait while tracking script is loaded if tracking is disabled.
+									if (
+										! window.wcTracks.isEnabled &&
+										'function' ===
+											typeof window.wcTracks.enable
+									) {
+										window.wcTracks.enable(
+											( scriptLoaded ) => {
+												if ( scriptLoaded ) {
+													window.wcTracks.recordEvent(
+														'wcpay_connect_account_clicked'
+													);
+												}
+												window.location =
+													wcpaySettings.connectUrl;
+											}
+										);
+									} else {
+										window.wcTracks.recordEvent(
+											'wcpay_connect_account_clicked'
+										);
+										window.location =
+											wcpaySettings.connectUrl;
+									}
 								} }
-								href={ wcpaySettings.connectUrl }
 							>
 								{ __( 'Set up', 'woocommerce-payments' ) }
 							</Button>
