@@ -126,6 +126,15 @@ class Payment_Information {
 	}
 
 	/**
+	 * Update the payment token associated with this payment.
+	 *
+	 * @param \WC_Payment_Token $token The new payment token.
+	 */
+	public function set_token( \WC_Payment_Token $token ) {
+		$this->token = $token;
+	}
+
+	/**
 	 * Returns true if the payment token is not empty, false otherwise.
 	 *
 	 * @return bool True if payment token is not empty, false otherwise.
