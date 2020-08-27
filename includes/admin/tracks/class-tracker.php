@@ -53,4 +53,11 @@ class Tracker {
 	public static function get_admin_events() {
 		return self::$admin_events;
 	}
+
+	/**
+	 * Enables tracking with WC Tracker for the site.
+	 */
+	public static function enable_tracking() {
+		update_option( 'woocommerce_allow_tracking', 'yes' );
+	}
 }
