@@ -101,6 +101,11 @@ class Payment_Information {
 	 * @return string The payment method ID.
 	 */
 	public function get_payment_method(): string {
+		// Use the token if we have it.
+		if ( $this->is_using_saved_payment_method() ) {
+			return $this->token->get_token();
+		}
+
 		return $this->payment_method;
 	}
 
