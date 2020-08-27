@@ -92,7 +92,7 @@ class Payment_Information {
 	 * @return bool True if payment was initiated by the merchant, false otherwise.
 	 */
 	public function is_merchant_initiated(): bool {
-		return $this->is_recurring;
+		return $this->off_session;
 	}
 
 	/**
