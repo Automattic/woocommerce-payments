@@ -645,6 +645,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function add_token_to_order( $order, $token ) {
 		$order_tokens = $order->get_payment_tokens();
 
+		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers
+		// may re-use a previous card for the same subscription, as we consider the last token to be the active one.
+		// We can't remove the previous entry for the token because WC_Order does not support removal of tokens [1] and
+		// we can't delete the token as it might be used somewhere else.
+		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
 		if ( $token->get_id() !== end( $order_tokens ) ) {
 			$order->add_payment_token( $token );
 		}
