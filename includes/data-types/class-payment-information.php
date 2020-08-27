@@ -1,9 +1,11 @@
 <?php
 /**
- * Class WC_Payment_Information
+ * Class Payment_Information
  *
  * @package WooCommerce\Payments
  */
+
+namespace WCPay\DataTypes;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -12,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Mostly a wrapper containing information on a single payment.
  */
-class WC_Payment_Information {
+class Payment_Information {
 	/**
 	 * The ID of the payment method used for this payment.
 	 *
@@ -23,7 +25,7 @@ class WC_Payment_Information {
 	/**
 	 * The payment token used for this payment.
 	 *
-	 * @var WC_Payment_Token/NULL
+	 * @var \WC_Payment_Token/NULL
 	 */
 	private $token;
 
@@ -51,11 +53,11 @@ class WC_Payment_Information {
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param string                $payment_method The ID of the payment method used for this payment.
-	 * @param WC_Payment_Token/NULL $token The payment token used for this payment.
-	 * @param array                 $is_saved_method Indicates whether this payment was made using a saved card.
-	 * @param bool                  $is_recurring Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
-	 * @param bool                  $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param string                 $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Payment_Token/NULL $token The payment token used for this payment.
+	 * @param array                  $is_saved_method Indicates whether this payment was made using a saved card.
+	 * @param bool                   $is_recurring Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
+	 * @param bool                   $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @throws Exception - If no payment method is found in the provided request.
 	 */
@@ -107,7 +109,7 @@ class WC_Payment_Information {
 	/**
 	 * Returns the payment token.
 	 *
-	 * @return WC_Payment_Token/NULL The payment token.
+	 * @return \WC_Payment_Token/NULL The payment token.
 	 */
 	public function get_payment_token() {
 		return $this->token;
@@ -138,7 +140,7 @@ class WC_Payment_Information {
 		$is_recurring    = $is_recurring_payment;
 		$off_session     = $off_session;
 
-		return new WC_Payment_Information( $payment_method, $token, $is_saved_method, $is_recurring, $off_session );
+		return new Payment_Information( $payment_method, $token, $is_saved_method, $is_recurring, $off_session );
 	}
 
 	/**
@@ -149,7 +151,7 @@ class WC_Payment_Information {
 	 * @return bool True if payment was made with a saved card, false otherwise.
 	 */
 	public static function is_request_made_with_saved_method( $request ) {
-		return empty( $request['wcpay-payment-method'] ) && ! empty( $request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] );
+		return empty( $request['wcpay-payment-method'] ) && ! empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] );
 	}
 
 	/**
@@ -161,7 +163,7 @@ class WC_Payment_Information {
 	 * @throws Exception - If no payment method is found.
 	 */
 	public static function get_payment_method_from_request( $request ) {
-		if ( empty( $request['wcpay-payment-method'] ) && empty( $request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
+		if ( empty( $request['wcpay-payment-method'] ) && empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
 		}
@@ -172,7 +174,7 @@ class WC_Payment_Information {
 		if ( empty( $payment_method ) ) {
 			$token = self::get_token_from_request( $request );
 
-			if ( ! $token || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+			if ( ! $token || \WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
 				throw new Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
 			}
 
@@ -187,14 +189,14 @@ class WC_Payment_Information {
 	 *
 	 * @param array $request Associative array containing payment request information.
 	 *
-	 * @return WC_Payment_Token|NULL
+	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( $request ) {
-		if ( ! isset( $request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
+		if ( ! isset( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
 			return null;
 		}
 
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		return WC_Payment_Tokens::get( wc_clean( $request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) );
+		return \WC_Payment_Tokens::get( wc_clean( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) );
 	}
 }

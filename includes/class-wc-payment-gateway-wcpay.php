@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\DataTypes\Payment_Information;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -403,7 +404,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id, $is_recurring_payment = false ) {
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = WC_Payment_Information::from_payment_request( $_POST, $is_recurring_payment );
+			$payment_information = Payment_Information::from_payment_request( $_POST, $is_recurring_payment );
 			$order               = wc_get_order( $order_id );
 			$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
 

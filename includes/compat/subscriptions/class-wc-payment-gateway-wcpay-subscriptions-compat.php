@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\DataTypes\Payment_Information;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -92,7 +93,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new WC_Payment_Information( $token->get_token(), $token, true, true, true );
+		$payment_information = new Payment_Information( $token->get_token(), $token, true, true, true );
 
 		try {
 			$this->process_payment_for_order( $renewal_order, null, $payment_information, false );
