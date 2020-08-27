@@ -53,15 +53,21 @@ class Payment_Information {
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param string                 $payment_method The ID of the payment method used for this payment.
-	 * @param \WC_Payment_Token/NULL $token The payment token used for this payment.
-	 * @param array                  $is_saved_method Indicates whether this payment was made using a saved card.
-	 * @param bool                   $is_recurring Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
-	 * @param bool                   $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param string            $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Payment_Token $token The payment token used for this payment.
+	 * @param bool              $is_saved_method Indicates whether this payment was made using a saved card.
+	 * @param bool              $is_recurring Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
+	 * @param bool              $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @throws Exception - If no payment method is found in the provided request.
 	 */
-	public function __construct( $payment_method, $token, $is_saved_method = false, $is_recurring = false, $off_session = false ) {
+	public function __construct(
+		string $payment_method,
+		\WC_Payment_Token $token = null,
+		bool $is_saved_method = false,
+		bool $is_recurring = false,
+		bool $off_session = false
+	) {
 		$this->payment_method  = $payment_method;
 		$this->token           = $token;
 		$this->is_saved_method = $is_saved_method;
@@ -74,7 +80,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if payment was made with a saved card, false otherwise.
 	 */
-	public function is_using_saved_card() {
+	public function is_using_saved_card(): bool {
 		return $this->is_saved_method;
 	}
 
@@ -84,7 +90,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if first installment of recurring payment, false otherwise.
 	 */
-	public function is_first_installment() {
+	public function is_first_installment(): bool {
 		return $this->is_recurring;
 	}
 
@@ -93,7 +99,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if payment was initiated by the merchant, false otherwise.
 	 */
-	public function is_merchant_initiated() {
+	public function is_merchant_initiated(): bool {
 		return $this->is_recurring;
 	}
 
@@ -102,16 +108,20 @@ class Payment_Information {
 	 *
 	 * @return string The payment method ID.
 	 */
-	public function get_payment_method() {
+	public function get_payment_method(): string {
 		return $this->payment_method;
 	}
 
 	/**
 	 * Returns the payment token.
 	 *
+	 * TODO: Once php requirement is bumped to >= 7.1.0 change return type to ?\WC_Payment_Token
+	 * since the return type is nullable, as per
+	 * https://www.php.net/manual/en/functions.returning-values.php#functions.returning-values.type-declaration
+	 *
 	 * @return \WC_Payment_Token/NULL The payment token.
 	 */
-	public function get_payment_token() {
+	public function get_payment_token(): \WC_Payment_Token {
 		return $this->token;
 	}
 
@@ -120,7 +130,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if payment token is not empty, false otherwise.
 	 */
-	public function has_payment_token() {
+	public function has_payment_token(): bool {
 		return ! empty( $this->token );
 	}
 
@@ -133,7 +143,11 @@ class Payment_Information {
 	 *
 	 * @throws Exception - If no payment method is found in the provided request.
 	 */
-	public static function from_payment_request( $request, $is_recurring_payment = false, $off_session = false ) {
+	public static function from_payment_request(
+		array $request,
+		bool $is_recurring_payment = false,
+		bool $off_session = false
+	): Payment_Information {
 		$payment_method  = self::get_payment_method_from_request( $request );
 		$token           = self::get_token_from_request( $request );
 		$is_saved_method = self::is_request_made_with_saved_method( $request );
@@ -150,7 +164,7 @@ class Payment_Information {
 	 *
 	 * @return bool True if payment was made with a saved card, false otherwise.
 	 */
-	public static function is_request_made_with_saved_method( $request ) {
+	public static function is_request_made_with_saved_method( array $request ): bool {
 		return empty( $request['wcpay-payment-method'] ) && ! empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] );
 	}
 
@@ -162,7 +176,7 @@ class Payment_Information {
 	 * @return string
 	 * @throws Exception - If no payment method is found.
 	 */
-	public static function get_payment_method_from_request( $request ) {
+	public static function get_payment_method_from_request( array $request ): string {
 		if ( empty( $request['wcpay-payment-method'] ) && empty( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
 			// If no payment method is set then stop here with an error.
 			throw new Exception( __( 'Payment method not found.', 'woocommerce-payments' ) );
@@ -187,11 +201,15 @@ class Payment_Information {
 	/**
 	 * Extract the payment token from the provided request.
 	 *
+	 * TODO: Once php requirement is bumped to >= 7.1.0 change return type to ?\WC_Payment_Token
+	 * since the return type is nullable, as per
+	 * https://www.php.net/manual/en/functions.returning-values.php#functions.returning-values.type-declaration
+	 *
 	 * @param array $request Associative array containing payment request information.
 	 *
 	 * @return \WC_Payment_Token|NULL
 	 */
-	public static function get_token_from_request( $request ) {
+	public static function get_token_from_request( array $request ): \WC_Payment_Token {
 		if ( ! isset( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ) {
 			return null;
 		}
