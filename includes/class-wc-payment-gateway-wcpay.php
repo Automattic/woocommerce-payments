@@ -464,7 +464,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
-		if ( $is_saved_method ) {
+		if ( $payment_information->is_using_saved_card() ) {
 			try {
 				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->payment_method(), $order );
 			} catch ( Exception $e ) {
