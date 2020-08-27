@@ -114,4 +114,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$renewal_token        = end( $renewal_order_tokens );
 		$subscription->add_payment_token( $renewal_token );
 	}
+
+	/**
+	 * Saves the payment token to the order.
+	 *
+	 * @param WC_Order         $order The order.
+	 * @param WC_Payment_Token $token The token to save.
+	 */
+	protected function add_token_to_order( $order, $token ) {
+		parent::add_token_to_order( $order, $token );
+
+		// Set payment token for subscriptions, so it can be used for renewals.
+		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+		foreach ( $subscriptions as $subscription ) {
+			parent::add_token_to_order( $subscription, $token );
+		}
+	}
 }

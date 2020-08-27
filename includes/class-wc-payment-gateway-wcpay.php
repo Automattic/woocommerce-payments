@@ -592,13 +592,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $payment_information->is_using_saved_payment_method() ) {
 			$token = $payment_information->get_payment_token();
-			$order->add_payment_token( $token );
-
-			// Set payment token for subscriptions, so it can be used for renewals.
-			$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-			foreach ( $subscriptions as $subscription ) {
-				$subscription->add_payment_token( $token );
-			}
+			$this->add_token_to_order( $order, $token );
 		}
 
 		wc_reduce_stock_levels( $order_id );
@@ -610,6 +604,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Saves the payment token to the order.
+	 *
+	 * @param WC_Order         $order The order.
+	 * @param WC_Payment_Token $token The token to save.
+	 */
+	protected function add_token_to_order( $order, $token ) {
+		$order_tokens = $order->get_payment_tokens();
+
+		if ( $token->get_id() !== end( $order_tokens ) ) {
+			$order->add_payment_token( $token );
+		}
 	}
 
 	/**
