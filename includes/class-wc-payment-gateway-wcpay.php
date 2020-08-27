@@ -397,18 +397,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Process the payment for a given order.
 	 *
 	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $is_recurring_payment Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param bool $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $is_recurring_payment = false ) {
+	public function process_payment( $order_id, $force_save_payment_method = false ) {
+		$order = wc_get_order( $order_id );
+
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST, $is_recurring_payment );
-			$order               = wc_get_order( $order_id );
+			$payment_information = Payment_Information::from_payment_request( $_POST );
 			$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
 
-			return $this->process_payment_for_order( $order, WC()->cart, $payment_information, $manual_capture );
+			return $this->process_payment_for_order( $order, WC()->cart, $payment_information, $manual_capture, $force_save_payment_method );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -429,13 +430,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Cart                $cart Cart.
 	 * @param WC_Payment_Information $payment_information Payment info.
 	 * @param bool                   $manual_capture Indicates whether this payment is merchant-initiated (true) or customer-initated (false).
+	 * @param bool                   $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws WC_Payments_API_Exception Error processing the payment.
 	 */
-	public function process_payment_for_order( $order, $cart, $payment_information, $manual_capture ) {
+	public function process_payment_for_order( $order, $cart, $payment_information, $manual_capture, $force_save_payment_method = false ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $payment_information->is_first_installment() );
+		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $force_save_payment_method );
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -448,7 +450,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
 		];
-		if ( $payment_information->is_first_installment() ) {
+
+		// We only force save the card during subscriptions.
+		// TODO: This is a bit flawed; make these 2 functionalities distinct.
+		if ( $force_save_payment_method ) {
 			$metadata['payment_type'] = 'recurring';
 		}
 

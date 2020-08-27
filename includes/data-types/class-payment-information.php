@@ -44,19 +44,11 @@ class Payment_Information {
 	private $off_session;
 
 	/**
-	 * Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
-	 *
-	 * @var bool
-	 */
-	private $is_recurring;
-
-	/**
 	 * Payment information constructor.
 	 *
 	 * @param string            $payment_method The ID of the payment method used for this payment.
 	 * @param \WC_Payment_Token $token The payment token used for this payment.
 	 * @param bool              $is_saved_method Indicates whether this payment was made using a saved card.
-	 * @param bool              $is_recurring Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
 	 * @param bool              $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @throws Exception - If no payment method is found in the provided request.
@@ -65,25 +57,13 @@ class Payment_Information {
 		string $payment_method,
 		\WC_Payment_Token $token = null,
 		bool $is_saved_method = false,
-		bool $is_recurring = false,
 		bool $off_session = false
 	) {
 		$this->payment_method  = $payment_method;
 		$this->token           = $token;
 		$this->is_saved_method = $is_saved_method;
-		$this->is_recurring    = $is_recurring;
 		$this->off_session     = $off_session;
-	}
 
-
-	/**
-	 * Returns true if this payment is the first installment of a recurring payment,
-	 * false otherwise.
-	 *
-	 * @return bool True if first installment of recurring payment, false otherwise.
-	 */
-	public function is_first_installment(): bool {
-		return $this->is_recurring;
 	}
 
 	/**
@@ -144,23 +124,20 @@ class Payment_Information {
 	 * Payment information constructor.
 	 *
 	 * @param array $request Associative array containing payment request information.
-	 * @param bool  $is_recurring_payment Indicates whether this is a one-off payment (false) or the first installment of a recurring payment (true).
 	 * @param bool  $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @throws Exception - If no payment method is found in the provided request.
 	 */
 	public static function from_payment_request(
 		array $request,
-		bool $is_recurring_payment = false,
 		bool $off_session = false
 	): Payment_Information {
 		$payment_method  = self::get_payment_method_from_request( $request );
 		$token           = self::get_token_from_request( $request );
 		$is_saved_method = self::is_request_made_with_saved_method( $request );
-		$is_recurring    = $is_recurring_payment;
 		$off_session     = $off_session;
 
-		return new Payment_Information( $payment_method, $token, $is_saved_method, $is_recurring, $off_session );
+		return new Payment_Information( $payment_method, $token, $is_saved_method, $off_session );
 	}
 
 	/**

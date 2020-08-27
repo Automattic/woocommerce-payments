@@ -92,10 +92,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new Payment_Information( $token->get_token(), $token, true, true, true );
+		$payment_information = new Payment_Information( $token->get_token(), $token, true, true );
 
 		try {
-			$this->process_payment_for_order( $renewal_order, null, $payment_information, false );
+			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.
+			$this->process_payment_for_order( $renewal_order, null, $payment_information, false, true );
 		} catch ( WC_Payments_API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
