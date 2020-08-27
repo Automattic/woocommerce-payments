@@ -94,6 +94,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 * Fix - Support checkout on Internet Explorer 11.
 * Add - Display payment method details on account subscriptions pages.
 * Add - Redact sensitive data before logging.
+* Add - Promote usage tracking option on connect page.
 
 = 1.4.1 - 2020-09-07 =
 * Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
