@@ -225,20 +225,14 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Don't redirect if the user is in the WC setup wizard.
-		$current_page = isset( $_GET['page'] ) ? wp_unslash( $_GET['page'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( 'wc-setup' === $current_page ) {
-			return false;
-		}
-
-		// Don't redirect if the user is on the WC-Admin setup profiler or WC-Admin dashboard with the task list.
-		if ( 'wc-admin' === $current_page && empty( $_GET['path'] )
-			&& ( Onboarding::should_show_profiler() || Onboarding::should_show_tasks() ) ) {
-			return false;
-		}
-
-		// Don't redirect if the user is on Jetpack pages.
-		if ( 'jetpack' === $current_page ) {
+		// Do not redirect if the plugin was installed via the WC setup wizard.
+		$onboarding_profile = get_option( Onboarding::PROFILE_DATA_OPTION );
+		if (
+			is_array( $onboarding_profile )
+			&& isset( $onboarding_profile['business_extensions'] )
+			&& is_array( $onboarding_profile['business_extensions'] )
+			&& in_array( 'woocommerce-payments', $onboarding_profile['business_extensions'], true )
+		) {
 			return false;
 		}
 
