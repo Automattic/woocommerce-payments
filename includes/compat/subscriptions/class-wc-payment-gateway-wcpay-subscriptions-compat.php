@@ -85,9 +85,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
 		$order_tokens = $renewal_order->get_payment_tokens();
-		$token_id     = empty( $order_tokens ) ? false : end( $order_tokens );
-		$token        = WC_Payment_Tokens::get( $token_id );
-		if ( ! $token ) {
+		$token_id     = end( $order_tokens );
+		$token        = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
+		if ( is_null( $token ) ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			$renewal_order->update_status( 'failed' );
 			return;
@@ -114,7 +114,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
 		$renewal_order_tokens = $renewal_order->get_payment_tokens();
 		$renewal_token_id     = end( $renewal_order_tokens );
-		$renewal_token        = WC_Payment_Tokens::get( $renewal_token_id );
+		$renewal_token        = ! $renewal_token_id ? null : WC_Payment_Tokens::get( $renewal_token_id );
+		if ( is_null( $renewal_token ) ) {
+			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
+			return;
+		}
 		$subscription->add_payment_token( $renewal_token );
 	}
 
