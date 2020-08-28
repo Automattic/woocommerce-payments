@@ -396,13 +396,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param int|WC_Order $order Order ID to process the payment for, or WC_Order for tests.
+	 * @param bool         $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false ) {
-		$order = wc_get_order( $order_id );
+	public function process_payment( $order, $force_save_payment_method = false ) {
+		if ( ! is_object( $order ) ) {
+			$order = wc_get_order( $order );
+		}
 
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing

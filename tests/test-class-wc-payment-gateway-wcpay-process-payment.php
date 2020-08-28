@@ -206,7 +206,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process a successful payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
+		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST );                                           // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, false );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -308,7 +309,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
+		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST );                                          // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, true );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -357,31 +359,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'update_status' )
 			->with( 'failed' );
 
-		// Assert: Order transaction ID was not set.
-		$mock_order
-			->expects( $this->exactly( 0 ) )
-			->method( 'set_transaction_id' );
-
-		// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
-		$mock_order
-		->expects( $this->exactly( 0 ) )
-		->method( 'update_meta_data' );
-
-		// Assert: No order note was added.
-		// - status
-		// - intention id
-		// - amount charged.
-		$mock_order
-			->expects( $this->exactly( 0 ) )
-			->method( 'add_order_note' );
-
 		// Assert: empty_cart() was not called.
 		$mock_cart
 			->expects( $this->exactly( 0 ) )
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
+		$result = $this->mock_wcpay_gateway->process_payment( $mock_order );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
@@ -488,7 +472,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart );
+		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST );                                           // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, false );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -512,10 +497,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->mock_token_service
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
-			->with( 'pm_mock', wp_get_current_user() );
+			->with( 'pm_mock', get_user_by( 'id', 1 ) )
+			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
 
-		$_POST['wc-woocommerce_payments-new-payment-method'] = 'true';
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), true );
 	}
 
 	public function test_not_saved_card_at_checkout() {
