@@ -481,6 +481,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$intent_failed = false;
 
+		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+		if ( 0 === $amount && ! $save_payment_method ) {
+			$order->payment_complete();
+		}
+
 		if ( $amount > 0 ) {
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
@@ -497,9 +502,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$intent_id = $intent->get_id();
 			$status    = $intent->get_status();
+			$charge_id = $intent->get_charge_id();
+		} else {
+			// For $0 orders, we need to save the payment method using a setup intent.
+			$intent = $this->payments_api_client->create_setup_intent(
+				$payment_information->get_payment_method(),
+				$customer_id,
+				'true'
+			);
 
+			$intent_id = $intent['id'];
+			$status    = $intent['status'];
+			$charge_id = '';
+
+			// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
+			// For now, since we're not supporting SCA cards, we can ignore that status.
+			if ( 'succeeded' !== $status ) {
+				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+			}
+		}
+
+		if ( ! empty( $intent ) ) {
 			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
 				$intent_failed = true;
+			}
+
+			if ( $save_payment_method && ! $intent_failed ) {
+				try {
+					$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
+					$payment_information->set_token( $token );
+				} catch ( Exception $e ) {
+					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+				}
+			}
+
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				$token = $payment_information->get_payment_token();
+				$this->add_token_to_order( $order, $token );
 			}
 
 			switch ( $status ) {
@@ -518,11 +558,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 
 					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_charge_id', $charge_id );
 					$order->update_meta_data( '_intention_status', $status );
 					$order->save();
 
-					$order->add_order_note( $note );
+					if ( $amount > 0 ) {
+						$order->add_order_note( $note );
+					}
 					$order->payment_complete( $intent_id );
 					break;
 				case 'requires_capture':
@@ -543,7 +585,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->set_transaction_id( $intent_id );
 
 					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+					$order->update_meta_data( '_charge_id', $charge_id );
 					$order->update_meta_data( '_intention_status', $status );
 					$order->save();
 
@@ -581,23 +623,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						),
 					];
 			}
-		} else {
-			$order->payment_complete();
-		}
-
-		if ( $save_payment_method && ! $intent_failed ) {
-			try {
-				$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
-				$payment_information->set_token( $token );
-			} catch ( Exception $e ) {
-				// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
-				Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-			}
-		}
-
-		if ( $payment_information->is_using_saved_payment_method() ) {
-			$token = $payment_information->get_payment_token();
-			$this->add_token_to_order( $order, $token );
 		}
 
 		wc_reduce_stock_levels( $order_id );
@@ -620,6 +645,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function add_token_to_order( $order, $token ) {
 		$order_tokens = $order->get_payment_tokens();
 
+		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers
+		// may re-use a previous card for the same subscription, as we consider the last token to be the active one.
+		// We can't remove the previous entry for the token because WC_Order does not support removal of tokens [1] and
+		// we can't delete the token as it might be used somewhere else.
+		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
 		if ( $token->get_id() !== end( $order_tokens ) ) {
 			$order->add_payment_token( $token );
 		}
