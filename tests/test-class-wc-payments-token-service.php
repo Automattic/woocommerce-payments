@@ -155,6 +155,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token = new WC_Payment_Token_CC();
 		$token->set_gateway_id( 'woocommerce_payments' );
 		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
 
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 	}
@@ -189,6 +190,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token = new WC_Payment_Token_CC();
 		$token->set_gateway_id( 'woocommerce_payments' );
 		$token->set_token( 'pm_mock' );
+		$token->set_user_id( 1 );
 
 		$this->token_service->woocommerce_payment_token_set_default( 'pm_mock', $token );
 	}
