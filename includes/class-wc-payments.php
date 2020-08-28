@@ -94,13 +94,20 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-logger.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
-		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-intent-authentication-exception.php';
+		include_once dirname( __FILE__ ) . '/exceptions/class-wc-payments-intent-authentication-exception.php';
+		include_once dirname( __FILE__ ) . '/data-types/class-payment-information.php';
 
 		self::$account          = new WC_Payments_Account( self::$api_client );
 		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
 		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 
-		self::$gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service );
+		$gateway_class = 'WC_Payment_Gateway_WCPay';
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '3.0.0', '>=' ) ) {
+			include_once dirname( __FILE__ ) . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
+			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
+		}
+
+		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );

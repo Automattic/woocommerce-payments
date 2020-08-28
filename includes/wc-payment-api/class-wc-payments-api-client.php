@@ -121,6 +121,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
 	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                 - Level 3 data.
+	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -133,7 +134,8 @@ class WC_Payments_API_Client {
 		$manual_capture = false,
 		$save_payment_method = false,
 		$metadata = [],
-		$level3 = []
+		$level3 = [],
+		$off_session = false
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -145,6 +147,10 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+
+		if ( $off_session ) {
+			$request['off_session'] = true;
+		}
 
 		if ( $save_payment_method ) {
 			$request['setup_future_usage'] = 'off_session';
