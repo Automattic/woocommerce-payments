@@ -142,9 +142,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 	public function test_woocommerce_payment_token_set_default() {
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->any() )
 			->method( 'get_customer_id_by_user_id' )
-			->with( 1 )
 			->willReturn( 'cus_12345' );
 
 		$this->mock_customer_service
@@ -177,7 +176,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 	public function test_woocommerce_payment_token_set_default_no_customer() {
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->any() )
 			->method( 'get_customer_id_by_user_id' )
 			->with( 1 )
 			->willReturn( null );
