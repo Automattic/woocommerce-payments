@@ -36,7 +36,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				'subscription_date_changes',
 				'subscription_payment_method_change',
 				'subscription_payment_method_change_customer',
-				'subscription_payment_method_change_admin',
 				'multiple_subscriptions',
 			]
 		);
