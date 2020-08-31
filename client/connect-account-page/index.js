@@ -19,6 +19,18 @@ import wcpayTracks from 'tracks';
 const ConnectAccountPage = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
+	const handleSetup = async () => {
+		setSubmitted( true );
+
+		// Use async version here to opt in for tracking and load the script if required.
+		await wcpayTracks.recordEventAsync(
+			wcpayTracks.events.CONNECT_ACCOUNT_CLICKED,
+			null,
+			true
+		);
+		window.location = wcpaySettings.connectUrl;
+	};
+
 	return (
 		<Page isNarrow className="connect-account">
 			{ wcpaySettings.errorMessage && (
@@ -67,22 +79,7 @@ const ConnectAccountPage = () => {
 								isLarge
 								isBusy={ isSubmitted }
 								disabled={ isSubmitted }
-								onClick={ () => {
-									setSubmitted( true );
-
-									// Use async version here to opt in for tracking and load the script if required.
-									wcpayTracks
-										.recordEventAsync(
-											wcpayTracks.events
-												.CONNECT_ACCOUNT_CLICKED,
-											null,
-											true
-										)
-										.then( () => {
-											window.location =
-												wcpaySettings.connectUrl;
-										} );
-								} }
+								onClick={ handleSetup }
 							>
 								{ __( 'Set up', 'woocommerce-payments' ) }
 							</Button>
