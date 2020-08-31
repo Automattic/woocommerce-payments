@@ -163,6 +163,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 * @throws WC_Payments_API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_statement_descriptor() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
@@ -223,6 +234,11 @@ class WC_Payments_Account {
 		// Don't redirect if the user is on the WC-Admin setup profiler or WC-Admin dashboard with the task list.
 		if ( 'wc-admin' === $current_page && empty( $_GET['path'] )
 			&& ( Onboarding::should_show_profiler() || Onboarding::should_show_tasks() ) ) {
+			return false;
+		}
+
+		// Don't redirect if the user is on Jetpack pages.
+		if ( 'jetpack' === $current_page ) {
 			return false;
 		}
 
@@ -567,7 +583,7 @@ class WC_Payments_Account {
 			delete_transient( self::ACCOUNT_TRANSIENT );
 			$this->get_cached_account_data();
 		} catch ( Exception $e ) {
-			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+			Logger::error( "Failed to refresh account data. Error: $e" );
 		}
 	}
 
@@ -616,5 +632,45 @@ class WC_Payments_Account {
 				WC_Payments::display_admin_notice( $message, $classes );
 			}
 		);
+	}
+
+	/**
+	 * Updates Stripe account settings.
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return null|string Error message if update failed.
+	 */
+	public function update_stripe_account( $stripe_account_settings ) {
+		try {
+			if ( ! $this->settings_changed( $stripe_account_settings ) ) {
+				Logger::info( 'Skip updating account settings. Nothing is changed.' );
+				return;
+			}
+			$updated_account = $this->payments_api_client->update_account( $stripe_account_settings );
+			$this->cache_account( $updated_account );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to update Stripe account ' . $e );
+			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * Checks if account settings changed.
+	 *
+	 * @param array $changes Account settings changes.
+	 *
+	 * @return bool True if at least one parameter value is changed.
+	 */
+	private function settings_changed( $changes = [] ) {
+		$account = get_transient( self::ACCOUNT_TRANSIENT );
+
+		// Consider changes as valid if we don't have cached account data.
+		if ( ! $this->is_valid_cached_account( $account ) ) {
+			return true;
+		}
+
+		$diff = array_diff_assoc( $changes, $account );
+		return ! empty( $diff );
 	}
 }

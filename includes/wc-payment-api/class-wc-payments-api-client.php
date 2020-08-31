@@ -121,6 +121,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
 	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                 - Level 3 data.
+	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -133,7 +134,8 @@ class WC_Payments_API_Client {
 		$manual_capture = false,
 		$save_payment_method = false,
 		$metadata = [],
-		$level3 = []
+		$level3 = [],
+		$off_session = false
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -145,6 +147,10 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+
+		if ( $off_session ) {
+			$request['off_session'] = true;
+		}
 
 		if ( $save_payment_method ) {
 			$request['setup_future_usage'] = 'off_session';
@@ -254,14 +260,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
+	 * @param bool   $confirm                - Flag to confirm the intent on creation if true.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_setup_intent( $payment_method_id, $customer_id, $confirm = 'false' ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
+			'confirm'        => $confirm,
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -609,6 +617,21 @@ class WC_Payments_API_Client {
 			],
 			self::ACCOUNTS_API,
 			self::GET
+		);
+	}
+
+	/**
+	 * Update Stripe account data
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return array Updated account data.
+	 */
+	public function update_account( $stripe_account_settings ) {
+		return $this->request(
+			$stripe_account_settings,
+			self::ACCOUNTS_API,
+			self::POST
 		);
 	}
 
