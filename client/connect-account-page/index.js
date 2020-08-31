@@ -14,6 +14,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 import './style.scss';
 import Page from 'components/page';
 import HeroImage from './hero-image';
+import wcpayTracks from 'tracks';
 
 const ConnectAccountPage = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
@@ -68,30 +69,19 @@ const ConnectAccountPage = () => {
 								disabled={ isSubmitted }
 								onClick={ () => {
 									setSubmitted( true );
-									// We have to manually update location to wait while tracking script is loaded if tracking is disabled.
-									if (
-										! window.wcTracks.isEnabled &&
-										'function' ===
-											typeof window.wcTracks.enable
-									) {
-										window.wcTracks.enable(
-											( scriptLoaded ) => {
-												if ( scriptLoaded ) {
-													window.wcTracks.recordEvent(
-														'wcpay_connect_account_clicked'
-													);
-												}
-												window.location =
-													wcpaySettings.connectUrl;
-											}
-										);
-									} else {
-										window.wcTracks.recordEvent(
-											'wcpay_connect_account_clicked'
-										);
-										window.location =
-											wcpaySettings.connectUrl;
-									}
+
+									// Use async version here to opt in for tracking and load the script if required.
+									wcpayTracks
+										.recordEventAsync(
+											wcpayTracks.events
+												.CONNECT_ACCOUNT_CLICKED,
+											null,
+											true
+										)
+										.then( () => {
+											window.location =
+												wcpaySettings.connectUrl;
+										} );
 								} }
 							>
 								{ __( 'Set up', 'woocommerce-payments' ) }
