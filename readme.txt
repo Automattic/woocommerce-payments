@@ -90,7 +90,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.4.0 - 2020-09-02 =
+= 1.4.0 - 2020-xx-xx =
 * Add - Initial support for WooCommerce Subscriptions: Signing up for subscriptions, scheduled payments, and customer-initiated payment method changes.
 * Add - Added a link to transaction details from order screens.
 * Add - Allow merchant to edit statement descriptor.
