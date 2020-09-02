@@ -84,7 +84,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$token = $this->create_saved_payment_method( 'new_payment_method' );
+		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 
 		$this->wcpay_gateway->add_token_to_order( $original_order, $token );
 
@@ -99,8 +99,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 		$tokens = [
-			$this->create_saved_payment_method( 'new_payment_method_1' ),
-			$this->create_saved_payment_method( 'new_payment_method_2' ),
+			WC_Helper_Token::create_token( 'new_payment_method_1', self::USER_ID ),
+			WC_Helper_Token::create_token( 'new_payment_method_2', self::USER_ID ),
 		];
 
 		foreach ( $tokens as $token ) {
@@ -116,8 +116,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 		$this->mock_wcs_get_subscriptions_for_order( [] );
 		$tokens = [
-			$this->create_saved_payment_method( 'new_payment_method_1' ),
-			$this->create_saved_payment_method( 'new_payment_method_2' ),
+			WC_Helper_Token::create_token( 'new_payment_method_1', self::USER_ID ),
+			WC_Helper_Token::create_token( 'new_payment_method_2', self::USER_ID ),
 		];
 		$tokens = array_merge( $tokens, $tokens );
 
@@ -128,20 +128,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			$this->assertEquals( $token->get_id(), end( $payment_methods ) );
 		}
 		$this->assertCount( count( $tokens ), $order->get_payment_tokens() );
-	}
-
-	private function create_saved_payment_method( $payment_method, $gateway = WC_Payment_Gateway_WCPay::GATEWAY_ID, $user_id = self::USER_ID ) {
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( $payment_method );
-		$token->set_gateway_id( $gateway );
-		$token->set_user_id( $user_id );
-		$token->set_card_type( 'visa' );
-		$token->set_last4( '4242' );
-		$token->set_expiry_month( 6 );
-		$token->set_expiry_year( 2026 );
-		$token->save();
-
-		return WC_Payment_Tokens::get( $token->get_id() );
 	}
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {

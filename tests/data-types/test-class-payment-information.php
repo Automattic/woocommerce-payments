@@ -25,16 +25,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( self::TOKEN );
-		$token->set_gateway_id( \WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$token->set_user_id( get_current_user_id() );
-		$token->set_card_type( 'visa' );
-		$token->set_last4( '4242' );
-		$token->set_expiry_month( 6 );
-		$token->set_expiry_year( 2026 );
-		$token->save();
-		$this->token = WC_Payment_Tokens::get( $token->get_id() );
+		$this->token = WC_Helper_Token::create_token( self::TOKEN );
 	}
 
 	public function test_requires_payment_method_or_token() {

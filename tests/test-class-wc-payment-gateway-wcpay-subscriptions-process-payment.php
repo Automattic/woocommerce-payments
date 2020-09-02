@@ -69,6 +69,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	 */
 	private $payment_intent;
 
+	/**
+	 * Token to be used during the tests.
+	 *
+	 * @var WC_Payment_Token
+	 */
+	private $token;
+
 	public function setUp() {
 		parent::setUp();
 
@@ -127,6 +134,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
 
+		$this->token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
 		$_POST = [
 			'wcpay-payment-method' => self::PAYMENT_METHOD_ID,
 		];
@@ -134,9 +143,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 	public function test_new_card_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
-
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( self::PAYMENT_METHOD_ID );
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -150,7 +156,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
-			->willReturn( $token );
+			->willReturn( $this->token );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
 		$this->mock_wcpay_gateway
@@ -158,7 +164,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->method( 'add_token_to_order' )
 			->with(
 				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$token
+				$this->token
 			);
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -171,9 +177,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_new_card_zero_dollar_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( self::PAYMENT_METHOD_ID );
-
 		$this->mock_wcs_order_contains_subscription( true );
 
 		$this->mock_api_client
@@ -186,7 +189,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
-			->willReturn( $token );
+			->willReturn( $this->token );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
 		$this->mock_wcpay_gateway
@@ -194,7 +197,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->method( 'add_token_to_order' )
 			->with(
 				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$token
+				$this->token
 			);
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -207,9 +210,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_new_card_is_added_before_status_update() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( self::PAYMENT_METHOD_ID );
-
 		$this->mock_wcs_order_contains_subscription( true );
 
 		$this->mock_api_client
@@ -222,7 +222,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )
 			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
-			->willReturn( $token );
+			->willReturn( $this->token );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
 		$this->mock_wcpay_gateway
@@ -233,7 +233,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 					$this->callback( $this->match_order_id( $order->get_id() ) ),
 					$this->callback( $this->match_order_status( 'pending' ) )
 				),
-				$token
+				$this->token
 			);
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -242,8 +242,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_saved_card_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 
-		$token = $this->create_saved_payment_method( self::PAYMENT_METHOD_ID );
-		$_POST = [ self::TOKEN_REQUEST_KEY => $token->get_id() ];
+		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -263,7 +262,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->method( 'add_token_to_order' )
 			->with(
 				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$token
+				$this->token
 			);
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -276,8 +275,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_saved_card_zero_dollar_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$token = $this->create_saved_payment_method( self::PAYMENT_METHOD_ID );
-		$_POST = [ self::TOKEN_REQUEST_KEY => $token->get_id() ];
+		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -297,7 +295,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->method( 'add_token_to_order' )
 			->with(
 				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$token
+				$this->token
 			);
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
@@ -310,8 +308,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_saved_card_is_added_before_status_update() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$token = $this->create_saved_payment_method( self::PAYMENT_METHOD_ID );
-		$_POST = [ self::TOKEN_REQUEST_KEY => $token->get_id() ];
+		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -334,24 +331,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 					$this->callback( $this->match_order_id( $order->get_id() ) ),
 					$this->callback( $this->match_order_status( 'pending' ) )
 				),
-				$token
+				$this->token
 			);
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
-	}
-
-	private function create_saved_payment_method( $payment_method, $gateway = WC_Payment_Gateway_WCPay::GATEWAY_ID, $user_id = self::USER_ID ) {
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( $payment_method );
-		$token->set_gateway_id( $gateway );
-		$token->set_user_id( $user_id );
-		$token->set_card_type( 'visa' );
-		$token->set_last4( '4242' );
-		$token->set_expiry_month( 6 );
-		$token->set_expiry_year( 2026 );
-		$token->save();
-
-		return WC_Payment_Tokens::get( $token->get_id() );
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
