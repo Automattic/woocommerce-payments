@@ -90,6 +90,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.4.1 - 2020-xx-xx =
+* Fix - Webhook processing with no Jetpack plugin installed
+
 = 1.4.0 - 2020-xx-xx =
 * Add - Allow merchant to edit statement descriptor
 * Fix - Link from order details page to transaction details page.
