@@ -2,7 +2,6 @@
 
 = 1.4.0 - 2020-09-02 =
 * Add - Initial support for WooCommerce Subscriptions: Signing up for subscriptions, scheduled payments, and customer-initiated payment method changes.
-* Add - and customer-initiated payment method changes
 * Add - Added a link to transaction details from order screens.
 * Add - Allow merchant to edit statement descriptor.
 * Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard.
