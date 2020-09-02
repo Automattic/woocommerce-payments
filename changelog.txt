@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 1.4.0 - 2020-xx-xx =
+= 1.4.0 - 2020-09-02 =
 * Add - Support for WooCommerce Subscriptions.
 * Add - Added a link to transaction details from order screens.
 * Add - Allow merchant to edit statement descriptor.
