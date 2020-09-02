@@ -69,7 +69,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service,
+			$this->mock_token_service
 		);
 	}
 
