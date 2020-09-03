@@ -118,7 +118,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
 		}
-		$subscription->add_payment_token( $renewal_token );
+		$this->add_token_to_order( $subscription, $renewal_token );
 	}
 
 	/**
