@@ -130,6 +130,43 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertCount( count( $tokens ), $order->get_payment_tokens() );
 	}
 
+	public function test_update_failing_payment_method_copies_last_method_from_renewal() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method_1', self::USER_ID ) );
+		$renewal_order->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method_2', self::USER_ID ) );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$payment_methods = $subscription->get_payment_tokens();
+		$this->assertCount( 1, $payment_methods );
+		$token = WC_Payment_Tokens::get( end( $payment_methods ) );
+		$this->assertEquals( 'new_payment_method_2', $token->get_token() );
+	}
+
+	public function test_update_failing_payment_method_does_not_copy_method_if_renewal_has_no_method() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertCount( 0, $subscription->get_payment_tokens() );
+	}
+
+	public function test_update_failing_payment_method_does_not_copy_method_if_token_does_not_exist() {
+		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$token->delete();
+
+		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
+
+		$this->assertCount( 0, $subscription->get_payment_tokens() );
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WCS_Mock::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $subscriptions ) {
