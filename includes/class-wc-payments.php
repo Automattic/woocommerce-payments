@@ -122,9 +122,6 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 		}
 
-		// Init Jetpack connection package REST Auth - needs to happen on plugin load, before rest_api_init.
-		\Automattic\Jetpack\Connection\Rest_Authentication::init();
-
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 	}
 

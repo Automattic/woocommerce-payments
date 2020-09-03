@@ -37,6 +37,8 @@ function wcpay_jetpack_init() {
 			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		]
 	);
+
+	Automattic\Jetpack\Connection\Rest_Authentication::init();
 }
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
