@@ -642,7 +642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order         $order The order.
 	 * @param WC_Payment_Token $token The token to save.
 	 */
-	protected function add_token_to_order( $order, $token ) {
+	public function add_token_to_order( $order, $token ) {
 		$order_tokens = $order->get_payment_tokens();
 
 		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers

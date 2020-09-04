@@ -118,7 +118,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
 		}
-		$subscription->add_payment_token( $renewal_token );
+		$this->add_token_to_order( $subscription, $renewal_token );
 	}
 
 	/**
@@ -127,7 +127,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order         $order The order.
 	 * @param WC_Payment_Token $token The token to save.
 	 */
-	protected function add_token_to_order( $order, $token ) {
+	public function add_token_to_order( $order, $token ) {
 		parent::add_token_to_order( $order, $token );
 
 		// Set payment token for subscriptions, so it can be used for renewals.
