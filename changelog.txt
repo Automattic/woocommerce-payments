@@ -1,9 +1,12 @@
 *** WooCommerce Payments Changelog ***
 
-= 1.4.0 - 2020-xx-xx =
-* Add - Allow merchant to edit statement descriptor
-* Fix - Link from order details page to transaction details page.
-* Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard
+= 1.4.0 - 2020-09-02 =
+* Add - Initial support for WooCommerce Subscriptions: Signing up for subscriptions, scheduled payments, and customer-initiated payment method changes.
+* Add - Added a link to transaction details from order screens.
+* Add - Allow merchant to edit statement descriptor.
+* Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard.
+* Fix - Save order metadata before the payment is completed to avoid missing payments.
+* Update - Bumped the minimum Jetpack requirement to version 8.2.
 
 = 1.3.0 - 2020-08-17 =
 * Add - Support for saved cards.
