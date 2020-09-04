@@ -94,7 +94,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 		foreach ( $orders as $order ) {
 			$payment_methods = $order->get_payment_tokens();
-			$this->assertNotFalse( end( $payment_methods ) );
 			$this->assertEquals( $token->get_id(), end( $payment_methods ) );
 		}
 	}
@@ -110,7 +109,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		foreach ( $tokens as $token ) {
 			$this->wcpay_gateway->add_token_to_order( $order, $token );
 			$payment_methods = $order->get_payment_tokens();
-			$this->assertNotFalse( end( $payment_methods ) );
 			$this->assertEquals( $token->get_id(), end( $payment_methods ) );
 		}
 		$this->assertCount( count( $tokens ), $order->get_payment_tokens() );
@@ -128,7 +126,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		foreach ( $tokens as $token ) {
 			$this->wcpay_gateway->add_token_to_order( $order, $token );
 			$payment_methods = $order->get_payment_tokens();
-			$this->assertNotFalse( end( $payment_methods ) );
 			$this->assertEquals( $token->get_id(), end( $payment_methods ) );
 		}
 		$this->assertCount( count( $tokens ), $order->get_payment_tokens() );
