@@ -37,7 +37,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 
 	public function test_is_merchant_initiated_returns_off_session() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, true );
-		$this->assertEquals( true, $payment_information->is_merchant_initiated() );
+		$this->assertTrue( $payment_information->is_merchant_initiated() );
 	}
 
 	public function test_get_payment_method_returns_payment_method() {
@@ -57,16 +57,16 @@ class Payment_Information_Test extends WP_UnitTestCase {
 
 	public function is_using_saved_payment_method_returns_true_if_token() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, $this->token );
-		$this->assertEquals( true, $payment_information->is_using_saved_payment_method() );
+		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
 	public function test_set_token_updates_token() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD );
-		$this->assertEquals( false, $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
 
 		$payment_information->set_token( $this->token );
 		$this->assertEquals( $this->token, $payment_information->get_payment_token() );
-		$this->assertEquals( true, $payment_information->is_using_saved_payment_method() );
+		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
 	public function test_get_payment_method_from_request() {
@@ -78,21 +78,21 @@ class Payment_Information_Test extends WP_UnitTestCase {
 
 	public function test_get_token_from_request_returns_null_when_not_set() {
 		$token = Payment_Information::get_token_from_request( [] );
-		$this->assertEquals( null, $token );
+		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_null_when_new() {
 		$token = Payment_Information::get_token_from_request(
 			[ self::TOKEN_REQUEST_KEY => 'new' ]
 		);
-		$this->assertEquals( null, $token );
+		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_null_when_invalid() {
 		$token = Payment_Information::get_token_from_request(
 			[ self::TOKEN_REQUEST_KEY => $this->token->get_id() + 1 ]
 		);
-		$this->assertEquals( null, $token );
+		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_null_when_wrong_gateway() {
@@ -101,7 +101,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 		$token = Payment_Information::get_token_from_request(
 			[ self::TOKEN_REQUEST_KEY => $this->token->get_id() ]
 		);
-		$this->assertEquals( null, $token );
+		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_null_when_wrong_customer() {
@@ -110,7 +110,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 		$token = Payment_Information::get_token_from_request(
 			[ self::TOKEN_REQUEST_KEY => $this->token->get_id() ]
 		);
-		$this->assertEquals( null, $token );
+		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_token() {
@@ -129,9 +129,9 @@ class Payment_Information_Test extends WP_UnitTestCase {
 			true
 		);
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
-		$this->assertEquals( true, $payment_information->is_using_saved_payment_method() );
+		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 		$this->assertEquals( $this->token, $payment_information->get_payment_token() );
-		$this->assertEquals( true, $payment_information->is_merchant_initiated() );
+		$this->assertTrue( $payment_information->is_merchant_initiated() );
 	}
 
 	public function test_from_payment_request_without_token() {
@@ -139,7 +139,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 			[ self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD ]
 		);
 		$this->assertEquals( self::PAYMENT_METHOD, $payment_information->get_payment_method() );
-		$this->assertEquals( false, $payment_information->is_using_saved_payment_method() );
-		$this->assertEquals( false, $payment_information->is_merchant_initiated() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
 	}
 }
