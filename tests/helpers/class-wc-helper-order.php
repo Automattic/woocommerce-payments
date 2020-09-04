@@ -39,7 +39,9 @@ class WC_Helper_Order {
 	 * @version 3.0 New parameter $product.
 	 *
 	 * @param int        $customer_id The ID of the customer the order is for.
-	 * @param WC_Product $product The product to add to the order.
+	 * @param int        $total       Total cost of the order. Defaults to 50 (4 x $10 simple helper product + $10 shipping)
+	 *                                and can be modified to test $0 orders.
+	 * @param WC_Product $product     The product to add to the order.
 	 *
 	 * @return WC_Order
 	 */
@@ -114,7 +116,7 @@ class WC_Helper_Order {
 		$order->set_discount_tax( 0 );
 		$order->set_cart_tax( 0 );
 		$order->set_shipping_tax( 0 );
-		$order->set_total( $total ); // 4 x $10 simple helper product
+		$order->set_total( $total );
 		$order->save();
 
 		return $order;
