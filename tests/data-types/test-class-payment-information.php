@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 
 /**
  * Payment_Information unit tests.

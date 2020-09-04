@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
