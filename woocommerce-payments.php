@@ -26,6 +26,27 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 
 /**
+ * Plugin activation hook.
+ */
+function wcpay_activate() {
+	// Do not take any action if activated in a REST request (via wc-admin).
+	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		return;
+	}
+
+	if (
+		// Only redirect to onboarding when activated on its own. Either with a link...
+		isset( $_GET['action'] ) && 'activate' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification
+		// ...or with a bulk action.
+		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification
+	) {
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+	}
+}
+
+register_activation_hook( __FILE__, 'wcpay_activate' );
+
+/**
  * Initialize the Jetpack connection functionality.
  */
 function wcpay_jetpack_init() {

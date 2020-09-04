@@ -210,33 +210,7 @@ class WC_Payments_Account {
 			return true;
 		}
 
-		// If already redirected to onboarding in the past, don't do it again.
-		if ( get_option( 'wcpay_redirected_to_onboarding', false ) ) {
-			return false;
-		}
-
-		// If onboarding new accounts is disabled, so it's pointless to redirect users to the splash page.
-		if ( self::is_on_boarding_disabled() ) {
-			return false;
-		}
-
-		// Don't hijack WP-Admin if the user is bulk-activating plugins.
-		if ( isset( $_GET['activate-multi'] ) ) {
-			return false;
-		}
-
-		// Do not redirect if the plugin was installed via the WC setup wizard.
-		$onboarding_profile = get_option( Onboarding::PROFILE_DATA_OPTION );
-		if (
-			is_array( $onboarding_profile )
-			&& isset( $onboarding_profile['business_extensions'] )
-			&& is_array( $onboarding_profile['business_extensions'] )
-			&& in_array( 'woocommerce-payments', $onboarding_profile['business_extensions'], true )
-		) {
-			return false;
-		}
-
-		return true;
+		return get_option( 'wcpay_should_redirect_to_onboarding', false );
 	}
 
 	/**
@@ -258,7 +232,7 @@ class WC_Payments_Account {
 
 		if ( empty( $account ) ) {
 			if ( $this->should_redirect_to_onboarding() ) {
-				update_option( 'wcpay_redirected_to_onboarding', true );
+				update_option( 'wcpay_should_redirect_to_onboarding', false );
 				$this->redirect_to_onboarding_page();
 			}
 			return false;
