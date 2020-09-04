@@ -27,7 +27,7 @@ class WC_Helper_Token {
 		$token->set_card_type( 'visa' );
 		$token->set_last4( '4242' );
 		$token->set_expiry_month( 6 );
-		$token->set_expiry_year( 2026 );
+		$token->set_expiry_year( intval( gmdate( 'Y' ) ) + 1 );
 		$token->save();
 
 		return WC_Payment_Tokens::get( $token->get_id() );
