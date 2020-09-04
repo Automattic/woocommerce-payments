@@ -90,6 +90,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.4.1 - 2020-xx-xx =
+* Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
+
 = 1.4.0 - 2020-09-02 =
 * Add - Initial support for WooCommerce Subscriptions: Signing up for subscriptions, scheduled payments, and customer-initiated payment method changes.
 * Add - Added a link to transaction details from order screens.

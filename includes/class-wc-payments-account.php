@@ -210,39 +210,7 @@ class WC_Payments_Account {
 			return true;
 		}
 
-		// If already redirected to onboarding in the past, don't do it again.
-		if ( get_option( 'wcpay_redirected_to_onboarding', false ) ) {
-			return false;
-		}
-
-		// If onboarding new accounts is disabled, so it's pointless to redirect users to the splash page.
-		if ( self::is_on_boarding_disabled() ) {
-			return false;
-		}
-
-		// Don't hijack WP-Admin if the user is bulk-activating plugins.
-		if ( isset( $_GET['activate-multi'] ) ) {
-			return false;
-		}
-
-		// Don't redirect if the user is in the WC setup wizard.
-		$current_page = isset( $_GET['page'] ) ? wp_unslash( $_GET['page'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( 'wc-setup' === $current_page ) {
-			return false;
-		}
-
-		// Don't redirect if the user is on the WC-Admin setup profiler or WC-Admin dashboard with the task list.
-		if ( 'wc-admin' === $current_page && empty( $_GET['path'] )
-			&& ( Onboarding::should_show_profiler() || Onboarding::should_show_tasks() ) ) {
-			return false;
-		}
-
-		// Don't redirect if the user is on Jetpack pages.
-		if ( 'jetpack' === $current_page ) {
-			return false;
-		}
-
-		return true;
+		return get_option( 'wcpay_should_redirect_to_onboarding', false );
 	}
 
 	/**
@@ -264,7 +232,7 @@ class WC_Payments_Account {
 
 		if ( empty( $account ) ) {
 			if ( $this->should_redirect_to_onboarding() ) {
-				update_option( 'wcpay_redirected_to_onboarding', true );
+				update_option( 'wcpay_should_redirect_to_onboarding', false );
 				$this->redirect_to_onboarding_page();
 			}
 			return false;
