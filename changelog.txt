@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 1.4.1 - 2020-xx-xx =
+= 1.4.1 - 2020-09-07 =
 * Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
 
 = 1.4.0 - 2020-09-02 =
