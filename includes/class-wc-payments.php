@@ -97,6 +97,9 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/exceptions/class-wc-payments-intent-authentication-exception.php';
 		include_once dirname( __FILE__ ) . '/data-types/class-payment-information.php';
 
+		// Always load tracker to avoid class not found errors.
+		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
+
 		self::$account          = new WC_Payments_Account( self::$api_client );
 		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
 		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -118,7 +121,7 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
 
-			include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
+			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 		}
 
