@@ -848,7 +848,7 @@ class WC_Payments_API_Client {
 
 		Logger::log( "REQUEST $method $url" );
 		if ( 'POST' === $method || 'PUT' === $method ) {
-			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			Logger::redact_and_log( 'BODY: ', $params );
 		}
 
 		$response = $this->http_client->remote_request(
@@ -862,7 +862,7 @@ class WC_Payments_API_Client {
 		);
 
 		$response_body = $this->extract_response_body( $response );
-		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		Logger::redact_and_log( 'RESPONSE ', $response_body );
 
 		return $response_body;
 	}

@@ -24,6 +24,23 @@ class Logger {
 
 	const LOG_FILENAME = 'woocommerce-payments';
 
+	const STRIPE_KEYS_TO_REDACT = [
+		'client_secret',
+		'email',
+		'name',
+		'phone',
+		'line1',
+		'line2',
+		'postal_code',
+		'state',
+		'city',
+		'country',
+		'customer_name',
+		'customer_email',
+	];
+
+	const LOG_MAX_RECURSION = 10;
+
 	/**
 	 * Add a log entry.
 	 *
@@ -152,5 +169,63 @@ class Logger {
 	 */
 	public static function debug( $message ) {
 		self::log( $message, 'debug' );
+	}
+
+	/**
+	 * Redacts the provided assoc array and logs it using the ::log() method.
+	 *
+	 * @param string $prefix Log message prefix.
+	 * @param array  $array  The array to log.
+	 */
+	public static function redact_and_log( $prefix, $array ) {
+		// Check if logging is enabled to avoid unneccessary redact calls.
+		if ( ! self::can_log() ) {
+			return;
+		}
+
+		$redacted = self::redact_array( $array );
+
+		self::log( $prefix . var_export( $redacted, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+	}
+
+	/**
+	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
+	 *
+	 * @param array   $array The array to redact.
+	 * @param integer $level The current recursion level.
+	 *
+	 * @return array The redacted array.
+	 */
+	private static function redact_array( $array, $level = 0 ) {
+		if ( $level >= self::LOG_MAX_RECURSION ) {
+			return '(recursion limit reached)';
+		}
+
+		if ( is_object( $array ) ) {
+			// TODO: if we ever want to log objects, they could implement a method returning an array or string.
+			return get_class( $array );
+		}
+
+		if ( ! is_array( $array ) ) {
+			return $array;
+		}
+
+		$result = [];
+
+		foreach ( $array as $key => $value ) {
+			if ( in_array( $key, self::STRIPE_KEYS_TO_REDACT, true ) ) {
+				$result[ $key ] = '(redacted)';
+				continue;
+			}
+
+			if ( is_array( $value ) ) {
+				$result[ $key ] = self::redact_array( $value, $level + 1 );
+				continue;
+			}
+
+			$result[ $key ] = $value;
+		}
+
+		return $result;
 	}
 }
