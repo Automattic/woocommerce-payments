@@ -1417,4 +1417,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Returns a saved token that matches the payment method ID.
+	 *
+	 * @param int    $user_id           ID of the user.
+	 * @param string $payment_method_id ID of the payment method.
+	 *
+	 * @return null|WC_Payment_Token the WC Token if a user's token matches the payment method ID, null otherwise.
+	 */
+	protected function get_token_from_payment_method_id( $user_id, $payment_method_id ) {
+		$tokens = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user_id,
+				'gateway_id' => self::GATEWAY_ID,
+			]
+		);
+
+		foreach ( $tokens as $token ) {
+			if ( $payment_method_id === $token->get_token() ) {
+				$existing_token = $token;
+			}
+		}
+
+		if ( empty( $existing_token ) ) {
+			return null;
+		}
+
+		return $existing_token;
+	}
 }

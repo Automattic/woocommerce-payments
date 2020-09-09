@@ -139,9 +139,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] = [
 			'wc_order_tokens' => [
-				'token' => [
+				'payment_method_id' => [
 					'label' => __( 'Saved payment method ID', 'woocommerce-payments' ),
-					'value' => empty( $active_token ) ? '' : strval( $active_token->get_id() ),
+					'value' => empty( $active_token ) ? '' : strval( $active_token->get_token() ),
 				],
 			],
 		];
@@ -163,18 +163,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		if ( empty( $payment_meta['wc_order_tokens']['token']['value'] ) ) {
+		if ( empty( $payment_meta['wc_order_tokens']['payment_method_id']['value'] ) ) {
 			throw new Exception( __( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ) );
 		}
 
-		$token = WC_Payment_Tokens::get( $payment_meta['wc_order_tokens']['token']['value'] );
+		$payment_method_id = $payment_meta['wc_order_tokens']['payment_method_id']['value'];
+		$token             = $this->get_token_from_payment_method_id( $subscription->get_user_id(), $payment_method_id );
 
 		if ( empty( $token ) ) {
-			throw new Exception( __( 'The saved payment method selected is invalid or does not exist.', 'woocommerce-payments' ) );
-		}
-
-		if ( $subscription->get_user_id() !== $token->get_user_id() ) {
-			throw new Exception( __( 'The saved payment method selected does not belong to this order\'s customer.', 'woocommerce-payments' ) );
+			throw new Exception( __( 'The saved payment method selected is invalid or does not exist for this customer.', 'woocommerce-payments' ) );
 		}
 	}
 
@@ -187,11 +184,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param string          $meta_value   Meta value to be updated.
 	 */
 	public function save_meta_in_order_tokens( $subscription, $table, $meta_key, $meta_value ) {
-		if ( 'wc_order_tokens' !== $table || 'token' !== $meta_key ) {
+		if ( 'wc_order_tokens' !== $table || 'payment_method_id' !== $meta_key ) {
 			return;
 		}
 
-		$token = WC_Payment_Tokens::get( $meta_value );
+		$token = $this->get_token_from_payment_method_id( $subscription->get_user_id(), $meta_value );
 
 		if ( empty( $token ) ) {
 			return;
