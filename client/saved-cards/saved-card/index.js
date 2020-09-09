@@ -12,7 +12,6 @@ import './style.scss';
 import Chip from 'components/chip';
 
 export const SavedCard = ( {
-	tokenId,
 	paymentMethodId,
 	isDefault,
 	brand,
@@ -46,12 +45,6 @@ export const SavedCard = ( {
 				) : null }
 			</span>
 			<span className="wcpay-saved-cards__card-id">
-				<span className="wcpay-saved-cards__card-id--token">
-					<span class="label">
-						{ __( 'Token ID:', 'woocommerce-payments' ) }
-					</span>{ ' ' }
-					{ tokenId }
-				</span>
 				<span className="wcpay-saved-cards__card-id--method">
 					<span class="label">
 						{ __( 'Card ID:', 'woocommerce-payments' ) }
