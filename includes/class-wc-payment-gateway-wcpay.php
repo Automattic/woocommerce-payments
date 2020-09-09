@@ -160,6 +160,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		// Display user tokens so admins can reference them when updating a subscription payment methods.
+		add_action( 'show_user_profile', [ $this, 'display_user_saved_payment_methods' ], 50 );
 	}
 
 	/**
@@ -278,6 +281,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</p>',
 			esc_attr( $this->id ),
 			esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) )
+		);
+	}
+
+	/**
+	 * Display saved payment methods for a user.
+	 *
+	 * @param WP_User $user The user.
+	 */
+	public function display_user_saved_payment_methods( $user ) {
+		$tokens           = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user->ID,
+				'gateway_id' => self::GATEWAY_ID,
+			]
+		);
+		$formatted_tokens = array_map(
+			function ( $token ) {
+				return [
+					'tokenId'         => $token->get_id(),
+					'paymentMethodId' => $token->get_token(),
+					'brand'           => $token->get_card_type(),
+					'last4'           => $token->get_last4(),
+					'expiryMonth'     => $token->get_expiry_month(),
+					'expiryYear'      => $token->get_expiry_year(),
+					'isDefault'       => $token->get_is_default(),
+				];
+			},
+			array_values( $tokens )
+		);
+		printf( '<h3>%1$s</h3>', esc_html__( 'WooCommerce Payments', 'woocommerce-payments' ) );
+		printf(
+			'<table class="form-table">
+				<tbody>
+					<tr>
+						<th>
+							<label for="wcpay-saved-cards">Saved cards</label>
+						</th>
+						<td>
+							<div id="wcpay-saved-cards-container" data-cards="%1$s"></div>
+						</td>
+					</tr>
+				</tbody>
+			</table>',
+			esc_js( wp_json_encode( $formatted_tokens ) )
 		);
 	}
 

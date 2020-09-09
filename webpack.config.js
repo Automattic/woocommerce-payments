@@ -10,6 +10,7 @@ const webpackConfig = {
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings.js',
+		'user-page-settings': './client/user-page-settings.js',
 	},
 	output: {
 		filename: '[name].js',

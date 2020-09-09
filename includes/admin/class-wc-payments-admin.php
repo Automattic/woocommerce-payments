@@ -233,6 +233,22 @@ class WC_Payments_Admin {
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
+
+		$user_page_settings_src_url      = plugins_url( 'dist/user-page-settings.js', WCPAY_PLUGIN_FILE );
+		$user_page_settings_asset_path   = WCPAY_ABSPATH . 'dist/user-page-settings.asset.php';
+		$user_page_settings_asset        = file_exists( $user_page_settings_asset_path ) ? require_once $user_page_settings_asset_path : null;
+		$user_page_settings_dependencies = array_merge(
+			$user_page_settings_asset['dependencies'],
+			[ 'stripe' ]
+		);
+
+		wp_register_script(
+			'WCPAY_USER_PAGE_SETTINGS',
+			$user_page_settings_src_url,
+			$user_page_settings_dependencies,
+			WC_Payments::get_file_version( 'dist/user-page-settings.js' ),
+			true
+		);
 	}
 
 	/**
@@ -248,6 +264,12 @@ class WC_Payments_Admin {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+		}
+
+		// Enqueue user page setting scripts if in the user-edit page.
+		if ( get_current_screen() && 'user-edit' === get_current_screen()->id ) {
+			wp_enqueue_script( 'WCPAY_USER_PAGE_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_USER_PAGE_SETTINGS' );
 		}
 
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
