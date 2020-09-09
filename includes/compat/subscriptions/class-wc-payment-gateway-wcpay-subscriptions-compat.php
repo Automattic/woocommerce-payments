@@ -36,6 +36,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				'subscription_date_changes',
 				'subscription_payment_method_change',
 				'subscription_payment_method_change_customer',
+				'subscription_payment_method_change_admin',
 				'multiple_subscriptions',
 			]
 		);
@@ -46,6 +47,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
+
+		// Allow store managers to manually set Stripe as the payment method on a subscription.
+		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
+		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
+		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
 	}
 
 	/**
@@ -118,6 +124,80 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
+	}
+
+	/**
+	 * Include the payment meta data required to process automatic recurring payments so that store managers can
+	 * manually set up automatic recurring payments for a customer via the Edit Subscriptions screen in 2.0+.
+	 *
+	 * @param array           $payment_meta Associative array of meta data required for automatic payments.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return array
+	 */
+	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
+		$active_token = $this->get_payment_token( $subscription );
+
+		$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] = [
+			'wc_order_tokens' => [
+				'token' => [
+					'label' => __( 'Saved payment method ID', 'woocommerce-payments' ),
+					'value' => empty( $active_token ) ? '' : strval( $active_token->get_id() ),
+				],
+			],
+		];
+		return $payment_meta;
+	}
+
+	/**
+	 * Validate the payment meta data required to process automatic recurring payments so that store managers can
+	 * manually set up automatic recurring payments for a customer via the Edit Subscriptions screen in 2.0+.
+	 *
+	 * @param string          $payment_method_id The ID of the payment gateway to validate.
+	 * @param array           $payment_meta      Associative array of meta data required for automatic payments.
+	 * @param WC_Subscription $subscription      The subscription order.
+	 *
+	 * @throws Exception When $payment_meta is not valid.
+	 */
+	public function validate_subscription_payment_meta( $payment_method_id, $payment_meta, $subscription ) {
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $payment_method_id ) {
+			return;
+		}
+
+		if ( empty( $payment_meta['wc_order_tokens']['token']['value'] ) ) {
+			throw new Exception( __( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ) );
+		}
+
+		$token = WC_Payment_Tokens::get( $payment_meta['wc_order_tokens']['token']['value'] );
+
+		if ( empty( $token ) ) {
+			throw new Exception( __( 'The saved payment method selected is invalid or does not exist.', 'woocommerce-payments' ) );
+		}
+
+		if ( $subscription->get_user_id() !== $token->get_user_id() ) {
+			throw new Exception( __( 'The saved payment method selected does not belong to this order\'s customer.', 'woocommerce-payments' ) );
+		}
+	}
+
+	/**
+	 * Save subscriptions payment_method metadata to the order tokens when its type is wc_order_tokens.
+	 *
+	 * @param WC_Subscription $subscription The subscription to be updated.
+	 * @param string          $table        Where to store and retrieve the metadata.
+	 * @param string          $meta_key     Meta key to be updated.
+	 * @param string          $meta_value   Meta value to be updated.
+	 */
+	public function save_meta_in_order_tokens( $subscription, $table, $meta_key, $meta_value ) {
+		if ( 'wc_order_tokens' !== $table || 'token' !== $meta_key ) {
+			return;
+		}
+
+		$token = WC_Payment_Tokens::get( $meta_value );
+
+		if ( empty( $token ) ) {
+			return;
+		}
+
+		$this->add_token_to_order( $subscription, $token );
 	}
 
 	/**
