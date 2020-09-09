@@ -6,11 +6,15 @@
 /**
  * Internal dependencies
  */
+import './style.scss';
+import SavedCard from './saved-card';
 
 export const SavedCards = ( { cards } ) => {
 	return (
 		<div class="wcpay-saved-cards">
-			<pre>{ JSON.stringify( cards, null, 2 ) }</pre>
+			{ cards.map( ( card ) => (
+				<SavedCard { ...card } />
+			) ) }
 		</div>
 	);
 };

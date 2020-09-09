@@ -249,6 +249,13 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/user-page-settings.js' ),
 			true
 		);
+
+		wp_register_style(
+			'WCPAY_USER_PAGE_SETTINGS',
+			plugins_url( 'dist/user-page-settings.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/user-page-settings.css' )
+		);
 	}
 
 	/**

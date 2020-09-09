@@ -1,0 +1,46 @@
+.wcpay-saved-cards__card {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	border: 1px solid $g2-lighter-grey;
+	padding: 14px 16px;
+
+	.payment-method__brand {
+		height: 32px;
+		width: 53px;
+	}
+
+	.wcpay-saved-cards__card-info,
+	.wcpay-saved-cards__card-id {
+		display: flex;
+		flex-direction: column;
+		white-space: nowrap;
+	}
+
+	.wcpay-saved-cards__card-info {
+		margin: 0 15px;
+
+		font-size: 14px;
+		line-height: 20px;
+		.wcpay-saved-cards__card-info--card {
+			font-weight: 600;
+		}
+
+		.wcpay-saved-cards__card-info--expiry {
+			font-weight: 400;
+		}
+	}
+
+	.wcpay-saved-cards__card-id {
+		flex: 1;
+		text-align: right;
+		font-size: 12px;
+		line-height: 16px;
+		font-weight: 400;
+
+		.label {
+			font-weight: 600;
+		}
+	}
+}

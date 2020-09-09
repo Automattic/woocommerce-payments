@@ -163,6 +163,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Display user tokens so admins can reference them when updating a subscription payment methods.
 		add_action( 'show_user_profile', [ $this, 'display_user_saved_payment_methods' ], 50 );
+		add_action( 'edit_user_profile', [ $this, 'display_user_saved_payment_methods' ], 50 );
 	}
 
 	/**
