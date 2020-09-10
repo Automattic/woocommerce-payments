@@ -11,7 +11,7 @@ import SavedCard from './saved-card';
 
 export const SavedCards = ( { cards } ) => {
 	return (
-		<div class="wcpay-saved-cards">
+		<div className="wcpay-saved-cards">
 			{ cards.map( ( card ) => (
 				<SavedCard { ...card } />
 			) ) }

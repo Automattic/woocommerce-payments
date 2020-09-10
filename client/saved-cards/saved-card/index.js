@@ -24,7 +24,7 @@ export const SavedCard = ( {
 		.month( expiryMonth - 1 )
 		.format( 'MMM' );
 	return (
-		<div class="wcpay-saved-cards__card">
+		<div className="wcpay-saved-cards__card">
 			<span
 				className={ `payment-method__brand payment-method__brand--${ brand }` }
 			></span>
@@ -45,7 +45,7 @@ export const SavedCard = ( {
 				) : null }
 			</span>
 			<span className="wcpay-saved-cards__card-id">
-				<span class="label">
+				<span className="label">
 					{ __( 'Card ID:', 'woocommerce-payments' ) }
 				</span>{ ' ' }
 				{ paymentMethodId }
