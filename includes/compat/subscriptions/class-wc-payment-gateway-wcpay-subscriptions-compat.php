@@ -52,6 +52,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 	}
 
 	/**
@@ -140,7 +141,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] = [
 			'wc_order_tokens' => [
 				'payment_method_id' => [
-					'label' => __( 'Saved payment method ID', 'woocommerce-payments' ),
+					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
 					'value' => empty( $active_token ) ? '' : strval( $active_token->get_token() ),
 				],
 			],
@@ -195,6 +196,48 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		$this->add_token_to_order( $subscription, $token );
+	}
+
+	/**
+	 * Loads the subscription edit page script with user cards to hijack the payment method input and
+	 * transform it into a select element.
+	 *
+	 * @param WC_Order $order The WC Order.
+	 */
+	public function add_payment_method_select_to_subscription_edit( $order ) {
+		// Do not load the script if the order is not a subscription.
+		if ( ! wcs_is_subscription( $order ) ) {
+			return;
+		}
+
+		$subscription_edit_page_src_url      = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
+		$subscription_edit_page_asset_path   = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
+		$subscription_edit_page_asset        = file_exists( $subscription_edit_page_asset_path ) ? require_once $subscription_edit_page_asset_path : null;
+		$subscription_edit_page_dependencies = array_merge(
+			$subscription_edit_page_asset['dependencies'],
+			[ 'stripe' ]
+		);
+
+		wp_register_script(
+			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
+			$subscription_edit_page_src_url,
+			$subscription_edit_page_dependencies,
+			WC_Payments::get_file_version( 'dist/subscription-edit-page.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
+			'wcpaySubscriptionEdit',
+			[
+				'gateway' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				'table'   => 'wc_order_tokens',
+				'metaKey' => 'payment_method_id',
+				'tokens'  => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
+			]
+		);
+
+		wp_enqueue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
 	}
 
 	/**

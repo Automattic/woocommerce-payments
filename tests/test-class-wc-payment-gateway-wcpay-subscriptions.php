@@ -280,7 +280,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			[
 				'wc_order_tokens' => [
 					'payment_method_id' => [
-						'label' => 'Saved payment method ID',
+						'label' => 'Saved payment method',
 						'value' => self::PAYMENT_METHOD_ID,
 					],
 				],
@@ -298,7 +298,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			[
 				'wc_order_tokens' => [
 					'payment_method_id' => [
-						'label' => 'Saved payment method ID',
+						'label' => 'Saved payment method',
 						'value' => '',
 					],
 				],
