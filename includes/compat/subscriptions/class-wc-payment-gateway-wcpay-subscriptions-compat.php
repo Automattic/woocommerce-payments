@@ -86,9 +86,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
-		$order_tokens = $renewal_order->get_payment_tokens();
-		$token_id     = end( $order_tokens );
-		$token        = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
+		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			$renewal_order->update_status( 'failed' );
@@ -154,14 +152,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				return $payment_method_to_display;
 			}
 
-			$order_tokens = $subscription->get_payment_tokens();
-			$token_id     = end( $order_tokens );
-			$token        = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
-
+			$token = $this->get_payment_token( $subscription );
 			return is_null( $token ) ? $payment_method_to_display : $token->get_display_name();
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get payment method for subscription  #' . $subscription->get_id() . ' ' . $e );
 			return $payment_method_to_display;
 		}
+	}
+
+	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	private function get_payment_token( $order ) {
+		$order_tokens = $order->get_payment_tokens();
+		$token_id     = end( $order_tokens );
+		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 	}
 }
