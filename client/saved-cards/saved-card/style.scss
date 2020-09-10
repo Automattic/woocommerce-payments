@@ -18,10 +18,11 @@
 	}
 
 	.wcpay-saved-cards__card-info {
-		margin: 0 15px;
+		margin: 0 15px 0 12px;
 
 		font-size: 14px;
 		line-height: 20px;
+
 		.wcpay-saved-cards__card-info--card {
 			font-weight: 600;
 		}
@@ -32,14 +33,23 @@
 	}
 
 	.wcpay-saved-cards__card-id {
-		flex: 1;
-		text-align: right;
+		width: 100%;
+		margin-top: 16px;
+
 		font-size: 12px;
 		line-height: 16px;
 		font-weight: 400;
 
 		.label {
 			font-weight: 600;
+		}
+	}
+
+	&.is-large {
+		.wcpay-saved-cards__card-id {
+			flex: 1;
+			text-align: right;
+			margin-top: 0;
 		}
 	}
 }

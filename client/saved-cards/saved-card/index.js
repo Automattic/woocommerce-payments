@@ -18,13 +18,14 @@ export const SavedCard = ( {
 	last4,
 	expiryMonth,
 	expiryYear,
+	className,
 } ) => {
 	const formattedBrand = brand.charAt( 0 ).toUpperCase() + brand.slice( 1 );
 	const formattedExpiryMonth = moment()
 		.month( expiryMonth - 1 )
 		.format( 'MMM' );
 	return (
-		<div className="wcpay-saved-cards__card">
+		<div className={ `wcpay-saved-cards__card ${ className }` }>
 			<span
 				className={ `payment-method__brand payment-method__brand--${ brand }` }
 			></span>

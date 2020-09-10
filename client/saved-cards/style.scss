@@ -3,4 +3,6 @@
 	background: $studio-white;
 	border-radius: 2px;
 	border: 1px solid $g2-lighter-grey;
+	/* position needs to be relative so resizeListener measures the container size */
+	position: relative;
 }
