@@ -17,6 +17,9 @@ use WCPay\Payment_Information;
  */
 class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_WCPay {
 
+	const PAYMENT_METHOD_META_TABLE = 'wc_order_tokens';
+	const PAYMENT_METHOD_META_KEY   = 'token';
+
 	/**
 	 * WC_Payment_Gateway_WCPay_Subscriptions_Compat constructor.
 	 *
@@ -139,8 +142,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$active_token = $this->get_payment_token( $subscription );
 
 		$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] = [
-			'wc_order_tokens' => [
-				'token' => [
+			self::PAYMENT_METHOD_META_TABLE => [
+				self::PAYMENT_METHOD_META_KEY => [
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
 					'value' => empty( $active_token ) ? '' : strval( $active_token->get_id() ),
 				],
@@ -164,11 +167,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		if ( empty( $payment_meta['wc_order_tokens']['token']['value'] ) ) {
+		if ( empty( $payment_meta[ self::PAYMENT_METHOD_META_TABLE ][ self::PAYMENT_METHOD_META_KEY ]['value'] ) ) {
 			throw new Exception( __( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ) );
 		}
 
-		$token = WC_Payment_Tokens::get( $payment_meta['wc_order_tokens']['token']['value'] );
+		$token = WC_Payment_Tokens::get( $payment_meta[ self::PAYMENT_METHOD_META_TABLE ][ self::PAYMENT_METHOD_META_KEY ]['value'] );
 
 		if ( empty( $token ) ) {
 			throw new Exception( __( 'The saved payment method selected is invalid or does not exist.', 'woocommerce-payments' ) );
@@ -188,7 +191,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param string          $meta_value   Meta value to be updated.
 	 */
 	public function save_meta_in_order_tokens( $subscription, $table, $meta_key, $meta_value ) {
-		if ( 'wc_order_tokens' !== $table || 'token' !== $meta_key ) {
+		if ( self::PAYMENT_METHOD_META_TABLE !== $table || self::PAYMENT_METHOD_META_KEY !== $meta_key ) {
 			return;
 		}
 
@@ -234,8 +237,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			'wcpaySubscriptionEdit',
 			[
 				'gateway' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-				'table'   => 'wc_order_tokens',
-				'metaKey' => 'token',
+				'table'   => self::PAYMENT_METHOD_META_TABLE,
+				'metaKey' => self::PAYMENT_METHOD_META_KEY,
 				'tokens'  => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
 			]
 		);
