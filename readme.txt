@@ -93,6 +93,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 = 1.x.x - 2020-xx-xx =
 * Add - Display payment method details on account subscriptions pages.
 * Add - Redact sensitive data before logging.
+* Add - Support for WooCommerce Subscriptions admin-initiated payment method changes.
 
 = 1.4.1 - 2020-09-07 =
 * Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
