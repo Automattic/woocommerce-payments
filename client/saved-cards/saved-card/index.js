@@ -45,12 +45,10 @@ export const SavedCard = ( {
 				) : null }
 			</span>
 			<span className="wcpay-saved-cards__card-id">
-				<span className="wcpay-saved-cards__card-id--method">
-					<span class="label">
-						{ __( 'Card ID:', 'woocommerce-payments' ) }
-					</span>{ ' ' }
-					{ paymentMethodId }
-				</span>
+				<span class="label">
+					{ __( 'Card ID:', 'woocommerce-payments' ) }
+				</span>{ ' ' }
+				{ paymentMethodId }
 			</span>
 		</div>
 	);
