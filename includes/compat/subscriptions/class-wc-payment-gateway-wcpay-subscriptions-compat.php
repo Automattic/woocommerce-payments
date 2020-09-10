@@ -153,7 +153,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			}
 
 			$token = $this->get_payment_token( $subscription );
-			return is_null( $token ) ? $payment_method_to_display : $token->get_display_name();
+
+			if ( is_null( $token ) ) {
+				Logger::info( 'There is no saved payment token for subscription #' . $subscription->get_id() );
+				return $payment_method_to_display;
+			}
+			return $token->get_display_name();
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get payment method for subscription  #' . $subscription->get_id() . ' ' . $e );
 			return $payment_method_to_display;
