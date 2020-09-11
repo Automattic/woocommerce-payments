@@ -25,6 +25,8 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 
+use Automattic\Jetpack\Connection\Rest_Authentication as Connection_Rest_Authentication;
+
 /**
  * Plugin activation hook.
  */
@@ -53,6 +55,9 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
+
+	Connection_Rest_Authentication::init();
+
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
