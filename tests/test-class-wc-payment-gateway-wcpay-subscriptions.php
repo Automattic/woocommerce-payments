@@ -407,8 +407,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertCount( 0, $subscription->get_payment_tokens() );
 	}
 
+	public function test_render_custom_payment_meta_input() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'field_value' );
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
-		WCS_Mock::set_wcs_get_subscriptions_for_order(
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $subscriptions ) {
 				return $subscriptions;
 			}

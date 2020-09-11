@@ -55,7 +55,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
-		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
+		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
+		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
+			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
+		}
 	}
 
 	/**
@@ -149,6 +152,19 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				],
 			],
 		];
+
+		// Display select element on newer Subscriptions versions.
+		add_action(
+			sprintf(
+				'woocommerce_subscription_payment_meta_input_%s_%s_%s',
+				WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_META_TABLE,
+				self::PAYMENT_METHOD_META_KEY
+			),
+			[ $this, 'render_custom_payment_meta_input' ],
+			10,
+			3
+		);
 
 		return $payment_meta;
 	}
@@ -284,5 +300,22 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			Logger::error( 'Failed to get payment method for subscription  #' . $subscription->get_id() . ' ' . $e );
 			return $payment_method_to_display;
 		}
+	}
+
+	/**
+	 * Outputs a select element to be used for the Subscriptions payment meta token selection.
+	 *
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @param string          $field_id     The field_id to add to the select element.
+	 * @param string          $field_value  The field_value to be selected by default.
+	 */
+	public function render_custom_payment_meta_input( $subscription, $field_id, $field_value ) {
+		$tokens = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
+		echo '<select name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '">';
+		foreach ( $tokens as $token ) {
+			$is_selected = intval( $field_value ) === $token['tokenId'] ? 'selected' : '';
+			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
+		}
+		echo '</select>';
 	}
 }
