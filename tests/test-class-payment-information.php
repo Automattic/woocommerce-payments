@@ -6,6 +6,7 @@
  */
 
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Initiated_By;
 
 /**
  * Payment_Information unit tests.
@@ -35,9 +36,19 @@ class Payment_Information_Test extends WP_UnitTestCase {
 		$payment_information = new Payment_Information( '' );
 	}
 
-	public function test_is_merchant_initiated_returns_off_session() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, true );
+	public function test_is_merchant_initiated_defaults_to_false() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
+	}
+
+	public function test_is_merchant_initiated_returns_true_when_payment_initiated_by_merchant() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::MERCHANT );
 		$this->assertTrue( $payment_information->is_merchant_initiated() );
+	}
+
+	public function test_is_merchant_initiated_returns_false_when_payment_initiated_by_customer() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::CUSTOMER );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
 	}
 
 	public function test_get_payment_method_returns_payment_method() {
@@ -127,7 +138,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 				self::TOKEN_REQUEST_KEY          => $this->token->get_id(),
 			],
 			null,
-			true
+			Payment_Initiated_By::MERCHANT
 		);
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );

@@ -96,6 +96,7 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
 		include_once dirname( __FILE__ ) . '/exceptions/class-wc-payments-intent-authentication-exception.php';
 		include_once dirname( __FILE__ ) . '/class-payment-information.php';
+		include_once dirname( __FILE__ ) . '/constants/class-payment-initiated-by.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
