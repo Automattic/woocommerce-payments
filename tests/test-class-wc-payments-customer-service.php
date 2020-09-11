@@ -296,7 +296,6 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 
-		$exception_was_handled = false;
 		try {
 			$this->customer_service->get_payment_methods_for_customer( 'cus_test12345', $order );
 			$this->success();
