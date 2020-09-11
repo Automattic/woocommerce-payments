@@ -27,6 +27,7 @@ export const SavedCards = ( { cards } ) => {
 			{ resizeListener }
 			{ cards.map( ( card ) => (
 				<SavedCard
+					key={ card.tokenId }
 					{ ...card }
 					className={ getWidthClassName( width ) }
 				/>
