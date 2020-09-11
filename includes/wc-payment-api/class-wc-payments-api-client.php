@@ -955,7 +955,7 @@ class WC_Payments_API_Client {
 				$error_message
 			);
 
-			Logger::error( "Error: $error_message ($error_code)" );
+			Logger::error( "$error_message ($error_code)" );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
