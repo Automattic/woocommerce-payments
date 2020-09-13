@@ -316,7 +316,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
 			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
-			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : null;
+			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
 			$checkout_script_dependencies = array_merge(
 				$checkout_script_asset['dependencies'],
 				[ 'stripe', 'wc-checkout' ]
