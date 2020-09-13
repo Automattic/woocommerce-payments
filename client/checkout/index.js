@@ -506,8 +506,8 @@ jQuery( function ( $ ) {
 	maybeShowAuthenticationModal();
 
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
-	window.addEventListener( 'hashchange', function ( event ) {
-		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
+	window.addEventListener( 'hashchange', function () {
+		if ( 0 < window.location.hash.startsWith( '#wcpay-confirm-pi' ) ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
