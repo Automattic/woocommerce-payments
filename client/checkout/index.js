@@ -1,4 +1,3 @@
-/* eslint-disable strict */
 /* global jQuery, Stripe, wcpay_config */
 
 /**
@@ -7,8 +6,6 @@
 import './style.scss';
 
 jQuery( function ( $ ) {
-	'use strict';
-
 	/* eslint-disable-next-line camelcase */
 	const stripe = new Stripe( wcpay_config.publishableKey, {
 		/* eslint-disable-next-line camelcase */
