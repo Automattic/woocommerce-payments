@@ -1,5 +1,11 @@
 /* eslint-disable strict, no-var */
 /* global jQuery, Stripe, wcpay_config */
+
+/**
+ * Internal dependencies
+ */
+import './style.scss';
+
 jQuery( function ( $ ) {
 	'use strict';
 
