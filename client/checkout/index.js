@@ -1,4 +1,4 @@
-/* eslint-disable strict, no-var */
+/* eslint-disable strict */
 /* global jQuery, Stripe, wcpay_config */
 
 /**
@@ -10,17 +10,17 @@ jQuery( function ( $ ) {
 	'use strict';
 
 	/* eslint-disable-next-line camelcase */
-	var stripe = new Stripe( wcpay_config.publishableKey, {
+	const stripe = new Stripe( wcpay_config.publishableKey, {
 		/* eslint-disable-next-line camelcase */
 		stripeAccount: wcpay_config.accountId,
 	} );
-	var elements = stripe.elements();
+	const elements = stripe.elements();
 
 	// In the future this object will be loaded with customer information through `wp_localize_script`.
-	var preparedCustomerData = {};
+	const preparedCustomerData = {};
 
 	// Create a card element.
-	var cardElement = elements.create( 'card', {
+	const cardElement = elements.create( 'card', {
 		hidePostalCode: true,
 		classes: { base: 'wcpay-card-mounted' },
 	} );
@@ -47,7 +47,7 @@ jQuery( function ( $ ) {
 
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', function ( event ) {
-		var displayError = jQuery( '#wcpay-errors' );
+		const displayError = jQuery( '#wcpay-errors' );
 		if ( event.error ) {
 			displayError
 				.html( '<ul class="woocommerce-error"><li /></ul>' )
@@ -63,7 +63,7 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {object} $form The jQuery object for the form.
 	 */
-	var blockUI = function ( $form ) {
+	const blockUI = function ( $form ) {
 		$form.addClass( 'processing' ).block( {
 			message: null,
 			overlayCSS: {
@@ -80,8 +80,8 @@ jQuery( function ( $ ) {
 	 * @param {string} prop        The name of the prop in the object.
 	 * @param {string} inputId     The ID of the input on the page (or the data, preloaded by the server.)
 	 */
-	var setCustomerValue = function ( customerObj, prop, inputId ) {
-		var value;
+	const setCustomerValue = function ( customerObj, prop, inputId ) {
+		let value;
 
 		// Try to load the value from the fields on the page.
 		if ( 'name' === inputId ) {
@@ -111,8 +111,8 @@ jQuery( function ( $ ) {
 	 *
 	 * @return {object} An object, containing email, name, phone & an address.
 	 */
-	var loadBillingDetails = function () {
-		var billingDetails = {},
+	const loadBillingDetails = function () {
+		const billingDetails = {},
 			billingAddress = {};
 
 		// Populate billing details.
@@ -133,12 +133,12 @@ jQuery( function ( $ ) {
 	};
 
 	// Show error notice at top of checkout form.
-	var showError = function ( errorMessage ) {
-		var messageWrapper =
+	const showError = function ( errorMessage ) {
+		const messageWrapper =
 			'<ul class="woocommerce-error" role="alert">' +
 			errorMessage +
 			'</ul>';
-		var $container = $(
+		const $container = $(
 			'.woocommerce-notices-wrapper, form.checkout'
 		).first();
 
@@ -160,7 +160,7 @@ jQuery( function ( $ ) {
 			.trigger( 'validate' )
 			.blur();
 
-		var scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
+		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
 		if ( ! scrollElement.length ) {
 			scrollElement = $container;
 		}
@@ -170,7 +170,7 @@ jQuery( function ( $ ) {
 	};
 
 	// Create payment method on submission.
-	var paymentMethodGenerated;
+	let paymentMethodGenerated;
 
 	/**
 	 * Saves the payment method ID in a hidden input, and re-submits the form.
@@ -178,15 +178,15 @@ jQuery( function ( $ ) {
 	 * @param {object} $form         The jQuery object for the form.
 	 * @param {object} paymentMethod Payment method object.
 	 */
-	var handleOrderPayment = function ( $form, paymentMethod ) {
-		var id = paymentMethod.id;
+	const handleOrderPayment = function ( $form, paymentMethod ) {
+		const id = paymentMethod.id;
 
 		// Flag that the payment method has been successfully generated so that we can allow the form
 		// submission next time.
 		paymentMethodGenerated = true;
 
 		// Populate form with the payment method.
-		var paymentMethodInput = document.getElementById(
+		const paymentMethodInput = document.getElementById(
 			'wcpay-payment-method'
 		);
 		paymentMethodInput.value = id;
@@ -201,7 +201,7 @@ jQuery( function ( $ ) {
 	 * @param {object} $form         The jQuery object for the form.
 	 * @param {object} paymentMethod Payment method object.
 	 */
-	var handleAddCard = function ( $form, paymentMethod ) {
+	const handleAddCard = function ( $form, paymentMethod ) {
 		/* eslint-disable camelcase */
 		$.post( wcpay_config.ajaxUrl, {
 			action: 'create_setup_intent',
@@ -214,7 +214,7 @@ jQuery( function ( $ ) {
 					return $.Deferred().reject( response.data.error );
 				}
 
-				var setupIntent = response.data;
+				const setupIntent = response.data;
 
 				stripe
 					.confirmCardSetup( setupIntent.client_secret, {
@@ -222,8 +222,8 @@ jQuery( function ( $ ) {
 						payment_method: paymentMethod.id,
 					} )
 					.then( function ( result ) {
-						var confirmedSetupIntent = result.setupIntent;
-						var error = result.error;
+						const confirmedSetupIntent = result.setupIntent;
+						const error = result.error;
 
 						if ( error ) {
 							throw error;
@@ -233,7 +233,7 @@ jQuery( function ( $ ) {
 					} )
 					.then( function ( confirmedSetupIntent ) {
 						// Populate form with the setup intent and re-submit.
-						var setupIntentInput = $(
+						const setupIntentInput = $(
 							'<input type="hidden" id="wcpay-setup-intent" name="wcpay-setup-intent" />'
 						);
 						setupIntentInput.val( confirmedSetupIntent.id );
@@ -241,7 +241,7 @@ jQuery( function ( $ ) {
 
 						// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
 						// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-						var defaultIgnoreIfBlocked =
+						const defaultIgnoreIfBlocked =
 							$.blockUI.defaults.ignoreIfBlocked;
 						$.blockUI.defaults.ignoreIfBlocked = true;
 
@@ -270,7 +270,7 @@ jQuery( function ( $ ) {
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */
-	var handlePaymentMethodCreation = function (
+	const handlePaymentMethodCreation = function (
 		$form,
 		successHandler,
 		useBillingDetails = true
@@ -284,7 +284,7 @@ jQuery( function ( $ ) {
 
 		blockUI( $form );
 
-		var paymentMethodArgs = {
+		const paymentMethodArgs = {
 			type: 'card',
 			card: cardElement,
 		};
@@ -297,8 +297,8 @@ jQuery( function ( $ ) {
 		stripe
 			.createPaymentMethod( paymentMethodArgs )
 			.then( function ( result ) {
-				var paymentMethod = result.paymentMethod;
-				var error = result.error;
+				const paymentMethod = result.paymentMethod;
+				const error = result.error;
 
 				if ( error ) {
 					throw error;
@@ -324,17 +324,17 @@ jQuery( function ( $ ) {
 	 * @param {string} orderId      The ID of the order being paid for.
 	 * @param {string} clientSecret The client secret of the intent being used to pay for the order.
 	 */
-	var showAuthenticationModal = function ( orderId, clientSecret ) {
+	const showAuthenticationModal = function ( orderId, clientSecret ) {
 		stripe
 			.confirmCardPayment( clientSecret )
 			.then( function ( result ) {
-				var paymentMethodId = document.getElementById(
+				const paymentMethodId = document.getElementById(
 					'wcpay-payment-method'
 				).value;
-				var savePaymentMethod = document.getElementById(
+				const savePaymentMethod = document.getElementById(
 					'wc-woocommerce_payments-new-payment-method'
 				).checked;
-				var intentId =
+				const intentId =
 					( result.paymentIntent && result.paymentIntent.id ) ||
 					( result.error &&
 						result.error.payment_intent &&
@@ -369,7 +369,7 @@ jQuery( function ( $ ) {
 				return response;
 			} )
 			.then( function ( response ) {
-				var result = JSON.parse( response );
+				const result = JSON.parse( response );
 
 				if ( result.error ) {
 					throw result.error;
@@ -382,7 +382,7 @@ jQuery( function ( $ ) {
 				$( '#order_review' ).removeClass( 'processing' ).unblock();
 				$( '#payment' ).show( 500 );
 
-				var errorMessage = error.message;
+				let errorMessage = error.message;
 
 				// If this is a generic error, we probably don't want to display the error message to the user,
 				// so display a generic message instead.
@@ -399,7 +399,7 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	function maybeShowAuthenticationModal() {
-		var partials = window.location.hash.match(
+		const partials = window.location.hash.match(
 			/^#wcpay-confirm-pi:(.+):(.+):(.+)$/
 		);
 
@@ -407,16 +407,16 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		var orderPayIndex = document.location.href.indexOf( 'order-pay' );
-		var isOrderPage = orderPayIndex > -1;
+		const orderPayIndex = document.location.href.indexOf( 'order-pay' );
+		const isOrderPage = orderPayIndex > -1;
 
 		if ( isOrderPage ) {
 			blockUI( $( '#order_review' ) );
 			$( '#payment' ).hide( 500 );
 		}
 
-		var orderId = partials[ 1 ];
-		var clientSecret = partials[ 2 ];
+		let orderId = partials[ 1 ];
+		const clientSecret = partials[ 2 ];
 		// Update the current order status nonce with the new one to ensure that the update
 		// order status call works when a guest user creates an account during checkout.
 		// eslint-disable-next-line camelcase
@@ -432,7 +432,7 @@ jQuery( function ( $ ) {
 		// Non-plain permalinks:
 		// /checkout/order-pay/189/
 		// Match for consecutive digits after the string 'order-pay' to get the order ID.
-		var orderIdPartials =
+		const orderIdPartials =
 			isOrderPage &&
 			window.location.href.substring( orderPayIndex ).match( /\d+/ );
 		if ( orderIdPartials ) {
