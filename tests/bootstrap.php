@@ -29,7 +29,7 @@ function _manually_load_plugin() {
 	define( 'WCPAY_TEST_ENV', true );
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
-	require_once dirname( __FILE__ ) . '/../vendor/woocommerce/woocommerce/woocommerce.php';
+	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
 
 	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
 
@@ -38,6 +38,10 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+
+	// Load the gateway files, so subscriptions can be tested.
+	require_once dirname( __FILE__ ) . '/../includes/class-wc-payment-gateway-wcpay.php';
+	require_once dirname( __FILE__ ) . '/../includes/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 
 	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-wc-payments-rest-request-exception.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-payments-rest-controller.php';

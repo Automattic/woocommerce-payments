@@ -101,7 +101,7 @@ class WC_Payments_Http {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public function is_connected() {
-		return $this->connection_manager->is_active();
+		return $this->connection_manager->is_plugin_enabled() && $this->connection_manager->is_active();
 	}
 
 	/**
@@ -113,15 +113,18 @@ class WC_Payments_Http {
 	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect ) {
-		// First, register the site to wp.com.
-		if ( ! $this->connection_manager->get_access_token() ) {
+		// Mark the plugin as enabled in case it had been soft-disconnected.
+		$this->connection_manager->enable_plugin();
+
+		// Register the site to wp.com.
+		if ( ! $this->connection_manager->is_registered() ) {
 			$result = $this->connection_manager->register();
 			if ( is_wp_error( $result ) ) {
 				throw new WC_Payments_API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
 			}
 		}
 
-		// Second, redirect the user to the Jetpack user connection flow.
+		// Redirect the user to the Jetpack user connection flow.
 		add_filter( 'jetpack_use_iframe_authorization_flow', '__return_false' );
 		// Same logic as in WC-Admin.
 		$calypso_env = defined( 'WOOCOMMERCE_CALYPSO_ENVIRONMENT' ) && in_array( WOOCOMMERCE_CALYPSO_ENVIRONMENT, [ 'development', 'wpcalypso', 'horizon', 'stage' ], true ) ? WOOCOMMERCE_CALYPSO_ENVIRONMENT : 'production';

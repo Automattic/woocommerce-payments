@@ -3,7 +3,10 @@
 /**
  * Internal dependencies
  */
-import { getConfig } from '../utils.js';
+import {
+	getConfig,
+	setConfig,
+} from '../utils.js';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -132,7 +135,7 @@ export default class WCPayAPI {
 	 * @returns {mixed} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl ) {
-		const partials = redirectUrl.match( /#wcpay-confirm-pi:(.+):(.+)$/ );
+		const partials = redirectUrl.match( /#wcpay-confirm-pi:(.+):(.+):(.+)$/ );
 
 		if ( ! partials ) {
 			return true;
@@ -140,6 +143,10 @@ export default class WCPayAPI {
 
 		let orderId = partials[ 1 ];
 		const clientSecret = partials[ 2 ];
+		// Update the current order status nonce with the new one to ensure that the update
+		// order status call works when a guest user creates an account during checkout.
+		// eslint-disable-next-line camelcase
+		setConfig( 'updateOrderStatusNonce', partials[ 3 ] );
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;

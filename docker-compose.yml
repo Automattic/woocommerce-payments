@@ -3,8 +3,8 @@ version: '3'
 services:
   wordpress:
     build: ./docker/wordpress_xdebug
-    image: wordpress-xdebug
     container_name: woocommerce_payments_wordpress
+    image: woocommerce_payments_wordpress
     restart: always
     depends_on:
       - db

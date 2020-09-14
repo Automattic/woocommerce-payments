@@ -439,4 +439,64 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 		$this->assertEquals( [], $cached_account, 'Cached account is not cleared' );
 	}
+
+	public function test_update_stripe_account() {
+		$account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$new_descriptor   = 'WCPAY_DEV';
+		$expected_account = array_merge(
+			$account,
+			[ 'statement_descriptor' => $new_descriptor ]
+		);
+
+		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will( $this->returnValue( $expected_account ) );
+		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => $new_descriptor ] );
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+	}
+
+	public function test_update_stripe_account_skipped() {
+		$account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'update_account' );
+		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY' ] );
+	}
+
+	public function test_update_stripe_account_failed() {
+		$account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will(
+			$this->throwException( new WC_Payments_API_Exception( 'test', 'bad_request', 400 ) )
+		);
+		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
+		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+	}
 }

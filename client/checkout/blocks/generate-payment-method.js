@@ -33,7 +33,7 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 				paymentMethodData: {
 					paymentMethod: PAYMENT_METHOD_NAME,
 					// eslint-disable-next-line camelcase
-					wcpay_payment_method: id,
+					'wcpay-payment-method': id,
 				},
 			},
 		};
