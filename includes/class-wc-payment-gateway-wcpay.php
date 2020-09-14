@@ -1440,6 +1440,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'expiryMonth'     => $token->get_expiry_month(),
 					'expiryYear'      => $token->get_expiry_year(),
 					'isDefault'       => $token->get_is_default(),
+					'displayName'     => $token->get_display_name(),
 				];
 			},
 			array_values( $tokens )

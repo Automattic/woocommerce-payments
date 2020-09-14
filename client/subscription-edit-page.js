@@ -11,11 +11,9 @@ const addWCPayCards = ( { gateway, table, metaKey, tokens } ) => {
 
 	const paymentMethodSelect = document.createElement( 'select' );
 	tokens.forEach( ( token ) => {
-		const formattedBrand =
-			token.brand.charAt( 0 ).toUpperCase() + token.brand.slice( 1 );
 		const option = document.createElement( 'option' );
 		option.value = token.tokenId;
-		option.text = `${ formattedBrand } •••• ${ token.last4 } (${ token.expiryMonth }/${ token.expiryYear })`;
+		option.text = token.displayName;
 		paymentMethodSelect.appendChild( option );
 	} );
 	paymentMethodSelect.id = paymentMethodInputId;
