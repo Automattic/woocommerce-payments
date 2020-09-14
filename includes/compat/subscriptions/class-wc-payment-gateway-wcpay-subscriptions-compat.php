@@ -69,7 +69,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id, $is_recurring_payment = false ) {
-		return parent::process_payment( $order_id, wcs_order_contains_subscription( $order_id ) );
+		$force_save_payment_method = wcs_order_contains_subscription( $order_id ) || $this->is_changing_payment_method_for_subscription();
+		return parent::process_payment( $order_id, $force_save_payment_method );
 	}
 
 	/**
