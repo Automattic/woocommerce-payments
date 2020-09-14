@@ -217,18 +217,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$subscription_edit_page_src_url      = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
-		$subscription_edit_page_asset_path   = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$subscription_edit_page_asset        = file_exists( $subscription_edit_page_asset_path ) ? require_once $subscription_edit_page_asset_path : null;
-		$subscription_edit_page_dependencies = array_merge(
-			$subscription_edit_page_asset['dependencies'],
-			[ 'stripe' ]
-		);
+		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
-			$subscription_edit_page_src_url,
-			$subscription_edit_page_dependencies,
+			$script_src_url,
+			$script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/subscription-edit-page.js' ),
 			true
 		);
