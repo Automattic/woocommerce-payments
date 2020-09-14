@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\DataTypes;
+namespace WCPay;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.

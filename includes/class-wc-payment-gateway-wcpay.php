@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
