@@ -285,7 +285,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 					],
 				],
 			],
-			$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ]
+			$payment_meta[ $this->wcpay_gateway->id ]
 		);
 	}
 
@@ -303,7 +303,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 					],
 				],
 			],
-			$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ]
+			$payment_meta[ $this->wcpay_gateway->id ]
 		);
 	}
 
@@ -315,7 +315,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		// but we need to assert something to avoid PHPUnit's risky test warning.
 		$this->assertNull(
 			$this->wcpay_gateway->validate_subscription_payment_meta(
-				WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				$this->wcpay_gateway->id,
 				[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
 				$subscription
 			)
@@ -341,7 +341,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->wcpay_gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '' ] ] ],
 			$subscription
 		);
@@ -354,7 +354,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->wcpay_gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '158651' ] ] ],
 			$subscription
 		);
@@ -368,7 +368,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID + 1 );
 
 		$this->wcpay_gateway->validate_subscription_payment_meta(
-			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->wcpay_gateway->id,
 			[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
 			$subscription
 		);

@@ -141,7 +141,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
 		$active_token = $this->get_payment_token( $subscription );
 
-		$payment_meta[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] = [
+		$payment_meta[ $this->id ] = [
 			self::PAYMENT_METHOD_META_TABLE => [
 				self::PAYMENT_METHOD_META_KEY => [
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
@@ -149,6 +149,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				],
 			],
 		];
+
 		return $payment_meta;
 	}
 
@@ -163,7 +164,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @throws Exception When $payment_meta is not valid.
 	 */
 	public function validate_subscription_payment_meta( $payment_method_id, $payment_meta, $subscription ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $payment_method_id ) {
+		if ( $this->id !== $payment_method_id ) {
 			return;
 		}
 
@@ -236,7 +237,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
 			'wcpaySubscriptionEdit',
 			[
-				'gateway' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				'gateway' => $this->id,
 				'table'   => self::PAYMENT_METHOD_META_TABLE,
 				'metaKey' => self::PAYMENT_METHOD_META_KEY,
 				'tokens'  => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
