@@ -10,6 +10,7 @@ const webpackConfig = {
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings.js',
+		checkout: './client/checkout/index.js',
 	},
 	output: {
 		filename: '[name].js',

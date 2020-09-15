@@ -314,22 +314,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				true
 			);
 
+			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
+			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
+			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
+			$checkout_script_dependencies = array_merge(
+				$checkout_script_asset['dependencies'],
+				[ 'stripe', 'wc-checkout' ]
+			);
 			wp_register_script(
-				'wcpay-checkout',
-				plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
-				[ 'stripe', 'wc-checkout' ],
-				WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
+				'WCPAY_CHECKOUT',
+				$checkout_script_src_url,
+				$checkout_script_dependencies,
+				WC_Payments::get_file_version( 'dist/checkout.js' ),
 				true
 			);
 
-			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $js_config );
-			wp_enqueue_script( 'wcpay-checkout' );
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			wp_enqueue_style(
-				'wcpay-checkout',
-				plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
+				'WCPAY_CHECKOUT',
+				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' )
 			);
 
 			// Output the form HTML.
