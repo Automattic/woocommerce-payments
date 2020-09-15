@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Saved Cards renders correctly 1`] = `
+<div>
+  <div
+    class="wcpay-saved-cards is-large"
+  >
+    <div
+      class="wcpay-saved-cards__card is-large"
+    >
+      <span
+        class="payment-method__brand payment-method__brand--visa"
+      />
+      <span
+        class="wcpay-saved-cards__card-info"
+      >
+        <span
+          class="wcpay-saved-cards__card-info--card"
+        >
+          Visa •••• 4242
+        </span>
+        <span
+          class="wcpay-saved-cards__card-info--expiry"
+        >
+          Expires Apr 2024
+        </span>
+      </span>
+      <span
+        class="wcpay-saved-cards__card-default"
+      >
+        <span
+          class="chip chip-primary"
+        >
+          Default
+        </span>
+      </span>
+      <span
+        class="wcpay-saved-cards__card-id"
+      >
+        <span
+          class="label"
+        >
+          Card ID:
+        </span>
+         
+        pm_mock_1
+      </span>
+    </div>
+    <div
+      class="wcpay-saved-cards__card is-large"
+    >
+      <span
+        class="payment-method__brand payment-method__brand--mastercard"
+      />
+      <span
+        class="wcpay-saved-cards__card-info"
+      >
+        <span
+          class="wcpay-saved-cards__card-info--card"
+        >
+          Mastercard •••• 4444
+        </span>
+        <span
+          class="wcpay-saved-cards__card-info--expiry"
+        >
+          Expires Apr 2044
+        </span>
+      </span>
+      <span
+        class="wcpay-saved-cards__card-default"
+      />
+      <span
+        class="wcpay-saved-cards__card-id"
+      >
+        <span
+          class="label"
+        >
+          Card ID:
+        </span>
+         
+        pm_mock_2
+      </span>
+    </div>
+  </div>
+</div>
+`;
