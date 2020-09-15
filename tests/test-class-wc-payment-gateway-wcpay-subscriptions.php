@@ -14,6 +14,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	const PAYMENT_METHOD_ID = 'pm_mock';
 	const CHARGE_ID         = 'ch_mock';
 	const PAYMENT_INTENT_ID = 'pi_mock';
+	const SETUP_INTENT_ID   = 'seti_mock';
 
 	/**
 	 * System under test.
@@ -247,6 +248,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
+	}
+
+	public function test_subscription_payment_method_filter_bypass_other_payment_methods() {
+		$subscription              = WC_Helper_Order::create_order( self::USER_ID );
+		$payment_method_to_display = $this->wcpay_gateway->maybe_render_subscription_payment_method( 'Via Crypto Currency', $subscription );
+		$this->assertEquals( 'Via Crypto Currency', $payment_method_to_display );
+	}
+
+	public function test_subscription_payment_method_filter_adds_card_details() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+		$subscription->add_payment_token( WC_Helper_Token::create_token( 'new_payment_method_1', self::USER_ID ) );
+
+		$last_token = WC_Helper_Token::create_token( 'new_payment_method_2', self::USER_ID );
+		$subscription->add_payment_token( $last_token );
+
+		$payment_method_to_display = $this->wcpay_gateway->maybe_render_subscription_payment_method( 'Via Credit card', $subscription );
+		$this->assertEquals( $last_token->get_display_name(), $payment_method_to_display );
 	}
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
