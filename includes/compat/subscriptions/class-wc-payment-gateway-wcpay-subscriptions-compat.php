@@ -162,17 +162,4 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return $payment_method_to_display;
 		}
 	}
-
-	/**
-	 * Retrieve payment token from a subscription or order.
-	 *
-	 * @param WC_Order $order Order or subscription object.
-	 *
-	 * @return null|WC_Payment_Token Last token associated with order or subscription.
-	 */
-	private function get_payment_token( $order ) {
-		$order_tokens = $order->get_payment_tokens();
-		$token_id     = end( $order_tokens );
-		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
-	}
 }
