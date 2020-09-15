@@ -36,27 +36,27 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_merchant_initiated_returns_off_session() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, true );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, true );
 		$this->assertTrue( $payment_information->is_merchant_initiated() );
 	}
 
 	public function test_get_payment_method_returns_payment_method() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null );
 		$this->assertEquals( self::PAYMENT_METHOD, $payment_information->get_payment_method() );
 	}
 
 	public function test_get_payment_method_returns_token_if_present() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, $this->token );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, $this->token );
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
 	}
 
 	public function test_get_payment_token_returns_token() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, $this->token );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, $this->token );
 		$this->assertEquals( $this->token, $payment_information->get_payment_token() );
 	}
 
 	public function is_using_saved_payment_method_returns_true_if_token() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, $this->token );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, $this->token );
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
@@ -126,6 +126,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
 				self::TOKEN_REQUEST_KEY          => $this->token->get_id(),
 			],
+			null,
 			true
 		);
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
