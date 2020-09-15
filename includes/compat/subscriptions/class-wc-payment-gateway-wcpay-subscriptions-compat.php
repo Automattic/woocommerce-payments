@@ -112,9 +112,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order        $renewal_order The failed renewal order.
 	 */
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
-		$renewal_order_tokens = $renewal_order->get_payment_tokens();
-		$renewal_token_id     = end( $renewal_order_tokens );
-		$renewal_token        = ! $renewal_token_id ? null : WC_Payment_Tokens::get( $renewal_token_id );
+		$renewal_token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
