@@ -404,7 +404,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		const orderPayIndex = document.location.href.indexOf( 'order-pay' );
+		const orderPayIndex = window.location.href.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
 
 		if ( isOrderPage ) {
@@ -504,7 +504,7 @@ jQuery( function ( $ ) {
 
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
 	window.addEventListener( 'hashchange', function () {
-		if ( 0 < window.location.hash.startsWith( '#wcpay-confirm-pi' ) ) {
+		if ( window.location.hash.startsWith( '#wcpay-confirm-pi' ) ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
