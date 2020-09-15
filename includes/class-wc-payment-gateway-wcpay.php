@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -643,16 +643,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payment_Token $token The token to save.
 	 */
 	public function add_token_to_order( $order, $token ) {
-		$order_tokens = $order->get_payment_tokens();
+		$payment_token = $this->get_payment_token( $order );
 
 		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers
 		// may re-use a previous card for the same subscription, as we consider the last token to be the active one.
 		// We can't remove the previous entry for the token because WC_Order does not support removal of tokens [1] and
 		// we can't delete the token as it might be used somewhere else.
 		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
-		if ( $token->get_id() !== end( $order_tokens ) ) {
+		if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
 			$order->add_payment_token( $token );
 		}
+	}
+
+	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	protected function get_payment_token( $order ) {
+		$order_tokens = $order->get_payment_tokens();
+		$token_id     = end( $order_tokens );
+		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 	}
 
 	/**

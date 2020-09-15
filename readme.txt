@@ -90,8 +90,10 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.5.0 - 2020-xx-xx =
+= 1.x.x - 2020-xx-xx =
 * Fix - Support checkout on Internet Explorer 11.
+* Add - Display payment method details on account subscriptions pages.
+* Add - Redact sensitive data before logging.
 
 = 1.4.1 - 2020-09-07 =
 * Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
