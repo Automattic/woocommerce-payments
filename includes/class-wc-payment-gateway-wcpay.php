@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -407,7 +408,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST, $order, false, $manual_capture );
+			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $manual_capture );
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
 		} catch ( Exception $e ) {

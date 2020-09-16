@@ -120,7 +120,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT );
+		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT() );
 
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.

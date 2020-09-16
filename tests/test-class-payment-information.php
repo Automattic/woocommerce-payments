@@ -42,12 +42,12 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_merchant_initiated_returns_true_when_payment_initiated_by_merchant() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::MERCHANT );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::MERCHANT() );
 		$this->assertTrue( $payment_information->is_merchant_initiated() );
 	}
 
 	public function test_is_merchant_initiated_returns_false_when_payment_initiated_by_customer() {
-		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::CUSTOMER );
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::CUSTOMER() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
 	}
 
@@ -138,7 +138,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 				self::TOKEN_REQUEST_KEY          => $this->token->get_id(),
 			],
 			null,
-			Payment_Initiated_By::MERCHANT
+			Payment_Initiated_By::MERCHANT()
 		);
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );

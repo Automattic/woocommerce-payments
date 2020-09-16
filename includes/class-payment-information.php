@@ -41,7 +41,7 @@ class Payment_Information {
 	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
-	 * @var string
+	 * @var Payment_Initiated_By
 	 */
 	private $payment_initiated_by;
 
@@ -55,11 +55,11 @@ class Payment_Information {
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param string            $payment_method The ID of the payment method used for this payment.
-	 * @param \WC_Order         $order The order object.
-	 * @param \WC_Payment_Token $token The payment token used for this payment.
-	 * @param string            $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
-	 * @param bool              $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
+	 * @param string               $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Order            $order The order object.
+	 * @param \WC_Payment_Token    $token The payment token used for this payment.
+	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
+	 * @param bool                 $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
@@ -67,7 +67,7 @@ class Payment_Information {
 		string $payment_method,
 		\WC_Order $order = null,
 		\WC_Payment_Token $token = null,
-		string $payment_initiated_by = Payment_Initiated_By::CUSTOMER
+		Payment_Initiated_By $payment_initiated_by = null,
 		bool $manual_capture = false
 	) {
 		if ( empty( $payment_method ) && empty( $token ) ) {
@@ -77,7 +77,7 @@ class Payment_Information {
 		$this->payment_method       = $payment_method;
 		$this->order                = $order;
 		$this->token                = $token;
-		$this->payment_initiated_by = $payment_initiated_by;
+		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
 		$this->manual_capture       = $manual_capture;
 	}
 
@@ -87,7 +87,7 @@ class Payment_Information {
 	 * @return bool True if payment was initiated by the merchant, false otherwise.
 	 */
 	public function is_merchant_initiated(): bool {
-		return Payment_Initiated_By::MERCHANT === $this->payment_initiated_by;
+		return $this->payment_initiated_by->equals( Payment_Initiated_By::MERCHANT() );
 	}
 
 	/**
@@ -156,23 +156,23 @@ class Payment_Information {
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param array     $request Associative array containing payment request information.
-	 * @param \WC_Order $order The order object.
-	 * @param string    $payment_initiated_by Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
-	 * @param bool      $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
+	 * @param array                $request Associative array containing payment request information.
+	 * @param \WC_Order            $order The order object.
+	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param bool                 $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public static function from_payment_request(
 		array $request,
 		\WC_Order $order = null,
-		string $payment_initiated_by = Payment_Initiated_By::CUSTOMER
+		Payment_Initiated_By $payment_initiated_by = null,
 		bool $manual_capture = false
 	): Payment_Information {
 		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
 
-		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by, $manual_capture );
+		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER(), $manual_capture );
 	}
 
 	/**
