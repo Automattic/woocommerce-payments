@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -141,13 +141,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			],
 		];
-
-		if ( $this->is_in_dev_mode() ) {
-			$this->form_fields['test_mode']['custom_attributes']['disabled']      = 'disabled';
-			$this->form_fields['test_mode']['label']                              = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
-			$this->form_fields['enable_logging']['custom_attributes']['disabled'] = 'disabled';
-			$this->form_fields['enable_logging']['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
-		}
 
 		// Load the settings.
 		$this->init_settings();
@@ -321,22 +314,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				true
 			);
 
+			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
+			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
+			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
+			$checkout_script_dependencies = array_merge(
+				$checkout_script_asset['dependencies'],
+				[ 'stripe', 'wc-checkout' ]
+			);
 			wp_register_script(
-				'wcpay-checkout',
-				plugins_url( 'assets/js/wcpay-checkout.js', WCPAY_PLUGIN_FILE ),
-				[ 'stripe', 'wc-checkout' ],
-				WC_Payments::get_file_version( 'assets/js/wcpay-checkout.js' ),
+				'WCPAY_CHECKOUT',
+				$checkout_script_src_url,
+				$checkout_script_dependencies,
+				WC_Payments::get_file_version( 'dist/checkout.js' ),
 				true
 			);
 
-			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $js_config );
-			wp_enqueue_script( 'wcpay-checkout' );
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			wp_enqueue_style(
-				'wcpay-checkout',
-				plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
+				'WCPAY_CHECKOUT',
+				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' )
 			);
 
 			// Output the form HTML.
@@ -642,17 +642,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order         $order The order.
 	 * @param WC_Payment_Token $token The token to save.
 	 */
-	protected function add_token_to_order( $order, $token ) {
-		$order_tokens = $order->get_payment_tokens();
+	public function add_token_to_order( $order, $token ) {
+		$payment_token = $this->get_payment_token( $order );
 
 		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers
 		// may re-use a previous card for the same subscription, as we consider the last token to be the active one.
 		// We can't remove the previous entry for the token because WC_Order does not support removal of tokens [1] and
 		// we can't delete the token as it might be used somewhere else.
 		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
-		if ( $token->get_id() !== end( $order_tokens ) ) {
+		if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
 			$order->add_payment_token( $token );
 		}
+	}
+
+	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	protected function get_payment_token( $order ) {
+		$order_tokens = $order->get_payment_tokens();
+		$token_id     = end( $order_tokens );
+		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 	}
 
 	/**
@@ -738,6 +751,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'enabled' === $key && ! $this->is_connected() ) {
 			return '';
 		}
+
+		$in_dev_mode = $this->is_in_dev_mode();
+
+		if ( 'test_mode' === $key && $in_dev_mode ) {
+			$data['custom_attributes']['disabled'] = 'disabled';
+			$data['label']                         = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
+		}
+
+		if ( 'enable_logging' === $key && $in_dev_mode ) {
+			$data['custom_attributes']['disabled'] = 'disabled';
+			$data['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
+		}
+
 		return parent::generate_checkbox_html( $key, $data );
 	}
 

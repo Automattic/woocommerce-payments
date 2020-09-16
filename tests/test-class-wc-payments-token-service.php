@@ -65,13 +65,14 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	 * Test add token to user.
 	 */
 	public function test_add_token_to_user() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
 			'card' => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
 				'exp_month' => 6,
-				'exp_year'  => 2026,
+				'exp_year'  => $expiry_year,
 			],
 		];
 
@@ -83,17 +84,18 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'visa', $token->get_card_type() );
 		$this->assertEquals( '4242', $token->get_last4() );
 		$this->assertEquals( '06', $token->get_expiry_month() );
-		$this->assertEquals( '2026', $token->get_expiry_year() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
 	public function test_add_payment_method_to_user() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
 			'id'   => 'pm_mock',
 			'card' => [
 				'brand'     => 'visa',
 				'last4'     => '4242',
 				'exp_month' => 6,
-				'exp_year'  => 2026,
+				'exp_year'  => $expiry_year,
 			],
 		];
 
@@ -111,7 +113,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'visa', $token->get_card_type() );
 		$this->assertEquals( '4242', $token->get_last4() );
 		$this->assertEquals( '06', $token->get_expiry_month() );
-		$this->assertEquals( '2026', $token->get_expiry_year() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
 	public function test_woocommerce_payment_token_deleted() {

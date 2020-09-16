@@ -161,7 +161,7 @@ class WC_Payments_Admin {
 	public function register_payments_scripts() {
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : null;
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
@@ -206,7 +206,7 @@ class WC_Payments_Admin {
 
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : null;
+		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
 		$settings_script_dependencies = array_merge(
 			$settings_script_asset['dependencies'],
 			[ 'stripe' ]

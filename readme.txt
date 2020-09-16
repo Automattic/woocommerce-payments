@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.3.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,13 +90,22 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.4.1 - 2020-xx-xx =
-* Fix - Webhook processing with no Jetpack plugin installed
+= 1.x.x - 2020-xx-xx =
+* Fix - Support checkout on Internet Explorer 11.
+* Fix - Webhook processing with no Jetpack plugin installed.
+* Add - Display payment method details on account subscriptions pages.
+* Add - Redact sensitive data before logging.
 
-= 1.4.0 - 2020-xx-xx =
-* Add - Allow merchant to edit statement descriptor
-* Fix - Link from order details page to transaction details page.
-* Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard
+= 1.4.1 - 2020-09-07 =
+* Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.
+
+= 1.4.0 - 2020-09-02 =
+* Add - Initial support for WooCommerce Subscriptions: Signing up for subscriptions, scheduled payments, and customer-initiated payment method changes.
+* Add - Added a link to transaction details from order screens.
+* Add - Allow merchant to edit statement descriptor.
+* Fix - Do not redirect to the onboarding page after completing the WC4.5-beta wizard.
+* Fix - Save order metadata before the payment is completed to avoid missing payments.
+* Update - Bumped the minimum Jetpack requirement to version 8.2.
 
 = 1.3.0 - 2020-08-17 =
 * Add - Support for saved cards.

@@ -206,7 +206,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process a successful payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, false );
 
 		// Assert: Returning correct array.
@@ -309,7 +309,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, true );
 
 		// Assert: Returning correct array.
@@ -465,7 +465,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, true );
 
 		// Assert: Returning correct array.
@@ -560,15 +560,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	}
 
 	private function setup_saved_payment_method() {
-		$token = new WC_Payment_Token_CC();
-		$token->set_token( 'pm_mock' );
-		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$token->set_card_type( 'visa' );
-		$token->set_last4( '4242' );
-		$token->set_expiry_month( 6 );
-		$token->set_expiry_year( 2026 );
-		$token->set_user_id( get_current_user_id() );
-		$token->save();
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
 		return [
 			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),

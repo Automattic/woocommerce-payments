@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\DataTypes;
+namespace WCPay;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -156,15 +156,16 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
+		$token_request_key = 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
 		if (
-			! isset( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) ||
-			'new' === $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ]
+			! isset( $request[ $token_request_key ] ) ||
+			'new' === $request[ $token_request_key ]
 		) {
 			return null;
 		}
 
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$token = \WC_Payment_Tokens::get( wc_clean( $request[ 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' ] ) );
+		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
 		// If the token doesn't belong to this gateway or the current user it's invalid.
 		if ( ! $token || \WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
