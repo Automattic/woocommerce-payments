@@ -423,10 +423,78 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'field_value' );
 	}
 
+	public function test_adds_custom_payment_meta_input_using_filter() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->add_payment_token( WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID ) );
+
+		$this->wcpay_gateway->add_subscription_payment_meta( [], $subscription );
+		$this->assertTrue( has_action( 'woocommerce_subscription_payment_meta_input_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_wc_order_tokens_token' ) );
+	}
+
+	public function test_adds_custom_payment_meta_input_fallback_until_subs_3_0_7() {
+		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
+
+		WC_Subscriptions::$version = '3.0.7';
+		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->mock_api_client,
+			$this->wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service
+		);
+
+		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
+	}
+
+	public function test_does_not_add_custom_payment_meta_input_fallback_for_subs_3_0_8() {
+		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
+
+		WC_Subscriptions::$version = '3.0.8';
+		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->mock_api_client,
+			$this->wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service
+		);
+
+		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
+	}
+
+	public function test_add_payment_method_select_to_subscription_edit_when_subscription() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$this->mock_wcs_is_subscription( true );
+		wp_deregister_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+		wp_dequeue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+
+		$this->wcpay_gateway->add_payment_method_select_to_subscription_edit( $subscription );
+
+		$this->assertTrue( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'registered' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'enqueued' ) );
+	}
+
+	public function test_add_payment_method_select_to_subscription_edit_when_order() {
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+		$this->mock_wcs_is_subscription( false );
+		wp_deregister_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+		wp_dequeue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+
+		$this->wcpay_gateway->add_payment_method_select_to_subscription_edit( $order );
+
+		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'registered' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'enqueued' ) );
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $subscriptions ) {
 				return $subscriptions;
+			}
+		);
+	}
+
+	private function mock_wcs_is_subscription( $return_value ) {
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $return_value ) {
+				return $return_value;
 			}
 		);
 	}
