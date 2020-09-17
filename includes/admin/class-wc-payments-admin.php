@@ -234,18 +234,14 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
 
-		$user_page_settings_src_url      = plugins_url( 'dist/user-page-settings.js', WCPAY_PLUGIN_FILE );
-		$user_page_settings_asset_path   = WCPAY_ABSPATH . 'dist/user-page-settings.asset.php';
-		$user_page_settings_asset        = file_exists( $user_page_settings_asset_path ) ? require_once $user_page_settings_asset_path : null;
-		$user_page_settings_dependencies = array_merge(
-			$user_page_settings_asset['dependencies'],
-			[ 'stripe' ]
-		);
+		$user_page_settings_src_url    = plugins_url( 'dist/user-page-settings.js', WCPAY_PLUGIN_FILE );
+		$user_page_settings_asset_path = WCPAY_ABSPATH . 'dist/user-page-settings.asset.php';
+		$user_page_settings_asset      = file_exists( $user_page_settings_asset_path ) ? require_once $user_page_settings_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_USER_PAGE_SETTINGS',
 			$user_page_settings_src_url,
-			$user_page_settings_dependencies,
+			$user_page_settings_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/user-page-settings.js' ),
 			true
 		);
@@ -274,7 +270,8 @@ class WC_Payments_Admin {
 		}
 
 		// Enqueue user page setting scripts if in the user-edit page.
-		if ( get_current_screen() && 'user-edit' === get_current_screen()->id ) {
+		$user_edit_pages = [ 'user-edit', 'profile' ];
+		if ( get_current_screen() && in_array( get_current_screen()->id, $user_edit_pages, true ) ) {
 			wp_enqueue_script( 'WCPAY_USER_PAGE_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_USER_PAGE_SETTINGS' );
 		}
