@@ -103,26 +103,7 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
-		if ( null === $customer_id ) {
-			return $tokens;
-		}
-
-		$stored_tokens = [];
-
-		foreach ( $tokens as $token ) {
-			$stored_tokens[] = $token->get_token();
-		}
-
-		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-
-		foreach ( $payment_methods as $payment_method ) {
-			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
-				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
-					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
-					$tokens[ $token->get_id() ] = $token;
-				}
-			}
-		}
+		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 
 		return $tokens;
 	}
@@ -160,5 +141,39 @@ class WC_Payments_Token_Service {
 				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
+	}
+
+	/**
+	 * Imports customer payment methods from the API and adds them to WooCommerce.
+	 *
+	 * @param array  $tokens      Token list.
+	 * @param string $customer_id Customer ID.
+	 * @param int    $user_id     User ID.
+	 *
+	 * @return array Token list with imported tokens.
+	 */
+	private function import_customer_tokens( $tokens, $customer_id, $user_id ) {
+		if ( null === $customer_id ) {
+			return $tokens;
+		}
+
+		$stored_tokens = [];
+
+		foreach ( $tokens as $token ) {
+			$stored_tokens[] = $token->get_token();
+		}
+
+		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
+
+		foreach ( $payment_methods as $payment_method ) {
+			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
+				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
+					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
+					$tokens[ $token->get_id() ] = $token;
+				}
+			}
+		}
+
+		return $tokens;
 	}
 }
