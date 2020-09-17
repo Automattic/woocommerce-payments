@@ -7,6 +7,7 @@
 
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Capture_Type;
 
 /**
  * Payment_Information unit tests.
@@ -49,6 +50,21 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	public function test_is_merchant_initiated_returns_false_when_payment_initiated_by_customer() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, Payment_Initiated_By::CUSTOMER() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
+	}
+
+	public function test_is_using_manual_capture_defaults_to_false() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null );
+		$this->assertFalse( $payment_information->is_using_manual_capture() );
+	}
+
+	public function test_is_using_manual_capture_returns_true_when_set_to_manual_capture() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, null, Payment_Capture_Type::MANUAL() );
+		$this->assertTrue( $payment_information->is_using_manual_capture() );
+	}
+
+	public function test_is_using_manual_capture_returns_false_when_set_to_automatic_capture() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, null, null, Payment_Capture_Type::AUTOMATIC() );
+		$this->assertFalse( $payment_information->is_using_manual_capture() );
 	}
 
 	public function test_get_payment_method_returns_payment_method() {
