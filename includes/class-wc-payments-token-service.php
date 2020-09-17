@@ -18,6 +18,7 @@ use WCPay\Logger;
 class WC_Payments_Token_Service {
 
 	const CUSTOMER_ID_META_KEY = '_wcpay_customer_id';
+	const TEST_MODE_META_KEY   = '_wcpay_test_mode';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -70,6 +71,10 @@ class WC_Payments_Token_Service {
 		$token->add_meta_data(
 			self::CUSTOMER_ID_META_KEY,
 			$this->customer_service->get_customer_id_by_user_id( $user->ID )
+		);
+		$token->add_meta_data(
+			self::TEST_MODE_META_KEY,
+			WC_Payments::get_gateway()->is_in_test_mode()
 		);
 		$token->save();
 

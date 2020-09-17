@@ -58,6 +58,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	 */
 	public function tearDown() {
 		wp_set_current_user( $this->user_id );
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		parent::tearDown();
 	}
 
@@ -92,6 +93,42 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( '06', $token->get_expiry_month() );
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 		$this->assertEquals( 'cus_12345', $token->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( false, $token->get_meta( '_wcpay_test_mode' ) );
+	}
+
+	/**
+	 * Test add token to user.
+	 */
+	public function test_add_token_to_user_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'     => 'visa',
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => $expiry_year,
+			],
+		];
+
+		$this->mock_customer_service
+			->expects( $this->atLeastOnce() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( 'cus_12345' );
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'visa', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+		$this->assertEquals( 'cus_12345', $token->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( true, $token->get_meta( '_wcpay_test_mode' ) );
 	}
 
 	public function test_add_payment_method_to_user() {
