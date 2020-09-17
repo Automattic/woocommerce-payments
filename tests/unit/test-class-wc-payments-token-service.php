@@ -82,6 +82,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			->with( 1 )
 			->willReturn( 'cus_12345' );
 
+		$this->mock_customer_service->method( 'get_payment_methods_for_customer' )->willReturn( [] );
+
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
 		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );

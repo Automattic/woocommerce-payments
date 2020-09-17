@@ -109,40 +109,7 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
-		if ( null === $customer_id ) {
-			return $tokens;
-		}
-
-		$stored_tokens = [];
-
-		foreach ( $tokens as $token ) {
-			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-				$stored_tokens[ $token->get_token() ] = $token;
-			}
-		}
-
-		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-
-		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
-		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
-		foreach ( $payment_methods as $payment_method ) {
-			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
-				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
-					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
-					$tokens[ $token->get_id() ] = $token;
-				} else {
-					unset( $stored_tokens[ $payment_method['id'] ] );
-				}
-			}
-		}
-		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
-
-		// Remove the payment methods that no longer exist in Stripe's side.
-		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
-		foreach ( $stored_tokens as $token ) {
-			$token->delete();
-		}
-		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 
 		return $tokens;
 	}
@@ -180,5 +147,53 @@ class WC_Payments_Token_Service {
 				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
+	}
+
+	/**
+	 * Imports customer payment methods from the API and adds them to WooCommerce.
+	 *
+	 * @param array  $tokens      Token list.
+	 * @param string $customer_id Customer ID.
+	 * @param int    $user_id     User ID.
+	 *
+	 * @return array Token list with imported tokens.
+	 */
+	private function import_customer_tokens( $tokens, $customer_id, $user_id ) {
+		if ( null === $customer_id ) {
+			return $tokens;
+		}
+
+		$stored_tokens = [];
+
+		foreach ( $tokens as $token ) {
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+				$stored_tokens[ $token->get_token() ] = $token;
+			}
+		}
+
+		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
+
+		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		foreach ( $payment_methods as $payment_method ) {
+			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
+				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
+					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
+					$tokens[ $token->get_id() ] = $token;
+				} else {
+					unset( $stored_tokens[ $payment_method['id'] ] );
+				}
+			}
+		}
+		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+
+		// Remove the payment methods that no longer exist in Stripe's side.
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		foreach ( $stored_tokens as $token ) {
+			$token->delete();
+		}
+		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+
+		return $tokens;
 	}
 }
