@@ -46,7 +46,7 @@ class WC_Payments_Customer_Service {
 			return null;
 		}
 
-		$customer_id = get_user_option( self::WCPAY_CUSTOMER_ID_OPTION, $user_id );
+		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
 		if ( false === $customer_id ) {
 			return null;
 		}
@@ -72,7 +72,7 @@ class WC_Payments_Customer_Service {
 		$customer_id = $this->payments_api_client->create_customer( $name, $email, $description );
 
 		if ( $user->ID > 0 ) {
-			$result = update_user_option( $user->ID, self::WCPAY_CUSTOMER_ID_OPTION, $customer_id );
+			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id );
 			if ( ! $result ) {
 				// Log the error, but continue since we have the customer ID we need.
 				Logger::error( 'Failed to store new customer ID for user ' . $user->ID );
@@ -239,7 +239,7 @@ class WC_Payments_Customer_Service {
 	 */
 	private function recreate_customer( $user, $name, $email ) {
 		if ( $user->ID > 0 ) {
-			$result = delete_user_option( $user->ID, self::WCPAY_CUSTOMER_ID_OPTION );
+			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
 				// Log the error, but continue since we'll be trying to update this option in create_customer.
 				Logger::error( 'Failed to delete old customer ID for user ' . $user->ID );
@@ -247,5 +247,12 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $this->create_customer_for_user( $user, $name, $email );
+	}
+
+	/**
+	 * Returns the name of the customer option meta, taking test mode into account.
+	 */
+	private function get_customer_id_option() {
+		return self::WCPAY_CUSTOMER_ID_OPTION . ( WC_Payments::get_gateway()->is_in_test_mode() ? '_test' : '' );
 	}
 }
