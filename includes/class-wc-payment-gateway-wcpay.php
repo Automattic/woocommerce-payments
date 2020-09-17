@@ -325,7 +325,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					</tr>
 				</tbody>
 			</table>',
-			esc_js( wp_json_encode( $formatted_tokens ) )
+			esc_attr( wp_json_encode( $formatted_tokens ) )
 		);
 	}
 
