@@ -89,7 +89,7 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
-	 * Gets saved tokens from API if they don't already exist in WooCommerce.
+	 * Filters tokens based on customer ID and imports saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
 	 * @param string $user_id    WC user ID.
@@ -103,6 +103,7 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
+		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 
 		return $tokens;
@@ -175,5 +176,22 @@ class WC_Payments_Token_Service {
 		}
 
 		return $tokens;
+	}
+
+	/**
+	 * Clears unavailable tokens from the token list.
+	 *
+	 * @param array  $tokens      Token list.
+	 * @param string $customer_id Customer ID.
+	 *
+	 * @return array Token list with tokens for $customer_id.
+	 */
+	private function remove_unavailable_tokens( $tokens, $customer_id ) {
+		return array_filter(
+			$tokens,
+			function ( $token ) use ( $customer_id ) {
+				return $token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id;
+			}
+		);
 	}
 }
