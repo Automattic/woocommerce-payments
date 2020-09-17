@@ -76,6 +76,12 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			],
 		];
 
+		$this->mock_customer_service
+			->expects( $this->atLeastOnce() )
+			->method( 'get_customer_id_by_user_id' )
+			->with( 1 )
+			->willReturn( 'cus_12345' );
+
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
 		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
@@ -85,6 +91,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( '4242', $token->get_last4() );
 		$this->assertEquals( '06', $token->get_expiry_month() );
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+		$this->assertEquals( 'cus_12345', $token->get_meta( '_wcpay_customer_id' ) );
 	}
 
 	public function test_add_payment_method_to_user() {

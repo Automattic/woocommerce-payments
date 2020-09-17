@@ -17,6 +17,8 @@ use WCPay\Logger;
  */
 class WC_Payments_Token_Service {
 
+	const CUSTOMER_ID_META_KEY = '_wcpay_customer_id';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -65,6 +67,10 @@ class WC_Payments_Token_Service {
 		$token->set_expiry_month( $payment_method['card']['exp_month'] );
 		$token->set_expiry_year( $payment_method['card']['exp_year'] );
 		$token->set_user_id( $user->ID );
+		$token->add_meta_data(
+			self::CUSTOMER_ID_META_KEY,
+			$this->customer_service->get_customer_id_by_user_id( $user->ID )
+		);
 		$token->save();
 
 		return $token;
