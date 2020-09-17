@@ -15,5 +15,10 @@ const savedCardsContainer = document.getElementById(
 if ( savedCardsContainer ) {
 	const cards =
 		JSON.parse( savedCardsContainer.getAttribute( 'data-cards' ) ) || [];
-	ReactDOM.render( <SavedCards cards={ cards } />, savedCardsContainer );
+	const customerId =
+		savedCardsContainer.getAttribute( 'data-customer' ) || null;
+	ReactDOM.render(
+		<SavedCards cards={ cards } customerId={ customerId } />,
+		savedCardsContainer
+	);
 }

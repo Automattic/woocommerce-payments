@@ -320,12 +320,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							<label for="wcpay-saved-cards">Saved cards</label>
 						</th>
 						<td>
-							<div id="wcpay-saved-cards-container" data-cards="%1$s"></div>
+							<div id="wcpay-saved-cards-container" data-cards="%1$s" data-customer="%2$s"></div>
 						</td>
 					</tr>
 				</tbody>
 			</table>',
-			esc_attr( wp_json_encode( $formatted_tokens ) )
+			esc_attr( wp_json_encode( $formatted_tokens ) ),
+			esc_attr( $this->customer_service->get_customer_id_by_user_id( $user->ID ) )
 		);
 	}
 

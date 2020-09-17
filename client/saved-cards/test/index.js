@@ -16,6 +16,7 @@ const mockUseResizeObserverWidth = ( width ) => {
 	useResizeObserver.mockReturnValue( [ null, { width } ] );
 };
 
+const customerId = 'cus_SomeCustomer';
 const mockCards = [
 	{
 		tokenId: 1,
@@ -44,31 +45,49 @@ describe( 'Saved Cards', () => {
 
 	test( 'renders correctly', () => {
 		mockUseResizeObserverWidth( 800 );
-		const { container } = render( <SavedCards cards={ mockCards } /> );
+		const { container } = render(
+			<SavedCards customerId={ customerId } cards={ mockCards } />
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders customerId fallback', () => {
+		mockUseResizeObserverWidth( 800 );
+		const { container } = render(
+			<SavedCards customerId={ null } cards={ [] } />
+		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'adds is-small class for small viewports', () => {
 		mockUseResizeObserverWidth( 374 );
-		const { container } = render( <SavedCards cards={ mockCards } /> );
+		const { container } = render(
+			<SavedCards customerId={ customerId } cards={ mockCards } />
+		);
 		expect( container.firstChild ).toHaveClass( 'is-small' );
 	} );
 
 	test( 'adds is-medium class for medium viewports lower-bound', () => {
 		mockUseResizeObserverWidth( 375 );
-		const { container } = render( <SavedCards cards={ mockCards } /> );
+		const { container } = render(
+			<SavedCards customerId={ customerId } cards={ mockCards } />
+		);
 		expect( container.firstChild ).toHaveClass( 'is-medium' );
 	} );
 
 	test( 'adds is-medium class for medium viewports upper-bound', () => {
 		mockUseResizeObserverWidth( 651 );
-		const { container } = render( <SavedCards cards={ mockCards } /> );
+		const { container } = render(
+			<SavedCards customerId={ customerId } cards={ mockCards } />
+		);
 		expect( container.firstChild ).toHaveClass( 'is-medium' );
 	} );
 
 	test( 'adds is-large class for large viewports', () => {
 		mockUseResizeObserverWidth( 652 );
-		const { container } = render( <SavedCards cards={ mockCards } /> );
+		const { container } = render(
+			<SavedCards customerId={ customerId } cards={ mockCards } />
+		);
 		expect( container.firstChild ).toHaveClass( 'is-large' );
 	} );
 } );
