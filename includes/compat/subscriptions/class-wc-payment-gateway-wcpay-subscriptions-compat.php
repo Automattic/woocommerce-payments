@@ -249,10 +249,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
 			'wcpaySubscriptionEdit',
 			[
-				'gateway' => $this->id,
-				'table'   => self::PAYMENT_METHOD_META_TABLE,
-				'metaKey' => self::PAYMENT_METHOD_META_KEY,
-				'tokens'  => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
+				'gateway'           => $this->id,
+				'table'             => self::PAYMENT_METHOD_META_TABLE,
+				'metaKey'           => self::PAYMENT_METHOD_META_KEY,
+				'tokens'            => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
+				'defaultOptionText' => __( 'Please select a payment method', 'woocommerce-payments' ),
 			]
 		);
 
