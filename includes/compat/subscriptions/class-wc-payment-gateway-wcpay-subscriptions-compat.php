@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -43,6 +43,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
+
+		// Display the credit card used for a subscription in the "My Subscriptions" table.
+		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 	}
 
 	/**
@@ -83,20 +86,18 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
-		$order_tokens = $renewal_order->get_payment_tokens();
-		$token_id     = end( $order_tokens );
-		$token        = ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
+		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			$renewal_order->update_status( 'failed' );
 			return;
 		}
 
-		$payment_information = new Payment_Information( '', $token, true );
+		$payment_information = new Payment_Information( '', $renewal_order, $token, true );
 
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.
-			$this->process_payment_for_order( $renewal_order, null, $payment_information, false, true );
+			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( WC_Payments_API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
@@ -111,9 +112,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order        $renewal_order The failed renewal order.
 	 */
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
-		$renewal_order_tokens = $renewal_order->get_payment_tokens();
-		$renewal_token_id     = end( $renewal_order_tokens );
-		$renewal_token        = ! $renewal_token_id ? null : WC_Payment_Tokens::get( $renewal_token_id );
+		$renewal_token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
@@ -134,6 +133,33 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
 		foreach ( $subscriptions as $subscription ) {
 			parent::add_token_to_order( $subscription, $token );
+		}
+	}
+
+	/**
+	 * Render the payment method used for a subscription in My Account pages
+	 *
+	 * @param string          $payment_method_to_display Default payment method to display.
+	 * @param WC_Subscription $subscription              Subscription object.
+	 *
+	 * @return string Payment method string to display in UI.
+	 */
+	public function maybe_render_subscription_payment_method( $payment_method_to_display, $subscription ) {
+		try {
+			if ( $subscription->get_payment_method() !== $this->id ) {
+				return $payment_method_to_display;
+			}
+
+			$token = $this->get_payment_token( $subscription );
+
+			if ( is_null( $token ) ) {
+				Logger::info( 'There is no saved payment token for subscription #' . $subscription->get_id() );
+				return $payment_method_to_display;
+			}
+			return $token->get_display_name();
+		} catch ( \Exception $e ) {
+			Logger::error( 'Failed to get payment method for subscription  #' . $subscription->get_id() . ' ' . $e );
+			return $payment_method_to_display;
 		}
 	}
 }

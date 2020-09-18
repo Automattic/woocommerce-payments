@@ -188,4 +188,76 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( [ 'First term', "Order #{$order->get_id()}", 'Another term' ] );
 		$this->assertEquals( [ 'First term', $charge_id, 'Another term' ], $result );
 	}
+
+	public function test_redact_array_redacts() {
+		$array          = [
+			'nice_key1' => 123,
+			'nice_key2' => [
+				'nested_nice_key' => 456,
+				'nested_bad_key'  => 'hello',
+			],
+			'bad_key1'  => 'test',
+			'bad_key2'  => [
+				'nested_key' => 'foo',
+			],
+		];
+		$keys_to_redact = [ 'nested_bad_key', 'bad_key1', 'bad_key2' ];
+
+		$expected = [
+			'nice_key1' => 123,
+			'nice_key2' => [
+				'nested_nice_key' => 456,
+				'nested_bad_key'  => '(redacted)',
+			],
+			'bad_key1'  => '(redacted)',
+			'bad_key2'  => '(redacted)',
+		];
+
+		$result = WC_Payments_Utils::redact_array( $array, $keys_to_redact );
+
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_redact_array_handles_recursion() {
+		$array              = [
+			'test' => 'test',
+		];
+		$array['recursive'] = &$array;
+
+		$result = WC_Payments_Utils::redact_array( $array, [] );
+
+		$node = $result;
+		for ( $i = 0; $i < WC_Payments_Utils::MAX_ARRAY_DEPTH; $i++ ) {
+			$node = $node['recursive'];
+		}
+
+		$this->assertEquals(
+			'(recursion limit reached)',
+			$node
+		);
+	}
+
+	public function test_redact_array_handles_non_arrays() {
+		$array = [
+			'object'  => new stdClass(),
+			'integer' => 123,
+			'float'   => 1.23,
+			'string'  => 'test',
+			'boolean' => true,
+			'null'    => null,
+		];
+
+		$expected = [
+			'object'  => 'stdClass()',
+			'integer' => 123,
+			'float'   => 1.23,
+			'string'  => 'test',
+			'boolean' => true,
+			'null'    => null,
+		];
+
+		$result = WC_Payments_Utils::redact_array( $array, [] );
+
+		$this->assertEquals( $expected, $result );
+	}
 }

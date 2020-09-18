@@ -36,6 +36,24 @@ class WC_Payments_API_Client {
 	const SETUP_INTENTS_API   = 'setup_intents';
 
 	/**
+	 * Common keys in API requests/responses that we might want to redact.
+	 */
+	const API_KEYS_TO_REDACT = [
+		'client_secret',
+		'email',
+		'name',
+		'phone',
+		'line1',
+		'line2',
+		'postal_code',
+		'state',
+		'city',
+		'country',
+		'customer_name',
+		'customer_email',
+	];
+
+	/**
 	 * User agent string to report in requests.
 	 *
 	 * @var string
@@ -848,7 +866,10 @@ class WC_Payments_API_Client {
 
 		Logger::log( "REQUEST $method $url" );
 		if ( 'POST' === $method || 'PUT' === $method ) {
-			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			Logger::log(
+				'BODY: '
+				. var_export( WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			);
 		}
 
 		$response = $this->http_client->remote_request(
@@ -862,7 +883,10 @@ class WC_Payments_API_Client {
 		);
 
 		$response_body = $this->extract_response_body( $response );
-		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		Logger::log(
+			'RESPONSE: '
+			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
 
 		return $response_body;
 	}

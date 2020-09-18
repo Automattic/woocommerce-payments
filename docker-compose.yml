@@ -1,5 +1,9 @@
 version: '3'
 
+volumes:
+  ## Kludge for not having the ./docker directory bound recursively
+  dockerdirectory:
+
 services:
   wordpress:
     build: ./docker/wordpress_xdebug
@@ -19,6 +23,8 @@ services:
       - ./docker/logs/apache2/:/var/log/apache2
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
       - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
+      - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
+      - ./docker/bin:/var/scripts
   db:
     container_name: woocommerce_payments_mysql
     image: mysql:5.7

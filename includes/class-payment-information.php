@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\DataTypes;
+namespace WCPay;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -23,6 +23,13 @@ class Payment_Information {
 	private $payment_method;
 
 	/**
+	 * The order object.
+	 *
+	 * @var \WC_Order/NULL
+	 */
+	private $order;
+
+	/**
 	 * The payment token used for this payment.
 	 *
 	 * @var \WC_Payment_Token/NULL
@@ -37,26 +44,39 @@ class Payment_Information {
 	private $off_session;
 
 	/**
+	 * Indicates whether the payment will be only authorized (true) or captured immediately (false).
+	 *
+	 * @var bool
+	 */
+	private $manual_capture;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string            $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Order         $order The order object.
 	 * @param \WC_Payment_Token $token The payment token used for this payment.
 	 * @param bool              $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param bool              $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public function __construct(
 		string $payment_method,
+		\WC_Order $order = null,
 		\WC_Payment_Token $token = null,
-		bool $off_session = false
+		bool $off_session = false,
+		bool $manual_capture = false
 	) {
 		if ( empty( $payment_method ) && empty( $token ) ) {
 			throw new \Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
 		}
 
 		$this->payment_method = $payment_method;
+		$this->order          = $order;
 		$this->token          = $token;
 		$this->off_session    = $off_session;
+		$this->manual_capture = $manual_capture;
 	}
 
 	/**
@@ -80,6 +100,15 @@ class Payment_Information {
 		}
 
 		return $this->payment_method;
+	}
+
+	/**
+	 * Returns the order object.
+	 *
+	 * @return \WC_Order The order object.
+	 */
+	public function get_order(): \WC_Order {
+		return $this->order;
 	}
 
 	/**
@@ -114,22 +143,34 @@ class Payment_Information {
 	}
 
 	/**
+	 * Returns true if the payment should be only authorized, false if it should be captured immediately.
+	 *
+	 * @return bool True if the payment should be only authorized, false if it should be captured immediately.
+	 */
+	public function is_using_manual_capture(): bool {
+		return $this->manual_capture;
+	}
+
+	/**
 	 * Payment information constructor.
 	 *
-	 * @param array $request Associative array containing payment request information.
-	 * @param bool  $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param array     $request Associative array containing payment request information.
+	 * @param \WC_Order $order The order object.
+	 * @param bool      $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
+	 * @param bool      $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
-	 * @throws Exception - If no payment method is found in the provided request.
+	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public static function from_payment_request(
 		array $request,
-		bool $off_session = false
+		\WC_Order $order = null,
+		bool $off_session = false,
+		bool $manual_capture = false
 	): Payment_Information {
 		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
-		$off_session    = $off_session;
 
-		return new Payment_Information( $payment_method, $token, $off_session );
+		return new Payment_Information( $payment_method, $order, $token, $off_session, $manual_capture );
 	}
 
 	/**
