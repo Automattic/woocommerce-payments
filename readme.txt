@@ -91,6 +91,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 == Changelog ==
 
 = 1.x.x - 2020-xx-xx =
+* Fix - Support checkout on Internet Explorer 11.
 * Add - Display payment method details on account subscriptions pages.
 * Add - Redact sensitive data before logging.
 * Add - Support for WooCommerce Subscriptions admin-initiated payment method changes.
