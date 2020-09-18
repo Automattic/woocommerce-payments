@@ -173,7 +173,7 @@ class Payment_Information {
 		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
 
-		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER(), $manual_capture ?? Payment_Capture_Type::AUTOMATIC() );
+		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by, $manual_capture );
 	}
 
 	/**
