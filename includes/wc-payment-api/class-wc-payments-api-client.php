@@ -447,7 +447,12 @@ class WC_Payments_API_Client {
 		);
 
 		if ( $order ) {
-			array_unshift( $results, [ 'label' => __( 'Order #', 'woocommerce-payments' ) . $search_term ] );
+			if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+				$prefix = __( 'Subscription #', 'woocommerce-payments' );
+			} else {
+				$prefix = __( 'Order #', 'woocommerce-payments' );
+			}
+			array_unshift( $results, [ 'label' => $prefix . $search_term ] );
 		}
 
 		return $results;
