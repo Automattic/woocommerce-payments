@@ -417,10 +417,42 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->add_payment_token( $tokens[1] );
 
 		$this->expectOutputString(
-			'<select name="field_id" id="field_id"><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+			'<select name="field_id" id="field_id"><option value="' . $tokens[0]->get_id() . '" selected>' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
 		);
 
-		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'field_value' );
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', strval( $tokens[0]->get_id() ) );
+	}
+
+	public function test_render_custom_payment_meta_input_invalid_value() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'invalid_value' );
+	}
+
+	public function test_render_custom_payment_meta_input_empty_value() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', '' );
 	}
 
 	public function test_adds_custom_payment_meta_input_using_filter() {
