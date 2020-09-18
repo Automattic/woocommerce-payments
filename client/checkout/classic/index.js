@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME } from '../constants.js';
-import { getConfig } from './../utils.js';
+import { getConfig } from '../utils';
 import WCPayAPI from './../api';
 
 jQuery( function ( $ ) {
@@ -360,8 +360,8 @@ jQuery( function ( $ ) {
 	maybeShowAuthenticationModal();
 
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
-	window.addEventListener( 'hashchange', ( event ) => {
-		if ( 0 < event.newURL.indexOf( '#wcpay-confirm-pi' ) ) {
+	window.addEventListener( 'hashchange', () => {
+		if ( window.location.hash.startsWith( '#wcpay-confirm-pi' ) ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
