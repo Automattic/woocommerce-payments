@@ -173,14 +173,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * Validate the payment meta data required to process automatic recurring payments so that store managers can
 	 * manually set up automatic recurring payments for a customer via the Edit Subscriptions screen in 2.0+.
 	 *
-	 * @param string          $payment_method_id The ID of the payment gateway to validate.
-	 * @param array           $payment_meta      Associative array of meta data required for automatic payments.
-	 * @param WC_Subscription $subscription      The subscription order.
+	 * @param string          $payment_gateway_id The ID of the payment gateway to validate.
+	 * @param array           $payment_meta       Associative array of meta data required for automatic payments.
+	 * @param WC_Subscription $subscription       The subscription order.
 	 *
 	 * @throws Exception When $payment_meta is not valid.
 	 */
-	public function validate_subscription_payment_meta( $payment_method_id, $payment_meta, $subscription ) {
-		if ( $this->id !== $payment_method_id ) {
+	public function validate_subscription_payment_meta( $payment_gateway_id, $payment_meta, $subscription ) {
+		if ( $this->id !== $payment_gateway_id ) {
 			return;
 		}
 
