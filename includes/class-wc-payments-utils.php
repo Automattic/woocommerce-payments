@@ -157,7 +157,7 @@ class WC_Payments_Utils {
 	 * @return array|null The charge_id(s) for the order or subscription, or null if no charges are found.
 	 */
 	public static function get_charge_ids_from_search_term( $term ) {
-		$order_term = 'Order #';
+		$order_term = __( 'Order #', 'woocommerce-payments' );
 		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
 			$term_parts = explode( '#', $term, 2 );
 			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
@@ -167,7 +167,7 @@ class WC_Payments_Utils {
 			}
 		}
 
-		$subscription_term = 'Subscription #';
+		$subscription_term = __( 'Subscription #', 'woocommerce-payments' );
 		if ( function_exists( 'wcs_get_subscription' ) && substr( $term, 0, strlen( $subscription_term ) ) === $subscription_term ) {
 			$term_parts      = explode( '#', $term, 2 );
 			$subscription_id = isset( $term_parts[1] ) ? $term_parts[1] : '';
