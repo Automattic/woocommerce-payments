@@ -268,6 +268,29 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertEquals( $last_token->get_display_name(), $payment_method_to_display );
 	}
 
+	public function test_display_save_payment_method_checkbox_for_subs_cart() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertFalse( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
+	}
+
+	public function test_display_save_payment_method_checkbox_for_subs_change() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$this->mock_wcs_is_subscription( true );
+
+		$_GET = [ 'change_payment_method' => 10 ];
+		$this->assertFalse( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
+	}
+
+	public function test_display_save_payment_method_checkbox_for_returns_display() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+
+		$this->mock_wcs_is_subscription( false );
+
+		$this->assertTrue( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
+	}
+
 	public function test_add_subscription_payment_meta_adds_active_token() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
