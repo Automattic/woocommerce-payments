@@ -93,6 +93,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 = 1.x.x - 2020-xx-xx =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
 * Fix - Support checkout on Internet Explorer 11.
+* Fix - Webhook processing with no Jetpack plugin installed.
 * Add - Display payment method details on account subscriptions pages.
 * Add - Redact sensitive data before logging.
 
