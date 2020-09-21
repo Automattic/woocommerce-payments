@@ -361,7 +361,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				true
 			);
 
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			wp_enqueue_style(
