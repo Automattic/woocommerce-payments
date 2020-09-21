@@ -44,13 +44,4 @@ interface WC_Payments_Http_Interface {
 	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect );
-
-	/**
-	 * Filter function to add WP.com to the list of allowed redirect hosts
-	 *
-	 * @param array $hosts - array of allowed hosts.
-	 *
-	 * @return array allowed hosts
-	 */
-	public function allowed_redirect_hosts( $hosts );
 }
