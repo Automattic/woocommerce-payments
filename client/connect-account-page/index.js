@@ -29,9 +29,12 @@ const ConnectAccountPage = () => {
 		await wcpayTracks.recordEventAsync(
 			wcpayTracks.events.CONNECT_ACCOUNT_CLICKED,
 			null,
-			true
+			isUsageTrackingEnabled
 		);
-		window.location = wcpaySettings.connectUrl;
+
+		window.location = isUsageTrackingEnabled
+			? wcpaySettings.connectUrl + '&enable-usage-tracking=true'
+			: wcpaySettings.connectUrl;
 	};
 
 	return (
@@ -63,6 +66,7 @@ const ConnectAccountPage = () => {
 									help={ strings.usageTrackingHelp }
 									checked={ isUsageTrackingEnabled }
 									onChange={ setUsageTracking }
+									disabled={ isSubmitted }
 								/>
 							</div>
 						) : null }
