@@ -19,7 +19,7 @@ jest.mock( 'data', () => ( {
 	useTransactionsSummary: jest.fn(),
 } ) );
 
-const mockTransactions = [
+const getMockTransactions = () => [
 	{
 		// eslint-disable-next-line camelcase
 		transaction_id: 'txn_j23jda9JJa',
@@ -89,12 +89,13 @@ describe( 'Transactions list', () => {
 			featureFlags: {
 				customSearch: true,
 			},
+			isSubscriptionsActive: false,
 		};
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {
 		useTransactions.mockReturnValue( {
-			transactions: mockTransactions.filter(
+			transactions: getMockTransactions().filter(
 				( txn ) => txn.deposit_id === 'po_mock'
 			),
 			isLoading: false,
@@ -121,7 +122,7 @@ describe( 'Transactions list', () => {
 		let container, rerender;
 		beforeEach( () => {
 			useTransactions.mockReturnValue( {
-				transactions: mockTransactions,
+				transactions: getMockTransactions(),
 				isLoading: false,
 			} );
 
@@ -189,5 +190,37 @@ describe( 'Transactions list', () => {
 			expect( useTransactionsCall[ 0 ].orderby ).toEqual( field );
 			expect( useTransactionsCall[ 0 ].order ).toEqual( direction );
 		}
+	} );
+
+	test( 'subscription column renders correctly', () => {
+		global.wcpaySettings.isSubscriptionsActive = true;
+
+		const mockTransactions = getMockTransactions();
+		mockTransactions[ 0 ].order.subscriptions = [
+			{
+				number: 246,
+				url: 'https://example.com/subscription/246',
+			},
+		];
+		mockTransactions[ 1 ].order.subscriptions = [];
+
+		useTransactions.mockReturnValue( {
+			transactions: mockTransactions,
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <TransactionsList /> );
+
+		expect( container ).toMatchSnapshot();
 	} );
 } );
