@@ -1425,4 +1425,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Returns a formatted token list for a user.
+	 *
+	 * @param int $user_id The user ID.
+	 */
+	protected function get_user_formatted_tokens_array( $user_id ) {
+		$tokens = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user_id,
+				'gateway_id' => self::GATEWAY_ID,
+			]
+		);
+		return array_map(
+			function ( $token ) {
+				return [
+					'tokenId'         => $token->get_id(),
+					'paymentMethodId' => $token->get_token(),
+					'brand'           => $token->get_card_type(),
+					'last4'           => $token->get_last4(),
+					'expiryMonth'     => $token->get_expiry_month(),
+					'expiryYear'      => $token->get_expiry_year(),
+					'isDefault'       => $token->get_is_default(),
+					'displayName'     => $token->get_display_name(),
+				];
+			},
+			array_values( $tokens )
+		);
+	}
 }

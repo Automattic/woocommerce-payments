@@ -7,23 +7,30 @@
 
 // Set up subscriptions mocks.
 function wcs_order_contains_subscription( $order ) {
-	return call_user_func( WCS_Mock::$wcs_order_contains_subscription, $order );
+	return call_user_func( WC_Subscriptions::$wcs_order_contains_subscription, $order );
 }
 
 function wcs_get_subscriptions_for_order( $order ) {
-	return call_user_func( WCS_Mock::$wcs_get_subscriptions_for_order, $order );
+	return call_user_func( WC_Subscriptions::$wcs_get_subscriptions_for_order, $order );
 }
 
 function wcs_is_subscription( $order ) {
-	return call_user_func( WCS_Mock::$wcs_is_subscription, $order );
+	return call_user_func( WC_Subscriptions::$wcs_is_subscription, $order );
 }
 
 /**
- * Class WCS_Mock.
+ * Class WC_Subscriptions.
  *
  * This helper class should ONLY be used for unit tests!.
  */
-class WCS_Mock {
+class WC_Subscriptions {
+	/**
+	 * Subscriptions version, defaults to 3.0.7
+	 *
+	 * @var string
+	 */
+	public static $version = '3.0.7';
+
 	/**
 	 * wcs_order_contains_subscription mock.
 	 *
