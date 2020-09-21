@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\DataTypes\Payment_Information;
+use WCPay\Payment_Information;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -338,14 +338,37 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
 			// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
 			// https://stripe.com/docs/stripe-js/elements/migrating).
-			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'wcpay-checkout' );
+			wp_register_script(
+				'stripe',
+				'https://js.stripe.com/v3/',
+				[],
+				'3.0',
+				true
+			);
+
+			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
+			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
+			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
+			$checkout_script_dependencies = array_merge(
+				$checkout_script_asset['dependencies'],
+				[ 'stripe', 'wc-checkout' ]
+			);
+			wp_register_script(
+				'WCPAY_CHECKOUT',
+				$checkout_script_src_url,
+				$checkout_script_dependencies,
+				WC_Payments::get_file_version( 'dist/checkout.js' ),
+				true
+			);
+
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			wp_enqueue_style(
-				'wcpay-checkout',
-				plugins_url( 'assets/css/wcpay-checkout.css', WCPAY_PLUGIN_FILE ),
+				'WCPAY_CHECKOUT',
+				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				WC_Payments::get_file_version( 'assets/css/wcpay-checkout.css' )
+				WC_Payments::get_file_version( 'dist/checkout.css' )
 			);
 
 			// Output the form HTML.
@@ -414,11 +437,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST );
-			$manual_capture      = 'yes' === $this->get_option( 'manual_capture' );
+			$payment_information = Payment_Information::from_payment_request( $_POST, $order, false, $manual_capture );
 
-			return $this->process_payment_for_order( $order, WC()->cart, $payment_information, $manual_capture, $force_save_payment_method );
+			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -435,18 +458,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param WC_Order               $order Order.
-	 * @param WC_Cart                $cart Cart.
-	 * @param WC_Payment_Information $payment_information Payment info.
-	 * @param bool                   $manual_capture Indicates whether this payment is merchant-initiated (true) or customer-initated (false).
-	 * @param bool                   $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param WC_Cart                   $cart Cart.
+	 * @param WCPay\Payment_Information $payment_information Payment info.
+	 * @param bool                      $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws WC_Payments_API_Exception Error processing the payment.
 	 */
-	public function process_payment_for_order( $order, $cart, $payment_information, $manual_capture, $force_save_payment_method = false ) {
+	public function process_payment_for_order( $cart, $payment_information, $force_save_payment_method = false ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $force_save_payment_method );
+		$order               = $payment_information->get_order();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -502,7 +524,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'usd',
 				$payment_information->get_payment_method(),
 				$customer_id,
-				$manual_capture,
+				$payment_information->is_using_manual_capture(),
 				$save_payment_method,
 				$metadata,
 				$this->get_level3_data_from_order( $order ),
@@ -652,16 +674,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payment_Token $token The token to save.
 	 */
 	public function add_token_to_order( $order, $token ) {
-		$order_tokens = $order->get_payment_tokens();
+		$payment_token = $this->get_payment_token( $order );
 
 		// This could lead to tokens being saved twice in an order's payment tokens, but it is needed so that shoppers
 		// may re-use a previous card for the same subscription, as we consider the last token to be the active one.
 		// We can't remove the previous entry for the token because WC_Order does not support removal of tokens [1] and
 		// we can't delete the token as it might be used somewhere else.
 		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
-		if ( $token->get_id() !== end( $order_tokens ) ) {
+		if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
 			$order->add_payment_token( $token );
 		}
+	}
+
+	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	protected function get_payment_token( $order ) {
+		$order_tokens = $order->get_payment_tokens();
+		$token_id     = end( $order_tokens );
+		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 	}
 
 	/**

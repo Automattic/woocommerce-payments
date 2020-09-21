@@ -14,7 +14,7 @@ use WCPay\Logger;
  * the testability of WC_Payments_API_Client, and allow dependency
  * injection.
  */
-class WC_Payments_Http {
+class WC_Payments_Http implements WC_Payments_Http_Interface {
 
 	/**
 	 * Jetpack connection handler.

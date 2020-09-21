@@ -206,8 +206,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process a successful payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, false );
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -309,8 +309,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, true );
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, false, true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
@@ -465,8 +465,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'empty_cart' );
 
 		// Act: process payment.
-		$payment_information = WCPay\DataTypes\Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_order, $mock_cart, $payment_information, true );
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
