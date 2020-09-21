@@ -894,6 +894,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception When statement descriptor is invalid.
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
+		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
+		$value = stripslashes( $value );
+
 		// Validation can be done with a single regex but splitting into multiple for better readability.
 		$valid_length   = '/^.{5,22}$/';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
@@ -907,8 +910,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new Exception( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
-		// Perform text validation after own checks to prevent special characters like < > escaped before own validation.
-		return $this->validate_text_field( $key, $value );
+		return $value;
 	}
 
 	/**
