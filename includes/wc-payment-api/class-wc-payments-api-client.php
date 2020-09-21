@@ -36,6 +36,24 @@ class WC_Payments_API_Client {
 	const SETUP_INTENTS_API   = 'setup_intents';
 
 	/**
+	 * Common keys in API requests/responses that we might want to redact.
+	 */
+	const API_KEYS_TO_REDACT = [
+		'client_secret',
+		'email',
+		'name',
+		'phone',
+		'line1',
+		'line2',
+		'postal_code',
+		'state',
+		'city',
+		'country',
+		'customer_name',
+		'customer_email',
+	];
+
+	/**
 	 * User agent string to report in requests.
 	 *
 	 * @var string
@@ -121,6 +139,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
 	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                 - Level 3 data.
+	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws WC_Payments_API_Exception - Exception thrown on intention creation failure.
@@ -133,7 +152,8 @@ class WC_Payments_API_Client {
 		$manual_capture = false,
 		$save_payment_method = false,
 		$metadata = [],
-		$level3 = []
+		$level3 = [],
+		$off_session = false
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -145,6 +165,10 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+
+		if ( $off_session ) {
+			$request['off_session'] = true;
+		}
 
 		if ( $save_payment_method ) {
 			$request['setup_future_usage'] = 'off_session';
@@ -254,14 +278,16 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
+	 * @param bool   $confirm                - Flag to confirm the intent on creation if true.
 	 *
 	 * @return array
 	 * @throws WC_Payments_API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_setup_intent( $payment_method_id, $customer_id, $confirm = 'false' ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
+			'confirm'        => $confirm,
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -613,6 +639,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update Stripe account data
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return array Updated account data.
+	 */
+	public function update_account( $stripe_account_settings ) {
+		return $this->request(
+			$stripe_account_settings,
+			self::ACCOUNTS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
 	 * @param string $return_url    - URL to redirect to at the end of the flow.
@@ -825,7 +866,10 @@ class WC_Payments_API_Client {
 
 		Logger::log( "REQUEST $method $url" );
 		if ( 'POST' === $method || 'PUT' === $method ) {
-			Logger::log( 'BODY: ' . var_export( $body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			Logger::log(
+				'BODY: '
+				. var_export( WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			);
 		}
 
 		$response = $this->http_client->remote_request(
@@ -839,7 +883,10 @@ class WC_Payments_API_Client {
 		);
 
 		$response_body = $this->extract_response_body( $response );
-		Logger::log( 'RESPONSE ' . var_export( $response_body, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		Logger::log(
+			'RESPONSE: '
+			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
 
 		return $response_body;
 	}

@@ -13,6 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Utils class
  */
 class WC_Payments_Utils {
+
+	/**
+	 * Max depth used when processing arrays, for example in redact_array.
+	 */
+	const MAX_ARRAY_DEPTH = 10;
+
 	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
@@ -219,5 +225,42 @@ class WC_Payments_Utils {
 
 		$billing_details['address'] = array_filter( $billing_details['address'], $remove_empty_entries );
 		return array_filter( $billing_details, $remove_empty_entries );
+	}
+
+	/**
+	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
+	 *
+	 * @param array   $array The array to redact.
+	 * @param array   $keys_to_redact The keys whose values need to be redacted.
+	 * @param integer $level The current recursion level.
+	 *
+	 * @return array The redacted array.
+	 */
+	public static function redact_array( $array, $keys_to_redact, $level = 0 ) {
+		if ( is_object( $array ) ) {
+			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
+			return get_class( $array ) . '()';
+		}
+
+		if ( ! is_array( $array ) ) {
+			return $array;
+		}
+
+		if ( $level >= self::MAX_ARRAY_DEPTH ) {
+			return '(recursion limit reached)';
+		}
+
+		$result = [];
+
+		foreach ( $array as $key => $value ) {
+			if ( in_array( $key, $keys_to_redact, true ) ) {
+				$result[ $key ] = '(redacted)';
+				continue;
+			}
+
+			$result[ $key ] = self::redact_array( $value, $keys_to_redact, $level + 1 );
+		}
+
+		return $result;
 	}
 }

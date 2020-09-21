@@ -42,8 +42,8 @@ You will see it give a forwarding address like this one:
 Copy the address and use it in the following command (replacing `<url>`)
 
 ```
-docker-compose exec -u www-data wordpress wp option update home <url>
-docker-compose exec -u www-data wordpress wp option update siteurl <url>
+npm run wp option update home <url>
+npm run wp option update siteurl <url>
 ```
 
 Visit the `<url>` , login and connect to Jetpack. If this doesn't work, visit `localhost:8082` and you will be redirected 
@@ -56,8 +56,8 @@ Activate Jetpack and setup WCPay.
 Turn off Ngrok by running:
 
 ```
-docker-compose exec -u www-data wordpress wp option update home http://localhost:8082
-docker-compose exec -u www-data wordpress wp option update siteurl http://localhost:8082
+npm run wp option update home http://localhost:8082
+npm run wp option update siteurl http://localhost:8082
 ```
 
 After this succeeds you can access the local site at
@@ -68,12 +68,8 @@ http://localhost:8082/
 
 To get your blog ID run:
 
-```sh
-docker run -it --rm \
---volumes-from woocommerce_payments_wordpress \
---network woocommerce-payments_default \
-wordpress:cli \
-   eval 'echo Jetpack_Options::get_option( "id" );
+```
+npm run wp eval 'echo Jetpack_Options::get_option( "id" );'
 ```
 
 For the rest of the setup instructions see this link:

@@ -43,7 +43,16 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting server containers"
-redirect_output local/bin/start.sh
+redirect_output docker-compose up --build --force-recreate -d
+
+if [[ -n $CI ]]; then
+	echo "Setting docker folder permissions"
+	redirect_output sudo chown www-data:www-data -R ./docker/wordpress
+	redirect_output ls -al ./docker
+fi
+
+step "Setting up server containers"
+redirect_output local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
 redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
@@ -135,6 +144,7 @@ cli wp option set woocommerce_store_postcode "94110"
 cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
+cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages

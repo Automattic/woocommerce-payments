@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use \Automattic\WooCommerce\Admin\Features\Onboarding;
 
 /**
  * Class handling any account connection functionality
@@ -36,7 +37,7 @@ class WC_Payments_Account {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
-		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ] );
+		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 	}
@@ -162,6 +163,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account statement descriptor for rendering on the settings page.
+	 *
+	 * @return string Account statement descriptor.
+	 * @throws WC_Payments_API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_statement_descriptor() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
@@ -186,6 +198,22 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Whether to do a full-page redirect to the WCPay onboarding page. It has several exceptions, to prevent
+	 * "hijacking" the multiple WC/WC-Admin onboarding flows.
+	 * This function assumes that the Stripe account hasn't been setup yet.
+	 *
+	 * @return bool True if the user should be redirected to the WCPay onboarding page, false otherwise.
+	 */
+	private function should_redirect_to_onboarding() {
+		// If the user is in the WCPay settings screen and hasn't onboarded yet, always redirect.
+		if ( WC_Payment_Gateway_WCPay::is_current_page_settings() ) {
+			return true;
+		}
+
+		return get_option( 'wcpay_should_redirect_to_onboarding', false );
+	}
+
+	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the account is connected properly.
@@ -203,10 +231,8 @@ class WC_Payments_Account {
 		}
 
 		if ( empty( $account ) ) {
-			if ( WC_Payment_Gateway_WCPay::is_current_page_settings()
-				|| ( ! self::is_on_boarding_disabled() && ! get_option( 'wcpay_redirected_to_onboarding', false ) )
-			) {
-				update_option( 'wcpay_redirected_to_onboarding', true );
+			if ( $this->should_redirect_to_onboarding() ) {
+				update_option( 'wcpay_should_redirect_to_onboarding', false );
 				$this->redirect_to_onboarding_page();
 			}
 			return false;
@@ -525,7 +551,7 @@ class WC_Payments_Account {
 			delete_transient( self::ACCOUNT_TRANSIENT );
 			$this->get_cached_account_data();
 		} catch ( Exception $e ) {
-			WCPay\Logger::error( "Failed to refresh account data. Error: $e" );
+			Logger::error( "Failed to refresh account data. Error: $e" );
 		}
 	}
 
@@ -574,5 +600,45 @@ class WC_Payments_Account {
 				WC_Payments::display_admin_notice( $message, $classes );
 			}
 		);
+	}
+
+	/**
+	 * Updates Stripe account settings.
+	 *
+	 * @param array $stripe_account_settings Settings to update.
+	 *
+	 * @return null|string Error message if update failed.
+	 */
+	public function update_stripe_account( $stripe_account_settings ) {
+		try {
+			if ( ! $this->settings_changed( $stripe_account_settings ) ) {
+				Logger::info( 'Skip updating account settings. Nothing is changed.' );
+				return;
+			}
+			$updated_account = $this->payments_api_client->update_account( $stripe_account_settings );
+			$this->cache_account( $updated_account );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to update Stripe account ' . $e );
+			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * Checks if account settings changed.
+	 *
+	 * @param array $changes Account settings changes.
+	 *
+	 * @return bool True if at least one parameter value is changed.
+	 */
+	private function settings_changed( $changes = [] ) {
+		$account = get_transient( self::ACCOUNT_TRANSIENT );
+
+		// Consider changes as valid if we don't have cached account data.
+		if ( ! $this->is_valid_cached_account( $account ) ) {
+			return true;
+		}
+
+		$diff = array_diff_assoc( $changes, $account );
+		return ! empty( $diff );
 	}
 }
