@@ -14,7 +14,7 @@
 			}
 		}
 
-		svg {
+		.hero-image {
 			margin: 16px auto 24px;
 			display: block;
 		}
@@ -26,11 +26,24 @@
 			color: $studio-gray-60;
 		}
 
-		.connect-account__terms {
+		.connect-account__terms,
+		.connect-account__usage-tracking {
 			margin: 0 0 16px;
 			font-weight: 300;
 			font-size: 12px;
 			color: $studio-gray-60;
+		}
+
+		.connect-account__usage-tracking {
+			text-align: center;
+
+			.components-checkbox-control__input {
+				border-color: $studio-gray-60;
+			}
+
+			svg.dashicon {
+				fill: #fff;
+			}
 		}
 
 		.connect-account__action {
