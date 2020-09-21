@@ -16,7 +16,30 @@ import HeroImage from './hero-image';
 import strings from './strings';
 import wcpayTracks from 'tracks';
 
-const ConnectAccountPage = () => {
+const ConnectPageError = () => {
+	if ( ! wcpaySettings.errorMessage ) {
+		return null;
+	}
+	return (
+		<Notice
+			className="wcpay-connect-error-notice"
+			status="error"
+			isDismissible={ false }
+		>
+			{ wcpaySettings.errorMessage }
+		</Notice>
+	);
+};
+
+const ConnectPageOnboardingDisabled = () => (
+	<p>
+		{ strings.onboardingDisabled[ 0 ] }
+		<br />
+		{ strings.onboardingDisabled[ 1 ] }
+	</p>
+);
+
+const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ isUsageTrackingEnabled, setUsageTracking ] = useState(
 		wcpayTracks.isEnabled()
@@ -38,57 +61,49 @@ const ConnectAccountPage = () => {
 	};
 
 	return (
-		<Page isNarrow className="connect-account">
-			{ wcpaySettings.errorMessage && (
-				<Notice
-					className="wcpay-connect-error-notice"
-					status="error"
-					isDismissible={ false }
+		<>
+			<p className="connect-account__terms">{ strings.terms }</p>
+			{ ! wcpayTracks.isEnabled() ? (
+				<div className="connect-account__usage-tracking">
+					<CheckboxControl
+						label={ strings.usageTrackingLabel }
+						help={ strings.usageTrackingHelp }
+						checked={ isUsageTrackingEnabled }
+						onChange={ setUsageTracking }
+						disabled={ isSubmitted }
+					/>
+				</div>
+			) : null }
+			<hr className="full-width" />
+			<p className="connect-account__action">
+				<Button
+					isPrimary
+					isLarge
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ handleSetup }
 				>
-					{ wcpaySettings.errorMessage }
-				</Notice>
-			) }
+					{ __( 'Set up', 'woocommerce-payments' ) }
+				</Button>
+			</p>
+		</>
+	);
+};
+
+const ConnectAccountPage = () => {
+	return (
+		<Page isNarrow className="connect-account">
+			<ConnectPageError />
 			<Card className="connect-account__card">
 				<HeroImage className="hero-image" />
 				<h2>{ strings.heading }</h2>
 				<p className="connect-account__description">
 					{ strings.description }
 				</p>
-				{ ! wcpaySettings.onBoardingDisabled ? (
-					<>
-						<p className="connect-account__terms">
-							{ strings.terms }
-						</p>
-						{ ! wcpayTracks.isEnabled() ? (
-							<div className="connect-account__usage-tracking">
-								<CheckboxControl
-									label={ strings.usageTrackingLabel }
-									help={ strings.usageTrackingHelp }
-									checked={ isUsageTrackingEnabled }
-									onChange={ setUsageTracking }
-									disabled={ isSubmitted }
-								/>
-							</div>
-						) : null }
-						<hr className="full-width" />
-						<p className="connect-account__action">
-							<Button
-								isPrimary
-								isLarge
-								isBusy={ isSubmitted }
-								disabled={ isSubmitted }
-								onClick={ handleSetup }
-							>
-								{ __( 'Set up', 'woocommerce-payments' ) }
-							</Button>
-						</p>
-					</>
+				{ wcpaySettings.onBoardingDisabled ? (
+					<ConnectPageOnboardingDisabled />
 				) : (
-					<p>
-						{ strings.onboardingDisabled[ 0 ] }
-						<br />
-						{ strings.onboardingDisabled[ 1 ] }
-					</p>
+					<ConnectPageOnboarding />
 				) }
 			</Card>
 		</Page>
