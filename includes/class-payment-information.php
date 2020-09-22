@@ -11,6 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Capture_Type;
+
 /**
  * Mostly a wrapper containing information on a single payment.
  */
@@ -39,25 +42,25 @@ class Payment_Information {
 	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
-	 * @var bool
+	 * @var Payment_Initiated_By
 	 */
-	private $off_session;
+	private $payment_initiated_by;
 
 	/**
 	 * Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
-	 * @var bool
+	 * @var Capture_Type
 	 */
 	private $manual_capture;
 
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param string            $payment_method The ID of the payment method used for this payment.
-	 * @param \WC_Order         $order The order object.
-	 * @param \WC_Payment_Token $token The payment token used for this payment.
-	 * @param bool              $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
-	 * @param bool              $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
+	 * @param string               $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Order            $order The order object.
+	 * @param \WC_Payment_Token    $token The payment token used for this payment.
+	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
+	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
@@ -65,18 +68,18 @@ class Payment_Information {
 		string $payment_method,
 		\WC_Order $order = null,
 		\WC_Payment_Token $token = null,
-		bool $off_session = false,
-		bool $manual_capture = false
+		Payment_Initiated_By $payment_initiated_by = null,
+		Payment_Capture_Type $manual_capture = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) ) {
 			throw new \Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
 		}
 
-		$this->payment_method = $payment_method;
-		$this->order          = $order;
-		$this->token          = $token;
-		$this->off_session    = $off_session;
-		$this->manual_capture = $manual_capture;
+		$this->payment_method       = $payment_method;
+		$this->order                = $order;
+		$this->token                = $token;
+		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
+		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
 	}
 
 	/**
@@ -85,7 +88,7 @@ class Payment_Information {
 	 * @return bool True if payment was initiated by the merchant, false otherwise.
 	 */
 	public function is_merchant_initiated(): bool {
-		return $this->off_session;
+		return $this->payment_initiated_by->equals( Payment_Initiated_By::MERCHANT() );
 	}
 
 	/**
@@ -148,29 +151,29 @@ class Payment_Information {
 	 * @return bool True if the payment should be only authorized, false if it should be captured immediately.
 	 */
 	public function is_using_manual_capture(): bool {
-		return $this->manual_capture;
+		return $this->manual_capture->equals( Payment_Capture_Type::MANUAL() );
 	}
 
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param array     $request Associative array containing payment request information.
-	 * @param \WC_Order $order The order object.
-	 * @param bool      $off_session Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
-	 * @param bool      $manual_capture Indicates whether the payment will be only authorized (true) or captured immediately (false).
+	 * @param array                $request Associative array containing payment request information.
+	 * @param \WC_Order            $order The order object.
+	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
+	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public static function from_payment_request(
 		array $request,
 		\WC_Order $order = null,
-		bool $off_session = false,
-		bool $manual_capture = false
+		Payment_Initiated_By $payment_initiated_by = null,
+		Payment_Capture_Type $manual_capture = null
 	): Payment_Information {
 		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
 
-		return new Payment_Information( $payment_method, $order, $token, $off_session, $manual_capture );
+		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by, $manual_capture );
 	}
 
 	/**
