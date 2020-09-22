@@ -66,6 +66,9 @@ docker/data
 docker/wordpress
 docker/logs
 
+# Tunneling scripts
+/docker/bin/jt
+
 # Test coverage report
 /coverage
 
