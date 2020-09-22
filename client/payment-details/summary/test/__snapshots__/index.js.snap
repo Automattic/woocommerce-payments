@@ -49,12 +49,8 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           <div
             class="payment-details-summary__actions"
           >
-            <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
-              href="https://somerandomorderurl.com/?edit_order=45981"
-            >
-              View order #45981
-            </a>
+            Payment ID: 
+            ch_38jdHA39KKA
           </div>
         </div>
       </div>
@@ -108,6 +104,22 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             <span
               class="woocommerce-list__item-title"
             >
+              Order
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
               Payment method
             </span>
           </div>
@@ -126,20 +138,6 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             >
               Risk evaluation
             </span>
-          </div>
-        </li>
-        <li
-          aria-disabled="false"
-          class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
-        >
-          <div
-            class="woocommerce-list__item-text"
-          >
-            <span
-              class="woocommerce-list__item-title"
-            />
           </div>
         </li>
       </ul>
@@ -200,12 +198,8 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           <div
             class="payment-details-summary__actions"
           >
-            <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
-              href="https://somerandomorderurl.com/?edit_order=45981"
-            >
-              View order #45981
-            </a>
+            Payment ID: 
+            ch_38jdHA39KKA
           </div>
         </div>
       </div>
@@ -259,6 +253,22 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             <span
               class="woocommerce-list__item-title"
             >
+              Order
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
               Payment method
             </span>
           </div>
@@ -277,20 +287,6 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             >
               Risk evaluation
             </span>
-          </div>
-        </li>
-        <li
-          aria-disabled="false"
-          class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
-        >
-          <div
-            class="woocommerce-list__item-text"
-          >
-            <span
-              class="woocommerce-list__item-title"
-            />
           </div>
         </li>
       </ul>
@@ -350,7 +346,14 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         >
           <div
             class="payment-details-summary__actions"
-          />
+          >
+            <span
+              aria-busy="true"
+              class="is-loadable-placeholder"
+            >
+              Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx
+            </span>
+          </div>
         </div>
       </div>
       <hr
@@ -423,12 +426,8 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           <div
             class="payment-details-summary__actions"
           >
-            <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
-              href="https://somerandomorderurl.com/?edit_order=45981"
-            >
-              View order #45981
-            </a>
+            Payment ID: 
+            ch_38jdHA39KKA
           </div>
         </div>
       </div>
@@ -482,6 +481,22 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             <span
               class="woocommerce-list__item-title"
             >
+              Order
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
               Payment method
             </span>
           </div>
@@ -500,20 +515,6 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             >
               Risk evaluation
             </span>
-          </div>
-        </li>
-        <li
-          aria-disabled="false"
-          class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
-        >
-          <div
-            class="woocommerce-list__item-text"
-          >
-            <span
-              class="woocommerce-list__item-title"
-            />
           </div>
         </li>
       </ul>
@@ -574,12 +575,8 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           <div
             class="payment-details-summary__actions"
           >
-            <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
-              href="https://somerandomorderurl.com/?edit_order=45981"
-            >
-              View order #45981
-            </a>
+            Payment ID: 
+            ch_38jdHA39KKA
           </div>
         </div>
       </div>
@@ -633,6 +630,22 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             <span
               class="woocommerce-list__item-title"
             >
+              Order
+            </span>
+          </div>
+        </li>
+        <li
+          aria-disabled="false"
+          class="woocommerce-list__item"
+          role="menuitem"
+          tabindex="0"
+        >
+          <div
+            class="woocommerce-list__item-text"
+          >
+            <span
+              class="woocommerce-list__item-title"
+            >
               Payment method
             </span>
           </div>
@@ -651,20 +664,6 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             >
               Risk evaluation
             </span>
-          </div>
-        </li>
-        <li
-          aria-disabled="false"
-          class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
-        >
-          <div
-            class="woocommerce-list__item-text"
-          >
-            <span
-              class="woocommerce-list__item-title"
-            />
           </div>
         </li>
       </ul>

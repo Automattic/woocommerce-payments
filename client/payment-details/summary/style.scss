@@ -58,24 +58,6 @@
 
 .payment-details-summary-details
 	.woocommerce-list--horizontal
-	.woocommerce-list__item:last-child {
-	flex-grow: 1;
-	border-left: 0;
-	.woocommerce-list__item-text {
-		width: 100%;
-		text-transform: none;
-		@include breakpoint( '>800px' ) {
-			text-align: right;
-			color: $studio-gray-40;
-			.woocommerce-list__item-content {
-				@include font-size( 12 );
-			}
-		}
-	}
-}
-
-.payment-details-summary-details
-	.woocommerce-list--horizontal
 	.woocommerce-list__item-inner
 	.woocommerce-list__item-title,
 .payment-details-summary-details
