@@ -30,32 +30,44 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge } ) => [
-	{
-		title: __( 'Date', 'woocommerce-payments' ),
-		content: charge.created
-			? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
-			: '–',
-	},
-	{
-		title: __( 'Customer', 'woocommerce-payments' ),
-		content: get( charge, 'billing_details.name' ) || '–',
-	},
-	{
-		title: __( 'Order', 'woocommerce-payments' ),
-		content: <OrderLink order={ charge.order } />,
-	},
-	{
-		title: __( 'Payment method', 'woocommerce-payments' ),
-		content: (
-			<PaymentMethodDetails payment={ charge.payment_method_details } />
-		),
-	},
-	{
-		title: __( 'Risk evaluation', 'woocommerce-payments' ),
-		content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
-	},
-];
+const composePaymentSummaryItems = ( { charge } ) =>
+	[
+		{
+			title: __( 'Date', 'woocommerce-payments' ),
+			content: charge.created
+				? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
+				: '–',
+		},
+		{
+			title: __( 'Customer', 'woocommerce-payments' ),
+			content: get( charge, 'billing_details.name' ) || '–',
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ charge.order } />,
+		},
+		wcpaySettings.isSubscriptionsActive && {
+			title: __( 'Subscription', 'woocommerce-payments' ),
+			content: charge.order && charge.order.subscriptions.length ? (
+				charge.order.subscriptions.map( ( subscription, i, all ) => [
+					<OrderLink key={ i } order={ subscription } />,
+					i !== all.length - 1 && ', ',
+				] )
+			) : <OrderLink />,
+		},
+		{
+			title: __( 'Payment method', 'woocommerce-payments' ),
+			content: (
+				<PaymentMethodDetails
+					payment={ charge.payment_method_details }
+				/>
+			),
+		},
+		{
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
+		},
+	].filter( Boolean );
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const { net, fee, refunded } = charge.amount
