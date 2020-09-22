@@ -10,6 +10,7 @@ const webpackConfig = {
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings.js',
+		'subscription-edit-page': './client/subscription-edit-page.js',
 		checkout: './client/checkout/index.js',
 	},
 	output: {

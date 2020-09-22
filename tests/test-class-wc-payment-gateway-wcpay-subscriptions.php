@@ -277,11 +277,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_display_save_payment_method_checkbox_for_subs_change() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		WCS_Mock::set_wcs_is_subscription(
-			function ( $order ) {
-				return true;
-			}
-		);
+		$this->mock_wcs_is_subscription( true );
 
 		$_GET = [ 'change_payment_method' => 10 ];
 		$this->assertFalse( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
@@ -290,19 +286,270 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_display_save_payment_method_checkbox_for_returns_display() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 
-		WCS_Mock::set_wcs_is_subscription(
-			function ( $order ) {
-				return false;
-			}
-		);
+		$this->mock_wcs_is_subscription( false );
 
 		$this->assertTrue( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
 	}
 
+	public function test_add_subscription_payment_meta_adds_active_token() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+
+		$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$subscription->add_payment_token( $token );
+
+		$payment_meta = $this->wcpay_gateway->add_subscription_payment_meta( [], $subscription );
+
+		$this->assertEquals(
+			[
+				'wc_order_tokens' => [
+					'token' => [
+						'label' => 'Saved payment method',
+						'value' => strval( $token->get_id() ),
+					],
+				],
+			],
+			$payment_meta[ $this->wcpay_gateway->id ]
+		);
+	}
+
+	public function test_add_subscription_payment_meta_adds_empty_string() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+
+		$payment_meta = $this->wcpay_gateway->add_subscription_payment_meta( [], $subscription );
+
+		$this->assertEquals(
+			[
+				'wc_order_tokens' => [
+					'token' => [
+						'label' => 'Saved payment method',
+						'value' => '',
+					],
+				],
+			],
+			$payment_meta[ $this->wcpay_gateway->id ]
+		);
+	}
+
+	public function test_validate_subscription_payment_meta_success() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		// The validate method doesn't return/does anything when the payment_meta is valid,
+		// but we need to assert something to avoid PHPUnit's risky test warning.
+		$this->assertNull(
+			$this->wcpay_gateway->validate_subscription_payment_meta(
+				$this->wcpay_gateway->id,
+				[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
+				$subscription
+			)
+		);
+	}
+
+	public function test_validate_subscription_payment_meta_skips_wrong_gateway() {
+		// The validate method doesn't return/does anything when the payment_meta is valid,
+		// but we need to assert something to avoid PHPUnit's risky test warning.
+		$this->assertNull(
+			$this->wcpay_gateway->validate_subscription_payment_meta(
+				'some_random_gateway',
+				[],
+				null
+			)
+		);
+	}
+
+	public function test_validate_subscription_payment_meta_no_payment_method() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A customer saved payment method was not selected for this order.' );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+
+		$this->wcpay_gateway->validate_subscription_payment_meta(
+			$this->wcpay_gateway->id,
+			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '' ] ] ],
+			$subscription
+		);
+	}
+
+	public function test_validate_subscription_payment_meta_invalid_token() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'The saved payment method selected is invalid or does not exist.' );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+
+		$this->wcpay_gateway->validate_subscription_payment_meta(
+			$this->wcpay_gateway->id,
+			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '158651' ] ] ],
+			$subscription
+		);
+	}
+
+	public function test_validate_subscription_payment_meta_another_user_token() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'The saved payment method selected does not belong to this order\'s customer.' );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID + 1 );
+
+		$this->wcpay_gateway->validate_subscription_payment_meta(
+			$this->wcpay_gateway->id,
+			[ 'wc_order_tokens' => [ 'token' => [ 'value' => strval( $token->get_id() ) ] ] ],
+			$subscription
+		);
+	}
+
+	public function test_save_meta_in_order_tokens_adds_token_to_order() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$this->wcpay_gateway->save_meta_in_order_tokens( $subscription, 'wc_order_tokens', 'token', strval( $token->get_id() ) );
+		$subscription_tokens = $subscription->get_payment_tokens();
+		$this->assertEquals( $token->get_id(), end( $subscription_tokens ) );
+	}
+
+	public function test_save_meta_in_order_tokens_skips_wrong_table_name() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$this->wcpay_gateway->save_meta_in_order_tokens( $subscription, 'post_meta', 'token', strval( $token->get_id() ) );
+		$this->assertCount( 0, $subscription->get_payment_tokens() );
+	}
+
+	public function test_save_meta_in_order_tokens_wrong_meta_key() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$this->wcpay_gateway->save_meta_in_order_tokens( $subscription, 'wc_order_tokens', 'payment_method_id', strval( $token->get_id() ) );
+		$this->assertCount( 0, $subscription->get_payment_tokens() );
+	}
+
+	public function test_save_meta_in_order_tokens_wrong_token_id() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$this->wcpay_gateway->save_meta_in_order_tokens( $subscription, 'wc_order_tokens', 'token', strval( $token->get_id() + 200 ) );
+		$this->assertCount( 0, $subscription->get_payment_tokens() );
+	}
+
+	public function test_render_custom_payment_meta_input() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="' . $tokens[0]->get_id() . '" selected>' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', strval( $tokens[0]->get_id() ) );
+	}
+
+	public function test_render_custom_payment_meta_input_invalid_value() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'invalid_value' );
+	}
+
+	public function test_render_custom_payment_meta_input_empty_value() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+		];
+		$subscription->add_payment_token( $tokens[0] );
+		$subscription->add_payment_token( $tokens[1] );
+
+		$this->expectOutputString(
+			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+		);
+
+		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', '' );
+	}
+
+	public function test_adds_custom_payment_meta_input_using_filter() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->add_payment_token( WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID ) );
+
+		$this->wcpay_gateway->add_subscription_payment_meta( [], $subscription );
+		$this->assertTrue( has_action( 'woocommerce_subscription_payment_meta_input_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_wc_order_tokens_token' ) );
+	}
+
+	public function test_adds_custom_payment_meta_input_fallback_until_subs_3_0_7() {
+		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
+
+		WC_Subscriptions::$version = '3.0.7';
+		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->mock_api_client,
+			$this->wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service
+		);
+
+		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
+	}
+
+	public function test_does_not_add_custom_payment_meta_input_fallback_for_subs_3_0_8() {
+		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
+
+		WC_Subscriptions::$version = '3.0.8';
+		new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->mock_api_client,
+			$this->wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service
+		);
+
+		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
+	}
+
+	public function test_add_payment_method_select_to_subscription_edit_when_subscription() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$this->mock_wcs_is_subscription( true );
+		wp_deregister_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+		wp_dequeue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+
+		$this->wcpay_gateway->add_payment_method_select_to_subscription_edit( $subscription );
+
+		$this->assertTrue( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'registered' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'enqueued' ) );
+	}
+
+	public function test_add_payment_method_select_to_subscription_edit_when_order() {
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+		$this->mock_wcs_is_subscription( false );
+		wp_deregister_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+		wp_dequeue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
+
+		$this->wcpay_gateway->add_payment_method_select_to_subscription_edit( $order );
+
+		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'registered' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'enqueued' ) );
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
-		WCS_Mock::set_wcs_get_subscriptions_for_order(
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $subscriptions ) {
 				return $subscriptions;
+			}
+		);
+	}
+
+	private function mock_wcs_is_subscription( $return_value ) {
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) use ( $return_value ) {
+				return $return_value;
 			}
 		);
 	}

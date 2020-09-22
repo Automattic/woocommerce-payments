@@ -550,11 +550,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider account_statement_descriptor_validation_provider
 	 */
-	public function test_validate_account_statement_descriptor_field( $is_valid, $value ) {
+	public function test_validate_account_statement_descriptor_field( $is_valid, $value, $expected = null ) {
 		$key = 'account_statement_descriptor';
 		if ( $is_valid ) {
 			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
-			$this->assertNotEmpty( $validated_value );
+			$this->assertEquals( $expected ?? $value, $validated_value );
 		} else {
 			$this->expectExceptionMessage( 'Customer bank statement is invalid.' );
 			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
@@ -563,19 +563,22 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function account_statement_descriptor_validation_provider() {
 		return [
-			'valid'         => [ true, 'WCPAY dev' ],
-			'allow_digits'  => [ true, 'WCPay dev 2020' ],
-			'allow_special' => [ true, 'WCPay-Dev_2020' ],
-			'empty'         => [ false, '' ],
-			'short'         => [ false, 'WCP' ],
-			'long'          => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
-			'no_*'          => [ false, 'WCPay * dev' ],
-			'no_sqt'        => [ false, 'WCPay \'dev\'' ],
-			'no_dqt'        => [ false, 'WCPay "dev"' ],
-			'no_lt'         => [ false, 'WCPay<dev' ],
-			'no_gt'         => [ false, 'WCPay>dev' ],
-			'req_latin'     => [ false, 'дескриптор' ],
-			'req_letter'    => [ false, '123456' ],
+			'valid'          => [ true, 'WCPAY dev' ],
+			'allow_digits'   => [ true, 'WCPay dev 2020' ],
+			'allow_special'  => [ true, 'WCPay-Dev_2020' ],
+			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
+			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
+			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
+			'empty'          => [ false, '' ],
+			'short'          => [ false, 'WCP' ],
+			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
+			'no_*'           => [ false, 'WCPay * dev' ],
+			'no_sqt'         => [ false, 'WCPay \'dev\'' ],
+			'no_dqt'         => [ false, 'WCPay "dev"' ],
+			'no_lt'          => [ false, 'WCPay<dev' ],
+			'no_gt'          => [ false, 'WCPay>dev' ],
+			'req_latin'      => [ false, 'дескриптор' ],
+			'req_letter'     => [ false, '123456' ],
 		];
 	}
 }

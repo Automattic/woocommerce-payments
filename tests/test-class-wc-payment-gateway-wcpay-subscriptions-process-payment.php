@@ -344,7 +344,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( false );
 
-		WCS_Mock::set_wcs_is_subscription(
+		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $order ) {
 				return true;
 			}
@@ -379,7 +379,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
-		WCS_Mock::set_wcs_order_contains_subscription(
+		WC_Subscriptions::set_wcs_order_contains_subscription(
 			function ( $order ) use ( $value ) {
 				return $value;
 			}
