@@ -297,7 +297,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		try {
 			$methods = $this->customer_service->get_payment_methods_for_customer( 'cus_test12345' );
 			// we returned nothing as the exception was handled in the function and not bubbled up.
-			$this->assertEmpty( $methods );
+			$this->assertEquals( $methods, [] );
 		} catch ( WC_Payments_API_Exception $e ) {
 			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of WC_Payments_API_Exception.' );
 		}
