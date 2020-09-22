@@ -181,6 +181,7 @@ class WC_Payments_Admin {
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
 			[
+				'connectUrl'            => WC_Payments_Account::get_connect_url(),
 				'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
 				'onBoardingDisabled'    => $on_boarding_disabled,
 				'errorMessage'          => $error_message,
