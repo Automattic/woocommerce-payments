@@ -254,6 +254,8 @@ class WC_Payments_Customer_Service {
 	 * Returns the name of the customer option meta, taking test mode into account.
 	 */
 	private function get_customer_id_option() {
-		return self::WCPAY_CUSTOMER_ID_OPTION . ( WC_Payments::get_gateway()->is_in_test_mode() ? '_test' : '' );
+		return WC_Payments::get_gateway()->is_in_test_mode()
+			? self::WCPAY_CUSTOMER_ID_OPTION . '_test'
+			: self::WCPAY_CUSTOMER_ID_OPTION;
 	}
 }
