@@ -116,6 +116,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
 		$this->assertEquals( 'cus_test12345', get_user_option( '_wcpay_customer_id', $user->ID ) );
+		$this->assertEquals( false, get_user_option( '_wcpay_customer_id_test', $user->ID ) );
 	}
 
 	/**
@@ -137,6 +138,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
 		$this->assertEquals( 'cus_test12345', get_user_option( '_wcpay_customer_id_test', $user->ID ) );
+		$this->assertEquals( false, get_user_option( '_wcpay_customer_id', $user->ID ) );
 	}
 
 	/**
