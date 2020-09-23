@@ -357,4 +357,50 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ $token ], 1, 'woocommerce_payments' );
 		$this->assertCount( 0, $result );
 	}
+
+	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+
+		$old_token1       = WC_Helper_Token::create_token( 'pm_mock0' );
+		$old_token2       = WC_Helper_Token::create_token( 'pm_mock1' );
+		$token1           = WC_Helper_Token::create_token( 'pm_mock2' );
+		$token2           = WC_Helper_Token::create_token( 'pm_mock3' );
+		$wrong_mode_token = WC_Helper_Token::create_token( 'pm_mock4' );
+
+		$token1->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$token1->add_meta_data( '_wcpay_test_mode', true );
+		$token2->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
+		$token2->add_meta_data( '_wcpay_test_mode', false );
+		$wrong_mode_token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$wrong_mode_token->add_meta_data( '_wcpay_test_mode', false );
+
+		$tokens = [ $old_token1, $old_token2, $token1, $token2, $wrong_mode_token ];
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willReturn( [] );
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$result_tokens = array_values( $result );
+		$this->assertCount( 4, $result_tokens );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
+		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
+		$this->assertEquals( 'pm_mock4', $result_tokens[3]->get_token() );
+		$this->assertEquals( 'cus_12345', $result_tokens[0]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[1]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[2]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[3]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( true, $result_tokens[0]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( true, $result_tokens[1]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( true, $result_tokens[2]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( true, $result_tokens[3]->get_meta( '_wcpay_test_mode' ) );
+	}
 }
