@@ -12,6 +12,9 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
+	const CUSTOMER_LIVE_META_KEY = '_wcpay_customer_id_live';
+	const CUSTOMER_TEST_META_KEY = '_wcpay_customer_id_test';
+
 	/**
 	 * System under test.
 	 *
@@ -41,8 +44,9 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tearDown() {
+		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
+		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
-		delete_user_option( 1, '_wcpay_customer_id_test' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		parent::tearDown();
 	}
@@ -51,7 +55,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	 * Test get customer ID by user ID for live mode.
 	 */
 	public function test_get_customer_id_by_user_id() {
-		update_user_option( 1, '_wcpay_customer_id', 'cus_test12345' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
 
@@ -63,7 +67,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	 */
 	public function test_get_customer_id_by_user_id_test_mode() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
-		update_user_option( 1, '_wcpay_customer_id_test', 'cus_test12345' );
+		update_user_option( 1, self::CUSTOMER_TEST_META_KEY, 'cus_test12345' );
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
 
@@ -114,8 +118,8 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
-		$this->assertEquals( 'cus_test12345', get_user_option( '_wcpay_customer_id', $user->ID ) );
-		$this->assertEquals( false, get_user_option( '_wcpay_customer_id_test', $user->ID ) );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -136,8 +140,8 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
-		$this->assertEquals( 'cus_test12345', get_user_option( '_wcpay_customer_id_test', $user->ID ) );
-		$this->assertEquals( false, get_user_option( '_wcpay_customer_id', $user->ID ) );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -205,7 +209,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals( 'cus_test67890', $customer_id );
-		$this->assertEquals( 'cus_test67890', get_user_option( '_wcpay_customer_id', $user->ID ) );
+		$this->assertEquals( 'cus_test67890', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -245,7 +249,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals( 'cus_test67890', $customer_id );
-		$this->assertEquals( 'cus_test67890', get_user_option( '_wcpay_customer_id_test', $user->ID ) );
+		$this->assertEquals( 'cus_test67890', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -282,21 +286,21 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	}
 
 	public function test_change_customer_mode_to_test() {
-		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_12345' );
 
 		$this->customer_service->change_customer_mode( 1, 'cus_12345', true );
 
-		$this->assertEquals( 'cus_12345', get_user_option( '_wcpay_customer_id_test', 1 ) );
-		$this->assertEquals( false, get_user_option( '_wcpay_customer_id', 1 ) );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
 	}
 
 	public function test_change_customer_mode_to_live() {
-		update_user_option( 1, '_wcpay_customer_id_test', 'cus_12345' );
+		update_user_option( 1, self::CUSTOMER_TEST_META_KEY, 'cus_12345' );
 
 		$this->customer_service->change_customer_mode( 1, 'cus_12345', false );
 
-		$this->assertEquals( 'cus_12345', get_user_option( '_wcpay_customer_id', 1 ) );
-		$this->assertEquals( false, get_user_option( '_wcpay_customer_id_test', 1 ) );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
 	}
 
 	public function test_set_default_payment_method_for_customer() {
