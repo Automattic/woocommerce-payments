@@ -281,6 +281,24 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_change_customer_mode_to_test() {
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+
+		$this->customer_service->change_customer_mode( 1, 'cus_12345', true );
+
+		$this->assertEquals( 'cus_12345', get_user_option( '_wcpay_customer_id_test', 1 ) );
+		$this->assertEquals( false, get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
+	public function test_change_customer_mode_to_live() {
+		update_user_option( 1, '_wcpay_customer_id_test', 'cus_12345' );
+
+		$this->customer_service->change_customer_mode( 1, 'cus_12345', false );
+
+		$this->assertEquals( 'cus_12345', get_user_option( '_wcpay_customer_id', 1 ) );
+		$this->assertEquals( false, get_user_option( '_wcpay_customer_id_test', 1 ) );
+	}
+
 	public function test_set_default_payment_method_for_customer() {
 		$this->mock_api_client
 			->expects( $this->once() )

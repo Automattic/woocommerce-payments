@@ -125,6 +125,24 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Modifies the customer live/test mode value for $test_mode.
+	 *
+	 * @param int     $user_id     User ID.
+	 * @param string  $customer_id Customer ID.
+	 * @param boolean $test_mode   Test mode flag to change customer to.
+	 */
+	public function change_customer_mode( $user_id, $customer_id, $test_mode ) {
+		$new_option = $this->get_customer_id_option( $test_mode );
+		$old_option = $this->get_customer_id_option( ! $test_mode );
+
+		update_user_option( $user_id, $new_option, $customer_id );
+
+		if ( get_user_option( $old_option, $user_id ) === $customer_id ) {
+			delete_user_option( $user_id, $old_option );
+		}
+	}
+
+	/**
 	 * Sets a payment method as default for a customer.
 	 *
 	 * @param string $customer_id       The customer ID.
@@ -243,9 +261,12 @@ class WC_Payments_Customer_Service {
 
 	/**
 	 * Returns the name of the customer option meta, taking test mode into account.
+	 *
+	 * @param boolean $test_mode Test mode to be used in the option. Defaults to current gateway mode.
 	 */
-	private function get_customer_id_option() {
-		return WC_Payments::get_gateway()->is_in_test_mode()
+	private function get_customer_id_option( $test_mode = null ) {
+		$test_mode = $test_mode ?? WC_Payments::get_gateway()->is_in_test_mode();
+		return $test_mode
 			? self::WCPAY_CUSTOMER_ID_OPTION . '_test'
 			: self::WCPAY_CUSTOMER_ID_OPTION;
 	}
