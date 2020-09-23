@@ -14,6 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Class handling any customer functionality
  */
 class WC_Payments_Customer_Service {
+	const DEPRECATED_WCPAY_CUSTOMER_ID_OPTION = '_wcpay_customer_id';
 
 	const WCPAY_LIVE_CUSTOMER_ID_OPTION = '_wcpay_customer_id_live';
 	const WCPAY_TEST_CUSTOMER_ID_OPTION = '_wcpay_customer_id_test';
@@ -49,11 +50,23 @@ class WC_Payments_Customer_Service {
 		}
 
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
-		if ( false === $customer_id ) {
-			return null;
+
+		// If customer_id is false it could mean that it hasn't been migrated from the deprecated key.
+		// If the gateway is in live mode, proceed to migrate the legacy customer ID to the new meta.
+		if ( false === $customer_id && ! WC_Payments::get_gateway()->is_in_test_mode() ) {
+			$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
+			if ( false !== $customer_id ) {
+				// A customer was found in the deprecated key. Migrate it to the new one and delete meta.
+				if ( update_user_option( $user_id, $this->get_customer_id_option(), $customer_id ) ) {
+					delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
+				} else {
+					// Log the error, but continue without deleting old meta since we have the customer ID we need.
+					Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
+				}
+			}
 		}
 
-		return $customer_id;
+		return $customer_id ? $customer_id : null;
 	}
 
 	/**
