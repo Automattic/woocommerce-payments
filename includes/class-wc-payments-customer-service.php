@@ -15,8 +15,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Customer_Service {
 
-	const WCPAY_CUSTOMER_ID_OPTION  = '_wcpay_customer_id';
-	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
+	const WCPAY_LIVE_CUSTOMER_ID_OPTION = '_wcpay_customer_id_live';
+	const WCPAY_TEST_CUSTOMER_ID_OPTION = '_wcpay_customer_id_test';
+	const PAYMENT_METHODS_TRANSIENT     = 'wcpay_payment_methods_';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -255,7 +256,7 @@ class WC_Payments_Customer_Service {
 	 */
 	private function get_customer_id_option() {
 		return WC_Payments::get_gateway()->is_in_test_mode()
-			? self::WCPAY_CUSTOMER_ID_OPTION . '_test'
-			: self::WCPAY_CUSTOMER_ID_OPTION;
+			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
+			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
 	}
 }
