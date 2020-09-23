@@ -225,7 +225,7 @@ class WC_Payments_Token_Service {
 			$tokens,
 			function ( $token ) use ( $customer_id ) {
 				return $token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id &&
-					$token->get_meta( self::TEST_MODE_META_KEY ) === WC_Payments::get_gateway()->is_in_test_mode();
+					$token->get_meta( self::TEST_MODE_META_KEY ) === strval( WC_Payments::get_gateway()->is_in_test_mode() );
 			}
 		);
 	}
@@ -245,7 +245,11 @@ class WC_Payments_Token_Service {
 		foreach ( $tokens as $token ) {
 			if (
 				! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ||
-				$token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id
+				(
+					$token->meta_exists( self::TEST_MODE_META_KEY ) &&
+					$token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id &&
+					$token->get_meta( self::TEST_MODE_META_KEY ) !== strval( $test_mode )
+				)
 			) {
 				$token->update_meta_data(
 					self::CUSTOMER_ID_META_KEY,
