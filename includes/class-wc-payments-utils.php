@@ -154,7 +154,7 @@ class WC_Payments_Utils {
 	 *
 	 * @param string $term Search term.
 	 *
-	 * @return array|null The charge_id(s) for the order or subscription, or null if no charges are found.
+	 * @return array The charge_id(s) for the order or subscription.
 	 */
 	public static function get_charge_ids_from_search_term( $term ) {
 		$order_term = __( 'Order #', 'woocommerce-payments' );
@@ -182,7 +182,7 @@ class WC_Payments_Utils {
 			}
 		}
 
-		return null;
+		return [];
 	}
 
 	/**
@@ -193,7 +193,7 @@ class WC_Payments_Utils {
 	 * @return array Processed search strings.
 	 */
 	public static function map_search_orders_to_charge_ids( $search ) {
-		// Map Order # and Subscription # terms to the actual charge id to be used in the server.
+		// Map Order # and Subscription # terms to the actual charge IDs to be used in the server.
 		$terms = [];
 		foreach ( $search as $term ) {
 			$charge_ids = self::get_charge_ids_from_search_term( $term );

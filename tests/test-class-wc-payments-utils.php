@@ -193,12 +193,12 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 	public function test_get_charge_ids_from_search_term_skips_invalid_terms() {
 		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'invalid term' );
-		$this->assertEquals( null, $result );
+		$this->assertEquals( [], $result );
 	}
 
 	public function test_get_charge_ids_from_search_term_handles_invalid_order() {
 		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Order #897' );
-		$this->assertEquals( null, $result );
+		$this->assertEquals( [], $result );
 	}
 
 	public function test_get_charge_ids_from_search_term_handles_invalid_subscription() {
@@ -208,7 +208,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 			}
 		);
 		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Subscription #897' );
-		$this->assertEquals( null, $result );
+		$this->assertEquals( [], $result );
 	}
 
 	public function test_map_search_orders_to_charge_ids() {
