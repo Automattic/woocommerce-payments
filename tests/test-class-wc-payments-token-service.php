@@ -354,7 +354,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( null );
 
@@ -428,5 +428,63 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		} catch ( WC_Payments_API_Exception $e ) {
 			$this->fail( 'token_service->woocommerce_get_customer_payment_tokens did not handle the resource_missing code of WC_Payments_API_Exception.' );
 		}
+	}
+
+	/**
+	 * @dataProvider gateway_test_mode_provider
+	 */
+	public function test_woocommerce_get_customer_payment_tokens_migrates_incorrect_customers( $current_test_mode ) {
+		WC_Payments::get_gateway()->update_option( 'test_mode', $current_test_mode ? 'yes' : 'no' );
+
+		$actual_customer_test_mode = ! $current_test_mode;
+
+		$no_customer_token = WC_Helper_Token::create_token( 'pm_mock1' );
+		$wrong_mode_token  = WC_Helper_Token::create_token( 'pm_mock2' );
+
+		$wrong_mode_token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$wrong_mode_token->add_meta_data( '_wcpay_test_mode', $current_test_mode );
+
+		$tokens = [ $no_customer_token, $wrong_mode_token ];
+
+		$this->mock_customer_service
+			->expects( $this->at( 0 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->at( 1 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_67890' );
+
+		$message = 'No such customer: \'cus_12345\'; a similar object exists in test mode, but a live mode key was used to make this request.';
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willThrowException(
+				new WC_Payments_API_Exception( $message, 'resource_missing', 400 )
+			);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'change_customer_mode' )
+			->with( 1, 'cus_12345', $actual_customer_test_mode );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$this->assertCount( 0, $result );
+
+		$no_customer_token = WC_Payment_tokens::get( $no_customer_token->get_id() );
+		$wrong_mode_token  = WC_Payment_tokens::get( $wrong_mode_token->get_id() );
+		$this->assertEquals( 'cus_12345', $no_customer_token->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( $actual_customer_test_mode, $no_customer_token->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( 'cus_12345', $wrong_mode_token->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( $actual_customer_test_mode, $wrong_mode_token->get_meta( '_wcpay_test_mode' ) );
+	}
+
+	public function gateway_test_mode_provider() {
+		return [
+			[ true ],
+			[ false ],
+		];
 	}
 }

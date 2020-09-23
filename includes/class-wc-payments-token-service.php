@@ -109,8 +109,13 @@ class WC_Payments_Token_Service {
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
 		$tokens = $this->migrate_existing_tokens( $tokens, $customer_id, WC_Payments::get_gateway()->is_in_test_mode() );
-		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
+
+		// import_customer_tokens might change the customer ID if it doesn't match
+		// current test mode, so we need to update it.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
+
+		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 
 		return $tokens;
 	}
@@ -172,6 +177,14 @@ class WC_Payments_Token_Service {
 			// If we failed to find the customer we can simply use an empty $payment_methods as this
 			// customer will be recreated when the user successfully adds a new payment method.
 			if ( 'resource_missing' === $e->get_error_code() ) {
+				// However, if we can find the customer in a different mode (based on the exception
+				// message) we need to migrate it to the new meta, along with their tokens.
+				if ( $this->customer_exists_in_other_mode( $e ) ) {
+					$actual_user_mode = ! WC_Payments::get_gateway()->is_in_test_mode();
+					$this->customer_service->change_customer_mode( $user_id, $customer_id, $actual_user_mode );
+					$this->migrate_existing_tokens( $tokens, $customer_id, $actual_user_mode );
+				}
+
 				$payment_methods = [];
 			} else {
 				// Rethrow for error codes we don't care about in this function.
@@ -246,5 +259,17 @@ class WC_Payments_Token_Service {
 			}
 		}
 		return $tokens;
+	}
+
+	/**
+	 * Check exception for customer in wrong mode message.
+	 *
+	 * @param WC_Payments_API_Exception $e The WCPay API exception.
+	 *
+	 * @return boolean Whether customer was searched in wrong mode.
+	 */
+	private function customer_exists_in_other_mode( $e ) {
+		$regex = '/No such customer: \'cus\_.*\'; a similar object exists in (test|live) mode, but a (test|live) mode key .*/';
+		return preg_match( $regex, $e->getMessage() );
 	}
 }
