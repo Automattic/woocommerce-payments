@@ -47,7 +47,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             Payment ID: 
             ch_38jdHA39KKA
@@ -193,7 +193,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             Payment ID: 
             ch_38jdHA39KKA
@@ -358,7 +358,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             Payment ID: 
             ch_38jdHA39KKA
@@ -507,7 +507,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             <span
               aria-busy="true"
@@ -586,7 +586,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             Payment ID: 
             ch_38jdHA39KKA
@@ -735,7 +735,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           class="payment-details-summary__section"
         >
           <div
-            class="payment-details-summary__actions"
+            class="payment-details-summary__id"
           >
             Payment ID: 
             ch_38jdHA39KKA

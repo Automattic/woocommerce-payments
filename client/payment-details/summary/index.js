@@ -48,12 +48,17 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		wcpaySettings.isSubscriptionsActive && {
 			title: __( 'Subscription', 'woocommerce-payments' ),
-			content: charge.order && charge.order.subscriptions.length ? (
-				charge.order.subscriptions.map( ( subscription, i, all ) => [
-					<OrderLink key={ i } order={ subscription } />,
-					i !== all.length - 1 && ', ',
-				] )
-			) : <OrderLink />,
+			content:
+				charge.order && charge.order.subscriptions.length ? (
+					charge.order.subscriptions.map(
+						( subscription, i, all ) => [
+							<OrderLink key={ i } order={ subscription } />,
+							i !== all.length - 1 && ', ',
+						]
+					)
+				) : (
+					<OrderLink />
+				),
 		},
 		{
 			title: __( 'Payment method', 'woocommerce-payments' ),
@@ -127,8 +132,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 					</div>
 				</div>
 				<div className="payment-details-summary__section">
-					{ /* TODO: implement control buttons depending on the transaction status */ }
-					<div className="payment-details-summary__actions">
+					<div className="payment-details-summary__id">
 						<Loadable
 							isLoading={ isLoading }
 							placeholder="Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx"
