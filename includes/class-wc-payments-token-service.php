@@ -74,7 +74,7 @@ class WC_Payments_Token_Service {
 		);
 		$token->add_meta_data(
 			self::TEST_MODE_META_KEY,
-			WC_Payments::get_gateway()->is_in_test_mode()
+			strval( WC_Payments::get_gateway()->is_in_test_mode() )
 		);
 		$token->save();
 
@@ -258,7 +258,7 @@ class WC_Payments_Token_Service {
 
 				$token->update_meta_data(
 					self::TEST_MODE_META_KEY,
-					$test_mode
+					strval( $test_mode )
 				);
 
 				$token->save();
