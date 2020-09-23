@@ -248,7 +248,10 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$token1->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
 		$token2->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$token1->add_meta_data( '_wcpay_test_mode', false );
+		$token2->add_meta_data( '_wcpay_test_mode', false );
 		$unavailable_token->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
+		$unavailable_token->add_meta_data( '_wcpay_test_mode', false );
 
 		$tokens = [
 			$token1,
@@ -277,6 +280,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	public function test_woocommerce_get_customer_payment_tokens_imports_tokens() {
 		$token = WC_Helper_Token::create_token( 'pm_mock0' );
 		$token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$token->add_meta_data( '_wcpay_test_mode', false );
 
 		$tokens = [ $token ];
 
