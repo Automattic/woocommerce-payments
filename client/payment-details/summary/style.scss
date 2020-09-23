@@ -22,7 +22,7 @@
 		.payment-details-summary__amount-currency {
 			@include font-size( 16 );
 			text-transform: uppercase;
-			margin: 0 0.75rem 0 0.5rem;
+			margin: 0 0.5rem;
 			color: $studio-gray-60;
 		}
 	}
