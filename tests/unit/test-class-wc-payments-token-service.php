@@ -57,6 +57,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tearDown() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		wp_set_current_user( $this->user_id );
 		parent::tearDown();
 	}
@@ -315,5 +316,66 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ $token ], 1, 'woocommerce_payments' );
 		$this->assertCount( 0, $result );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_live_mode() {
+		$old_token1           = WC_Helper_Token::create_token( 'pm_mock0' );
+		$old_token2           = WC_Helper_Token::create_token( 'pm_mock1' );
+		$token1               = WC_Helper_Token::create_token( 'pm_mock2' );
+		$wrong_customer_token = WC_Helper_Token::create_token( 'pm_mock3' );
+
+		$token1->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$wrong_customer_token->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
+
+		$tokens = [ $old_token1, $old_token2, $token1, $wrong_customer_token ];
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willReturn( [] );
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$result_tokens = array_values( $result );
+		$this->assertCount( 3, $result_tokens );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
+		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
+		$this->assertEquals( 'cus_12345', $result_tokens[0]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[1]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[2]->get_meta( '_wcpay_customer_id' ) );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_does_not_migrate_old_tokens_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+
+		$old_token1 = WC_Helper_Token::create_token( 'pm_mock0' );
+		$token1     = WC_Helper_Token::create_token( 'pm_mock1' );
+
+		$token1->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+
+		$tokens = [ $old_token1, $token1 ];
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willReturn( [] );
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$result_tokens = array_values( $result );
+		$this->assertCount( 1, $result_tokens );
+		$this->assertEquals( 'pm_mock1', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'cus_12345', $result_tokens[0]->get_meta( '_wcpay_customer_id' ) );
 	}
 }

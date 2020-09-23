@@ -109,6 +109,11 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
+		// If in live mode, update deprecated tokens with customer information.
+		if ( ! WC_Payments::get_gateway()->is_in_test_mode() ) {
+			$tokens = $this->migrate_customerless_tokens( $tokens, $customer_id );
+		}
+
 		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 
@@ -213,5 +218,27 @@ class WC_Payments_Token_Service {
 				return $token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id;
 			}
 		);
+	}
+
+	/**
+	 * Adds customer information to tokens that have none.
+	 *
+	 * @param array  $tokens      Token list.
+	 * @param string $customer_id Customer ID.
+	 *
+	 * @return array Token list with tokens for $customer_id.
+	 */
+	private function migrate_customerless_tokens( $tokens, $customer_id ) {
+		foreach ( $tokens as $token ) {
+			if ( ! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ) {
+				$token->update_meta_data(
+					self::CUSTOMER_ID_META_KEY,
+					$customer_id
+				);
+
+				$token->save();
+			}
+		}
+		return $tokens;
 	}
 }
