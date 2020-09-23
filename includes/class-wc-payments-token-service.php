@@ -158,10 +158,25 @@ class WC_Payments_Token_Service {
 	 * @param int    $user_id     User ID.
 	 *
 	 * @return array Token list with imported tokens.
+	 *
+	 * @throws WC_Payments_API_Exception This method handles 'resource_missing' code types and rethrows anything else.
 	 */
 	private function import_customer_tokens( $tokens, $customer_id, $user_id ) {
 		if ( null === $customer_id ) {
 			return $tokens;
+		}
+
+		try {
+			$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
+		} catch ( WC_Payments_API_Exception $e ) {
+			// If we failed to find the customer we can simply use an empty $payment_methods as this
+			// customer will be recreated when the user successfully adds a new payment method.
+			if ( 'resource_missing' === $e->get_error_code() ) {
+				$payment_methods = [];
+			} else {
+				// Rethrow for error codes we don't care about in this function.
+				throw $e;
+			}
 		}
 
 		$stored_tokens = [];
@@ -169,8 +184,6 @@ class WC_Payments_Token_Service {
 		foreach ( $tokens as $token ) {
 			$stored_tokens[] = $token->get_token();
 		}
-
-		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {

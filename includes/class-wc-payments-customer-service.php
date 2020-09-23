@@ -147,7 +147,9 @@ class WC_Payments_Customer_Service {
 	 * @param string $customer_id The customer ID.
 	 * @param string $type        Type of payment methods to fetch.
 	 *
-	 * @throws WC_Payments_API_Exception We only handle 'resource_missing' code types and rethrow anything else.
+	 * @return array Customer's payment methods.
+	 *
+	 * @throws WC_Payments_API_Exception When API request fails.
 	 */
 	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
 		if ( ! $customer_id ) {
@@ -160,21 +162,11 @@ class WC_Payments_Customer_Service {
 			return $payment_methods;
 		}
 
-		try {
-			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
-			set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
-			return $payment_methods;
+		$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 
-		} catch ( WC_Payments_API_Exception $e ) {
-			// If we failed to find the we can simply return empty payment methods as this customer will
-			// be recreated when the user succesfuly adds a payment method.
-			if ( $e->get_error_code() === 'resource_missing' ) {
-				return [];
-			}
+		set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
 
-			// Rethrow for error codes we don't care about in this function.
-			throw $e;
-		}
+		return $payment_methods;
 	}
 
 	/**

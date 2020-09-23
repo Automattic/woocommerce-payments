@@ -403,4 +403,26 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( true, $result_tokens[2]->get_meta( '_wcpay_test_mode' ) );
 		$this->assertEquals( true, $result_tokens[3]->get_meta( '_wcpay_test_mode' ) );
 	}
+
+	public function test_woocommerce_get_customer_payment_tokens_does_not_throw_resource_missing() {
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willThrowException( new WC_Payments_API_Exception( 'No such customer', 'resource_missing', 400 ) );
+
+		$existing_tokens = [];
+		try {
+			$tokens = $this->token_service->woocommerce_get_customer_payment_tokens( $existing_tokens, 1, 'woocommerce_payments' );
+			// We return $existing_tokens as the exception was handled in the function and not bubbled up.
+			$this->assertEquals( $tokens, $existing_tokens );
+		} catch ( WC_Payments_API_Exception $e ) {
+			$this->fail( 'token_service->woocommerce_get_customer_payment_tokens did not handle the resource_missing code of WC_Payments_API_Exception.' );
+		}
+	}
 }
