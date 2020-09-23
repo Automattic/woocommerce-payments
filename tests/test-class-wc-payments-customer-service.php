@@ -74,6 +74,29 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'cus_test12345', $customer_id );
 	}
 
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta() {
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertEquals( 'cus_12345', $customer_id );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertEquals( 'cus_12345', $customer_id );
+		$this->assertFalse( get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
 	/**
 	 * Test get customer ID by user ID when no stored customer ID.
 	 */
