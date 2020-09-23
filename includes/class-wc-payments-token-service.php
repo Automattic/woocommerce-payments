@@ -108,12 +108,14 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
-		$tokens = $this->migrate_existing_tokens( $tokens, $customer_id, WC_Payments::get_gateway()->is_in_test_mode() );
-		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
+		if ( ! is_null( $customer_id ) ) {
+			$tokens = $this->migrate_existing_tokens( $tokens, $customer_id, WC_Payments::get_gateway()->is_in_test_mode() );
+			$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 
-		// import_customer_tokens might change the customer ID if it doesn't match
-		// current test mode, so we need to update it.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
+			// import_customer_tokens might change the customer ID if it doesn't match
+			// current test mode, so we need to update it.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
+		}
 
 		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 

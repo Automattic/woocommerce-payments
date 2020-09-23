@@ -319,15 +319,16 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_no_customer() {
-		$token = WC_Helper_Token::create_token( 'pm_mock0' );
-		$token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$token1 = WC_Helper_Token::create_token( 'pm_mock0' );
+		$token1->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$token2 = WC_Helper_Token::create_token( 'pm_mock0' );
 
 		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( null );
 
-		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ $token ], 1, 'woocommerce_payments' );
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ $token1, $token2 ], 1, 'woocommerce_payments' );
 		$this->assertCount( 0, $result );
 	}
 
