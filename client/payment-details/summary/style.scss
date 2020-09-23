@@ -22,7 +22,7 @@
 		.payment-details-summary__amount-currency {
 			@include font-size( 16 );
 			text-transform: uppercase;
-			margin: 0 1rem 0 0.25rem;
+			margin: 0 0.5rem;
 			color: $studio-gray-60;
 		}
 	}
@@ -32,55 +32,22 @@
 			@include font-size( 14 );
 			color: $dark-gray-500;
 			display: inline-block;
-			margin: 0.5rem 0.75rem 0 0;
+			margin: 0.25rem 1rem 0 0;
 		}
 		p:last-child {
 			margin-right: 0;
 		}
 	}
 
-	.payment-details-summary__actions {
+	.payment-details-summary__id {
 		height: 100%;
+		margin-top: 8px;
+		color: $studio-gray-40;
 		display: flex;
-		align-items: center;
+		align-items: start;
 		justify-content: initial;
 		@include breakpoint( '>660px' ) {
 			justify-content: flex-end;
 		}
-		.payment-details-summary__actions-item {
-			margin-top: 1rem;
-			@include breakpoint( '>660px' ) {
-				margin-top: 0;
-			}
-		}
 	}
-}
-
-.payment-details-summary-details
-	.woocommerce-list--horizontal
-	.woocommerce-list__item:last-child {
-	flex-grow: 1;
-	border-left: 0;
-	.woocommerce-list__item-text {
-		width: 100%;
-		text-transform: none;
-		@include breakpoint( '>800px' ) {
-			text-align: right;
-			color: $studio-gray-40;
-			.woocommerce-list__item-content {
-				@include font-size( 12 );
-			}
-		}
-	}
-}
-
-.payment-details-summary-details
-	.woocommerce-list--horizontal
-	.woocommerce-list__item-inner
-	.woocommerce-list__item-title,
-.payment-details-summary-details
-	.woocommerce-list--horizontal
-	.woocommerce-list__item-inner
-	.woocommerce-list__item-content {
-	@include font-size( 14 );
 }

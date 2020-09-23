@@ -5,7 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Button } from '@wordpress/components';
 import { Card } from '@woocommerce/components';
 import Currency from '@woocommerce/currency';
 import moment from 'moment';
@@ -20,6 +19,7 @@ import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
+import OrderLink from 'components/order-link';
 import './style.scss';
 
 const currency = new Currency();
@@ -30,32 +30,49 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge } ) => [
-	{
-		title: __( 'Date', 'woocommerce-payments' ),
-		content: charge.created
-			? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
-			: '–',
-	},
-	{
-		title: __( 'Customer', 'woocommerce-payments' ),
-		content: get( charge, 'billing_details.name' ) || '–',
-	},
-	{
-		title: __( 'Payment method', 'woocommerce-payments' ),
-		content: (
-			<PaymentMethodDetails payment={ charge.payment_method_details } />
-		),
-	},
-	{
-		title: __( 'Risk evaluation', 'woocommerce-payments' ),
-		content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
-	},
-	{
-		title: '',
-		content: charge.id || '–',
-	},
-];
+const composePaymentSummaryItems = ( { charge } ) =>
+	[
+		{
+			title: __( 'Date', 'woocommerce-payments' ),
+			content: charge.created
+				? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
+				: '–',
+		},
+		{
+			title: __( 'Customer', 'woocommerce-payments' ),
+			content: get( charge, 'billing_details.name' ) || '–',
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ charge.order } />,
+		},
+		wcpaySettings.isSubscriptionsActive && {
+			title: __( 'Subscription', 'woocommerce-payments' ),
+			content:
+				charge.order && charge.order.subscriptions.length ? (
+					charge.order.subscriptions.map(
+						( subscription, i, all ) => [
+							<OrderLink key={ i } order={ subscription } />,
+							i !== all.length - 1 && ', ',
+						]
+					)
+				) : (
+					<OrderLink />
+				),
+		},
+		{
+			title: __( 'Payment method', 'woocommerce-payments' ),
+			content: (
+				<PaymentMethodDetails
+					payment={ charge.payment_method_details }
+				/>
+			),
+		},
+		{
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: riskMappings[ get( charge, 'outcome.risk_level' ) ] || '–',
+		},
+	].filter( Boolean );
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const { net, fee, refunded } = charge.amount
@@ -115,22 +132,17 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 					</div>
 				</div>
 				<div className="payment-details-summary__section">
-					{ /* TODO: implement control buttons depending on the transaction status */ }
-					<div className="payment-details-summary__actions">
-						{ charge.order ? (
-							<Button
-								className="payment-details-summary__actions-item"
-								isDefault
-								isLarge
-								href={ charge.order.url }
-							>
-								{ `${ __( 'View order' ) } #${
-									charge.order.number
-								}` }
-							</Button>
-						) : (
-							''
-						) }
+					<div className="payment-details-summary__id">
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx"
+						>
+							{ `${ __(
+								'Payment ID',
+								'woocommerce-payments'
+							) }: ` }
+							{ charge.id }
+						</Loadable>
 					</div>
 				</div>
 			</div>
