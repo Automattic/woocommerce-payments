@@ -156,7 +156,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'Hello <strong>there, <em>John Doe</em> <img src="test"/></strong>', $result );
 	}
 
-	public function test_get_charge_id_from_search_term_returns_charge_id() {
+	public function test_get_charge_ids_from_search_term_order_returns_charge_id() {
 		$charge_id = 'ch_test_charge';
 
 		// Create an order with charge_id to test with.
@@ -164,18 +164,51 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
-		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'Order #' . $order->get_id() );
-		$this->assertEquals( $charge_id, $result );
+		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Order #' . $order->get_id() );
+		$this->assertEquals( [ $charge_id ], $result );
 	}
 
-	public function test_get_charge_id_from_search_term_skips_invalid_terms() {
-		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'invalid term' );
-		$this->assertEquals( '', $result );
+	public function test_get_charge_ids_from_search_term_subscription_returns_charge_ids() {
+		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $charge_ids ) {
+				$subscription = new WC_Subscription();
+
+				$order1 = WC_Helper_Order::create_order();
+				$order1->update_meta_data( '_charge_id', $charge_ids[0] );
+				$order1->save();
+				$order2 = WC_Helper_Order::create_order();
+				$order2->update_meta_data( '_charge_id', $charge_ids[1] );
+				$order2->save();
+				$subscription->set_related_orders( [ $order1, $order2 ] );
+
+				return $subscription;
+			}
+		);
+
+		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Subscription #123' );
+		$this->assertEquals( $charge_ids, $result );
 	}
 
-	public function test_get_charge_id_from_search_term_handles_invalid_order() {
-		$result = WC_Payments_Utils::get_charge_id_from_search_term( 'Order #897' );
-		$this->assertEquals( '', $result );
+	public function test_get_charge_ids_from_search_term_skips_invalid_terms() {
+		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'invalid term' );
+		$this->assertEquals( null, $result );
+	}
+
+	public function test_get_charge_ids_from_search_term_handles_invalid_order() {
+		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Order #897' );
+		$this->assertEquals( null, $result );
+	}
+
+	public function test_get_charge_ids_from_search_term_handles_invalid_subscription() {
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) {
+				return false;
+			}
+		);
+		$result = WC_Payments_Utils::get_charge_ids_from_search_term( 'Subscription #897' );
+		$this->assertEquals( null, $result );
 	}
 
 	public function test_map_search_orders_to_charge_ids() {
@@ -187,6 +220,29 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( [ 'First term', "Order #{$order->get_id()}", 'Another term' ] );
 		$this->assertEquals( [ 'First term', $charge_id, 'Another term' ], $result );
+	}
+
+	public function test_map_search_orders_to_charge_ids_subscription_term() {
+		$charge_ids = [ 'ch_test_charge_1', 'ch_test_charge_2' ];
+
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $charge_ids ) {
+				$subscription = new WC_Subscription();
+
+				$order1 = WC_Helper_Order::create_order();
+				$order1->update_meta_data( '_charge_id', $charge_ids[0] );
+				$order1->save();
+				$order2 = WC_Helper_Order::create_order();
+				$order2->update_meta_data( '_charge_id', $charge_ids[1] );
+				$order2->save();
+				$subscription->set_related_orders( [ $order1, $order2 ] );
+
+				return $subscription;
+			}
+		);
+
+		$result = WC_Payments_Utils::map_search_orders_to_charge_ids( [ 'First term', 'Subscription #123', 'Another term' ] );
+		$this->assertEquals( [ 'First term', $charge_ids[0], $charge_ids[1], 'Another term' ], $result );
 	}
 
 	public function test_redact_array_redacts() {
