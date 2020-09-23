@@ -47,6 +47,12 @@ const getBaseCharge = () => ( {
 /* eslint-enable camelcase */
 
 describe( 'PaymentDetailsSummary', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			isSubscriptionsActive: false,
+		};
+	} );
+
 	test( 'correctly renders a charge', () => {
 		const paymentDetailsSummary = renderCharge( getBaseCharge() );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
@@ -79,6 +85,21 @@ describe( 'PaymentDetailsSummary', () => {
 			amount: 1500,
 			status: 'under_review',
 		};
+
+		const paymentDetailsSummary = renderCharge( charge );
+		expect( paymentDetailsSummary ).toMatchSnapshot();
+	} );
+
+	test( 'renders a charge with subscriptions', () => {
+		global.wcpaySettings.isSubscriptionsActive = true;
+
+		const charge = getBaseCharge();
+		charge.order.subscriptions = [
+			{
+				number: 246,
+				url: 'https://example.com/subscription/246',
+			},
+		];
 
 		const paymentDetailsSummary = renderCharge( charge );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
