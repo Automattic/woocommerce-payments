@@ -158,6 +158,42 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Adds customer and test_mode to tokens that have none and updates test mode
+	 * for tokens that match the customer.
+	 *
+	 * @param array   $tokens      Token list.
+	 * @param string  $customer_id Customer ID.
+	 * @param boolean $test_mode   Customer test mode flag.
+	 *
+	 * @return array Token list with tokens for $customer_id.
+	 */
+	public function migrate_existing_tokens( $tokens, $customer_id, $test_mode ) {
+		foreach ( $tokens as $token ) {
+			if (
+				! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ||
+				(
+					$token->meta_exists( self::TEST_MODE_META_KEY ) &&
+					$token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id &&
+					$token->get_meta( self::TEST_MODE_META_KEY ) !== strval( $test_mode )
+				)
+			) {
+				$token->update_meta_data(
+					self::CUSTOMER_ID_META_KEY,
+					$customer_id
+				);
+
+				$token->update_meta_data(
+					self::TEST_MODE_META_KEY,
+					strval( $test_mode )
+				);
+
+				$token->save();
+			}
+		}
+		return $tokens;
+	}
+
+	/**
 	 * Imports customer payment methods from the API and adds them to WooCommerce.
 	 *
 	 * @param array  $tokens      Token list.
@@ -228,42 +264,5 @@ class WC_Payments_Token_Service {
 					$token->get_meta( self::TEST_MODE_META_KEY ) === strval( WC_Payments::get_gateway()->is_in_test_mode() );
 			}
 		);
-	}
-
-	/**
-	 * Adds customer and test_mode to tokens that have none.
-	 * This takes an optimistic approach based on the customer ID and current
-	 * test mode flag.
-	 *
-	 * @param array   $tokens      Token list.
-	 * @param string  $customer_id Customer ID.
-	 * @param boolean $test_mode   Customer test mode flag.
-	 *
-	 * @return array Token list with tokens for $customer_id.
-	 */
-	private function migrate_existing_tokens( $tokens, $customer_id, $test_mode ) {
-		foreach ( $tokens as $token ) {
-			if (
-				! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ||
-				(
-					$token->meta_exists( self::TEST_MODE_META_KEY ) &&
-					$token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id &&
-					$token->get_meta( self::TEST_MODE_META_KEY ) !== strval( $test_mode )
-				)
-			) {
-				$token->update_meta_data(
-					self::CUSTOMER_ID_META_KEY,
-					$customer_id
-				);
-
-				$token->update_meta_data(
-					self::TEST_MODE_META_KEY,
-					strval( $test_mode )
-				);
-
-				$token->save();
-			}
-		}
-		return $tokens;
 	}
 }

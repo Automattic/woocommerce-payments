@@ -400,6 +400,45 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		}
 	}
 
+	public function test_migrate_existing_tokens_updates_blank_tokens() {
+		$tokens = [ WC_Helper_Token::create_token( 'pm_mock1' ), WC_Helper_Token::create_token( 'pm_mock2' ) ];
+
+		$migrated_tokens = $this->token_service->migrate_existing_tokens( $tokens, 'cus_12345', false );
+
+		$this->assertEquals( 'cus_12345', $migrated_tokens[0]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( strval( false ), $migrated_tokens[0]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( 'cus_12345', $migrated_tokens[1]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( strval( false ), $migrated_tokens[1]->get_meta( '_wcpay_test_mode' ) );
+	}
+
+	public function test_migrate_existing_tokens_updates_test_mode() {
+		$tokens = [ WC_Helper_Token::create_token( 'pm_mock1' ), WC_Helper_Token::create_token( 'pm_mock2' ) ];
+
+		$tokens[0]->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$tokens[0]->add_meta_data( '_wcpay_test_mode', strval( true ) );
+		$tokens[1]->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+		$tokens[1]->add_meta_data( '_wcpay_test_mode', strval( false ) );
+
+		$migrated_tokens = $this->token_service->migrate_existing_tokens( $tokens, 'cus_12345', false );
+		$this->assertEquals( strval( false ), $migrated_tokens[0]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( strval( false ), $migrated_tokens[1]->get_meta( '_wcpay_test_mode' ) );
+	}
+
+	public function test_migrate_existing_tokens_skips_tokens_from_other_customers() {
+		$tokens = [ WC_Helper_Token::create_token( 'pm_mock1' ), WC_Helper_Token::create_token( 'pm_mock2' ) ];
+
+		$tokens[0]->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
+		$tokens[0]->add_meta_data( '_wcpay_test_mode', strval( true ) );
+		$tokens[1]->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
+		$tokens[1]->add_meta_data( '_wcpay_test_mode', strval( false ) );
+
+		$migrated_tokens = $this->token_service->migrate_existing_tokens( $tokens, 'cus_12345', false );
+		$this->assertEquals( 'cus_67890', $migrated_tokens[0]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( strval( true ), $migrated_tokens[0]->get_meta( '_wcpay_test_mode' ) );
+		$this->assertEquals( 'cus_67890', $migrated_tokens[1]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( strval( false ), $migrated_tokens[1]->get_meta( '_wcpay_test_mode' ) );
+	}
+
 	/**
 	 * @dataProvider gateway_test_mode_provider
 	 */
