@@ -3,6 +3,7 @@
 /**
  * Internal dependencies
  */
+import './style.scss';
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 import { getConfig } from '../utils';
 import WCPayAPI from './../api';
