@@ -1365,9 +1365,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
-	 * @throws Exception - When an error occurs in setup intent creation.
+	 * @param bool $retry Flag indicating whether the method should be retried.
+	 * @throws Exception|WC_Payments_API_Exception - When an error occurs in setup intent creation.
 	 */
-	public function create_setup_intent() {
+	public function create_setup_intent( $retry = true ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST );
 
@@ -1378,10 +1379,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
 		}
 
-		return $this->payments_api_client->create_setup_intent(
-			$payment_information->get_payment_method(),
-			$customer_id
-		);
+		try {
+			return $this->payments_api_client->create_setup_intent(
+				$payment_information->get_payment_method(),
+				$customer_id
+			);
+		} catch ( WC_Payments_API_Exception $e ) {
+			// If customer is in the wrong mode we can fix it and re-run create_setup_intent, which will create a new one.
+			if ( $retry && $this->payments_api_client->customer_exists_in_other_mode( $e ) ) {
+				$actual_customer_mode = ! $this->is_in_test_mode();
+				$user_tokens          = WC_Payment_Tokens::get_tokens(
+					[
+						'user_id'    => $user->ID,
+						'gateway_id' => self::GATEWAY_ID,
+					]
+				);
+				$this->customer_service->change_customer_mode( $user->ID, $customer_id, $actual_customer_mode );
+				$this->token_service->migrate_existing_tokens( $user_tokens, $customer_id, $actual_customer_mode );
+
+				// Re-run this method without retrying again.
+				return $this->create_setup_intent( false );
+			} else {
+				throw $e;
+			}
+		}
 	}
 
 	/**

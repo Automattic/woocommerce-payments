@@ -67,6 +67,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'create_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
+					'customer_exists_in_other_mode',
 				]
 			)
 			->getMock();
@@ -465,6 +466,79 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->create_setup_intent();
 
 		$this->assertEquals( 'pm_mock', $result['id'] );
+	}
+
+	public function test_create_setup_intent_migrates_wrong_customer() {
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturnOnConsecutiveCalls( 'cus_12345', null );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_setup_intent' )
+			->withConsecutive(
+				[ 'pm_mock', 'cus_12345' ],
+				[ 'pm_mock', 'cus_67890' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$this->throwException( new WC_Payments_API_Exception( 'Error message', 'resource_missing', 400 ) ),
+				[ 'id' => 'pm_mock' ]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'customer_exists_in_other_mode' )
+			->willReturn( true );
+
+		// Assert that change_customer_mode gets called.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'change_customer_mode' )
+			->with( get_current_user_id(), 'cus_12345', true );
+
+		// Assert that migrate_existing_tokens gets called.
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'migrate_existing_tokens' )
+			->with( [], 'cus_12345', true );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->willReturn( 'cus_67890' );
+
+		$result = $this->wcpay_gateway->create_setup_intent();
+
+		$this->assertEquals( 'pm_mock', $result['id'] );
+	}
+
+	public function test_create_setup_intent_does_not_retry_twice() {
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_api_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'create_setup_intent' )
+			->with( 'pm_mock', 'cus_12345' )
+			->willThrowException( new WC_Payments_API_Exception( 'Error message', 'resource_missing', 400 ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'customer_exists_in_other_mode' )
+			->willReturn( true );
+
+		// If the method retried more than one time, expectations on the number of calls set for the
+		// methods above would fail after an exception is thrown for the second time.
+		$this->expectException( WC_Payments_API_Exception::class );
+
+		$this->wcpay_gateway->create_setup_intent();
 	}
 
 	public function test_add_payment_method_no_intent() {
