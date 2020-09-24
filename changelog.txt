@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 1.5.0 - 2020-09-24 =
+= 1.5.0 - 2020-xx-xx =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
 * Fix - Support checkout on Internet Explorer 11.
 * Fix - Webhook processing with no Jetpack plugin installed.
