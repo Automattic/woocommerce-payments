@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Payment_Method
+ * Class WC_Payments_Blocks_Payment_Method
  *
  * @package WooCommerce\Payments
  */
@@ -10,7 +10,7 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
  */
-class WC_Payments_Payment_Method extends AbstractPaymentMethodType {
+class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * Initializes the class.
 	 */
