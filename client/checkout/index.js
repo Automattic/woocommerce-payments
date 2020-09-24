@@ -437,9 +437,7 @@ jQuery( function ( $ ) {
 		}
 
 		// Cleanup the URL.
-		// https://stackoverflow.com/questions/1397329/
-		// how-to-remove-the-hash-from-window-location-url-with-javascript-without-page-r/
-		// 5298684#5298684
+		// https://stackoverflow.com/a/5298684
 		history.replaceState(
 			'',
 			document.title,
