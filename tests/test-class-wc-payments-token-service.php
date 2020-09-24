@@ -426,14 +426,16 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_67890' );
 
-		$message = 'No such customer: \'cus_12345\'; a similar object exists in test mode, but a live mode key was used to make this request.';
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_payment_methods_for_customer' )
 			->with( 'cus_12345' )
-			->willThrowException(
-				new WC_Payments_API_Exception( $message, 'resource_missing', 400 )
-			);
+			->willThrowException( new WC_Payments_API_Exception( 'Error message', 'resource_missing', 400 ) );
+
+		$this->mock_api_client
+			->expects( $this->atLeastOnce() )
+			->method( 'customer_exists_in_other_mode' )
+			->willReturn( true );
 
 		$this->mock_customer_service
 			->expects( $this->once() )

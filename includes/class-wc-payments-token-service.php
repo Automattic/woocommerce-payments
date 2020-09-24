@@ -181,7 +181,7 @@ class WC_Payments_Token_Service {
 			if ( 'resource_missing' === $e->get_error_code() ) {
 				// However, if we can find the customer in a different mode (based on the exception
 				// message) we need to migrate it to the new meta, along with their tokens.
-				if ( $this->customer_exists_in_other_mode( $e ) ) {
+				if ( $this->payments_api_client->customer_exists_in_other_mode( $e ) ) {
 					$actual_user_mode = ! WC_Payments::get_gateway()->is_in_test_mode();
 					$this->customer_service->change_customer_mode( $user_id, $customer_id, $actual_user_mode );
 					$this->migrate_existing_tokens( $tokens, $customer_id, $actual_user_mode );
@@ -265,17 +265,5 @@ class WC_Payments_Token_Service {
 			}
 		}
 		return $tokens;
-	}
-
-	/**
-	 * Check exception for customer in wrong mode message.
-	 *
-	 * @param WC_Payments_API_Exception $e The WCPay API exception.
-	 *
-	 * @return boolean Whether customer was searched in wrong mode.
-	 */
-	private function customer_exists_in_other_mode( $e ) {
-		$regex = '/No such customer: \'cus\_.*\'; a similar object exists in (test|live) mode, but a (test|live) mode key .*/';
-		return preg_match( $regex, $e->getMessage() );
 	}
 }

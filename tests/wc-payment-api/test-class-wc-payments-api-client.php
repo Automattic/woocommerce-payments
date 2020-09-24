@@ -420,6 +420,24 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->payments_api_client->update_customer( ' ' );
 	}
 
+	public function test_customer_exists_in_other_mode_right_code_and_message() {
+		$message   = 'No such customer: \'cus_12345\'; a similar object exists in test mode, but a live mode key was used to make this request.';
+		$exception = new WC_Payments_API_Exception( $message, 'resource_missing', 400 );
+		$this->assertTrue( $this->payments_api_client->customer_exists_in_other_mode( $exception ) );
+	}
+
+	public function test_customer_exists_in_other_mode_wrong_message() {
+		$message   = 'No such customer: \'cus_12345\'.';
+		$exception = new WC_Payments_API_Exception( $message, 'resource_missing', 400 );
+		$this->assertFalse( $this->payments_api_client->customer_exists_in_other_mode( $exception ) );
+	}
+
+	public function test_customer_exists_in_other_mode_wrong_error_code() {
+		$message   = 'No such customer: \'cus_12345\'; a similar object exists in test mode, but a live mode key was used to make this request.';
+		$exception = new WC_Payments_API_Exception( $message, 'wrong_code', 400 );
+		$this->assertFalse( $this->payments_api_client->customer_exists_in_other_mode( $exception ) );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *

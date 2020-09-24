@@ -816,6 +816,19 @@ class WC_Payments_API_Client {
 		);
 	}
 
+
+	/**
+	 * Check exception for customer in wrong mode message.
+	 *
+	 * @param WC_Payments_API_Exception $e The WCPay API exception.
+	 *
+	 * @return boolean Whether customer was searched in wrong mode.
+	 */
+	public function customer_exists_in_other_mode( $e ) {
+		$regex = '/No such customer: \'cus\_.*\'; a similar object exists in (test|live) mode, but a (test|live) mode key .*/';
+		return 'resource_missing' === $e->get_error_code() && 1 === preg_match( $regex, $e->getMessage() );
+	}
+
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
