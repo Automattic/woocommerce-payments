@@ -3,10 +3,7 @@
 /**
  * Internal dependencies
  */
-import {
-	getConfig,
-	setConfig,
-} from '../utils.js';
+import { getConfig, setConfig } from '../utils.js';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -132,10 +129,13 @@ export default class WCPayAPI {
 	 * and displays the intent confirmation modal (if needed).
 	 *
 	 * @param {string} redirectUrl The redirect URL, returned from the server.
+	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
 	 * @returns {mixed} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
-	confirmIntent( redirectUrl ) {
-		const partials = redirectUrl.match( /#wcpay-confirm-pi:(.+):(.+):(.+)$/ );
+	confirmIntent( redirectUrl, paymentMethodToSave ) {
+		const partials = redirectUrl.match(
+			/#wcpay-confirm-pi:(.+):(.+):(.+)$/
+		);
 
 		if ( ! partials ) {
 			return true;
@@ -186,6 +186,8 @@ export default class WCPayAPI {
 					_ajax_nonce: getConfig( 'updateOrderStatusNonce' ),
 					// eslint-disable-next-line camelcase
 					intent_id: intentId,
+					// eslint-disable-next-line camelcase
+					payment_method_id: paymentMethodToSave || null,
 				} );
 
 				return [ ajaxCall, result.error ];

@@ -259,7 +259,16 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const confirmation = api.confirmIntent( window.location.href );
+		const paymentMethodId = document.getElementById(
+			'wcpay-payment-method'
+		).value;
+		const savePaymentMethod = document.getElementById(
+			'wc-woocommerce_payments-new-payment-method'
+		).checked;
+		const confirmation = api.confirmIntent(
+			window.location.href,
+			savePaymentMethod ? paymentMethodId : null
+		);
 
 		// Boolean `true` means that there is nothing to confirm.
 		if ( true === confirmation ) {
