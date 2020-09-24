@@ -21,7 +21,7 @@ exports[`FileUploadControl renders default file upload control 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button components-icon-button has-text is-button is-primary is-large"
+            class="components-button is-primary has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >
@@ -76,7 +76,7 @@ exports[`FileUploadControl renders disabled state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button components-icon-button is-success has-text is-button is-primary is-large"
+            class="components-button is-success is-primary has-text has-icon"
             disabled=""
             id="form-file-upload-field_key"
             type="button"
@@ -134,7 +134,7 @@ exports[`FileUploadControl renders loading state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button components-icon-button has-text is-button is-primary is-large is-busy"
+            class="components-button is-primary is-busy has-text has-icon"
             disabled=""
             id="form-file-upload-field_key"
             type="button"
@@ -190,7 +190,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button components-icon-button is-success has-text is-button is-primary is-large"
+            class="components-button is-success is-primary has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >
@@ -222,7 +222,7 @@ exports[`FileUploadControl renders upload done state 1`] = `
         </span>
         <button
           aria-label="Remove file"
-          class="components-button components-icon-button delete-uploaded-file-button"
+          class="components-button delete-uploaded-file-button has-icon"
           type="button"
         >
           <svg
@@ -266,7 +266,7 @@ exports[`FileUploadControl renders upload failed state 1`] = `
           class="components-form-file-upload"
         >
           <button
-            class="components-button components-icon-button has-text is-button is-primary is-large is-destructive"
+            class="components-button is-primary is-destructive has-text has-icon"
             id="form-file-upload-field_key"
             type="button"
           >

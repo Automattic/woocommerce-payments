@@ -6,7 +6,7 @@ exports[`Disputes list renders correctly 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
-      class="woocommerce-card woocommerce-table has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card has-menu"
     >
       <div
         class="woocommerce-card__header"
@@ -26,10 +26,12 @@ exports[`Disputes list renders correctly 1`] = `
           <div
             class="woocommerce-ellipsis-menu"
           >
-            <div>
+            <div
+              class="components-dropdown"
+            >
               <button
                 aria-expanded="false"
-                class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
                 title="Choose which values to display"
                 type="button"
               >
@@ -45,6 +47,19 @@ exports[`Disputes list renders correctly 1`] = `
                 >
                   <path
                     d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
                   />
                 </svg>
               </button>

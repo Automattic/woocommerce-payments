@@ -3,7 +3,7 @@
 exports[`Transactions list renders correctly when filtered to deposit 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-table transactions-list has-menu"
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
   >
     <div
       class="woocommerce-card__header"
@@ -18,15 +18,66 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
         </h2>
       </div>
       <div
+        class="woocommerce-card__action woocommerce-card__header-item"
+      >
+        <div>
+          <div>
+            <div
+              class="woocommerce-select-control woocommerce-search is-searchable"
+            >
+              <div
+                class="components-base-control woocommerce-select-control__control empty"
+              >
+                <i
+                  class="material-icons-outlined"
+                >
+                  search
+                </i>
+                <div
+                  class="components-base-control__field"
+                >
+                  <label
+                    class="components-base-control__label"
+                    for="woocommerce-select-control-0__control-input"
+                  >
+                    Search by order number, customer name, or billing email
+                  </label>
+                  <input
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    autocomplete="off"
+                    class="woocommerce-select-control__control-input"
+                    id="woocommerce-select-control-0__control-input"
+                    placeholder=""
+                    role="combobox"
+                    type="text"
+                    value=""
+                  />
+                  <span
+                    class="screen-reader-text"
+                    id="search-inline-input-0"
+                  >
+                    Move backward for selected items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >
         <div
           class="woocommerce-ellipsis-menu"
         >
-          <div>
+          <div
+            class="components-dropdown"
+          >
             <button
               aria-expanded="false"
-              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+              class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
               title="Choose which values to display"
               type="button"
             >
@@ -42,6 +93,19 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               >
                 <path
                   d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
                 />
               </svg>
             </button>
@@ -84,21 +148,21 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               >
                 <button
                   aria-describedby="header-0-1"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -142,21 +206,21 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               >
                 <button
                   aria-describedby="header-0-3"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -184,21 +248,21 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               >
                 <button
                   aria-describedby="header-0-4"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -226,21 +290,21 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               >
                 <button
                   aria-describedby="header-0-5"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -501,7 +565,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
 exports[`Transactions list subscription column renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-analytics__card woocommerce-table has-menu has-action"
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
   >
     <div
       class="woocommerce-card__header"
@@ -517,17 +581,65 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
       <div
         class="woocommerce-card__action woocommerce-card__header-item"
-      />
+      >
+        <div>
+          <div>
+            <div
+              class="woocommerce-select-control woocommerce-search is-searchable"
+            >
+              <div
+                class="components-base-control woocommerce-select-control__control empty"
+              >
+                <i
+                  class="material-icons-outlined"
+                >
+                  search
+                </i>
+                <div
+                  class="components-base-control__field"
+                >
+                  <label
+                    class="components-base-control__label"
+                    for="woocommerce-select-control-6__control-input"
+                  >
+                    Search by order number, customer name, or billing email
+                  </label>
+                  <input
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    autocomplete="off"
+                    class="woocommerce-select-control__control-input"
+                    id="woocommerce-select-control-6__control-input"
+                    placeholder=""
+                    role="combobox"
+                    type="text"
+                    value=""
+                  />
+                  <span
+                    class="screen-reader-text"
+                    id="search-inline-input-6"
+                  >
+                    Move backward for selected items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >
         <div
           class="woocommerce-ellipsis-menu"
         >
-          <div>
+          <div
+            class="components-dropdown"
+          >
             <button
               aria-expanded="false"
-              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+              class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
               title="Choose which values to display"
               type="button"
             >
@@ -543,6 +655,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               >
                 <path
                   d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
                 />
               </svg>
             </button>
@@ -585,21 +710,21 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               >
                 <button
                   aria-describedby="header-6-1"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -643,21 +768,21 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               >
                 <button
                   aria-describedby="header-6-3"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -685,21 +810,21 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               >
                 <button
                   aria-describedby="header-6-4"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -727,21 +852,21 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               >
                 <button
                   aria-describedby="header-6-5"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -823,54 +948,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   class="screen-reader-text"
                 >
                   Customer
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Email
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Email
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Country
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Country
-                </span>
-              </th>
-              <th
-                class="woocommerce-table__header"
-                role="columnheader"
-                scope="col"
-              >
-                <span
-                  aria-hidden="true"
-                >
-                  Risk level
-                </span>
-                <span
-                  class="screen-reader-text"
-                >
-                  Risk level
                 </span>
               </th>
               <th
@@ -1021,46 +1098,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  another@customer.com
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  US
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
-                  <span
-                    style="color: green;"
-                  >
-                    Normal
-                  </span>
-                </a>
-              </td>
-              <td
                 class="woocommerce-table__item deposit"
               >
                 Pending
@@ -1190,46 +1227,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  a@b.com
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  US
-                </a>
-              </td>
-              <td
-                class="woocommerce-table__item"
-              >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
-                  <span
-                    style="color: red;"
-                  >
-                    Highest
-                  </span>
-                </a>
-              </td>
-              <td
                 class="woocommerce-table__item deposit"
               >
                 <a
@@ -1311,7 +1308,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
 exports[`Transactions list when not filtered by deposit renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-table transactions-list has-menu"
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
   >
     <div
       class="woocommerce-card__header"
@@ -1326,15 +1323,66 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
         </h2>
       </div>
       <div
+        class="woocommerce-card__action woocommerce-card__header-item"
+      >
+        <div>
+          <div>
+            <div
+              class="woocommerce-select-control woocommerce-search is-searchable"
+            >
+              <div
+                class="components-base-control woocommerce-select-control__control empty"
+              >
+                <i
+                  class="material-icons-outlined"
+                >
+                  search
+                </i>
+                <div
+                  class="components-base-control__field"
+                >
+                  <label
+                    class="components-base-control__label"
+                    for="woocommerce-select-control-1__control-input"
+                  >
+                    Search by order number, customer name, or billing email
+                  </label>
+                  <input
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    autocomplete="off"
+                    class="woocommerce-select-control__control-input"
+                    id="woocommerce-select-control-1__control-input"
+                    placeholder=""
+                    role="combobox"
+                    type="text"
+                    value=""
+                  />
+                  <span
+                    class="screen-reader-text"
+                    id="search-inline-input-1"
+                  >
+                    Move backward for selected items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
         class="woocommerce-card__menu woocommerce-card__header-item"
       >
         <div
           class="woocommerce-ellipsis-menu"
         >
-          <div>
+          <div
+            class="components-dropdown"
+          >
             <button
               aria-expanded="false"
-              class="components-button components-icon-button woocommerce-ellipsis-menu__toggle"
+              class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
               title="Choose which values to display"
               type="button"
             >
@@ -1350,6 +1398,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               >
                 <path
                   d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
                 />
               </svg>
             </button>
@@ -1392,21 +1453,21 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               >
                 <button
                   aria-describedby="header-1-1"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -1450,21 +1511,21 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               >
                 <button
                   aria-describedby="header-1-3"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -1492,21 +1553,21 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               >
                 <button
                   aria-describedby="header-1-4"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"
@@ -1534,21 +1595,21 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               >
                 <button
                   aria-describedby="header-1-5"
-                  class="components-button components-icon-button has-text is-button is-default"
+                  class="components-button"
                   type="button"
                 >
                   <svg
-                    class="gridicon gridicons-chevron-down"
-                    height="18"
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
                     viewBox="0 0 24 24"
-                    width="18"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g>
-                      <path
-                        d="M20 9l-8 8-8-8 1.414-1.414L12 14.172l6.586-6.586"
-                      />
-                    </g>
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
                   </svg>
                   <span
                     aria-hidden="true"

@@ -131,7 +131,7 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -169,7 +169,7 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -312,7 +312,7 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -350,7 +350,7 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -499,7 +499,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -557,7 +557,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -700,7 +700,7 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -738,7 +738,7 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -881,7 +881,7 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -919,7 +919,7 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1068,7 +1068,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1132,7 +1132,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1281,7 +1281,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1342,7 +1342,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1488,7 +1488,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1529,7 +1529,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1672,7 +1672,7 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1710,7 +1710,7 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1853,7 +1853,7 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1891,7 +1891,7 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2040,7 +2040,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2098,7 +2098,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2247,7 +2247,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2314,7 +2314,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2463,7 +2463,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2524,7 +2524,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2673,7 +2673,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2731,7 +2731,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute

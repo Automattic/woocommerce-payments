@@ -15,7 +15,7 @@ exports[`Dispute details actions renders correctly for dispute needing response,
       Challenge dispute
     </a>
     <button
-      class="components-button is-button is-default is-large"
+      class="components-button is-secondary"
       type="button"
     >
       Accept dispute

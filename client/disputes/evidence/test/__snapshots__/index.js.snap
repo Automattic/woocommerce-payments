@@ -79,7 +79,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
               class="components-form-file-upload"
             >
               <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
+                class="components-button is-primary has-text has-icon"
                 id="form-file-upload-customer_signature"
                 type="button"
               >
@@ -136,13 +136,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         class="woocommerce-card__footer"
       >
         <button
-          class="components-button is-button is-primary is-large"
+          class="components-button is-primary"
           type="button"
         >
           Submit evidence
         </button>
         <button
-          class="components-button is-button is-default is-large"
+          class="components-button is-secondary"
           type="button"
         >
           Save for later
@@ -234,7 +234,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
               class="components-form-file-upload"
             >
               <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
+                class="components-button is-primary has-text has-icon"
                 disabled=""
                 id="form-file-upload-customer_signature"
                 type="button"

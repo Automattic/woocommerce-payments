@@ -50,7 +50,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             class="payment-details-summary__actions"
           >
             <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              class="components-button payment-details-summary__actions-item is-secondary"
               href="https://somerandomorderurl.com/?edit_order=45981"
             >
               View order #45981
@@ -240,7 +240,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             class="payment-details-summary__actions"
           >
             <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              class="components-button payment-details-summary__actions-item is-secondary"
               href="https://somerandomorderurl.com/?edit_order=45981"
             >
               View order #45981
@@ -502,7 +502,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             class="payment-details-summary__actions"
           >
             <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              class="components-button payment-details-summary__actions-item is-secondary"
               href="https://somerandomorderurl.com/?edit_order=45981"
             >
               View order #45981
@@ -692,7 +692,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             class="payment-details-summary__actions"
           >
             <a
-              class="components-button payment-details-summary__actions-item is-button is-default is-large"
+              class="components-button payment-details-summary__actions-item is-secondary"
               href="https://somerandomorderurl.com/?edit_order=45981"
             >
               View order #45981
