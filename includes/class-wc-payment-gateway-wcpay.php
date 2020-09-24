@@ -291,6 +291,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Registers all scripts, necessary for the gateway.
 	 */
 	public function register_scripts() {
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
+		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
+		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
+		// https://stripe.com/docs/stripe-js/elements/migrating).
 		wp_register_script(
 			'stripe',
 			'https://js.stripe.com/v3/',
@@ -331,41 +337,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
-			// Add JavaScript for the payment form.
-			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-			// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-			// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-			// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-			// https://stripe.com/docs/stripe-js/elements/migrating).
-			wp_register_script(
-				'stripe',
-				'https://js.stripe.com/v3/',
-				[],
-				'3.0',
-				true
-			);
-
-			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
-			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
-			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
-			$checkout_script_dependencies = array_merge(
-				$checkout_script_asset['dependencies'],
-				[ 'stripe', 'wc-checkout' ]
-			);
-			wp_register_script(
-				'WCPAY_CHECKOUT',
-				$checkout_script_src_url,
-				$checkout_script_dependencies,
-				WC_Payments::get_file_version( 'dist/checkout.js' ),
-				true
-			);
-
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'wcpay-checkout' );
 
 			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
+				'wcpay-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )
