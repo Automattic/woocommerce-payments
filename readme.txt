@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.4
 Requires PHP: 7.0
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,7 +90,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.5.0 - 2020-xx-xx =
+= 1.5.0 - 2020-09-24 =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
 * Fix - Support checkout on Internet Explorer 11.
 * Fix - Webhook processing with no Jetpack plugin installed.
