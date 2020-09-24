@@ -285,6 +285,22 @@ export const TransactionsList = ( props ) => {
 		} );
 	};
 
+	let searchPlaceholder = wcpaySettings.isSubscriptionsActive
+		? __(
+				'Search by order number, subscription number, customer name, or billing email',
+				'woocommerce-payments'
+		  )
+		: __(
+				'Search by order number, customer name, or billing email',
+				'woocommerce-payments'
+		  );
+	if ( ! wcpaySettings.featureFlags.customSearch ) {
+		searchPlaceholder = __(
+			'Search by customer name',
+			'woocommerce-payments'
+		);
+	}
+
 	return (
 		<TableCard
 			className="transactions-list woocommerce-report-table has-search"
@@ -307,17 +323,7 @@ export const TransactionsList = ( props ) => {
 					inlineTags
 					key="search"
 					onChange={ onSearchChange }
-					placeholder={
-						wcpaySettings.featureFlags.customSearch
-							? __(
-									'Search by order number, customer name, or billing email',
-									'woocommerce-payments'
-							  )
-							: __(
-									'Search by customer name',
-									'woocommerce-payments'
-							  )
-					}
+					placeholder={ searchPlaceholder }
 					selected={ searchedLabels }
 					showClearButton={ true }
 					type={

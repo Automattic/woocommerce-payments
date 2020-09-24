@@ -1,6 +1,6 @@
 <?php
 /**
- * Subscription helpers.
+ * Subscriptions helpers.
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -16,6 +16,10 @@ function wcs_get_subscriptions_for_order( $order ) {
 
 function wcs_is_subscription( $order ) {
 	return call_user_func( WC_Subscriptions::$wcs_is_subscription, $order );
+}
+
+function wcs_get_subscription( $subscription ) {
+	return call_user_func( WC_Subscriptions::$wcs_get_subscription, $subscription );
 }
 
 /**
@@ -52,6 +56,13 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_is_subscription = null;
 
+	/**
+	 * wcs_get_subscription mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_get_subscription = null;
+
 	public static function set_wcs_order_contains_subscription( $function ) {
 		self::$wcs_order_contains_subscription = $function;
 	}
@@ -62,5 +73,9 @@ class WC_Subscriptions {
 
 	public static function set_wcs_is_subscription( $function ) {
 		self::$wcs_is_subscription = $function;
+	}
+
+	public static function set_wcs_get_subscription( $function ) {
+		self::$wcs_get_subscription = $function;
 	}
 }
