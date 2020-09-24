@@ -12,6 +12,7 @@ const webpackConfig = {
 		settings: './client/settings.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
+		'subscription-edit-page': './client/subscription-edit-page.js',
 	},
 	output: {
 		filename: '[name].js',

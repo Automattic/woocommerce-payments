@@ -28,6 +28,14 @@
 			border-bottom: 0;
 		}
 
+		&:hover {
+			background: none;
+
+			.woocommerce-list__item-title {
+				color: $studio-gray-60;
+			}
+		}
+
 		.woocommerce-list__item-inner {
 			margin: 0;
 			padding: 0;
@@ -35,8 +43,14 @@
 
 		.woocommerce-list__item-title,
 		.woocommerce-list__item-content {
-			color: $dark-gray-500;
 			margin-top: 0;
+			@include font-size( 14 );
+		}
+		.woocommerce-list__item-title {
+			color: $studio-gray-60;
+		}
+		.woocommerce-list__item-content {
+			color: $studio-gray-80;
 		}
 	}
 	.woocommerce-list__item:first-child {

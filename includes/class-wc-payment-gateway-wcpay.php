@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
@@ -413,9 +415,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			$manual_capture = 'yes' === $this->get_option( 'manual_capture' );
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST, $order, false, $manual_capture );
+			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
 		} catch ( Exception $e ) {
@@ -833,6 +834,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get payment capture type from WCPay settings.
+	 *
+	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
+	 */
+	private function get_capture_type() {
+		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+	}
+
+	/**
 	 * Sanitizes plugin settings before saving them in site's DB.
 	 *
 	 * Filters out some values stored in connected account.
@@ -902,6 +912,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception When statement descriptor is invalid.
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
+		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
+		$value = stripslashes( $value );
+
 		// Validation can be done with a single regex but splitting into multiple for better readability.
 		$valid_length   = '/^.{5,22}$/';
 		$has_one_letter = '/^.*[a-zA-Z]+/';
@@ -915,8 +928,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			throw new Exception( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
-		// Perform text validation after own checks to prevent special characters like < > escaped before own validation.
-		return $this->validate_text_field( $key, $value );
+		return $value;
 	}
 
 	/**
@@ -1429,6 +1441,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Returns a formatted token list for a user.
+	 *
+	 * @param int $user_id The user ID.
+	 */
+	protected function get_user_formatted_tokens_array( $user_id ) {
+		$tokens = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user_id,
+				'gateway_id' => self::GATEWAY_ID,
+			]
+		);
+		return array_map(
+			function ( $token ) {
+				return [
+					'tokenId'         => $token->get_id(),
+					'paymentMethodId' => $token->get_token(),
+					'brand'           => $token->get_card_type(),
+					'last4'           => $token->get_last4(),
+					'expiryMonth'     => $token->get_expiry_month(),
+					'expiryYear'      => $token->get_expiry_year(),
+					'isDefault'       => $token->get_is_default(),
+					'displayName'     => $token->get_display_name(),
+				];
+			},
+			array_values( $tokens )
 		);
 	}
 }

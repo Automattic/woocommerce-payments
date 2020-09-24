@@ -96,6 +96,8 @@ class WC_Payments {
 		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
 		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
 		include_once dirname( __FILE__ ) . '/exceptions/class-wc-payments-intent-authentication-exception.php';
+		include_once dirname( __FILE__ ) . '/constants/class-payment-initiated-by.php';
+		include_once dirname( __FILE__ ) . '/constants/class-payment-capture-type.php';
 		include_once dirname( __FILE__ ) . '/class-payment-information.php';
 
 		// Always load tracker to avoid class not found errors.
@@ -106,6 +108,7 @@ class WC_Payments {
 		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
+		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '3.0.0', '>=' ) ) {
 			include_once dirname( __FILE__ ) . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';

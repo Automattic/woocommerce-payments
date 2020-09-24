@@ -287,4 +287,19 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
 	}
+
+	public function test_get_payment_methods_for_customer_not_throw_resource_missing_code_exception() {
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_payment_methods' )
+			->with( 'cus_test12345' )
+			->willThrowException( new WC_Payments_API_Exception( 'Error Message', 'resource_missing', 400 ) );
+
+		try {
+			$methods = $this->customer_service->get_payment_methods_for_customer( 'cus_test12345' );
+			// We return an empty array as the exception was handled in the function and not bubbled up.
+			$this->assertEquals( $methods, [] );
+		} catch ( WC_Payments_API_Exception $e ) {
+			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of WC_Payments_API_Exception.' );
+		}
+	}
 }

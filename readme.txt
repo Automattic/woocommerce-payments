@@ -94,8 +94,13 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
 * Fix - Support checkout on Internet Explorer 11.
 * Fix - Webhook processing with no Jetpack plugin installed.
+* Fix - Do not block the checkout card field from loading when customer meta is invalid or related to an old account.
+* Fix - Saving account statement descriptor with an ampersand character.
+* Fix - Do not attempt to render the payment timeline if the intention ID is missing.
 * Add - Display payment method details on account subscriptions pages.
 * Add - Redact sensitive data before logging.
+* Add - Support for WooCommerce Subscriptions admin-initiated payment method changes.
+* Add - Link to Subscription admin pages from Transactions views.
 
 = 1.4.1 - 2020-09-07 =
 * Fix - Only redirect to the onboarding screen if the plugin has been individually activated using the plugins page.

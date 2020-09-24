@@ -979,7 +979,7 @@ class WC_Payments_API_Client {
 				$error_message
 			);
 
-			Logger::error( "Error: $error_message ($error_code)" );
+			Logger::error( "$error_message ($error_code)" );
 			throw new WC_Payments_API_Exception( $message, $error_code, $response_code );
 		}
 
@@ -1009,6 +1009,18 @@ class WC_Payments_API_Client {
 				'number' => $order->get_order_number(),
 				'url'    => $order->get_edit_order_url(),
 			];
+
+			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+				$object['order']['subscriptions'] = [];
+
+				$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
+				foreach ( $subscriptions as $subscription ) {
+					$object['order']['subscriptions'][] = [
+						'number' => $subscription->get_order_number(),
+						'url'    => $subscription->get_edit_order_url(),
+					];
+				}
+			}
 		}
 
 		return $object;

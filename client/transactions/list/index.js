@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { uniq } from 'lodash';
+import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
@@ -31,88 +32,101 @@ import './style.scss';
 
 const currency = new Currency();
 
-const columns = [
-	{ key: 'details', label: '', required: true },
-	{
-		key: 'date',
-		label: __( 'Date / Time', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
-		required: true,
-		isLeftAligned: true,
-		defaultOrder: 'desc',
-		cellClassName: 'date-time',
-		isSortable: true,
-		defaultSort: true,
-	},
-	{
-		key: 'type',
-		label: __( 'Type', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
-		required: true,
-	},
-	{
-		key: 'amount',
-		label: __( 'Amount', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
-		isNumeric: true,
-		isSortable: true,
-	},
-	{
-		key: 'fees',
-		label: __( 'Fees', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Fees', 'woocommerce-payments' ),
-		isNumeric: true,
-		isSortable: true,
-	},
-	{
-		key: 'net',
-		label: __( 'Net', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Net', 'woocommerce-payments' ),
-		isNumeric: true,
-		required: true,
-		isSortable: true,
-	},
-	{
-		key: 'order',
-		label: __( 'Order #', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Order number', 'woocommerce-payments' ),
-		required: true,
-	},
-	{
-		key: 'source',
-		label: __( 'Source', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
-	},
-	{
-		key: 'customer_name',
-		label: __( 'Customer', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Customer', 'woocommerce-payments' ),
-	},
-	{
-		key: 'customer_email',
-		label: __( 'Email', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
-		visible: false,
-	},
-	{
-		key: 'customer_country',
-		label: __( 'Country', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
-		visible: false,
-	},
-	{
-		key: 'risk_level',
-		label: __( 'Risk level', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
-		visible: false,
-	},
-];
-const depositColumn = {
-	key: 'deposit',
-	label: __( 'Deposit', 'woocommerce-payments' ),
-	screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
-	cellClassName: 'deposit',
-};
+const getColumns = ( includeDeposit, includeSubscription ) =>
+	[
+		{
+			key: 'details',
+			label: '',
+			required: true,
+		},
+		{
+			key: 'date',
+			label: __( 'Date / Time', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
+			required: true,
+			isLeftAligned: true,
+			defaultOrder: 'desc',
+			cellClassName: 'date-time',
+			isSortable: true,
+			defaultSort: true,
+		},
+		{
+			key: 'type',
+			label: __( 'Type', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
+			required: true,
+		},
+		{
+			key: 'amount',
+			label: __( 'Amount', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
+			isNumeric: true,
+			isSortable: true,
+		},
+		{
+			key: 'fees',
+			label: __( 'Fees', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Fees', 'woocommerce-payments' ),
+			isNumeric: true,
+			isSortable: true,
+		},
+		{
+			key: 'net',
+			label: __( 'Net', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Net', 'woocommerce-payments' ),
+			isNumeric: true,
+			required: true,
+			isSortable: true,
+		},
+		{
+			key: 'order',
+			label: __( 'Order #', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Order number', 'woocommerce-payments' ),
+			required: true,
+		},
+		includeSubscription && {
+			key: 'subscriptions',
+			label: __( 'Subscription #', 'woocommerce-payments' ),
+			screenReaderLabel: __(
+				'Subscription number',
+				'woocommerce-payments'
+			),
+		},
+		{
+			key: 'source',
+			label: __( 'Source', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Source', 'woocommerce-payments' ),
+		},
+		{
+			key: 'customer_name',
+			label: __( 'Customer', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Customer', 'woocommerce-payments' ),
+		},
+		{
+			key: 'customer_email',
+			label: __( 'Email', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Email', 'woocommerce-payments' ),
+			visible: false,
+		},
+		{
+			key: 'customer_country',
+			label: __( 'Country', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
+			visible: false,
+		},
+		{
+			key: 'risk_level',
+			label: __( 'Risk level', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Risk level', 'woocommerce-payments' ),
+			visible: false,
+		},
+		includeDeposit && {
+			key: 'deposit',
+			label: __( 'Deposit', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Deposit', 'woocommerce-payments' ),
+			cellClassName: 'deposit',
+		},
+	].filter( Boolean );
 
 export const TransactionsList = ( props ) => {
 	const { transactions, isLoading } = useTransactions(
@@ -124,9 +138,12 @@ export const TransactionsList = ( props ) => {
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId );
 
-	const columnsToDisplay = props.depositId
-		? columns
-		: [ ...columns, depositColumn ];
+	const columnsToDisplay = useMemo( () => {
+		return getColumns(
+			! props.depositId,
+			wcpaySettings.isSubscriptionsActive
+		);
+	}, [ props.depositId, wcpaySettings.isSubscriptionsActive ] );
 
 	// match background of details and date when sorting
 	const detailsColumn =
@@ -146,6 +163,13 @@ export const TransactionsList = ( props ) => {
 			<DetailsLink id={ txn.charge_id } parentSegment="transactions" />
 		);
 		const orderUrl = <OrderLink order={ txn.order } />;
+		const subscriptions =
+			txn.order &&
+			wcpaySettings.isSubscriptionsActive &&
+			txn.order.subscriptions.map( ( subscription, i, all ) => [
+				<OrderLink key={ i } order={ subscription } />,
+				i !== all.length - 1 && ', ',
+			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 		const deposit = (
 			<Deposit
@@ -178,6 +202,7 @@ export const TransactionsList = ( props ) => {
 				),
 			},
 			order: { value: txn.order_id, display: orderUrl },
+			subscriptions: { value: txn.order_id, display: subscriptions },
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
