@@ -354,33 +354,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Output the form HTML.
 			?>
-			<fieldset>
-				<?php if ( ! empty( $this->get_description() ) ) : ?>
-					<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
-				<?php endif; ?>
+			<?php if ( ! empty( $this->get_description() ) ) : ?>
+				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
+			<?php endif; ?>
 
-				<?php if ( $this->is_in_test_mode() ) : ?>
-					<p class="testmode-info">
-					<?php
-						echo WC_Payments_Utils::esc_interpolated_html(
-							/* translators: link to Stripe testing page */
-							__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
-							]
-						);
-					?>
-					</p>
-				<?php endif; ?>
-
+			<?php if ( $this->is_in_test_mode() ) : ?>
+				<p class="testmode-info">
 				<?php
-				if ( $display_tokenization ) {
-					$this->tokenization_script();
-					echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: link to Stripe testing page */
+						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						]
+					);
 				?>
+				</p>
+			<?php endif; ?>
 
+			<?php
+			if ( $display_tokenization ) {
+				$this->tokenization_script();
+				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+			?>
+
+			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
@@ -390,7 +390,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
 				?>
-
 
 			</fieldset>
 			<?php
