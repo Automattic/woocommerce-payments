@@ -283,7 +283,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
 			'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
+			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 		];
 	}
 
