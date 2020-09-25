@@ -260,12 +260,10 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const paymentMethodId = document.getElementById(
-			'wcpay-payment-method'
-		).value;
-		const savePaymentMethod = document.getElementById(
-			'wc-woocommerce_payments-new-payment-method'
-		).checked;
+		const paymentMethodId = $( '#wcpay-payment-method' ).val();
+		const savePaymentMethod = $(
+			'#wc-woocommerce_payments-new-payment-method'
+		).is( ':checked' );
 		const confirmation = api.confirmIntent(
 			window.location.href,
 			savePaymentMethod ? paymentMethodId : null
