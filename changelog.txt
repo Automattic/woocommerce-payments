@@ -2,6 +2,7 @@
 
 = 1.7.0 - 2020-xx-xx =
 * Fix - Fix ordering of payment detail timeline events.
+* Fix - Payment form hides when saved card is selected.
 
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
