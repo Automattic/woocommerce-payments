@@ -14,6 +14,7 @@ import { NAMESPACE, STORE_NAME } from '../constants';
 import {
 	updateDeposit,
 	updateDeposits,
+	updateDepositsCount,
 	updateErrorForDepositQuery,
 	updateDepositsOverview,
 	updateErrorForDepositsOverview,
@@ -104,22 +105,15 @@ export function* getDeposits( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/deposits`, {
 		page: query.paged,
 		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
 	} );
 
 	try {
 		const results = yield apiFetch( { path } ) || {};
 
-		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are formatted by the server.
-		if (
-			results.data &&
-			results.data.length &&
-			'payout' === results.data[ 0 ].object
-		) {
-			results.data = results.data.map( convertStripePayoutToDeposit );
-		}
-
 		yield updateDeposits( query, results.data );
+		yield updateDepositsCount( results.count );
 
 		// Update resolution state on getDeposit selector for each result.
 		for ( const i in results.data ) {

@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
@@ -19,9 +20,13 @@ import { formatCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 
-// TODO make date, amount sortable - when date is sortable, the background of the info buttons should match
-const columns = [
-	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
+const getColumns = ( sortByDate ) => [
+	{
+		key: 'details',
+		label: '',
+		required: true,
+		cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
+	},
 	{
 		key: 'date',
 		label: __( 'Date', 'woocommerce-payments' ),
@@ -29,6 +34,8 @@ const columns = [
 		isLeftAligned: true,
 		defaultOrder: 'desc',
 		cellClassName: 'date-time',
+		isSortable: true,
+		defaultSort: true,
 	},
 	{
 		key: 'type',
@@ -40,6 +47,7 @@ const columns = [
 		label: __( 'Amount', 'woocommerce-payments' ),
 		isNumeric: true,
 		required: true,
+		isSortable: true,
 	},
 	{
 		key: 'status',
@@ -47,11 +55,19 @@ const columns = [
 		required: true,
 	},
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
-	{ key: 'bankAccount', label: __( 'Bank account', 'woocommerce-payments' ) },
+	{
+		key: 'bankAccount',
+		label: __( 'Bank account', 'woocommerce-payments' ),
+	},
 ];
 
 export const DepositsList = () => {
-	const { deposits, isLoading } = useDeposits( getQuery() );
+	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
+
+	const columnsArgs = [
+		! getQuery().orderby || 'date' === getQuery().orderby,
+	];
+	const columns = useMemo( () => getColumns( ...columnsArgs ), columnsArgs );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (
@@ -108,10 +124,8 @@ export const DepositsList = () => {
 			// className="deposits-list"
 			title={ __( 'Deposit history', 'woocommerce-payments' ) }
 			isLoading={ isLoading }
-			// rowsPerPage={ getQuery().per_page || 25 }
-			// totalRows={ count || 0 }
-			rowsPerPage={ 10 }
-			totalRows={ 10 }
+			rowsPerPage={ getQuery().per_page || 25 }
+			totalRows={ depositsCount }
 			headers={ columns }
 			rows={ rows }
 			query={ getQuery() }

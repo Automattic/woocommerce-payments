@@ -35,24 +35,30 @@ export const useDepositsOverview = () =>
 	} );
 
 // eslint-disable-next-line camelcase
-export const useDeposits = ( { paged, per_page: perPage } ) =>
+export const useDeposits = ( { paged, per_page: perPage, orderby, order } ) =>
 	useSelect(
 		( select ) => {
-			const { getDeposits, getDepositQueryError, isResolving } = select(
-				STORE_NAME
-			);
+			const {
+				getDeposits,
+				getDepositsCount,
+				getDepositQueryError,
+				isResolving,
+			} = select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
 				perPage: Number.isNaN( parseInt( perPage, 10 ) )
 					? '25'
 					: perPage,
+				orderby: orderby || 'date',
+				order: order || 'desc',
 			};
 			return {
 				deposits: getDeposits( query ),
+				depositsCount: getDepositsCount(),
 				depositsError: getDepositQueryError( query ),
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage ]
+		[ paged, perPage, orderby, order ]
 	);
