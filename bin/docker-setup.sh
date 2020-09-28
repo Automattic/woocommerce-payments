@@ -115,7 +115,7 @@ fi
 
 echo "Installing dev tools plugin..."
 set +e
-git clone git@github.com:Automattic/woocommerce-payments-dddddddev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
+git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
 if [[ $? -eq 0 ]]; then
 	cli wp plugin activate woocommerce-payments-dev-tools
 else
