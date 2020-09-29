@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
-import { Button, Notice, CheckboxControl } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -41,39 +41,15 @@ const ConnectPageOnboardingDisabled = () => (
 
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isUsageTrackingEnabled, setUsageTracking ] = useState(
-		wcpayTracks.isEnabled()
-	);
 
-	const handleSetup = async () => {
+	const handleSetup = () => {
 		setSubmitted( true );
-
-		// Use async version here to opt in for tracking and load the script if required.
-		await wcpayTracks.recordEventAsync(
-			wcpayTracks.events.CONNECT_ACCOUNT_CLICKED,
-			null,
-			isUsageTrackingEnabled
-		);
-
-		window.location = isUsageTrackingEnabled
-			? wcpaySettings.connectUrl + '&enable-usage-tracking=true'
-			: wcpaySettings.connectUrl;
+		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED );
 	};
 
 	return (
 		<>
 			<p className="connect-account__terms">{ strings.terms }</p>
-			{ ! wcpayTracks.isEnabled() ? (
-				<div className="connect-account__usage-tracking">
-					<CheckboxControl
-						label={ strings.usageTrackingLabel }
-						help={ strings.usageTrackingHelp }
-						checked={ isUsageTrackingEnabled }
-						onChange={ setUsageTracking }
-						disabled={ isSubmitted }
-					/>
-				</div>
-			) : null }
 			<hr className="full-width" />
 			<p className="connect-account__action">
 				<Button
@@ -82,6 +58,7 @@ const ConnectPageOnboarding = () => {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
+					href={ wcpaySettings.connectUrl }
 				>
 					{ __( 'Set up', 'woocommerce-payments' ) }
 				</Button>
