@@ -294,10 +294,6 @@ class WC_Payments_Account {
 				return;
 			}
 
-			if ( isset( $_GET['enable-usage-tracking'] ) && 'true' === $_GET['enable-usage-tracking'] ) {
-				Tracker::enable_tracking();
-			}
-
 			try {
 				$this->maybe_init_jetpack_connection( $wcpay_connect_param );
 			} catch ( Exception $e ) {
