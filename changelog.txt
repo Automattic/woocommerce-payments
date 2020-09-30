@@ -1,6 +1,7 @@
 *** WooCommerce Payments Changelog ***
 
 = 1.x.x - 2020-xx-xx =
+* Fix - Trimming the whitespace when updating the bank statement descriptor
 * Add - Initial support for the checkout block.
 
 = 1.5.0 - 2020-09-24 =
