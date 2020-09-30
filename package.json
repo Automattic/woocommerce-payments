@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^1.1.2",
-    "css-loader": "^2.1.1",
+    "css-loader": "^4.0.0",
     "debug": "^4.1.1",
     "lodash": "^4.17.14",
     "wordpress-element": "npm:@wordpress/element@2.11.0"
