@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
@@ -13,6 +13,7 @@
     "wp_org_slug": "woocommerce-payments"
   },
   "scripts": {
+    "postinstall": "composer install",
     "build": "npm run build:deps && npm run build:release",
     "build:client": "NODE_ENV=production webpack",
     "build:deps": "rm -rf vendor && composer install --no-dev",
@@ -31,7 +32,7 @@
     "watch": "webpack --watch",
     "start": "npm run watch",
     "dev": "npm run up && npm run watch",
-    "up": "docker-compose up --build --force-recreate -d",
+    "up": "docker-compose up --build --force-recreate -d && ./bin/docker-setup.sh",
     "down": "docker-compose down",
     "wp": "docker-compose exec -u www-data wordpress wp",
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",

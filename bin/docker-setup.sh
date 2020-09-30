@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 
 # Exit if any command fails.
 set -e
@@ -31,6 +31,17 @@ while [[ $? -ne 0 ]]; do
 	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
 
+# If the plugin is already active then return early
+cli wp plugin is-active woocommerce-payments > /dev/null
+if [[ $? -eq 0 ]]; then
+	set -e
+	echo
+	echo "WCPay is installed and active"
+	echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"
+	echo "You can login by using the username and password both as 'admin'"
+	exit 0
+fi
+
 set -e
 
 echo
@@ -57,7 +68,8 @@ echo "Updating the WordPress database..."
 cli wp core update-db --quiet
 
 echo "Configuring paths to work with ngrok...";
-cli config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . ( ! empty( \$_SERVER['HTTP_HOST'] ) ? \$_SERVER['HTTP_HOST'] : 'localhost' )" --raw
+cli config set DOCKER_HOST "\$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
+cli config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
 cli config set WP_SITEURL DOCKER_REQUEST_URL --raw
 cli config set WP_HOME DOCKER_REQUEST_URL --raw
 
@@ -100,6 +112,17 @@ else
 	echo "Updating WooCommerce Payments settings"
 	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 fi
+
+echo "Installing dev tools plugin..."
+set +e
+git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
+if [[ $? -eq 0 ]]; then
+	cli wp plugin activate woocommerce-payments-dev-tools
+else
+	echo
+	echo "WARN: Could not access the dev tools repository. Skipping the install."
+fi;
+set -e
 
 echo
 echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"
