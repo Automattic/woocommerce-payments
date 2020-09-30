@@ -90,6 +90,9 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
+= 1.x.x - 2020-xx-xx =
+* Add - Initial support for the checkout block.
+
 = 1.5.0 - 2020-09-24 =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
 * Fix - Support checkout on Internet Explorer 11.
