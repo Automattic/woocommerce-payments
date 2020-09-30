@@ -157,6 +157,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
@@ -270,6 +271,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Generates the configuration values, needed for payment fields.
+	 *
+	 * Isolated as a separate method in order to be avaiable both
+	 * during the classic checkout, as well as the checkout block.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		return [
+			'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'              => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
+			'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+		];
+	}
+
+	/**
+	 * Registers all scripts, necessary for the gateway.
+	 */
+	public function register_scripts() {
+		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
+		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
+		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
+		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
+		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
+		// https://stripe.com/docs/stripe-js/elements/migrating).
+		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			[],
+			'3.0',
+			true
+		);
+
+		wp_register_script(
+			'wcpay-checkout',
+			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
+			[ 'stripe', 'wc-checkout' ],
+			WC_Payments::get_file_version( 'dist/checkout.js' ),
+			true
+		);
+	}
+
+	/**
 	 * Displays the save to account checkbox.
 	 */
 	public function save_payment_method_checkbox() {
@@ -292,50 +339,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
-			// Add JavaScript for the payment form.
-			$js_config = [
-				'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-				'accountId'              => $this->account->get_stripe_account_id(),
-				'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
-				'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
-				'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-				'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email and refresh the page to try again.', 'woocommerce-payments' ),
-			];
-
-			// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-			// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-			// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-			// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-			// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-			// https://stripe.com/docs/stripe-js/elements/migrating).
-			wp_register_script(
-				'stripe',
-				'https://js.stripe.com/v3/',
-				[],
-				'3.0',
-				true
-			);
-
-			$checkout_script_src_url      = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
-			$checkout_script_asset_path   = WCPAY_ABSPATH . 'dist/checkout.asset.php';
-			$checkout_script_asset        = file_exists( $checkout_script_asset_path ) ? require_once $checkout_script_asset_path : [ 'dependencies' => [] ];
-			$checkout_script_dependencies = array_merge(
-				$checkout_script_asset['dependencies'],
-				[ 'stripe', 'wc-checkout' ]
-			);
-			wp_register_script(
-				'WCPAY_CHECKOUT',
-				$checkout_script_src_url,
-				$checkout_script_dependencies,
-				WC_Payments::get_file_version( 'dist/checkout.js' ),
-				true
-			);
-
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
-			wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'wcpay-checkout' );
 
 			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
+				'wcpay-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )

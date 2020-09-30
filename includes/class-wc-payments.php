@@ -83,6 +83,7 @@ class WC_Payments {
 		};
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
+		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
 		include_once dirname( __FILE__ ) . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -482,5 +483,16 @@ class WC_Payments {
 	 */
 	public static function get_gateway() {
 		return self::$gateway;
+	}
+
+	/**
+	 * Registers the payment method with the blocks registry.
+	 *
+	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
+	 */
+	public static function register_checkout_gateway( $payment_method_registry ) {
+		require_once dirname( __FILE__ ) . '/class-wc-payments-blocks-payment-method.php';
+
+		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 }

@@ -10,8 +10,9 @@ const webpackConfig = {
 	entry: {
 		index: './client/index.js',
 		settings: './client/settings.js',
+		'blocks-checkout': './client/checkout/blocks/index.js',
+		checkout: './client/checkout/classic/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
-		checkout: './client/checkout/index.js',
 	},
 	output: {
 		filename: '[name].js',
@@ -68,6 +69,8 @@ const webpackConfig = {
 						return [ 'wc', 'currency' ];
 					case '@woocommerce/navigation':
 						return [ 'wc', 'navigation' ];
+					case '@woocommerce/blocks-registry':
+						return [ 'wc', 'wcBlocksRegistry' ];
 				}
 			},
 			requestToHandle( request ) {
