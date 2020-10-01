@@ -91,7 +91,7 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 == Changelog ==
 
 = 1.x.x - 2020-xx-xx =
-* Fix - Trimming the whitespace when updating the bank statement descriptor
+* Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
 
 = 1.5.0 - 2020-09-24 =

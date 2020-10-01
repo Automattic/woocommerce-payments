@@ -913,8 +913,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
-		$value = stripslashes( $value );
-		$value = trim( $value );
+		$value = trim( stripslashes( $value ) );
 
 		// Validation can be done with a single regex but splitting into multiple for better readability.
 		$valid_length   = '/^.{5,22}$/';
