@@ -166,7 +166,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account statement descriptor for rendering on the settings page.
 	 *
-	 * @return string Account statement descriptor.
+	 * @return string        Account statement descriptor.
 	 * @throws API_Exception Bubbles up from get_cached_account_data.
 	 */
 	public function get_statement_descriptor() {
