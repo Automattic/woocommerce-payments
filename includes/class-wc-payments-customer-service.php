@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -63,7 +64,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return string The created customer's ID
 	 *
-	 * @throws WC_Payments_API_Exception Error creating customer.
+	 * @throws API_Exception Error creating customer.
 	 */
 	public function create_customer_for_user( $user, $name, $email ) {
 		$description = $this->build_description_string( $user, $name );
@@ -92,7 +93,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return string The updated customer's ID. Can be different to the ID parameter if the customer was re-created.
 	 *
-	 * @throws WC_Payments_API_Exception Error updating the customer.
+	 * @throws API_Exception Error updating the customer.
 	 */
 	public function update_customer_for_user( $customer_id, $user, $name, $email ) {
 		$description = $this->build_description_string( $user, $name );
@@ -110,7 +111,7 @@ class WC_Payments_Customer_Service {
 
 			// We successfully updated the existing customer, so return the passed in ID unchanged.
 			return $customer_id;
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			// If we failed to find the customer we wanted to update, then create a new customer and associate it to the
 			// current user instead. This might happen if the customer was deleted from the server, the linked WCPay
 			// account was changed, or if users were imported from another site.
@@ -147,7 +148,7 @@ class WC_Payments_Customer_Service {
 	 * @param string $customer_id The customer ID.
 	 * @param string $type        Type of payment methods to fetch.
 	 *
-	 * @throws WC_Payments_API_Exception We only handle 'resource_missing' code types and rethrow anything else.
+	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
 	public function get_payment_methods_for_customer( $customer_id, $type = 'card' ) {
 		if ( ! $customer_id ) {
@@ -165,7 +166,7 @@ class WC_Payments_Customer_Service {
 			set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
 			return $payment_methods;
 
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			// If we failed to find the we can simply return empty payment methods as this customer will
 			// be recreated when the user succesfuly adds a payment method.
 			if ( $e->get_error_code() === 'resource_missing' ) {
@@ -235,7 +236,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return string The newly created customer's ID
 	 *
-	 * @throws WC_Payments_API_Exception Error creating customer.
+	 * @throws API_Exception Error creating customer.
 	 */
 	private function recreate_customer( $user, $name, $email ) {
 		if ( $user->ID > 0 ) {

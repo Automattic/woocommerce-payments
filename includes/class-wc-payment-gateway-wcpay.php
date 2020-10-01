@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
@@ -445,7 +446,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param bool                      $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws WC_Payments_API_Exception    Error processing the payment.
+	 * @throws API_Exception    Error processing the payment.
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $force_save_payment_method = false ) {
@@ -1026,7 +1027,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 			if ( 'canceled' === $intent->get_status() ) {

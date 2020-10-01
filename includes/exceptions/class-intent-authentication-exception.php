@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Intent_Authentication_Exception
+ * Class Intent_Authentication_Exception
  *
  * @package WooCommerce\Payments
  */

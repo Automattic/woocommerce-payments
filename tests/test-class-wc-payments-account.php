@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * WC_Payments_Account unit tests.
  */
@@ -56,7 +58,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_check_stripe_account_status_stripe_disconnected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
 		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
@@ -66,7 +68,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	public function test_check_stripe_account_status_stripe_disconnected_and_on_boarding_disabled() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException(
-				new WC_Payments_API_Exception(
+				new API_Exception(
 					'test',
 					'wcpay_on_boarding_disabled',
 					401
@@ -134,7 +136,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			->willReturnCallback(
 				function () use ( $expected_call_count ) {
 					if ( $expected_call_count->getInvocationCount() === 1 ) {
-						throw new WC_Payments_API_Exception(
+						throw new API_Exception(
 							'test',
 							'wcpay_on_boarding_disabled',
 							401
@@ -182,17 +184,17 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_try_is_stripe_connected_throws() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 
 		$this->wcpay_account->try_is_stripe_connected();
 	}
 
 	public function test_try_is_stripe_connected_returns_false() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
@@ -217,7 +219,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_is_stripe_connected_returns_false_on_error() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
@@ -225,7 +227,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_is_stripe_connected_returns_false_when_not_connected() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
@@ -267,10 +269,10 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_get_publishable_key_throws() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'test', 123 ) )
+			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
 		);
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 
 		$this->wcpay_account->get_publishable_key( true );
 	}
@@ -294,10 +296,10 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_get_stripe_account_id_throws() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'test', 123 ) )
+			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
 		);
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 
 		$this->wcpay_account->get_stripe_account_id();
 	}
@@ -346,7 +348,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// cached value should be ignored and the api should return not-connected.
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
@@ -432,7 +434,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
+			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 		$this->wcpay_account->refresh_account_data();
 
@@ -494,7 +496,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'bad_request', 400 ) )
+			$this->throwException( new API_Exception( 'test', 'bad_request', 400 ) )
 		);
 		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 		$this->assertEquals( 'test', $error_msg, 'Error message expected' );

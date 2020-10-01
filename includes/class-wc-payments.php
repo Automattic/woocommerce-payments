@@ -88,6 +88,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
+		require_once __DIR__ . '/exceptions/class-base-exception.php';
+		require_once __DIR__ . '/exceptions/class-api-exception.php';
+
 		self::$api_client = self::create_api_client();
 
 		include_once __DIR__ . '/class-wc-payments-account.php';
@@ -403,7 +406,6 @@ class WC_Payments {
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-exception.php';
 
 		$http_class = self::get_wc_payments_http();
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Base_Exception
+ * Class Base_Exception
  *
  * @package WooCommerce\Payments
  */

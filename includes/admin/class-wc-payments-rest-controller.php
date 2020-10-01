@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -47,7 +49,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	public function forward_request( $api_method, $args, $err_code = '' ) {
 		try {
 			$response = call_user_func_array( [ $this->api_client, $api_method ], $args );
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			$code     = $err_code ? $err_code : 'wcpay_' . $api_method;
 			$response = new WP_Error( $code, $e->getMessage() );
 		}

@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Customer_Service unit tests.
@@ -86,7 +87,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test create customer for user.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_create_customer_for_user() {
 		$user             = new WP_User( 1 );
@@ -105,7 +106,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test update customer for user.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_for_user() {
 		$user = new WP_User( 0 );
@@ -134,7 +135,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test update customer for user when user not found.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_for_user_when_user_not_found() {
 		$user             = new WP_User( 1 );
@@ -151,7 +152,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 					'description' => 'Name: Test User, Username: testUser',
 				]
 			)
-			->willThrowException( new WC_Payments_API_Exception( 'Error Message', 'resource_missing', 400 ) );
+			->willThrowException( new API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		// Check that the API call to create customer happens.
 		$this->mock_api_client->expects( $this->once() )
@@ -172,7 +173,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Test update customer for user when a general exception is thrown.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_for_user_when_general_exception_is_thrown() {
 		$user             = new WP_User( 1 );
@@ -189,9 +190,9 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 					'description' => 'Name: Test User, Username: testUser',
 				]
 			)
-			->willThrowException( new WC_Payments_API_Exception( 'Generic Error Message', 'generic_error', 500 ) );
+			->willThrowException( new API_Exception( 'Generic Error Message', 'generic_error', 500 ) );
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessage( 'Generic Error Message' );
 
 		$this->customer_service->update_customer_for_user(
@@ -292,13 +293,13 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'get_payment_methods' )
 			->with( 'cus_test12345' )
-			->willThrowException( new WC_Payments_API_Exception( 'Error Message', 'resource_missing', 400 ) );
+			->willThrowException( new API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		try {
 			$methods = $this->customer_service->get_payment_methods_for_customer( 'cus_test12345' );
 			// We return an empty array as the exception was handled in the function and not bubbled up.
 			$this->assertEquals( $methods, [] );
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of WC_Payments_API_Exception.' );
 		}
 	}

@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
 /**
@@ -42,13 +43,13 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws WC_Payments_API_Exception - If not connected or request failed.
+	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true ) {
 		// Make sure we're not sending requests if Jetpack is not connected.
 		if ( ! $this->is_connected() ) {
 			Logger::error( 'HTTP_REQUEST_ERROR Site is not connected to WordPress.com' );
-			throw new WC_Payments_API_Exception(
+			throw new API_Exception(
 				__( 'Site is not connected to WordPress.com', 'woocommerce-payments' ),
 				'wcpay_wpcom_not_connected',
 				409 // HTTP Conflict status code.
@@ -75,7 +76,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param string $body - The body passed to the HTTP request.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws WC_Payments_API_Exception - If request returns WP_Error.
+	 * @throws API_Exception - If request returns WP_Error.
 	 */
 	private static function make_request( $args, $body ) {
 		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
@@ -87,7 +88,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new WC_Payments_API_Exception( $message, 'wcpay_http_request_failed', 500 );
+			throw new API_Exception( $message, 'wcpay_http_request_failed', 500 );
 		}
 
 		return $response;
@@ -110,7 +111,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 *
 	 * @param string $redirect - URL to redirect to after the connection process is over.
 	 *
-	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
+	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect ) {
 		// Mark the plugin as enabled in case it had been soft-disconnected.
@@ -120,7 +121,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		if ( ! $this->connection_manager->is_registered() ) {
 			$result = $this->connection_manager->register();
 			if ( is_wp_error( $result ) ) {
-				throw new WC_Payments_API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
+				throw new API_Exception( $result->get_error_message(), 'wcpay_jetpack_register_site_failed', 500 );
 			}
 		}
 
