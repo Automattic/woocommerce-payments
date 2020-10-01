@@ -569,6 +569,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
 			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
 			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
+			'trim_valid'     => [ true, '   good_descriptor  ', 'good_descriptor' ],
 			'empty'          => [ false, '' ],
 			'short'          => [ false, 'WCP' ],
 			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
@@ -579,6 +580,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'no_gt'          => [ false, 'WCPay>dev' ],
 			'req_latin'      => [ false, 'дескриптор' ],
 			'req_letter'     => [ false, '123456' ],
+			'trim_too_short' => [ false, '  aaa    ' ],
 		];
 	}
 }
