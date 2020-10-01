@@ -12,5 +12,5 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Exception for throwing an error when payment processing is not possible or fails.
  */
-class WC_Payments_ProcessPayment_Exception extends WC_Payments_Base_Exception {
+class Process_Payment_Exception extends Base_Exception {
 }

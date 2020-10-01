@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * Abstract class for payments extension exceptions, where we allow to inject
  * human-friendly error codes, e.g. 'order_not_found'.
  */
-abstract class WC_Payments_Base_Exception extends Exception {
+abstract class Base_Exception extends Exception {
 	/**
 	 * String error code, for example 'order_not_found'.
 	 *

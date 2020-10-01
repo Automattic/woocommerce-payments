@@ -95,11 +95,11 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/exceptions/class-wc-payments-base-exception.php';
-		include_once __DIR__ . '/exceptions/class-wc-payments-addpaymentmethod-exception.php';
-		include_once __DIR__ . '/exceptions/class-wc-payments-intent-authentication-exception.php';
-		include_once __DIR__ . '/exceptions/class-wc-payments-invalidpaymentmethod-exception.php';
-		include_once __DIR__ . '/exceptions/class-wc-payments-processpayment-exception.php';
+		include_once __DIR__ . '/exceptions/class-base-exception.php';
+		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/class-payment-information.php';
