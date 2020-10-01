@@ -300,7 +300,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 			// We return an empty array as the exception was handled in the function and not bubbled up.
 			$this->assertEquals( $methods, [] );
 		} catch ( API_Exception $e ) {
-			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of WC_Payments_API_Exception.' );
+			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of API_Exception.' );
 		}
 	}
 }

@@ -38,13 +38,13 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Forwards request to API client with taking care of WC_Payments_API_Exception.
+	 * Forwards request to API client with taking care of API_Exception.
 	 *
 	 * @param string $api_method - API method name.
 	 * @param array  $args - API method args.
 	 * @param string $err_code - Optional error code to use for WP_Error.
 	 *
-	 * @return WP_Error|mixed - Method result of WP_Error in case of WC_Payments_API_Exception.
+	 * @return WP_Error|mixed - Method result of WP_Error in case of API_Exception.
 	 */
 	public function forward_request( $api_method, $args, $err_code = '' ) {
 		try {

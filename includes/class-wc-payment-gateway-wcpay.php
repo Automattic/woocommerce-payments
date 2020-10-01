@@ -9,15 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\Add_Payment_Method_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Exceptions\Intent_Authentication_Exception;
 use WCPay\Tracker;
 
 /**
@@ -918,8 +914,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  string $key Field key.
 	 * @param  string $value Posted Value.
 	 *
-	 * @return string                           Sanitized statement descriptor.
-	 * @throws Invalid_Payment_Method_Exception When statement descriptor is invalid.
+	 * @return string                   Sanitized statement descriptor.
+	 * @throws InvalidArgumentException When statement descriptor is invalid.
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
@@ -935,10 +931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new Invalid_Payment_Method_Exception(
-				__( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ),
-				'invalid_customer_statement'
-			);
+			throw new InvalidArgumentException( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
 		return $value;

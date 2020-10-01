@@ -7,8 +7,6 @@
 
 namespace WCPay\Exceptions;
 
-use Exception;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
