@@ -2,6 +2,7 @@
 
 = 1.x.x - 2020-xx-xx =
 * Add - Initial support for the checkout block.
+* Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.
 
 = 1.5.0 - 2020-09-24 =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
