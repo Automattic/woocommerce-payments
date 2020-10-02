@@ -16,7 +16,6 @@ Array [
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
     "headline": "Payment status changed to Authorization Expired",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -42,7 +41,6 @@ Array [
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
     "headline": "Payment status changed to Authorization Voided",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -68,7 +66,6 @@ Array [
     "body": Array [],
     "date": 2020-03-30T17:33:16.000Z,
     "headline": "Payment status changed to Authorized",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -104,7 +101,6 @@ Array [
         Apr 2, 2020 deposit
       </a>
     </React.Fragment>,
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="plus"
@@ -115,7 +111,6 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -141,7 +136,6 @@ Array [
     "body": Array [],
     "date": 2020-04-01T03:35:13.000Z,
     "headline": "Payment status changed to Failed",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -182,7 +176,6 @@ Array [
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
     "headline": "Payment status changed to Disputed: In Review",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -208,7 +201,6 @@ Array [
     "body": Array [],
     "date": 2020-04-05T02:56:10.000Z,
     "headline": "Payment status changed to Disputed: Lost",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -243,7 +235,6 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "$110.00 will be deducted from a future deposit",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="minus"
@@ -254,7 +245,6 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs Response",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -288,7 +278,6 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "No funds have been withdrawn yet",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="info-outline"
@@ -299,7 +288,6 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs Response",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -350,7 +338,6 @@ Array [
         Apr 5, 2020 deposit
       </a>
     </React.Fragment>,
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="plus"
@@ -361,7 +348,6 @@ Array [
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": "Payment status changed to Disputed: Won",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -387,7 +373,6 @@ Array [
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "$100.00 will be deducted from a future deposit",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="minus"
@@ -398,7 +383,6 @@ Array [
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "Payment status changed to Refunded",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
@@ -424,7 +408,6 @@ Array [
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "$50.00 will be deducted from a future deposit",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="minus"
@@ -435,7 +418,6 @@ Array [
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "Payment status changed to Partial Refund",
-    "hideTimestamp": false,
     "icon": <t
       className=""
       icon="sync"
