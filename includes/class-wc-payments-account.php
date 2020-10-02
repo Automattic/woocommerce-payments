@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use \Automattic\WooCommerce\Admin\Features\Onboarding;
 
@@ -165,8 +166,8 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account statement descriptor for rendering on the settings page.
 	 *
-	 * @return string Account statement descriptor.
-	 * @throws WC_Payments_API_Exception Bubbles up from get_cached_account_data.
+	 * @return string        Account statement descriptor.
+	 * @throws API_Exception Bubbles up from get_cached_account_data.
 	 */
 	public function get_statement_descriptor() {
 		$account = $this->get_cached_account_data();
@@ -364,7 +365,8 @@ class WC_Payments_Account {
 	 * Starts the Jetpack connection flow if it's not already fully connected.
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
-	 * @throws WC_Payments_API_Exception If there was an error when registering the site on WP.com.
+	 *
+	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
 	private function maybe_init_jetpack_connection( $wcpay_connect_from ) {
 		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected();
@@ -495,7 +497,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Account data;
 	 *
-	 * @throws WC_Payments_API_Exception Bubbles up if get_account_data call fails.
+	 * @throws API_Exception Bubbles up if get_account_data call fails.
 	 */
 	private function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -514,7 +516,7 @@ class WC_Payments_Account {
 			delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
 			$account = $this->payments_api_client->get_account_data();
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
 				// Special case - detect account not connected and cache it.
 				$account = [];

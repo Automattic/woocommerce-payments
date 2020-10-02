@@ -22,7 +22,7 @@ interface WC_Payments_Http_Interface {
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws WC_Payments_API_Exception - If not connected or request failed.
+	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function remote_request( $args, $body = null, $is_site_specific = true );
 
@@ -41,7 +41,7 @@ interface WC_Payments_Http_Interface {
 	 *
 	 * @param string $redirect - URL to redirect to after the connection process is over.
 	 *
-	 * @throws WC_Payments_API_Exception - Exception thrown on failure.
+	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect );
 }

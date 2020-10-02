@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -332,7 +334,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will(
 				$this->throwException(
-					new WC_Payments_API_Exception(
+					new API_Exception(
 						$error_message,
 						'resource_missing',
 						400

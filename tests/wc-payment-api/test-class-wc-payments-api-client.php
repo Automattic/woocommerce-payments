@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * WC_Payments_API_Client unit tests.
  */
@@ -289,7 +291,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Test creating a customer.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_create_customer_success() {
 		$name        = 'Test Customer';
@@ -312,7 +314,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a customer.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_success() {
 		$name        = 'Test Customer';
@@ -372,7 +374,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a customer with null customer ID.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_with_null_customer_id() {
 		// Ensure we don't make a call to the server.
@@ -380,7 +382,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'remote_request' );
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessage( 'Customer ID is required' );
 
 		$this->payments_api_client->update_customer( null );
@@ -389,7 +391,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a customer with an empty string customer ID.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_with_empty_string_customer_id() {
 		// Ensure we don't make a call to the server.
@@ -397,7 +399,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'remote_request' );
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessage( 'Customer ID is required' );
 
 		$this->payments_api_client->update_customer( '' );
@@ -406,7 +408,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * Test updating a customer with an empty string customer ID.
 	 *
-	 * @throws WC_Payments_API_Exception
+	 * @throws API_Exception
 	 */
 	public function test_update_customer_with_whitespace_customer_id() {
 		// Ensure we don't make a call to the server.
@@ -414,7 +416,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'remote_request' );
 
-		$this->expectException( WC_Payments_API_Exception::class );
+		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessage( 'Customer ID is required' );
 
 		$this->payments_api_client->update_customer( ' ' );
