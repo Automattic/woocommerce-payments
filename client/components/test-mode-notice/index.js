@@ -7,7 +7,7 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { isInTestMode, getPaymentSettingsUrl } from '../../util';
+import { isInTestMode, getPaymentSettingsUrl } from 'utils';
 
 // The topics (i.e. pages) that have test mode notices.
 export const topics = {

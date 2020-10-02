@@ -9,7 +9,7 @@
  */
 import displayStatus from './mappings';
 import Chip from '../chip';
-import { formatStringValue } from '../../util';
+import { formatStringValue } from 'utils';
 
 const PaymentStatusChip = ( { status } ) => {
 	const mapping = displayStatus[ status ] || {};
