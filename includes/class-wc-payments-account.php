@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Tracker;
 use \Automattic\WooCommerce\Admin\Features\Onboarding;
 
 /**
