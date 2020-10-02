@@ -6,7 +6,7 @@ import { Notice } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { getPaymentSettingsUrl, isInTestMode } from '../../../util';
+import { getPaymentSettingsUrl, isInTestMode } from 'utils';
 import {
 	topics,
 	getPaymentsSettingsUrlComponent,
@@ -16,7 +16,7 @@ import {
 	withTestNotice,
 } from '../index';
 
-jest.mock( '../../../util', () => ( {
+jest.mock( 'utils', () => ( {
 	isInTestMode: jest.fn(),
 	getPaymentSettingsUrl: jest.fn().mockReturnValue( 'https://example.com/' ),
 } ) );

@@ -25,7 +25,7 @@ import RiskLevel from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
-import { formatStringValue } from '../../util';
+import { formatStringValue } from 'utils';
 import Deposit from './deposit';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';

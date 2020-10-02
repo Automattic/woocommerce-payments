@@ -16,7 +16,7 @@ import {
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
 } from './actions';
-import { formatDateValue } from '../../util';
+import { formatDateValue } from 'utils';
 
 /*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {

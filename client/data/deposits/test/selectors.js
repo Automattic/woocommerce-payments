@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from '../../util';
+import { getResourceId } from 'utils/data';
 import {
 	getDeposit,
 	getDeposits,

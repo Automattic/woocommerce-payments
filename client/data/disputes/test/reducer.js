@@ -6,7 +6,7 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { getResourceId } from '../../util';
+import { getResourceId } from 'utils/data';
 
 describe( 'Disputes reducer tests', () => {
 	const mockQuery = { paged: '2', perPage: '50' };

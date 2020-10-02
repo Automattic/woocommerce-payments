@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from '../util';
+import { getResourceId } from 'utils/data';
 
 /**
  * Retrieves the transactions state from the wp.data store if the state

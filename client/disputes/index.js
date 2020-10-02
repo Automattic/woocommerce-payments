@@ -20,7 +20,7 @@ import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
 import { reasons } from './strings';
-import { formatStringValue } from '../util';
+import { formatStringValue } from 'utils';
 
 const currency = new Currency();
 
