@@ -73,7 +73,7 @@ cli config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' 
 cli config set WP_SITEURL DOCKER_REQUEST_URL --raw
 cli config set WP_HOME DOCKER_REQUEST_URL --raw
 
-echo "Enabling WP_DEBUG"
+echo "Enabling WordPress debug flags"
 cli config set WP_DEBUG true --raw
 cli config set WP_DEBUG_DISPLAY true --raw
 cli config set WP_DEBUG_LOG true --raw
