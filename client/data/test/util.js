@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from '../util';
+import { getResourceId } from 'utils/data';
 
 describe( 'General data store utility functions', () => {
 	test( 'getResourceId returns the right string', () => {

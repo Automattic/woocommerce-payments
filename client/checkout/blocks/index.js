@@ -8,7 +8,7 @@ import { registerPaymentMethod } from '@woocommerce/blocks-registry';
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME } from '../constants.js';
-import { getConfig } from './../utils.js';
+import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
 import request from './request.js';
