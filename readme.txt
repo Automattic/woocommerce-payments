@@ -95,7 +95,6 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 * Add - Initial support for the checkout block.
 * Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.
 * Update - Introduced payments-specific exceptions instead of generic one.
-* Update - Relocated client/utils.js into client/utils/index.js (simplifies codebase)
 
 = 1.5.0 - 2020-09-24 =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.
