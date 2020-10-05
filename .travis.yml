@@ -52,7 +52,8 @@ matrix:
     stage: e2e-testing
     script:
       - npm run build:client && npm run test:e2e-setup && npm run test:e2e
-  - stage: validate-composer-manifest
+  - name: "composer.json validation"
+    stage: validate-composer-manifest
     script:
       - composer validate --strict --no-check-all
       - composer require --dev kalessil/production-dependencies-guard:dev-master roave/security-advisories:dev-master
