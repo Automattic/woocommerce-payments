@@ -51,7 +51,7 @@ matrix:
   - name: "E2E tests"
     stage: e2e-testing
     script:
-      - npm run build:client && npm run test:e2e-setup && npm run test:e2e  - name: "E2E tests"
+      - npm run build:client && npm run test:e2e-setup && npm run test:e2e
   - stage: validate-composer-manifest
     script:
       - composer validate --strict --no-check-all
