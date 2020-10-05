@@ -1,8 +1,9 @@
 /** @format */
 
-export default () => (
+export default ( props ) => (
 	/* eslint-disable */
 	<svg
+		{ ...props }
 		width="260"
 		height="193"
 		viewBox="0 0 260 193"
