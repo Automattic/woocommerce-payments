@@ -60,7 +60,8 @@
       "npm run format:provided",
       "npm run lint:css"
     ],
-    "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors"
+    "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors",
+    "composer.json": "composer validate --strict --no-check-all"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^1.1.2",
