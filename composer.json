@@ -39,6 +39,10 @@
         "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
         "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
       },
-      "installer-disable": true
+      "installer-disable": true,
+      "production-dependencies-guard": [
+        "check-lock-file",
+        "check-abandoned"
+      ]
     }
 }
