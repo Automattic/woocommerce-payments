@@ -52,11 +52,6 @@ matrix:
     stage: e2e-testing
     script:
       - npm run build:client && npm run test:e2e-setup && npm run test:e2e
-  - name: "Dependencies validation"
-    stage: secure-dependecies
-    script:
-      - composer require --dev kalessil/production-dependencies-guard:dev-master roave/security-advisories:dev-master
-      - npm audit --audit-level=moderate --production
 
 before_install:
   - nvm install lts/erbium
