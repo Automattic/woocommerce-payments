@@ -5,7 +5,7 @@
  */
 import Chip from '../chip';
 import displayStatus from './mappings';
-import { formatStringValue } from '../../util';
+import { formatStringValue } from 'utils';
 
 const DisputeStatusChip = ( { status } ) => {
 	const mapping = displayStatus[ status ] || {};

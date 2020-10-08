@@ -64,7 +64,6 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 			status
 		),
 		body: [],
-		hideTimestamp: true,
 	};
 };
 
@@ -134,7 +133,6 @@ const getDepositTimelineItem = (
 		icon: getIcon( isPositive ? 'plus' : 'minus' ),
 		headline,
 		body,
-		hideTimestamp: true,
 	};
 };
 
@@ -344,7 +342,6 @@ const mapEventToTimelineItems = ( event ) => {
 						'woocommerce-services'
 					),
 				],
-				hideTimestamp: true,
 			};
 		} else {
 			const formattedTotal = formatCurrency(

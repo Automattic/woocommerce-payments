@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -131,7 +133,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.
 			$this->process_payment_for_order( null, $payment_information, true );
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
 			$renewal_order->update_status( 'failed' );
@@ -197,7 +199,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param array           $payment_meta       Associative array of meta data required for automatic payments.
 	 * @param WC_Subscription $subscription       The subscription order.
 	 *
-	 * @throws Exception When $payment_meta is not valid.
+	 * @throws Invalid_Payment_Method_Exception When $payment_meta is not valid.
 	 */
 	public function validate_subscription_payment_meta( $payment_gateway_id, $payment_meta, $subscription ) {
 		if ( $this->id !== $payment_gateway_id ) {
@@ -205,17 +207,26 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		if ( empty( $payment_meta[ self::PAYMENT_METHOD_META_TABLE ][ self::PAYMENT_METHOD_META_KEY ]['value'] ) ) {
-			throw new Exception( __( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ) );
+			throw new Invalid_Payment_Method_Exception(
+				__( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ),
+				'payment_method_not_selected'
+			);
 		}
 
 		$token = WC_Payment_Tokens::get( $payment_meta[ self::PAYMENT_METHOD_META_TABLE ][ self::PAYMENT_METHOD_META_KEY ]['value'] );
 
 		if ( empty( $token ) ) {
-			throw new Exception( __( 'The saved payment method selected is invalid or does not exist.', 'woocommerce-payments' ) );
+			throw new Invalid_Payment_Method_Exception(
+				__( 'The saved payment method selected is invalid or does not exist.', 'woocommerce-payments' ),
+				'payment_method_token_not_found'
+			);
 		}
 
 		if ( $subscription->get_user_id() !== $token->get_user_id() ) {
-			throw new Exception( __( 'The saved payment method selected does not belong to this order\'s customer.', 'woocommerce-payments' ) );
+			throw new Invalid_Payment_Method_Exception(
+				__( 'The saved payment method selected does not belong to this order\'s customer.', 'woocommerce-payments' ),
+				'payment_method_token_not_owned'
+			);
 		}
 	}
 

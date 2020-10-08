@@ -9,7 +9,7 @@ import { map, keyBy } from 'lodash';
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { getResourceId } from '../util';
+import { getResourceId } from 'utils/data';
 
 const defaultState = { byId: {}, queries: {} };
 

@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -117,7 +118,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_payment_fields_outputs_error() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'test', 123 ) )
+			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
 		);
 
 		$this->wcpay_gateway->payment_fields();
@@ -344,7 +345,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -386,7 +387,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new WC_Payments_API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -569,6 +570,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
 			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
 			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
+			'trim_valid'     => [ true, '   good_descriptor  ', 'good_descriptor' ],
 			'empty'          => [ false, '' ],
 			'short'          => [ false, 'WCP' ],
 			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
@@ -579,6 +581,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'no_gt'          => [ false, 'WCPay>dev' ],
 			'req_latin'      => [ false, 'дескриптор' ],
 			'req_letter'     => [ false, '123456' ],
+			'trim_too_short' => [ false, '  aaa    ' ],
 		];
 	}
 }

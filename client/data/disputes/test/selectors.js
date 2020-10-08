@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from '../../util';
+import { getResourceId } from 'utils/data';
 import { getDispute, getDisputes } from '../selectors';
 
 // Sections in initial state are empty.

@@ -71,7 +71,7 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
-		include_once dirname( __FILE__ ) . '/class-wc-payments-utils.php';
+		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', [ __CLASS__, 'check_plugin_dependencies' ] );
@@ -80,26 +80,33 @@ class WC_Payments {
 
 		if ( ! self::check_multi_currency_disabled() ) {
 			return;
-		};
+		}
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
-		include_once dirname( __FILE__ ) . '/class-wc-payments-db.php';
+		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
+
+		require_once __DIR__ . '/exceptions/class-base-exception.php';
+		require_once __DIR__ . '/exceptions/class-api-exception.php';
 
 		self::$api_client = self::create_api_client();
 
-		include_once dirname( __FILE__ ) . '/class-wc-payments-account.php';
-		include_once dirname( __FILE__ ) . '/class-wc-payments-customer-service.php';
-		include_once dirname( __FILE__ ) . '/class-logger.php';
-		include_once dirname( __FILE__ ) . '/class-wc-payment-gateway-wcpay.php';
-		include_once dirname( __FILE__ ) . '/class-wc-payments-token-service.php';
-		include_once dirname( __FILE__ ) . '/exceptions/class-wc-payments-intent-authentication-exception.php';
-		include_once dirname( __FILE__ ) . '/constants/class-payment-type.php';
-		include_once dirname( __FILE__ ) . '/constants/class-payment-initiated-by.php';
-		include_once dirname( __FILE__ ) . '/constants/class-payment-capture-type.php';
-		include_once dirname( __FILE__ ) . '/class-payment-information.php';
+		include_once __DIR__ . '/class-wc-payments-account.php';
+		include_once __DIR__ . '/class-wc-payments-customer-service.php';
+		include_once __DIR__ . '/class-logger.php';
+		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
+		include_once __DIR__ . '/class-wc-payments-token-service.php';
+		include_once __DIR__ . '/exceptions/class-base-exception.php';
+		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
+		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
+		include_once __DIR__ . '/constants/class-payment-type.php';
+		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
+		include_once __DIR__ . '/constants/class-payment-capture-type.php';
+		include_once __DIR__ . '/class-payment-information.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -111,7 +118,7 @@ class WC_Payments {
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once dirname( __FILE__ ) . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
+			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
@@ -397,10 +404,9 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-charge.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/models/class-wc-payments-api-intention.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-client.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-api-exception.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
 
 		$http_class = self::get_wc_payments_http();
 
@@ -419,8 +425,8 @@ class WC_Payments {
 	 * @return WC_Payments_Http_Interface
 	 */
 	private static function get_wc_payments_http() {
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http-interface.php';
-		require_once dirname( __FILE__ ) . '/wc-payment-api/class-wc-payments-http.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
 		$http_class = apply_filters( 'wc_payments_http', null );
 
@@ -435,7 +441,7 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		include_once WCPAY_ABSPATH . 'includes/exceptions/class-wc-payments-rest-request-exception.php';
+		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';

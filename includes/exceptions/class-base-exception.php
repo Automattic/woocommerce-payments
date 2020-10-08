@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Intent_Authentication_Exception
+ * Class Base_Exception
  *
  * @package WooCommerce\Payments
  */
@@ -12,16 +12,16 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Exception for throwing an error when there's a problem updating an order after a payment
- * authentication attempt was made by the customer, e.g. for 3DS authentication.
+ * Abstract class for payments extension exceptions, where we allow to inject
+ * human-friendly error codes, e.g. 'order_not_found'.
  */
-class WC_Payments_Intent_Authentication_Exception extends Exception {
+abstract class Base_Exception extends Exception {
 	/**
-	 * String error code, for example 'intent_id_mismatch'.
+	 * String error code, for example 'order_not_found'.
 	 *
 	 * @var string
 	 */
-	private $error_code = '';
+	private $error_code;
 
 	/**
 	 * Constructor, including the usual $message, $code, and $previous,
@@ -35,13 +35,13 @@ class WC_Payments_Intent_Authentication_Exception extends Exception {
 	public function __construct( $message, $error_code, $code = 0, $previous = null ) {
 		$this->error_code = $error_code;
 
-		return parent::__construct( $message, $code, $previous );
+		parent::__construct( $message, $code, $previous );
 	}
 
 	/**
 	 * Returns the error code.
 	 *
-	 * @return string Error code, for example 'intent_id_mismatch'.
+	 * @return string Error code, for example 'order_not_found'.
 	 */
 	public function get_error_code() {
 		return $this->error_code;

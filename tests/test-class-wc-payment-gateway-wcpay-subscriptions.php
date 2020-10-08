@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Exceptions\API_Exception;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -243,7 +245,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
-			->willThrowException( new WC_Payments_API_Exception( 'Error', 'error', 500 ) );
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 

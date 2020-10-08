@@ -67,11 +67,20 @@ cli wp core update --quiet
 echo "Updating the WordPress database..."
 cli wp core update-db --quiet
 
-echo "Configuring paths to work with ngrok...";
+echo "Configuring WordPress to work with ngrok (in order to allow creating a Jetpack-WPCOM connection)";
 cli config set DOCKER_HOST "\$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
 cli config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
 cli config set WP_SITEURL DOCKER_REQUEST_URL --raw
 cli config set WP_HOME DOCKER_REQUEST_URL --raw
+
+echo "Enabling WordPress debug flags"
+cli config set WP_DEBUG true --raw
+cli config set WP_DEBUG_DISPLAY true --raw
+cli config set WP_DEBUG_LOG true --raw
+cli config set SCRIPT_DEBUG true --raw
+
+echo "Enabling WordPress development environment (enforces Stripe testing mode)";
+cli config set WP_ENVIRONMENT_TYPE development
 
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'

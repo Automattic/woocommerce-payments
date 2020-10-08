@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 
 /**
  * Mostly a wrapper containing information on a single payment.
@@ -70,7 +71,7 @@ class Payment_Information {
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 *
-	 * @throws \Exception - If no payment method is found in the provided request.
+	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
 	public function __construct(
 		string $payment_method,
@@ -80,7 +81,10 @@ class Payment_Information {
 		Payment_Capture_Type $manual_capture = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) ) {
-			throw new \Exception( __( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ) );
+			throw new Invalid_Payment_Method_Exception(
+				__( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ),
+				'payment_method_not_provided'
+			);
 		}
 
 		$this->payment_method       = $payment_method;

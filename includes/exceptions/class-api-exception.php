@@ -1,25 +1,18 @@
 <?php
 /**
- * Class WC_Payments_Exception
+ * Class API_Exception
  *
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+namespace WCPay\Exceptions;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
- * Class representing WC_Payments_API_Exception
+ * Class representing API_Exception
  */
-class WC_Payments_API_Exception extends Exception {
-	/**
-	 * String error code, for example wcpay_account_not_found.
-	 *
-	 * @var string
-	 */
-	private $error_code = '';
-
+class API_Exception extends Base_Exception {
 	/**
 	 * HTTP error code, for example 404, 500 etc.
 	 *
@@ -37,19 +30,9 @@ class WC_Payments_API_Exception extends Exception {
 	 * @param Throwable $previous   The previous exception used for the exception chaining.
 	 */
 	public function __construct( $message, $error_code, $http_code, $code = 0, $previous = null ) {
-		$this->error_code = $error_code;
-		$this->http_code  = $http_code;
+		$this->http_code = $http_code;
 
-		return parent::__construct( $message, $code, $previous );
-	}
-
-	/**
-	 * Returns the error code.
-	 *
-	 * @return string Error code, for example wcpay_account_not_found.
-	 */
-	public function get_error_code() {
-		return $this->error_code;
+		parent::__construct( $message, $error_code, $code, $previous );
 	}
 
 	/**

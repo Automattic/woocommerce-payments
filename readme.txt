@@ -91,7 +91,11 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 == Changelog ==
 
 = 1.x.x - 2020-xx-xx =
+* Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
+* Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.
+* Update - Introduced payments-specific exceptions instead of generic one.
+* Update - Transaction timeline: enabled timestamps rendering for all entries.
 
 = 1.5.0 - 2020-09-24 =
 * Fix - Save payment method checkbox for Subscriptions customer-initiated payment method updates.

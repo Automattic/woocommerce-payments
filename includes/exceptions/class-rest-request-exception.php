@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Rest_Exception
+ * Class Rest_Request_Exception
  *
  * @package WooCommerce\Payments
  */
@@ -14,4 +14,4 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Exception for throwing errors in REST API controllers (e.g. issues with missing parameters in requests).
  */
-class WC_Payments_Rest_Request_Exception extends Exception {}
+class Rest_Request_Exception extends Exception {}

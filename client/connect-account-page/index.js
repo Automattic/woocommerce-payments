@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
  * Internal dependencies
@@ -14,82 +13,74 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 import './style.scss';
 import Page from 'components/page';
 import HeroImage from './hero-image';
+import strings from './strings';
+import wcpayTracks from 'tracks';
 
-const ConnectAccountPage = () => {
+const ConnectPageError = () => {
+	if ( ! wcpaySettings.errorMessage ) {
+		return null;
+	}
+	return (
+		<Notice
+			className="wcpay-connect-error-notice"
+			status="error"
+			isDismissible={ false }
+		>
+			{ wcpaySettings.errorMessage }
+		</Notice>
+	);
+};
+
+const ConnectPageOnboardingDisabled = () => (
+	<p>
+		{ strings.onboardingDisabled[ 0 ] }
+		<br />
+		{ strings.onboardingDisabled[ 1 ] }
+	</p>
+);
+
+const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
+	const handleSetup = () => {
+		setSubmitted( true );
+		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED );
+	};
+
+	return (
+		<>
+			<p className="connect-account__terms">{ strings.terms }</p>
+			<hr className="full-width" />
+			<p className="connect-account__action">
+				<Button
+					isPrimary
+					isLarge
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ handleSetup }
+					href={ wcpaySettings.connectUrl }
+				>
+					{ __( 'Set up', 'woocommerce-payments' ) }
+				</Button>
+			</p>
+		</>
+	);
+};
+
+const ConnectAccountPage = () => {
 	return (
 		<Page isNarrow className="connect-account">
-			{ wcpaySettings.errorMessage && (
-				<Notice
-					className="wcpay-connect-error-notice"
-					status="error"
-					isDismissible={ false }
-				>
-					{ wcpaySettings.errorMessage }
-				</Notice>
-			) }
+			<ConnectPageError />
 			<Card className="connect-account__card">
-				<HeroImage />
-				<h2>
-					{ ' ' }
-					{ __(
-						'WooCommerce Payments',
-						'woocommerce-payments'
-					) }{ ' ' }
-				</h2>
+				<HeroImage className="hero-image" />
+				<h2>{ strings.heading }</h2>
 				<p className="connect-account__description">
-					{ __(
-						'Accept credit card payments the easy way! No set up fees. ' +
-							'No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.',
-						'woocommerce-payments'
-					) }
+					{ strings.description }
 				</p>
-				{ ! wcpaySettings.onBoardingDisabled ? (
-					<>
-						<p className="connect-account__terms">
-							{ createInterpolateElement(
-								__(
-									'By clicking “Set up,” you agree to the <a>Terms of Service</a>',
-									'woocommerce-payments'
-								),
-								{
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									a: <a href="https://wordpress.com/tos" />,
-								}
-							) }
-						</p>
-						<hr className="full-width" />
-						<p className="connect-account__action">
-							<Button
-								isPrimary
-								isLarge
-								isBusy={ isSubmitted }
-								disabled={ isSubmitted }
-								onClick={ () => {
-									setSubmitted( true );
-									window.wcTracks.recordEvent(
-										'wcpay_connect_account_clicked'
-									);
-								} }
-								href={ wcpaySettings.connectUrl }
-							>
-								{ __( 'Set up', 'woocommerce-payments' ) }
-							</Button>
-						</p>
-					</>
+				{ wcpaySettings.onBoardingDisabled ? (
+					<ConnectPageOnboardingDisabled />
 				) : (
-					<p>
-						{ __(
-							"We've temporarily paused new account creation.",
-							'woocommmerce-payments'
-						) }
-						<br />
-						{ __(
-							"We'll notify you when we resume!",
-							'woocommmerce-payments'
-						) }
-					</p>
+					<ConnectPageOnboarding />
 				) }
 			</Card>
 		</Page>

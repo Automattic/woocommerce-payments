@@ -15,7 +15,7 @@ import { Link } from '@woocommerce/components';
 import OrderLink from 'components/order-link';
 import { getDetailsURL } from 'components/details-link';
 import { reasons } from '../strings';
-import { formatStringValue } from '../../util';
+import { formatStringValue } from 'utils';
 import './style.scss';
 import Loadable from 'components/loadable';
 

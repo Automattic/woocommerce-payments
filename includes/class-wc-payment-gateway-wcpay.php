@@ -9,12 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
 use WCPay\Tracker;
 
 /**
@@ -222,7 +222,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_in_dev_mode() {
-		return apply_filters( 'wcpay_dev_mode', defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE );
+		$is_extension_dev_mode        = defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+		$is_wordpress_dev_environment = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), [ 'development', 'staging' ], true );
+		return apply_filters( 'wcpay_dev_mode', $is_extension_dev_mode || $is_wordpress_dev_environment );
 	}
 
 	/**
@@ -444,8 +446,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param bool                      $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
-	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 * @throws WC_Payments_API_Exception Error processing the payment.
+	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                Error processing the payment.
+	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $force_save_payment_method = false ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -526,7 +529,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
 			// For now, since we're not supporting SCA cards, we can ignore that status.
 			if ( 'succeeded' !== $status ) {
-				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+				throw new Add_Payment_Method_Exception(
+					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
+					'invalid_response_status'
+				);
 			}
 		}
 
@@ -908,12 +914,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  string $key Field key.
 	 * @param  string $value Posted Value.
 	 *
-	 * @return string Sanitized statement descriptor.
-	 * @throws Exception When statement descriptor is invalid.
+	 * @return string                   Sanitized statement descriptor.
+	 * @throws InvalidArgumentException When statement descriptor is invalid.
 	 */
 	public function validate_account_statement_descriptor_field( $key, $value ) {
 		// Since the value is escaped, and we are saving in a place that does not require escaping, apply stripslashes.
-		$value = stripslashes( $value );
+		$value = trim( stripslashes( $value ) );
 
 		// Validation can be done with a single regex but splitting into multiple for better readability.
 		$valid_length   = '/^.{5,22}$/';
@@ -925,7 +931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! preg_match( $has_one_letter, $value ) ||
 			! preg_match( $no_specials, $value )
 		) {
-			throw new Exception( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
+			throw new InvalidArgumentException( __( 'Customer bank statement is invalid. Statement should be between 5 and 22 characters long, contain at least single Latin character and does not contain special characters: \' " * &lt; &gt;', 'woocommerce-payments' ) );
 		}
 
 		return $value;
@@ -1014,7 +1020,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
-		} catch ( WC_Payments_API_Exception $e ) {
+		} catch ( API_Exception $e ) {
 			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 			if ( 'canceled' === $intent->get_status() ) {
@@ -1152,13 +1158,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_update_order_status_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
-				throw new Exception( __( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ) );
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'invalid_referrer'
+				);
 			}
 
 			$order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : false;
 			$order    = wc_get_order( $order_id );
 			if ( ! $order ) {
-				throw new Exception( __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ) );
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'order_not_found'
+				);
 			}
 
 			$intent_id          = $order->get_meta( '_intent_id', true );
@@ -1168,7 +1180,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			: __( 'unknown', 'woocommerce-payments' );
 
 			if ( empty( $intent_id ) ) {
-				throw new WC_Payments_Intent_Authentication_Exception(
+				throw new Intent_Authentication_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 					'empty_intent_id'
 				);
@@ -1182,7 +1194,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// the order, so we need to make sure the intent that was used for authentication
 			// is the same as the one we're using to update the status.
 			if ( $intent_id !== $intent_id_received ) {
-				throw new WC_Payments_Intent_Authentication_Exception(
+				throw new Intent_Authentication_Exception(
 					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 					'intent_id_mismatch'
 				);
@@ -1284,7 +1296,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				wp_die();
 			}
-		} catch ( WC_Payments_Intent_Authentication_Exception $e ) {
+		} catch ( Intent_Authentication_Exception $e ) {
 			$error_code = $e->get_error_code();
 
 			switch ( $error_code ) {
@@ -1329,14 +1341,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Add payment method via account screen.
 	 *
-	 * @throws Exception If payment method is missing.
+	 * @throws Add_Payment_Method_Exception If payment method is missing.
 	 */
 	public function add_payment_method() {
 		try {
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
-				throw new Exception( __( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ) );
+				throw new Add_Payment_Method_Exception(
+					__( 'A WooCommerce Payments payment method was not provided', 'woocommerce-payments' ),
+					'payment_method_intent_not_provided'
+				);
 			}
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
@@ -1345,13 +1360,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
 
 			if ( ! $setup_intent_id || null === $customer_id ) {
-				throw new Exception( __( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ) );
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please try again later", 'woocommerce-payments' ),
+					'invalid_setup_intent_id'
+				);
 			}
 
 			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 
 			if ( 'succeeded' !== $setup_intent['status'] ) {
-				throw new Exception( __( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ) );
+				throw new Add_Payment_Method_Exception(
+					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
+					'invalid_response_status'
+				);
 			}
 
 			$payment_method = $setup_intent['payment_method'];
@@ -1395,13 +1416,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
 	 *
-	 * @throws Exception - If nonce or setup intent is invalid.
+	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
 	 */
 	public function create_setup_intent_ajax() {
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
-				throw new Exception( __( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ) );
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'invalid_referrer'
+				);
 			}
 
 			$setup_intent = $this->create_setup_intent();

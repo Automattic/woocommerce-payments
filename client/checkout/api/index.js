@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig, setConfig } from '../utils.js';
+import { getConfig, setConfig } from 'utils/checkout';
 
 /**
  * Handles generic connections to the server and Stripe.

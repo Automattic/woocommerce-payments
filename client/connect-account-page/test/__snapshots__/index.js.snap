@@ -12,6 +12,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
         class="woocommerce-card__body"
       >
         <svg
+          class="hero-image"
           fill="none"
           height="193"
           viewBox="0 0 260 193"
@@ -171,9 +172,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           </defs>
         </svg>
         <h2>
-           
           WooCommerce Payments
-           
         </h2>
         <p
           class="connect-account__description"
@@ -221,6 +220,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
         class="woocommerce-card__body"
       >
         <svg
+          class="hero-image"
           fill="none"
           height="193"
           viewBox="0 0 260 193"
@@ -380,9 +380,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
           </defs>
         </svg>
         <h2>
-           
           WooCommerce Payments
-           
         </h2>
         <p
           class="connect-account__description"
