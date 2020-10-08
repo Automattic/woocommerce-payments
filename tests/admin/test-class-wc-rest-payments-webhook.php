@@ -172,7 +172,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
-				'A refund of <span class="woocommerce-Price-amount amount"><span class="woocommerce-Price-currencySymbol">&pound;</span>9.99</span> was <strong>unsuccessful</strong> using WooCommerce Payments (<code>test_refund_id</code>).'
+				$this->matchesRegularExpression(
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&pound;</span>9.99(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+				)
 			);
 
 		$this->mock_db_wrapper
