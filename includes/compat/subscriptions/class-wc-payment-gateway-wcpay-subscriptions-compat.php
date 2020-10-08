@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 
 /**
@@ -83,11 +84,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = 'single' ) {
+	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = null ) {
 		if ( wcs_order_contains_subscription( $order_id ) || $this->is_changing_payment_method_for_subscription() ) {
-			return parent::process_payment( $order_id, true, 'recurring' );
+			return parent::process_payment( $order_id, true, Payment_Type::RECURRING() );
 		} else {
-			return parent::process_payment( $order_id, $force_save_payment_method );
+			return parent::process_payment( $order_id, $force_save_payment_method, $payment_type );
 		}
 	}
 
@@ -125,7 +126,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT() );
-		$payment_information->set_payment_type( 'recurring' );
+		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.

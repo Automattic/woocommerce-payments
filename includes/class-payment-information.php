@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 
@@ -58,7 +59,7 @@ class Payment_Information {
 	 *
 	 * @var string
 	 */
-	private $payment_type = 'single';
+	private $payment_type;
 
 	/**
 	 * Payment information constructor.
@@ -87,6 +88,7 @@ class Payment_Information {
 		$this->token                = $token;
 		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
 		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
+		$this->payment_type         = Payment_Type::SINGLE();
 	}
 
 	/**

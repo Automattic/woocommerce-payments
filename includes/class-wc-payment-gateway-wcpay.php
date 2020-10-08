@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\WC_Payments_Intent_Authentication_Exception;
@@ -412,13 +413,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = 'single' ) {
+	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = null ) {
 		$order = wc_get_order( $order_id );
 
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
-			$payment_information->set_payment_type( $payment_type );
+			if ( ! empty( $payment_type ) ) {
+				$payment_information->set_payment_type( $payment_type );
+			}
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
 		} catch ( Exception $e ) {
