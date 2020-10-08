@@ -37,6 +37,7 @@ export default async function confirmCardPayment(
 			type: 'error',
 			message: error.message,
 			messageContext: emitResponse.noticeContexts.PAYMENTS,
+			retry: true,
 		};
 	}
 }
