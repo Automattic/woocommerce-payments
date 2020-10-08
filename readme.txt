@@ -47,6 +47,8 @@ Our global support team is available to answer questions you may have about WooC
 
 To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
 
+WooCommerce Payments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
+
 == Installation ==
 
 Install and activate the WooCommerce and WooCommerce Payments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
@@ -80,6 +82,15 @@ WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When y
 = Are there Terms of Service and data usage policies? =
 
 You can read our Terms of Service [here](https://en.wordpress.com/tos).
+
+= How does the Checkout block work? =
+
+You need the [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/) plugin to be installed and active to use the Checkout block. Once you add the block to a page, WooCommerce Payments will automatically appear as an option.
+
+Please note that our support for the checkout block is still experimental and the following features of the gateway will probably not work:
+
+* Using saved cards and saving cards.
+* Integration with WooCommerce Subscriptions.
 
 == Screenshots ==
 
