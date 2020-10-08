@@ -77,14 +77,18 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $is_recurring_payment Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param int    $order_id Order ID to process the payment for.
+	 * @param bool   $force_save_payment_method Whether to save the payment method upon successful payment.
+	 * @param string $payment_type              The type of the payment that's being made.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $is_recurring_payment = false ) {
-		$force_save_payment_method = wcs_order_contains_subscription( $order_id ) || $this->is_changing_payment_method_for_subscription();
-		return parent::process_payment( $order_id, $force_save_payment_method );
+	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = 'single' ) {
+		if ( wcs_order_contains_subscription( $order_id ) || $this->is_changing_payment_method_for_subscription() ) {
+			return parent::process_payment( $order_id, true, 'recurring' );
+		} else {
+			return parent::process_payment( $order_id, $force_save_payment_method );
+		}
 	}
 
 	/**
@@ -121,6 +125,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT() );
+		$payment_information->set_payment_type( 'recurring' );
 
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.

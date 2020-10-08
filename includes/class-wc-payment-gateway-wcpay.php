@@ -406,17 +406,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param int    $order_id                  Order ID to process the payment for.
+	 * @param bool   $force_save_payment_method Whether to save the payment method upon successful payment.
+	 * @param string $payment_type              The type of the payment that's being made.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false ) {
+	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = 'single' ) {
 		$order = wc_get_order( $order_id );
 
 		try {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+			$payment_information->set_payment_type( $payment_type );
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
 		} catch ( Exception $e ) {
@@ -457,13 +459,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
+			'payment_type'   => $payment_information->get_payment_type(),
 		];
-
-		// We only force save the card during subscriptions.
-		// TODO: This is a bit flawed; make these 2 functionalities distinct.
-		if ( $force_save_payment_method ) {
-			$metadata['payment_type'] = 'recurring';
-		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );

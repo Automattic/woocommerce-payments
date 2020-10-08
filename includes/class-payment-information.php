@@ -54,6 +54,13 @@ class Payment_Information {
 	private $manual_capture;
 
 	/**
+	 * The type of the payment. `single`, `recurring`, etc.
+	 *
+	 * @var string
+	 */
+	private $payment_type = 'single';
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -217,5 +224,23 @@ class Payment_Information {
 		}
 
 		return $token;
+	}
+
+	/**
+	 * Cchanges type type of the payment.
+	 *
+	 * @param string $type The new type.
+	 */
+	public function set_payment_type( $type ) {
+		$this->payment_type = $type;
+	}
+
+	/**
+	 * Retrieves the type of the payment.
+	 *
+	 * @return string The payment type.
+	 */
+	public function get_payment_type() {
+		return $this->payment_type;
 	}
 }
