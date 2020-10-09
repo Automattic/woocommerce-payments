@@ -205,6 +205,18 @@ class WC_Payments_Admin {
 			true
 		);
 
+		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
+		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
+		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			'WCPAY_TOS',
+			$tos_script_src_url,
+			$tos_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/tos.js' ),
+			true
+		);
+
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
 		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
@@ -255,6 +267,13 @@ class WC_Payments_Admin {
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
+		}
+
+		// TODO: Update pages list where script is enqueued.
+		if ( $current_tab && $current_section
+			&& 'checkout' === $current_tab
+			&& 'woocommerce_payments' === $current_section ) {
+			wp_enqueue_script( 'WCPAY_TOS' );
 		}
 	}
 
