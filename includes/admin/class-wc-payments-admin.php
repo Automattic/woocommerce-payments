@@ -217,6 +217,13 @@ class WC_Payments_Admin {
 			true
 		);
 
+		wp_register_style(
+			'WCPAY_TOS',
+			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/tos.css' )
+		);
+
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
 		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
@@ -271,9 +278,10 @@ class WC_Payments_Admin {
 
 		// TODO: Update pages list where script is enqueued.
 		if ( $current_tab && $current_section
-			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section ) {
+		&& 'checkout' === $current_tab
+		&& 'woocommerce_payments' === $current_section ) {
 			wp_enqueue_script( 'WCPAY_TOS' );
+			wp_enqueue_style( 'WCPAY_TOS' );
 		}
 	}
 
