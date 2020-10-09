@@ -49,10 +49,7 @@ const PaymentDetails = ( props ) => {
 				charge={ charge }
 				isLoading={ isLoading }
 			/>
-			{
-				// Hidden for the beta.
-				false && <PaymentDetailsSession charge={ charge } />
-			}
+			<PaymentDetailsSession charge={ charge } />
 		</Page>
 	);
 };
