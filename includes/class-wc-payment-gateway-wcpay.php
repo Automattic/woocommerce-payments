@@ -321,16 +321,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Displays the save to account checkbox.
+	 *
+	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
 	 */
-	public function save_payment_method_checkbox() {
-		printf(
-			'<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
-				<input id="wc-%1$s-new-payment-method" name="wc-%1$s-new-payment-method" type="checkbox" value="true" style="width:auto;" />
-				<label for="wc-%1$s-new-payment-method" style="display:inline;">%2$s</label>
-			</p>',
-			esc_attr( $this->id ),
-			esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) )
-		);
+	public function save_payment_method_checkbox( $force_checked = false ) {
+		$id = 'wc-' . $this->id . '-new-payment-method';
+		?>
+		<div <?php echo $force_checked ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
+				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; ?> /> // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
+					<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) ); ?>
+				</label>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
@@ -386,11 +391,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 
 				<?php
-				if ( apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) && ! is_add_payment_method_page() ) {
-					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
+				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+				$this->save_payment_method_checkbox( $force_save_payment );
 				?>
-
 
 			</fieldset>
 			<?php
