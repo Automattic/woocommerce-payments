@@ -28,4 +28,10 @@ Install The following plugins
 
 Connect using jetpack. You will need a externally accessible url. You can use ngrok for this.
 
+If you want to set up an account with test data, set the `dev` mode flag to true. In your site's `wp-config.php`:
+
+```PHP
+define( 'WCPAY_DEV_MODE', true );
+```
+
 See: https://github.com/Automattic/woocommerce-payments/blob/master/CONTRIBUTING.md (possibly move contents here for visibility sake)
