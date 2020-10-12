@@ -16,7 +16,7 @@ const TosLink = () => (
 	<Link href="https://wordpress.com/tos" target="_blank" type="external" />
 );
 
-const TosModalUI = ( { onAccept, onDecline } ) => {
+const TosModalUI = ( { onAccept, onDecline, isBusy } ) => {
 	const title = __(
 		'WooCommerce Payments: Terms of Service',
 		'woocommerce-payments'
@@ -44,11 +44,11 @@ const TosModalUI = ( { onAccept, onDecline } ) => {
 					{ message }
 				</div>
 				<div className="woocommerce-payments__tos-footer">
-					<Button isTertiary onClick={ onDecline }>
+					<Button isTertiary onClick={ onDecline } isBusy={ isBusy }>
 						{ __( 'Decline', 'woocommerce-payments' ) }
 					</Button>
 
-					<Button isPrimary onClick={ onAccept }>
+					<Button isPrimary onClick={ onAccept } isBusy={ isBusy }>
 						{ __( 'Accept', 'woocommerce-payments' ) }
 					</Button>
 				</div>
@@ -57,7 +57,7 @@ const TosModalUI = ( { onAccept, onDecline } ) => {
 	);
 };
 
-const DisableModalUI = ( { onDisable, onCancel } ) => {
+const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 	const title = __( 'Disable WooCommerce Payments', 'woocommerce-payments' );
 	const message = interpolateComponents( {
 		mixedString: __(
@@ -83,11 +83,11 @@ const DisableModalUI = ( { onDisable, onCancel } ) => {
 					{ message }
 				</div>
 				<div className="woocommerce-payments__tos-footer">
-					<Button isTertiary onClick={ onCancel }>
+					<Button isTertiary onClick={ onCancel } isBusy={ isBusy }>
 						{ __( 'Back', 'woocommerce-payments' ) }
 					</Button>
 
-					<Button isPrimary onClick={ onDisable }>
+					<Button isPrimary onClick={ onDisable } isBusy={ isBusy }>
 						{ __( 'Disable', 'woocommerce-payments' ) }
 					</Button>
 				</div>
@@ -100,18 +100,32 @@ const TosModal = () => {
 	// TODO: detect initial state
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
 	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
+	const [ isBusy, setIsBusy ] = useState( false );
 
-	const closeModal = () => setIsTosModalOpen( false );
+	const closeTosModal = () => setIsTosModalOpen( false );
 	const closeDisableModal = () => setIsDisableModalOpen( false );
 
 	const declineTos = () => {
-		closeModal();
+		closeTosModal();
 		setIsDisableModalOpen( true );
 	};
 
-	// TODO: Add handlers
-	const acceptTos = closeModal;
-	const disablePlugin = closeDisableModal;
+	const acceptTos = () => {
+		// TODO: Call endpoint to accept ToS
+		setIsBusy( true );
+		setTimeout( () => {
+			setIsBusy( false );
+			closeTosModal();
+		}, 200 );
+	};
+	const disablePlugin = () => {
+		// TODO: Call endpoint to disable plugin
+		setIsBusy( true );
+		setTimeout( () => {
+			setIsBusy( false );
+			closeDisableModal();
+		}, 200 );
+	};
 
 	const cancelPluginDisable = () => {
 		closeDisableModal();
@@ -123,12 +137,19 @@ const TosModal = () => {
 			<DisableModalUI
 				onDisable={ disablePlugin }
 				onCancel={ cancelPluginDisable }
+				isBusy={ isBusy }
 			/>
 		);
 	}
 
 	if ( isTosModalOpen ) {
-		return <TosModalUI onAccept={ acceptTos } onDecline={ declineTos } />;
+		return (
+			<TosModalUI
+				onAccept={ acceptTos }
+				onDecline={ declineTos }
+				isBusy={ isBusy }
+			/>
+		);
 	}
 
 	return null;
