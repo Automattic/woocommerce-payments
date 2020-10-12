@@ -67,8 +67,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
-		$page       = intval( $request->get_param( 'page' ) );
-		$page_size  = intval( $request->get_param( 'pagesize' ) );
+		$page       = (int) $request->get_param( 'page' );
+		$page_size  = (int) $request->get_param( 'pagesize' );
 		$sort       = $request->get_param( 'sort' );
 		$direction  = $request->get_param( 'direction' );
 		$deposit_id = $request->get_param( 'deposit_id' );

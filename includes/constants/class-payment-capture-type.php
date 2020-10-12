@@ -20,4 +20,4 @@ use MyCLabs\Enum\Enum;
 class Payment_Capture_Type extends Enum {
 	const AUTOMATIC = 'automatic_capture';
 	const MANUAL    = 'manual_capture';
-};
+}

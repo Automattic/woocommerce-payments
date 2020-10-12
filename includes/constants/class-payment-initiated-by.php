@@ -20,4 +20,4 @@ use MyCLabs\Enum\Enum;
 class Payment_Initiated_By extends Enum {
 	const MERCHANT = 'initiated_by_merchant';
 	const CUSTOMER = 'initiated_by_customer';
-};
+}

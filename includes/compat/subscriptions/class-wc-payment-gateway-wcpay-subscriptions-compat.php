@@ -164,7 +164,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			self::PAYMENT_METHOD_META_TABLE => [
 				self::PAYMENT_METHOD_META_KEY => [
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
-					'value' => empty( $active_token ) ? '' : strval( $active_token->get_id() ),
+					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
 				],
 			],
 		];
@@ -340,7 +340,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$is_valid_value = false;
 
 		foreach ( $tokens as $token ) {
-			$is_valid_value = $is_valid_value || intval( $field_value ) === $token['tokenId'];
+			$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
 		}
 
 		echo '<select name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '">';
@@ -349,7 +349,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			echo '<option value="" selected disabled>' . esc_html__( 'Please select a payment method', 'woocommerce-payments' ) . '</option>';
 		}
 		foreach ( $tokens as $token ) {
-			$is_selected = intval( $field_value ) === $token['tokenId'] ? 'selected' : '';
+			$is_selected = (int) $field_value === $token['tokenId'] ? 'selected' : '';
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';
