@@ -15,15 +15,24 @@ import './style.scss';
 const TosModal = () => {
 	// TODO: detect initial state
 	const [ isOpen, setIsOpen ] = useState( true );
+	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
+
 	const closeModal = () => setIsOpen( false );
+	const closeDisableModal = () => setIsDisableModalOpen( false );
+
+	const declineTos = () => {
+		closeModal();
+		setIsDisableModalOpen( true );
+	};
 
 	// TODO: Add handlers
-	const declineTos = closeModal;
 	const acceptTos = closeModal;
+	const disablePlugin = closeDisableModal;
 
-	if ( ! isOpen ) {
-		return null;
-	}
+	const cancelPluginDisable = () => {
+		closeDisableModal();
+		setIsOpen( true );
+	};
 
 	const title = __(
 		'WooCommerce Payments: Terms of Service',
@@ -46,31 +55,85 @@ const TosModal = () => {
 		},
 	} );
 
-	return (
-		<Modal
-			title={ title }
-			isDismissible={ false }
-			shouldCloseOnClickOutside={ false }
-			shouldCloseOnEsc={ false }
-			onRequestClose={ closeModal }
-			className="woocommerce-payments__tos-modal"
-		>
-			<div className="woocommerce-payments__tos-wrapper">
-				<div className="woocommerce-payments__tos-modal-message">
-					{ trackingMessage }
-				</div>
-				<div className="woocommerce-payments__tos-footer">
-					<Button isTertiary onClick={ declineTos }>
-						{ __( 'Decline', 'woocommerce-payments' ) }
-					</Button>
+	if ( isDisableModalOpen ) {
+		const disableModalTitle = __(
+			'Disable WooCommerce Payments',
+			'woocommerce-payments'
+		);
+		const disableMessage = interpolateComponents( {
+			mixedString: __(
+				'By declining our {{link}}Terms of Service{{/link}},' +
+					' you’ll no longer be able to capture credit card payments using WooCommerce Payments.' +
+					' Your previous transaction and deposit data will still be available.',
+				'woocommerce-payments'
+			),
+			components: {
+				link: (
+					<Link
+						href="https://wordpress.com/tos"
+						target="_blank"
+						type="external"
+					/>
+				),
+			},
+		} );
 
-					<Button isPrimary onClick={ acceptTos }>
-						{ __( 'Accept', 'woocommerce-payments' ) }
-					</Button>
+		return (
+			<Modal
+				title={ disableModalTitle }
+				isDismissible={ false }
+				shouldCloseOnClickOutside={ false }
+				shouldCloseOnEsc={ false }
+				onRequestClose={ disablePlugin }
+				className="woocommerce-payments__tos-modal"
+			>
+				<div className="woocommerce-payments__tos-wrapper">
+					<div className="woocommerce-payments__tos-modal-message">
+						{ disableMessage }
+					</div>
+					<div className="woocommerce-payments__tos-footer">
+						<Button isTertiary onClick={ cancelPluginDisable }>
+							{ __( 'Back', 'woocommerce-payments' ) }
+						</Button>
+
+						<Button isPrimary onClick={ disablePlugin }>
+							{ __( 'Disable', 'woocommerce-payments' ) }
+						</Button>
+					</div>
 				</div>
-			</div>
-		</Modal>
-	);
+			</Modal>
+		);
+	}
+
+	if ( isOpen ) {
+		return (
+			<Modal
+				title={ title }
+				isDismissible={ false }
+				shouldCloseOnClickOutside={ false }
+				shouldCloseOnEsc={ false }
+				onRequestClose={ closeModal }
+				className="woocommerce-payments__tos-modal"
+			>
+				<div className="woocommerce-payments__tos-wrapper">
+					<div className="woocommerce-payments__tos-modal-message">
+						{ trackingMessage }
+					</div>
+					<div className="woocommerce-payments__tos-footer">
+						<Button isTertiary onClick={ declineTos }>
+							{ __( 'Decline', 'woocommerce-payments' ) }
+						</Button>
+
+						<Button isPrimary onClick={ acceptTos }>
+							{ __( 'Accept', 'woocommerce-payments' ) }
+						</Button>
+					</div>
+				</div>
+			</Modal>
+		);
+	}
+
+	return null;
 };
 
 export default TosModal;
