@@ -501,7 +501,7 @@ class WC_Payments {
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
-		require_once dirname( __FILE__ ) . '/class-wc-payments-blocks-payment-method.php';
+		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}

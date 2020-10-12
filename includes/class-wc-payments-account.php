@@ -287,7 +287,7 @@ class WC_Payments_Account {
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
-			if ( ! $this->payments_api_client->is_server_connected() && isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
+			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_page(
 					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
 				);
