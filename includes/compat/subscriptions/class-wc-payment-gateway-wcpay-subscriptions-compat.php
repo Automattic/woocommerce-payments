@@ -83,7 +83,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order $order The order whose payment will be processed.
 	 * @return Payment_Information An object, which describes the payment.
 	 */
-	public function prepare_payment_information( $order ) {
+	protected function prepare_payment_information( $order ) {
 		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $this->is_changing_payment_method_for_subscription() ) {
 			return parent::prepare_payment_information( $order );
 		}
@@ -91,8 +91,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// Subs-specific behavior starts here.
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
-		$payment_information->set_payment_type( Payment_Type::RECURRING() );
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::RECURRING(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+
+		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
 
 		return $payment_information;
@@ -131,8 +132,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT() );
-		$payment_information->set_payment_type( Payment_Type::RECURRING() );
+		$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 
 		try {
 			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.
