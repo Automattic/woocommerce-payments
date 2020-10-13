@@ -194,7 +194,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				return $order;
 			}
 		);
-		$order->add_payment_token( $this->payment_token );
+		$order->add_payment_token( $this->token );
 
 		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 		$this->mock_api_client

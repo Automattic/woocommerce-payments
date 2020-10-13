@@ -443,11 +443,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
 
 		// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
-		if (
-			! $payment_information->is_using_saved_payment_method()
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			&& ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] )
-		) {
+		if ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment_information->must_save_payment_method();
 		}
 
@@ -466,7 +462,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
 		$order               = $payment_information->get_order();
-		$save_payment_method = $payment_information->should_save_payment_method();
+		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && $payment_information->should_save_payment_method();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
