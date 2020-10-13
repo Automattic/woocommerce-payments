@@ -233,7 +233,7 @@ class Payment_Information {
 	}
 
 	/**
-	 * Cchanges type type of the payment.
+	 * Changes the type of the payment.
 	 *
 	 * @param string $type The new type.
 	 */
