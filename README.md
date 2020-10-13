@@ -5,8 +5,6 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 ## Dependencies
 
 - WooCommerce
-- WooCommerce Admin
-- Jetpack or Jetpack DNA Connection
 
 ## Development
 
@@ -21,17 +19,11 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 If you're using the Docker environment see setup instructions here:
 https://github.com/Automattic/woocommerce-payments/blob/master/docker/README.md
 
-Install The following plugins
-- Jetpack
+Install the following plugins:
 - WooCommerce
-- WooCommerce Admin
 
-Connect using jetpack. You will need a externally accessible url. You can use ngrok for this.
+For setting up a test account follow [these instructions](https://docs.woocommerce.com/document/payments/testing/dev-mode/).
 
-If you want to set up an account with test data, set the `dev` mode flag to true. In your site's `wp-config.php`:
-
-```PHP
-define( 'WCPAY_DEV_MODE', true );
-```
+You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
 
 See: https://github.com/Automattic/woocommerce-payments/blob/master/CONTRIBUTING.md (possibly move contents here for visibility sake)
