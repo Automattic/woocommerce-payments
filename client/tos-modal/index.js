@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
 import { Button, Modal } from '@wordpress/components';
@@ -96,6 +97,13 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 	);
 };
 
+const makeTosRequest = async ( { accept } ) =>
+	apiFetch( {
+		path: '/wc/v3/payments/tos',
+		method: 'POST',
+		data: { accept },
+	} );
+
 const TosModal = () => {
 	// TODO: detect initial state
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
@@ -110,21 +118,29 @@ const TosModal = () => {
 		setIsDisableModalOpen( true );
 	};
 
-	const acceptTos = () => {
-		// TODO: Call endpoint to accept ToS
-		setIsBusy( true );
-		setTimeout( () => {
-			setIsBusy( false );
+	const acceptTos = async () => {
+		try {
+			setIsBusy( true );
+			await makeTosRequest( { accept: true } );
 			closeTosModal();
-		}, 200 );
-	};
-	const disablePlugin = () => {
-		// TODO: Call endpoint to disable plugin
-		setIsBusy( true );
-		setTimeout( () => {
+		} catch ( err ) {
+			// TODO: handle errors
+			console.error( err );
+		} finally {
 			setIsBusy( false );
+		}
+	};
+	const disablePlugin = async () => {
+		try {
+			setIsBusy( true );
+			await makeTosRequest( { accept: false } );
 			closeDisableModal();
-		}, 200 );
+		} catch ( err ) {
+			// TODO: handle errors
+			console.error( err );
+		} finally {
+			setIsBusy( false );
+		}
 	};
 
 	const cancelPluginDisable = () => {
