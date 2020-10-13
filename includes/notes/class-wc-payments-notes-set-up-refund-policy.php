@@ -47,14 +47,14 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 		$note = new WC_Admin_Note();
 
 		$note->set_title( __( 'Set up refund policy', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Set up and update orders emails pitch here.', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Protect your merchant account by defining the policy and making it accessible to customers.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( WC_Admin_Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-admin' );
 		$note->add_action(
 			self::NOTE_NAME,
-			__( 'Set up policy', 'woocommerce-payments' ),
+			__( 'Read more', 'woocommerce-payments' ),
 			self::NOTE_DOCUMENTATION_URL,
 			'unactioned',
 			true
