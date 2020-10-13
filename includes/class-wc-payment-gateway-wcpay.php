@@ -409,9 +409,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int    $order_id                  Order ID to process the payment for.
-	 * @param bool   $force_save_payment_method Whether to save the payment method upon successful payment.
-	 * @param string $payment_type              The type of the payment that's being made.
+	 * @param int          $order_id                  Order ID to process the payment for.
+	 * @param bool         $force_save_payment_method Whether to save the payment method upon successful payment.
+	 * @param Payment_Type $payment_type              The type of the payment that's being made.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */

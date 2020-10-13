@@ -58,7 +58,7 @@ class Payment_Information {
 	/**
 	 * The type of the payment. `single`, `recurring`, etc.
 	 *
-	 * @var string
+	 * @var Payment_Type
 	 */
 	private $payment_type;
 
@@ -235,7 +235,7 @@ class Payment_Information {
 	/**
 	 * Changes the type of the payment.
 	 *
-	 * @param string $type The new type.
+	 * @param Payment_Type $type The new type.
 	 */
 	public function set_payment_type( $type ) {
 		$this->payment_type = $type;
@@ -244,7 +244,7 @@ class Payment_Information {
 	/**
 	 * Retrieves the type of the payment.
 	 *
-	 * @return string The payment type.
+	 * @return Payment_Type The payment type.
 	 */
 	public function get_payment_type() {
 		return $this->payment_type;
