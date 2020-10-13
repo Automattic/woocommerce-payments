@@ -63,6 +63,13 @@ class Payment_Information {
 	private $payment_type;
 
 	/**
+	 * Indicates whether the payment method should be saved.
+	 *
+	 * @var bool
+	 */
+	private $save_payment_method = false;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -248,5 +255,21 @@ class Payment_Information {
 	 */
 	public function get_payment_type() {
 		return $this->payment_type;
+	}
+
+	/**
+	 * Forces the payment method to be saved when the payment gets processed.
+	 */
+	public function must_save_payment_method() {
+		$this->save_payment_method = true;
+	}
+
+	/**
+	 * Indicates whether the payment method needs be saved for later usage.
+	 *
+	 * @return bool The flag.
+	 */
+	public function should_save_payment_method() {
+		return $this->save_payment_method;
 	}
 }

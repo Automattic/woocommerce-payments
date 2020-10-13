@@ -409,23 +409,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int          $order_id                  Order ID to process the payment for.
-	 * @param bool         $force_save_payment_method Whether to save the payment method upon successful payment.
-	 * @param Payment_Type $payment_type              The type of the payment that's being made.
+	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = null ) {
+	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		try {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
-			if ( ! empty( $payment_type ) ) {
-				$payment_information->set_payment_type( $payment_type );
-			}
-
-			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
+			$payment_information = $this->prepare_payment_information( $order );
+			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -440,19 +433,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Prepares the payment information object.
+	 *
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
+	 */
+	public function prepare_payment_information( $order ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+		$payment_information->set_payment_type( Payment_Type::SINGLE() );
+		return $payment_information;
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart                   $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param bool                      $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception                Error processing the payment.
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
-	public function process_payment_for_order( $cart, $payment_information, $force_save_payment_method = false ) {
+	public function process_payment_for_order( $cart, $payment_information ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $force_save_payment_method );
+		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $payment_information->should_save_payment_method() );
 		$order               = $payment_information->get_order();
 
 		$order_id = $order->get_id();
@@ -844,7 +849,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
 	 */
-	private function get_capture_type() {
+	protected function get_capture_type() {
 		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
 	}
 

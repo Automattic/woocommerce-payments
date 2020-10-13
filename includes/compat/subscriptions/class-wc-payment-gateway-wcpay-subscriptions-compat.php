@@ -78,21 +78,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	}
 
 	/**
-	 * Process the payment for a given order.
+	 * Prepares the payment information object.
 	 *
-	 * @param int          $order_id Order ID to process the payment for.
-	 * @param bool         $force_save_payment_method Whether to save the payment method upon successful payment.
-	 * @param Payment_Type $payment_type The type of the payment that's being made.
-	 *
-	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false, $payment_type = null ) {
-		if ( ! wcs_order_contains_subscription( $order_id ) && ! $this->is_changing_payment_method_for_subscription() ) {
-			return parent::process_payment( $order_id, $force_save_payment_method, $payment_type );
+	public function prepare_payment_information( $order ) {
+		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $this->is_changing_payment_method_for_subscription() ) {
+			return parent::prepare_payment_information( $order );
 		}
-		
-		// Subs specific behavior starts here.
-		return parent::process_payment( $order_id, true, Payment_Type::RECURRING() );
+
+		// Subs-specific behavior starts here.
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+		$payment_information->set_payment_type( Payment_Type::RECURRING() );
+		$payment_information->must_save_payment_method();
+
+		return $payment_information;
 	}
 
 	/**
