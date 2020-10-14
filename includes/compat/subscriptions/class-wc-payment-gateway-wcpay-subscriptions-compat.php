@@ -90,9 +90,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		// Subs-specific behavior starts here.
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::RECURRING(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
-
+		$payment_information = parent::prepare_payment_information( $order );
+		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
 
