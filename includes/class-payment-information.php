@@ -101,7 +101,7 @@ class Payment_Information {
 		$this->token                = $token;
 		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
 		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
-		$this->payment_type         = $payment_type;
+		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
 	}
 
 	/**
