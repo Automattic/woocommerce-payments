@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.x.x - 2020-xx-xx =
+= 1.6.0 - 2020-xx-xx =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
 * Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.
