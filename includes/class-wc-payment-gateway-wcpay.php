@@ -462,7 +462,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
 		$order               = $payment_information->get_order();
-		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && $payment_information->should_save_payment_method();
+		$save_payment_method = $payment_information->should_save_payment_method();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
