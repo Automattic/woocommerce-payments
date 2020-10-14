@@ -35,6 +35,7 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
+	const TOS_AGREEMENTS_API  = 'tos_agreements';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -819,6 +820,44 @@ class WC_Payments_API_Client {
 			[],
 			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
 			self::POST
+		);
+	}
+
+	/**
+	 * Records a new Terms of Service agreement.
+	 *
+	 * @param string $agreement_version The version of the accepted agreeement.
+	 * @param string $source            A string, which describes where the merchant agreed to the terms.
+	 * @param string $user_ip           IP address of the current user.
+	 * @param string $user_agent        User agent string for the current user.
+	 *
+	 * @return bool A flag, which indicates whether the agreement was saved.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function add_tos_agreement( $agreement_version, $source, $user_ip, $user_agent ) {
+		return 'success' === $this->request(
+			[
+				'version'    => $agreement_version,
+				'source'     => $source,
+				'user_ip'    => $user_ip,
+				'user_agent' => $user_agent,
+			],
+			self::TOS_AGREEMENTS_API,
+			self::POST
+		);
+	}
+
+	/**
+	 * Retrieves the latest TOS agreement for this account.
+	 *
+	 * @return array An array, which contains `date`, `tos_version`, and `source`.
+	 */
+	public function get_latest_tos_agreement() {
+		return $this->request(
+			[],
+			self::TOS_AGREEMENTS_API,
+			self::GET
 		);
 	}
 
