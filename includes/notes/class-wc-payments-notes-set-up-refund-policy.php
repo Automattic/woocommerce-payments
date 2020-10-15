@@ -46,6 +46,13 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 	public static function get_note() {
 		$note = new WC_Admin_Note();
 
+		/*
+		 * For the documentation:
+		 * - Reference https://woocommerce.com/refund-policy/ as policy example
+		 * - Reference https://woocommerce.com/posts/how-to-customize-emails-in-woocommerce/
+		 * - Add "Managing Disputes with WooCommerce Payments" (-> https://docs.woocommerce.com/documentation/woocommerce-payments/)
+		 */
+
 		$note->set_title( __( 'Set up refund policy', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Protect your merchant account by defining the policy and making it accessible to customers.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
