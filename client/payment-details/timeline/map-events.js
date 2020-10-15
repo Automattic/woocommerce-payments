@@ -178,6 +178,10 @@ const mapEventToTimelineItems = ( event ) => {
 
 	if ( 'authorized' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Authorized', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
@@ -191,13 +195,13 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-warning'
 			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorized', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'authorization_voided' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Authorization Voided', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
@@ -211,13 +215,13 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-warning'
 			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorization Voided', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'authorization_expired' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Authorization Expired', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
@@ -231,14 +235,15 @@ const mapEventToTimelineItems = ( event ) => {
 				'cross',
 				'is-error'
 			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorization Expired', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'captured' === type ) {
 		const formattedNet = formatCurrency( event.amount - event.fee );
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Paid', 'woocommerce-payments' )
+			),
+			getDepositTimelineItem( event, formattedNet, true ),
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
@@ -264,15 +269,17 @@ const mapEventToTimelineItems = ( event ) => {
 					),
 				]
 			),
-			getDepositTimelineItem( event, formattedNet, true ),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Paid', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
 		const formattedAmount = formatCurrency( event.amount_refunded );
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				'full_refund' === type
+					? __( 'Refunded', 'woocommerce-payments' )
+					: __( 'Partial Refund', 'woocommerce-payments' )
+			),
+			getDepositTimelineItem( event, formattedAmount, false ),
 			getMainTimelineItem(
 				event,
 				sprintf(
@@ -286,16 +293,13 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-success'
 			),
-			getDepositTimelineItem( event, formattedAmount, false ),
-			getStatusChangeTimelineItem(
-				event,
-				'full_refund' === type
-					? __( 'Refunded', 'woocommerce-payments' )
-					: __( 'Partial Refund', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'failed' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Failed', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				stringWithAmount(
@@ -305,10 +309,6 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				'cross',
 				'is-error'
-			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Failed', 'woocommerce-payments' )
 			),
 		];
 	} else if ( 'dispute_needs_response' === type ) {
@@ -367,28 +367,28 @@ const mapEventToTimelineItems = ( event ) => {
 		}
 
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Disputed: Needs Response', 'woocommerce-payments' )
+			),
+			depositTimelineItem,
 			getMainTimelineItem( event, reasonHeadline, 'cross', 'is-error', [
 				<a href={ disputeUrl }>
 					{ __( 'View dispute', 'woocommerce-payments' ) }
 				</a>,
 			] ),
-			depositTimelineItem,
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: Needs Response', 'woocommerce-payments' )
-			),
 		];
 	} else if ( 'dispute_in_review' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Disputed: In Review', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				__( 'Challenge evidence submitted', 'woocommerce-payments' ),
 				'checkmark',
 				'is-success'
-			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: In Review', 'woocommerce-payments' )
 			),
 		];
 	} else if ( 'dispute_won' === type ) {
@@ -396,14 +396,9 @@ const mapEventToTimelineItems = ( event ) => {
 			Math.abs( event.amount ) + Math.abs( event.fee )
 		);
 		return [
-			getMainTimelineItem(
+			getStatusChangeTimelineItem(
 				event,
-				__(
-					'Dispute won! The bank ruled in your favor',
-					'woocommerce-payments'
-				),
-				'notice-outline',
-				'is-success'
+				__( 'Disputed: Won', 'woocommerce-payments' )
 			),
 			getDepositTimelineItem( event, formattedTotal, true, [
 				stringWithAmount(
@@ -417,13 +412,22 @@ const mapEventToTimelineItems = ( event ) => {
 					event.fee
 				),
 			] ),
-			getStatusChangeTimelineItem(
+			getMainTimelineItem(
 				event,
-				__( 'Disputed: Won', 'woocommerce-payments' )
+				__(
+					'Dispute won! The bank ruled in your favor',
+					'woocommerce-payments'
+				),
+				'notice-outline',
+				'is-success'
 			),
 		];
 	} else if ( 'dispute_lost' === type ) {
 		return [
+			getStatusChangeTimelineItem(
+				event,
+				__( 'Disputed: Lost', 'woocommerce-payments' )
+			),
 			getMainTimelineItem(
 				event,
 				__(
@@ -432,10 +436,6 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				'cross',
 				'is-error'
-			),
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: Lost', 'woocommerce-payments' )
 			),
 		];
 	} else if ( 'dispute_warning_closed' === type ) {
