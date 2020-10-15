@@ -103,8 +103,15 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 * Process ToS accepted.
 	 */
 	private function handle_tos_accepted() {
-		// TODO: record ToS acceptance data.
 		$this->gateway->enable();
+
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$user_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
+
+		$this->api_client->add_tos_agreement( 'settings-popup', $user_ip, $user_agent );
 	}
 
 	/**

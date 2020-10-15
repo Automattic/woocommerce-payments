@@ -277,7 +277,7 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Update conditions when ToS script is enqueued.
-		if ( false && $current_tab && $current_section
+		if ( $current_tab && $current_section
 		&& 'checkout' === $current_tab
 		&& 'woocommerce_payments' === $current_section ) {
 			wp_enqueue_script( 'WCPAY_TOS' );

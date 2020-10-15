@@ -802,19 +802,17 @@ class WC_Payments_API_Client {
 	/**
 	 * Records a new Terms of Service agreement.
 	 *
-	 * @param string $agreement_version The version of the accepted agreeement.
-	 * @param string $source            A string, which describes where the merchant agreed to the terms.
-	 * @param string $user_ip           IP address of the current user.
-	 * @param string $user_agent        User agent string for the current user.
+	 * @param string $source     A string, which describes where the merchant agreed to the terms.
+	 * @param string $user_ip    IP address of the current user.
+	 * @param string $user_agent User agent string for the current user.
 	 *
 	 * @return bool A flag, which indicates whether the agreement was saved.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function add_tos_agreement( $agreement_version, $source, $user_ip, $user_agent ) {
+	public function add_tos_agreement( $source, $user_ip, $user_agent ) {
 		return 'success' === $this->request(
 			[
-				'version'    => $agreement_version,
 				'source'     => $source,
 				'user_ip'    => $user_ip,
 				'user_agent' => $user_agent,
