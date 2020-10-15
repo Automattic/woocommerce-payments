@@ -27,14 +27,27 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account Account instance.
+	 * @param WC_Payments_API_Client   $payments_api_client - WooCommerce Payments API client.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
-		$this->wcpay_gateway = $gateway;
-		$this->account       = $account;
+	public function __construct(
+		WC_Payment_Gateway_WCPay $gateway,
+		WC_Payments_Account $account,
+		WC_Payments_API_Client $payments_api_client
+	) {
+		$this->wcpay_gateway       = $gateway;
+		$this->account             = $account;
+		$this->payments_api_client = $payments_api_client;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
@@ -205,24 +218,34 @@ class WC_Payments_Admin {
 			true
 		);
 
-		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
-		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+		if ( $this->is_tos_agreement_required() ) {
+			$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
+			$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
+			$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
 
-		wp_register_script(
-			'WCPAY_TOS',
-			$tos_script_src_url,
-			$tos_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/tos.js' ),
-			true
-		);
+			wp_register_script(
+				'WCPAY_TOS',
+				$tos_script_src_url,
+				$tos_script_asset['dependencies'],
+				WC_Payments::get_file_version( 'dist/tos.js' ),
+				true
+			);
 
-		wp_register_style(
-			'WCPAY_TOS',
-			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/tos.css' )
-		);
+			wp_localize_script(
+				'WCPAY_TOS',
+				'wcpay_tos_settings',
+				[
+					'settingsUrl' => $this->wcpay_gateway->get_settings_url(),
+				]
+			);
+
+			wp_register_style(
+				'WCPAY_TOS',
+				plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/tos.css' )
+			);
+		}
 
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
@@ -318,5 +341,46 @@ class WC_Payments_Admin {
 		$version1 = $matches1[1];
 		$version2 = $matches2[1];
 		return version_compare( $version1, $version2, $operator );
+	}
+
+	/**
+	 * Checks whether the gateway is enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_gateway_enabled() {
+		$options = get_option( 'woocommerce_woocommerce_payments_settings' );
+		return 'yes' === $options['enabled'];
+	}
+
+	/**
+	 * Checks whether it's necessary to display a ToS agreement modal.
+	 *
+	 * @return bool
+	 */
+	private function is_tos_agreement_required() {
+		// The gateway might already be disabled because of ToS.
+		if ( ! $this->is_gateway_enabled() ) {
+			return false;
+		}
+
+		$transient_name   = 'wcpay_tos_agreement_ok';
+		$transient_expiry = DAY_IN_SECONDS;
+
+		$transient = get_transient( $transient_name );
+		if ( $transient ) {
+			// Already agreed, no need to do it again.
+			return false;
+		}
+
+		// Retrieve the latest agreement and check whether it's regarding the latest ToS version.
+		$agreement = $this->payments_api_client->get_latest_tos_agreement();
+		if ( ! $agreement['is_current_version'] ) {
+			return true;
+		}
+
+		// It's ok, let's not check for the next day.
+		set_transient( $transient_name, true, $transient_expiry );
+		return false;
 	}
 }

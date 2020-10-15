@@ -1,3 +1,5 @@
+/* global wcpay_tos_settings */
+
 /**
  * External dependencies
  */
