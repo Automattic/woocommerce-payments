@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.5
 Requires PHP: 7.0
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.6.0 - 2020-xx-xx =
+= 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
 * Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.
