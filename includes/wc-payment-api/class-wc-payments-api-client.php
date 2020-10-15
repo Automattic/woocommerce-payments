@@ -606,10 +606,8 @@ class WC_Payments_API_Client {
 		try {
 			return $this->request( $body, self::FILES_API, self::POST );
 		} catch ( API_Exception $e ) {
-			// TODO - Send better error messages to the client once the server is updated.
-			// Throw generic error without details to the client.
 			throw new API_Exception(
-				__( 'Upload failed.', 'woocommerce-payments' ),
+				$e->getMessage(),
 				'wcpay_evidence_file_upload_error',
 				$e->get_http_code()
 			);
