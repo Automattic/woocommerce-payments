@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
@@ -454,10 +454,10 @@ export default ( { query } ) => {
 		getHistory().push( href );
 	};
 
-	const handleSaveError = ( submit ) => {
+	const handleSaveError = ( err, submit ) => {
 		const message = submit
-			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
-			: __( 'Failed to save evidence!', 'woocommerce-payments' );
+			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
+			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
 
 		submit
 			? window.wcTracks.recordEvent(
@@ -466,7 +466,7 @@ export default ( { query } ) => {
 			: window.wcTracks.recordEvent(
 					'wcpay_dispute_save_evidence_failed'
 			  );
-		createErrorNotice( message );
+		createErrorNotice( sprintf( message, err.message ) );
 	};
 
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
@@ -508,7 +508,7 @@ export default ( { query } ) => {
 			setEvidence( {} );
 			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
-			handleSaveError( submit );
+			handleSaveError( err, submit );
 		} finally {
 			setLoading( false );
 		}
