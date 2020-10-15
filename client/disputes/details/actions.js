@@ -35,13 +35,11 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 				href={ challengeUrl }
 				className="components-button is-button is-primary is-large"
 				onClick={ () =>
-					needsResponse
-						? window.wcTracks.recordEvent(
-								'wcpay_dispute_challenge_clicked'
-						  )
-						: window.wcTracks.recordEvent(
-								'wcpay_view_submitted_evidence_clicked'
-						  )
+					window.wcTracks.recordEvent(
+						needsResponse
+							? 'wcpay_dispute_challenge_clicked'
+							: 'wcpay_view_submitted_evidence_clicked'
+					)
 				}
 			>
 				{ needsResponse
