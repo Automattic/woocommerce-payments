@@ -909,7 +909,20 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
 	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
-		// If level3 data is not present for some reason, simply proceed normally.
+		/**
+		 * Allows the usage of level3 data to be disabled.
+		 *
+		 * @param bool $enabled Whether level3 data is enabled, true by default.
+		 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
+		 * @param string $api              - The API endpoint to call.
+		 * @param string $method           - The HTTP method to make the request with.
+		 * @return bool
+		 */
+		$use_level3_data = apply_filters( 'wcpay_api_use_level3_data', true, $params, $api, $method );
+		if ( ! $use_level3_data && isset( $params['level3'] ) ) {
+			unset( $params['level3'] );
+		}
+
 		if ( ! isset( $params['level3'] ) ) {
 			return $this->request( $params, $api, $method, $is_site_specific );
 		}
