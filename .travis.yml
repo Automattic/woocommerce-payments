@@ -113,4 +113,5 @@ script:
 branches:
   only:
     - master
+    - update/travis-build-matrix
     - /^feature\/.*$/
