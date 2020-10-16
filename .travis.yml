@@ -27,7 +27,7 @@ services:
 stages:
   - test
   - name: compatibility
-    if: branch = update/travis-build-matrix
+    if: branch = master
   - e2e-testing
 
 env:
