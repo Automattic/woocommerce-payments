@@ -26,7 +26,8 @@ services:
 # Different stages in order to only deploy when everything succeeds
 stages:
   - test
-  - compatibility
+  - name: compatibility
+    if: branch = update/travis-build-matrix
   - e2e-testing
 
 env:
