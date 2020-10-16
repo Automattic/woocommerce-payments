@@ -18,6 +18,7 @@ php:
   - 7.1
   - 7.2
   - 7.3
+  - 7.4
 
 services:
   - mysql
@@ -26,9 +27,12 @@ services:
 stages:
   - test
   - e2e-testing
+  - compatibility-bottom-edge
+  - compatibility
+  - compatibility-top-edge
 
 env:
-  - WP_VERSION=latest WC_VERSION=4.3.0
+  - WP_VERSION=latest WC_VERSION=4.5.0
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
@@ -37,17 +41,54 @@ env:
 matrix:
   fast_finish: true
   include:
+# PHP versions compatibility (latest WordPress and most used WooCommerce versions)
   - name: "Coding standard check"
-    php: 7.2
-    env: WP_VERSION=latest WC_VERSION=4.3.0 RUN_PHPCS=1
+    php: 7.0
+    env: WP_VERSION=latest WC_VERSION=4.5.0 RUN_PHPCS=1
+    stage: test
+  - php: 7.1
+    env: WP_VERSION=latest WC_VERSION=4.5.0
+    stage: test
+  - php: 7.2
+    env: WP_VERSION=latest WC_VERSION=4.5.0
     stage: test
   - php: 7.3
+    env: WP_VERSION=latest WC_VERSION=4.5.0
+    stage: test
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.5.0
+    stage: test
+# bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
+  - php: 7.0
+    env: WP_VERSION=5.3.0 WC_VERSION=4.0.0
+    stage: compatibility
+# WooCommerce versions compatibility (latest supported PHP/WordPress versions on latest supported PHP version)
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.0.0
+    stage: compatibility
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.1.0
+    stage: compatibility
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.2.0
+    stage: compatibility
+  - php: 7.4
     env: WP_VERSION=latest WC_VERSION=4.3.0
-    stage: test
-  - name: "PHP 7.3 unit tests using WordPress nightly"
-    php: 7.3
-    env: WP_VERSION=nightly WC_VERSION=4.3.0
-    stage: test
+    stage: compatibility
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.4.0
+    stage: compatibility
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.5.0
+    stage: compatibility
+  - php: 7.4
+    env: WP_VERSION=latest WC_VERSION=4.6.0
+    stage: compatibility
+# top compatibility edge (nightly versions of WordPress/WooCommerce on latest supported PHP version)
+  - php: 7.4
+    env: WP_VERSION=nightly WC_VERSION=nightly
+    stage: compatibility
+# E2E testing
   - name: "E2E tests"
     stage: e2e-testing
     script:
