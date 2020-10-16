@@ -26,10 +26,8 @@ services:
 # Different stages in order to only deploy when everything succeeds
 stages:
   - test
-  - e2e-testing
-  - compatibility-bottom-edge
   - compatibility
-  - compatibility-top-edge
+  - e2e-testing
 
 env:
   - WP_VERSION=latest WC_VERSION=4.5.0
