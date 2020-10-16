@@ -218,7 +218,11 @@ class WC_Payments_Admin {
 			true
 		);
 
-		if ( $this->is_tos_agreement_required() ) {
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$tos_disabled_snackbar  = isset( $_GET['tos-disabled'] );
+		$tos_agreement_required = $this->is_tos_agreement_required();
+
+		if ( $tos_agreement_required || $tos_disabled_snackbar ) {
 			$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
 			$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
 			$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
@@ -235,7 +239,10 @@ class WC_Payments_Admin {
 				'WCPAY_TOS',
 				'wcpay_tos_settings',
 				[
-					'settingsUrl' => $this->wcpay_gateway->get_settings_url(),
+					'showModal'           => $tos_agreement_required,
+					'settingsUrl'         => $this->wcpay_gateway->get_settings_url(),
+					'disabledSettingsUrl' => add_query_arg( 'tos-disabled', 1, $this->wcpay_gateway->get_settings_url() ),
+					'showSnackbar'        => $tos_disabled_snackbar,
 				]
 			);
 

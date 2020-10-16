@@ -61,6 +61,16 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/reactivate',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'reactivate' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -120,5 +130,29 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	private function handle_tos_declined() {
 		// TODO: maybe record ToS declined data.
 		$this->gateway->disable();
+	}
+
+	/**
+	 * Activates the gateway again, after it's been disabled.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function reactivate( $request ) {
+		try {
+			$options = get_option( 'woocommerce_woocommerce_payments_settings' );
+
+			$options['enabled'] = 'yes';
+
+			update_option( 'woocommerce_woocommerce_payments_settings', $options );
+
+			Logger::debug( 'Gateway re-enabled after ToS decline.' );
+		} catch ( Exception $e ) {
+			Logger::error( $e );
+			return new WP_REST_Response( [ 'result' => self::RESULT_ERROR ], 500 );
+		}
+
+		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
 }

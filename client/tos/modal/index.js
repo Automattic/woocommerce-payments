@@ -1,11 +1,7 @@
-/* global wcpay_tos_settings */
-
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-
-import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
 import { Button, Modal } from '@wordpress/components';
@@ -15,6 +11,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import { getPaymentMethodsUrl } from 'utils';
+import { makeTosAcceptanceRequest } from '../request.js';
 import './style.scss';
 
 const TosLink = ( props ) => (
@@ -106,14 +103,8 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 	);
 };
 
-const makeTosRequest = ( { accept } ) =>
-	apiFetch( {
-		path: '/wc/v3/payments/tos',
-		method: 'POST',
-		data: { accept },
-	} );
-
 const TosModal = () => {
+	// TODO: detect initial state
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
 	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
 	const [ isBusy, setIsBusy ] = useState( false );
@@ -129,7 +120,7 @@ const TosModal = () => {
 	const acceptTos = async () => {
 		try {
 			setIsBusy( true );
-			await makeTosRequest( { accept: true } );
+			await makeTosAcceptanceRequest( { accept: true } );
 			closeTosModal();
 		} catch ( err ) {
 			// Note: errors handling will be added in https://github.com/Automattic/woocommerce-payments/pull/993
@@ -142,7 +133,7 @@ const TosModal = () => {
 	const disablePlugin = async () => {
 		try {
 			setIsBusy( true );
-			await makeTosRequest( { accept: false } );
+			await makeTosAcceptanceRequest( { accept: false } );
 			closeDisableModal();
 			window.location = getPaymentMethodsUrl();
 		} catch ( err ) {
