@@ -32,6 +32,9 @@ stages:
     if: branch = master
   - e2e-testing
 
+env:
+  - WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
+
 # 2. Also test against these combinations, as listed out explicitly one by one
 
 # Additional tests against stable PHP (min recommended version is 5.6) and past supported versions of WP
