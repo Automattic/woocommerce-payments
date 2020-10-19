@@ -91,7 +91,7 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id || ! is_user_logged_in() ) {
+		if ( ( ! empty( $gateway_id ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -104,7 +104,9 @@ class WC_Payments_Token_Service {
 		$stored_tokens = [];
 
 		foreach ( $tokens as $token ) {
-			$stored_tokens[] = $token->get_token();
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+				$stored_tokens[] = $token->get_token();
+			}
 		}
 
 		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
