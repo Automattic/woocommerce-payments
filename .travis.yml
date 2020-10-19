@@ -33,11 +33,10 @@ stages:
   - e2e-testing
 
 env:
-  - WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
+  jobs:
+    - WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
   global:
-    - WC_MOST_USED_VERSION=4.5.0
-    - WC_OLDEST_SUPPORTED_VERSION=4.0.0
-    - WP_OLDEST_SUPPORTED_VERSION=5.3
+    - WC_MOST_USED_VERSION=4.5.0 WC_OLDEST_SUPPORTED_VERSION=4.0.0 WP_OLDEST_SUPPORTED_VERSION=5.3
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
