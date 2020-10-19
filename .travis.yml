@@ -33,7 +33,7 @@ stages:
   - e2e-testing
 
 env:
-  - WP_VERSION=latest WC_VERSION=4.6.0
+  - WP_VERSION=latest WC_VERSION=4.5.0
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
@@ -66,7 +66,7 @@ matrix:
 # bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
   - php: 7.0
     env: WP_VERSION=5.3 WC_VERSION=4.0.0
-    stage: compatibility
+    stage: compatibility-edge
 # WooCommerce versions compatibility (latest supported PHP/WordPress versions on latest supported PHP version)
   - php: 7.4
     env: WP_VERSION=latest WC_VERSION=4.0.0
