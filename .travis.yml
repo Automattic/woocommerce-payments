@@ -74,8 +74,8 @@ matrix:
     stage: compatibility-edge
 # E2E testing
   - name: "E2E tests"
-    stage: e2e-testing
     env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
+    stage: e2e-testing
     script:
       - npm run build:client && npm run test:e2e-setup && npm run test:e2e
 
