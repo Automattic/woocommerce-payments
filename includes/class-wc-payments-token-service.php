@@ -105,7 +105,7 @@ class WC_Payments_Token_Service {
 
 		foreach ( $tokens as $token ) {
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-				$stored_tokens[] = $token->get_token();
+				$stored_tokens[ $token->get_token() ] = $token;
 			}
 		}
 
@@ -113,12 +113,21 @@ class WC_Payments_Token_Service {
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
-				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
+				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
 					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 					$tokens[ $token->get_id() ] = $token;
+				} else {
+					unset( $stored_tokens[ $payment_method['id'] ] );
 				}
 			}
 		}
+
+		// Remove the payment methods that no longer exist in Stripe's side.
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		foreach ( $stored_tokens as $token ) {
+			$token->delete();
+		}
+		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
 		return $tokens;
 	}
