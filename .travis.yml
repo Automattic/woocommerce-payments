@@ -31,7 +31,7 @@ stages:
   - e2e-testing
 
 env:
-  - WP_VERSION=latest WC_VERSION=4.5.0
+  - WP_VERSION=latest WC_VERSION=4.6.0
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
