@@ -54,8 +54,3 @@ tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
-
-// We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
-if ( defined( 'PHP_VERSION_ID' ) && ( PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 80000 ) ) {
-	error_reporting( error_reporting() ^ E_DEPRECATED ); // phpcs:ignore
-}
