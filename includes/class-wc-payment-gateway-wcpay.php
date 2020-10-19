@@ -530,8 +530,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// For $0 orders, we need to save the payment method using a setup intent.
 			$intent = $this->payments_api_client->create_setup_intent(
 				$payment_information->get_payment_method(),
-				$customer_id,
-				'true'
+				$customer_id
 			);
 
 			$intent_id = $intent['id'];
