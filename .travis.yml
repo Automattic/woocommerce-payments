@@ -72,15 +72,6 @@ matrix:
     env: WP_VERSION=latest WC_VERSION=4.0.0
     stage: compatibility
   - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=4.1.0
-    stage: compatibility
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=4.2.0
-    stage: compatibility
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=4.3.0
-    stage: compatibility
-  - php: 7.4
     env: WP_VERSION=latest WC_VERSION=4.4.0
     stage: compatibility
   - php: 7.4
