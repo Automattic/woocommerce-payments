@@ -33,6 +33,7 @@ stages:
   - e2e-testing
 
 env:
+  - WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
   global:
     - WC_MOST_USED_VERSION=4.5.0
     - WC_OLDEST_SUPPORTED_VERSION=4.0.0
