@@ -33,7 +33,10 @@ stages:
   - e2e-testing
 
 env:
-  - WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
+  global:
+    - WC_MOST_USED_VERSION=4.5.0
+    - WC_OLDEST_SUPPORTED_VERSION=4.0.0
+    - WP_OLDEST_SUPPORTED_VERSION=5.3
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
@@ -91,9 +94,6 @@ matrix:
       - npm run build:client && npm run test:e2e-setup && npm run test:e2e
 
 before_install:
-  - WC_MOST_USED_VERSION='4.5.0'
-  - WC_OLDEST_SUPPORTED_VERSION='4.0.0'
-  - WP_OLDEST_SUPPORTED_VERSION='5.3'
   - nvm install lts/erbium
   - npm i -g npm@>=6.13.0
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
