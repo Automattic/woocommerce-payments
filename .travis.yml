@@ -41,6 +41,10 @@ env:
 # and code coverage report.
 matrix:
   fast_finish: true
+  allow_failures:
+    - php: 7.4
+      env: WP_VERSION=nightly WC_VERSION=latest
+      stage: compatibility-edge
   include:
 # PHP versions compatibility (latest WordPress and most used WooCommerce versions)
   - name: "Coding standard check"
