@@ -28,6 +28,8 @@ stages:
   - test
   - name: compatibility
     if: branch = master
+  - name: compatibility-edge
+    if: branch = master
   - e2e-testing
 
 env:
@@ -86,7 +88,7 @@ matrix:
 # top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
   - php: 7.4
     env: WP_VERSION=nightly WC_VERSION=latest
-    stage: compatibility
+    stage: compatibility-edge
 # E2E testing
   - name: "E2E tests"
     stage: e2e-testing
