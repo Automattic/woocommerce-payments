@@ -117,7 +117,7 @@
     "react-test-renderer": "16.8.6",
     "sass-loader": "7.1.0",
     "shelljs": "0.8.4",
-    "stylelint": "13.6.1",
+    "stylelint": "13.7.2",
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-wordpress": "17.0.0",
     "webpack": "4.35.3",
