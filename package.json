@@ -120,7 +120,7 @@
     "stylelint": "13.7.2",
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-wordpress": "17.0.0",
-    "webpack": "4.35.3",
+    "webpack": "4.44.2",
     "webpack-cli": "3.3.12"
   }
 }
