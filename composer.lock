@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d646aa1604d1e28b0133d1011f141b32",
+    "content-hash": "f4103edcf68b63001d25413c7cf995a3",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -38,16 +38,16 @@
         },
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v2.3.0",
+            "version": "v2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "841976bc8322af907a3efd7acd028a5dec35a5f9"
+                "reference": "75596db2f4843668792a1d2cc786cf82f60e9b72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/841976bc8322af907a3efd7acd028a5dec35a5f9",
-                "reference": "841976bc8322af907a3efd7acd028a5dec35a5f9",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/75596db2f4843668792a1d2cc786cf82f60e9b72",
+                "reference": "75596db2f4843668792a1d2cc786cf82f60e9b72",
                 "shasum": ""
             },
             "require": {
@@ -61,6 +61,9 @@
                 "class": "Automattic\\Jetpack\\Autoloader\\CustomAutoloaderPlugin"
             },
             "autoload": {
+                "classmap": [
+                    "src/AutoloadGenerator.php"
+                ],
                 "psr-4": {
                     "Automattic\\Jetpack\\Autoloader\\": "src"
                 }
@@ -70,7 +73,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Creates a custom autoloader for a plugin or theme.",
-            "time": "2020-08-21T20:08:55+00:00"
+            "time": "2020-09-28T14:13:14+00:00"
         },
         {
             "name": "automattic/jetpack-config",
