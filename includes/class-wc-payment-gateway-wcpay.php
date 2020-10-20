@@ -955,7 +955,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
 					/* translators: 1) dashboard login URL */
-					__( '<a>View and edit account details</a>', 'woocommerce-payments' ),
+					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
 					[
 						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
 					]
