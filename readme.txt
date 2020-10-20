@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.0.0 - 2021-xx-xx =
+* Fix - Assign saved payment methods to Stripe customer.
+
 = 1.9.0 - 2021-02-02 =
 * Add - Improved fraud prevention.
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
