@@ -148,8 +148,6 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 	/**
 	 * Test create customer for user for test mode.
-	 *
-	 * @throws WC_Payments_API_Exception
 	 */
 	public function test_create_customer_for_user_test_mode() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
@@ -238,8 +236,6 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
 	/**
 	 * Test update customer for user when user not found for test mode.
-	 *
-	 * @throws WC_Payments_API_Exception
 	 */
 	public function test_update_customer_for_user_when_user_not_found_test_mode() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
