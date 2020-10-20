@@ -22,6 +22,8 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
+	const API_TIMEOUT_SECONDS = 70;
+
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
 	const CUSTOMERS_API       = 'customers';
@@ -859,6 +861,7 @@ class WC_Payments_API_Client {
 				'url'     => $url,
 				'method'  => $method,
 				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific
