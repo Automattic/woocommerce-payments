@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WC_Stripe_Payment_Request class.
+ * WC_Payments_Payment_Request class.
  */
-class WC_Stripe_Payment_Request {
+class WC_Payments_Payment_Request {
 	/**
 	 * Enabled.
 	 *
@@ -547,12 +547,12 @@ class WC_Stripe_Payment_Request {
 			'product'         => $this->get_product_data(),
 		);
 
-		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', '', '3.0', true );
-		wp_register_script( 'wc_stripe_payment_request', plugins_url( 'assets/js/stripe-payment-request' . $suffix . '.js', WC_STRIPE_MAIN_FILE ), array( 'jquery', 'stripe' ), WC_STRIPE_VERSION, true );
+		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', [], '3.0', true );
+		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request' . $suffix . '.js', WCPAY_PLUGIN_FILE ), array( 'jquery', 'stripe' ), WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
-		wp_localize_script( 'wc_stripe_payment_request', 'wc_stripe_payment_request_params', apply_filters( 'wc_stripe_payment_request_params', $stripe_params ) );
+		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wc_stripe_payment_request_params', $stripe_params );
 
-		wp_enqueue_script( 'wc_stripe_payment_request' );
+		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( isset( $gateways['stripe'] ) ) {
@@ -1292,4 +1292,4 @@ class WC_Stripe_Payment_Request {
 	}
 }
 
-new WC_Stripe_Payment_Request();
+new WC_Payments_Payment_Request();
