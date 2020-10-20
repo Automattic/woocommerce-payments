@@ -90,7 +90,7 @@ class WC_Payments_Token_Service {
 	 * @param string $gateway_id WC gateway ID.
 	 * @return array
 	 */
-	public function woocommerce_get_customer_payment_tokens( $tokens = [], $user_id, $gateway_id ) {
+	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id || ! is_user_logged_in() ) {
 			return $tokens;
 		}
