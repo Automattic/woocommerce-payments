@@ -181,28 +181,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Confirm an intention
-	 *
-	 * @param WC_Payments_API_Intention $intent            - The intention to confirm.
-	 * @param string                    $payment_method_id - ID of payment method to process charge with.
-	 *
-	 * @return WC_Payments_API_Intention
-	 * @throws API_Exception - Exception thrown on intention confirmation failure.
-	 */
-	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
-		$request                   = [];
-		$request['payment_method'] = $payment_method_id;
-
-		$response_array = $this->request(
-			$request,
-			self::INTENTIONS_API . '/' . $intent->get_id() . '/confirm',
-			self::POST
-		);
-
-		return $this->deserialize_intention_object_from_array( $response_array );
-	}
-
-	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
