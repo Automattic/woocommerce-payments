@@ -56,7 +56,7 @@ const webpackConfig = {
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
 	},
 	plugins: [
-		new MiniCssExtractPlugin( 'css/[name].css' ),
+		new MiniCssExtractPlugin( { filename: 'css/[name].css' } ),
 		new WordPressExternalDependenciesPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
