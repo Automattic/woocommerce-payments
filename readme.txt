@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 1.7.0 - 2020-xx-xx =
+* Fix - Fix ordering of payment detail timeline events.
+
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
