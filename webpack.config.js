@@ -34,8 +34,12 @@ const webpackConfig = {
 					{
 						loader: 'sass-loader',
 						query: {
-							includePaths: [ 'client/stylesheets/abstracts' ],
-							data:
+							sassOptions: {
+								includePaths: [
+									'client/stylesheets/abstracts',
+								],
+							},
+							additionalData:
 								'@import "node_modules/@wordpress/base-styles/_colors.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_variables.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_mixins.scss"; ' +
