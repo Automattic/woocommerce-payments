@@ -1029,10 +1029,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 		} catch ( API_Exception $e ) {
-			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
-			if ( 'canceled' === $intent->get_status() ) {
-				$is_authorization_expired = true;
+			try {
+				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				if ( 'canceled' === $intent->get_status() ) {
+					$is_authorization_expired = true;
+				}
+			} catch ( API_Exception $ge ) {
+				// Ignore any errors during the intent retrieval, and add the failed capture note below.
+				$status = null;
 			}
 		}
 
@@ -1072,8 +1077,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
-		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
-		$status = $intent->get_status();
+		$status = null;
+
+		try {
+			$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
+			$status = $intent->get_status();
+		} catch ( API_Exception $e ) {
+			try {
+				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				$status = $intent->get_status();
+			} catch ( API_Exception $ge ) {
+				// Ignore any errors during the intent retrieval, and add the failed cancellation note below.
+				$status = null;
+			}
+		}
 
 		$order->update_meta_data( '_intention_status', $status );
 		$order->save();
