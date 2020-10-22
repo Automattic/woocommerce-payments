@@ -10,7 +10,7 @@
  */
 class WC_Payments_Notes_Set_Up_Refund_Policy_Test extends WP_UnitTestCase {
 	public function test_removes_note_on_extension_deactivation() {
-		if ( version_compare( WC_VERSION, '4.3.0', '>=' ) ) {
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			// Trigger WCPay extension deactivation callback.
 			wcpay_deactivated();
 
@@ -22,7 +22,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy_Test extends WP_UnitTestCase {
 	}
 
 	public function test_adds_note_on_extension_activation() {
-		if ( version_compare( WC_VERSION, '4.3.0', '>=' ) ) {
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			// Trigger WCPay extension activation callback.
 			wcpay_activated();
 
