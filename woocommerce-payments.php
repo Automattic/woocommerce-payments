@@ -42,16 +42,20 @@ function wcpay_activated() {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
 
-	/* add set up refund policy note (if not yet) */
-	( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
+	if ( version_compare( WC_VERSION, '4.3.0', '>=' ) ) {
+		/* add set up refund policy note (if not yet) */
+		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
+	}
 }
 
 /**
  * Plugin deactivation hook.
  */
 function wcpay_deactivated() {
-	/* drop set up refund policy note */
-	( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_deactivation();
+	if ( version_compare( WC_VERSION, '4.3.0', '>=' ) ) {
+		/* drop set up refund policy note */
+		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_deactivation();
+	}
 }
 
 /**
@@ -63,7 +67,7 @@ function wcpay_deactivated() {
 function wcpay_updated( $upgrader_object, $options ) {
 	$is_plugin_update = 'update' === $options['action'] && 'plugin' === $options['type'];
 	$is_wcpay_updated = $is_plugin_update && in_array( 'woocommerce-payments', (array) $options['plugins'], true );
-	if ( $is_wcpay_updated ) {
+	if ( $is_wcpay_updated && version_compare( WC_VERSION, '4.3.0', '>=' ) ) {
 		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
 	}
 }
