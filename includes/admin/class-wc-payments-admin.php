@@ -276,8 +276,8 @@ class WC_Payments_Admin {
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
 		}
 
-		// TODO: Update pages list where script is enqueued.
-		if ( $current_tab && $current_section
+		// TODO: Update conditions when ToS script is enqueued.
+		if ( false && $current_tab && $current_section
 		&& 'checkout' === $current_tab
 		&& 'woocommerce_payments' === $current_section ) {
 			wp_enqueue_script( 'WCPAY_TOS' );
