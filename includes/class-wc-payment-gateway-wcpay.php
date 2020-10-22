@@ -1504,4 +1504,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			array_values( $tokens )
 		);
 	}
+
+	/**
+	 * Disables gateway.
+	 */
+	public function disable() {
+		$this->update_option( 'enabled', 'no' );
+	}
+
+	/**
+	 * Enables gateway.
+	 */
+	public function enable() {
+		$this->update_option( 'enabled', 'yes' );
+	}
 }

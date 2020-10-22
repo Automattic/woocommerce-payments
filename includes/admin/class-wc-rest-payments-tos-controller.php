@@ -31,6 +31,24 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	protected $rest_base = 'payments/tos';
 
 	/**
+	 * Instance of WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
+	 * WC_REST_Payments_Webhook_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay $gateway WC_Payment_Gateway_WCPay instance.
+	 */
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway ) {
+		parent::__construct( $api_client );
+		$this->gateway = $gateway;
+	}
+
+	/**
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
@@ -86,12 +104,14 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function handle_tos_accepted() {
 		// TODO: record ToS acceptance data.
+		$this->gateway->enable();
 	}
 
 	/**
 	 * Process ToS declined.
 	 */
 	private function handle_tos_declined() {
-		// TODO: record ToS decline data and disable plugin.
+		// TODO: maybe record ToS declined data.
+		$this->gateway->disable();
 	}
 }
