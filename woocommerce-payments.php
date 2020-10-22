@@ -22,7 +22,6 @@ define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
-require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 
 /**
  * Plugin activation hook.
@@ -44,6 +43,7 @@ function wcpay_activated() {
 
 	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 		/* add set up refund policy note (if not yet) */
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
 	}
 }
@@ -54,6 +54,7 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 		/* drop set up refund policy note */
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_deactivation();
 	}
 }
@@ -68,6 +69,7 @@ function wcpay_updated( $upgrader_object, $options ) {
 	$is_plugin_update = 'update' === $options['action'] && 'plugin' === $options['type'];
 	$is_wcpay_updated = $is_plugin_update && in_array( 'woocommerce-payments', (array) $options['plugins'], true );
 	if ( $is_wcpay_updated && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
 	}
 }
