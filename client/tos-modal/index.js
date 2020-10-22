@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+
 import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
@@ -11,6 +12,7 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import { getPaymentMethodsUrl } from 'utils';
 import './style.scss';
 
 const TosLink = () => (
@@ -105,7 +107,6 @@ const makeTosRequest = async ( { accept } ) =>
 	} );
 
 const TosModal = () => {
-	// TODO: detect initial state
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
 	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
 	const [ isBusy, setIsBusy ] = useState( false );
@@ -124,7 +125,8 @@ const TosModal = () => {
 			await makeTosRequest( { accept: true } );
 			closeTosModal();
 		} catch ( err ) {
-			// TODO: handle errors
+			// Note: errors handling will be added in https://github.com/Automattic/woocommerce-payments/pull/993
+			// eslint-disable-next-line no-console
 			console.error( err );
 		} finally {
 			setIsBusy( false );
@@ -135,8 +137,10 @@ const TosModal = () => {
 			setIsBusy( true );
 			await makeTosRequest( { accept: false } );
 			closeDisableModal();
+			window.location = getPaymentMethodsUrl();
 		} catch ( err ) {
-			// TODO: handle errors
+			// Note: errors handling will be added in https://github.com/Automattic/woocommerce-payments/pull/993
+			// eslint-disable-next-line no-console
 			console.error( err );
 		} finally {
 			setIsBusy( false );

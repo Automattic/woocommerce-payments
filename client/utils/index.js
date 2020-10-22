@@ -34,6 +34,18 @@ export const getPaymentSettingsUrl = () => {
 };
 
 /**
+ * Returns the URL to the list of payment methods page.
+ *
+ * @returns {string} URL to the list of payment methods page.
+ */
+export const getPaymentMethodsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'checkout',
+	} );
+};
+
+/**
  * Basic formatting function to convert snake_case to display value.
  *
  * @param {string} value snake_case string to convert.
