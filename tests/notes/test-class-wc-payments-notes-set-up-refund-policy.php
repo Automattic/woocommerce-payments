@@ -17,7 +17,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy_Test extends WP_UnitTestCase {
 			$note_id = WC_Payments_Notes_Set_Up_Refund_Policy::NOTE_NAME;
 			$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 		} else {
-			$this->skip( 'The used WC components are not forward compatible' );
+			$this->markTestSkipped( 'The used WC components are not forward compatible' );
 		}
 	}
 
@@ -29,7 +29,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy_Test extends WP_UnitTestCase {
 			$note_id = WC_Payments_Notes_Set_Up_Refund_Policy::NOTE_NAME;
 			$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 		} else {
-			$this->skip( 'The used WC components are not forward compatible' );
+			$this->markTestSkipped( 'The used WC components are not forward compatible' );
 		}
 	}
 }
