@@ -31,20 +31,6 @@ class WC_Payments_Payment_Request {
 	public $total_label;
 
 	/**
-	 * Key
-	 *
-	 * @var
-	 */
-	public $publishable_key;
-
-	/**
-	 * Key
-	 *
-	 * @var
-	 */
-	public $secret_key;
-
-	/**
 	 * Is test mode active?
 	 *
 	 * @var bool
@@ -59,23 +45,25 @@ class WC_Payments_Payment_Request {
 	private static $_this;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @since   3.0.0
 	 * @version 4.0.0
 	 */
-	public function __construct() {
-		self::$_this           = $this;
-		$this->stripe_settings = get_option( 'woocommerce_stripe_settings', array() );
-		$this->testmode        = ( ! empty( $this->stripe_settings['testmode'] ) && 'yes' === $this->stripe_settings['testmode'] ) ? true : false;
-		$this->publishable_key = ! empty( $this->stripe_settings['publishable_key'] ) ? $this->stripe_settings['publishable_key'] : '';
-		$this->secret_key      = ! empty( $this->stripe_settings['secret_key'] ) ? $this->stripe_settings['secret_key'] : '';
-		$this->total_label     = ! empty( $this->stripe_settings['statement_descriptor'] ) ? WC_Stripe_Helper::clean_statement_descriptor( $this->stripe_settings['statement_descriptor'] ) : '';
+	public function __construct( WC_Payments_Account $account ) {
+		$this->account = $account;
 
-		if ( $this->testmode ) {
-			$this->publishable_key = ! empty( $this->stripe_settings['test_publishable_key'] ) ? $this->stripe_settings['test_publishable_key'] : '';
-			$this->secret_key      = ! empty( $this->stripe_settings['test_secret_key'] ) ? $this->stripe_settings['test_secret_key'] : '';
-		}
+		self::$_this            = $this;
+		$this->stripe_settings  = get_option( 'woocommerce_stripe_settings', array() );
+		$this->testmode         = ( ! empty( $this->stripe_settings['testmode'] ) && 'yes' === $this->stripe_settings['testmode'] ) ? true : false;
+		$this->total_label      = ! empty( $this->stripe_settings['statement_descriptor'] ) ? WC_Stripe_Helper::clean_statement_descriptor( $this->stripe_settings['statement_descriptor'] ) : '';
 
 		$this->total_label = str_replace( "'", '', $this->total_label ) . apply_filters( 'wc_stripe_payment_request_total_label_suffix', ' (via WooCommerce)' );
 
@@ -96,24 +84,6 @@ class WC_Payments_Payment_Request {
 
 		add_action( 'template_redirect', array( $this, 'set_session' ) );
 		$this->init();
-	}
-
-	/**
-	 * Checks if keys are set and valid.
-	 *
-	 * @since  4.0.6
-	 * @return boolean True if the keys are set *and* valid, false otherwise (for example, if keys are empty or the secret key was pasted as publishable key).
-	 */
-	public function are_keys_set() {
-		// NOTE: updates to this function should be added to are_keys_set()
-		// in includes/abstracts/abstract-wc-stripe-payment-gateway.php
-		if ( $this->testmode ) {
-			return preg_match( '/^pk_test_/', $this->publishable_key )
-			       && preg_match( '/^[rs]k_test_/', $this->secret_key );
-		} else {
-			return preg_match( '/^pk_live_/', $this->publishable_key )
-			       && preg_match( '/^[rs]k_live_/', $this->secret_key );
-		}
 	}
 
 	/**
@@ -482,9 +452,8 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function scripts() {
-		// If keys are not set bail.
-		if ( ! $this->are_keys_set() ) {
-			WC_Stripe_Logger::log( 'Keys are not set correctly.' );
+		// If account is not connected then bail.
+		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return;
 		}
 
@@ -507,7 +476,8 @@ class WC_Payments_Payment_Request {
 		$stripe_params = array(
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => array(
-				'key'                => $this->publishable_key,
+				'publishableKey' => $this->account->get_publishable_key( true ), // TODO pass is_test_mode as argument
+				'accountId'      => $this->account->get_stripe_account_id(),
 				'allow_prepaid_card' => apply_filters( 'wc_stripe_allow_prepaid_card', true ) ? 'yes' : 'no',
 			),
 			'nonce'           => array(
@@ -1291,5 +1261,3 @@ class WC_Payments_Payment_Request {
 		);
 	}
 }
-
-new WC_Payments_Payment_Request();

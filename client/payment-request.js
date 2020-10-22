@@ -2,8 +2,10 @@
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe = Stripe( wc_stripe_payment_request_params.stripe.key ),
-		paymentRequestType;
+	var stripe = Stripe( wc_stripe_payment_request_params.stripe.publishableKey, {
+		stripeAccount: wc_stripe_payment_request_params.stripe.accountId,
+	} );
+	var paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
