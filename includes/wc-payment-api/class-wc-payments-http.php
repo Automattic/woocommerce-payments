@@ -57,7 +57,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		}
 
 		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
-		$args['user_id'] = Automattic\Jetpack\Connection\Manager::JETPACK_MASTER_USER;
+		$args['user_id'] = Automattic\Jetpack\Connection\Manager::CONNECTION_OWNER;
 
 		if ( $is_site_specific ) {
 			// We expect `url` to include a `%s` placeholder which will allow us inject the blog id.
