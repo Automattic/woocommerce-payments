@@ -47,6 +47,7 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-rest-request-exception.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-payments-rest-controller.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-webhook-controller.php';
+	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once dirname( __FILE__ ) . '/../includes/admin/tracks/class-tracker.php';
 }
 
