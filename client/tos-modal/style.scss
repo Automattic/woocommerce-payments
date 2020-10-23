@@ -1,7 +1,12 @@
 .woocommerce-payments__tos-modal {
-	.components-modal__header .components-modal__header-heading {
-		font-size: 24px;
-		line-height: 32px;
+	.components-modal__header {
+		height: auto;
+		padding: 12px 24px;
+
+		.components-modal__header-heading {
+			font-size: 24px;
+			line-height: 32px;
+		}
 	}
 
 	.woocommerce-payments__tos-modal-message {
