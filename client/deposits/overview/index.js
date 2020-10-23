@@ -55,12 +55,13 @@ const getNextDepositLabelFormatted = ( deposit ) => {
 
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
-		case 'daily':
+		case 'daily': {
 			return __(
 				'Automatic, every business day',
 				'woocommerce-payments'
 			);
-		case 'weekly':
+		}
+		case 'weekly': {
 			return sprintf(
 				/** translators: %s day of the week e.g. Monday */
 				__( 'Automatic, every week on %s', 'woocommerce-payments' ),
@@ -72,7 +73,8 @@ const formatDepositSchedule = ( schedule ) => {
 					.locale( moment.locale() )
 					.format( 'dddd' )
 			);
-		case 'monthly':
+		}
+		case 'monthly': {
 			// If locale is set up as en_US or en_GB the ordinal will not show up
 			// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
 			// Using 'en' as the locale should be enough to workaround it
@@ -91,6 +93,7 @@ const formatDepositSchedule = ( schedule ) => {
 					.date( schedule.monthly_anchor )
 					.format( 'Do' )
 			);
+		}
 	}
 };
 

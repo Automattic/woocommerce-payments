@@ -45,6 +45,21 @@
 			{
 				"required": "id"
 			}
-		]
+		],
+		"inclusive-language/use-inclusive-words": [
+			"warn",
+			{
+				"allowedTerms": [ "mastercard" ]
+			}
+		],
+		// this section disables rules causing massive violations in https://github.com/Automattic/woocommerce-payments/pull/1029
+		// we need to re-visit with JS advocating folks and deside how to proceed here
+		"jsdoc/check-types": "off",           // +47 violations
+		"jsdoc/no-undefined-types": "off",    // +15 violation
+		"react-hooks/exhaustive-deps": "off", // +8 violations
+		"jsdoc/check-param-names": "off",     // +4 violations
+		"jsdoc/require-param": "off",         // +3 violations
+		"react-hooks/rules-of-hooks": "off",  // +2 violation
+		"jsdoc/require-property": "off",      // +1 violation
 	}
 }

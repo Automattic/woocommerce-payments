@@ -87,9 +87,7 @@ const unsetCheckbox = async ( selector ) => {
  * Wait for UI blocking to end.
  */
 const uiUnblocked = async () => {
-	await page.waitForFunction(
-		() => ! Boolean( document.querySelector( '.blockUI' ) )
-	);
+	await page.waitForFunction( () => ! document.querySelector( '.blockUI' ) );
 };
 
 /**

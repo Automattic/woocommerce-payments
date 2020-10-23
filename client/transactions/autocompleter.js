@@ -15,6 +15,7 @@ import computeSuggestionMatch from 'utils/compute-suggestion-match';
  * @typedef {Object} Completer
  */
 
+// eslint-disable-next-line inclusive-language/use-inclusive-words
 /**
  * A transaction completer.
  * See https://github.com/WordPress/gutenberg/tree/master/packages/components/src/autocomplete#the-completer-interface
