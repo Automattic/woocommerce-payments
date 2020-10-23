@@ -138,9 +138,6 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
-
-		// Demo code, used during the development of the PR.
-		add_action( 'template_redirect', [ static::class, 'test_tos_agreements' ] );
 	}
 
 	/**
@@ -508,29 +505,5 @@ class WC_Payments {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
-	}
-
-	/**
-	 * Tests TOS agreements.
-	 */
-	public static function test_tos_agreements() {
-		$test_add = false;
-		$test_get = false;
-
-		if ( $test_add ) {
-			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-			$user_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
-
-			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-			$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
-
-			self::$api_client->add_tos_agreement( '4.0.0', 'popup', $user_ip, $user_agent );
-			exit;
-		}
-
-		if ( $test_get ) {
-			self::$api_client->get_latest_tos_agreement();
-			exit;
-		}
 	}
 }
