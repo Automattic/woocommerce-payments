@@ -20,17 +20,11 @@ if ( wcpay_tos_settings.showSnackbar ) {
 }
 
 function renderTosModal() {
-	// eslint-disable-next-line camelcase
-	const { disabledSettingsUrl } = wcpay_tos_settings;
-
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-tos-container';
 	const wpcontent = document.getElementById( 'wpcontent' );
 	wpcontent.appendChild( container );
-	ReactDOM.render(
-		<TosModal settingsUrl={ disabledSettingsUrl } />,
-		container
-	);
+	ReactDOM.render( <TosModal />, container );
 }
 
 function renderTosSnackbar() {

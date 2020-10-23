@@ -239,10 +239,9 @@ class WC_Payments_Admin {
 				'WCPAY_TOS',
 				'wcpay_tos_settings',
 				[
-					'showModal'           => $tos_agreement_required,
-					'settingsUrl'         => $this->wcpay_gateway->get_settings_url(),
-					'disabledSettingsUrl' => add_query_arg( 'tos-disabled', 1, $this->wcpay_gateway->get_settings_url() ),
-					'showSnackbar'        => $tos_disabled_snackbar,
+					'showModal'    => $tos_agreement_required,
+					'settingsUrl'  => $this->wcpay_gateway->get_settings_url(),
+					'showSnackbar' => $tos_disabled_snackbar,
 				]
 			);
 
