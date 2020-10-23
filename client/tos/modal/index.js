@@ -129,7 +129,6 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
 };
 
 const TosModal = () => {
-	// TODO: detect initial state
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
 	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
 	const [ isBusy, setIsBusy ] = useState( false );

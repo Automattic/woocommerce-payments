@@ -350,23 +350,13 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Checks whether the gateway is enabled.
-	 *
-	 * @return bool
-	 */
-	private function is_gateway_enabled() {
-		$options = get_option( 'woocommerce_woocommerce_payments_settings' );
-		return 'yes' === $options['enabled'];
-	}
-
-	/**
 	 * Checks whether it's necessary to display a ToS agreement modal.
 	 *
 	 * @return bool
 	 */
 	private function is_tos_agreement_required() {
 		// The gateway might already be disabled because of ToS.
-		if ( ! $this->is_gateway_enabled() ) {
+		if ( ! $this->wcpay_gateway->is_enabled() ) {
 			return false;
 		}
 

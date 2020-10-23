@@ -1506,6 +1506,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks whether the gateway is enabled.
+	 *
+	 * @return bool The result.
+	 */
+	public function is_enabled() {
+		return 'yes' === $this->get_option( 'enabled' );
+	}
+
+	/**
 	 * Disables gateway.
 	 */
 	public function disable() {

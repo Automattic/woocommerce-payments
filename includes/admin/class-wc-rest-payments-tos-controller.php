@@ -141,12 +141,7 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function reactivate( $request ) {
 		try {
-			$options = get_option( 'woocommerce_woocommerce_payments_settings' );
-
-			$options['enabled'] = 'yes';
-
-			update_option( 'woocommerce_woocommerce_payments_settings', $options );
-
+			$this->gateway->enable();
 			Logger::debug( 'Gateway re-enabled after ToS decline.' );
 		} catch ( Exception $e ) {
 			Logger::error( $e );
