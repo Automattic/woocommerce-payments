@@ -4,6 +4,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+/**
+ * Internal dependencies
+ */
 import TosModal from 'tos-modal';
 
 renderTosModal();
