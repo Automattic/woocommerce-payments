@@ -36,7 +36,9 @@ exports[`ToS modal should render ToS modal 1`] = `
           data-link-type="external"
           href="https://wordpress.com/tos"
           target="_blank"
-        />
+        >
+          Terms of Service
+        </a>
         . By clicking “Accept” you agree to the Terms of Service.
       </div>
       <div
@@ -96,7 +98,9 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
           data-link-type="external"
           href="https://wordpress.com/tos"
           target="_blank"
-        />
+        >
+          Terms of Service
+        </a>
         , you’ll no longer be able to capture credit card payments using WooCommerce Payments. Your previous transaction and deposit data will still be available.
       </div>
       <div

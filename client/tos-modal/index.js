@@ -15,8 +15,13 @@ import { Link } from '@woocommerce/components';
 import { getPaymentMethodsUrl } from 'utils';
 import './style.scss';
 
-const TosLink = () => (
-	<Link href="https://wordpress.com/tos" target="_blank" type="external" />
+const TosLink = ( props ) => (
+	<Link
+		{ ...props }
+		href="https://wordpress.com/tos"
+		target="_blank"
+		type="external"
+	/>
 );
 
 const TosModalUI = ( { onAccept, onDecline, isBusy } ) => {
