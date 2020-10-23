@@ -104,7 +104,7 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 	);
 };
 
-const makeTosRequest = async ( { accept } ) =>
+const makeTosRequest = ( { accept } ) =>
 	apiFetch( {
 		path: '/wc/v3/payments/tos',
 		method: 'POST',
