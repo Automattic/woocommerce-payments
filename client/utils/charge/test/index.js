@@ -171,8 +171,6 @@ describe( 'Charge utilities', () => {
 				expect( utils.getChargeStatus( charge ) ).toEqual(
 					'disputed_' + status
 				);
-				expect( charge.refunded ).toEqual( true );
-				expect( charge.amount_refunded ).toEqual( 1500 );
 			}
 		);
 	} );

@@ -14,13 +14,11 @@ const getBaseCharge = () => ( {
 	id: 'ch_38jdHA39KKA',
 	/* Stripe data comes in seconds, instead of the default Date milliseconds */
 	created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
-	amount: 1500,
+	amount: 2000,
 	amount_refunded: 0,
 	application_fee_amount: 70,
 	disputed: false,
 	dispute: null,
-	fee: 74,
-	net: 1426,
 	currency: 'usd',
 	type: 'charge',
 	status: 'succeeded',
@@ -72,7 +70,7 @@ describe( 'PaymentDetailsSummary', () => {
 		const charge = getBaseCharge();
 		charge.refunded = true;
 		// eslint-disable-next-line camelcase
-		charge.amount_refunded = 1500;
+		charge.amount_refunded = 2000;
 
 		const paymentDetailsSummary = renderCharge( charge );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
