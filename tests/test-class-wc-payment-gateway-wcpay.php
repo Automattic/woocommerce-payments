@@ -346,7 +346,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -371,6 +371,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		)[0];
 
 		$this->assertContains( 'failed', $note->content );
+		$this->assertContains( 'test exception', $note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
 		$this->assertEquals( $order->get_status(), 'on-hold' );
@@ -388,7 +389,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -431,7 +432,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'cancel_intention' )
-			->will( $this->throwException( new API_Exception( 'test', 'test', 123 ) ) );
+			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -474,12 +475,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'cancel_intention' )
-			->will( $this->throwException( new API_Exception( 'test', 'test', 123 ) ) );
+			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->will( $this->throwException( new API_Exception( 'test', 'test', 123 ) ) );
+			->will( $this->throwException( new API_Exception( 'ignore this', 'test', 123 ) ) );
 
 		$this->wcpay_gateway->cancel_authorization( $order );
 
@@ -491,6 +492,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		)[0];
 
 		$this->assertContains( 'failed', $note->content );
+		$this->assertContains( 'test exception', $note->content );
 		$this->assertEquals( $order->get_status(), 'on-hold' );
 	}
 
