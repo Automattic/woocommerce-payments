@@ -53,6 +53,7 @@ export default class TosSnackbar extends Component {
 	}
 
 	async enableGateway() {
+		// ToDo: Add a busy state!
 		const { settingsUrl } = this.props;
 		await enableGatewayAfterTosDecline();
 		window.location = settingsUrl;

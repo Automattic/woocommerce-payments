@@ -6,6 +6,7 @@ import { useState } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
 import { Button, Notice, Modal } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -161,7 +162,9 @@ const TosModal = () => {
 			setIsBusy( true );
 			await makeTosAcceptanceRequest( { accept: false } );
 			closeDisableModal();
-			window.location = getPaymentMethodsUrl();
+			window.location = addQueryArgs( getPaymentMethodsUrl(), {
+				'tos-disabled': 1,
+			} );
 		} catch ( err ) {
 			setDeclineError( true );
 		} finally {

@@ -306,9 +306,19 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Update conditions when ToS script is enqueued.
-		if ( $current_tab && $current_section
-		&& 'checkout' === $current_tab
-		&& 'woocommerce_payments' === $current_section ) {
+		$show_on_payment_methods_list = (
+			$current_tab
+			&& 'checkout' === $current_tab
+			&& isset( $_GET['tos-disabled'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		);
+
+		$show_on_settings_page = (
+			$current_tab && $current_section
+			&& 'checkout' === $current_tab
+			&& 'woocommerce_payments' === $current_section
+		);
+
+		if ( $show_on_payment_methods_list || $show_on_settings_page ) {
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
 		}
