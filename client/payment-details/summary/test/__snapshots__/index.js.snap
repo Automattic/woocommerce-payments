@@ -17,7 +17,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
           <p
             class="payment-details-summary__amount"
           >
-            $15.00
+            $20.00
             <span
               class="payment-details-summary__amount-currency"
             >
@@ -39,7 +39,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             </p>
             <p>
               Net: 
-              $14.30
+              $19.30
             </p>
           </div>
         </div>
@@ -163,7 +163,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
           <p
             class="payment-details-summary__amount"
           >
-            $15.00
+            $20.00
             <span
               class="payment-details-summary__amount-currency"
             >
@@ -185,7 +185,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             </p>
             <p>
               Net: 
-              $14.30
+              $19.30
             </p>
           </div>
         </div>
@@ -325,7 +325,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           <p
             class="payment-details-summary__amount"
           >
-            $15.00
+            $20.00
             <span
               class="payment-details-summary__amount-currency"
             >
@@ -342,7 +342,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           >
             <p>
               Refunded: 
-              $-15.00
+              $-20.00
             </p>
             <p>
               Fee: 
@@ -553,7 +553,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           <p
             class="payment-details-summary__amount"
           >
-            $15.00
+            $20.00
             <span
               class="payment-details-summary__amount-currency"
             >
@@ -578,7 +578,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             </p>
             <p>
               Net: 
-              $2.30
+              $7.30
             </p>
           </div>
         </div>
@@ -702,7 +702,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           <p
             class="payment-details-summary__amount"
           >
-            $15.00
+            $20.00
             <span
               class="payment-details-summary__amount-currency"
             >
@@ -727,7 +727,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             </p>
             <p>
               Net: 
-              $-15.70
+              $-10.70
             </p>
           </div>
         </div>
