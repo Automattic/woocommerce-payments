@@ -104,6 +104,8 @@ Please note that our support for the checkout block is still experimental and th
 = 1.7.0 - 2020-xx-xx =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.
+* Fix - Render dispute evidence file upload errors.
+* Fix - Increase timeout for calls to the API server.
 * Fix - Correctly display the fee and net amounts for a charge with an inquiry.
 
 = 1.6.0 - 2020-10-15 =

@@ -391,6 +391,7 @@ export default ( { query } ) => {
 
 		// Set request status for UI.
 		updateDispute( {
+			metadata: { [ key ]: '' },
 			isUploading: { [ key ]: true },
 			uploadingErrors: { [ key ]: '' },
 		} );
@@ -420,6 +421,7 @@ export default ( { query } ) => {
 			} );
 
 			updateDispute( {
+				metadata: { [ key ]: '' },
 				isUploading: { [ key ]: false },
 				uploadingErrors: { [ key ]: err.message },
 			} );
