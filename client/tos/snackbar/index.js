@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import { Component } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Snackbar } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,51 +11,51 @@ import { Snackbar } from '@wordpress/components';
 import { enableGatewayAfterTosDecline } from '../request.js';
 import './style.scss';
 
-export default class TosSnackbar extends Component {
-	constructor() {
-		super();
+const TosSnackbar = ( { settingsUrl } ) => {
+	const [ visible, setVisible ] = useState( true );
+	const [ busy, setBusy ] = useState( false );
 
-		this.state = {
-			visible: true,
-		};
-	}
+	const enableGateway = async () => {
+		setBusy( true );
+		await enableGatewayAfterTosDecline();
+		window.location = settingsUrl;
+	};
 
-	componentDidMount() {
+	// Hide the snackbar after 15 seconds.
+	useEffect( () => {
 		setTimeout( () => {
-			this.setState( {
-				visible: false,
-			} );
+			setVisible( false );
 		}, 15000 );
+	} );
+
+	if ( ! visible ) {
+		return null;
 	}
 
-	render() {
-		const { visible } = this.state;
-
-		if ( ! visible ) {
-			return null;
-		}
-
-		const actions = [
-			{
-				label: __( 'Undo', 'woocommerce-payments' ),
-				onClick: this.enableGateway.bind( this ),
-			},
-		];
-
+	if ( busy ) {
 		return (
-			<Snackbar actions={ actions }>
+			<Snackbar>
 				{ __(
-					'Disabled WooCommerce Payments',
+					'Enabling WooCommerce Payments…',
 					'woocommerce-payments'
 				) }
 			</Snackbar>
 		);
 	}
 
-	async enableGateway() {
-		// ToDo: Add a busy state!
-		const { settingsUrl } = this.props;
-		await enableGatewayAfterTosDecline();
-		window.location = settingsUrl;
-	}
-}
+	const actions = [
+		{
+			label: __( 'Undo', 'woocommerce-payments' ),
+			onClick: enableGateway,
+			isBusy: busy,
+		},
+	];
+
+	return (
+		<Snackbar actions={ actions }>
+			{ __( 'Disabled WooCommerce Payments', 'woocommerce-payments' ) }
+		</Snackbar>
+	);
+};
+
+export default TosSnackbar;
