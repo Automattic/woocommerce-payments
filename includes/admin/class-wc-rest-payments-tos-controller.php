@@ -121,7 +121,11 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
 
-		$this->api_client->add_tos_agreement( 'settings-popup', $user_ip, $user_agent );
+		// Accessing directly, because a user must be already logged in.
+		$current_user = wp_get_current_user();
+		$user_name    = $current_user->user_login;
+
+		$this->api_client->add_tos_agreement( 'settings-popup', $user_name, $user_ip, $user_agent );
 	}
 
 	/**
