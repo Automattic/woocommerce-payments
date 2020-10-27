@@ -13,7 +13,7 @@
     },
     "require": {
       "php": "7.*",
-      "automattic/jetpack-connection": "1.18.4",
+      "automattic/jetpack-connection": "1.19.0",
       "automattic/jetpack-config": "1.4.1",
       "automattic/jetpack-autoloader": "2.4.0",
       "myclabs/php-enum": "1.6.6"
