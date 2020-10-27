@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
@@ -391,6 +391,7 @@ export default ( { query } ) => {
 
 		// Set request status for UI.
 		updateDispute( {
+			metadata: { [ key ]: '' },
 			isUploading: { [ key ]: true },
 			uploadingErrors: { [ key ]: '' },
 		} );
@@ -420,6 +421,7 @@ export default ( { query } ) => {
 			} );
 
 			updateDispute( {
+				metadata: { [ key ]: '' },
 				isUploading: { [ key ]: false },
 				uploadingErrors: { [ key ]: err.message },
 			} );
@@ -438,13 +440,11 @@ export default ( { query } ) => {
 			path: '/payments/disputes',
 		} );
 
-		submit
-			? window.wcTracks.recordEvent(
-					'wcpay_dispute_submit_evidence_success'
-			  )
-			: window.wcTracks.recordEvent(
-					'wcpay_dispute_save_evidence_success'
-			  );
+		window.wcTracks.recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_success'
+				: 'wcpay_dispute_save_evidence_success'
+		);
 		/*
 			We rely on WC-Admin Transient notices to display success message.
 			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
@@ -454,19 +454,17 @@ export default ( { query } ) => {
 		getHistory().push( href );
 	};
 
-	const handleSaveError = ( submit ) => {
-		const message = submit
-			? __( 'Failed to submit evidence!', 'woocommerce-payments' )
-			: __( 'Failed to save evidence!', 'woocommerce-payments' );
+	const handleSaveError = ( err, submit ) => {
+		window.wcTracks.recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed'
+		);
 
-		submit
-			? window.wcTracks.recordEvent(
-					'wcpay_dispute_submit_evidence_failed'
-			  )
-			: window.wcTracks.recordEvent(
-					'wcpay_dispute_save_evidence_failed'
-			  );
-		createErrorNotice( message );
+		const message = submit
+			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
+			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+		createErrorNotice( sprintf( message, err.message ) );
 	};
 
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
@@ -484,13 +482,11 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
-			submit
-				? window.wcTracks.recordEvent(
-						'wcpay_dispute_submit_evidence_clicked'
-				  )
-				: window.wcTracks.recordEvent(
-						'wcpay_dispute_save_evidence_clicked'
-				  );
+			window.wcTracks.recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked'
+			);
 
 			const { metadata } = dispute;
 			const updatedDispute = await apiFetch( {
@@ -508,7 +504,7 @@ export default ( { query } ) => {
 			setEvidence( {} );
 			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
-			handleSaveError( submit );
+			handleSaveError( err, submit );
 		} finally {
 			setLoading( false );
 		}

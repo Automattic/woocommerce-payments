@@ -13,6 +13,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 
 /**
@@ -77,16 +78,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	}
 
 	/**
-	 * Process the payment for a given order.
+	 * Prepares the payment information object.
 	 *
-	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $is_recurring_payment Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
-	 *
-	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
 	 */
-	public function process_payment( $order_id, $is_recurring_payment = false ) {
-		$force_save_payment_method = wcs_order_contains_subscription( $order_id ) || $this->is_changing_payment_method_for_subscription();
-		return parent::process_payment( $order_id, $force_save_payment_method );
+	protected function prepare_payment_information( $order ) {
+		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $this->is_changing_payment_method_for_subscription() ) {
+			return parent::prepare_payment_information( $order );
+		}
+
+		// Subs-specific behavior starts here.
+
+		$payment_information = parent::prepare_payment_information( $order );
+		$payment_information->set_payment_type( Payment_Type::RECURRING() );
+		// The payment method is always saved for subscriptions.
+		$payment_information->must_save_payment_method();
+
+		return $payment_information;
 	}
 
 	/**
@@ -122,11 +131,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new Payment_Information( '', $renewal_order, $token, Payment_Initiated_By::MERCHANT() );
+		$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 
 		try {
-			// TODO: make `force_saved_card` and adding the 'recurring' metadata 2 distinct features.
-			$this->process_payment_for_order( null, $payment_information, true );
+			$this->process_payment_for_order( null, $payment_information );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
@@ -164,7 +172,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			self::PAYMENT_METHOD_META_TABLE => [
 				self::PAYMENT_METHOD_META_KEY => [
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
-					'value' => empty( $active_token ) ? '' : strval( $active_token->get_id() ),
+					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
 				],
 			],
 		];
@@ -340,7 +348,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$is_valid_value = false;
 
 		foreach ( $tokens as $token ) {
-			$is_valid_value = $is_valid_value || intval( $field_value ) === $token['tokenId'];
+			$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
 		}
 
 		echo '<select name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '">';
@@ -349,7 +357,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			echo '<option value="" selected disabled>' . esc_html__( 'Please select a payment method', 'woocommerce-payments' ) . '</option>';
 		}
 		foreach ( $tokens as $token ) {
-			$is_selected = intval( $field_value ) === $token['tokenId'] ? 'selected' : '';
+			$is_selected = (int) $field_value === $token['tokenId'] ? 'selected' : '';
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';

@@ -1,8 +1,12 @@
 /** @format **/
 
+/**
+ * External dependencies
+ */
+import { sumBy } from 'lodash';
+
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
-const disputeFee = 1500;
 
 export const getDisputeStatus = ( dispute = {} ) => dispute.status || null;
 
@@ -62,21 +66,21 @@ export const getChargeStatus = ( charge = {} ) => {
  * @return {object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
-	let refunded, fee;
-
 	// The base fee is the application fee.
-	fee = charge.application_fee_amount;
-	refunded = 0;
+	let fee      = charge.application_fee_amount;
+	let refunded = 0;
 
-	if ( isChargeDisputed( charge ) && 'won' !== charge.dispute.status ) {
-		fee += disputeFee;
-		refunded = charge.dispute.amount;
-	} else if ( isChargeRefunded( charge ) ) {
-		refunded = charge.amount_refunded;
+	if ( isChargeDisputed( charge ) ) {
+		fee += sumBy( charge.dispute.balance_transactions, 'fee' );
+		refunded -= sumBy( charge.dispute.balance_transactions, 'amount' );
+	}
+
+	if ( isChargeRefunded( charge ) ) {
+		refunded += charge.amount_refunded;
 	}
 
 	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
-	const net = charge.amount - fee - ( refunded || 0 );
+	const net = charge.amount - fee - refunded;
 
 	return { net, fee, refunded };
 };

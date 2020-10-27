@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
-Tested up to: 5.4
+Tested up to: 5.5
 Requires PHP: 7.0
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -47,6 +47,8 @@ Our global support team is available to answer questions you may have about WooC
 
 To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
 
+WooCommerce Payments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
+
 == Installation ==
 
 Install and activate the WooCommerce and WooCommerce Payments plugins, if you haven't already done so, then go to "Payments" in the WordPress admin menu and follow the instructions there.
@@ -81,6 +83,15 @@ WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When y
 
 You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
+= How does the Checkout block work? =
+
+You need the [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/) plugin to be installed and active to use the Checkout block. Once you add the block to a page, WooCommerce Payments will automatically appear as an option.
+
+Please note that our support for the checkout block is still experimental and the following features of the gateway will probably not work:
+
+* Using saved cards and saving cards.
+* Integration with WooCommerce Subscriptions.
+
 == Screenshots ==
 
 1. View Transactions
@@ -90,7 +101,14 @@ You can read our Terms of Service [here](https://en.wordpress.com/tos).
 
 == Changelog ==
 
-= 1.x.x - 2020-xx-xx =
+= 1.7.0 - 2020-xx-xx =
+* Fix - Fix ordering of payment detail timeline events.
+* Fix - Payment form hides when saved card is selected.
+* Fix - Render dispute evidence file upload errors.
+* Fix - Increase timeout for calls to the API server.
+* Fix - Correctly display the fee and net amounts for a charge with an inquiry.
+
+= 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
 * Add - Initial support for the checkout block.
 * Add - Support wp_get_environment_type() and enable dev-mode when environment is 'development' or 'staging'.

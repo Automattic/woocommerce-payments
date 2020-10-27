@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
@@ -55,10 +56,25 @@ class Payment_Information {
 	private $manual_capture;
 
 	/**
+	 * The type of the payment. `single`, `recurring`, etc.
+	 *
+	 * @var Payment_Type
+	 */
+	private $payment_type;
+
+	/**
+	 * Indicates whether the payment method should be saved.
+	 *
+	 * @var bool
+	 */
+	private $save_payment_method = false;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
 	 * @param \WC_Order            $order The order object.
+	 * @param Payment_Type         $payment_type The type of the payment.
 	 * @param \WC_Payment_Token    $token The payment token used for this payment.
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
@@ -68,6 +84,7 @@ class Payment_Information {
 	public function __construct(
 		string $payment_method,
 		\WC_Order $order = null,
+		Payment_Type $payment_type = null,
 		\WC_Payment_Token $token = null,
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null
@@ -84,6 +101,7 @@ class Payment_Information {
 		$this->token                = $token;
 		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
 		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
+		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
 	}
 
 	/**
@@ -163,6 +181,7 @@ class Payment_Information {
 	 *
 	 * @param array                $request Associative array containing payment request information.
 	 * @param \WC_Order            $order The order object.
+	 * @param Payment_Type         $payment_type The type of the payment.
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 *
@@ -171,13 +190,14 @@ class Payment_Information {
 	public static function from_payment_request(
 		array $request,
 		\WC_Order $order = null,
+		Payment_Type $payment_type = null,
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null
 	): Payment_Information {
 		$payment_method = self::get_payment_method_from_request( $request );
 		$token          = self::get_token_from_request( $request );
 
-		return new Payment_Information( $payment_method, $order, $token, $payment_initiated_by, $manual_capture );
+		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture );
 	}
 
 	/**
@@ -221,5 +241,39 @@ class Payment_Information {
 		}
 
 		return $token;
+	}
+
+	/**
+	 * Changes the type of the payment.
+	 *
+	 * @param Payment_Type $type The new type.
+	 */
+	public function set_payment_type( $type ) {
+		$this->payment_type = $type;
+	}
+
+	/**
+	 * Retrieves the type of the payment.
+	 *
+	 * @return Payment_Type The payment type.
+	 */
+	public function get_payment_type() {
+		return $this->payment_type;
+	}
+
+	/**
+	 * Forces the payment method to be saved when the payment gets processed.
+	 */
+	public function must_save_payment_method() {
+		$this->save_payment_method = true;
+	}
+
+	/**
+	 * Indicates whether the payment method needs be saved for later usage.
+	 *
+	 * @return bool The flag.
+	 */
+	public function should_save_payment_method() {
+		return ! $this->is_using_saved_payment_method() && $this->save_payment_method;
 	}
 }

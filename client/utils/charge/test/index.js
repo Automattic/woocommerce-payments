@@ -171,8 +171,6 @@ describe( 'Charge utilities', () => {
 				expect( utils.getChargeStatus( charge ) ).toEqual(
 					'disputed_' + status
 				);
-				expect( charge.refunded ).toEqual( true );
-				expect( charge.amount_refunded ).toEqual( 1500 );
 			}
 		);
 	} );
@@ -239,6 +237,12 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			disputed: true,
 			dispute: {
 				amount: 1800,
+				balance_transactions: [
+					{
+						amount: -1800,
+						fee: 1500,
+					},
+				],
 			},
 		};
 
@@ -246,6 +250,53 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
+		} );
+	} );
+
+	test( 'reversed dispute', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+			disputed: true,
+			dispute: {
+				amount: 1800,
+				balance_transactions: [
+					{
+						amount: -1800,
+						fee: 1500,
+					},
+					{
+						amount: 1800,
+						fee: -1500,
+					},
+				],
+			},
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: charge.amount - charge.application_fee_amount,
+			fee: charge.application_fee_amount,
+			refunded: 0,
+		} );
+	} );
+
+	test( 'inquiry', () => {
+		const charge = {
+			amount: 1800,
+			// eslint-disable-next-line camelcase
+			application_fee_amount: 82,
+			disputed: true,
+			dispute: {
+				amount: 1800,
+				balance_transactions: [],
+			},
+		};
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			net: charge.amount - charge.application_fee_amount,
+			fee: charge.application_fee_amount,
+			refunded: 0,
 		} );
 	} );
 } );

@@ -22,6 +22,8 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
+	const API_TIMEOUT_SECONDS = 70;
+
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
 	const CUSTOMERS_API       = 'customers';
@@ -176,28 +178,6 @@ class WC_Payments_API_Client {
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
-
-		return $this->deserialize_intention_object_from_array( $response_array );
-	}
-
-	/**
-	 * Confirm an intention
-	 *
-	 * @param WC_Payments_API_Intention $intent            - The intention to confirm.
-	 * @param string                    $payment_method_id - ID of payment method to process charge with.
-	 *
-	 * @return WC_Payments_API_Intention
-	 * @throws API_Exception - Exception thrown on intention confirmation failure.
-	 */
-	public function confirm_intention( WC_Payments_API_Intention $intent, $payment_method_id ) {
-		$request                   = [];
-		$request['payment_method'] = $payment_method_id;
-
-		$response_array = $this->request(
-			$request,
-			self::INTENTIONS_API . '/' . $intent->get_id() . '/confirm',
-			self::POST
-		);
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -606,10 +586,8 @@ class WC_Payments_API_Client {
 		try {
 			return $this->request( $body, self::FILES_API, self::POST );
 		} catch ( API_Exception $e ) {
-			// TODO - Send better error messages to the client once the server is updated.
-			// Throw generic error without details to the client.
 			throw new API_Exception(
-				__( 'Upload failed.', 'woocommerce-payments' ),
+				$e->getMessage(),
 				'wcpay_evidence_file_upload_error',
 				$e->get_http_code()
 			);
@@ -883,6 +861,7 @@ class WC_Payments_API_Client {
 				'url'     => $url,
 				'method'  => $method,
 				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific

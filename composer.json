@@ -12,15 +12,16 @@
       }
     },
     "require": {
-      "automattic/jetpack-connection": "1.17.2",
+      "php": "7.*",
+      "automattic/jetpack-connection": "1.18.4",
       "automattic/jetpack-config": "1.4.1",
-      "automattic/jetpack-autoloader": "2.3.0",
-      "myclabs/php-enum": "^1.6"
+      "automattic/jetpack-autoloader": "2.4.0",
+      "myclabs/php-enum": "1.6.6"
     },
     "require-dev": {
       "composer/installers": "1.9.0",
       "phpunit/phpunit": "6.5.14",
-      "woocommerce/woocommerce-sniffs": "0.0.10",
+      "woocommerce/woocommerce-sniffs": "0.1.0",
       "kalessil/production-dependencies-guard": "dev-master"
     },
     "scripts": {

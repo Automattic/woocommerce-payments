@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
@@ -353,33 +354,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Output the form HTML.
 			?>
-			<fieldset>
-				<?php if ( ! empty( $this->get_description() ) ) : ?>
-					<legend><?php echo wp_kses_post( $this->get_description() ); ?></legend>
-				<?php endif; ?>
+			<?php if ( ! empty( $this->get_description() ) ) : ?>
+				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
+			<?php endif; ?>
 
-				<?php if ( $this->is_in_test_mode() ) : ?>
-					<p class="testmode-info">
-					<?php
-						echo WC_Payments_Utils::esc_interpolated_html(
-							/* translators: link to Stripe testing page */
-							__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
-							]
-						);
-					?>
-					</p>
-				<?php endif; ?>
-
+			<?php if ( $this->is_in_test_mode() ) : ?>
+				<p class="testmode-info">
 				<?php
-				if ( $display_tokenization ) {
-					$this->tokenization_script();
-					echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: link to Stripe testing page */
+						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+						]
+					);
 				?>
+				</p>
+			<?php endif; ?>
 
+			<?php
+			if ( $display_tokenization ) {
+				$this->tokenization_script();
+				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+			?>
+
+			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
@@ -389,7 +390,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
 				?>
-
 
 			</fieldset>
 			<?php
@@ -408,19 +408,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Process the payment for a given order.
 	 *
-	 * @param int  $order_id Order ID to process the payment for.
-	 * @param bool $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
+	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
-	public function process_payment( $order_id, $force_save_payment_method = false ) {
+	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		try {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
-
-			return $this->process_payment_for_order( WC()->cart, $payment_information, $force_save_payment_method );
+			$payment_information = $this->prepare_payment_information( $order );
+			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
 			wc_add_notice( $e->getMessage(), 'error' );
@@ -435,20 +432,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Prepares the payment information object.
+	 *
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
+	 */
+	protected function prepare_payment_information( $order ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
+
+		// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
+		if ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment_information->must_save_payment_method();
+		}
+
+		return $payment_information;
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart                   $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param bool                      $force_save_payment_method Whether this is a one-off payment (false) or it's the first installment of a recurring payment (true).
 	 *
 	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception                Error processing the payment.
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
-	public function process_payment_for_order( $cart, $payment_information, $force_save_payment_method = false ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$save_payment_method = ! $payment_information->is_using_saved_payment_method() && ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) || $force_save_payment_method );
+	public function process_payment_for_order( $cart, $payment_information ) {
 		$order               = $payment_information->get_order();
+		$save_payment_method = $payment_information->should_save_payment_method();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -460,13 +473,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
+			'payment_type'   => $payment_information->get_payment_type(),
 		];
-
-		// We only force save the card during subscriptions.
-		// TODO: This is a bit flawed; make these 2 functionalities distinct.
-		if ( $force_save_payment_method ) {
-			$metadata['payment_type'] = 'recurring';
-		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
@@ -844,7 +852,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
 	 */
-	private function get_capture_type() {
+	protected function get_capture_type() {
 		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
 	}
 
@@ -946,7 +954,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
 					/* translators: 1) dashboard login URL */
-					__( '<a>View and edit account details</a>', 'woocommerce-payments' ),
+					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
 					[
 						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
 					]
