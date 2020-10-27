@@ -51,7 +51,7 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 		$note->set_content_data( (object) [] );
 		$note->set_type( WC_Admin_Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
-		$note->set_source( 'woocommerce-admin' );
+		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'Read more', 'woocommerce-payments' ),
