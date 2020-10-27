@@ -15,12 +15,10 @@
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
-define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
+define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
@@ -28,7 +26,7 @@ require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 /**
  * Plugin activation hook.
  */
-function wcpay_activate() {
+function wcpay_activated() {
 	// Do not take any action if activated in a REST request (via wc-admin).
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		return;
@@ -42,9 +40,43 @@ function wcpay_activate() {
 	) {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
+
+	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		/* add set up refund policy note (if not yet) */
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
+	}
 }
 
-register_activation_hook( __FILE__, 'wcpay_activate' );
+/**
+ * Plugin deactivation hook.
+ */
+function wcpay_deactivated() {
+	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		/* drop set up refund policy note */
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_deactivation();
+	}
+}
+
+/**
+ * Plugin update hook: receives information about updated components an ensures WCPay is one of them.
+ *
+ * @param \WP_Upgrader $upgrader_object The upgrader object.
+ * @param array        $options         Extra details regarding updated components.
+ */
+function wcpay_updated( $upgrader_object, $options ) {
+	$is_plugin_update = 'update' === $options['action'] && 'plugin' === $options['type'];
+	$is_wcpay_updated = $is_plugin_update && in_array( 'woocommerce-payments', (array) $options['plugins'], true );
+	if ( $is_wcpay_updated && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
+	}
+}
+
+register_activation_hook( __FILE__, 'wcpay_activated' );
+register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
+add_action( 'upgrader_process_complete', 'wcpay_updated' );
 
 /**
  * Initialize the Jetpack connection functionality.
