@@ -546,12 +546,14 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Refetches account data.
+	 * Refetches account data and returns the fresh data.
+	 *
+	 * @return mixed Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		try {
 			delete_transient( self::ACCOUNT_TRANSIENT );
-			$this->get_cached_account_data();
+			return $this->get_cached_account_data();
 		} catch ( Exception $e ) {
 			Logger::error( "Failed to refresh account data. Error: $e" );
 		}
@@ -642,5 +644,28 @@ class WC_Payments_Account {
 
 		$diff = array_diff_assoc( $changes, $account );
 		return ! empty( $diff );
+	}
+
+	/**
+	 * Retrieves the latest ToS agreement for the account.
+	 *
+	 * @return array|null Eiter the agreement or null if unavailable.
+	 */
+	public function get_latest_tos_agreement() {
+		$account = $this->get_cached_account_data();
+
+		if ( empty( $account ) ) {
+			return null;
+		}
+
+		if ( ! isset( $account['latest_tos_agreement'] ) ) {
+			$account = $this->refresh_account_data();
+		}
+
+		if ( empty( $account ) ) {
+			return null;
+		}
+
+		return $account['latest_tos_agreement'];
 	}
 }

@@ -38,14 +38,23 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	private $gateway;
 
 	/**
+	 * WC Payments Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account      $account WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		parent::__construct( $api_client );
 		$this->gateway = $gateway;
+		$this->account = $account;
 	}
 
 	/**
@@ -126,6 +135,7 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 		$user_name    = $current_user->user_login;
 
 		$this->api_client->add_tos_agreement( 'settings-popup', $user_name, $user_ip, $user_agent );
+		$this->account->refresh_account_data();
 	}
 
 	/**

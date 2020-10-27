@@ -370,23 +370,13 @@ class WC_Payments_Admin {
 			return false;
 		}
 
-		$transient_name   = 'wcpay_tos_agreement_ok';
-		$transient_expiry = DAY_IN_SECONDS;
-
-		$transient = get_transient( $transient_name );
-		if ( $transient ) {
-			// Already agreed, no need to do it again.
+		// Retrieve the latest agreement and check whether it's regarding the latest ToS version.
+		$agreement = $this->account->get_latest_tos_agreement();
+		if ( empty( $agreement ) ) {
+			// Account data couldn't be fetched, let the merchant solve that first.
 			return false;
 		}
 
-		// Retrieve the latest agreement and check whether it's regarding the latest ToS version.
-		$agreement = $this->payments_api_client->get_latest_tos_agreement();
-		if ( ! $agreement['is_current_version'] ) {
-			return true;
-		}
-
-		// It's ok, let's not check for the next day.
-		set_transient( $transient_name, true, $transient_expiry );
-		return false;
+		return ! $agreement['is_current_version'];
 	}
 }

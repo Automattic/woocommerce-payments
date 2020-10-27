@@ -825,19 +825,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Retrieves the latest TOS agreement for this account.
-	 *
-	 * @return array An array, which contains `date`, `tos_version`, and `source`.
-	 */
-	public function get_latest_tos_agreement() {
-		return $this->request(
-			[],
-			self::TOS_AGREEMENTS_API,
-			self::GET
-		);
-	}
-
-	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
