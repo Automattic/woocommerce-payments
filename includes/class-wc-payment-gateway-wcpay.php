@@ -1016,6 +1016,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$status                   = null;
+		$error_message            = null;
 
 		try {
 			$intent = $this->payments_api_client->capture_intention(
@@ -1029,10 +1030,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 		} catch ( API_Exception $e ) {
-			// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
-			if ( 'canceled' === $intent->get_status() ) {
-				$is_authorization_expired = true;
+			try {
+				$error_message = $e->getMessage();
+
+				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				if ( 'canceled' === $intent->get_status() ) {
+					$is_authorization_expired = true;
+				}
+			} catch ( API_Exception $ge ) {
+				// Ignore any errors during the intent retrieval, and add the failed capture note below with the
+				// original error message.
+				$status        = null;
+				$error_message = $e->getMessage();
 			}
 		}
 
@@ -1041,18 +1051,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount */
-					__( 'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.', 'woocommerce-payments' ),
+					/* translators: %1: the successfully charged amount */
+					__(
+						'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.',
+						'woocommerce-payments'
+					),
 					[ 'strong' => '<strong>' ]
 				),
 				wc_price( $amount )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
+		} elseif ( ! empty( $error_message ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the failed capture amount, %2: error message  */
+					__(
+						'A capture of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+						'woocommerce-payments'
+					),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				wc_price( $amount ),
+				esc_html( $error_message )
+			);
+			$order->add_order_note( $note );
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount */
+					/* translators: %1: the failed capture amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
@@ -1072,8 +1102,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order - Order to cancel authorization on.
 	 */
 	public function cancel_authorization( $order ) {
-		$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
-		$status = $intent->get_status();
+		$status        = null;
+		$error_message = null;
+
+		try {
+			$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
+			$status = $intent->get_status();
+		} catch ( API_Exception $e ) {
+			try {
+				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
+				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				$status = $intent->get_status();
+				if ( 'canceled' !== $status ) {
+					$error_message = $e->getMessage();
+				}
+			} catch ( API_Exception $ge ) {
+				// Ignore any errors during the intent retrieval, and add the failed cancellation note below with the
+				// original error message.
+				$status        = null;
+				$error_message = $e->getMessage();
+			}
+		}
 
 		$order->update_meta_data( '_intention_status', $status );
 		$order->save();
@@ -1086,6 +1135,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					[ 'strong' => '<strong>' ]
 				)
 			);
+		} elseif ( ! empty( $error_message ) ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: error message  */
+					__(
+						'Canceling authorization <strong>failed</strong> to complete with the following message: <code>%1$s</code>.',
+						'woocommerce-payments'
+					),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				esc_html( $error_message )
+			);
+			$order->add_order_note( $note );
 		} else {
 			$order->add_order_note(
 				WC_Payments_Utils::esc_interpolated_html(
