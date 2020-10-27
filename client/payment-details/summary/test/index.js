@@ -82,12 +82,13 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute = {
 			amount: 1500,
 			status: 'under_review',
+			// eslint-disable-next-line camelcase
 			balance_transactions: [
 				{
 					amount: -1500,
 					fee: 1500,
-				}
-			]
+				},
+			],
 		};
 
 		const paymentDetailsSummary = renderCharge( charge );

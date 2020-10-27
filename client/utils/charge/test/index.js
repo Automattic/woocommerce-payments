@@ -237,6 +237,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			disputed: true,
 			dispute: {
 				amount: 1800,
+				// eslint-disable-next-line camelcase
 				balance_transactions: [
 					{
 						amount: -1800,
@@ -261,6 +262,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			disputed: true,
 			dispute: {
 				amount: 1800,
+				// eslint-disable-next-line camelcase
 				balance_transactions: [
 					{
 						amount: -1800,
@@ -289,6 +291,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			disputed: true,
 			dispute: {
 				amount: 1800,
+				// eslint-disable-next-line camelcase
 				balance_transactions: [],
 			},
 		};
