@@ -690,21 +690,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/kalessil/production-dependencies-guard.git",
-                "reference": "684c0374a2f0af31ea27de4107b28344d1bbc0d3"
+                "reference": "04ee2cab1027e953a556506acee7d849e0478f9e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kalessil/production-dependencies-guard/zipball/684c0374a2f0af31ea27de4107b28344d1bbc0d3",
-                "reference": "684c0374a2f0af31ea27de4107b28344d1bbc0d3",
+                "url": "https://api.github.com/repos/kalessil/production-dependencies-guard/zipball/04ee2cab1027e953a556506acee7d849e0478f9e",
+                "reference": "04ee2cab1027e953a556506acee7d849e0478f9e",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.1",
+                "composer-plugin-api": "^1.0|^2.0",
                 "ext-json": "*",
                 "php": "^7.0"
             },
             "require-dev": {
-                "composer/composer": "^1.8",
+                "composer/composer": "^1.0|^2.0",
                 "ext-xdebug": "*",
                 "infection/infection": "^0.9",
                 "phpunit/phpunit": "^6.5",
@@ -734,7 +734,7 @@
             ],
             "description": "Prevents adding of development packages into require-section (should be require-dev).",
             "homepage": "https://github.com/kalessil/production-dependencies-guard",
-            "time": "2019-05-14T11:33:20+00:00"
+            "time": "2020-10-27T09:20:09+00:00"
         },
         {
             "name": "myclabs/deep-copy",
