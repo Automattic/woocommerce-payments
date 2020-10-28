@@ -34,6 +34,9 @@ matrix:
     - php: 7.4
       env: WP_VERSION=nightly WC_VERSION=latest
       stage: compatibility-edge
+    - php: nightly
+      env: WP_VERSION=nightly WC_VERSION=latest
+      stage: compatibility-edge
   include:
 # PHP versions compatibility (latest WordPress and most used WooCommerce versions)
   - php: 7.0
@@ -70,6 +73,9 @@ matrix:
     stage: compatibility
 # top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
   - php: 7.4
+    env: WP_VERSION=nightly WC_VERSION=latest
+    stage: compatibility-edge
+  - php: nightly
     env: WP_VERSION=nightly WC_VERSION=latest
     stage: compatibility-edge
 # E2E testing
