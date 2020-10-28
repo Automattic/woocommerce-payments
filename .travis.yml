@@ -76,7 +76,7 @@ matrix:
     env: WP_VERSION=nightly WC_VERSION=latest
     stage: compatibility-edge
   - php: nightly
-    env: WP_VERSION=nightly WC_VERSION=latest
+    env: WP_VERSION=nightly WC_VERSION=beta
     stage: compatibility-edge
 # E2E testing
   - name: "E2E tests"

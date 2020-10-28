@@ -30,7 +30,7 @@ wp() {
 	WORKING_DIR="$PWD"
 	cd "$WP_CORE_DIR"
 
-	if [ ! -d $TMPDIR/wp-cli.phar ]; then
+	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
 	php "$TMPDIR/wp-cli.phar" $@
@@ -151,6 +151,11 @@ install_woocommerce() {
 	WC_INSTALL_EXTRA=''
 	INSTALLED_WC_VERSION=$(wp plugin get woocommerce --field=version)
 
+	if [[ $WC_VERSION == 'beta' ]]; then
+		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
+		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | keys[-2]' --sort-keys)
+	fi
+
 	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then
 		# WooCommerce is already installed, we just must update it to the latest stable version
 		wp plugin update woocommerce
@@ -160,11 +165,13 @@ install_woocommerce() {
 			# WooCommerce is installed but it's the wrong version, overwrite the installed version
 			WC_INSTALL_EXTRA+=" --force"
 		fi
-		if [[ $WC_VERSION != 'latest' ]]; then
+		if [[ $WC_VERSION != 'latest' ]] && [[ $WC_VERSION != 'beta' ]]; then
 			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
 		fi
 		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
 	fi
+
+	wp plugin get woocommerce
 }
 
 install_wp
