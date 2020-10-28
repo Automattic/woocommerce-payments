@@ -1,9 +1,9 @@
-/* global wc_stripe_payment_request_params, Stripe */
+/* global wcpay_payment_request_params, Stripe */
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe = Stripe( wc_stripe_payment_request_params.stripe.publishableKey, {
-		stripeAccount: wc_stripe_payment_request_params.stripe.accountId,
+	var stripe = Stripe( wcpay_payment_request_params.stripe.publishableKey, {
+		stripeAccount: wcpay_payment_request_params.stripe.accountId,
 	} );
 	var paymentRequestType;
 
@@ -18,14 +18,14 @@ jQuery( function( $ ) {
 		 * @return {String}
 		 */
 		getAjaxURL: function( endpoint ) {
-			return wc_stripe_payment_request_params.ajax_url
+			return wcpay_payment_request_params.ajax_url
 				.toString()
 				.replace( '%%endpoint%%', 'wc_stripe_' + endpoint );
 		},
 
 		getCartDetails: function() {
 			var data = {
-				security: wc_stripe_payment_request_params.nonce.payment
+				security: wcpay_payment_request_params.nonce.payment
 			};
 
 			$.ajax( {
@@ -91,7 +91,7 @@ jQuery( function( $ ) {
 			var name     = source.owner.name;
 			var shipping = evt.shippingAddress;
 			var data     = {
-				_wpnonce:                  wc_stripe_payment_request_params.nonce.checkout,
+				_wpnonce:                  wcpay_payment_request_params.nonce.checkout,
 				billing_first_name:        null !== name ? name.split( ' ' ).slice( 0, 1 ).join( ' ' ) : '',
 				billing_last_name:         null !== name ? name.split( ' ' ).slice( 1 ).join( ' ' ) : '',
 				billing_company:           '',
@@ -161,7 +161,7 @@ jQuery( function( $ ) {
 
 			$( '.woocommerce-error' ).remove();
 
-			if ( wc_stripe_payment_request_params.is_product_page ) {
+			if ( wcpay_payment_request_params.is_product_page ) {
 				var element = $( '.product' );
 
 				element.before( message );
@@ -215,7 +215,7 @@ jQuery( function( $ ) {
 		 */
 		updateShippingOptions: function( details, address ) {
 			var data = {
-				security:  wc_stripe_payment_request_params.nonce.shipping,
+				security:  wcpay_payment_request_params.nonce.shipping,
 				country:   address.country,
 				state:     address.region,
 				postcode:  address.postalCode,
@@ -223,7 +223,7 @@ jQuery( function( $ ) {
 				address:   typeof address.addressLine[0] === 'undefined' ? '' : address.addressLine[0],
 				address_2: typeof address.addressLine[1] === 'undefined' ? '' : address.addressLine[1],
 				payment_request_type: paymentRequestType,
-				is_product_page: wc_stripe_payment_request_params.is_product_page,
+				is_product_page: wcpay_payment_request_params.is_product_page,
 			};
 
 			return $.ajax( {
@@ -241,10 +241,10 @@ jQuery( function( $ ) {
 		 */
 		updateShippingDetails: function( details, shippingOption ) {
 			var data = {
-				security: wc_stripe_payment_request_params.nonce.update_shipping,
+				security: wcpay_payment_request_params.nonce.update_shipping,
 				shipping_method: [ shippingOption.id ],
 				payment_request_type: paymentRequestType,
-				is_product_page: wc_stripe_payment_request_params.is_product_page,
+				is_product_page: wcpay_payment_request_params.is_product_page,
 			};
 
 			return $.ajax( {
@@ -267,7 +267,7 @@ jQuery( function( $ ) {
 			}
 
 			var data = {
-				security: wc_stripe_payment_request_params.nonce.add_to_cart,
+				security: wcpay_payment_request_params.nonce.add_to_cart,
 				product_id: product_id,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length ? wc_stripe_payment_request.getAttributes().data : []
@@ -299,7 +299,7 @@ jQuery( function( $ ) {
 
 		clearCart: function() {
 			var data = {
-					'security': wc_stripe_payment_request_params.nonce.clear_cart
+					'security': wcpay_payment_request_params.nonce.clear_cart
 				};
 
 			return $.ajax( {
@@ -312,14 +312,14 @@ jQuery( function( $ ) {
 
 		getRequestOptionsFromLocal: function() {
 			return {
-				total: wc_stripe_payment_request_params.product.total,
-				currency: wc_stripe_payment_request_params.checkout.currency_code,
-				country: wc_stripe_payment_request_params.checkout.country_code,
+				total: wcpay_payment_request_params.product.total,
+				currency: wcpay_payment_request_params.checkout.currency_code,
+				country: wcpay_payment_request_params.checkout.country_code,
 				requestPayerName: true,
 				requestPayerEmail: true,
-				requestPayerPhone: wc_stripe_payment_request_params.checkout.needs_payer_phone,
-				requestShipping: wc_stripe_payment_request_params.product.requestShipping,
-				displayItems: wc_stripe_payment_request_params.product.displayItems
+				requestPayerPhone: wcpay_payment_request_params.checkout.needs_payer_phone,
+				requestShipping: wcpay_payment_request_params.product.requestShipping,
+				displayItems: wcpay_payment_request_params.product.displayItems
 			};
 		},
 
@@ -333,7 +333,7 @@ jQuery( function( $ ) {
 			var paymentDetails,
 				options;
 
-			if ( wc_stripe_payment_request_params.is_product_page ) {
+			if ( wcpay_payment_request_params.is_product_page ) {
 				options = wc_stripe_payment_request.getRequestOptionsFromLocal();
 
 				paymentDetails = options;
@@ -344,7 +344,7 @@ jQuery( function( $ ) {
 					country: cart.order_data.country_code,
 					requestPayerName: true,
 					requestPayerEmail: true,
-					requestPayerPhone: wc_stripe_payment_request_params.checkout.needs_payer_phone,
+					requestPayerPhone: wcpay_payment_request_params.checkout.needs_payer_phone,
 					requestShipping: cart.shipping_required ? true : false,
 					displayItems: cart.order_data.displayItems
 				};
@@ -354,7 +354,7 @@ jQuery( function( $ ) {
 
 			var paymentRequest = stripe.paymentRequest( options );
 
-			var elements = stripe.elements( { locale: wc_stripe_payment_request_params.button.locale } );
+			var elements = stripe.elements( { locale: wcpay_payment_request_params.button.locale } );
 			var prButton = wc_stripe_payment_request.createPaymentRequestButton( elements, paymentRequest );
 
 			// Check the availability of the Payment Request API first.
@@ -388,8 +388,8 @@ jQuery( function( $ ) {
 
 			paymentRequest.on( 'source', function( evt ) {
 				// Check if we allow prepaid cards.
-				if ( 'no' === wc_stripe_payment_request_params.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
-					wc_stripe_payment_request.abortPayment( evt, wc_stripe_payment_request.getErrorMessageHTML( wc_stripe_payment_request_params.i18n.no_prepaid_card ) );
+				if ( 'no' === wcpay_payment_request_params.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
+					wc_stripe_payment_request.abortPayment( evt, wc_stripe_payment_request.getErrorMessageHTML( wcpay_payment_request_params.i18n.no_prepaid_card ) );
 				} else {
 					$.when( wc_stripe_payment_request.processSource( evt, paymentRequestType ) ).then( function( response ) {
 						if ( 'success' === response.result ) {
@@ -414,7 +414,7 @@ jQuery( function( $ ) {
 			var addon_value = addons.reduce( function ( sum, addon ) { return sum + addon.cost; }, 0 );
 
 			var data = {
-				security: wc_stripe_payment_request_params.nonce.get_selected_product_data,
+				security: wcpay_payment_request_params.nonce.get_selected_product_data,
 				product_id: product_id,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length ? wc_stripe_payment_request.getAttributes().data : [],
@@ -466,8 +466,8 @@ jQuery( function( $ ) {
 		 */
 		createPaymentRequestButton: function( elements, paymentRequest ) {
 			var button;
-			if ( wc_stripe_payment_request_params.button.is_custom ) {
-				button = $( wc_stripe_payment_request_params.button.css_selector );
+			if ( wcpay_payment_request_params.button.is_custom ) {
+				button = $( wcpay_payment_request_params.button.css_selector );
 				if ( button.length ) {
 					// We fallback to default paymentRequest button if no custom button is found in the UI.
 					// Add flag to be sure that created button is custom button rather than fallback element.
@@ -476,7 +476,7 @@ jQuery( function( $ ) {
 				}
 			}
 
-			if ( wc_stripe_payment_request_params.button.is_branded ) {
+			if ( wcpay_payment_request_params.button.is_branded ) {
 				if ( wc_stripe_payment_request.shouldUseGooglePayBrand() ) {
 					button = wc_stripe_payment_request.createGooglePayButton();
 					// Add flag to be sure that created button is branded rather than fallback element.
@@ -486,7 +486,7 @@ jQuery( function( $ ) {
 					// Not implemented branded buttons default to Stripe's button
 					// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
 					// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
-					wc_stripe_payment_request_params.button.type = 'long' === wc_stripe_payment_request_params.button.branded_type ? 'buy' : 'default';
+					wcpay_payment_request_params.button.type = 'long' === wcpay_payment_request_params.button.branded_type ? 'buy' : 'default';
 				}
 			}
 
@@ -494,9 +494,9 @@ jQuery( function( $ ) {
 				paymentRequest: paymentRequest,
 				style: {
 					paymentRequestButton: {
-						type: wc_stripe_payment_request_params.button.type,
-						theme: wc_stripe_payment_request_params.button.theme,
-						height: wc_stripe_payment_request_params.button.height + 'px',
+						type: wcpay_payment_request_params.button.type,
+						theme: wcpay_payment_request_params.button.theme,
+						height: wcpay_payment_request_params.button.height + 'px',
 					},
 				},
 			} );
@@ -529,10 +529,10 @@ jQuery( function( $ ) {
 			var allowedThemes = [ 'dark', 'light' ];
 			var allowedTypes = [ 'short', 'long' ];
 
-			var theme  = wc_stripe_payment_request_params.button.theme;
-			var type   = wc_stripe_payment_request_params.button.branded_type;
-			var locale = wc_stripe_payment_request_params.button.locale;
-			var height = wc_stripe_payment_request_params.button.height;
+			var theme  = wcpay_payment_request_params.button.theme;
+			var type   = wcpay_payment_request_params.button.branded_type;
+			var locale = wcpay_payment_request_params.button.locale;
+			var height = wcpay_payment_request_params.button.height;
 			theme = allowedThemes.includes( theme ) ? theme : 'light';
 			type = allowedTypes.includes( type ) ? type : 'long';
 
@@ -550,7 +550,7 @@ jQuery( function( $ ) {
 		},
 
 		attachPaymentRequestButtonEventListeners: function( prButton, paymentRequest ) {
-			if ( wc_stripe_payment_request_params.is_product_page ) {
+			if ( wcpay_payment_request_params.is_product_page ) {
 				wc_stripe_payment_request.attachProductPageEventListeners( prButton, paymentRequest );
 			} else {
 				wc_stripe_payment_request.attachCartPageEventListeners( prButton, paymentRequest );
@@ -631,8 +631,8 @@ jQuery( function( $ ) {
 		},
 
 		attachCartPageEventListeners: function ( prButton, paymentRequest ) {
-			if ( ( ! wc_stripe_payment_request_params.button.is_custom || ! wc_stripe_payment_request.isCustomPaymentRequestButton( prButton ) ) &&
-				( ! wc_stripe_payment_request_params.button.is_branded || ! wc_stripe_payment_request.isBrandedPaymentRequestButton( prButton ) ) ) {
+			if ( ( ! wcpay_payment_request_params.button.is_custom || ! wc_stripe_payment_request.isCustomPaymentRequestButton( prButton ) ) &&
+				( ! wcpay_payment_request_params.button.is_branded || ! wc_stripe_payment_request.isBrandedPaymentRequestButton( prButton ) ) ) {
 				return;
 			}
 
@@ -682,7 +682,7 @@ jQuery( function( $ ) {
 		 * @version 4.0.0
 		 */
 		init: function() {
-			if ( wc_stripe_payment_request_params.is_product_page ) {
+			if ( wcpay_payment_request_params.is_product_page ) {
 				wc_stripe_payment_request.startPaymentRequest( '' );
 			} else {
 				wc_stripe_payment_request.getCartDetails();
