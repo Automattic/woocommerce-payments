@@ -92,7 +92,7 @@
     "@wordpress/element": "2.11.0",
     "@wordpress/i18n": "3.5.0",
     "@wordpress/jest-preset-default": "4.0.0",
-    "@wordpress/scripts": "5.1.0",
+    "@wordpress/scripts": "12.4.0",
     "archiver": "5.0.2",
     "babel-loader": "8.1.0",
     "colors": "1.4.0",
