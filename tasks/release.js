@@ -19,6 +19,7 @@ const filesToCopy = [
 	'woocommerce-payments.php',
 	'changelog.txt',
 	'readme.txt',
+	'SECURITY.md',
 ];
 
 // run npm dist
