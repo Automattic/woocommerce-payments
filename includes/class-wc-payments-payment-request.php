@@ -219,7 +219,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function custom_button_selector() {
-		return $this->is_custom_button() ? '#wc-stripe-custom-button' : '';
+		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
 	}
 
 	/**
@@ -559,14 +559,14 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 		?>
-		<div id="wc-stripe-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
-			<div id="wc-stripe-payment-request-button">
+		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
+			<div id="wcpay-payment-request-button">
 				<?php
 					if ( $this->is_custom_button() ) {
 						$label = esc_html( $this->get_button_label() );
 						$class_name = esc_attr( 'button ' .  $this->get_button_theme() );
 						$style = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
-						echo "<button id=\"wc-stripe-custom-button\" class=\"$class_name\" style=\"$style\"> $label </button>";
+						echo "<button id=\"wcpay-custom-button\" class=\"$class_name\" style=\"$style\"> $label </button>";
 					}
 				?>
 				<!-- A Stripe Element will be inserted here. -->
@@ -604,7 +604,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 		?>
-		<p id="wc-stripe-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-gateway-stripe' ); ?> &mdash;</p>
+		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-gateway-stripe' ); ?> &mdash;</p>
 		<?php
 	}
 

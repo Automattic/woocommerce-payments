@@ -536,7 +536,7 @@ jQuery( function( $ ) {
 			theme = allowedThemes.includes( theme ) ? theme : 'light';
 			type = allowedTypes.includes( type ) ? type : 'long';
 
-			var button = $( '<button type="button" id="wc-stripe-branded-button" aria-label="Google Pay" class="gpay-button"></button>' );
+			var button = $( '<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>' );
 			button.css( 'height', height + 'px' );
 			button.addClass( theme + ' ' + type );
 			if ( 'long' === type ) {
@@ -645,31 +645,31 @@ jQuery( function( $ ) {
 		showPaymentRequestButton: function( prButton ) {
 			if ( wc_stripe_payment_request.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.addClass( 'is-active' );
-				$( '#wc-stripe-payment-request-wrapper, #wc-stripe-payment-request-button-separator' ).show();
+				$( '#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator' ).show();
 			} else if ( wc_stripe_payment_request.isBrandedPaymentRequestButton( prButton ) ) {
-				$( '#wc-stripe-payment-request-wrapper, #wc-stripe-payment-request-button-separator' ).show();
-				$( '#wc-stripe-payment-request-button' ).html( prButton );
-			} else if ( $( '#wc-stripe-payment-request-button' ).length ) {
-				$( '#wc-stripe-payment-request-wrapper, #wc-stripe-payment-request-button-separator' ).show();
-				prButton.mount( '#wc-stripe-payment-request-button' );
+				$( '#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator' ).show();
+				$( '#wcpay-payment-request-button' ).html( prButton );
+			} else if ( $( '#wcpay-payment-request-button' ).length ) {
+				$( '#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator' ).show();
+				prButton.mount( '#wcpay-payment-request-button' );
 			}
 		},
 
 		blockPaymentRequestButton: function( prButton ) {
 			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
 			// blockUI.isBlocked is either undefined or 0 when element is not blocked
-			if ( $( '#wc-stripe-payment-request-button' ).data( 'blockUI.isBlocked' ) ) {
+			if ( $( '#wcpay-payment-request-button' ).data( 'blockUI.isBlocked' ) ) {
 				return;
 			}
 
-			$( '#wc-stripe-payment-request-button' ).block( { message: null } );
+			$( '#wcpay-payment-request-button' ).block( { message: null } );
 			if ( wc_stripe_payment_request.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.addClass( 'is-blocked' );
 			}
 		},
 
 		unblockPaymentRequestButton: function( prButton ) {
-			$( '#wc-stripe-payment-request-button' ).unblock();
+			$( '#wcpay-payment-request-button' ).unblock();
 			if ( wc_stripe_payment_request.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.removeClass( 'is-blocked' );
 			}
