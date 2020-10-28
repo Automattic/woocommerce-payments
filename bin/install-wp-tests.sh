@@ -170,8 +170,6 @@ install_woocommerce() {
 		fi
 		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
 	fi
-
-	wp plugin get woocommerce
 }
 
 install_wp
