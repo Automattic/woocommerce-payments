@@ -7,6 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Automattic\WooCommerce\Admin\Loader;
+use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
+
 /**
  * WC_Payments_Admin Class.
  */
@@ -37,7 +40,7 @@ class WC_Payments_Admin {
 		$this->account       = $account;
 
 		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], PHP_INT_MAX );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 	}
 
@@ -54,43 +57,73 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$top_level_link = $stripe_connected ? '/payments/deposits' : '/payments/connect';
+		$navigation_enabled = Loader::is_feature_enabled( 'navigation' );
+		$top_level_link     = $stripe_connected ? '/payments/deposits' : '/payments/connect';
+
+		// Register items in the Payments category unless other payment items exist.
+		$category = 'payments';
+		if ( $navigation_enabled ) {
+			$menu_items    = Menu::get_items();
+			$payment_items = array_filter(
+				$menu_items,
+				function( $item ) {
+					return 'payments' === $item['parent'];
+				}
+			);
+
+			if ( ! empty( $payment_items ) ) {
+				// Register category.
+				Menu::add_category(
+					[
+						'id'         => 'woocommerce-payments',
+						'parent'     => 'payments',
+						'title'      => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+						'capability' => 'manage_woocommerce',
+					]
+				);
+				$category = 'woocommerce-payments';
+			}
+		}
 
 		wc_admin_register_page(
 			[
 				'id'         => 'wc-payments',
-				'title'      => __( 'Payments', 'woocommerce-payments' ),
+				'title'      => $navigation_enabled ? __( 'Connect', 'woocommerce-payments' ) : __( 'Payments', 'woocommerce-payments' ),
 				'capability' => 'manage_woocommerce',
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'category'   => $stripe_connected ? false : $category,
 			]
 		);
 
 		if ( $stripe_connected ) {
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-deposits',
-					'title'  => __( 'Deposits', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/deposits',
+					'id'       => 'wc-payments-deposits',
+					'title'    => __( 'Deposits', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/deposits',
+					'category' => $category,
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-transactions',
-					'title'  => __( 'Transactions', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/transactions',
+					'id'       => 'wc-payments-transactions',
+					'title'    => __( 'Transactions', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/transactions',
+					'category' => $category,
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes',
-					'title'  => __( 'Disputes', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/disputes',
+					'id'       => 'wc-payments-disputes',
+					'title'    => __( 'Disputes', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/disputes',
+					'category' => $category,
 				]
 			);
 
