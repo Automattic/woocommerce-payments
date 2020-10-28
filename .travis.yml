@@ -34,6 +34,9 @@ matrix:
     - php: 7.4
       env: WP_VERSION=nightly WC_VERSION=latest
       stage: compatibility-edge
+    - php: nightly
+      env: WP_VERSION=nightly WC_VERSION=beta
+      stage: compatibility-edge
   include:
 # PHP versions compatibility (latest WordPress and most used WooCommerce versions)
   - php: 7.0
@@ -72,6 +75,9 @@ matrix:
   - php: 7.4
     env: WP_VERSION=nightly WC_VERSION=latest
     stage: compatibility-edge
+  - php: nightly
+    env: WP_VERSION=nightly WC_VERSION=beta
+    stage: compatibility-edge
 # E2E testing
   - name: "E2E tests"
     env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
@@ -86,7 +92,7 @@ before_install:
 
 install:
   - npm ci
-  - composer install
+  - php --version && composer install
   - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
 
 script:
