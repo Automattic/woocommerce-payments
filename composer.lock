@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8b401f3a369c0354aaa2ad502ae1103f",
+    "content-hash": "9d8f145dc88e15a515003a4d9c32be66",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1593,16 +1593,16 @@
         },
         {
             "name": "phpunit/phpunit-mock-objects",
-            "version": "5.0.10",
+            "version": "5.0.13",
             "source": {
                 "type": "git",
-                "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-                "reference": "cd1cf05c553ecfec36b170070573e540b67d3f1f"
+                "url": "https://github.com/kalessil/phpunit-mock-objects.git",
+                "reference": "9238af01206dcb68d5250921f7c87397c0465f2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/cd1cf05c553ecfec36b170070573e540b67d3f1f",
-                "reference": "cd1cf05c553ecfec36b170070573e540b67d3f1f",
+                "url": "https://api.github.com/repos/kalessil/phpunit-mock-objects/zipball/9238af01206dcb68d5250921f7c87397c0465f2a",
+                "reference": "9238af01206dcb68d5250921f7c87397c0465f2a",
                 "shasum": ""
             },
             "require": {
@@ -1611,11 +1611,8 @@
                 "phpunit/php-text-template": "^1.2.1",
                 "sebastian/exporter": "^3.1"
             },
-            "conflict": {
-                "phpunit/phpunit": "<6.0"
-            },
             "require-dev": {
-                "phpunit/phpunit": "^6.5.11"
+                "phpunit/phpunit": "^7.0"
             },
             "suggest": {
                 "ext-soap": "*"
@@ -1623,7 +1620,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "5.0.x-dev"
+                    "dev-master": "6.1-dev"
                 }
             },
             "autoload": {
@@ -1631,7 +1628,11 @@
                     "src/"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "classmap": [
+                    "tests/_fixture/"
+                ]
+            },
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1648,8 +1649,11 @@
                 "mock",
                 "xunit"
             ],
-            "abandoned": true,
-            "time": "2018-08-09T05:50:03+00:00"
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/phpunit-mock-objects/issues",
+                "source": "https://github.com/kalessil/phpunit-mock-objects/tree/5.0.13"
+            },
+            "time": "2020-10-29T15:47:58+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -2212,16 +2216,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.5.6",
+            "version": "3.5.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "e97627871a7eab2f70e59166072a6b767d5834e0"
+                "reference": "9d583721a7157ee997f235f327de038e7ea6dac4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/e97627871a7eab2f70e59166072a6b767d5834e0",
-                "reference": "e97627871a7eab2f70e59166072a6b767d5834e0",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/9d583721a7157ee997f235f327de038e7ea6dac4",
+                "reference": "9d583721a7157ee997f235f327de038e7ea6dac4",
                 "shasum": ""
             },
             "require": {
@@ -2259,20 +2263,20 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2020-08-10T04:50:15+00:00"
+            "time": "2020-10-23T02:01:07+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.18.1",
+            "version": "v1.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "1c302646f6efc070cd46856e600e5e0684d6b454"
+                "reference": "aed596913b70fae57be53d86faa2e9ef85a2297b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/1c302646f6efc070cd46856e600e5e0684d6b454",
-                "reference": "1c302646f6efc070cd46856e600e5e0684d6b454",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/aed596913b70fae57be53d86faa2e9ef85a2297b",
+                "reference": "aed596913b70fae57be53d86faa2e9ef85a2297b",
                 "shasum": ""
             },
             "require": {
@@ -2284,7 +2288,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.18-dev"
+                    "dev-main": "1.19-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -2335,7 +2339,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-14T12:35:20+00:00"
+            "time": "2020-10-23T09:01:57+00:00"
         },
         {
             "name": "theseer/tokenizer",
