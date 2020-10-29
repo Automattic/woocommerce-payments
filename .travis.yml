@@ -90,17 +90,17 @@ before_install:
   - npm i -g npm@>=6.13.0
   - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 
+install:
+  - npm ci
+  - php --version && composer install
+  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
+
 before_script:
   - |
     if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then
       echo "downloading phpunit"
       wget https://phar.phpunit.de/phpunit-6.5.14.phar
     fi
-
-install:
-  - npm ci
-  - php --version && composer install
-  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
 
 script:
   - bash bin/phpunit.sh
