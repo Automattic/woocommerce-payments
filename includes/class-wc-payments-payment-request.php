@@ -265,7 +265,7 @@ class WC_Payments_Payment_Request {
 
 		$items[] = array(
 			'label'  => $product->get_name(),
-			'amount' => WC_Stripe_Helper::get_stripe_amount( $product->get_price() ),
+			'amount' => WC_Payments_Utils::prepare_amount( $product->get_price() ),
 		);
 
 		if ( wc_tax_enabled() ) {
@@ -294,7 +294,7 @@ class WC_Payments_Payment_Request {
 		$data['displayItems'] = $items;
 		$data['total']        = array(
 			'label'   => apply_filters( 'wc_stripe_payment_request_total_label', $this->total_label ),
-			'amount'  => WC_Stripe_Helper::get_stripe_amount( $product->get_price() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $product->get_price() ),
 			'pending' => true,
 		);
 
@@ -459,7 +459,7 @@ class WC_Payments_Payment_Request {
 
 		// If no SSL bail.
 		if ( ! $this->testmode && ! is_ssl() ) {
-			WC_Stripe_Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return;
 		}
 
@@ -616,7 +616,7 @@ class WC_Payments_Payment_Request {
 			return false;
 		}
 		if ( ! $this->allowed_items_in_cart() ) {
-			WC_Stripe_Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
 			return false;
 		}
 		return true;
@@ -648,7 +648,7 @@ class WC_Payments_Payment_Request {
 
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			WC_Stripe_Logger::log( 'Pre Order charge upon release is not supported. ( Payment Request button disabled )' );
+			Logger::log( 'Pre Order charge upon release is not supported. ( Payment Request button disabled )' );
 			return false;
 		}
 
@@ -676,7 +676,7 @@ class WC_Payments_Payment_Request {
 
 		$errors = wc_clean( stripslashes( $_POST['errors'] ) );
 
-		WC_Stripe_Logger::log( $errors );
+		Logger::log( $errors );
 
 		exit;
 	}
@@ -781,7 +781,7 @@ class WC_Payments_Payment_Request {
 							'id'     => $rate->id,
 							'label'  => $rate->label,
 							'detail' => '',
-							'amount' => WC_Stripe_Helper::get_stripe_amount( $rate->cost ),
+							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost ),
 						);
 					}
 				}
@@ -918,7 +918,7 @@ class WC_Payments_Payment_Request {
 
 			$items[] = array(
 				'label'  => $product->get_name() . $quantity_label,
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $total ),
+				'amount' => WC_Payments_Utils::prepare_amount( $total ),
 			);
 
 			if ( wc_tax_enabled() ) {
@@ -947,7 +947,7 @@ class WC_Payments_Payment_Request {
 			$data['displayItems'] = $items;
 			$data['total']        = array(
 				'label'   => $this->total_label,
-				'amount'  => WC_Stripe_Helper::get_stripe_amount( $total ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total ),
 				'pending' => true,
 			);
 
@@ -1157,7 +1157,7 @@ class WC_Payments_Payment_Request {
 				'id'     => $method['id'],
 				'label'  => $method['label'],
 				'detail' => '',
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $method['amount']['value'] ),
+				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'] ),
 			);
 		}
 
@@ -1190,7 +1190,7 @@ class WC_Payments_Payment_Request {
 
 				$item = array(
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Stripe_Helper::get_stripe_amount( $amount ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount ),
 				);
 
 				$items[] = $item;
@@ -1216,21 +1216,21 @@ class WC_Payments_Payment_Request {
 		if ( wc_tax_enabled() ) {
 			$items[] = array(
 				'label'  => esc_html( __( 'Tax', 'woocommerce-gateway-stripe' ) ),
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $tax ),
+				'amount' => WC_Payments_Utils::prepare_amount( $tax ),
 			);
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
 			$items[] = array(
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-gateway-stripe' ) ),
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $shipping ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping ),
 			);
 		}
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = array(
 				'label'  => esc_html( __( 'Discount', 'woocommerce-gateway-stripe' ) ),
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $discounts ),
+				'amount' => WC_Payments_Utils::prepare_amount( $discounts ),
 			);
 		}
 
@@ -1244,7 +1244,7 @@ class WC_Payments_Payment_Request {
 		foreach ( $cart_fees as $key => $fee ) {
 			$items[] = array(
 				'label'  => $fee->name,
-				'amount' => WC_Stripe_Helper::get_stripe_amount( $fee->amount ),
+				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount ),
 			);
 		}
 
@@ -1252,7 +1252,7 @@ class WC_Payments_Payment_Request {
 			'displayItems' => $items,
 			'total'        => array(
 				'label'   => $this->total_label,
-				'amount'  => max( 0, apply_filters( 'woocommerce_stripe_calculated_total', WC_Stripe_Helper::get_stripe_amount( $order_total ), $order_total, WC()->cart ) ),
+				'amount'  => max( 0, apply_filters( 'woocommerce_stripe_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			),
 		);
