@@ -318,11 +318,11 @@ class WC_Payments_Payment_Request {
 		$order        = wc_get_order( $post->ID );
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( 'stripe' === $id && ! empty( $method_title ) && 'Apple Pay (Stripe)' === $method_title ) {
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Apple Pay (WooCommerce Payments)' === $method_title ) {
 			return $method_title;
 		}
 
-		if ( 'stripe' === $id && ! empty( $method_title ) && 'Chrome Payment Request (Stripe)' === $method_title ) {
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Chrome Payment Request (WooCommerce Payments)' === $method_title ) {
 			return $method_title;
 		}
 
@@ -338,7 +338,7 @@ class WC_Payments_Payment_Request {
 	public function postal_code_validation( $valid, $postcode, $country ) {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-		if ( ! isset( $gateways['stripe'] ) ) {
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return $valid;
 		}
 
@@ -381,12 +381,12 @@ class WC_Payments_Payment_Request {
 		$payment_request_type = wc_clean( $_POST['payment_request_type'] );
 
 		if ( 'apple_pay' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Apple Pay (Stripe)' );
+			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
 			$order->save();
 		}
 
 		if ( 'payment_request_api' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Chrome Payment Request (Stripe)' );
+			$order->set_payment_method_title( 'Chrome Payment Request (WooCommerce Payments)' );
 			$order->save();
 		}
 	}
@@ -523,8 +523,8 @@ class WC_Payments_Payment_Request {
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-		if ( isset( $gateways['stripe'] ) ) {
-			$gateways['stripe']->payment_scripts();
+		if ( isset( $gateways['woocommerce_payments'] ) ) {
+			$gateways['woocommerce_payments']->register_scripts();
 		}
 	}
 
@@ -536,10 +536,9 @@ class WC_Payments_Payment_Request {
 	 */
 	public function display_payment_request_button_html() {
 		global $post;
-
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-		if ( ! isset( $gateways['stripe'] ) ) {
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return;
 		}
 
@@ -584,7 +583,7 @@ class WC_Payments_Payment_Request {
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
-		if ( ! isset( $gateways['stripe'] ) ) {
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return;
 		}
 

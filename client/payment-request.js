@@ -114,10 +114,10 @@ jQuery( function( $ ) {
 				shipping_postcode:         '',
 				shipping_method:           [ null === evt.shippingOption ? null : evt.shippingOption.id ],
 				order_comments:            '',
-				payment_method:            'stripe',
+				payment_method:            'woocommerce_payments',
 				ship_to_different_address: 1,
 				terms:                     1,
-				stripe_source:             source.id,
+				'wcpay-payment-method':    source.id,
 				payment_request_type:      paymentRequestType
 			};
 
