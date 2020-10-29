@@ -4,69 +4,94 @@ exports[`HorizontalList correctly renders a List element with horizontal class m
 <div>
   <ul
     class="woocommerce-list woocommerce-list--horizontal"
+    role="menu"
   >
     <li
-      aria-disabled="false"
       class="woocommerce-list__item"
-      role="menuitem"
-      tabindex="0"
     >
       <div
-        class="woocommerce-list__item-text"
+        class="woocommerce-list__item-inner"
       >
-        <span
-          class="woocommerce-list__item-title"
+        <div
+          class="woocommerce-list__item-text"
         >
-          Item 1
-        </span>
+          <span
+            class="woocommerce-list__item-title"
+          >
+            Item 1
+          </span>
+          <span
+            class="woocommerce-list__item-content"
+          >
+            Item 1 content
+          </span>
+        </div>
       </div>
     </li>
     <li
-      aria-disabled="false"
       class="woocommerce-list__item"
-      role="menuitem"
-      tabindex="0"
     >
       <div
-        class="woocommerce-list__item-text"
+        class="woocommerce-list__item-inner"
       >
-        <span
-          class="woocommerce-list__item-title"
+        <div
+          class="woocommerce-list__item-text"
         >
-          Item 2
-        </span>
+          <span
+            class="woocommerce-list__item-title"
+          >
+            Item 2
+          </span>
+          <span
+            class="woocommerce-list__item-content"
+          >
+            Item 2 content
+          </span>
+        </div>
       </div>
     </li>
     <li
-      aria-disabled="false"
       class="woocommerce-list__item"
-      role="menuitem"
-      tabindex="0"
     >
       <div
-        class="woocommerce-list__item-text"
+        class="woocommerce-list__item-inner"
       >
-        <span
-          class="woocommerce-list__item-title"
+        <div
+          class="woocommerce-list__item-text"
         >
-          Item 3
-        </span>
+          <span
+            class="woocommerce-list__item-title"
+          >
+            Item 3
+          </span>
+          <span
+            class="woocommerce-list__item-content"
+          >
+            Item 3 content
+          </span>
+        </div>
       </div>
     </li>
     <li
-      aria-disabled="false"
       class="woocommerce-list__item"
-      role="menuitem"
-      tabindex="0"
     >
       <div
-        class="woocommerce-list__item-text"
+        class="woocommerce-list__item-inner"
       >
-        <span
-          class="woocommerce-list__item-title"
+        <div
+          class="woocommerce-list__item-text"
         >
-          Item 4
-        </span>
+          <span
+            class="woocommerce-list__item-title"
+          >
+            Item 4
+          </span>
+          <span
+            class="woocommerce-list__item-content"
+          >
+            Item 4 content
+          </span>
+        </div>
       </div>
     </li>
   </ul>
