@@ -22,7 +22,7 @@ const currencyData = getCurrencyData();
 /**
  * Gets wc-admin Currency for the given currency code
  *
- * @param {String} currencyCode Currency code
+ * @param {string} currencyCode Currency code
  *
  * @return {Currency} Currency object
  */
@@ -37,8 +37,8 @@ const getCurrency = ( currencyCode ) => {
 /**
  * Creates a Gridicon
  *
- * @param {String} icon Icon to render
- * @param {String} className Extra class name, defaults to empty
+ * @param {string} icon Icon to render
+ * @param {string} className Extra class name, defaults to empty
  *
  * @return {Gridicon} Gridicon component
  */
@@ -49,10 +49,10 @@ const getIcon = ( icon, className = '' ) => (
 /**
  * Creates a timeline item about a payment status change
  *
- * @param {Object} event An event triggering the status change
- * @param {String} status Localized status description
+ * @param {object} event An event triggering the status change
+ * @param {string} status Localized status description
  *
- * @return {Object} Formatted status change timeline item
+ * @return {object} Formatted status change timeline item
  */
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
@@ -70,12 +70,12 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 /**
  * Creates a timeline item about a deposit
  *
- * @param {Object} event An event affecting the deposit
- * @param {Number} formattedAmount Formatted amount
- * @param {Boolean} isPositive Whether the amount will be added or deducted
+ * @param {object} event An event affecting the deposit
+ * @param {number} formattedAmount Formatted amount
+ * @param {boolean} isPositive Whether the amount will be added or deducted
  * @param {Array} body Any extra subitems that should be included as item body
  *
- * @return {Object} Deposit timeline item
+ * @return {object} Deposit timeline item
  */
 const getDepositTimelineItem = (
 	event,
@@ -139,13 +139,13 @@ const getDepositTimelineItem = (
 /**
  * Formats the main item for the event
  *
- * @param {Object} event Event object
- * @param {String|Object} headline Headline describing the event
- * @param {String} icon Icon to render for this event
- * @param {String} iconClass Icon class
+ * @param {object} event Event object
+ * @param {string | object} headline Headline describing the event
+ * @param {string} icon Icon to render for this event
+ * @param {string} iconClass Icon class
  * @param {Array} body Body to include in this item, defaults to empty
  *
- * @return {Object} Formatted main item
+ * @return {object} Formatted main item
  */
 const getMainTimelineItem = (
 	event,
@@ -163,7 +163,7 @@ const getMainTimelineItem = (
 /**
  * Formats an event into one or more payment timeline items
  *
- * @param {Object} event An event data
+ * @param {object} event An event data
  *
  * @return {Array} Payment timeline items
  */

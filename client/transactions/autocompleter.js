@@ -12,7 +12,7 @@ import interpolateComponents from 'interpolate-components';
 import computeSuggestionMatch from 'utils/compute-suggestion-match';
 
 /**
- * @typedef {Object} Completer
+ * @typedef {object} Completer
  */
 
 // eslint-disable-next-line inclusive-language/use-inclusive-words

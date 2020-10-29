@@ -12,7 +12,7 @@ export default class WCPayAPI {
 	/**
 	 * Prepares the API.
 	 *
-	 * @param {Object}   options Options for the initialization.
+	 * @param {object}   options Options for the initialization.
 	 * @param {Function} request A function to use for AJAX requests.
 	 */
 	constructor( options, request ) {
@@ -24,7 +24,7 @@ export default class WCPayAPI {
 	/**
 	 * Generates a new instance of Stripe.
 	 *
-	 * @returns {Object} The Stripe Object.
+	 * @returns {object} The Stripe Object.
 	 */
 	getStripe() {
 		if ( ! this.stripe ) {
@@ -41,9 +41,9 @@ export default class WCPayAPI {
 	/**
 	 * Generates a Stripe payment method.
 	 *
-	 * @param {Object} elements A hash of all Stripe elements, used to enter card data.
-	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
-	 * @returns {Object} A request object, which will be prepared and then `.send()`.
+	 * @param {object} elements A hash of all Stripe elements, used to enter card data.
+	 * @param {object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
+	 * @returns {object} A request object, which will be prepared and then `.send()`.
 	 */
 	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
@@ -108,7 +108,7 @@ export default class WCPayAPI {
 			/**
 			 * Sends the request to Stripe once everything is ready.
 			 *
-			 * @return {Object} The payment method object if successfully loaded.
+			 * @return {object} The payment method object if successfully loaded.
 			 */
 			send() {
 				return stripe

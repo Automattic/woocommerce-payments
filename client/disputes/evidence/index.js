@@ -291,7 +291,7 @@ export const DisputeEvidencePage = ( props ) => {
 /**
  * Retrieves product type from the dispute.
  *
- * @param {Object?} dispute Dispute object
+ * @param {?object} dispute Dispute object
  * @returns {string} dispute product type
  */
 const getDisputeProductType = ( dispute ) => {

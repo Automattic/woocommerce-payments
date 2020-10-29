@@ -13,7 +13,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  *
  * @param {string} suggestion The item's label as returned from the API.
  * @param {string} query The search term to match in the string.
- * @return {Object} A list in three parts: before, match, and after.
+ * @return {object} A list in three parts: before, match, and after.
  */
 export default function computeSuggestionMatch( suggestion, query ) {
 	if ( ! query ) {

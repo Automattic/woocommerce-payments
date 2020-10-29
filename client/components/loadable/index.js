@@ -6,7 +6,7 @@ import './style.scss';
 /**
  * Renders placeholder while data are being loaded.
  *
- * @param {Object} props Component props.
+ * @param {object} props Component props.
  * @param {boolean} props.isLoading Flag used to display placeholder or content.
  * @param {string} props.display Defines how the placeholder is displayed: inline-block (default), inline or block.
  * @param {ReactNode} props.placeholder Custom placeholder content.
@@ -34,8 +34,8 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 /**
  * Helper component for rendering loadable block which takes several lines in the ui.
  *
- * @param {Object} props Component props.
- * @param {Number} props.numLines Vertical size of the component in lines.
+ * @param {object} props Component props.
+ * @param {number} props.numLines Vertical size of the component in lines.
  *
  * @returns {ReactNode} Loadable content
  */

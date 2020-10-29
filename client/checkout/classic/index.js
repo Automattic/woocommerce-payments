@@ -182,7 +182,7 @@ jQuery( function ( $ ) {
 	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
 	 *
 	 * @param {object} $form The jQuery object for the form.
-	 * @param {function} successHandler    Callback to be executed when payment method is generated.
+	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */

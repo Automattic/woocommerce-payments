@@ -120,10 +120,10 @@ export const getNotice = ( topic ) => {
 /**
  * Adds a test notice that will be displayed when test mode is enabled.
  *
- * @param {function|React.Component} Component The component to add the notice to.
+ * @param {Function | React.Component} Component The component to add the notice to.
  * @param {string} pageTopic                   The topic for this notice, e.g. 'transactions'.
  *
- * @returns {function} The wrapped component, including a notice when applicable.
+ * @returns {Function} The wrapped component, including a notice when applicable.
  */
 export const withTestNotice = ( Component, pageTopic ) => {
 	return ( props, ownProps ) => (
