@@ -60,8 +60,8 @@ export const formatStringValue = ( value ) =>
  *
  * We want the selected date to be included in upper bound selections, so we need to make its time 11:59:59 PM.
  *
- * @param {string} date       date string to be formatted.
- * @param {bool}   upperBound flag to include the selected day for upper bound dates.
+ * @param {string} date        date string to be formatted.
+ * @param {boolean} upperBound flag to include the selected day for upper bound dates.
  *
  * @return {string} Formatted date string to use in server query.
  */

@@ -65,8 +65,8 @@ export default class WCPayAPI {
 			 * uses a default value if none is present.
 			 *
 			 * @param {string} name The key of the value.
-			 * @param {mixed} value The value to sanitize.
-			 * @returns {mixed}     The sanitized value, `undefined` if not present.
+			 * @param {any} value   The value to sanitize.
+			 * @returns {any}       The sanitized value, `undefined` if not present.
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
@@ -128,9 +128,9 @@ export default class WCPayAPI {
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
-	 * @param {string} redirectUrl The redirect URL, returned from the server.
+	 * @param {string} redirectUrl         The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @returns {mixed} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @returns {any}                      A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
