@@ -39,7 +39,7 @@ matrix:
       stage: compatibility-edge
   include:
 # PHP versions compatibility (latest WordPress and most used WooCommerce versions)
-  - php: 7.0
+  - php: 7.1
     env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
     stage: test
   - php: 7.1
@@ -94,6 +94,13 @@ install:
   - npm ci
   - php --version && composer install
   - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
+
+before_script:
+  - |
+    if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then
+      echo "downloading phpunit"
+      wget https://phar.phpunit.de/phpunit-6.5.14.phar
+    fi
 
 script:
   - bash bin/phpunit.sh
