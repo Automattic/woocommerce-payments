@@ -445,10 +445,9 @@ export default ( { query } ) => {
 				? 'wcpay_dispute_submit_evidence_success'
 				: 'wcpay_dispute_save_evidence_success'
 		);
-		// eslint-disable-next-line inclusive-language/use-inclusive-words
 		/*
 			We rely on WC-Admin Transient notices to display success message.
-			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+			https://github.com/woocommerce/woocommerce-admin/tree/main/client/layout/transient-notices.
 		*/
 		createSuccessNotice( message );
 

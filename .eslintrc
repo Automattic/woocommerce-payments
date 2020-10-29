@@ -47,7 +47,7 @@
 			}
 		],
 		"inclusive-language/use-inclusive-words": [
-			"warn",
+			"error",
 			{
 				"allowedTerms": [ "mastercard" ]
 			}
