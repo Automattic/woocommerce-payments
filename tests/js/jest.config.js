@@ -4,6 +4,8 @@ module.exports = {
 	moduleNameMapper: {
 		'^react$': '<rootDir>/node_modules/react',
 		'^react-dom$': '<rootDir>/node_modules/react-dom',
+		'^moment$': '<rootDir>/node_modules/moment',
+		'^moment-timezone$': '<rootDir>/node_modules/moment-timezone',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
