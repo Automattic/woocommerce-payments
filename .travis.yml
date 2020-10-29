@@ -39,7 +39,7 @@ matrix:
       stage: compatibility-edge
   include:
 # PHP versions compatibility (latest WordPress and most used WooCommerce versions)
-  - php: 7.0
+  - php: 7.1
     env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
     stage: test
   - php: 7.1
