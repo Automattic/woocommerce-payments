@@ -16,6 +16,13 @@ if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
 	exit( 1 );
 }
 
+if ( file_exists( $_tests_dir . '/includes/phpunit7/MockObject' ) ) {
+	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/NamespaceMatch.php';
+	require_once $_tests_dir . '/includes/phpunit7/MockObject/Builder/ParametersMatch.php';
+	require_once $_tests_dir . '/includes/phpunit7/MockObject/InvocationMocker.php';
+	require_once $_tests_dir . '/includes/phpunit7/MockObject/MockMethod.php';
+}
+
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 

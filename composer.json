@@ -24,20 +24,6 @@
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "kalessil/production-dependencies-guard": "dev-master"
     },
-    "autoload-dev": {
-      "files": [
-        "/tmp/wordpress-tests-lib/includes/phpunit7/MockObject/Builder/NamespaceMatch.php",
-        "/tmp/wordpress-tests-lib/includes/phpunit7/MockObject/Builder/ParametersMatch.php",
-        "/tmp/wordpress-tests-lib/includes/phpunit7/MockObject/InvocationMocker.php",
-        "/tmp/wordpress-tests-lib/includes/phpunit7/MockObject/MockMethod.php"
-      ],
-      "exclude-from-classmap": [
-        "vendor/phpunit/phpunit/src/Framework/MockObject/Builder/NamespaceMatch.php",
-        "vendor/phpunit/phpunit/src/Framework/MockObject/Builder/ParametersMatch.php",
-        "vendor/phpunit/phpunit/src/Framework/MockObject/InvocationMocker.php",
-        "vendor/phpunit/phpunit/src/Framework/MockObject/MockMethod.php"
-      ]
-    },
     "scripts": {
       "test": [
         "phpunit"
