@@ -63,8 +63,8 @@ jQuery( function( $ ) {
 			};
 		},
 
-		processSource: function( source, paymentRequestType ) {
-			var data = wcpay_payment_request.getOrderData( source, paymentRequestType );
+		processPaymentMethod: function( paymentMethod, paymentRequestType ) {
+			var data = wcpay_payment_request.getOrderData( paymentMethod, paymentRequestType );
 
 			return $.ajax( {
 				type:    'POST',
@@ -84,13 +84,13 @@ jQuery( function( $ ) {
 		 * @return {Object}
 		 */
 		getOrderData: function( evt, paymentRequestType ) {
-			var source   = evt.source;
-			var email    = source.owner.email;
-			var phone    = source.owner.phone;
-			var billing  = source.owner.address;
-			var name     = source.owner.name;
-			var shipping = evt.shippingAddress;
-			var data     = {
+			var paymentMethod = evt.paymentMethod;
+			var email         = paymentMethod.billing_details.email;
+			var phone         = paymentMethod.billing_details.phone;
+			var billing       = paymentMethod.billing_details.address;
+			var name          = paymentMethod.billing_details.name;
+			var shipping      = evt.shippingAddress;
+			var data          = {
 				_wpnonce:                  wcpay_payment_request_params.nonce.checkout,
 				billing_first_name:        null !== name ? name.split( ' ' ).slice( 0, 1 ).join( ' ' ) : '',
 				billing_last_name:         null !== name ? name.split( ' ' ).slice( 1 ).join( ' ' ) : '',
@@ -117,7 +117,7 @@ jQuery( function( $ ) {
 				payment_method:            'woocommerce_payments',
 				ship_to_different_address: 1,
 				terms:                     1,
-				'wcpay-payment-method':    source.id,
+				'wcpay-payment-method':    paymentMethod.id,
 				payment_request_type:      paymentRequestType
 			};
 
@@ -386,12 +386,12 @@ jQuery( function( $ ) {
 				} );
 			} );
 
-			paymentRequest.on( 'source', function( evt ) {
+			paymentRequest.on( 'paymentmethod', function( evt ) {
 				// Check if we allow prepaid cards.
 				if ( 'no' === wcpay_payment_request_params.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
 					wcpay_payment_request.abortPayment( evt, wcpay_payment_request.getErrorMessageHTML( wcpay_payment_request_params.i18n.no_prepaid_card ) );
 				} else {
-					$.when( wcpay_payment_request.processSource( evt, paymentRequestType ) ).then( function( response ) {
+					$.when( wcpay_payment_request.processPaymentMethod( evt, paymentRequestType ) ).then( function( response ) {
 						if ( 'success' === response.result ) {
 							wcpay_payment_request.completePayment( evt, response.redirect );
 						} else {
