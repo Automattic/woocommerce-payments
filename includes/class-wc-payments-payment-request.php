@@ -17,11 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Payment_Request {
 	/**
-	 * Enabled.
+	 * Gateway settings.
 	 *
 	 * @var
 	 */
-	public $stripe_settings;
+	public $gateway_settings;
 
 	/**
 	 * Total label
@@ -61,19 +61,19 @@ class WC_Payments_Payment_Request {
 		$this->account = $account;
 
 		self::$_this            = $this;
-		$this->stripe_settings  = get_option( 'woocommerce_stripe_settings', array() );
-		$this->testmode         = ( ! empty( $this->stripe_settings['testmode'] ) && 'yes' === $this->stripe_settings['testmode'] ) ? true : false;
-		$this->total_label      = ! empty( $this->stripe_settings['statement_descriptor'] ) ? WC_Stripe_Helper::clean_statement_descriptor( $this->stripe_settings['statement_descriptor'] ) : '';
+		$this->gateway_settings = get_option( 'woocommerce_woocommerce_payments_settings', array() );
+		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
+		$this->total_label      = ! empty( $this->account->get_statement_descriptor() ) ? $this->account->get_statement_descriptor() : '';
 
 		$this->total_label = str_replace( "'", '', $this->total_label ) . apply_filters( 'wc_stripe_payment_request_total_label_suffix', ' (via WooCommerce)' );
 
 		// Checks if Stripe Gateway is enabled.
-		if ( empty( $this->stripe_settings ) || ( isset( $this->stripe_settings['enabled'] ) && 'yes' !== $this->stripe_settings['enabled'] ) ) {
+		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
 			return;
 		}
 
 		// Checks if Payment Request is enabled.
-		if ( ! isset( $this->stripe_settings['payment_request'] ) || 'yes' !== $this->stripe_settings['payment_request'] ) {
+		if ( ! isset( $this->gateway_settings['payment_request'] ) || 'yes' !== $this->gateway_settings['payment_request'] ) {
 			return;
 		}
 
@@ -153,7 +153,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function get_button_type() {
-		return isset( $this->stripe_settings['payment_request_button_type'] ) ? $this->stripe_settings['payment_request_button_type'] : 'default';
+		return isset( $this->gateway_settings['payment_request_button_type'] ) ? $this->gateway_settings['payment_request_button_type'] : 'default';
 	}
 
 	/**
@@ -164,7 +164,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function get_button_theme() {
-		return isset( $this->stripe_settings['payment_request_button_theme'] ) ? $this->stripe_settings['payment_request_button_theme'] : 'dark';
+		return isset( $this->gateway_settings['payment_request_button_theme'] ) ? $this->gateway_settings['payment_request_button_theme'] : 'dark';
 	}
 
 	/**
@@ -175,7 +175,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function get_button_height() {
-		return isset( $this->stripe_settings['payment_request_button_height'] ) ? str_replace( 'px', '', $this->stripe_settings['payment_request_button_height'] ) : '64';
+		return isset( $this->gateway_settings['payment_request_button_height'] ) ? str_replace( 'px', '', $this->gateway_settings['payment_request_button_height'] ) : '64';
 	}
 
 	/**
@@ -197,7 +197,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function get_button_branded_type() {
-		return isset( $this->stripe_settings['payment_request_button_branded_type'] ) ? $this->stripe_settings['payment_request_button_branded_type'] : 'default';
+		return isset( $this->gateway_settings['payment_request_button_branded_type'] ) ? $this->gateway_settings['payment_request_button_branded_type'] : 'default';
 	}
 
 	/**
@@ -230,7 +230,7 @@ class WC_Payments_Payment_Request {
 	 * @return  string
 	 */
 	public function get_button_label() {
-		return isset( $this->stripe_settings['payment_request_button_label'] ) ? $this->stripe_settings['payment_request_button_label'] : 'Buy now';
+		return isset( $this->gateway_settings['payment_request_button_label'] ) ? $this->gateway_settings['payment_request_button_label'] : 'Buy now';
 	}
 
 	/**
