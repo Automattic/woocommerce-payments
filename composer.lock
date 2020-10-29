@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5e35fe1b0ea3b7599b2a723183337b68",
+    "content-hash": "8b401f3a369c0354aaa2ad502ae1103f",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -104,16 +104,16 @@
         },
         {
             "name": "automattic/jetpack-connection",
-            "version": "v1.19.0",
+            "version": "v1.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-connection.git",
-                "reference": "75b05ed1e798928e6c75d9b5f470851f379a3e48"
+                "reference": "02d19aa30f5e7fdd71e1340e592656c389671b94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/75b05ed1e798928e6c75d9b5f470851f379a3e48",
-                "reference": "75b05ed1e798928e6c75d9b5f470851f379a3e48",
+                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/02d19aa30f5e7fdd71e1340e592656c389671b94",
+                "reference": "02d19aa30f5e7fdd71e1340e592656c389671b94",
                 "shasum": ""
             },
             "require": {
@@ -144,7 +144,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
-            "time": "2020-10-27T15:05:50+00:00"
+            "time": "2020-10-29T14:41:13+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
