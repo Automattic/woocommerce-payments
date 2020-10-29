@@ -471,8 +471,6 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		$suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-
 		$stripe_params = array(
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => array(
@@ -518,7 +516,7 @@ class WC_Payments_Payment_Request {
 		);
 
 		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', [], '3.0', true );
-		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request' . $suffix . '.js', WCPAY_PLUGIN_FILE ), array( 'jquery', 'stripe' ), WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
+		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), array( 'jquery', 'stripe' ), WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpay_payment_request_params', $stripe_params );
 
