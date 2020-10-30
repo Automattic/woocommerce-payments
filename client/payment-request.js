@@ -20,7 +20,7 @@ jQuery( function( $ ) {
 		getAjaxURL: function( endpoint ) {
 			return wcpay_payment_request_params.ajax_url
 				.toString()
-				.replace( '%%endpoint%%', 'wc_stripe_' + endpoint );
+				.replace( '%%endpoint%%', 'wcpay_' + endpoint );
 		},
 
 		getCartDetails: function() {

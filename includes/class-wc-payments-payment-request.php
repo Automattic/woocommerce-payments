@@ -130,14 +130,14 @@ class WC_Payments_Payment_Request {
 		add_action( 'woocommerce_checkout_before_customer_details', array( $this, 'display_payment_request_button_html' ), 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', array( $this, 'display_payment_request_button_separator_html' ), 2 );
 
-		add_action( 'wc_ajax_wc_stripe_get_cart_details', array( $this, 'ajax_get_cart_details' ) );
-		add_action( 'wc_ajax_wc_stripe_get_shipping_options', array( $this, 'ajax_get_shipping_options' ) );
-		add_action( 'wc_ajax_wc_stripe_update_shipping_method', array( $this, 'ajax_update_shipping_method' ) );
-		add_action( 'wc_ajax_wc_stripe_create_order', array( $this, 'ajax_create_order' ) );
-		add_action( 'wc_ajax_wc_stripe_add_to_cart', array( $this, 'ajax_add_to_cart' ) );
-		add_action( 'wc_ajax_wc_stripe_get_selected_product_data', array( $this, 'ajax_get_selected_product_data' ) );
-		add_action( 'wc_ajax_wc_stripe_clear_cart', array( $this, 'ajax_clear_cart' ) );
-		add_action( 'wc_ajax_wc_stripe_log_errors', array( $this, 'ajax_log_errors' ) );
+		add_action( 'wc_ajax_wcpay_get_cart_details', array( $this, 'ajax_get_cart_details' ) );
+		add_action( 'wc_ajax_wcpay_get_shipping_options', array( $this, 'ajax_get_shipping_options' ) );
+		add_action( 'wc_ajax_wcpay_update_shipping_method', array( $this, 'ajax_update_shipping_method' ) );
+		add_action( 'wc_ajax_wcpay_create_order', array( $this, 'ajax_create_order' ) );
+		add_action( 'wc_ajax_wcpay_add_to_cart', array( $this, 'ajax_add_to_cart' ) );
+		add_action( 'wc_ajax_wcpay_get_selected_product_data', array( $this, 'ajax_get_selected_product_data' ) );
+		add_action( 'wc_ajax_wcpay_clear_cart', array( $this, 'ajax_clear_cart' ) );
+		add_action( 'wc_ajax_wcpay_log_errors', array( $this, 'ajax_log_errors' ) );
 
 		add_filter( 'woocommerce_gateway_title', array( $this, 'filter_gateway_title' ), 10, 2 );
 		add_filter( 'woocommerce_validate_postcode', array( $this, 'postal_code_validation' ), 10, 3 );
