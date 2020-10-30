@@ -35,7 +35,6 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
-	const TOS_AGREEMENTS_API  = 'tos_agreements';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -819,7 +818,7 @@ class WC_Payments_API_Client {
 				'user_ip'    => $user_ip,
 				'user_agent' => $user_agent,
 			],
-			self::TOS_AGREEMENTS_API,
+			self::ACCOUNTS_API . '/tos_agreements',
 			self::POST
 		);
 	}
