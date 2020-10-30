@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Correctly display the fee and net amounts for a charge with an inquiry.
 * Fix - Catch unhandled exceptions when cancelling a payment authorization.
 * Add - Introduced "Set up refund policy" notification in WooCommerce inbox
+* Add - Security.md with security and vulnerability reporting guidelines.
 
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
