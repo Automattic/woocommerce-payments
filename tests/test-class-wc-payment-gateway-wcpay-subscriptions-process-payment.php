@@ -181,7 +181,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
 			->willReturn( $this->setup_intent );
 
@@ -214,7 +214,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
 			->willReturn( $this->setup_intent );
 
@@ -281,7 +281,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
 			->willReturn( $this->setup_intent );
 
@@ -314,7 +314,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
 			->willReturn( $this->setup_intent );
 
@@ -352,7 +352,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
 			->willReturn( $this->setup_intent );
 

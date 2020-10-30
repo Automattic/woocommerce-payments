@@ -534,7 +534,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
-			$intent = $this->payments_api_client->create_setup_intent(
+			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
 				$customer_id
 			);
@@ -1431,7 +1431,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws Exception - When an error occurs in setup intent creation.
 	 */
-	public function create_setup_intent() {
+	public function create_and_confirm_setup_intent() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST );
 
@@ -1442,7 +1442,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
 		}
 
-		return $this->payments_api_client->create_setup_intent(
+		return $this->payments_api_client->create_and_confirm_setup_intent(
 			$payment_information->get_payment_method(),
 			$customer_id
 		);
@@ -1463,7 +1463,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->create_setup_intent();
+			$setup_intent = $this->create_and_confirm_setup_intent();
 
 			wp_send_json_success( $setup_intent, 200 );
 		} catch ( Exception $e ) {
