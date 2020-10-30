@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Admin\Notes\DataStore;
+use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use \Automattic\WooCommerce\Admin\Features\Onboarding;
@@ -436,7 +438,8 @@ class WC_Payments_Account {
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
-			]
+			],
+			$this->get_actioned_notes()
 		);
 
 		// If an account already exists for this site, we're done.
@@ -657,5 +660,47 @@ class WC_Payments_Account {
 		return ! empty( $account ) && isset( $account['latest_tos_agreement'] )
 			? $account['latest_tos_agreement']
 			: null;
+	}
+
+	/**
+	 * Returns an array containing the names of all the WCPay related notes that have be actioned.
+	 *
+	 * @return array
+	 */
+	private function get_actioned_notes() : array {
+		$wcpay_promo_notes = [];
+
+		try {
+			/**
+			 * Data Store for admin notes
+			 *
+			 * @var DataStore $data_store
+			 */
+			$data_store = WC_Data_Store::load( 'admin-note' );
+		} catch ( Exception $e ) {
+			// Don't stop the on-boarding process if something goes wrong here. Log the error and return the empty array
+			// of actioned notes.
+			Logger::error( $e );
+			return $wcpay_promo_notes;
+		}
+
+		// Fetch the last 10 actioned wcpay-promo admin notifications.
+		$add_like_clause = function( $where_clause ) {
+			return $where_clause . " AND name like 'wcpay-promo-%'";
+		};
+
+		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		$wcpay_promo_notes = $data_store->get_notes(
+			[
+				'status'     => [ WC_Admin_Note::E_WC_ADMIN_NOTE_ACTIONED ],
+				'is_deleted' => false,
+				'per_page'   => 10,
+			]
+		);
+
+		remove_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		return (array) $wcpay_promo_notes;
 	}
 }
