@@ -134,19 +134,20 @@ export default class WCPayAPI {
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
-			/#wcpay-confirm-pi:(.+):(.+):(.+)$/
+			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
 		);
 
 		if ( ! partials ) {
 			return true;
 		}
 
-		let orderId = partials[ 1 ];
-		const clientSecret = partials[ 2 ];
+		const isSetupIntent = partials[ 1 ] === 'si';
+		let orderId = partials[ 2 ];
+		const clientSecret = partials[ 3 ];
 		// Update the current order status nonce with the new one to ensure that the update
 		// order status call works when a guest user creates an account during checkout.
 		// eslint-disable-next-line camelcase
-		setConfig( 'updateOrderStatusNonce', partials[ 3 ] );
+		setConfig( 'updateOrderStatusNonce', partials[ 4 ] );
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
@@ -168,15 +169,21 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		const request = this.getStripe()
-			.confirmCardPayment( clientSecret )
+		const confirmAction = isSetupIntent
+			? this.getStripe().confirmCardSetup( clientSecret )
+			: this.getStripe().confirmCardPayment( clientSecret );
+
+		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
 			.then( ( result ) => {
 				const intentId =
 					( result.paymentIntent && result.paymentIntent.id ) ||
+					( result.setupIntent && result.setupIntent.id ) ||
 					( result.error &&
 						result.error.payment_intent &&
-						result.error.payment_intent.id );
+						result.error.payment_intent.id ) ||
+					( result.error.setup_intent &&
+						result.error.setup_intent.id );
 
 				const ajaxCall = this.request( getConfig( 'ajaxUrl' ), {
 					action: 'update_order_status',
@@ -231,21 +238,24 @@ export default class WCPayAPI {
 				throw response.data.error;
 			}
 
-			// eslint-disable-next-line camelcase
-			const { client_secret } = response.data;
-			return this.getStripe()
-				.confirmCardSetup( client_secret, {
-					// eslint-disable-next-line camelcase
-					payment_method: paymentMethodId,
-				} )
-				.then( ( confirmedSetupIntent ) => {
-					const { setupIntent, error } = confirmedSetupIntent;
-					if ( error ) {
-						throw error;
-					}
+			if ( response.data.status === 'succeeded' ) {
+				// No need for further authentication.
+				return response.data;
+			}
 
-					return setupIntent;
-				} );
+			return (
+				this.getStripe()
+					// eslint-disable-next-line camelcase
+					.confirmCardSetup( response.data.client_secret )
+					.then( ( confirmedSetupIntent ) => {
+						const { setupIntent, error } = confirmedSetupIntent;
+						if ( error ) {
+							throw error;
+						}
+
+						return setupIntent;
+					} )
+			);
 		} );
 	}
 }

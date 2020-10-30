@@ -321,16 +321,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Displays the save to account checkbox.
+	 *
+	 * @param bool $force_checked True if the checkbox must be forced to "checked" state (and invisible).
 	 */
-	public function save_payment_method_checkbox() {
-		printf(
-			'<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
-				<input id="wc-%1$s-new-payment-method" name="wc-%1$s-new-payment-method" type="checkbox" value="true" style="width:auto;" />
-				<label for="wc-%1$s-new-payment-method" style="display:inline;">%2$s</label>
-			</p>',
-			esc_attr( $this->id ),
-			esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) )
-		);
+	public function save_payment_method_checkbox( $force_checked = false ) {
+		$id = 'wc-' . $this->id . '-new-payment-method';
+		?>
+		<div <?php echo $force_checked ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
+			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
+				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; ?> /> // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
+					<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) ); ?>
+				</label>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
@@ -386,9 +391,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 
 				<?php
-				if ( apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) && ! is_add_payment_method_page() ) {
-					echo $this->save_payment_method_checkbox(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				}
+				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+				$this->save_payment_method_checkbox( $force_save_payment );
 				?>
 
 			</fieldset>
@@ -498,14 +502,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$intent_failed = false;
+		$intent_failed  = false;
+		$payment_needed = $amount > 0;
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( 0 === $amount && ! $save_payment_method ) {
+		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			];
 		}
 
-		if ( $amount > 0 ) {
+		if ( $payment_needed ) {
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
 				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
@@ -519,29 +528,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_information->is_merchant_initiated()
 			);
 
-			$intent_id = $intent->get_id();
-			$status    = $intent->get_status();
-			$charge_id = $intent->get_charge_id();
+			$intent_id     = $intent->get_id();
+			$status        = $intent->get_status();
+			$charge_id     = $intent->get_charge_id();
+			$client_secret = $intent->get_client_secret();
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
-			$intent = $this->payments_api_client->create_setup_intent(
+			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
-				$customer_id,
-				'true'
+				$customer_id
 			);
 
-			$intent_id = $intent['id'];
-			$status    = $intent['status'];
-			$charge_id = '';
-
-			// In SCA cases the setup intent status might be requires_action and we should display the authentication modal.
-			// For now, since we're not supporting SCA cards, we can ignore that status.
-			if ( 'succeeded' !== $status ) {
-				throw new Add_Payment_Method_Exception(
-					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
-					'invalid_response_status'
-				);
-			}
+			$intent_id     = $intent['id'];
+			$status        = $intent['status'];
+			$charge_id     = '';
+			$client_secret = $intent['client_secret'];
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -566,25 +567,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			switch ( $status ) {
 				case 'succeeded':
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$intent_id
-					);
-
-					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $charge_id );
-					$order->update_meta_data( '_intention_status', $status );
-					$order->save();
-
-					if ( $amount > 0 ) {
+					if ( $payment_needed ) {
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
 						$order->add_order_note( $note );
 					}
 					$order->payment_complete( $intent_id );
@@ -603,48 +598,51 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$intent_id
 					);
 
-					$order->update_status( 'on-hold', $note );
-					$order->set_transaction_id( $intent_id );
-
-					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_charge_id', $charge_id );
-					$order->update_meta_data( '_intention_status', $status );
-					$order->save();
+					$order->set_status( 'on-hold', $note );
 
 					break;
 				case 'requires_action':
-					// Add a note in case the customer does not complete the payment (exits the page),
-					// so the store owner has some information about what happened to create an order.
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
+					if ( $payment_needed ) {
+						// Add a note in case the customer does not complete the payment (exits the page),
+						// so the store owner has some information about what happened to create an order.
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$intent_id
-					);
-					$order->add_order_note( $note );
+								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						$order->add_order_note( $note );
+					}
 
-					$order->update_meta_data( '_intent_id', $intent_id );
-					$order->update_meta_data( '_intention_status', $status );
-					$order->save();
-
-					return [
+					$response = [
 						'result'   => 'success',
 						// Include a new nonce for update_order_status to ensure the update order
 						// status call works when a guest user creates an account during checkout.
 						'redirect' => sprintf(
-							'#wcpay-confirm-pi:%s:%s:%s',
+							'#wcpay-confirm-%s:%s:%s:%s',
+							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							$intent->get_client_secret(),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 					];
 			}
+		}
+
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
+
+		if ( isset( $response ) ) {
+			return $response;
 		}
 
 		wc_reduce_stock_levels( $order_id );
@@ -1273,79 +1271,108 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			// An exception is thrown if an intent can't be found for the given intent ID.
-			$intent = $this->payments_api_client->get_intent( $intent_id );
-
-			$status = $intent->get_status();
 			$amount = $order->get_total();
 
-			switch ( $status ) {
-				case 'succeeded':
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$intent_id
-					);
-					$order->add_order_note( $note );
+			if ( $amount > 0 ) {
+				// An exception is thrown if an intent can't be found for the given intent ID.
+				$intent = $this->payments_api_client->get_intent( $intent_id );
+				$status = $intent->get_status();
 
-					// The order is successful, so update it to reflect that.
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-					$order->update_meta_data( '_intention_status', $status );
-					$order->save();
+				switch ( $status ) {
+					case 'succeeded':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						$order->add_order_note( $note );
 
-					$order->payment_complete( $intent_id );
-					break;
-				case 'requires_capture':
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
+						// The order is successful, so update it to reflect that.
+						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+
+						$order->payment_complete( $intent_id );
+						break;
+					case 'requires_capture':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						// Save the note separately because if there is no change in status
+						// then the note is not saved using WC_Order::set_status.
+						$order->add_order_note( $note );
+
+						// The order is successful, so update it to reflect that.
+						$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
+
+						$order->set_status( 'on-hold' );
+						$order->set_transaction_id( $intent_id );
+						break;
+					case 'requires_payment_method':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						// Save the note separately because if there is no change in status
+						// then the note is not saved using WC_Order::set_status.
+						$order->add_order_note( $note );
+						$order->set_status( 'failed' );
+						break;
+				}
+			} else {
+				// For $0 orders, fetch the Setup Intent instead.
+				$intent = $this->payments_api_client->get_setup_intent( $intent_id );
+				$status = $intent['status'];
+
+				switch ( $status ) {
+					case 'succeeded':
+						$order->payment_complete( $intent_id );
+						break;
+					case 'requires_payment_method':
+						$note = sprintf(
+							WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$intent_id
-					);
-					// Save the note separately because if there is no change in status
-					// then the note is not saved using WC_Order::update_status.
-					$order->add_order_note( $note );
-
-					// The order is successful, so update it to reflect that.
-					$order->update_meta_data( '_charge_id', $intent->get_charge_id() );
-					$order->update_meta_data( '_intention_status', $status );
-					$order->save();
-
-					$order->update_status( 'on-hold' );
-					$order->set_transaction_id( $intent_id );
-					break;
-				case 'requires_payment_method':
-					$note = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'code'   => '<code>',
-							]
-						),
-						wc_price( $amount ),
-						$intent_id
-					);
-					// Save the note separately because if there is no change in status
-					// then the note is not saved using WC_Order::update_status.
-					$order->add_order_note( $note );
-					$order->update_status( 'failed' );
-					break;
+								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+									'code'   => '<code>',
+								]
+							),
+							wc_price( $amount ),
+							$intent_id
+						);
+						// Save the note separately because if there is no change in status
+						// then the note is not saved using WC_Order::set_status.
+						$order->add_order_note( $note );
+						$order->set_status( 'failed' );
+						break;
+				}
 			}
+
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
 
 			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
 				wc_reduce_stock_levels( $order_id );
@@ -1469,7 +1496,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws Exception - When an error occurs in setup intent creation.
 	 */
-	public function create_setup_intent() {
+	public function create_and_confirm_setup_intent() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST );
 
@@ -1480,7 +1507,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
 		}
 
-		return $this->payments_api_client->create_setup_intent(
+		return $this->payments_api_client->create_and_confirm_setup_intent(
 			$payment_information->get_payment_method(),
 			$customer_id
 		);
@@ -1501,7 +1528,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$setup_intent = $this->create_setup_intent();
+			$setup_intent = $this->create_and_confirm_setup_intent();
 
 			wp_send_json_success( $setup_intent, 200 );
 		} catch ( Exception $e ) {

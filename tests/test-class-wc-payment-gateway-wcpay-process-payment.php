@@ -282,10 +282,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// - intention id
 		// - amount charged.
 		// Note that the note and the order status are updated at the same
-		// time using `update_status()`.
+		// time using `set_status()`.
 		$mock_order
 			->expects( $this->exactly( 1 ) )
-			->method( 'update_status' )
+			->method( 'set_status' )
 			->with(
 				'on-hold',
 				$this->callback(
@@ -416,7 +416,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				$this->returnValue( $intent )
 			);
 
-		// Assert: Order charge id meta data was not updated with `update_meta_data()`.
+		// Assert: Order charge id meta data was updated with `update_meta_data()`.
 		// Assert: Order does not have intention status meta data.
 		// Assert: Order has correct intent ID.
 		// This test is a little brittle because we don't really care about the order
@@ -425,17 +425,18 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 3 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
+				[ '_charge_id', $charge_id ],
 				[ '_intention_status', 'requires_action' ]
 			);
 
 		// Assert: Order status was not updated.
 		$mock_order
-			->expects( $this->exactly( 0 ) )
-			->method( 'update_status' );
+			->expects( $this->never() )
+			->method( 'set_status' );
 
 		// Assert: The order note contains all the information we want:
 		// - status
@@ -456,14 +457,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
-		// Assert: Order transaction ID was not set.
+		// Assert: Order has correct transaction ID set.
 		$mock_order
-			->expects( $this->exactly( 0 ) )
-			->method( 'set_transaction_id' );
+			->expects( $this->exactly( 1 ) )
+			->method( 'set_transaction_id' )
+			->with( $intent_id );
 
 		// Assert: empty_cart() was not called.
 		$mock_cart
-			->expects( $this->exactly( 0 ) )
+			->expects( $this->never() )
 			->method( 'empty_cart' );
 
 		// Act: process payment.
