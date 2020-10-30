@@ -270,7 +270,7 @@ class WC_Payments_Payment_Request {
 
 		if ( wc_tax_enabled() ) {
 			$items[] = array(
-				'label'   => __( 'Tax', 'woocommerce-gateway-stripe' ),
+				'label'   => __( 'Tax', 'woocommerce-payments' ),
 				'amount'  => 0,
 				'pending' => true,
 			);
@@ -278,14 +278,14 @@ class WC_Payments_Payment_Request {
 
 		if ( wc_shipping_enabled() && $product->needs_shipping() ) {
 			$items[] = array(
-				'label'   => __( 'Shipping', 'woocommerce-gateway-stripe' ),
+				'label'   => __( 'Shipping', 'woocommerce-payments' ),
 				'amount'  => 0,
 				'pending' => true,
 			);
 
 			$data['shippingOptions'] = array(
 				'id'     => 'pending',
-				'label'  => __( 'Pending', 'woocommerce-gateway-stripe' ),
+				'label'  => __( 'Pending', 'woocommerce-payments' ),
 				'detail' => '',
 				'amount' => 0,
 			);
@@ -489,9 +489,9 @@ class WC_Payments_Payment_Request {
 				'clear_cart'                => wp_create_nonce( 'wc-stripe-clear-cart' ),
 			),
 			'i18n'            => array(
-				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-gateway-stripe' ),
+				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-payments' ),
 				/* translators: Do not translate the [option] placeholder */
-				'unknown_shipping' => __( 'Unknown shipping option "[option]".', 'woocommerce-gateway-stripe' ),
+				'unknown_shipping' => __( 'Unknown shipping option "[option]".', 'woocommerce-payments' ),
 			),
 			'checkout'        => array(
 				'url'               => wc_get_checkout_url(),
@@ -601,7 +601,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-gateway-stripe' ); ?> &mdash;</p>
+		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
@@ -773,7 +773,7 @@ class WC_Payments_Payment_Request {
 			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
 				foreach ( $packages as $package_key => $package ) {
 					if ( empty( $package['rates'] ) ) {
-						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-gateway-stripe' ) );
+						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
 					}
 
 					foreach ( $package['rates'] as $key => $rate ) {
@@ -786,7 +786,7 @@ class WC_Payments_Payment_Request {
 					}
 				}
 			} else {
-				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-gateway-stripe' ) );
+				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
 			}
 
 			// The first shipping option is automatically applied on the client.
@@ -885,7 +885,7 @@ class WC_Payments_Payment_Request {
 			$variation_id = null;
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
-				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-gateway-stripe' ), $product_id ) );
+				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
 			}
 
 			if ( 'variable' === $product->get_type() && isset( $_POST['attributes'] ) ) {
@@ -906,7 +906,7 @@ class WC_Payments_Payment_Request {
 
 			if ( ! $product->has_enough_stock( $qty ) ) {
 				/* translators: 1: product name 2: quantity in stock */
-				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-gateway-stripe' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
+				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
 			$total = $qty * $product->get_price() + $addon_value;
@@ -923,7 +923,7 @@ class WC_Payments_Payment_Request {
 
 			if ( wc_tax_enabled() ) {
 				$items[] = array(
-					'label'   => __( 'Tax', 'woocommerce-gateway-stripe' ),
+					'label'   => __( 'Tax', 'woocommerce-payments' ),
 					'amount'  => 0,
 					'pending' => true,
 				);
@@ -931,14 +931,14 @@ class WC_Payments_Payment_Request {
 
 			if ( wc_shipping_enabled() && $product->needs_shipping() ) {
 				$items[] = array(
-					'label'   => __( 'Shipping', 'woocommerce-gateway-stripe' ),
+					'label'   => __( 'Shipping', 'woocommerce-payments' ),
 					'amount'  => 0,
 					'pending' => true,
 				);
 
 				$data['shippingOptions'] = array(
 					'id'     => 'pending',
-					'label'  => __( 'Pending', 'woocommerce-gateway-stripe' ),
+					'label'  => __( 'Pending', 'woocommerce-payments' ),
 					'detail' => '',
 					'amount' => 0,
 				);
@@ -1057,7 +1057,7 @@ class WC_Payments_Payment_Request {
 	 */
 	public function ajax_create_order() {
 		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-gateway-stripe' ) );
+			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ) );
 		}
 
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
@@ -1215,21 +1215,21 @@ class WC_Payments_Payment_Request {
 
 		if ( wc_tax_enabled() ) {
 			$items[] = array(
-				'label'  => esc_html( __( 'Tax', 'woocommerce-gateway-stripe' ) ),
+				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax ),
 			);
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
 			$items[] = array(
-				'label'  => esc_html( __( 'Shipping', 'woocommerce-gateway-stripe' ) ),
+				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping ),
 			);
 		}
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = array(
-				'label'  => esc_html( __( 'Discount', 'woocommerce-gateway-stripe' ) ),
+				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $discounts ),
 			);
 		}
