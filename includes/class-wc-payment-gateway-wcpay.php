@@ -119,7 +119,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_statement_descriptor' => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
-				'description' => __( 'Edit the way your store name appears on your customers’ bank statements.', 'woocommerce-payments' ),
+				'description' => WC_Payments_Utils::esc_interpolated_html(
+					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
+					[ 'a' => '<a href="https://docs.woocommerce.com/document/payments/bank-statement-descriptor/">' ]
+				),
 			],
 			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
