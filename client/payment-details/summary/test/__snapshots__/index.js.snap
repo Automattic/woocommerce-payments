@@ -59,85 +59,129 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       />
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
+        role="menu"
       >
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Date
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Date
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Sep 19, 2019, 5:24pm
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Customer
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Customer
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Customer name
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Order
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Order
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://somerandomorderurl.com/?edit_order=45981"
+                >
+                  45981
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Payment method
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Payment method
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span
+                  class="payment-method-details"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                   •••• 
+                  4242
+                </span>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Risk evaluation
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Risk evaluation
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Normal
+              </span>
+            </div>
           </div>
         </li>
       </ul>
@@ -205,101 +249,156 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       />
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
+        role="menu"
       >
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Date
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Date
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Sep 19, 2019, 5:24pm
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Customer
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Customer
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Customer name
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Order
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Order
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://somerandomorderurl.com/?edit_order=45981"
+                >
+                  45981
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Subscription
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Subscription
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/subscription/246"
+                >
+                  246
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Payment method
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Payment method
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span
+                  class="payment-method-details"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                   •••• 
+                  4242
+                </span>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Risk evaluation
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Risk evaluation
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Normal
+              </span>
+            </div>
           </div>
         </li>
       </ul>
@@ -370,85 +469,129 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       />
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
+        role="menu"
       >
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Date
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Date
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Sep 19, 2019, 5:24pm
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Customer
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Customer
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Customer name
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Order
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Order
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://somerandomorderurl.com/?edit_order=45981"
+                >
+                  45981
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Payment method
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Payment method
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span
+                  class="payment-method-details"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                   •••• 
+                  4242
+                </span>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Risk evaluation
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Risk evaluation
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Normal
+              </span>
+            </div>
           </div>
         </li>
       </ul>
@@ -598,85 +741,129 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       />
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
+        role="menu"
       >
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Date
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Date
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Sep 19, 2019, 5:24pm
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Customer
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Customer
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Customer name
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Order
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Order
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://somerandomorderurl.com/?edit_order=45981"
+                >
+                  45981
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Payment method
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Payment method
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span
+                  class="payment-method-details"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                   •••• 
+                  4242
+                </span>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Risk evaluation
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Risk evaluation
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Normal
+              </span>
+            </div>
           </div>
         </li>
       </ul>
@@ -747,85 +934,129 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
       />
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
+        role="menu"
       >
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Date
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Date
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Sep 19, 2019, 5:24pm
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Customer
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Customer
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Customer name
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Order
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Order
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://somerandomorderurl.com/?edit_order=45981"
+                >
+                  45981
+                </a>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Payment method
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Payment method
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span
+                  class="payment-method-details"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                   •••• 
+                  4242
+                </span>
+              </span>
+            </div>
           </div>
         </li>
         <li
-          aria-disabled="false"
           class="woocommerce-list__item"
-          role="menuitem"
-          tabindex="0"
         >
           <div
-            class="woocommerce-list__item-text"
+            class="woocommerce-list__item-inner"
           >
-            <span
-              class="woocommerce-list__item-title"
+            <div
+              class="woocommerce-list__item-text"
             >
-              Risk evaluation
-            </span>
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Risk evaluation
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                Normal
+              </span>
+            </div>
           </div>
         </li>
       </ul>

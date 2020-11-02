@@ -57,55 +57,39 @@ exports[`Deposits overview renders correctly 1`] = `
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=last_deposit"
             role="menuitem"
           >
-            <span
+            <div
               class="woocommerce-summary__item-label"
             >
-              Last deposit
-            </span>
-            <span
+              <p
+                class="css-101we7g-Text e15wbhsk0"
+              >
+                Last deposit
+              </p>
+            </div>
+            <div
               class="woocommerce-summary__item-data"
             >
-              <span
+              <div
                 class="woocommerce-summary__item-value"
               >
-                $65.74
-              </span>
+                <p
+                  class="css-1ahfdc3-Text e15wbhsk0"
+                >
+                  $65.74
+                </p>
+              </div>
               <div
                 aria-label="No change from April 18, 2019"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
-                <svg
-                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
-                    />
-                  </g>
-                </svg>
-                <span
-                  class="woocommerce-summary__item-delta-value"
+                <p
+                  class="css-1qmnemh-Text e15wbhsk0"
                 >
                   N/A
-                </span>
+                </p>
               </div>
-            </span>
-            <span
-              class="woocommerce-summary__item-prev-label"
-            >
-              April 18, 2019
-            </span>
-             
-            <span
-              class="woocommerce-summary__item-prev-value"
-            >
-              N/A
-            </span>
+            </div>
           </a>
         </li>
         <li
@@ -117,55 +101,39 @@ exports[`Deposits overview renders correctly 1`] = `
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=next_deposit"
             role="menuitem"
           >
-            <span
+            <div
               class="woocommerce-summary__item-label"
             >
-              Next deposit
-            </span>
-            <span
+              <p
+                class="css-101we7g-Text e15wbhsk0"
+              >
+                Next deposit
+              </p>
+            </div>
+            <div
               class="woocommerce-summary__item-data"
             >
-              <span
+              <div
                 class="woocommerce-summary__item-value"
               >
-                $15.22
-              </span>
+                <p
+                  class="css-1ahfdc3-Text e15wbhsk0"
+                >
+                  $15.22
+                </p>
+              </div>
               <div
                 aria-label="No change from Est. Apr 22, 2019"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
-                <svg
-                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
-                    />
-                  </g>
-                </svg>
-                <span
-                  class="woocommerce-summary__item-delta-value"
+                <p
+                  class="css-1qmnemh-Text e15wbhsk0"
                 >
                   N/A
-                </span>
+                </p>
               </div>
-            </span>
-            <span
-              class="woocommerce-summary__item-prev-label"
-            >
-              Est. Apr 22, 2019
-            </span>
-             
-            <span
-              class="woocommerce-summary__item-prev-value"
-            >
-              N/A
-            </span>
+            </div>
           </a>
         </li>
         <li
@@ -174,55 +142,39 @@ exports[`Deposits overview renders correctly 1`] = `
           <div
             class="woocommerce-summary__item"
           >
-            <span
+            <div
               class="woocommerce-summary__item-label"
             >
-              Pending balance
-            </span>
-            <span
+              <p
+                class="css-101we7g-Text e15wbhsk0"
+              >
+                Pending balance
+              </p>
+            </div>
+            <div
               class="woocommerce-summary__item-data"
             >
-              <span
+              <div
                 class="woocommerce-summary__item-value"
               >
-                $48.66
-              </span>
+                <p
+                  class="css-1ahfdc3-Text e15wbhsk0"
+                >
+                  $48.66
+                </p>
+              </div>
               <div
                 aria-label="No change from 2 deposits"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
-                <svg
-                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
-                    />
-                  </g>
-                </svg>
-                <span
-                  class="woocommerce-summary__item-delta-value"
+                <p
+                  class="css-1qmnemh-Text e15wbhsk0"
                 >
                   N/A
-                </span>
+                </p>
               </div>
-            </span>
-            <span
-              class="woocommerce-summary__item-prev-label"
-            >
-              2 deposits
-            </span>
-             
-            <span
-              class="woocommerce-summary__item-prev-value"
-            >
-              N/A
-            </span>
+            </div>
           </div>
         </li>
         <li
@@ -231,53 +183,39 @@ exports[`Deposits overview renders correctly 1`] = `
           <div
             class="woocommerce-summary__item"
           >
-            <span
+            <div
               class="woocommerce-summary__item-label"
             >
-              Available balance
-            </span>
-            <span
+              <p
+                class="css-101we7g-Text e15wbhsk0"
+              >
+                Available balance
+              </p>
+            </div>
+            <div
               class="woocommerce-summary__item-data"
             >
-              <span
+              <div
                 class="woocommerce-summary__item-value"
               >
-                $0.00
-              </span>
+                <p
+                  class="css-1ahfdc3-Text e15wbhsk0"
+                >
+                  $0.00
+                </p>
+              </div>
               <div
                 aria-label="No change from "
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
-                <svg
-                  class="gridicon gridicons-arrow-right woocommerce-summary__item-delta-icon needs-offset-y"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"
-                    />
-                  </g>
-                </svg>
-                <span
-                  class="woocommerce-summary__item-delta-value"
+                <p
+                  class="css-1qmnemh-Text e15wbhsk0"
                 >
                   N/A
-                </span>
+                </p>
               </div>
-            </span>
-            <span
-              class="woocommerce-summary__item-prev-label"
-            />
-             
-            <span
-              class="woocommerce-summary__item-prev-value"
-            >
-              N/A
-            </span>
+            </div>
           </div>
         </li>
       </ul>
