@@ -76,7 +76,7 @@ function wcpay_updated( $upgrader_object, $options ) {
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
-add_action( 'upgrader_process_complete', 'wcpay_updated' );
+add_action( 'upgrader_process_complete', 'wcpay_updated', 10, 2 );
 
 /**
  * Initialize the Jetpack connection functionality.
