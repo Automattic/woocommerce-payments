@@ -27,20 +27,6 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 	const NOTE_DOCUMENTATION_URL = 'https://docs.woocommerce.com/document/woocommerce-refunds#refund-policy-howto';
 
 	/**
-	 * Handle activation scenario and create the note if it not yet created.
-	 */
-	public function on_wcpay_activation() {
-		self::possibly_add_note();
-	}
-
-	/**
-	 * Handle deactivation scenario and drop the note.
-	 */
-	public function on_wcpay_deactivation() {
-		self::possibly_delete_note();
-	}
-
-	/**
 	 * Get the note.
 	 */
 	public static function get_note() {
