@@ -27,27 +27,17 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
-	 * Client for making requests to the WooCommerce Payments API
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	private $payments_api_client;
-
-	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account Account instance.
-	 * @param WC_Payments_API_Client   $payments_api_client - WooCommerce Payments API client.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,
-		WC_Payments_Account $account,
-		WC_Payments_API_Client $payments_api_client
+		WC_Payments_Account $account
 	) {
-		$this->wcpay_gateway       = $gateway;
-		$this->account             = $account;
-		$this->payments_api_client = $payments_api_client;
+		$this->wcpay_gateway = $gateway;
+		$this->account       = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
@@ -218,40 +208,24 @@ class WC_Payments_Admin {
 			true
 		);
 
-		// phpcs:ignore WordPress.Security.NonceVerification
-		$tos_disabled_snackbar  = isset( $_GET['tos-disabled'] );
-		$tos_agreement_required = $this->is_tos_agreement_required();
+		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
+		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
+		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
 
-		if ( $tos_agreement_required || $tos_disabled_snackbar ) {
-			$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
-			$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-			$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+		wp_register_script(
+			'WCPAY_TOS',
+			$tos_script_src_url,
+			$tos_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/tos.js' ),
+			true
+		);
 
-			wp_register_script(
-				'WCPAY_TOS',
-				$tos_script_src_url,
-				$tos_script_asset['dependencies'],
-				WC_Payments::get_file_version( 'dist/tos.js' ),
-				true
-			);
-
-			wp_localize_script(
-				'WCPAY_TOS',
-				'wcpay_tos_settings',
-				[
-					'showModal'    => $tos_agreement_required,
-					'settingsUrl'  => $this->wcpay_gateway->get_settings_url(),
-					'showSnackbar' => $tos_disabled_snackbar,
-				]
-			);
-
-			wp_register_style(
-				'WCPAY_TOS',
-				plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/tos.css' )
-			);
-		}
+		wp_register_style(
+			'WCPAY_TOS',
+			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/tos.css' )
+		);
 
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
@@ -306,19 +280,42 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Update conditions when ToS script is enqueued.
-		$show_on_payment_methods_list = (
+		$tos_agreement_declined = (
 			$current_tab
 			&& 'checkout' === $current_tab
 			&& isset( $_GET['tos-disabled'] ) // phpcs:ignore WordPress.Security.NonceVerification
 		);
 
-		$show_on_settings_page = (
-			$current_tab && $current_section
-			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section
+		$tos_agreement_required = (
+			$this->is_tos_agreement_required() &&
+			(
+				// Is settings page?
+				(
+					$current_tab
+					&& $current_section
+					&& 'checkout' === $current_tab
+					&& 'woocommerce_payments' === $current_section
+				)
+
+				// Or a WC Admin page?
+				// Note: Merchants can navigate from analytics to payments w/o reload,
+				// which is why this is neccessary.
+				|| wc_admin_is_registered_page()
+			)
 		);
 
-		if ( $show_on_payment_methods_list || $show_on_settings_page ) {
+		if ( $tos_agreement_declined || $tos_agreement_required ) {
+			// phpcs:ignore WordPress.Security.NonceVerification
+			wp_localize_script(
+				'WCPAY_TOS',
+				'wcpay_tos_settings',
+				[
+					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'tosAgreementRequired' => $tos_agreement_required,
+					'tosAgreementDeclined' => $tos_agreement_declined,
+				]
+			);
+
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
 		}
@@ -365,6 +362,7 @@ class WC_Payments_Admin {
 	 * @return bool
 	 */
 	private function is_tos_agreement_required() {
+		true;
 		// The gateway might already be disabled because of ToS.
 		if ( ! $this->wcpay_gateway->is_enabled() ) {
 			return false;
