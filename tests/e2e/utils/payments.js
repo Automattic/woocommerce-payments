@@ -23,14 +23,18 @@ export async function fillCardDetails( page, card ) {
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
 }
 
+function delay( ms ) {
+	return new Promise( ( resolve ) => setTimeout( resolve, ms ) );
+}
+
 export async function confirmCardAuthentication(
 	page,
 	cardType = '3DS',
 	authorize = true
 ) {
 	const target = authorize
-		? '#test-source-authorize-3ds'
-		: '#test-source-fail-3ds';
+		? '#test-source-authorize-3ds:enabled'
+		: '#test-source-fail-3ds:enabled';
 	// we need to add a slight delay here so the authorization iframe has time to spin up
 	// otherwise, this would return the __privateStripeFrame related to the card input
 	await page.waitForFunction(
@@ -52,6 +56,7 @@ export async function confirmCardAuthentication(
 		challengeFrame = await acsFrameHandle.contentFrame();
 	}
 	const button = await challengeFrame.waitForSelector( target );
+	await delay( 1000 );
 	await button.click();
 }
 
