@@ -262,12 +262,17 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
+		global $current_tab, $current_section;
+
 		$this->register_payments_scripts();
 
-		global $current_tab, $current_section;
-		if ( $current_tab && $current_section
+		$is_settings_page = (
+			$current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section ) {
+			&& 'woocommerce_payments' === $current_section
+		);
+
+		if ( $is_settings_page ) {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -289,18 +294,12 @@ class WC_Payments_Admin {
 		$tos_agreement_required = (
 			$this->is_tos_agreement_required() &&
 			(
-				// Is settings page?
-				(
-					$current_tab
-					&& $current_section
-					&& 'checkout' === $current_tab
-					&& 'woocommerce_payments' === $current_section
-				)
+				$is_settings_page ||
 
 				// Or a WC Admin page?
 				// Note: Merchants can navigate from analytics to payments w/o reload,
 				// which is why this is neccessary.
-				|| wc_admin_is_registered_page()
+				wc_admin_is_registered_page()
 			)
 		);
 
