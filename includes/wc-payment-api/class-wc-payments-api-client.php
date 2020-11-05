@@ -806,6 +806,8 @@ class WC_Payments_API_Client {
 	 * @param string $user_ip    IP address of the current user.
 	 * @param string $user_agent User agent string for the current user.
 	 *
+	 * @return array An array, containing a `success` flag.
+	 *
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function add_tos_agreement( $source, $user_name, $user_ip, $user_agent ) {
