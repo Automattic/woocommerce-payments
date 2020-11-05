@@ -7,7 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import TosModal from './modal';
-import shotTosNotice from './disabled-notice';
+import showTosNotice from './disabled-notice';
 
 // eslint-disable-next-line camelcase
 if ( wcpay_tos_settings.tosAgreementRequired ) {
@@ -20,7 +20,7 @@ if ( wcpay_tos_settings.tosAgreementDeclined ) {
 		// eslint-disable-next-line camelcase
 		const { settingsUrl } = wcpay_tos_settings;
 
-		shotTosNotice( settingsUrl );
+		showTosNotice( settingsUrl );
 	} );
 }
 
