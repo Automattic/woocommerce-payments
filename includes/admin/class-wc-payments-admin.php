@@ -362,7 +362,6 @@ class WC_Payments_Admin {
 	 * @return bool
 	 */
 	private function is_tos_agreement_required() {
-		true;
 		// The gateway might already be disabled because of ToS.
 		if ( ! $this->wcpay_gateway->is_enabled() ) {
 			return false;
