@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { enableGatewayAfterTosDecline } from './request.js';
 
-const shotTosNotice = ( settingsUrl ) => {
+const showTosNotice = ( settingsUrl ) => {
 	const { createInfoNotice } = dispatch( 'core/notices' );
 
 	const enableGateway = async () => {
@@ -38,4 +38,4 @@ const shotTosNotice = ( settingsUrl ) => {
 	);
 };
 
-export default shotTosNotice;
+export default showTosNotice;

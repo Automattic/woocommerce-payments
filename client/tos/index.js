@@ -16,6 +16,12 @@ if ( wcpay_tos_settings.tosAgreementRequired ) {
 
 // eslint-disable-next-line camelcase
 if ( wcpay_tos_settings.tosAgreementDeclined ) {
+	/**
+	 * ToDo: This is a temporary solution.
+	 *
+	 * The `core/notices` data layer is not loaded
+	 * initially, we need to wait for it to be initialized.
+	 */
 	window.addEventListener( 'load', () => {
 		// eslint-disable-next-line camelcase
 		const { settingsUrl } = wcpay_tos_settings;
