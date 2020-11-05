@@ -7,33 +7,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import TosModal from './modal';
-import TosSnackbar from './snackbar';
+import shotTosNotice from './disabled-notice';
 
 // eslint-disable-next-line camelcase
-if ( wcpay_tos_settings.showModal ) {
+if ( wcpay_tos_settings.tosAgreementRequired ) {
 	renderTosModal();
 }
 
 // eslint-disable-next-line camelcase
-if ( wcpay_tos_settings.showSnackbar ) {
-	renderTosSnackbar();
+if ( wcpay_tos_settings.tosAgreementDeclined ) {
+	window.addEventListener( 'load', () => {
+		// eslint-disable-next-line camelcase
+		const { settingsUrl } = wcpay_tos_settings;
+
+		shotTosNotice( settingsUrl );
+	} );
 }
 
 function renderTosModal() {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-tos-container';
-	const wpcontent = document.getElementById( 'wpcontent' );
-	wpcontent.appendChild( container );
+	document.body.appendChild( container );
 	ReactDOM.render( <TosModal />, container );
-}
-
-function renderTosSnackbar() {
-	// eslint-disable-next-line camelcase
-	const { settingsUrl } = wcpay_tos_settings;
-
-	const container = document.createElement( 'div' );
-	container.className = 'woocommerce-payments__tos-snackbar';
-	const wpcontent = document.getElementById( 'wpcontent' );
-	wpcontent.appendChild( container );
-	ReactDOM.render( <TosSnackbar settingsUrl={ settingsUrl } />, container );
 }
