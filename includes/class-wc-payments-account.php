@@ -654,18 +654,8 @@ class WC_Payments_Account {
 	public function get_latest_tos_agreement() {
 		$account = $this->get_cached_account_data();
 
-		if ( empty( $account ) ) {
-			return null;
-		}
-
-		if ( ! isset( $account['latest_tos_agreement'] ) ) {
-			$account = $this->refresh_account_data();
-		}
-
-		if ( empty( $account ) ) {
-			return null;
-		}
-
-		return $account['latest_tos_agreement'];
+		return ! empty( $account ) && isset( $account['latest_tos_agreement'] )
+			? $account['latest_tos_agreement']
+			: null;
 	}
 }
