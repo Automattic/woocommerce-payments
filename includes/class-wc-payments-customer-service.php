@@ -14,11 +14,32 @@ defined( 'ABSPATH' ) || exit;
  * Class handling any customer functionality
  */
 class WC_Payments_Customer_Service {
+	/**
+	 * Deprecated Stripe customer ID option.
+	 *
+	 * This option was used to store the customer_id in a WC_User options before we decoupled live and test customers.
+	 */
 	const DEPRECATED_WCPAY_CUSTOMER_ID_OPTION = '_wcpay_customer_id';
 
+	/**
+	 * Live Stripe customer ID option.
+	 *
+	 * This option is used to store new live mode customers in a WC_User options. Customers stored in the deprecated
+	 * option are migrated to this one.
+	 */
 	const WCPAY_LIVE_CUSTOMER_ID_OPTION = '_wcpay_customer_id_live';
+
+	/**
+	 * Test Stripe customer ID option.
+	 *
+	 * This option is used to store new test mode customer IDs in a WC_User options.
+	 */
 	const WCPAY_TEST_CUSTOMER_ID_OPTION = '_wcpay_customer_id_test';
-	const PAYMENT_METHODS_TRANSIENT     = 'wcpay_payment_methods_';
+
+	/**
+	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
+	 */
+	const PAYMENT_METHODS_TRANSIENT = 'wcpay_payment_methods_';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
