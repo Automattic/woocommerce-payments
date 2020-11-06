@@ -23,25 +23,19 @@ export async function fillCardDetails( page, card ) {
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
 }
 
-function delay( ms ) {
-	return new Promise( ( resolve ) => setTimeout( resolve, ms ) );
-}
-
 export async function confirmCardAuthentication(
 	page,
 	cardType = '3DS',
 	authorize = true
 ) {
 	const target = authorize
-		? '#test-source-authorize-3ds:enabled'
-		: '#test-source-fail-3ds:enabled';
-	// we need to add a slight delay here so the authorization iframe has time to spin up
-	// otherwise, this would return the __privateStripeFrame related to the card input
-	await page.waitForFunction(
-		'document.querySelectorAll( \'iframe[name^="__privateStripeFrame"]\' ).length >= 2'
-	);
+		? '#test-source-authorize-3ds'
+		: '#test-source-fail-3ds';
+
+	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
+	// appears at the top of the DOM.
 	const frameHandle = await page.waitForSelector(
-		'iframe[name^="__privateStripeFrame"]'
+		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	const challengeFrameHandle = await stripeFrame.waitForSelector(
@@ -56,7 +50,8 @@ export async function confirmCardAuthentication(
 		challengeFrame = await acsFrameHandle.contentFrame();
 	}
 	const button = await challengeFrame.waitForSelector( target );
-	await delay( 1000 );
+	// Need to wait for the CSS animations to complete.
+	await page.waitFor( 500 );
 	await button.click();
 }
 
