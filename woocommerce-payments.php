@@ -96,7 +96,7 @@ add_action( 'plugins_loaded', 'wcpay_init', 11 );
  * @return bool True if the plugin can keep initializing itself, false otherwise.
  */
 function wcpay_check_old_jetpack_version() {
-	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) ) {
+	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) && JETPACK__VERSION !== 'wpcom' ) {
 		add_filter( 'admin_notices', 'wcpay_show_old_jetpack_notice' );
 		// Prevent the rest of the plugin from initializing.
 		remove_action( 'plugins_loaded', 'wcpay_init', 11 );
