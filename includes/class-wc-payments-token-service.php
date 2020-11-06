@@ -16,7 +16,11 @@ use WCPay\Logger;
  * Seen in checkout page and my account->add payment method page.
  */
 class WC_Payments_Token_Service {
-
+	/**
+	 * Stripe customer ID meta key.
+	 *
+	 * This meta key is used to store the customer_id who owns the Payment Method in the token's metadata.
+	 */
 	const CUSTOMER_ID_META_KEY = '_wcpay_customer_id';
 
 	/**
