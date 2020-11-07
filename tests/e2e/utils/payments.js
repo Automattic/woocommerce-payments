@@ -10,7 +10,7 @@ import { CustomerFlow, uiUnblocked } from './index';
 
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
-		'iframe[name^="__privateStripeFrame"]'
+		'#payment iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	const inputs = await stripeFrame.$$( '.InputElement.Input' );
