@@ -2,15 +2,15 @@
 jQuery( function( $ ) {
 	'use strict';
 
-	var stripe = Stripe( wcpay_payment_request_params.stripe.publishableKey, {
+	const stripe = Stripe( wcpay_payment_request_params.stripe.publishableKey, {
 		stripeAccount: wcpay_payment_request_params.stripe.accountId,
 	} );
-	var paymentRequestType;
+	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
-	var wcpay_payment_request = {
+	const wcpay_payment_request = {
 		/**
 		 * Get WC AJAX endpoint URL.
 		 *
@@ -24,7 +24,7 @@ jQuery( function( $ ) {
 		},
 
 		getCartDetails: function() {
-			var data = {
+			const data = {
 				security: wcpay_payment_request_params.nonce.payment
 			};
 
@@ -39,14 +39,14 @@ jQuery( function( $ ) {
 		},
 
 		getAttributes: function() {
-			var select = $( '.variations_form' ).find( '.variations select' ),
-				data   = {},
-				count  = 0,
-				chosen = 0;
+			const select = $( '.variations_form' ).find( '.variations select' );
+			const data   = {};
+			let count  = 0;
+			let chosen = 0;
 
 			select.each( function() {
-				var attribute_name = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
-				var value          = $( this ).val() || '';
+				const attribute_name = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
+				const value          = $( this ).val() || '';
 
 				if ( value.length > 0 ) {
 					chosen ++;
@@ -64,7 +64,7 @@ jQuery( function( $ ) {
 		},
 
 		processPaymentMethod: function( paymentMethod, paymentRequestType ) {
-			var data = wcpay_payment_request.getOrderData( paymentMethod, paymentRequestType );
+			const data = wcpay_payment_request.getOrderData( paymentMethod, paymentRequestType );
 
 			return $.ajax( {
 				type:    'POST',
@@ -84,13 +84,13 @@ jQuery( function( $ ) {
 		 * @return {Object}
 		 */
 		getOrderData: function( evt, paymentRequestType ) {
-			var paymentMethod = evt.paymentMethod;
-			var email         = paymentMethod.billing_details.email;
-			var phone         = paymentMethod.billing_details.phone;
-			var billing       = paymentMethod.billing_details.address;
-			var name          = paymentMethod.billing_details.name;
-			var shipping      = evt.shippingAddress;
-			var data          = {
+			const paymentMethod = evt.paymentMethod;
+			const email         = paymentMethod.billing_details.email;
+			const phone         = paymentMethod.billing_details.phone;
+			const billing       = paymentMethod.billing_details.address;
+			const name          = paymentMethod.billing_details.name;
+			const shipping      = evt.shippingAddress;
+			const data          = {
 				_wpnonce:                  wcpay_payment_request_params.nonce.checkout,
 				billing_first_name:        null !== name ? name.split( ' ' ).slice( 0, 1 ).join( ' ' ) : '',
 				billing_last_name:         null !== name ? name.split( ' ' ).slice( 1 ).join( ' ' ) : '',
@@ -162,7 +162,7 @@ jQuery( function( $ ) {
 			$( '.woocommerce-error' ).remove();
 
 			if ( wcpay_payment_request_params.is_product_page ) {
-				var element = $( '.product' );
+				const element = $( '.product' );
 
 				element.before( message );
 
@@ -170,7 +170,7 @@ jQuery( function( $ ) {
 					scrollTop: element.prev( '.woocommerce-error' ).offset().top
 				}, 600 );
 			} else {
-				var $form = $( '.shop_table.cart' ).closest( 'form' );
+				const $form = $( '.shop_table.cart' ).closest( 'form' );
 
 				$form.before( message );
 
@@ -214,7 +214,7 @@ jQuery( function( $ ) {
 		 * @param {PaymentAddress} address Shipping address.
 		 */
 		updateShippingOptions: function( details, address ) {
-			var data = {
+			const data = {
 				security:  wcpay_payment_request_params.nonce.shipping,
 				country:   address.country,
 				state:     address.region,
@@ -240,7 +240,7 @@ jQuery( function( $ ) {
 		 * @param {String}   shippingOption User's preferred shipping option to use for shipping price calculations.
 		 */
 		updateShippingDetails: function( details, shippingOption ) {
-			var data = {
+			const data = {
 				security: wcpay_payment_request_params.nonce.update_shipping,
 				shipping_method: [ shippingOption.id ],
 				payment_request_type: paymentRequestType,
@@ -259,14 +259,14 @@ jQuery( function( $ ) {
 		 *
 		 */
 		addToCart: function() {
-			var product_id = $( '.single_add_to_cart_button' ).val();
+			let product_id = $( '.single_add_to_cart_button' ).val();
 
 			// Check if product is a variable product.
 			if ( $( '.single_variation_wrap' ).length ) {
 				product_id = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
 			}
 
-			var data = {
+			const data = {
 				security: wcpay_payment_request_params.nonce.add_to_cart,
 				product_id: product_id,
 				qty: $( '.quantity .qty' ).val(),
@@ -274,11 +274,11 @@ jQuery( function( $ ) {
 			};
 
 			// add addons data to the POST body
-			var formData = $( 'form.cart' ).serializeArray();
+			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, function( i, field ) {
 				if ( /^addon-/.test( field.name ) ) {
 					if ( /\[\]$/.test( field.name ) ) {
-						var fieldName = field.name.substring( 0, field.name.length - 2);
+						const fieldName = field.name.substring( 0, field.name.length - 2);
 						if ( data[ fieldName ] ) {
 							data[ fieldName ].push( field.value );
 						} else {
@@ -298,7 +298,7 @@ jQuery( function( $ ) {
 		},
 
 		clearCart: function() {
-			var data = {
+			const data = {
 					'security': wcpay_payment_request_params.nonce.clear_cart
 				};
 
@@ -330,7 +330,7 @@ jQuery( function( $ ) {
 		 * @version 4.0.0
 		 */
 		startPaymentRequest: function( cart ) {
-			var paymentDetails,
+			let paymentDetails,
 				options;
 
 			if ( wcpay_payment_request_params.is_product_page ) {
@@ -352,10 +352,10 @@ jQuery( function( $ ) {
 				paymentDetails = cart.order_data;
 			}
 
-			var paymentRequest = stripe.paymentRequest( options );
+			const paymentRequest = stripe.paymentRequest( options );
 
-			var elements = stripe.elements( { locale: wcpay_payment_request_params.button.locale } );
-			var prButton = wcpay_payment_request.createPaymentRequestButton( elements, paymentRequest );
+			const elements = stripe.elements( { locale: wcpay_payment_request_params.button.locale } );
+			const prButton = wcpay_payment_request.createPaymentRequestButton( elements, paymentRequest );
 
 			// Check the availability of the Payment Request API first.
 			paymentRequest.canMakePayment().then( function( result ) {
@@ -403,17 +403,17 @@ jQuery( function( $ ) {
 		},
 
 		getSelectedProductData: function() {
-			var product_id = $( '.single_add_to_cart_button' ).val();
+			let product_id = $( '.single_add_to_cart_button' ).val();
 
 			// Check if product is a variable product.
 			if ( $( '.single_variation_wrap' ).length ) {
 				product_id = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
 			}
 
-			var addons = $( '#product-addons-total' ).data('price_data') || [];
-			var addon_value = addons.reduce( function ( sum, addon ) { return sum + addon.cost; }, 0 );
+			const addons = $( '#product-addons-total' ).data('price_data') || [];
+			const addon_value = addons.reduce( function ( sum, addon ) { return sum + addon.cost; }, 0 );
 
-			var data = {
+			const data = {
 				security: wcpay_payment_request_params.nonce.get_selected_product_data,
 				product_id: product_id,
 				qty: $( '.quantity .qty' ).val(),
@@ -442,14 +442,14 @@ jQuery( function( $ ) {
 		 * @return {function} A wrapped function with execution limited by the wait time.
 		 */
 		debounce: function( wait, func, immediate ) {
-			var timeout;
+			let timeout;
 			return function() {
-				var context = this, args = arguments;
-				var later = function() {
+				const context = this, args = arguments;
+				const later = function() {
 					timeout = null;
 					if (!immediate) func.apply(context, args);
 				};
-				var callNow = immediate && !timeout;
+				const callNow = immediate && !timeout;
 				clearTimeout(timeout);
 				timeout = setTimeout(later, wait);
 				if (callNow) func.apply(context, args);
@@ -465,7 +465,7 @@ jQuery( function( $ ) {
 		 * @return {object} Stripe paymentRequest element or custom button jQuery element.
 		 */
 		createPaymentRequestButton: function( elements, paymentRequest ) {
-			var button;
+			let button;
 			if ( wcpay_payment_request_params.button.is_custom ) {
 				button = $( wcpay_payment_request_params.button.css_selector );
 				if ( button.length ) {
@@ -518,30 +518,30 @@ jQuery( function( $ ) {
 		},
 
 		shouldUseGooglePayBrand: function () {
-			var ua = window.navigator.userAgent.toLowerCase();
-			var isChrome = /chrome/.test( ua ) && ! /edge|edg|opr|brave\//.test( ua ) && 'Google Inc.' === window.navigator.vendor;
+			const ua = window.navigator.userAgent.toLowerCase();
+			const isChrome = /chrome/.test( ua ) && ! /edge|edg|opr|brave\//.test( ua ) && 'Google Inc.' === window.navigator.vendor;
 			// newer versions of Brave do not have the userAgent string
-			var isBrave = isChrome && window.navigator.brave;
+			const isBrave = isChrome && window.navigator.brave;
 			return isChrome && ! isBrave;
 		},
 
 		createGooglePayButton: function () {
-			var allowedThemes = [ 'dark', 'light' ];
-			var allowedTypes = [ 'short', 'long' ];
+			const allowedThemes = [ 'dark', 'light' ];
+			const allowedTypes = [ 'short', 'long' ];
 
-			var theme  = wcpay_payment_request_params.button.theme;
-			var type   = wcpay_payment_request_params.button.branded_type;
-			var locale = wcpay_payment_request_params.button.locale;
-			var height = wcpay_payment_request_params.button.height;
+			let theme    = wcpay_payment_request_params.button.theme;
+			let type     = wcpay_payment_request_params.button.branded_type;
+			const locale = wcpay_payment_request_params.button.locale;
+			const height = wcpay_payment_request_params.button.height;
 			theme = allowedThemes.includes( theme ) ? theme : 'light';
 			type = allowedTypes.includes( type ) ? type : 'long';
 
-			var button = $( '<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>' );
+			const button = $( '<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>' );
 			button.css( 'height', height + 'px' );
 			button.addClass( theme + ' ' + type );
 			if ( 'long' === type ) {
-				var url = 'https://www.gstatic.com/instantbuy/svg/' + theme + '/' + locale + '.svg';
-				var fallbackUrl = 'https://www.gstatic.com/instantbuy/svg/' + theme + '/en.svg';
+				const url = 'https://www.gstatic.com/instantbuy/svg/' + theme + '/' + locale + '.svg';
+				const fallbackUrl = 'https://www.gstatic.com/instantbuy/svg/' + theme + '/en.svg';
 				// Check if locale GPay button exists, default to en if not
 				setBackgroundImageWithFallback( button, url, fallbackUrl );
 			}
@@ -558,8 +558,8 @@ jQuery( function( $ ) {
 		},
 
 		attachProductPageEventListeners: function( prButton, paymentRequest ) {
-			var paymentRequestError = [];
-			var addToCartButton = $( '.single_add_to_cart_button' );
+			let paymentRequestError = [];
+			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', function ( evt ) {
 				// First check if product can be added to cart.
@@ -706,7 +706,7 @@ jQuery( function( $ ) {
 	function setBackgroundImageWithFallback( element, background, fallback ) {
 		element.css( 'background-image', 'url(' + background + ')' );
 		// Need to use an img element to avoid CORS issues
-		var testImg = document.createElement("img");
+		const testImg = document.createElement("img");
 		testImg.onerror = function () {
 			element.css( 'background-image', 'url(' + fallback + ')' );
 		}
