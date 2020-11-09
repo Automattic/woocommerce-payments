@@ -32,7 +32,10 @@ class WC_Payments_Admin {
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account Account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payment_Gateway_WCPay $gateway,
+		WC_Payments_Account $account
+	) {
 		$this->wcpay_gateway = $gateway;
 		$this->account       = $account;
 
@@ -259,12 +262,17 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
+		global $current_tab, $current_section;
+
 		$this->register_payments_scripts();
 
-		global $current_tab, $current_section;
-		if ( $current_tab && $current_section
+		$is_settings_page = (
+			$current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section ) {
+			&& 'woocommerce_payments' === $current_section
+		);
+
+		if ( $is_settings_page ) {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -277,9 +285,36 @@ class WC_Payments_Admin {
 		}
 
 		// TODO: Update conditions when ToS script is enqueued.
-		if ( false && $current_tab && $current_section
-		&& 'checkout' === $current_tab
-		&& 'woocommerce_payments' === $current_section ) {
+		$tos_agreement_declined = (
+			$current_tab
+			&& 'checkout' === $current_tab
+			&& isset( $_GET['tos-disabled'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		);
+
+		$tos_agreement_required = (
+			$this->is_tos_agreement_required() &&
+			(
+				$is_settings_page ||
+
+				// Or a WC Admin page?
+				// Note: Merchants can navigate from analytics to payments w/o reload,
+				// which is why this is neccessary.
+				wc_admin_is_registered_page()
+			)
+		);
+
+		if ( $tos_agreement_declined || $tos_agreement_required ) {
+			// phpcs:ignore WordPress.Security.NonceVerification
+			wp_localize_script(
+				'WCPAY_TOS',
+				'wcpay_tos_settings',
+				[
+					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'tosAgreementRequired' => $tos_agreement_required,
+					'tosAgreementDeclined' => $tos_agreement_declined,
+				]
+			);
+
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
 		}
@@ -318,5 +353,26 @@ class WC_Payments_Admin {
 		$version1 = $matches1[1];
 		$version2 = $matches2[1];
 		return version_compare( $version1, $version2, $operator );
+	}
+
+	/**
+	 * Checks whether it's necessary to display a ToS agreement modal.
+	 *
+	 * @return bool
+	 */
+	private function is_tos_agreement_required() {
+		// The gateway might already be disabled because of ToS.
+		if ( ! $this->wcpay_gateway->is_enabled() ) {
+			return false;
+		}
+
+		// Retrieve the latest agreement and check whether it's regarding the latest ToS version.
+		$agreement = $this->account->get_latest_tos_agreement();
+		if ( empty( $agreement ) ) {
+			// Account data couldn't be fetched, let the merchant solve that first.
+			return false;
+		}
+
+		return ! $agreement['is_current_version'];
 	}
 }

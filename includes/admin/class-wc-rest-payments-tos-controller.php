@@ -38,14 +38,23 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	private $gateway;
 
 	/**
+	 * WC Payments Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account      $account WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		parent::__construct( $api_client );
 		$this->gateway = $gateway;
+		$this->account = $account;
 	}
 
 	/**
@@ -58,6 +67,16 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'handle_tos' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/reactivate',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'reactivate' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -103,8 +122,20 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	 * Process ToS accepted.
 	 */
 	private function handle_tos_accepted() {
-		// TODO: record ToS acceptance data.
 		$this->gateway->enable();
+
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$user_ip = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$user_agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
+
+		// Accessing directly, because a user must be already logged in.
+		$current_user = wp_get_current_user();
+		$user_name    = $current_user->user_login;
+
+		$this->api_client->add_tos_agreement( 'settings-popup', $user_name, $user_ip, $user_agent );
+		$this->account->refresh_account_data();
 	}
 
 	/**
@@ -113,5 +144,24 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	private function handle_tos_declined() {
 		// TODO: maybe record ToS declined data.
 		$this->gateway->disable();
+	}
+
+	/**
+	 * Activates the gateway again, after it's been disabled.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function reactivate( $request ) {
+		try {
+			$this->gateway->enable();
+			Logger::debug( 'Gateway re-enabled after ToS decline.' );
+		} catch ( Exception $e ) {
+			Logger::error( $e );
+			return new WP_REST_Response( [ 'result' => self::RESULT_ERROR ], 500 );
+		}
+
+		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
 }

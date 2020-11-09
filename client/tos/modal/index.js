@@ -2,17 +2,17 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-
-import apiFetch from '@wordpress/api-fetch';
 import { useState } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
-import { Button, Modal } from '@wordpress/components';
+import { Button, Notice, Modal } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import { getPaymentMethodsUrl } from 'utils';
+import { makeTosAcceptanceRequest } from '../request.js';
 import './style.scss';
 
 const TosLink = ( props ) => (
@@ -24,7 +24,7 @@ const TosLink = ( props ) => (
 	/>
 );
 
-const TosModalUI = ( { onAccept, onDecline, isBusy } ) => {
+const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
 	const title = __(
 		'WooCommerce Payments: Terms of Service',
 		'woocommerce-payments'
@@ -47,6 +47,18 @@ const TosModalUI = ( { onAccept, onDecline, isBusy } ) => {
 			onRequestClose={ onDecline }
 			className="woocommerce-payments__tos-modal"
 		>
+			{ hasError && (
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="woocommerce-payments__tos-error"
+				>
+					{ __(
+						'Something went wrong. Please try accepting the Terms of Service again!',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
 			<div className="woocommerce-payments__tos-wrapper">
 				<div className="woocommerce-payments__tos-modal-message">
 					{ message }
@@ -65,7 +77,7 @@ const TosModalUI = ( { onAccept, onDecline, isBusy } ) => {
 	);
 };
 
-const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
+const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
 	const title = __( 'Disable WooCommerce Payments', 'woocommerce-payments' );
 	const message = interpolateComponents( {
 		mixedString: __(
@@ -86,6 +98,19 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 			onRequestClose={ onDisable }
 			className="woocommerce-payments__tos-modal"
 		>
+			{ hasError && (
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="woocommerce-payments__tos-error"
+				>
+					{ __(
+						'Something went wrong. Please try again!',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<div className="woocommerce-payments__tos-wrapper">
 				<div className="woocommerce-payments__tos-modal-message">
 					{ message }
@@ -104,17 +129,12 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy } ) => {
 	);
 };
 
-const makeTosRequest = ( { accept } ) =>
-	apiFetch( {
-		path: '/wc/v3/payments/tos',
-		method: 'POST',
-		data: { accept },
-	} );
-
 const TosModal = () => {
 	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
 	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
 	const [ isBusy, setIsBusy ] = useState( false );
+	const [ hasAcceptanceError, setAcceptanceError ] = useState( false );
+	const [ hasDeclineError, setDeclineError ] = useState( false );
 
 	const closeTosModal = () => setIsTosModalOpen( false );
 	const closeDisableModal = () => setIsDisableModalOpen( false );
@@ -126,27 +146,27 @@ const TosModal = () => {
 
 	const acceptTos = async () => {
 		try {
+			setAcceptanceError( false );
 			setIsBusy( true );
-			await makeTosRequest( { accept: true } );
+			await makeTosAcceptanceRequest( { accept: true } );
 			closeTosModal();
 		} catch ( err ) {
-			// Note: errors handling will be added in https://github.com/Automattic/woocommerce-payments/pull/993
-			// eslint-disable-next-line no-console
-			console.error( err );
+			setAcceptanceError( true );
 		} finally {
 			setIsBusy( false );
 		}
 	};
 	const disablePlugin = async () => {
 		try {
+			setDeclineError( false );
 			setIsBusy( true );
-			await makeTosRequest( { accept: false } );
+			await makeTosAcceptanceRequest( { accept: false } );
 			closeDisableModal();
-			window.location = getPaymentMethodsUrl();
+			window.location = addQueryArgs( getPaymentMethodsUrl(), {
+				'tos-disabled': 1,
+			} );
 		} catch ( err ) {
-			// Note: errors handling will be added in https://github.com/Automattic/woocommerce-payments/pull/993
-			// eslint-disable-next-line no-console
-			console.error( err );
+			setDeclineError( true );
 		} finally {
 			setIsBusy( false );
 		}
@@ -163,6 +183,7 @@ const TosModal = () => {
 				onDisable={ disablePlugin }
 				onCancel={ cancelPluginDisable }
 				isBusy={ isBusy }
+				hasError={ hasDeclineError }
 			/>
 		);
 	}
@@ -173,6 +194,7 @@ const TosModal = () => {
 				onAccept={ acceptTos }
 				onDecline={ declineTos }
 				isBusy={ isBusy }
+				hasError={ hasAcceptanceError }
 			/>
 		);
 	}
