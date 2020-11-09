@@ -60,70 +60,92 @@ class WC_Payments_Admin {
 		$navigation_enabled = Loader::is_feature_enabled( 'navigation' );
 		$top_level_link     = $stripe_connected ? '/payments/deposits' : '/payments/connect';
 
-		// Register items in the Payments category unless other payment items exist.
-		$category = 'payments';
 		if ( $navigation_enabled ) {
-			$menu_items    = Menu::get_items();
-			$payment_items = array_filter(
-				$menu_items,
-				function( $item ) {
-					return 'payments' === $item['parent'];
-				}
+			// Register category.
+			Menu::add_plugin_category(
+				[
+					'id'         => 'woocommerce-payments',
+					'title'      => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'capability' => 'manage_woocommerce',
+				]
 			);
 
-			if ( ! empty( $payment_items ) ) {
-				// Register category.
-				Menu::add_category(
+			if ( ! $stripe_connected ) {
+				Menu::add_plugin_item(
 					[
-						'id'         => 'woocommerce-payments',
-						'parent'     => 'payments',
-						'title'      => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+						'id'         => 'woocommerce-payments-connect',
+						'title'      => __( 'Connect', 'woocommerce-payments' ),
 						'capability' => 'manage_woocommerce',
+						'url'        => 'wc-admin&path=' . $top_level_link,
+						'parent'     => 'woocommerce-payments',
 					]
 				);
-				$category = 'woocommerce-payments';
+			} else {
+				Menu::add_plugin_item(
+					[
+						'id'         => 'woocommerce-payments-deposits',
+						'title'      => __( 'Deposits', 'woocommerce-payments' ),
+						'capability' => 'manage_woocommerce',
+						'url'        => 'wc-admin&path=/payments/deposits',
+						'parent'     => 'woocommerce-payments',
+					]
+				);
+				Menu::add_plugin_item(
+					[
+						'id'         => 'woocommerce-payments-transactions',
+						'title'      => __( 'Transactions', 'woocommerce-payments' ),
+						'capability' => 'manage_woocommerce',
+						'url'        => 'wc-admin&path=/payments/transactions',
+						'parent'     => 'woocommerce-payments',
+					]
+				);
+				Menu::add_plugin_item(
+					[
+						'id'         => 'woocommerce-payments-disputes',
+						'title'      => __( 'Disputes', 'woocommerce-payments' ),
+						'capability' => 'manage_woocommerce',
+						'url'        => 'wc-admin&path=/payments/disputes',
+						'parent'     => 'woocommerce-payments',
+					]
+				);
 			}
 		}
 
 		wc_admin_register_page(
 			[
 				'id'         => 'wc-payments',
-				'title'      => $navigation_enabled ? __( 'Connect', 'woocommerce-payments' ) : __( 'Payments', 'woocommerce-payments' ),
+				'title'      => __( 'Payments', 'woocommerce-payments' ),
 				'capability' => 'manage_woocommerce',
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
-				'category'   => $stripe_connected ? false : $category,
 			]
 		);
 
 		if ( $stripe_connected ) {
 			wc_admin_register_page(
 				[
-					'id'       => 'wc-payments-deposits',
-					'title'    => __( 'Deposits', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/deposits',
-					'category' => $category,
+					'id'     => 'wc-payments-deposits',
+					'title'  => __( 'Deposits', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/deposits',
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'       => 'wc-payments-transactions',
-					'title'    => __( 'Transactions', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/transactions',
-					'category' => $category,
+					'id'     => 'wc-payments-transactions',
+					'title'  => __( 'Transactions', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/transactions',
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'       => 'wc-payments-disputes',
-					'title'    => __( 'Disputes', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/disputes',
-					'category' => $category,
+					'id'     => 'wc-payments-disputes',
+					'title'  => __( 'Disputes', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/disputes',
 				]
 			);
 
