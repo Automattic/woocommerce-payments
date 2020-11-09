@@ -40,7 +40,7 @@ class WC_Payments_Admin {
 		$this->account       = $account;
 
 		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], PHP_INT_MAX );
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 	}
 
