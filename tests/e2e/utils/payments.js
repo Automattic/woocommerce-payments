@@ -10,7 +10,7 @@ import { CustomerFlow, uiUnblocked } from './index';
 
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
-		'iframe[name^="__privateStripeFrame"]'
+		'#payment iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	const inputs = await stripeFrame.$$( '.InputElement.Input' );
@@ -31,13 +31,11 @@ export async function confirmCardAuthentication(
 	const target = authorize
 		? '#test-source-authorize-3ds'
 		: '#test-source-fail-3ds';
-	// we need to add a slight delay here so the authorization iframe has time to spin up
-	// otherwise, this would return the __privateStripeFrame related to the card input
-	await page.waitForFunction(
-		'document.querySelectorAll( \'iframe[name^="__privateStripeFrame"]\' ).length >= 2'
-	);
+
+	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
+	// appears at the top of the DOM.
 	const frameHandle = await page.waitForSelector(
-		'iframe[name^="__privateStripeFrame"]'
+		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	const challengeFrameHandle = await stripeFrame.waitForSelector(
@@ -52,6 +50,8 @@ export async function confirmCardAuthentication(
 		challengeFrame = await acsFrameHandle.contentFrame();
 	}
 	const button = await challengeFrame.waitForSelector( target );
+	// Need to wait for the CSS animations to complete.
+	await page.waitFor( 500 );
 	await button.click();
 }
 
@@ -63,6 +63,9 @@ export async function setupProductCheckout( billingDetails ) {
 	await CustomerFlow.goToCheckout();
 	await uiUnblocked();
 	await CustomerFlow.fillBillingDetails( billingDetails );
+	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
+	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
+	await page.waitFor( 1000 );
 	await uiUnblocked();
 	await expect( page ).toClick(
 		'.wc_payment_method.payment_method_woocommerce_payments'
