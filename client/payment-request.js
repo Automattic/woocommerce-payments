@@ -1,16 +1,16 @@
-/* global wcpay_payment_request_params, Stripe */
+/* global wcpayPaymentRequestParams, Stripe */
 jQuery( function( $ ) {
 	'use strict';
 
-	const stripe = Stripe( wcpay_payment_request_params.stripe.publishableKey, {
-		stripeAccount: wcpay_payment_request_params.stripe.accountId,
+	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
+		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
 	} );
 	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
-	const wcpay_payment_request = {
+	const wcpayPaymentRequest = {
 		/**
 		 * Get WC AJAX endpoint URL.
 		 *
@@ -18,22 +18,22 @@ jQuery( function( $ ) {
 		 * @return {String}
 		 */
 		getAjaxURL: function( endpoint ) {
-			return wcpay_payment_request_params.ajax_url
+			return wcpayPaymentRequestParams.ajax_url
 				.toString()
 				.replace( '%%endpoint%%', 'wcpay_' + endpoint );
 		},
 
 		getCartDetails: function() {
 			const data = {
-				security: wcpay_payment_request_params.nonce.payment
+				security: wcpayPaymentRequestParams.nonce.payment
 			};
 
 			$.ajax( {
 				type:    'POST',
 				data:    data,
-				url:     wcpay_payment_request.getAjaxURL( 'get_cart_details' ),
+				url:     wcpayPaymentRequest.getAjaxURL( 'get_cart_details' ),
 				success: function( response ) {
-					wcpay_payment_request.startPaymentRequest( response );
+					wcpayPaymentRequest.startPaymentRequest( response );
 				}
 			} );
 		},
@@ -45,15 +45,15 @@ jQuery( function( $ ) {
 			let chosen = 0;
 
 			select.each( function() {
-				const attribute_name = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
-				const value          = $( this ).val() || '';
+				const attributeName = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
+				const value         = $( this ).val() || '';
 
 				if ( value.length > 0 ) {
 					chosen ++;
 				}
 
 				count ++;
-				data[ attribute_name ] = value;
+				data[ attributeName ] = value;
 			});
 
 			return {
@@ -64,13 +64,13 @@ jQuery( function( $ ) {
 		},
 
 		processPaymentMethod: function( paymentMethod, paymentRequestType ) {
-			const data = wcpay_payment_request.getOrderData( paymentMethod, paymentRequestType );
+			const data = wcpayPaymentRequest.getOrderData( paymentMethod, paymentRequestType );
 
 			return $.ajax( {
 				type:    'POST',
 				data:    data,
 				dataType: 'json',
-				url:     wcpay_payment_request.getAjaxURL( 'create_order' )
+				url:     wcpayPaymentRequest.getAjaxURL( 'create_order' )
 			} );
 		},
 
@@ -84,6 +84,7 @@ jQuery( function( $ ) {
 		 * @return {Object}
 		 */
 		getOrderData: function( evt, paymentRequestType ) {
+			/* eslint-disable camelcase */
 			const paymentMethod = evt.paymentMethod;
 			const email         = paymentMethod.billing_details.email;
 			const phone         = paymentMethod.billing_details.phone;
@@ -91,7 +92,7 @@ jQuery( function( $ ) {
 			const name          = paymentMethod.billing_details.name;
 			const shipping      = evt.shippingAddress;
 			const data          = {
-				_wpnonce:                  wcpay_payment_request_params.nonce.checkout,
+				_wpnonce:                  wcpayPaymentRequestParams.nonce.checkout,
 				billing_first_name:        null !== name ? name.split( ' ' ).slice( 0, 1 ).join( ' ' ) : '',
 				billing_last_name:         null !== name ? name.split( ' ' ).slice( 1 ).join( ' ' ) : '',
 				billing_company:           '',
@@ -134,6 +135,7 @@ jQuery( function( $ ) {
 			}
 
 			return data;
+			/* eslint-enable camelcase */
 		},
 
 		/**
@@ -161,7 +163,7 @@ jQuery( function( $ ) {
 
 			$( '.woocommerce-error' ).remove();
 
-			if ( wcpay_payment_request_params.is_product_page ) {
+			if ( wcpayPaymentRequestParams.is_product_page ) {
 				const element = $( '.product' );
 
 				element.before( message );
@@ -189,7 +191,7 @@ jQuery( function( $ ) {
 		 * @param {String}          url     Order thank you page URL.
 		 */
 		completePayment: function( payment, url ) {
-			wcpay_payment_request.block();
+			wcpayPaymentRequest.block();
 
 			payment.complete( 'success' );
 
@@ -214,8 +216,9 @@ jQuery( function( $ ) {
 		 * @param {PaymentAddress} address Shipping address.
 		 */
 		updateShippingOptions: function( details, address ) {
+			/* eslint-disable camelcase */
 			const data = {
-				security:  wcpay_payment_request_params.nonce.shipping,
+				security:  wcpayPaymentRequestParams.nonce.shipping,
 				country:   address.country,
 				state:     address.region,
 				postcode:  address.postalCode,
@@ -223,13 +226,14 @@ jQuery( function( $ ) {
 				address:   typeof address.addressLine[0] === 'undefined' ? '' : address.addressLine[0],
 				address_2: typeof address.addressLine[1] === 'undefined' ? '' : address.addressLine[1],
 				payment_request_type: paymentRequestType,
-				is_product_page: wcpay_payment_request_params.is_product_page,
+				is_product_page: wcpayPaymentRequestParams.is_product_page,
 			};
+			/* eslint-enable camelcase */
 
 			return $.ajax( {
 				type:    'POST',
 				data:    data,
-				url:     wcpay_payment_request.getAjaxURL( 'get_shipping_options' )
+				url:     wcpayPaymentRequest.getAjaxURL( 'get_shipping_options' )
 			} );
 		},
 
@@ -240,17 +244,19 @@ jQuery( function( $ ) {
 		 * @param {String}   shippingOption User's preferred shipping option to use for shipping price calculations.
 		 */
 		updateShippingDetails: function( details, shippingOption ) {
+			/* eslint-disable camelcase */
 			const data = {
-				security: wcpay_payment_request_params.nonce.update_shipping,
+				security: wcpayPaymentRequestParams.nonce.update_shipping,
 				shipping_method: [ shippingOption.id ],
 				payment_request_type: paymentRequestType,
-				is_product_page: wcpay_payment_request_params.is_product_page,
+				is_product_page: wcpayPaymentRequestParams.is_product_page,
 			};
+			/* eslint-enable camelcase */
 
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url:  wcpay_payment_request.getAjaxURL( 'update_shipping_method' )
+				url:  wcpayPaymentRequest.getAjaxURL( 'update_shipping_method' )
 			} );
 		},
 
@@ -259,18 +265,19 @@ jQuery( function( $ ) {
 		 *
 		 */
 		addToCart: function() {
-			let product_id = $( '.single_add_to_cart_button' ).val();
+			let productId = $( '.single_add_to_cart_button' ).val();
 
 			// Check if product is a variable product.
 			if ( $( '.single_variation_wrap' ).length ) {
-				product_id = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
+				productId = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
 			}
 
 			const data = {
-				security: wcpay_payment_request_params.nonce.add_to_cart,
-				product_id: product_id,
+				security: wcpayPaymentRequestParams.nonce.add_to_cart,
+				// eslint-disable-next-line camelcase
+				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
-				attributes: $( '.variations_form' ).length ? wcpay_payment_request.getAttributes().data : []
+				attributes: $( '.variations_form' ).length ? wcpayPaymentRequest.getAttributes().data : []
 			};
 
 			// add addons data to the POST body
@@ -293,33 +300,33 @@ jQuery( function( $ ) {
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url:  wcpay_payment_request.getAjaxURL( 'add_to_cart' )
+				url:  wcpayPaymentRequest.getAjaxURL( 'add_to_cart' )
 			} );
 		},
 
 		clearCart: function() {
 			const data = {
-					'security': wcpay_payment_request_params.nonce.clear_cart
+					'security': wcpayPaymentRequestParams.nonce.clear_cart
 				};
 
 			return $.ajax( {
 				type:    'POST',
 				data:    data,
-				url:     wcpay_payment_request.getAjaxURL( 'clear_cart' ),
+				url:     wcpayPaymentRequest.getAjaxURL( 'clear_cart' ),
 				success: function( response ) {}
 			} );
 		},
 
 		getRequestOptionsFromLocal: function() {
 			return {
-				total: wcpay_payment_request_params.product.total,
-				currency: wcpay_payment_request_params.checkout.currency_code,
-				country: wcpay_payment_request_params.checkout.country_code,
+				total: wcpayPaymentRequestParams.product.total,
+				currency: wcpayPaymentRequestParams.checkout.currency_code,
+				country: wcpayPaymentRequestParams.checkout.country_code,
 				requestPayerName: true,
 				requestPayerEmail: true,
-				requestPayerPhone: wcpay_payment_request_params.checkout.needs_payer_phone,
-				requestShipping: wcpay_payment_request_params.product.requestShipping,
-				displayItems: wcpay_payment_request_params.product.displayItems
+				requestPayerPhone: wcpayPaymentRequestParams.checkout.needs_payer_phone,
+				requestShipping: wcpayPaymentRequestParams.product.requestShipping,
+				displayItems: wcpayPaymentRequestParams.product.displayItems
 			};
 		},
 
@@ -333,8 +340,8 @@ jQuery( function( $ ) {
 			let paymentDetails,
 				options;
 
-			if ( wcpay_payment_request_params.is_product_page ) {
-				options = wcpay_payment_request.getRequestOptionsFromLocal();
+			if ( wcpayPaymentRequestParams.is_product_page ) {
+				options = wcpayPaymentRequest.getRequestOptionsFromLocal();
 
 				paymentDetails = options;
 			} else {
@@ -344,7 +351,7 @@ jQuery( function( $ ) {
 					country: cart.order_data.country_code,
 					requestPayerName: true,
 					requestPayerEmail: true,
-					requestPayerPhone: wcpay_payment_request_params.checkout.needs_payer_phone,
+					requestPayerPhone: wcpayPaymentRequestParams.checkout.needs_payer_phone,
 					requestShipping: cart.shipping_required ? true : false,
 					displayItems: cart.order_data.displayItems
 				};
@@ -354,8 +361,8 @@ jQuery( function( $ ) {
 
 			const paymentRequest = stripe.paymentRequest( options );
 
-			const elements = stripe.elements( { locale: wcpay_payment_request_params.button.locale } );
-			const prButton = wcpay_payment_request.createPaymentRequestButton( elements, paymentRequest );
+			const elements = stripe.elements( { locale: wcpayPaymentRequestParams.button.locale } );
+			const prButton = wcpayPaymentRequest.createPaymentRequestButton( elements, paymentRequest );
 
 			// Check the availability of the Payment Request API first.
 			paymentRequest.canMakePayment().then( function( result ) {
@@ -363,19 +370,19 @@ jQuery( function( $ ) {
 					return;
 				}
 				paymentRequestType = result.applePay ? 'apple_pay' : 'payment_request_api';
-				wcpay_payment_request.attachPaymentRequestButtonEventListeners( prButton, paymentRequest );
-				wcpay_payment_request.showPaymentRequestButton( prButton );
+				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners( prButton, paymentRequest );
+				wcpayPaymentRequest.showPaymentRequestButton( prButton );
 			} );
 
 			// Possible statuses success, fail, invalid_payer_name, invalid_payer_email, invalid_payer_phone, invalid_shipping_address.
 			paymentRequest.on( 'shippingaddresschange', function( evt ) {
-				$.when( wcpay_payment_request.updateShippingOptions( paymentDetails, evt.shippingAddress ) ).then( function( response ) {
+				$.when( wcpayPaymentRequest.updateShippingOptions( paymentDetails, evt.shippingAddress ) ).then( function( response ) {
 					evt.updateWith( { status: response.result, shippingOptions: response.shipping_options, total: response.total, displayItems: response.displayItems } );
 				} );
 			} );
 
 			paymentRequest.on( 'shippingoptionchange', function( evt ) {
-				$.when( wcpay_payment_request.updateShippingDetails( paymentDetails, evt.shippingOption ) ).then( function( response ) {
+				$.when( wcpayPaymentRequest.updateShippingDetails( paymentDetails, evt.shippingOption ) ).then( function( response ) {
 					if ( 'success' === response.result ) {
 						evt.updateWith( { status: 'success', total: response.total, displayItems: response.displayItems } );
 					}
@@ -388,14 +395,14 @@ jQuery( function( $ ) {
 
 			paymentRequest.on( 'paymentmethod', function( evt ) {
 				// Check if we allow prepaid cards.
-				if ( 'no' === wcpay_payment_request_params.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
-					wcpay_payment_request.abortPayment( evt, wcpay_payment_request.getErrorMessageHTML( wcpay_payment_request_params.i18n.no_prepaid_card ) );
+				if ( 'no' === wcpayPaymentRequestParams.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
+					wcpayPaymentRequest.abortPayment( evt, wcpayPaymentRequest.getErrorMessageHTML( wcpayPaymentRequestParams.i18n.no_prepaid_card ) );
 				} else {
-					$.when( wcpay_payment_request.processPaymentMethod( evt, paymentRequestType ) ).then( function( response ) {
+					$.when( wcpayPaymentRequest.processPaymentMethod( evt, paymentRequestType ) ).then( function( response ) {
 						if ( 'success' === response.result ) {
-							wcpay_payment_request.completePayment( evt, response.redirect );
+							wcpayPaymentRequest.completePayment( evt, response.redirect );
 						} else {
-							wcpay_payment_request.abortPayment( evt, response.messages );
+							wcpayPaymentRequest.abortPayment( evt, response.messages );
 						}
 					} );
 				}
@@ -403,28 +410,30 @@ jQuery( function( $ ) {
 		},
 
 		getSelectedProductData: function() {
-			let product_id = $( '.single_add_to_cart_button' ).val();
+			let productId = $( '.single_add_to_cart_button' ).val();
 
 			// Check if product is a variable product.
 			if ( $( '.single_variation_wrap' ).length ) {
-				product_id = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
+				productId = $( '.single_variation_wrap' ).find( 'input[name="product_id"]' ).val();
 			}
 
 			const addons = $( '#product-addons-total' ).data('price_data') || [];
-			const addon_value = addons.reduce( function ( sum, addon ) { return sum + addon.cost; }, 0 );
+			const addonValue = addons.reduce( function ( sum, addon ) { return sum + addon.cost; }, 0 );
 
 			const data = {
-				security: wcpay_payment_request_params.nonce.get_selected_product_data,
-				product_id: product_id,
+				security: wcpayPaymentRequestParams.nonce.get_selected_product_data,
+				// eslint-disable-next-line camelcase
+				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
-				attributes: $( '.variations_form' ).length ? wcpay_payment_request.getAttributes().data : [],
-				addon_value: addon_value,
+				attributes: $( '.variations_form' ).length ? wcpayPaymentRequest.getAttributes().data : [],
+				// eslint-disable-next-line camelcase
+				addon_value: addonValue,
 			};
 
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url:  wcpay_payment_request.getAjaxURL( 'get_selected_product_data' )
+				url:  wcpayPaymentRequest.getAjaxURL( 'get_selected_product_data' )
 			} );
 		},
 
@@ -466,8 +475,8 @@ jQuery( function( $ ) {
 		 */
 		createPaymentRequestButton: function( elements, paymentRequest ) {
 			let button;
-			if ( wcpay_payment_request_params.button.is_custom ) {
-				button = $( wcpay_payment_request_params.button.css_selector );
+			if ( wcpayPaymentRequestParams.button.is_custom ) {
+				button = $( wcpayPaymentRequestParams.button.css_selector );
 				if ( button.length ) {
 					// We fallback to default paymentRequest button if no custom button is found in the UI.
 					// Add flag to be sure that created button is custom button rather than fallback element.
@@ -476,9 +485,9 @@ jQuery( function( $ ) {
 				}
 			}
 
-			if ( wcpay_payment_request_params.button.is_branded ) {
-				if ( wcpay_payment_request.shouldUseGooglePayBrand() ) {
-					button = wcpay_payment_request.createGooglePayButton();
+			if ( wcpayPaymentRequestParams.button.is_branded ) {
+				if ( wcpayPaymentRequest.shouldUseGooglePayBrand() ) {
+					button = wcpayPaymentRequest.createGooglePayButton();
 					// Add flag to be sure that created button is branded rather than fallback element.
 					button.data( 'isBranded', true );
 					return button;
@@ -486,7 +495,7 @@ jQuery( function( $ ) {
 					// Not implemented branded buttons default to Stripe's button
 					// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
 					// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
-					wcpay_payment_request_params.button.type = 'long' === wcpay_payment_request_params.button.branded_type ? 'buy' : 'default';
+					wcpayPaymentRequestParams.button.type = 'long' === wcpayPaymentRequestParams.button.branded_type ? 'buy' : 'default';
 				}
 			}
 
@@ -494,9 +503,9 @@ jQuery( function( $ ) {
 				paymentRequest: paymentRequest,
 				style: {
 					paymentRequestButton: {
-						type: wcpay_payment_request_params.button.type,
-						theme: wcpay_payment_request_params.button.theme,
-						height: wcpay_payment_request_params.button.height + 'px',
+						type: wcpayPaymentRequestParams.button.type,
+						theme: wcpayPaymentRequestParams.button.theme,
+						height: wcpayPaymentRequestParams.button.height + 'px',
 					},
 				},
 			} );
@@ -529,10 +538,10 @@ jQuery( function( $ ) {
 			const allowedThemes = [ 'dark', 'light' ];
 			const allowedTypes = [ 'short', 'long' ];
 
-			let theme    = wcpay_payment_request_params.button.theme;
-			let type     = wcpay_payment_request_params.button.branded_type;
-			const locale = wcpay_payment_request_params.button.locale;
-			const height = wcpay_payment_request_params.button.height;
+			let theme    = wcpayPaymentRequestParams.button.theme;
+			let type     = wcpayPaymentRequestParams.button.branded_type;
+			const locale = wcpayPaymentRequestParams.button.locale;
+			const height = wcpayPaymentRequestParams.button.height;
 			theme = allowedThemes.includes( theme ) ? theme : 'light';
 			type = allowedTypes.includes( type ) ? type : 'long';
 
@@ -550,10 +559,10 @@ jQuery( function( $ ) {
 		},
 
 		attachPaymentRequestButtonEventListeners: function( prButton, paymentRequest ) {
-			if ( wcpay_payment_request_params.is_product_page ) {
-				wcpay_payment_request.attachProductPageEventListeners( prButton, paymentRequest );
+			if ( wcpayPaymentRequestParams.is_product_page ) {
+				wcpayPaymentRequest.attachProductPageEventListeners( prButton, paymentRequest );
 			} else {
-				wcpay_payment_request.attachCartPageEventListeners( prButton, paymentRequest );
+				wcpayPaymentRequest.attachCartPageEventListeners( prButton, paymentRequest );
 			}
 		},
 
@@ -566,8 +575,10 @@ jQuery( function( $ ) {
 				if ( addToCartButton.is( '.disabled' ) ) {
 					evt.preventDefault(); // Prevent showing payment request modal.
 					if ( addToCartButton.is( '.wc-variation-is-unavailable' ) ) {
+						// eslint-disable-next-line camelcase
 						window.alert( wc_add_to_cart_variation_params.i18n_unavailable_text );
 					} else if ( addToCartButton.is( '.wc-variation-selection-needed' ) ) {
+						// eslint-disable-next-line camelcase
 						window.alert( wc_add_to_cart_variation_params.i18n_make_a_selection_text );
 					}
 					return;
@@ -579,25 +590,25 @@ jQuery( function( $ ) {
 					return;
 				}
 
-				wcpay_payment_request.addToCart();
+				wcpayPaymentRequest.addToCart();
 
-				if ( wcpay_payment_request.isCustomPaymentRequestButton( prButton ) || wcpay_payment_request.isBrandedPaymentRequestButton( prButton ) ) {
+				if ( wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) || wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton ) ) {
 					evt.preventDefault();
 					paymentRequest.show();
 				}
 			});
 
 			$( document.body ).on( 'woocommerce_variation_has_changed', function () {
-				wcpay_payment_request.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
 
-				$.when( wcpay_payment_request.getSelectedProductData() ).then( function ( response ) {
+				$.when( wcpayPaymentRequest.getSelectedProductData() ).then( function ( response ) {
 					$.when(
 						paymentRequest.update( {
 							total: response.total,
 							displayItems: response.displayItems,
 						} )
 					).then( function () {
-						wcpay_payment_request.unblockPaymentRequestButton( prButton );
+						wcpayPaymentRequest.unblockPaymentRequestButton( prButton );
 					} );
 				});
 			} );
@@ -605,17 +616,17 @@ jQuery( function( $ ) {
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 			// when the customer clicks on the button before the debounced event is processed.
 			$( '.quantity' ).on( 'input', '.qty', function() {
-				wcpay_payment_request.blockPaymentRequestButton( prButton );
+				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
 			} );
 
-			$( '.quantity' ).on( 'input', '.qty', wcpay_payment_request.debounce( 250, function() {
-				wcpay_payment_request.blockPaymentRequestButton( prButton );
+			$( '.quantity' ).on( 'input', '.qty', wcpayPaymentRequest.debounce( 250, function() {
+				wcpayPaymentRequest.blockPaymentRequestButton( prButton );
 				paymentRequestError = [];
 
-				$.when( wcpay_payment_request.getSelectedProductData() ).then( function ( response ) {
+				$.when( wcpayPaymentRequest.getSelectedProductData() ).then( function ( response ) {
 					if ( response.error ) {
 						paymentRequestError = [ response.error ];
-						wcpay_payment_request.unblockPaymentRequestButton( prButton );
+						wcpayPaymentRequest.unblockPaymentRequestButton( prButton );
 					} else {
 						$.when(
 							paymentRequest.update( {
@@ -623,7 +634,7 @@ jQuery( function( $ ) {
 								displayItems: response.displayItems,
 							} )
 						).then( function () {
-							wcpay_payment_request.unblockPaymentRequestButton( prButton );
+							wcpayPaymentRequest.unblockPaymentRequestButton( prButton );
 						});
 					}
 				} );
@@ -631,8 +642,8 @@ jQuery( function( $ ) {
 		},
 
 		attachCartPageEventListeners: function ( prButton, paymentRequest ) {
-			if ( ( ! wcpay_payment_request_params.button.is_custom || ! wcpay_payment_request.isCustomPaymentRequestButton( prButton ) ) &&
-				( ! wcpay_payment_request_params.button.is_branded || ! wcpay_payment_request.isBrandedPaymentRequestButton( prButton ) ) ) {
+			if ( ( ! wcpayPaymentRequestParams.button.is_custom || ! wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) ) &&
+				( ! wcpayPaymentRequestParams.button.is_branded || ! wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton ) ) ) {
 				return;
 			}
 
@@ -643,10 +654,10 @@ jQuery( function( $ ) {
 		},
 
 		showPaymentRequestButton: function( prButton ) {
-			if ( wcpay_payment_request.isCustomPaymentRequestButton( prButton ) ) {
+			if ( wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.addClass( 'is-active' );
 				$( '#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator' ).show();
-			} else if ( wcpay_payment_request.isBrandedPaymentRequestButton( prButton ) ) {
+			} else if ( wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton ) ) {
 				$( '#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator' ).show();
 				$( '#wcpay-payment-request-button' ).html( prButton );
 			} else if ( $( '#wcpay-payment-request-button' ).length ) {
@@ -663,14 +674,14 @@ jQuery( function( $ ) {
 			}
 
 			$( '#wcpay-payment-request-button' ).block( { message: null } );
-			if ( wcpay_payment_request.isCustomPaymentRequestButton( prButton ) ) {
+			if ( wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.addClass( 'is-blocked' );
 			}
 		},
 
 		unblockPaymentRequestButton: function( prButton ) {
 			$( '#wcpay-payment-request-button' ).unblock();
-			if ( wcpay_payment_request.isCustomPaymentRequestButton( prButton ) ) {
+			if ( wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) ) {
 				prButton.removeClass( 'is-blocked' );
 			}
 		},
@@ -682,25 +693,25 @@ jQuery( function( $ ) {
 		 * @version 4.0.0
 		 */
 		init: function() {
-			if ( wcpay_payment_request_params.is_product_page ) {
-				wcpay_payment_request.startPaymentRequest( '' );
+			if ( wcpayPaymentRequestParams.is_product_page ) {
+				wcpayPaymentRequest.startPaymentRequest( '' );
 			} else {
-				wcpay_payment_request.getCartDetails();
+				wcpayPaymentRequest.getCartDetails();
 			}
 
 		},
 	};
 
-	wcpay_payment_request.init();
+	wcpayPaymentRequest.init();
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', function() {
-		wcpay_payment_request.init();
+		wcpayPaymentRequest.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', function() {
-		wcpay_payment_request.init();
+		wcpayPaymentRequest.init();
 	} );
 
 	function setBackgroundImageWithFallback( element, background, fallback ) {
