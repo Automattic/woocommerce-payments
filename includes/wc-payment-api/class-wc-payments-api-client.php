@@ -800,6 +800,31 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Records a new Terms of Service agreement.
+	 *
+	 * @param string $source     A string, which describes where the merchant agreed to the terms.
+	 * @param string $user_name  The user_login of the current user.
+	 * @param string $user_ip    IP address of the current user.
+	 * @param string $user_agent User agent string for the current user.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function add_tos_agreement( $source, $user_name, $user_ip, $user_agent ) {
+		return $this->request(
+			[
+				'source'     => $source,
+				'user_name'  => $user_name,
+				'user_ip'    => $user_ip,
+				'user_agent' => $user_agent,
+			],
+			self::ACCOUNTS_API . '/tos_agreements',
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

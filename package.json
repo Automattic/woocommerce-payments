@@ -67,6 +67,7 @@
     "@stripe/react-stripe-js": "^1.1.2",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
+    "interpolate-components": "^1.1.1",
     "lodash": "^4.17.14",
     "wordpress-element": "npm:@wordpress/element@2.11.0"
   },

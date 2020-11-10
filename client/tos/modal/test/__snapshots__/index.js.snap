@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToS modal should render ToS modal 1`] = `
+<div
+  aria-labelledby="components-modal-header-0"
+  class="components-modal__frame woocommerce-payments__tos-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    tabindex="0"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-0"
+        >
+          WooCommerce Payments: Terms of Service
+        </h1>
+      </div>
+    </div>
+    <div
+      class="woocommerce-payments__tos-wrapper"
+    >
+      <div
+        class="woocommerce-payments__tos-modal-message"
+      >
+        To continue using WooCommerce Payments, please review and agree to our 
+        <a
+          data-link-type="external"
+          href="https://wordpress.com/tos"
+          target="_blank"
+        >
+          Terms of Service
+        </a>
+        . By clicking “Accept” you agree to the Terms of Service.
+      </div>
+      <div
+        class="woocommerce-payments__tos-footer"
+      >
+        <button
+          class="components-button is-tertiary"
+          type="button"
+        >
+          Decline
+        </button>
+        <button
+          class="components-button is-button is-primary"
+          type="button"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ToS modal should render disable plugin modal on decline 1`] = `
+<div
+  aria-labelledby="components-modal-header-3"
+  class="components-modal__frame woocommerce-payments__tos-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    tabindex="0"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-3"
+        >
+          Disable WooCommerce Payments
+        </h1>
+      </div>
+    </div>
+    <div
+      class="woocommerce-payments__tos-wrapper"
+    >
+      <div
+        class="woocommerce-payments__tos-modal-message"
+      >
+        By declining our 
+        <a
+          data-link-type="external"
+          href="https://wordpress.com/tos"
+          target="_blank"
+        >
+          Terms of Service
+        </a>
+        , you’ll no longer be able to capture credit card payments using WooCommerce Payments. Your previous transaction and deposit data will still be available.
+      </div>
+      <div
+        class="woocommerce-payments__tos-footer"
+      >
+        <button
+          class="components-button is-tertiary"
+          type="button"
+        >
+          Back
+        </button>
+        <button
+          class="components-button is-button is-primary"
+          type="button"
+        >
+          Disable
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
