@@ -15,12 +15,10 @@
  * @package WooCommerce\Payments
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
-define( 'WCPAY_ABSPATH', dirname( WCPAY_PLUGIN_FILE ) . '/' );
+define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
@@ -28,7 +26,7 @@ require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 /**
  * Plugin activation hook.
  */
-function wcpay_activate() {
+function wcpay_activated() {
 	// Do not take any action if activated in a REST request (via wc-admin).
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		return;
@@ -44,7 +42,16 @@ function wcpay_activate() {
 	}
 }
 
-register_activation_hook( __FILE__, 'wcpay_activate' );
+/**
+ * Plugin deactivation hook.
+ */
+function wcpay_deactivated() {
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	WC_Payments::remove_woo_admin_notes();
+}
+
+register_activation_hook( __FILE__, 'wcpay_activated' );
+register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
 
 /**
  * Initialize the Jetpack connection functionality.
@@ -89,7 +96,7 @@ add_action( 'plugins_loaded', 'wcpay_init', 11 );
  * @return bool True if the plugin can keep initializing itself, false otherwise.
  */
 function wcpay_check_old_jetpack_version() {
-	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) ) {
+	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) && JETPACK__VERSION !== 'wpcom' ) {
 		add_filter( 'admin_notices', 'wcpay_show_old_jetpack_notice' );
 		// Prevent the rest of the plugin from initializing.
 		remove_action( 'plugins_loaded', 'wcpay_init', 11 );

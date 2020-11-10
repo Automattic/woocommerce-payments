@@ -64,8 +64,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_account_data',
 					'is_server_connected',
 					'capture_intention',
+					'cancel_intention',
 					'get_intent',
-					'create_setup_intent',
+					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
 				]
@@ -345,7 +346,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -370,6 +371,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		)[0];
 
 		$this->assertContains( 'failed', $note->content );
+		$this->assertContains( 'test exception', $note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
 		$this->assertEquals( $order->get_status(), 'on-hold' );
@@ -387,7 +389,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
+			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue(
@@ -416,12 +418,90 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( $order->get_status(), 'cancelled' );
 	}
 
+	public function test_cancel_authorization_handles_api_exception_when_canceling() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_status( 'on-hold' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'cancel_intention' )
+			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					1500,
+					new DateTime(),
+					'canceled',
+					$charge_id,
+					'...'
+				)
+			);
+
+		$this->wcpay_gateway->cancel_authorization( $order );
+
+		$note = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		)[0];
+
+		$this->assertContains( 'cancelled', $note->content );
+		$this->assertEquals( $order->get_status(), 'cancelled' );
+	}
+
+	public function test_cancel_authorization_handles_all_api_exceptions() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_status( 'on-hold' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'cancel_intention' )
+			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->will( $this->throwException( new API_Exception( 'ignore this', 'test', 123 ) ) );
+
+		$this->wcpay_gateway->cancel_authorization( $order );
+
+		$note = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		)[0];
+
+		$this->assertContains( 'failed', $note->content );
+		$this->assertContains( 'test exception', $note->content );
+		$this->assertEquals( $order->get_status(), 'on-hold' );
+	}
+
 	public function test_add_payment_method_no_method() {
 		$result = $this->wcpay_gateway->add_payment_method();
 		$this->assertEquals( 'error', $result['result'] );
 	}
 
-	public function test_create_setup_intent_existing_customer() {
+	public function test_create_and_confirm_setup_intent_existing_customer() {
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_customer_service
@@ -435,16 +515,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( 'pm_mock', 'cus_12345' )
 			->willReturn( [ 'id' => 'pm_mock' ] );
 
-		$result = $this->wcpay_gateway->create_setup_intent();
+		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
 		$this->assertEquals( 'pm_mock', $result['id'] );
 	}
 
-	public function test_create_setup_intent_no_customer() {
+	public function test_create_and_confirm_setup_intent_no_customer() {
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_customer_service
@@ -459,11 +539,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
+			->method( 'create_and_confirm_setup_intent' )
 			->with( 'pm_mock', 'cus_12345' )
 			->willReturn( [ 'id' => 'pm_mock' ] );
 
-		$result = $this->wcpay_gateway->create_setup_intent();
+		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
 		$this->assertEquals( 'pm_mock', $result['id'] );
 	}

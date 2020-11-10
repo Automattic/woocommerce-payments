@@ -22,6 +22,8 @@ class WC_Payments_API_Client {
 	const POST = 'POST';
 	const GET  = 'GET';
 
+	const API_TIMEOUT_SECONDS = 70;
+
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
 	const CUSTOMERS_API       = 'customers';
@@ -257,16 +259,15 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
-	 * @param bool   $confirm                - Flag to confirm the intent on creation if true.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_setup_intent( $payment_method_id, $customer_id, $confirm = 'false' ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
-			'confirm'        => $confirm,
+			'confirm'        => 'true',
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -884,6 +885,7 @@ class WC_Payments_API_Client {
 				'url'     => $url,
 				'method'  => $method,
 				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific

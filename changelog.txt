@@ -3,6 +3,14 @@
 = 1.7.0 - 2020-xx-xx =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.
+* Fix - Render dispute evidence file upload errors.
+* Fix - Increase timeout for calls to the API server.
+* Fix - Correctly display the fee and net amounts for a charge with an inquiry.
+* Fix - Catch unhandled exceptions when cancelling a payment authorization.
+* Add - Security.md with security and vulnerability reporting guidelines.
+* Add - Introduced "Set up refund policy" notification in WooCommerce inbox.
+* Fix - Fix error when retrying to save a card in the Add Payment Method screen after failing SCA authentication.
+* Add - Allow signing up for a subscription with free trial with a credit card that requires SCA authentication.
 
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.

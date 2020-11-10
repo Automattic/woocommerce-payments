@@ -201,6 +201,13 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token = new WC_Payment_Token_CC();
 		$token->set_gateway_id( 'woocommerce_payments' );
 		$token->set_token( 'pm_mock0' );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_expiry_month( 1 );
+		$token->set_expiry_year( 2023 );
+		$token->set_user_id( 1 );
+		$token->set_default( true );
+		$token->save();
 
 		$tokens = [ $token ];
 

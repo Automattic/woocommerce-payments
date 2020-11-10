@@ -91,7 +91,7 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id || ! is_user_logged_in() ) {
+		if ( ( ! empty( $gateway_id ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -104,19 +104,30 @@ class WC_Payments_Token_Service {
 		$stored_tokens = [];
 
 		foreach ( $tokens as $token ) {
-			$stored_tokens[] = $token->get_token();
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+				$stored_tokens[ $token->get_token() ] = $token;
+			}
 		}
 
 		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
 
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
-				if ( ! in_array( $payment_method['id'], $stored_tokens, true ) ) {
+				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
 					$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 					$tokens[ $token->get_id() ] = $token;
+				} else {
+					unset( $stored_tokens[ $payment_method['id'] ] );
 				}
 			}
 		}
+
+		// Remove the payment methods that no longer exist in Stripe's side.
+		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		foreach ( $stored_tokens as $token ) {
+			$token->delete();
+		}
+		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
 		return $tokens;
 	}

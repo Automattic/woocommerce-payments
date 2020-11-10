@@ -333,6 +333,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'Content-Type' => 'application/json; charset=utf-8',
 						'User-Agent'   => 'Unit Test Agent/0.1.0',
 					],
+					'timeout' => 70,
 				],
 				wp_json_encode(
 					[
