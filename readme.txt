@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced "Set up refund policy" notification in WooCommerce inbox.
 * Fix - Fix error when retrying to save a card in the Add Payment Method screen after failing SCA authentication.
 * Add - Allow signing up for a subscription with free trial with a credit card that requires SCA authentication.
+* Fix - Fix crash when a user has 10 or more saved credit cards.
 
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.
