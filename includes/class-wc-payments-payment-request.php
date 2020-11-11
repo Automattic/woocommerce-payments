@@ -438,7 +438,7 @@ class WC_Payments_Payment_Request {
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
-			if ( ! in_array( $_product->get_type(), $this->supported_product_types() ) ) {
+			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
 				return false;
 			}
 
@@ -649,7 +649,7 @@ class WC_Payments_Payment_Request {
 			return false;
 		}
 
-		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types() ) ) {
+		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
 			return false;
 		}
 
@@ -1034,6 +1034,8 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function normalize_state() {
+		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
+
 		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( wp_unslash( $_POST['billing_country'] ) ) : '';
 		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( wp_unslash( $_POST['shipping_country'] ) ) : '';
 		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
