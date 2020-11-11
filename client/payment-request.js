@@ -1,7 +1,5 @@
-/* global wcpayPaymentRequestParams, Stripe */
+/* global wcpayPaymentRequestParams, Stripe, jQuery, wc_add_to_cart_variation_params */
 jQuery( function( $ ) {
-	'use strict';
-
 	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
 		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
 	} );
@@ -63,8 +61,8 @@ jQuery( function( $ ) {
 			};
 		},
 
-		processPaymentMethod: function( paymentMethod, paymentRequestType ) {
-			const data = wcpayPaymentRequest.getOrderData( paymentMethod, paymentRequestType );
+		processPaymentMethod: function( paymentMethod ) {
+			const data = wcpayPaymentRequest.getOrderData( paymentMethod );
 
 			return $.ajax( {
 				type:    'POST',
@@ -80,11 +78,10 @@ jQuery( function( $ ) {
 		 * @since 3.1.0
 		 * @version 4.0.0
 		 * @param {Object} evt Event.
-		 * @param {PaymentResponse} paymentRequestType Payment Response instance.
 		 *
 		 * @return {Object} Order data.
 		 */
-		getOrderData: function( evt, paymentRequestType ) {
+		getOrderData: function( evt ) {
 			/* eslint-disable camelcase */
 			const paymentMethod = evt.paymentMethod;
 			const email         = paymentMethod.billing_details.email;
@@ -120,7 +117,7 @@ jQuery( function( $ ) {
 				ship_to_different_address: 1,
 				terms:                     1,
 				'wcpay-payment-method':    paymentMethod.id,
-				payment_request_type:      paymentRequestType
+				payment_request_type:      paymentRequestType,
 			};
 
 			if ( shipping ) {
@@ -317,7 +314,7 @@ jQuery( function( $ ) {
 				type:    'POST',
 				data:    data,
 				url:     wcpayPaymentRequest.getAjaxURL( 'clear_cart' ),
-				success: function( response ) {}
+				success: function() {}
 			} );
 		},
 
@@ -383,7 +380,12 @@ jQuery( function( $ ) {
 			// Possible statuses success, fail, invalid_payer_name, invalid_payer_email, invalid_payer_phone, invalid_shipping_address.
 			paymentRequest.on( 'shippingaddresschange', function( evt ) {
 				$.when( wcpayPaymentRequest.updateShippingOptions( paymentDetails, evt.shippingAddress ) ).then( function( response ) {
-					evt.updateWith( { status: response.result, shippingOptions: response.shipping_options, total: response.total, displayItems: response.displayItems } );
+					evt.updateWith( {
+						status: response.result,
+						shippingOptions: response.shipping_options,
+						total: response.total,
+						displayItems: response.displayItems,
+					} );
 				} );
 			} );
 
@@ -402,9 +404,12 @@ jQuery( function( $ ) {
 			paymentRequest.on( 'paymentmethod', function( evt ) {
 				// Check if we allow prepaid cards.
 				if ( 'no' === wcpayPaymentRequestParams.stripe.allow_prepaid_card && 'prepaid' === evt.source.card.funding ) {
-					wcpayPaymentRequest.abortPayment( evt, wcpayPaymentRequest.getErrorMessageHTML( wcpayPaymentRequestParams.i18n.no_prepaid_card ) );
+					wcpayPaymentRequest.abortPayment(
+						evt,
+						wcpayPaymentRequest.getErrorMessageHTML( wcpayPaymentRequestParams.i18n.no_prepaid_card )
+					);
 				} else {
-					$.when( wcpayPaymentRequest.processPaymentMethod( evt, paymentRequestType ) ).then( function( response ) {
+					$.when( wcpayPaymentRequest.processPaymentMethod( evt ) ).then( function( response ) {
 						if ( 'success' === response.result ) {
 							wcpayPaymentRequest.completePayment( evt, response.redirect );
 						} else {
@@ -497,12 +502,12 @@ jQuery( function( $ ) {
 					// Add flag to be sure that created button is branded rather than fallback element.
 					button.data( 'isBranded', true );
 					return button;
-				} else {
-					// Not implemented branded buttons default to Stripe's button
-					// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
-					// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
-					wcpayPaymentRequestParams.button.type = 'long' === wcpayPaymentRequestParams.button.branded_type ? 'buy' : 'default';
 				}
+
+				// Not implemented branded buttons default to Stripe's button
+				// Apple Pay buttons can also fall back to Stripe's button, as it's already branded
+				// Set button type to default or buy, depending on branded type, to avoid issues with Stripe
+				wcpayPaymentRequestParams.button.type = 'long' === wcpayPaymentRequestParams.button.branded_type ? 'buy' : 'default';
 			}
 
 			return elements.create( 'paymentRequestButton', {
@@ -598,7 +603,10 @@ jQuery( function( $ ) {
 
 				wcpayPaymentRequest.addToCart();
 
-				if ( wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) || wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton ) ) {
+				if (
+					wcpayPaymentRequest.isCustomPaymentRequestButton( prButton ) ||
+					wcpayPaymentRequest.isBrandedPaymentRequestButton( prButton )
+				) {
 					evt.preventDefault();
 					paymentRequest.show();
 				}
