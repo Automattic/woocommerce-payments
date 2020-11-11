@@ -490,14 +490,14 @@ class WC_Payments_Payment_Request {
 				'allow_prepaid_card' => apply_filters( 'wc_stripe_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
 			'nonce'           => [
-				'payment'                   => wp_create_nonce( 'wc-stripe-payment-request' ),
-				'shipping'                  => wp_create_nonce( 'wc-stripe-payment-request-shipping' ),
-				'update_shipping'           => wp_create_nonce( 'wc-stripe-update-shipping-method' ),
+				'payment'                   => wp_create_nonce( 'wcpay-payment-request' ),
+				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
+				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
-				'add_to_cart'               => wp_create_nonce( 'wc-stripe-add-to-cart' ),
-				'get_selected_product_data' => wp_create_nonce( 'wc-stripe-get-selected-product-data' ),
-				'log_errors'                => wp_create_nonce( 'wc-stripe-log-errors' ),
-				'clear_cart'                => wp_create_nonce( 'wc-stripe-clear-cart' ),
+				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'log_errors'                => wp_create_nonce( 'wcpay-log-errors' ),
+				'clear_cart'                => wp_create_nonce( 'wcpay-clear-cart' ),
 			],
 			'i18n'            => [
 				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-payments' ),
@@ -684,7 +684,7 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function ajax_log_errors() {
-		check_ajax_referer( 'wc-stripe-log-errors', 'security' );
+		check_ajax_referer( 'wcpay-log-errors', 'security' );
 
 		if ( empty( $_POST['errors'] ) ) {
 			exit;
@@ -704,7 +704,7 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function ajax_clear_cart() {
-		check_ajax_referer( 'wc-stripe-clear-cart', 'security' );
+		check_ajax_referer( 'wcpay-clear-cart', 'security' );
 
 		WC()->cart->empty_cart();
 		exit;
@@ -714,7 +714,7 @@ class WC_Payments_Payment_Request {
 	 * Get cart details.
 	 */
 	public function ajax_get_cart_details() {
-		check_ajax_referer( 'wc-stripe-payment-request', 'security' );
+		check_ajax_referer( 'wcpay-payment-request', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
@@ -746,7 +746,7 @@ class WC_Payments_Payment_Request {
 	 * @see WC_Shipping::get_packages().
 	 */
 	public function ajax_get_shipping_options() {
-		check_ajax_referer( 'wc-stripe-payment-request-shipping', 'security' );
+		check_ajax_referer( 'wcpay-payment-request-shipping', 'security' );
 
 		$shipping_address          = filter_input_array(
 			INPUT_POST,
@@ -845,7 +845,7 @@ class WC_Payments_Payment_Request {
 	 * Update shipping method.
 	 */
 	public function ajax_update_shipping_method() {
-		check_ajax_referer( 'wc-stripe-update-shipping-method', 'security' );
+		check_ajax_referer( 'wcpay-update-shipping-method', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
@@ -892,7 +892,7 @@ class WC_Payments_Payment_Request {
 	 * @throws Exception If product or stock is unavailable - caught inside function.
 	 */
 	public function ajax_get_selected_product_data() {
-		check_ajax_referer( 'wc-stripe-get-selected-product-data', 'security' );
+		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
 
 		try {
 			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
@@ -986,7 +986,7 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function ajax_add_to_cart() {
-		check_ajax_referer( 'wc-stripe-add-to-cart', 'security' );
+		check_ajax_referer( 'wcpay-add-to-cart', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
