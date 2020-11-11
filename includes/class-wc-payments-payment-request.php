@@ -20,14 +20,14 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gateway settings.
 	 *
-	 * @var
+	 * @var array
 	 */
 	public $gateway_settings;
 
 	/**
 	 * Total label
 	 *
-	 * @var
+	 * @var string
 	 */
 	public $total_label;
 
@@ -41,7 +41,7 @@ class WC_Payments_Payment_Request {
 	/**
 	 * This Instance.
 	 *
-	 * @var
+	 * @var WC_Payments_Payment_Request
 	 */
 	private static $_this;
 
@@ -57,6 +57,8 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @since   3.0.0
 	 * @version 4.0.0
+	 *
+	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
@@ -308,6 +310,9 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Filters the gateway title to reflect Payment Request type
+	 *
+	 * @param string $title Gateway title.
+	 * @param string $id    Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
 		global $post;
@@ -335,6 +340,11 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @since   3.1.4
 	 * @version 4.0.0
+	 *
+	 * @param bool   $valid Whether postal code is valid.
+	 * @param string $postcode Postal code.
+	 * @param string $country Country.
+	 * @return bool Whether postal code is valid.
 	 */
 	public function postal_code_validation( $valid, $postcode, $country ) {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -343,7 +353,7 @@ class WC_Payments_Payment_Request {
 			return $valid;
 		}
 
-		$payment_request_type = isset( $_POST['payment_request_type'] ) ? wc_clean( $_POST['payment_request_type'] ) : '';
+		$payment_request_type = isset( $_POST['payment_request_type'] ) ? wc_clean( wp_unslash( $_POST['payment_request_type'] ) ) : '';
 
 		if ( 'apple_pay' !== $payment_request_type ) {
 			return $valid;
@@ -379,7 +389,7 @@ class WC_Payments_Payment_Request {
 
 		$order = wc_get_order( $order_id );
 
-		$payment_request_type = wc_clean( $_POST['payment_request_type'] );
+		$payment_request_type = wc_clean( wp_unslash( $_POST['payment_request_type'] ) );
 
 		if ( 'apple_pay' === $payment_request_type ) {
 			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
@@ -432,7 +442,7 @@ class WC_Payments_Payment_Request {
 				return false;
 			}
 
-			// Trial subscriptions with shipping are not supported
+			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Order' ) && WC_Subscriptions_Cart::cart_contains_subscription() && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
@@ -564,7 +574,8 @@ class WC_Payments_Payment_Request {
 					$label      = esc_html( $this->get_button_label() );
 					$class_name = esc_attr( 'button ' . $this->get_button_theme() );
 					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
-					echo "<button id=\"wcpay-custom-button\" class=\"$class_name\" style=\"$style\"> $label </button>";
+					$html       = "<button id=\"wcpay-custom-button\" class=\"$class_name\" style=\"$style\"> $label </button>";
+					echo esc_html( $html );
 				}
 				?>
 				<!-- A Stripe Element will be inserted here. -->
@@ -642,7 +653,7 @@ class WC_Payments_Payment_Request {
 			return false;
 		}
 
-		// Trial subscriptions with shipping are not supported
+		// Trial subscriptions with shipping are not supported.
 		if ( class_exists( 'WC_Subscriptions_Order' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
 			return false;
 		}
@@ -653,7 +664,7 @@ class WC_Payments_Payment_Request {
 			return false;
 		}
 
-		// File upload addon not supported
+		// File upload addon not supported.
 		if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
 			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
 			foreach ( $product_addons as $addon ) {
@@ -675,7 +686,11 @@ class WC_Payments_Payment_Request {
 	public function ajax_log_errors() {
 		check_ajax_referer( 'wc-stripe-log-errors', 'security' );
 
-		$errors = wc_clean( stripslashes( $_POST['errors'] ) );
+		if ( empty( $_POST['errors'] ) ) {
+			exit;
+		}
+
+		$errors = wc_clean( wp_unslash( $_POST['errors'] ) );
 
 		Logger::log( $errors );
 
@@ -873,19 +888,21 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @since   4.0.0
 	 * @version 4.0.0
-	 * @return  array $data
+	 *
+	 * @throws Exception If product or stock is unavailable - caught inside function.
 	 */
 	public function ajax_get_selected_product_data() {
 		check_ajax_referer( 'wc-stripe-get-selected-product-data', 'security' );
 
 		try {
-			$product_id   = absint( $_POST['product_id'] );
+			$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 			$qty          = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
 			$addon_value  = isset( $_POST['addon_value'] ) ? max( floatval( $_POST['addon_value'] ), 0 ) : 0;
 			$product      = wc_get_product( $product_id );
 			$variation_id = null;
 
 			if ( ! is_a( $product, 'WC_Product' ) ) {
+				/* translators: product ID */
 				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
 			}
 
@@ -967,7 +984,6 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @since   4.0.0
 	 * @version 4.0.0
-	 * @return  array $data
 	 */
 	public function ajax_add_to_cart() {
 		check_ajax_referer( 'wc-stripe-add-to-cart', 'security' );
@@ -978,7 +994,7 @@ class WC_Payments_Payment_Request {
 
 		WC()->shipping->reset_shipping();
 
-		$product_id   = absint( $_POST['product_id'] );
+		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
 		$qty          = ! isset( $_POST['qty'] ) ? 1 : absint( $_POST['qty'] );
 		$product      = wc_get_product( $product_id );
 		$product_type = $product->get_type();
@@ -1018,16 +1034,16 @@ class WC_Payments_Payment_Request {
 	 * @version 4.0.0
 	 */
 	public function normalize_state() {
-		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( $_POST['billing_country'] ) : '';
-		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( $_POST['shipping_country'] ) : '';
-		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( $_POST['billing_state'] ) : '';
-		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( $_POST['shipping_state'] ) : '';
+		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( wp_unslash( $_POST['billing_country'] ) ) : '';
+		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( wp_unslash( $_POST['shipping_country'] ) ) : '';
+		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
+		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
 
 		if ( $billing_state && $billing_country ) {
 			$valid_states = WC()->countries->get_states( $billing_country );
 
 			// Valid states found for country.
-			if ( ! empty( $valid_states ) && is_array( $valid_states ) && sizeof( $valid_states ) > 0 ) {
+			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
 				foreach ( $valid_states as $state_abbr => $state ) {
 					if ( preg_match( '/' . preg_quote( $state ) . '/i', $billing_state ) ) {
 						$_POST['billing_state'] = $state_abbr;
@@ -1040,7 +1056,7 @@ class WC_Payments_Payment_Request {
 			$valid_states = WC()->countries->get_states( $shipping_country );
 
 			// Valid states found for country.
-			if ( ! empty( $valid_states ) && is_array( $valid_states ) && sizeof( $valid_states ) > 0 ) {
+			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
 				foreach ( $valid_states as $state_abbr => $state ) {
 					if ( preg_match( '/' . preg_quote( $state ) . '/i', $shipping_state ) ) {
 						$_POST['shipping_state'] = $state_abbr;
@@ -1141,10 +1157,11 @@ class WC_Payments_Payment_Request {
 	}
 
 	/**
-	 * Builds the shippings methods to pass to Payment Request
+	 * Builds the shipping methods to pass to Payment Request
 	 *
 	 * @since   3.1.0
 	 * @version 4.0.0
+	 * @param array $shipping_methods Shipping methods.
 	 */
 	protected function build_shipping_methods( $shipping_methods ) {
 		if ( empty( $shipping_methods ) ) {
@@ -1170,6 +1187,8 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @since   3.1.0
 	 * @version 4.0.0
+	 *
+	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
 	protected function build_display_items( $itemized_display_items = false ) {
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
