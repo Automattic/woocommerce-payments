@@ -15,7 +15,7 @@ jQuery( function( $ ) {
 		 * Get WC AJAX endpoint URL.
 		 *
 		 * @param  {String} endpoint Endpoint.
-		 * @return {String}
+		 * @return {String} URL with interpolated endpoint.
 		 */
 		getAjaxURL: function( endpoint ) {
 			return wcpayPaymentRequestParams.ajax_url
@@ -79,9 +79,10 @@ jQuery( function( $ ) {
 		 *
 		 * @since 3.1.0
 		 * @version 4.0.0
-		 * @param {PaymentResponse} source Payment Response instance.
+		 * @param {Object} evt Event.
+		 * @param {PaymentResponse} paymentRequestType Payment Response instance.
 		 *
-		 * @return {Object}
+		 * @return {Object} Order data.
 		 */
 		getOrderData: function( evt, paymentRequestType ) {
 			/* eslint-disable camelcase */
@@ -144,7 +145,7 @@ jQuery( function( $ ) {
 		 * @since 3.1.0
 		 * @version 4.0.0
 		 * @param  {String} message Error message.
-		 * @return {Object}
+		 * @return {Object} Error message HTML.
 		 */
 		getErrorMessageHTML: function( message ) {
 			return $( '<div class="woocommerce-error" />' ).text( message );
@@ -214,6 +215,7 @@ jQuery( function( $ ) {
 		 *
 		 * @param {Object}         details Payment details.
 		 * @param {PaymentAddress} address Shipping address.
+		 * @return {Object} AJAX request.
 		 */
 		updateShippingOptions: function( details, address ) {
 			/* eslint-disable camelcase */
@@ -242,6 +244,7 @@ jQuery( function( $ ) {
 		 *
 		 * @param {Object}   details        The line items and shipping options.
 		 * @param {String}   shippingOption User's preferred shipping option to use for shipping price calculations.
+		 * @return {Object} AJAX request.
 		 */
 		updateShippingDetails: function( details, shippingOption ) {
 			/* eslint-disable camelcase */
@@ -263,6 +266,7 @@ jQuery( function( $ ) {
 		/**
 		 * Adds the item to the cart and return cart details.
 		 *
+		 * @return {Object} AJAX request.
 		 */
 		addToCart: function() {
 			let productId = $( '.single_add_to_cart_button' ).val();
@@ -335,6 +339,8 @@ jQuery( function( $ ) {
 		 *
 		 * @since 4.0.0
 		 * @version 4.0.0
+		 * 
+		 * @param {Object} cart Cart data.
 		 */
 		startPaymentRequest: function( cart ) {
 			let paymentDetails,
