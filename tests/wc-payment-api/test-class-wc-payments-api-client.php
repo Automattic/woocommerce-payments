@@ -452,7 +452,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'c' => 3,
 						],
 						'create_live_account' => true,
-						'additional'          => [
+						'actioned_notes'      => [
 							'd' => 4,
 							'e' => 5,
 							'f' => 6,

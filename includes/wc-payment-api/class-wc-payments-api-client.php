@@ -639,22 +639,22 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
-	 * @param string $return_url    - URL to redirect to at the end of the flow.
-	 * @param array  $business_data - Data to prefill the form.
-	 * @param array  $additional    - Additional data to be sent to the on-boarding flow.
+	 * @param string $return_url     - URL to redirect to at the end of the flow.
+	 * @param array  $business_data  - Data to prefill the form.
+	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
 	 *
 	 * @return array An array containing the url and state fields.
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, $business_data = [], array $additional = [] ) {
+	public function get_oauth_data( $return_url, $business_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
-				'additional'          => $additional,
+				'actioned_notes'      => $actioned_notes,
 			]
 		);
 
