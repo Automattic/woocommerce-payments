@@ -667,8 +667,8 @@ class WC_Payments_Account {
 	 *
 	 * @return array
 	 */
-	private function get_actioned_notes() : array {
-		$wcpay_promo_notes = [];
+	private function get_actioned_notes(): array {
+		$wcpay_note_names = [];
 
 		try {
 			/**
@@ -681,7 +681,7 @@ class WC_Payments_Account {
 			// Don't stop the on-boarding process if something goes wrong here. Log the error and return the empty array
 			// of actioned notes.
 			Logger::error( $e );
-			return $wcpay_promo_notes;
+			return $wcpay_note_names;
 		}
 
 		// Fetch the last 10 actioned wcpay-promo admin notifications.
@@ -701,6 +701,16 @@ class WC_Payments_Account {
 
 		remove_filter( 'woocommerce_note_where_clauses', $add_like_clause );
 
-		return (array) $wcpay_promo_notes;
+		// If we didn't get an array back from the data store, return an empty array of results.
+		if ( ! is_array( $wcpay_promo_notes ) ) {
+			return $wcpay_note_names;
+		}
+
+		// Copy the name of each note into the results.
+		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
+			$wcpay_note_names[] = $wcpay_note->name;
+		}
+
+		return $wcpay_note_names;
 	}
 }
