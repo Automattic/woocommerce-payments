@@ -526,6 +526,10 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-remote-note-service.php';
+			$note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+			$note_service->delete_notes();
 		}
 	}
 }

@@ -103,6 +103,14 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'account.updated':
 					$this->account->refresh_account_data();
 					break;
+				case 'wcpay.notification':
+					if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+						require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-remote-note-service.php';
+						$note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+						$note         = $this->read_rest_property( $body, 'data' );
+						$note_service->put_note( $note );
+					}
+					break;
 			}
 		} catch ( Rest_Request_Exception $e ) {
 			Logger::error( $e );
