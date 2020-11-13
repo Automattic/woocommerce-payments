@@ -116,6 +116,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_status'               => [
 				'type' => 'account_status',
 			],
+			'account_fees' => [
+				'type'        => 'account_fees',
+			],
 			'account_statement_descriptor' => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
@@ -808,6 +811,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</th>
 			<td>
 				<div id="wcpay-account-status-container"></div>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generates markup for the fees information section.
+	 *
+	 * @return string Markup or empty if the account is not connected.
+	 * @throws API_Exception
+	 */
+	public function generate_account_fees_html() {
+		if ( ! $this->is_connected() || empty( $this->account->get_fees() ) ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row">
+				<?php echo esc_html( __( 'Base fee', 'woocommerce-payments' ) ); ?>
+			</th>
+			<td>
+				<div id="wcpay-account-fees-container"></div>
 			</td>
 		</tr>
 		<?php

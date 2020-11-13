@@ -175,6 +175,17 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the current account fees for rendering on the settings page.
+	 *
+	 * @return array        Fees.
+	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_fees() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['fees'] ) ? $account['fees'] : [];
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *

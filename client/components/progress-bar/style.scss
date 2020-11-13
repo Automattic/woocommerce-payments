@@ -1,0 +1,36 @@
+.progressbar {
+	display: flex;
+
+	.progressbar__container {
+		flex-grow: 1;
+		display: flex;
+		flex-flow: wrap;
+		margin: 8px 8px 8px 0;
+		background-color: $white;
+		height: 32px;
+		border: 1px $dark-gray-900 solid;
+		border-radius: 4px;
+	}
+
+	.progressbar__inner {
+		background-color: #007CBA;
+		display: inline-flex;
+		flex-direction: row-reverse;
+		height: 100%;
+	}
+
+	.progressbar__outer-progress-label {
+		align-self: center;
+		margin: 4px;
+	}
+
+	.progressbar__inner-progress-label {
+		color: $white;
+		align-self: center;
+		margin: 4px;
+	}
+
+	.progressbar__total-label {
+		align-self: center;
+	}
+}

@@ -247,6 +247,7 @@ class WC_Payments_Admin {
 			'wcpayAdminSettings',
 			[
 				'accountStatus' => $this->account->get_account_status_data(),
+				'accountFees'   => $this->account->get_fees(),
 			]
 		);
 
