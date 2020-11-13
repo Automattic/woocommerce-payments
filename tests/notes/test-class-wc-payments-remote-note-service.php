@@ -64,7 +64,7 @@ class WC_Payments_Remote_Note_Service_Test extends WP_UnitTestCase {
 							&& $note->get_title() === $note_data['title']
 							&& $note->get_content() === $note_data['content'];
 					}
-				),
+				)
 			);
 
 		$result = $this->note_service->put_note( $note_data );
@@ -103,7 +103,7 @@ class WC_Payments_Remote_Note_Service_Test extends WP_UnitTestCase {
 							&& $note->get_content() === $note_data['content']
 							&& 1 === count( $note->get_actions() );
 					}
-				),
+				)
 			);
 
 		$result = $this->note_service->put_note( $note_data );
