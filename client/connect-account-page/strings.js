@@ -7,9 +7,15 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 
 export default {
 	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
-	description: __(
-		'Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.',
-		'woocommerce-payments'
+	description: createInterpolateElement(
+		__(
+			'Accept credit card payments the easy way! <a>No set up fees. No monthly fees.</a>',
+			'woocommerce-payments'
+		),
+		{
+			// eslint-disable-next-line jsx-a11y/anchor-has-content
+			a: <a href="https://docs.woocommerce.com/document/payments/faq/fees/" />,
+		}
 	),
 	terms: createInterpolateElement(
 		__(
