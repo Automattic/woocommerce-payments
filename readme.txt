@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 1.8.0 - 2020-xx-xx =
+* Add - Include information about failing payment into order notes.
+
 = 1.7.0 - 2020-11-17 =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.
