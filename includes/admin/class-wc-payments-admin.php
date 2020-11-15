@@ -32,7 +32,10 @@ class WC_Payments_Admin {
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account Account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payment_Gateway_WCPay $gateway,
+		WC_Payments_Account $account
+	) {
 		$this->wcpay_gateway = $gateway;
 		$this->account       = $account;
 
@@ -205,6 +208,25 @@ class WC_Payments_Admin {
 			true
 		);
 
+		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
+		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
+		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			'WCPAY_TOS',
+			$tos_script_src_url,
+			$tos_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/tos.js' ),
+			true
+		);
+
+		wp_register_style(
+			'WCPAY_TOS',
+			plugins_url( 'dist/tos.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/tos.css' )
+		);
+
 		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
 		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
@@ -240,12 +262,17 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
+		global $current_tab, $current_section;
+
 		$this->register_payments_scripts();
 
-		global $current_tab, $current_section;
-		if ( $current_tab && $current_section
+		$is_settings_page = (
+			$current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section ) {
+			&& 'woocommerce_payments' === $current_section
+		);
+
+		if ( $is_settings_page ) {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -255,6 +282,41 @@ class WC_Payments_Admin {
 		if ( wc_admin_is_registered_page() ) {
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
 			wp_enqueue_style( 'WCPAY_DASH_APP' );
+		}
+
+		// TODO: Update conditions when ToS script is enqueued.
+		$tos_agreement_declined = (
+			$current_tab
+			&& 'checkout' === $current_tab
+			&& isset( $_GET['tos-disabled'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		);
+
+		$tos_agreement_required = (
+			$this->is_tos_agreement_required() &&
+			(
+				$is_settings_page ||
+
+				// Or a WC Admin page?
+				// Note: Merchants can navigate from analytics to payments w/o reload,
+				// which is why this is neccessary.
+				wc_admin_is_registered_page()
+			)
+		);
+
+		if ( $tos_agreement_declined || $tos_agreement_required ) {
+			// phpcs:ignore WordPress.Security.NonceVerification
+			wp_localize_script(
+				'WCPAY_TOS',
+				'wcpay_tos_settings',
+				[
+					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'tosAgreementRequired' => $tos_agreement_required,
+					'tosAgreementDeclined' => $tos_agreement_declined,
+				]
+			);
+
+			wp_enqueue_script( 'WCPAY_TOS' );
+			wp_enqueue_style( 'WCPAY_TOS' );
 		}
 	}
 
@@ -291,5 +353,26 @@ class WC_Payments_Admin {
 		$version1 = $matches1[1];
 		$version2 = $matches2[1];
 		return version_compare( $version1, $version2, $operator );
+	}
+
+	/**
+	 * Checks whether it's necessary to display a ToS agreement modal.
+	 *
+	 * @return bool
+	 */
+	private function is_tos_agreement_required() {
+		// The gateway might already be disabled because of ToS.
+		if ( ! $this->wcpay_gateway->is_enabled() ) {
+			return false;
+		}
+
+		// Retrieve the latest agreement and check whether it's regarding the latest ToS version.
+		$agreement = $this->account->get_latest_tos_agreement();
+		if ( empty( $agreement ) ) {
+			// Account data couldn't be fetched, let the merchant solve that first.
+			return false;
+		}
+
+		return ! $agreement['is_current_version'];
 	}
 }

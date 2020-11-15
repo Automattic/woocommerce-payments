@@ -21,10 +21,10 @@ class WC_Payments_Notes_Set_Up_Refund_Policy_Test extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_adds_note_on_extension_activation() {
+	public function test_adds_note_in_hook() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			// Trigger WCPay extension activation callback.
-			wcpay_activated();
+			// Trigger WCPay extension woo notes hook.
+			WC_Payments::add_woo_admin_notes();
 
 			$note_id = WC_Payments_Notes_Set_Up_Refund_Policy::NOTE_NAME;
 			$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );

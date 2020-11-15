@@ -82,6 +82,8 @@ class WC_Payments {
 			return;
 		}
 
+		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
@@ -467,6 +469,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
 		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account );
 		$webhook_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
+		$webhook_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$webhook_controller->register_routes();
 	}
 
 	/**
@@ -501,5 +507,25 @@ class WC_Payments {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+	}
+
+	/**
+	 * Adds WCPay notes to the WC-Admin inbox.
+	 */
+	public static function add_woo_admin_notes() {
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
+		}
+	}
+
+	/**
+	 * Removes WCPay notes from the WC-Admin inbox.
+	 */
+	public static function remove_woo_admin_notes() {
+		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
+		}
 	}
 }
