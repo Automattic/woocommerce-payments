@@ -180,6 +180,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           Accept credit card payments the easy way! 
           <a
             href="https://docs.woocommerce.com/document/payments/faq/fees/"
+            rel="noopener noreferrer"
             target="_blank"
           >
             No set up fees. No monthly fees.
@@ -191,6 +192,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           By clicking “Set up,” you agree to the 
           <a
             href="https://wordpress.com/tos"
+            rel="noopener noreferrer"
             target="_blank"
           >
             Terms of Service
@@ -395,6 +397,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
           Accept credit card payments the easy way! 
           <a
             href="https://docs.woocommerce.com/document/payments/faq/fees/"
+            rel="noopener noreferrer"
             target="_blank"
           >
             No set up fees. No monthly fees.

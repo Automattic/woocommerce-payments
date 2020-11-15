@@ -14,7 +14,7 @@ export default {
 		),
 		{
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			a: <a href="https://docs.woocommerce.com/document/payments/faq/fees/" target="_blank" />,
+			a: <a href="https://docs.woocommerce.com/document/payments/faq/fees/" target="_blank" rel="noopener noreferrer" />,
 		}
 	),
 	terms: createInterpolateElement(
@@ -24,7 +24,7 @@ export default {
 		),
 		{
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			a: <a href="https://wordpress.com/tos" target="_blank" />,
+			a: <a href="https://wordpress.com/tos" target="_blank" rel="noopener noreferrer" />,
 		}
 	),
 	onboardingDisabled: [
