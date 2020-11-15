@@ -1,0 +1,190 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountFees renders discounted fee on top of negotiated base fee 1`] = `
+<div>
+  <p>
+    <s>
+      2.0% + $0.20 per transaction
+    </s>
+     1.4% + $0.14 per transaction (30% discount)
+  </p>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 49.382239999999996%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        $12,345.56
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $25,000.00
+    </span>
+  </div>
+  <p
+    class="description"
+  >
+    Discounted base fee expires after the first $25,000.00 of total payment volume.
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders discounted fee with volume limit 1`] = `
+<div>
+  <p>
+    <s>
+      2.9% + $0.30 per transaction
+    </s>
+     2.0% + $0.21 per transaction (30% discount)
+  </p>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 49.382239999999996%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        $12,345.56
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $25,000.00
+    </span>
+  </div>
+  <p
+    class="description"
+  >
+    Discounted base fee expires after the first $25,000.00 of total payment volume.
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders discounted fee without volume limit 1`] = `
+<div>
+  <p>
+    <s>
+      2.9% + $0.30 per transaction
+    </s>
+     2.0% + $0.21 per transaction (30% discount)
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
+<div>
+  <p>
+    <s>
+      2.9% + $0.30 per transaction
+    </s>
+     2.3% + $0.24 per transaction (20% discount)
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders negotiated base fee 1`] = `
+<div>
+  <p>
+    2.0% + $0.20 per transaction
+  </p>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 1.234556%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        $12,345.56
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $1,000,000.00
+    </span>
+  </div>
+  <p
+    class="description"
+  >
+    Discounted base fee expires after the first $1,000,000.00 of total payment volume.
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders normal base fee 1`] = `
+<div>
+  <p>
+    2.9% + $0.30 per transaction
+  </p>
+  <p>
+    <a
+      data-link-type="external"
+      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;

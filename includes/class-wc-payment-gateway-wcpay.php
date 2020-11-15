@@ -116,8 +116,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_status'               => [
 				'type' => 'account_status',
 			],
-			'account_fees' => [
-				'type'        => 'account_fees',
+			'account_fees'                 => [
+				'type' => 'account_fees',
 			],
 			'account_statement_descriptor' => [
 				'type'        => 'account_statement_descriptor',
@@ -821,7 +821,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Generates markup for the fees information section.
 	 *
 	 * @return string Markup or empty if the account is not connected.
-	 * @throws API_Exception
 	 */
 	public function generate_account_fees_html() {
 		if ( ! $this->is_connected() || empty( $this->account->get_fees() ) ) {
