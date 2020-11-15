@@ -37,8 +37,9 @@ exports[`AccountFees renders discounted fee on top of negotiated base fee 1`] = 
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>
@@ -83,8 +84,9 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>
@@ -102,8 +104,9 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>
@@ -121,8 +124,9 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>
@@ -164,8 +168,9 @@ exports[`AccountFees renders negotiated base fee 1`] = `
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>
@@ -180,8 +185,9 @@ exports[`AccountFees renders normal base fee 1`] = `
   </p>
   <p>
     <a
-      data-link-type="external"
       href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       Learn more
     </a>

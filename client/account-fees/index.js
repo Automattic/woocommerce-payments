@@ -5,7 +5,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import Currency from "@woocommerce/currency";
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { Link } from "@woocommerce/components";
 
 /**
  * Internal dependencies
@@ -72,9 +71,9 @@ const AccountFees = ( { accountFees } ) => {
 			<p>{ feeDescription }</p>
 			<ExpirationBar feeData={ currentFee } />
 			<p>
-				<Link href="https://docs.woocommerce.com/document/payments/faq/fees/" type="external">
+				<a href="https://docs.woocommerce.com/document/payments/faq/fees/" target="_blank" rel="noopener noreferrer">
 					{ __( 'Learn more', 'woocommerce-payments' ) }
-				</Link>
+				</a>
 			</p>
 		</>
 	);
