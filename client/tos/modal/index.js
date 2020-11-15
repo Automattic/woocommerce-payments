@@ -20,6 +20,7 @@ const TosLink = ( props ) => (
 		{ ...props }
 		href="https://wordpress.com/tos"
 		target="_blank"
+		rel="noopener noreferrer"
 		type="external"
 	/>
 );
