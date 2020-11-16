@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
 use WCPay\Exceptions\Rest_Request_Exception;
 
