@@ -20,21 +20,22 @@ const ExpirationBar = ( {
 		volume_allowance: volumeAllowance,
 		current_volume: currentVolume,
 	},
-} ) =>
-	volumeAllowance && (
+} ) => {
+	if ( ! volumeAllowance ) {
+		return null;
+	}
+	return (
 		<ProgressBar
 			progressLabel={ currency.formatCurrency( currentVolume / 100 ) }
 			totalLabel={ currency.formatCurrency( volumeAllowance / 100 ) }
 			progress={ currentVolume / volumeAllowance }
 		/>
 	);
+};
 
 const ExpirationDescription = ( {
-	feeData: {
-		volume_allowance: volumeAllowance,
-			end_time: endTime,
-	},
- } ) => {
+	feeData: { volume_allowance: volumeAllowance, end_time: endTime },
+} ) => {
 	let description;
 	if ( volumeAllowance && endTime ) {
 		description = sprintf(
@@ -44,7 +45,7 @@ const ExpirationDescription = ( {
 				'woocommerce-payments'
 			),
 			currency.formatCurrency( volumeAllowance / 100 ),
-			dateI18n( 'F j, Y', moment( endTime ) ),
+			dateI18n( 'F j, Y', moment( endTime ) )
 		);
 	} else if ( volumeAllowance ) {
 		description = sprintf(
@@ -62,16 +63,12 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires on %1$s.',
 				'woocommerce-payments'
 			),
-			dateI18n( 'F j, Y', moment( endTime ) ),
+			dateI18n( 'F j, Y', moment( endTime ) )
 		);
 	} else {
 		return null;
 	}
-	return (
-		<p className="description">
-			{ description }
-		</p>
-	);
+	return <p className="description">{ description }</p>;
 };
 
 const AccountFees = ( { accountFees } ) => {
@@ -92,9 +89,8 @@ const AccountFees = ( { accountFees } ) => {
 
 		if ( currentFee.discount ) {
 			// Proper discount fee (XX% off)
-			percentage =
-				baseFee.percentage_rate * 100 * ( 1 - currentFee.discount );
-			fixed = ( baseFee.fixed_rate / 100 ) * ( 1 - currentFee.discount );
+			percentage = baseFee.percentage_rate * ( 1 - currentFee.discount );
+			fixed = baseFee.fixed_rate * ( 1 - currentFee.discount );
 		} else {
 			// Custom base fee (2% + $.20)
 			percentage = currentFee.percentage_rate;
@@ -108,8 +104,8 @@ const AccountFees = ( { accountFees } ) => {
 				'woocommerce-payments'
 			),
 			feeDescription,
-			percentage,
-			currency.formatCurrency( fixed )
+			percentage * 100,
+			currency.formatCurrency( fixed / 100 )
 		);
 
 		if ( currentFee.discount ) {

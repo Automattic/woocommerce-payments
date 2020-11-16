@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AccountFees renders discounted fee on top of negotiated base fee 1`] = `
+exports[`AccountFees renders discounted base fee 1`] = `
 <div>
   <p>
     <s>
-      2.0% + $0.20 per transaction
+      2.9% + $0.30 per transaction
     </s>
-     1.4% + $0.14 per transaction (30% discount)
+     2.0% + $0.20 per transaction
   </p>
   <div
     class="progressbar"
@@ -16,7 +16,7 @@ exports[`AccountFees renders discounted fee on top of negotiated base fee 1`] = 
     >
       <div
         class="progressbar__inner"
-        style="width: 49.382239999999996%;"
+        style="width: 1.234556%;"
       />
       <span
         class="progressbar__outer-progress-label"
@@ -27,17 +27,42 @@ exports[`AccountFees renders discounted fee on top of negotiated base fee 1`] = 
     <span
       class="progressbar__total-label"
     >
-      $25,000.00
+      $1,000,000.00
     </span>
   </div>
   <p
     class="description"
   >
-    Discounted base fee expires after the first $25,000.00 of total payment volume.
+    Discounted base fee expires after the first $1,000,000.00 of total payment volume.
   </p>
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders discounted fee with end date 1`] = `
+<div>
+  <p>
+    <s>
+      2.9% + $0.30 per transaction
+    </s>
+     2.0% + $0.21 per transaction (30% discount)
+  </p>
+  <p
+    class="description"
+  >
+    Discounted base fee expires on March 31, 2025.
+  </p>
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -84,7 +109,54 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
   </p>
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </p>
+</div>
+`;
+
+exports[`AccountFees renders discounted fee with volume limit and end date 1`] = `
+<div>
+  <p>
+    <s>
+      2.9% + $0.30 per transaction
+    </s>
+     2.0% + $0.21 per transaction (30% discount)
+  </p>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 49.382239999999996%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        $12,345.56
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $25,000.00
+    </span>
+  </div>
+  <p
+    class="description"
+  >
+    Discounted base fee expires after the first $25,000.00 of total payment volume or on March 31, 2025.
+  </p>
+  <p>
+    <a
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -104,7 +176,7 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
   </p>
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
@@ -124,51 +196,7 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
   </p>
   <p>
     <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      Learn more
-    </a>
-  </p>
-</div>
-`;
-
-exports[`AccountFees renders negotiated base fee 1`] = `
-<div>
-  <p>
-    2.0% + $0.20 per transaction
-  </p>
-  <div
-    class="progressbar"
-  >
-    <div
-      class="progressbar__container"
-    >
-      <div
-        class="progressbar__inner"
-        style="width: 1.234556%;"
-      />
-      <span
-        class="progressbar__outer-progress-label"
-      >
-        $12,345.56
-      </span>
-    </div>
-    <span
-      class="progressbar__total-label"
-    >
-      $1,000,000.00
-    </span>
-  </div>
-  <p
-    class="description"
-  >
-    Discounted base fee expires after the first $1,000,000.00 of total payment volume.
-  </p>
-  <p>
-    <a
-      href="https://docs.woocommerce.com/document/payments/faq/fees/"
+      href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
       rel="noopener noreferrer"
       target="_blank"
     >
