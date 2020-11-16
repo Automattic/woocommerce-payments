@@ -83,7 +83,11 @@ const AccountFees = ( { accountFees } ) => {
 			<ExpirationBar feeData={ currentFee } />
 			<p>
 				<a
-					href="https://docs.woocommerce.com/document/payments/faq/fees/"
+					href={
+						accountFees.discount.length
+							? 'https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/'
+							: 'https://docs.woocommerce.com/document/payments/faq/fees/'
+					}
 					target="_blank"
 					rel="noopener noreferrer"
 				>
