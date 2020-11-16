@@ -1,5 +1,6 @@
 .progressbar {
 	display: flex;
+	max-width: 600px;
 
 	.progressbar__container {
 		flex-grow: 1;

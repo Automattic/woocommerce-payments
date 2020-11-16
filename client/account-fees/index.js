@@ -5,6 +5,8 @@
 import { __, sprintf } from '@wordpress/i18n';
 import Currency from '@woocommerce/currency';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -13,32 +15,62 @@ import ProgressBar from 'components/progress-bar';
 
 const currency = new Currency();
 
-const ExpirationBar = ( { feeData } ) => {
-	const {
+const ExpirationBar = ( {
+	feeData: {
 		volume_allowance: volumeAllowance,
 		current_volume: currentVolume,
-	} = feeData;
-	if ( ! volumeAllowance ) {
+	},
+} ) =>
+	volumeAllowance && (
+		<ProgressBar
+			progressLabel={ currency.formatCurrency( currentVolume / 100 ) }
+			totalLabel={ currency.formatCurrency( volumeAllowance / 100 ) }
+			progress={ currentVolume / volumeAllowance }
+		/>
+	);
+
+const ExpirationDescription = ( {
+	feeData: {
+		volume_allowance: volumeAllowance,
+			end_time: endTime,
+	},
+ } ) => {
+	let description;
+	if ( volumeAllowance && endTime ) {
+		description = sprintf(
+			/* translators: %1: total payment volume until this promotion expires %2: End date of the promotion */
+			__(
+				'Discounted base fee expires after the first %1$s of total payment volume or on %2$s.',
+				'woocommerce-payments'
+			),
+			currency.formatCurrency( volumeAllowance / 100 ),
+			dateI18n( 'F j, Y', moment( endTime ) ),
+		);
+	} else if ( volumeAllowance ) {
+		description = sprintf(
+			/* translators: %1: total payment volume until this promotion expires */
+			__(
+				'Discounted base fee expires after the first %1$s of total payment volume.',
+				'woocommerce-payments'
+			),
+			currency.formatCurrency( volumeAllowance / 100 )
+		);
+	} else if ( endTime ) {
+		description = sprintf(
+			/* translators: %1: End date of the promotion */
+			__(
+				'Discounted base fee expires on %1$s.',
+				'woocommerce-payments'
+			),
+			dateI18n( 'F j, Y', moment( endTime ) ),
+		);
+	} else {
 		return null;
 	}
 	return (
-		<>
-			<ProgressBar
-				progressLabel={ currency.formatCurrency( currentVolume / 100 ) }
-				totalLabel={ currency.formatCurrency( volumeAllowance / 100 ) }
-				progress={ currentVolume / volumeAllowance }
-			/>
-			<p className="description">
-				{ sprintf(
-					/* translators: %1: total payment volume until this promotion expires */
-					__(
-						'Discounted base fee expires after the first %1$s of total payment volume.',
-						'woocommerce-payments'
-					),
-					currency.formatCurrency( volumeAllowance / 100 )
-				) }
-			</p>
-		</>
+		<p className="description">
+			{ description }
+		</p>
 	);
 };
 
@@ -85,7 +117,7 @@ const AccountFees = ( { accountFees } ) => {
 				' ' +
 				sprintf(
 					/* translators: %d percentage discount to apply */
-					__( '(%$d%% discount)', 'woocommerce-payments' ),
+					__( '(%1$d%% discount)', 'woocommerce-payments' ),
 					currentFee.discount * 100
 				);
 		}
@@ -99,6 +131,7 @@ const AccountFees = ( { accountFees } ) => {
 		<>
 			<p>{ feeDescription }</p>
 			<ExpirationBar feeData={ currentFee } />
+			<ExpirationDescription feeData={ currentFee } />
 			<p>
 				<a
 					href={
