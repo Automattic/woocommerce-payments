@@ -48,7 +48,7 @@ describe( 'AccountFees', () => {
 			discount: [
 				{
 					discount: 0.3,
-				}
+				},
 			],
 		} );
 		expect( accountFees ).toMatchSnapshot();
@@ -65,7 +65,7 @@ describe( 'AccountFees', () => {
 					discount: 0.3,
 					volume_allowance: 2500000,
 					current_volume: 1234556,
-				}
+				},
 			],
 		} );
 		expect( accountFees ).toMatchSnapshot();
@@ -84,7 +84,7 @@ describe( 'AccountFees', () => {
 					discount: 0.3,
 					volume_allowance: 2500000,
 					current_volume: 1234556,
-				}
+				},
 			],
 		} );
 		expect( accountFees ).toMatchSnapshot();
@@ -105,7 +105,7 @@ describe( 'AccountFees', () => {
 					discount: 0.3,
 					volume_allowance: 2500000,
 					current_volume: 1234556,
-				}
+				},
 			],
 		} );
 		expect( accountFees ).toMatchSnapshot();
