@@ -29,13 +29,6 @@ class WC_Payments_Remote_Note_Service_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		if ( version_compare( WC_VERSION, '4.4.0', '<=' ) ) {
-			$this->markTestSkipped( 'The used WC components are not backward compatible' );
-			return;
-		}
-
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-remote-note-service.php';
-
 		$this->mock_data_store = $this->getMockBuilder( WC_Data_Store::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'get_notes_with_name', 'create' ] )
