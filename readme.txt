@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.7.0 - 2020-11-05 =
+= 1.7.0 - 2020-11-17 =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.
 * Fix - Render dispute evidence file upload errors.
