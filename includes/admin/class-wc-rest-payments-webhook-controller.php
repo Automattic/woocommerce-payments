@@ -121,9 +121,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					$note = $this->read_rest_property( $body, 'data' );
 					$this->remote_note_service->put_note( $note );
 					break;
-				case 'payment_intent.payment_failed':
-					$this->process_webhook_payment_failed( $body );
-					break;
 			}
 		} catch ( Rest_Request_Exception $e ) {
 			Logger::error( $e );
@@ -217,51 +214,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		WC_Payments_Utils::mark_payment_expired( $order );
-	}
-
-	/**
-	 * Process webhook for failed transactions: add corresponding note to orders
-	 *
-	 * @param array $event_body The event that triggered the webhook.
-	 *
-	 * @return void
-	 *
-	 * @throws Rest_Request_Exception           Required parameters not found.
-	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
-	 */
-	private function process_webhook_payment_failed( array $event_body ) {
-		$event_data    = $this->read_rest_property( $event_body, 'data' );
-		$intent_object = $this->read_rest_property( $event_data, 'object' );
-
-		$intent_id = $this->read_rest_property( $intent_object, 'id' );
-		$order     = $this->wcpay_db->order_from_intent_id( $intent_id );
-		if ( ! $order ) {
-			throw new Invalid_Payment_Method_Exception(
-				sprintf(
-					/* translators: %1: intent ID */
-					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
-					$intent_id
-				),
-				'order_not_found'
-			);
-		}
-
-		$note = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the failed capture amount, %2: error message  */
-				__(
-					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-					'woocommerce-payments'
-				),
-				[
-					'strong' => '<strong>',
-					'code'   => '<code>',
-				]
-			),
-			wc_price( $order->get_total() ),
-			esc_html( $intent_object['last_payment_error']['message'] ?? 'error message is not provided' )
-		);
-		$order->add_order_note( $note );
 	}
 
 	/**

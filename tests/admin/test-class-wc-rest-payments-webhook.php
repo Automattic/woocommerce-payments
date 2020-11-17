@@ -58,7 +58,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id' ] )
+			->setMethods( [ 'order_from_charge_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -230,71 +230,6 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 500, $response->get_status() );
 		$this->assertEquals( [ 'result' => 'error' ], $response_data );
-	}
-
-	/**
-	 * Test a valid failed payment intent webhook with a proper intent ID.
-	 */
-	public function test_payment_intent_payment_failed_webhook_success() {
-		// Introduce necessary mocks.
-		$order_mock = $this->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'add_order_note', 'get_total' ] )
-			->getMock();
-		$order_mock
-			->expects( $this->once() )
-			->method( 'get_total' )
-			->willReturn( 0.99 );
-		$order_mock
-			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with(
-				$this->matchesRegularExpression(
-					'~^A payment of .*0.99.* <strong>failed</strong> to complete with the following message: <code>error</code>.$~'
-				)
-			);
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_...' )
-			->willReturn( $order_mock );
-
-		// Setup test request data.
-		$this->request_body['type']           = 'payment_intent.payment_failed';
-		$this->request_body['data']['object'] = [
-			'id'                 => 'pi_...',
-			'last_payment_error' => [
-				'message' => 'error',
-			],
-		];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		$response = $this->controller->handle_webhook( $this->request );
-
-		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'success' ], $response->get_data() );
-	}
-
-	/**
-	 * Test a valid failed payment intent webhook with an unknown intent ID.
-	 */
-	public function test_payment_intent_payment_failed_webhook_order_not_fount() {
-		// Setup test request data.
-		$this->request_body['type']           = 'payment_intent.payment_failed';
-		$this->request_body['data']['object'] = [ 'id' => 'pi_...' ];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_intent_id' )
-			->with( 'pi_...' )
-			->willReturn( false );
-
-		$response = $this->controller->handle_webhook( $this->request );
-
-		$this->assertEquals( 500, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'error' ], $response->get_data() );
 	}
 
 	/**
