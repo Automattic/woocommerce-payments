@@ -708,7 +708,7 @@ class WC_Payments_Account {
 
 		// Copy the name of each note into the results.
 		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
-			$note = new WC_Admin_Note( $wcpay_note->note_id );
+			$note               = new WC_Admin_Note( $wcpay_note->note_id );
 			$wcpay_note_names[] = $note->get_name();
 		}
 
