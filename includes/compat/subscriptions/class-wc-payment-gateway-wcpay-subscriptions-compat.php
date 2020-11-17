@@ -138,12 +138,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
 			$renewal_order->update_status( 'failed' );
+
 			if ( ! empty( $payment_information ) ) {
-				// Save payment method, so we could use it and search in Stripe dashboard (other Stripe-ids are not available).
-				$renewal_order->update_meta_data( '_payment_method_id', $payment_information->get_payment_method() );
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount, %2: error message  */
+						/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -154,7 +153,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 						]
 					),
 					wc_price( $amount ),
-					esc_html( $e->getMessage() )
+					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$renewal_order->add_order_note( $note );
 			}

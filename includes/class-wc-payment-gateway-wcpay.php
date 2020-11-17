@@ -433,12 +433,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			$order->update_status( 'failed' );
+
 			if ( ! empty( $payment_information ) ) {
-				// Save payment method, so we could use it and search in Stripe dashboard (other Stripe-ids are not available).
-				$order->update_meta_data( '_payment_method_id', $payment_information->get_payment_method() );
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount, %2: error message  */
+						/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -449,7 +448,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						]
 					),
 					wc_price( $order->get_total() ),
-					esc_html( $e->getMessage() )
+					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$order->add_order_note( $note );
 			}
