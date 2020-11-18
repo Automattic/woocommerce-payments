@@ -10,8 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
-use Automattic\WooCommerce\Admin\Notes\Note;
-use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use \Automattic\WooCommerce\Admin\Features\Onboarding;
@@ -701,11 +699,7 @@ class WC_Payments_Account {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
-		if ( class_exists( 'Automattic\WooCommerce\Admin\Notes\Note' ) ) {
-			$note_class = Note::class;
-		} else {
-			$note_class = WC_Admin_Note::class;
-		}
+		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 
 		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
 

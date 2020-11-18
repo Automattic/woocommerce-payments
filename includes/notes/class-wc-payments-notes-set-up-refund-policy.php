@@ -6,8 +6,6 @@
  */
 
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
-use Automattic\WooCommerce\Admin\Notes\Note;
-use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,13 +29,8 @@ class WC_Payments_Notes_Set_Up_Refund_Policy {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		if ( class_exists( 'Automattic\WooCommerce\Admin\Notes\Note' ) ) {
-			$note_class = Note::class;
-		} else {
-			$note_class = WC_Admin_Note::class;
-		}
-
-		$note = new $note_class();
+		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note       = new $note_class();
 
 		$note->set_title( __( 'Set up refund policy', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Protect your merchant account from fraudulent disputes by defining the policy and making it accessible to customers.', 'woocommerce-payments' ) );
