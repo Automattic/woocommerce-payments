@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\WC_Admin_Note;
 use WCPay\Exceptions\Rest_Request_Exception;
 
@@ -55,11 +56,11 @@ class WC_Payments_Remote_Note_Service {
 	 *
 	 * @param array $note_data The note data to process.
 	 *
-	 * @return WC_Admin_Note Note object.
+	 * @return WC_Admin_Note|Note Note object.
 	 *
 	 * @throws Rest_Request_Exception If note data is invalid.
 	 */
-	private function create_note( array $note_data ) : WC_Admin_Note {
+	private function create_note( array $note_data ) {
 		if ( ! isset( $note_data['title'], $note_data['content'] ) ) {
 			throw new Rest_Request_Exception( 'Invalid note.' );
 		}
@@ -68,12 +69,18 @@ class WC_Payments_Remote_Note_Service {
 		$content   = $note_data['content'];
 		$note_name = self::NOTE_NAME_PREFIX . ( $note_data['name'] ?? md5( $title . $content ) );
 
-		$note = new WC_Admin_Note();
+		if ( class_exists( 'Automattic\WooCommerce\Admin\Notes\Note' ) ) {
+			$note_class = Note::class;
+		} else {
+			$note_class = WC_Admin_Note::class;
+		}
+
+		$note = new $note_class();
 
 		$note->set_title( $title );
 		$note->set_content( $content );
 		$note->set_content_data( (object) [] );
-		$note->set_type( WC_Admin_Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( $note_name );
 		$note->set_source( 'woocommerce-payments' );
 
@@ -93,7 +100,7 @@ class WC_Payments_Remote_Note_Service {
 					$note_name . '-' . $action_key,
 					$action['label'],
 					$url,
-					$action['status'] ?? WC_Admin_Note::E_WC_ADMIN_NOTE_ACTIONED,
+					$action['status'] ?? $note_class::E_WC_ADMIN_NOTE_ACTIONED,
 					$action['primary'] ?? false
 				);
 			}
