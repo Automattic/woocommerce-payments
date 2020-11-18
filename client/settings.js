@@ -9,10 +9,16 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AccountStatus from 'account-status';
+import AccountFees from 'account-fees';
 
 ReactDOM.render(
 	<AccountStatus { ...wcpayAdminSettings } />,
 	document.getElementById( 'wcpay-account-status-container' )
+);
+
+ReactDOM.render(
+	<AccountFees { ...wcpayAdminSettings } />,
+	document.getElementById( 'wcpay-account-fees-container' )
 );
 
 if ( isWCPaySettingsPage() ) {

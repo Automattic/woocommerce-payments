@@ -59,6 +59,13 @@ class WC_Payments {
 	private static $token_service;
 
 	/**
+	 * Instance of WC_Payments_Remote_Note_Service, created in init function.
+	 *
+	 * @var WC_Payments_Remote_Note_Service
+	 */
+	private static $remote_note_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -109,13 +116,15 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/class-payment-information.php';
+		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account          = new WC_Payments_Account( self::$api_client );
-		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
-		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$account             = new WC_Payments_Account( self::$api_client );
+		self::$customer_service    = new WC_Payments_Customer_Service( self::$api_client );
+		self::$token_service       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
@@ -467,7 +476,7 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
@@ -523,6 +532,8 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
+		self::$remote_note_service->delete_notes();
+
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
