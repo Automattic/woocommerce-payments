@@ -83,7 +83,7 @@ class WC_Payments_Customer_Service {
 
 		// If customer_id is false it could mean that it hasn't been migrated from the deprecated key.
 		if ( false === $customer_id ) {
-			$customer_id = $this->maybe_migrate_deprecated_customer( $user_id );
+			$this->maybe_migrate_deprecated_customer( $user_id );
 			// Customer might've been migrated in maybe_migrate_deprecated_customer, so we need to fetch it again.
 			$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
 		}
