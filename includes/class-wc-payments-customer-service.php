@@ -73,12 +73,12 @@ class WC_Payments_Customer_Service {
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
 
 		// If customer_id is false it could mean that it hasn't been migrated from the deprecated key.
-		// If the gateway is in live mode, proceed to migrate the legacy customer ID to the new meta.
+		// If the gateway is in live mode, proceed to migrate the legacy customer ID to the new LIVE meta.
 		if ( false === $customer_id && ! WC_Payments::get_gateway()->is_in_test_mode() ) {
 			$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
 			if ( false !== $customer_id ) {
-				// A customer was found in the deprecated key. Migrate it to the new one and delete meta.
-				if ( update_user_option( $user_id, $this->get_customer_id_option(), $customer_id ) ) {
+				// A customer was found in the deprecated key. Migrate it to the new LIVE one and delete the old meta.
+				if ( update_user_option( $user_id, self::WCPAY_LIVE_CUSTOMER_ID_OPTION, $customer_id ) ) {
 					delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
 				} else {
 					// Log the error, but continue without deleting old meta since we have the customer ID we need.
