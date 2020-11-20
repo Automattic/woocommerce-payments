@@ -189,12 +189,12 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account live mode value.
 	 *
-	 * @return bool          Account is_live value.
+	 * @return bool|null     Account is_live value.
 	 * @throws API_Exception Bubbles up from get_cached_account_data.
 	 */
 	public function get_is_live() {
 		$account = $this->get_cached_account_data();
-		return $account['is_live'];
+		return isset( $account['is_live'] ) ? $account['is_live'] : null;
 	}
 
 	/**
