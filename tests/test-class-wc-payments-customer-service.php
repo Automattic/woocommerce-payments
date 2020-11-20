@@ -31,14 +31,22 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account    = $this->createMock( WC_Payments_Account::class );
 
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account );
 	}
 
 	/**

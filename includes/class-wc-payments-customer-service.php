@@ -49,12 +49,21 @@ class WC_Payments_Customer_Service {
 	private $payments_api_client;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
 	}
 
 	/**
