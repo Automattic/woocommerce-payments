@@ -34,6 +34,13 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	private $mock_customer_service;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * @var int
 	 */
 	private $user_id = 0;
@@ -49,8 +56,9 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+		$this->mock_account          = $this->createMock( WC_Payments_Account::class );
 
-		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service );
+		$this->token_service = new WC_Payments_Token_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_account );
 	}
 
 	/**

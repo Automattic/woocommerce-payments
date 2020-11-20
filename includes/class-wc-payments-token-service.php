@@ -38,14 +38,27 @@ class WC_Payments_Token_Service {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_Payments_Token_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client       $payments_api_client Payments API client.
-	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
+	 * @param WC_Payments_Customer_Service $customer_service    Customer class instance.
+	 * @param WC_Payments_Account          $account             WC_Payments_Account instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Customer_Service $customer_service ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Account $account
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->customer_service    = $customer_service;
+		$this->account             = $account;
 
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
