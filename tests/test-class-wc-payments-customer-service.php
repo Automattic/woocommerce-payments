@@ -97,6 +97,18 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
 	}
 
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_live_key_for_undefined_accounts() {
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+		$this->mock_account->method( 'get_is_live' )->willReturn( null );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertEquals( 'cus_12345', $customer_id );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
 	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_test_key_for_test_accounts() {
 		// We're using live mode here to assert the account is migrated to the test key regardless of it.
 		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );

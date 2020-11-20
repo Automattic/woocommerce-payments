@@ -309,7 +309,9 @@ class WC_Payments_Customer_Service {
 			// If an account is live mode, we optimistically assume that the customer is live mode, to avoid losing
 			// live mode customer data. If the account is not live mode, it can only have test mode objects, so we
 			// can safely migrate them to the test key.
-			$customer_option_id = $this->account->get_is_live()
+			// If is_live cannot be determined, default it to true to avoid considering a live account as test.
+			$account_is_live    = null === $this->account->get_is_live() || $this->account->get_is_live();
+			$customer_option_id = $account_is_live
 				? self::WCPAY_LIVE_CUSTOMER_ID_OPTION
 				: self::WCPAY_TEST_CUSTOMER_ID_OPTION;
 			if ( update_user_option( $user_id, $customer_option_id, $customer_id ) ) {
