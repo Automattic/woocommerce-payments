@@ -318,7 +318,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( null );
 
@@ -326,7 +326,10 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertCount( 0, $result );
 	}
 
-	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_live_mode() {
+	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_live_account() {
+		// We're using test mode here to assert the account is migrated to the live key regardless of it.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+
 		$old_token1           = WC_Helper_Token::create_token( 'pm_mock0' );
 		$old_token2           = WC_Helper_Token::create_token( 'pm_mock1' );
 		$token1               = WC_Helper_Token::create_token( 'pm_mock2' );
@@ -337,9 +340,12 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$tokens = [ $old_token1, $old_token2, $token1, $wrong_customer_token ];
 
+		$this->mock_account->method( 'get_is_live' )->willReturn( true );
+
 		$this->mock_customer_service
-			->expects( $this->any() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
+			->withConsecutive( [ 1 ], [ 1, 'live' ] )
 			->willReturn( 'cus_12345' );
 
 		$this->mock_customer_service
@@ -359,9 +365,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'cus_12345', $result_tokens[2]->get_meta( '_wcpay_customer_id' ) );
 	}
 
-	public function test_woocommerce_get_customer_payment_tokens_does_not_migrate_old_tokens_test_mode() {
+	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_test_account() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
-
 		$old_token1 = WC_Helper_Token::create_token( 'pm_mock0' );
 		$token1     = WC_Helper_Token::create_token( 'pm_mock1' );
 
@@ -369,9 +374,12 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$tokens = [ $old_token1, $token1 ];
 
+		$this->mock_account->method( 'get_is_live' )->willReturn( false );
+
 		$this->mock_customer_service
-			->expects( $this->any() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
+			->withConsecutive( [ 1 ], [ 1, 'test' ] )
 			->willReturn( 'cus_12345' );
 
 		$this->mock_customer_service
@@ -382,8 +390,10 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
 		$result_tokens = array_values( $result );
-		$this->assertCount( 1, $result_tokens );
-		$this->assertEquals( 'pm_mock1', $result_tokens[0]->get_token() );
+		$this->assertCount( 2, $result_tokens );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
 		$this->assertEquals( 'cus_12345', $result_tokens[0]->get_meta( '_wcpay_customer_id' ) );
+		$this->assertEquals( 'cus_12345', $result_tokens[1]->get_meta( '_wcpay_customer_id' ) );
 	}
 }

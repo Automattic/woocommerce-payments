@@ -109,7 +109,7 @@ class WC_Payments_Token_Service {
 	 * Filters tokens based on customer ID and imports saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
-	 * @param string $user_id    WC user ID.
+	 * @param int    $user_id    WC user ID.
 	 * @param string $gateway_id WC gateway ID.
 	 * @return array
 	 */
@@ -126,11 +126,7 @@ class WC_Payments_Token_Service {
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
-		// If in live mode, update deprecated tokens with customer information.
-		if ( ! WC_Payments::get_gateway()->is_in_test_mode() ) {
-			$tokens = $this->migrate_customerless_tokens( $tokens, $customer_id );
-		}
-
+		$tokens = $this->migrate_customerless_tokens( $tokens, $user_id );
 		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
 		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 
@@ -240,12 +236,19 @@ class WC_Payments_Token_Service {
 	/**
 	 * Adds customer information to tokens that have none.
 	 *
-	 * @param array  $tokens      Token list.
-	 * @param string $customer_id Customer ID.
+	 * @param array $tokens  Token list.
+	 * @param int   $user_id WC user ID.
 	 *
 	 * @return array Token list with tokens for $customer_id.
 	 */
-	private function migrate_customerless_tokens( $tokens, $customer_id ) {
+	private function migrate_customerless_tokens( $tokens, $user_id ) {
+		// If is_live cannot be determined, default it to true to avoid considering a live account as test.
+		$account_is_live = null === $this->account->get_is_live() || $this->account->get_is_live();
+		$customer_id     = $this->customer_service->get_customer_id_by_user_id(
+			$user_id,
+			$account_is_live ? 'live' : 'test'
+		);
+
 		foreach ( $tokens as $token ) {
 			if ( ! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ) {
 				$token->update_meta_data(
