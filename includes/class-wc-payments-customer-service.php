@@ -82,18 +82,10 @@ class WC_Payments_Customer_Service {
 		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
 
 		// If customer_id is false it could mean that it hasn't been migrated from the deprecated key.
-		// If the gateway is in live mode, proceed to migrate the legacy customer ID to the new LIVE meta.
-		if ( false === $customer_id && ! WC_Payments::get_gateway()->is_in_test_mode() ) {
-			$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
-			if ( false !== $customer_id ) {
-				// A customer was found in the deprecated key. Migrate it to the new LIVE one and delete the old meta.
-				if ( update_user_option( $user_id, self::WCPAY_LIVE_CUSTOMER_ID_OPTION, $customer_id ) ) {
-					delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
-				} else {
-					// Log the error, but continue without deleting old meta since we have the customer ID we need.
-					Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
-				}
-			}
+		if ( false === $customer_id ) {
+			$customer_id = $this->maybe_migrate_deprecated_customer( $user_id );
+			// Customer might've been migrated in maybe_migrate_deprecated_customer, so we need to fetch it again.
+			$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
 		}
 
 		return $customer_id ? $customer_id : null;
@@ -303,5 +295,28 @@ class WC_Payments_Customer_Service {
 		return WC_Payments::get_gateway()->is_in_test_mode()
 			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
 			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
+	}
+
+	/**
+	 * Migrate any customer ID that might be in the DEPRECATED_WCPAY_CUSTOMER_ID_OPTION.
+	 *
+	 * @param int $user_id The user ID to look for a customer ID with.
+	 */
+	private function maybe_migrate_deprecated_customer( $user_id ) {
+		$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
+		if ( false !== $customer_id ) {
+			// A customer was found in the deprecated key. Migrate it to the appropriate one and delete the old meta.
+			// If an account is live mode, we optimistically assume that the customer is live mode, to avoid losing
+			// live mode customer data. If the account is not live mode, it can only have test mode objects, so we
+			// can safely migrate them to the test key.
+			$customer_option_id = $this->account->get_is_live()
+				? self::WCPAY_LIVE_CUSTOMER_ID_OPTION
+				: self::WCPAY_TEST_CUSTOMER_ID_OPTION;
+			if ( update_user_option( $user_id, $customer_option_id, $customer_id ) ) {
+				delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
+			} else {
+				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
+			}
+		}
 	}
 }
