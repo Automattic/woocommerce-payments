@@ -69,17 +69,18 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Get WCPay customer ID for the given WordPress user ID
 	 *
-	 * @param int $user_id The user ID to look for a customer ID with.
+	 * @param int    $user_id The user ID to look for a customer ID with.
+	 * @param string $mode    Specific mode to return the customer ID. Defaults to current store mode.
 	 *
 	 * @return string|null WCPay customer ID or null if not found.
 	 */
-	public function get_customer_id_by_user_id( $user_id ) {
+	public function get_customer_id_by_user_id( $user_id, $mode = '' ) {
 		// User ID might be 0 if fetched from a WP_User instance for a user who isn't logged in.
 		if ( null === $user_id || 0 === $user_id ) {
 			return null;
 		}
 
-		$customer_id = get_user_option( $this->get_customer_id_option(), $user_id );
+		$customer_id = get_user_option( $this->get_customer_id_option( $mode ), $user_id );
 
 		// If customer_id is false it could mean that it hasn't been migrated from the deprecated key.
 		if ( false === $customer_id ) {
@@ -293,10 +294,13 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Returns the name of the customer option meta, taking test mode into account.
 	 *
+	 * @param string $mode Specific mode to return the customer ID ('test' or 'live'). Defaults to current store mode.
+	 *
 	 * @return string The customer ID option name.
 	 */
-	private function get_customer_id_option(): string {
-		return WC_Payments::get_gateway()->is_in_test_mode()
+	private function get_customer_id_option( $mode = '' ): string {
+		$test_mode = 'test' === $mode || ( 'live' !== $mode && WC_Payments::get_gateway()->is_in_test_mode() );
+		return $test_mode
 			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
 			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
 	}

@@ -83,6 +83,23 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'cus_test12345', $customer_id );
 	}
 
+	public function test_get_customer_id_by_user_id_get_live_in_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1, 'live' );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
+	public function test_get_customer_id_by_user_id_get_test_in_live_mode() {
+		update_user_option( 1, self::CUSTOMER_TEST_META_KEY, 'cus_test12345' );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1, 'test' );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
 	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_live_key_for_live_accounts() {
 		// We're using test mode here to assert the account is migrated to the live key regardless of it.
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
