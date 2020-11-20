@@ -27,6 +27,14 @@ class WC_Payments_Admin {
 	private $account;
 
 	/**
+	 * Indicates if the connection to the server was not available
+	 * at some stage, in order not to enqueue any scripts.
+	 *
+	 * @var bool
+	 */
+	private $connection_broken = false;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
@@ -54,6 +62,7 @@ class WC_Payments_Admin {
 			$stripe_connected = $this->account->try_is_stripe_connected();
 		} catch ( Exception $e ) {
 			// do not render the menu if the server is unreachable.
+			$this->connection_broken = true;
 			return;
 		}
 
@@ -264,6 +273,11 @@ class WC_Payments_Admin {
 	 */
 	public function enqueue_payments_scripts() {
 		global $current_tab, $current_section;
+
+		// No connection means some scripts cannot be localized.
+		if ( $this->connection_broken ) {
+			return;
+		}
 
 		$this->register_payments_scripts();
 

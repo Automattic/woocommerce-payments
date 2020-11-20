@@ -6,6 +6,7 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -25,7 +26,12 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
-		return WC_Payments::get_gateway()->is_available();
+		try {
+			return WC_Payments::get_gateway()->is_available();
+		} catch ( API_Exception $e ) {
+			// An API exception this early means that the server is not available.
+			return false;
+		}
 	}
 
 	/**
