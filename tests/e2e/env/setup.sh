@@ -54,7 +54,7 @@ fi
 step "Setting up server containers"
 redirect_output local/bin/docker-setup.sh
 
-step "Configuring server with stripe account (test account, skip sync)"
+step "Configuring server with stripe account"
 redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
 
 cd $cwd
