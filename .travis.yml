@@ -120,4 +120,5 @@ script:
 branches:
   only:
     - master
+    - update/travis-configuration
     - /^feature\/.*$/
