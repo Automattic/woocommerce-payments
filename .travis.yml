@@ -12,7 +12,7 @@ services:
 stages:
   - test
   - name: compatibility
-    if: branch = master
+    if: branch = update/travis-configuration
   - e2e-testing
 
 env:
