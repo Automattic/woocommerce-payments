@@ -10,11 +10,11 @@ services:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
-  - test
-  - name: compatibility
-    if: branch = master
-  - name: compatibility-edge
-    if: branch = master
+#  - test
+#  - name: compatibility
+#    if: branch = master
+#  - name: compatibility-edge
+#    if: branch = master
   - e2e-testing
 
 env:
