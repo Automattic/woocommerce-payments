@@ -12,7 +12,7 @@ services:
 stages:
   - test
   - name: compatibility
-    if: branch = update/travis-configuration
+    if: branch = master
   - e2e-testing
 
 env:
@@ -120,5 +120,4 @@ script:
 branches:
   only:
     - master
-    - update/travis-configuration
     - /^feature\/.*$/
