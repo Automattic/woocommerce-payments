@@ -485,7 +485,7 @@ class WC_Payments_Payment_Request {
 		$stripe_params = [
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => [
-				'publishableKey'     => $this->account->get_publishable_key( true ), // TODO pass is_test_mode as argument
+				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::get_gateway()->is_in_test_mode() ),
 				'accountId'          => $this->account->get_stripe_account_id(),
 				'allow_prepaid_card' => apply_filters( 'wc_stripe_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
