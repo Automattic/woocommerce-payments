@@ -7,9 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use Automattic\WooCommerce\Admin\Loader;
-use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
-
 /**
  * WC_Payments_Admin Class.
  */
