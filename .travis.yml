@@ -29,11 +29,11 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    - name: "compatibility: PHP 7.4, WP nightly, WC latest"
+    - name: "compatibility-edge: PHP 7.4, WP nightly, WC latest"
       php: 7.4
       env: WP_VERSION=nightly WC_VERSION=latest
       stage: compatibility
-    - name: "compatibility: PHP nightly, WP nightly, WC beta"
+    - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
       php: nightly
       env: WP_VERSION=nightly WC_VERSION=beta
       stage: compatibility
@@ -55,7 +55,7 @@ matrix:
     env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
     stage: test
 # bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
-  - name: "compatibility: PHP 7.0, WP oldest, WC oldest"
+  - name: "compatibility-edge: PHP 7.0, WP oldest, WC oldest"
     php: 7.0
     env: WP_VERSION=$WP_OLDEST_SUPPORTED_VERSION WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
     stage: compatibility
@@ -77,11 +77,11 @@ matrix:
     env: WP_VERSION=latest WC_VERSION=$WC_NEWEST_SUPPORTED_VERSION
     stage: compatibility
 # top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
-  - name: "compatibility: PHP 7.4, WP nightly, WC latest"
+  - name: "compatibility-edge: PHP 7.4, WP nightly, WC latest"
     php: 7.4
     env: WP_VERSION=nightly WC_VERSION=latest
     stage: compatibility
-  - name: "compatibility: PHP nightly, WP nightly, WC beta"
+  - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
     php: nightly
     env: WP_VERSION=nightly WC_VERSION=beta
     stage: compatibility
