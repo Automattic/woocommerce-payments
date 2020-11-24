@@ -64,8 +64,10 @@ class WC_Payments_Admin {
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'nav_args'   => [
-					'title'       => __( 'WooCommerce Payments', 'woocommerce-payments' ),
-					'is_category' => $stripe_connected,
+					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'is_category'  => $stripe_connected,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
 				],
 			]
 		);
