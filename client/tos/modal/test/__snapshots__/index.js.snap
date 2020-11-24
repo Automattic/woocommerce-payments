@@ -35,6 +35,7 @@ exports[`ToS modal should render ToS modal 1`] = `
         <a
           data-link-type="external"
           href="https://wordpress.com/tos"
+          rel="noopener noreferrer"
           target="_blank"
         >
           Terms of Service
@@ -97,6 +98,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
         <a
           data-link-type="external"
           href="https://wordpress.com/tos"
+          rel="noopener noreferrer"
           target="_blank"
         >
           Terms of Service

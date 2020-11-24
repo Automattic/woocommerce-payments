@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.5
 Requires PHP: 7.0
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.7.0 - 2020-xx-xx =
+= 1.8.0 - 2020-xx-xx =
+* Add - Include information about failing payment into order notes.
+* Fix - Fix crash when a user has 10 or more saved credit cards.
+
+= 1.7.0 - 2020-11-17 =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.
 * Fix - Render dispute evidence file upload errors.
@@ -112,7 +116,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced "Set up refund policy" notification in WooCommerce inbox.
 * Fix - Fix error when retrying to save a card in the Add Payment Method screen after failing SCA authentication.
 * Add - Allow signing up for a subscription with free trial with a credit card that requires SCA authentication.
-* Fix - Fix crash when a user has 10 or more saved credit cards.
+* Add - Remote note service.
+* Add - Show details about the current fees in the Settings screen.
 
 = 1.6.0 - 2020-10-15 =
 * Fix - Trimming the whitespace when updating the bank statement descriptor.

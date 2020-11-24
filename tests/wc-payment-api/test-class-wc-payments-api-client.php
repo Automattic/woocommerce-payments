@@ -424,6 +424,72 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test getting initial oauth data.
+	 *
+	 * @throws API_Exception
+	 */
+	public function test_get_oauth_data() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
+					'method'  => 'POST',
+					'headers' => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode'           => false,
+						'return_url'          => 'http://localhost',
+						'business_data'       => [
+							'a' => 1,
+							'b' => 2,
+							'c' => 3,
+						],
+						'create_live_account' => true,
+						'actioned_notes'      => [
+							'd' => 4,
+							'e' => 5,
+							'f' => 6,
+						],
+					]
+				)
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'url' => false ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		// Call the method under test.
+		$result = $this->payments_api_client->get_oauth_data(
+			'http://localhost',
+			[
+				'a' => 1,
+				'b' => 2,
+				'c' => 3,
+			],
+			[
+				'd' => 4,
+				'e' => 5,
+				'f' => 6,
+			]
+		);
+
+		// Assert the response is correct.
+		$this->assertEquals( [ 'url' => false ], $result );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int   $status_code status code for the mocked response.

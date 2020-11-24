@@ -116,10 +116,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_status'               => [
 				'type' => 'account_status',
 			],
+			'account_fees'                 => [
+				'type' => 'account_fees',
+			],
 			'account_statement_descriptor' => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
-				'description' => __( 'Edit the way your store name appears on your customers’ bank statements.', 'woocommerce-payments' ),
+				'description' => WC_Payments_Utils::esc_interpolated_html(
+					__( 'Edit the way your store name appears on your customers’ bank statements (read more about requirements <a>here</a>).', 'woocommerce-payments' ),
+					[ 'a' => '<a href="https://docs.woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
+				),
 			],
 			'manual_capture'               => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
@@ -427,6 +433,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			$order->update_status( 'failed' );
+
+			if ( ! empty( $payment_information ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					wc_price( $order->get_total() ),
+					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$order->add_order_note( $note );
+			}
 
 			return [
 				'result'   => 'fail',
@@ -805,6 +830,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			</th>
 			<td>
 				<div id="wcpay-account-status-container"></div>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generates markup for the fees information section.
+	 *
+	 * @return string Markup or empty if the account is not connected.
+	 */
+	public function generate_account_fees_html() {
+		if ( ! $this->is_connected() || empty( $this->account->get_fees() ) ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row">
+				<?php echo esc_html( __( 'Base fee', 'woocommerce-payments' ) ); ?>
+			</th>
+			<td>
+				<div id="wcpay-account-fees-container"></div>
 			</td>
 		</tr>
 		<?php

@@ -46,16 +46,30 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $account;
 
 	/**
+	 * WC Payments Remote Note Service.
+	 *
+	 * @var WC_Payments_Remote_Note_Service
+	 */
+	private $remote_note_service;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payments_DB         $wcpay_db   WC_Payments_DB instance.
-	 * @param WC_Payments_Account    $account    WC_Payments_Account instance.
+	 * @param WC_Payments_API_Client          $api_client          WC_Payments_API_Client instance.
+	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
+	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
+	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payments_DB $wcpay_db,
+		WC_Payments_Account $account,
+		WC_Payments_Remote_Note_Service $remote_note_service
+	) {
 		parent::__construct( $api_client );
-		$this->wcpay_db = $wcpay_db;
-		$this->account  = $account;
+		$this->wcpay_db            = $wcpay_db;
+		$this->account             = $account;
+		$this->remote_note_service = $remote_note_service;
 	}
 
 	/**
@@ -102,6 +116,10 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					break;
 				case 'account.updated':
 					$this->account->refresh_account_data();
+					break;
+				case 'wcpay.notification':
+					$note = $this->read_rest_property( $body, 'data' );
+					$this->remote_note_service->put_note( $note );
 					break;
 			}
 		} catch ( Rest_Request_Exception $e ) {
@@ -180,7 +198,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// Fetch the details of the expired auth so that we can find the associated order.
 		$charge_id = $this->read_rest_property( $event_object, 'id' );
-		$intent_id = $this->read_rest_property( $event_object, 'payment_intent' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
