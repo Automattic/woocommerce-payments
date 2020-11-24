@@ -2,9 +2,6 @@
   "extends": [
     "config:base"
   ],
-  "minor": {
-    "automerge": false
-  },
   "patch": {
     "automerge": true
   },
