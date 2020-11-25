@@ -665,7 +665,11 @@ class WC_Payments_Account {
 	 * @return array|null Eiter the agreement or null if unavailable.
 	 */
 	public function get_latest_tos_agreement() {
-		$account = $this->get_cached_account_data();
+		try {
+			$account = $this->get_cached_account_data();
+		} catch ( API_Exception $e ) {
+			return null;
+		}
 
 		return ! empty( $account ) && isset( $account['latest_tos_agreement'] )
 			? $account['latest_tos_agreement']
