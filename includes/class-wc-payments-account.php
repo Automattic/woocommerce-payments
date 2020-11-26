@@ -182,8 +182,12 @@ class WC_Payments_Account {
 	 * @throws API_Exception Bubbles up from get_cached_account_data.
 	 */
 	public function get_fees() {
-		$account = $this->get_cached_account_data();
-		return isset( $account['fees'] ) ? $account['fees'] : [];
+		try {
+			$account = $this->get_cached_account_data();
+			return isset( $account['fees'] ) ? $account['fees'] : [];
+		} catch ( API_Exception $e ) {
+			return [];
+		}
 	}
 
 	/**
