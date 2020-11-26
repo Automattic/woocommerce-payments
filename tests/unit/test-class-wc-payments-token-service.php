@@ -290,6 +290,59 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_does_not_remove_valid_tokens() {
+		$token = WC_Helper_Token::create_token( 'pm_mock0' );
+		$token->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
+
+		$inactive_token = WC_Helper_Token::create_token( 'pm_mock1' );
+		$inactive_token->add_meta_data( '_wcpay_customer_id', 'cus_12345_test' );
+
+		$inexistent_token = WC_Helper_Token::create_token( 'pm_mock2' );
+		$inexistent_token->add_meta_data( '_wcpay_customer_id', 'cus_random_customer' );
+
+		$tokens = [ $token, $inactive_token, $inexistent_token ];
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->will(
+				$this->returnValueMap(
+					[
+						[ 1, '', 'cus_12345' ],
+						[ 1, 'live', 'cus_12345' ],
+						[ 1, 'test', 'cus_12345_test' ],
+					]
+				)
+			);
+
+		$this->mock_customer_service
+			->expects( $this->atLeastOnce() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willReturn(
+				[
+					[
+						'id'   => 'pm_mock0',
+						'type' => 'card',
+						'card' => [
+							'brand'     => 'visa',
+							'last4'     => '4242',
+							'exp_month' => 6,
+							'exp_year'  => 2026,
+						],
+					],
+				]
+			);
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$result_tokens = array_values( $result );
+		$this->assertCount( 1, $result_tokens );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+
+		// Assert that inactive_token has not been deleted and inexistent_token has.
+		$this->assertNotNull( WC_Payment_Tokens::get( $inactive_token->get_id() ) );
+		$this->assertNull( WC_Payment_Tokens::get( $inexistent_token->get_id() ) );
+	}
+
 	public function test_woocommerce_get_customer_payment_tokens_not_logged() {
 		$this->mock_customer_service
 			->expects( $this->never() )
@@ -343,7 +396,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->mock_account->method( 'get_is_live' )->willReturn( true );
 
 		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_customer_id_by_user_id' )
 			->withConsecutive( [ 1 ], [ 1, 'live' ] )
 			->willReturn( 'cus_12345' );
@@ -377,7 +430,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->mock_account->method( 'get_is_live' )->willReturn( false );
 
 		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->atLeastOnce() )
 			->method( 'get_customer_id_by_user_id' )
 			->withConsecutive( [ 1 ], [ 1, 'test' ] )
 			->willReturn( 'cus_12345' );

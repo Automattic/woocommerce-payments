@@ -208,8 +208,15 @@ class WC_Payments_Token_Service {
 
 		// Remove the payment methods that no longer exist in Stripe's side.
 		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
+		$inactive_customer_id = $this->customer_service->get_customer_id_by_user_id(
+			$user_id,
+			WC_Payments::get_gateway()->is_in_test_mode() ? 'live' : 'test'
+		);
 		foreach ( $stored_tokens as $token ) {
-			$token->delete();
+			// Do not remove tokens for the inactive customer.
+			if ( is_null( $inactive_customer_id ) || $token->get_meta( self::CUSTOMER_ID_META_KEY ) !== $inactive_customer_id ) {
+				$token->delete();
+			}
 		}
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
