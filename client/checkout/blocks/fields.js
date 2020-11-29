@@ -14,6 +14,7 @@ import { useEffect, useState } from '@wordpress/element';
 import generatePaymentMethod from './generate-payment-method.js';
 import confirmCardPayment from './confirm-card-payment.js';
 import { PAYMENT_METHOD_NAME } from '../constants.js';
+import WCPayAPI from '../api';
 
 const WCPayFields = ( {
 	api,
@@ -88,7 +89,9 @@ const WCPayFields = ( {
 /**
  * Wraps WCPayFields within the necessary Stripe consumer components.
  *
- * @param {object} props All props given by WooCommerce Blocks.
+ * @param {object} allProps All props given by WooCommerce Blocks.
+ * @param {WCPayAPI} allProps.api The API class that is used to connect both with the server and Stripe.
+ * @param {object} allProps.props The rest of the props.
  * @returns {object}     The wrapped React element.
  */
 const ConsumableWCPayFields = ( { api, ...props } ) => (

@@ -3,6 +3,7 @@
  */
 import { __, _n } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -36,12 +37,9 @@ const detailsTopics = [
 ];
 
 /**
- * Returns an <a> tag with the href attribute set to the Payments settings
- * page, and the provided text.
+ * Returns an <a> tag with the href attribute set to the Payments settings page.
  *
- * @param {string} topic The notice message topic.
- *
- * @returns {*} An HTML <a> component with a link to wcpay settings page.
+ * @returns {React.ReactNode} An HTML <a> component with a link to wcpay settings page.
  */
 export const getPaymentsSettingsUrlComponent = () => {
 	return (

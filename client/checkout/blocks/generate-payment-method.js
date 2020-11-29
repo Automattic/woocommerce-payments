@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME } from '../constants.js';
+import WCPayAPI from '../api';
 
 /**
  * Handles the payment method generation action.

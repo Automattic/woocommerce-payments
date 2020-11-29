@@ -167,8 +167,9 @@ jQuery( function ( $ ) {
 	/**
 	 * Saves the payment method ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form         The jQuery object for the form.
-	 * @param {object} paymentMethod Payment method object.
+	 * @param {object} $form            The jQuery object for the form.
+	 * @param {object} paymentMethod    Payment method object.
+	 * @param {string} paymentMethod.id Payment method ID.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
 		// Populate form with the payment method.

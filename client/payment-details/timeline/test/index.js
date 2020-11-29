@@ -27,15 +27,6 @@ jest.mock( '@woocommerce/components', () => {
 describe( 'PaymentDetailsTimeline', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		global.wcpaySettings = {
-			featureFlags: {
-				paymentTimeline: true,
-			},
-		};
-	} );
-
-	afterEach( () => {
-		delete global.wcpaySettings;
 	} );
 
 	test( 'renders loading', () => {
@@ -162,16 +153,6 @@ describe( 'PaymentDetailsTimeline', () => {
 			timelineError: null,
 			isLoading: false,
 		} );
-
-		const { container } = render(
-			<PaymentDetailsTimeline chargeId={ 'ch_test' } />
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'does not render when the feature flag is disabled', () => {
-		wcpaySettings.featureFlags.paymentTimeline = false;
 
 		const { container } = render(
 			<PaymentDetailsTimeline chargeId={ 'ch_test' } />

@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { ReactNode } from 'react';
+
+/**
  * Internal dependencies
  */
 import './style.scss';

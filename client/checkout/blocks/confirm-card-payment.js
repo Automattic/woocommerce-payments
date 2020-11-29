@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import WCPayAPI from '../api';
+
+/**
  * Handles the confirmation of card payments (3DSv2 modals/SCA challenge).
  *
  * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
