@@ -141,6 +141,7 @@ install_db() {
 	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
 	local WAITS=0
 
+	set +e
 	# Wait for the database to be started before the setup.
 	mysqladmin status $ADMIN_EXTRA > /dev/null
 	while [[ $? -ne 0 ]]; do
