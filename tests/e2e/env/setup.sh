@@ -12,7 +12,7 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 fi
 
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
-	step "Fetching server"
+	step "Fetching server (branch ${WCP_SERVER_BRANCH-master})"
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
 		echo "WCP_SERVER_REPO env variable is not defined"
@@ -20,9 +20,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	fi
 
 	rm -rf $SERVER_PATH
-	# git clone --depth=1 --branch ${WCP_SERVER_BRANCH-master} $WCP_SERVER_REPO $SERVER_PATH
-	git clone --depth=1 --branch update/docker-flags-for-client-ci $WCP_SERVER_REPO $SERVER_PATH
-
+	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-master} $WCP_SERVER_REPO $SERVER_PATH
 else
 	echo "Using cached server at ${SERVER_PATH}"
 fi
