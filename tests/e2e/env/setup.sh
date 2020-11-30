@@ -44,6 +44,7 @@ echo "Secrets created"
 
 step "Starting server containers"
 redirect_output docker-compose up --build --force-recreate -d
+sleep 15
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
