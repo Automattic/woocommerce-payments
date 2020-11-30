@@ -51,6 +51,7 @@ if [[ -n $CI ]]; then
 fi
 
 step "Setting up SERVER containers"
+cat $SERVER_PATH/local/bin/docker-setup.sh
 redirect_output $SERVER_PATH/local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
