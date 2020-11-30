@@ -42,9 +42,8 @@ define( 'WCPAY_OAUTH_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYB
 printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
-step "Starting server containers"
+step "Starting SERVER containers"
 redirect_output docker-compose up --build --force-recreate -d
-sleep 10
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
@@ -73,12 +72,11 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-master} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
 fi
 
-step "Starting client containers"
+step "Starting CLIENT containers"
 redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
 fi
-sleep 10
 
 echo
 step "Setting up client site"
