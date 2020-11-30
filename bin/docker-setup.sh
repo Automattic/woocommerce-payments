@@ -18,7 +18,7 @@ redirect_output() {
 # https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
 cli()
 {
-	redirect_output docker run --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
+	redirect_output docker run -t --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
 }
 
 set +e
