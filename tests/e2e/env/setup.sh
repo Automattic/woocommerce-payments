@@ -95,7 +95,7 @@ while [[ $? -ne 0 ]]; do
 	sleep 5
 	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
-echo "Client DB is up and running"
+echo "Client DB is up and running..."
 set -e
 
 echo
