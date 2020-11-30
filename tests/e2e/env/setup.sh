@@ -52,11 +52,11 @@ if [[ -n $CI ]]; then
 fi
 
 step "Setting up server containers"
-sed -i 's/docker-compose exec/docker-compose exec -T/g' local/bin/docker-setup.sh
+# sed -i 's/docker-compose exec/docker-compose exec -T/g' local/bin/docker-setup.sh
 redirect_output local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
-sed -i 's/docker-compose exec/docker-compose exec -T/g' local/bin/link-account.sh
+# sed -i 's/docker-compose exec/docker-compose exec -T/g' local/bin/link-account.sh
 redirect_output local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
 
 cd $cwd
