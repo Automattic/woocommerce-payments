@@ -43,7 +43,7 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting server containers"
-redirect_output docker-compose up --build --force-recreate -d
+redirect_output docker-compose -T up --build --force-recreate -d
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
@@ -71,9 +71,9 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 fi
 
 step "Starting client containers"
-redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
+redirect_output docker-compose -T -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
-	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
+	docker-compose -T -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
 fi
 
 echo
