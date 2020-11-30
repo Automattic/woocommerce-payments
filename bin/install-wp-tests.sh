@@ -138,7 +138,7 @@ install_db() {
 		fi
 	fi
 
-	local ADMIN_EXTRA="--user="$DB_USER" --password="$DB_PASS"$EXTRA"
+	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
 	local WAITS=0
 
 	# Wait for the database to be started before the setup.
