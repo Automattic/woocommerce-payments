@@ -51,7 +51,7 @@ if [[ -n $CI ]]; then
 	redirect_output ls -al ./docker
 fi
 
-step "Setting up server containers"
+step "Setting up SERVER containers"
 sed -i 's/docker-compose exec/docker-compose exec -T/g' local/bin/docker-setup.sh
 redirect_output local/bin/docker-setup.sh
 
@@ -79,7 +79,7 @@ if [[ -z $CI ]]; then
 fi
 
 echo
-step "Setting up client site"
+step "Setting up CLIENT site"
 # Need to use those credentials to comply with @woocommerce/e2e-environment
 WP_ADMIN=admin
 WP_ADMIN_PASSWORD=password
@@ -93,10 +93,10 @@ set +e
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
-	sleep 5s
+	sleep 5
 	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
-
+echo "Client DB is up and running"
 set -e
 
 echo
