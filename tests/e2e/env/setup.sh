@@ -92,11 +92,11 @@ SITE_TITLE="WooCommerce Payments E2E site"
 set +e
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
-redirect_output cli wp db check --path=/var/www/html --quiet > /dev/null
+cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5s
-	redirect_output cli wp db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
 
 set -e
