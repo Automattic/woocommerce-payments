@@ -10,6 +10,7 @@ env:
   WC_VERSION:         4.5.0  # the most used version here
   WCP_DEV_TOOLS_REPO: ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_SERVER_REPO:    ${{ secrets.WCP_SERVER_REPO }}
+  CI_USER_TOKEN:      ${{ secrets.CI_USER_TOKEN }}
 
 jobs:
   e2e:
@@ -32,5 +33,6 @@ jobs:
       - run: composer self-update 2.0.6 && composer install --no-progress
       - run: npm ci && npm run build:client
       # install testing resources and run E2E tests
+      - run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
       - run: npm run test:e2e-setup && npm run test:e2e
