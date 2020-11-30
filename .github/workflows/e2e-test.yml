@@ -6,8 +6,10 @@ on:
       - master
 
 env:
-  WP_VERSION: latest
-  WC_VERSION: 4.5.0  # the most used version here
+  WP_VERSION:         latest
+  WC_VERSION:         4.5.0  # the most used version here
+  WCP_DEV_TOOLS_REPO: ${{ secrets.WCP_DEV_TOOLS_REPO }}
+  WCP_SERVER_REPO:    ${{ secrets.WCP_SERVER_REPO }}
 
 jobs:
   e2e:
