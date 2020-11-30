@@ -34,4 +34,4 @@ jobs:
       - run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
       - run: sudo systemctl start mysql.service
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
-      - run: npm run test:e2e-setup && npm run test:e2e
+      - run: COMPOSE_INTERACTIVE_NO_CLI=1 npm run test:e2e-setup && npm run test:e2e
