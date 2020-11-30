@@ -44,7 +44,7 @@ echo "Secrets created"
 
 step "Starting server containers"
 redirect_output docker-compose up --build --force-recreate -d
-sleep 15
+sleep 10
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
@@ -78,6 +78,7 @@ redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build 
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
 fi
+sleep 10
 
 echo
 step "Setting up client site"
