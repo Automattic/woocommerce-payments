@@ -52,7 +52,8 @@ fi
 
 step "Setting up SERVER containers"
 echo '> '
-redirect_output $SERVER_PATH/local/bin/docker-setup.sh
+#redirect_output $SERVER_PATH/local/bin/docker-setup.sh
+$SERVER_PATH/local/bin/docker-setup.sh
 echo ' <'
 
 step "Configuring server with stripe account"
