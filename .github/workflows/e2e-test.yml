@@ -8,10 +8,10 @@ on:
 env:
   WP_VERSION:                                  latest
   WC_VERSION:                                  4.5.0  # the most used version here
-  CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}      # TODO: replace with one from CI-user
+  CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}       # TODO: replace with one from CI-user
   WCP_DEV_TOOLS_REPO:                          ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_SERVER_REPO:                             ${{ secrets.WCP_SERVER_REPO }}
-  WCP_SERVER_BRANCH:                           update/docker-flags-for-client-ci
+  WCP_SERVER_BRANCH:                           update/docker-flags-for-client-ci  # TODO: drop once server side changes are merged
   E2E_WCPAY_STRIPE_ACCOUNT_ID:                 ${{ secrets.E2E_WCPAY_STRIPE_ACCOUNT_ID }}
   E2E_WCPAY_STRIPE_TEST_CLIENT_ID:             ${{ secrets.E2E_WCPAY_STRIPE_TEST_CLIENT_ID }}
   E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY:            ${{ secrets.E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY }}
@@ -26,6 +26,13 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path:
+            - ${{ steps.composer-cache.outputs.dir }}
+            - ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
