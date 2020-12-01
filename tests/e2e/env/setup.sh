@@ -51,7 +51,9 @@ if [[ -n $CI ]]; then
 fi
 
 step "Setting up SERVER containers"
-echo '> ' && redirect_output $SERVER_PATH/local/bin/docker-setup.sh && echo ' <'
+echo '> '
+redirect_output $SERVER_PATH/local/bin/docker-setup.sh
+echo ' <'
 
 step "Configuring server with stripe account"
 redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
