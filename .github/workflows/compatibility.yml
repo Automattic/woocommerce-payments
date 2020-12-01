@@ -1,0 +1,49 @@
+name: WooCommerce, WordPress and PHP compatibility
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+# TODO: allow to fail: "compatibility-edge: PHP 7.4, WP nightly, WC latest", compatibility-edge: PHP nightly, WP nightly, WC beta"
+#  # top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
+#  - name: "compatibility-edge: PHP 7.4, WP nightly, WC latest"
+#    php: 7.4
+#    env: WP_VERSION=nightly WC_VERSION=latest
+#  - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
+#    php: nightly
+#    env: WP_VERSION=nightly WC_VERSION=beta
+#  # bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
+#  - name: "compatibility-edge: PHP 7.0, WP oldest, WC oldest"
+#    php: 7.0
+#    env: WP_VERSION=$WP_OLDEST_SUPPORTED_VERSION WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
+
+  woocommerce-compatibility:
+    name:    WooCommerce compatibility
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        woocommerce: ['4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0']
+        wordpress:   ['latest']
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools:       composer
+          coverage:    none
+      # install dependencies and run tests
+      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: sudo systemctl start mysql.service
+      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
+      - run: bash ./bin/phpunit.sh
