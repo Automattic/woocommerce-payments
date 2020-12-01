@@ -78,7 +78,7 @@ jobs:
         php:         ['8.0']
     steps:
       # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
-      continue-on-error: true
+      - continue-on-error: true
       # clone the repository
       - uses: actions/checkout@v2
       # enable dependencies caching
@@ -110,7 +110,7 @@ jobs:
         php:         ['7.4']
     steps:
       # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
-      continue-on-error: true
+      - continue-on-error: true
       # clone the repository
       - uses: actions/checkout@v2
       # enable dependencies caching
