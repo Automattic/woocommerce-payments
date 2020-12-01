@@ -5,10 +5,6 @@ on:
     branches:
       - master
 
-#env:
-#  WP_VERSION: latest
-#  WC_VERSION: 4.5.0  # the most used version here
-
 jobs:
   lint:
     name:    JS linting
