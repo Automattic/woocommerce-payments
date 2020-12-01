@@ -38,7 +38,7 @@ jobs:
       fail-fast:    false
       max-parallel: 5
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4', '8.0']
+        php: ['7.1', '7.2', '7.3', '7.4']
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -52,7 +52,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          extensions:  mysql, mysqli
           coverage:    none
       # install dependencies and run tests
       - run: composer self-update 2.0.6 && composer install --no-progress

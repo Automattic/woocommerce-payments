@@ -22,7 +22,6 @@ jobs:
   e2e:
     name:    E2E tests
     runs-on: ubuntu-16.04  
-
     steps:
       # clone the repository
       - uses: actions/checkout@v2
