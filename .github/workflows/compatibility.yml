@@ -77,8 +77,6 @@ jobs:
         wordpress:   ['nightly']
         php:         ['8.0']
     steps:
-      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
-      - continue-on-error: true
       # clone the repository
       - uses: actions/checkout@v2
       # enable dependencies caching
@@ -92,6 +90,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
+      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
+      - continue-on-error: true
       # install dependencies and run tests
       - run: composer self-update 2.0.6 && composer install --no-progress
       - run: sudo systemctl start mysql.service
@@ -109,8 +109,6 @@ jobs:
         wordpress:   ['latest']
         php:         ['7.4']
     steps:
-      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
-      - continue-on-error: true
       # clone the repository
       - uses: actions/checkout@v2
       # enable dependencies caching
@@ -124,6 +122,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
+      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
+      - continue-on-error: true
       # install dependencies and run tests
       - run: composer self-update 2.0.6 && composer install --no-progress
       - run: sudo systemctl start mysql.service
