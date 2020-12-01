@@ -28,10 +28,12 @@ jobs:
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
-          path: |
-            ~/.cache/composer/
-            ~/.npm
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}-npm-${{ hashFiles('package-lock.json') }}
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
