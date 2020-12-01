@@ -38,27 +38,6 @@ matrix:
       env: WP_VERSION=nightly WC_VERSION=beta
       stage: compatibility
   include:
-# PHP versions compatibility (latest WordPress and most used WooCommerce versions)
-  - name: "Code style checks"
-    php: 7.1
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
-    stage: test
-  - name: "Tests: PHP 7.1"
-    php: 7.1
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - name: "Tests: PHP 7.2"
-    php: 7.2
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - name: "Tests: PHP 7.3"
-    php: 7.3
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - name: "Tests: PHP 7.4"
-    php: 7.4
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
 # bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
   - name: "compatibility-edge: PHP 7.0, WP oldest, WC oldest"
     php: 7.0
