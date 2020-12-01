@@ -40,8 +40,6 @@ jobs:
     name:    Environment - oldest
     runs-on: ubuntu-16.04
     strategy:
-      fail-fast:    false
-      max-parallel: 10
       matrix:
         woocommerce: ['4.0.0']
         wordpress:   ['5.3']
@@ -64,18 +62,18 @@ jobs:
       - run: composer self-update 2.0.6 && composer install --no-progress
       - run: sudo systemctl start mysql.service
       - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
+      - run: wget https://phar.phpunit.de/phpunit-6.5.14.phar
       - run: bash ./bin/phpunit.sh
 
   compatibility-php8:
     name:    Environment - PHP 8
     runs-on: ubuntu-16.04
     strategy:
-      fail-fast:    false
-      max-parallel: 10
       matrix:
         woocommerce: ['beta']
         wordpress:   ['nightly']
         php:         ['8.0']
+    continue-on-error: true
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -100,12 +98,11 @@ jobs:
     name:    Environment - WC beta
     runs-on: ubuntu-16.04
     strategy:
-      fail-fast:    false
-      max-parallel: 10
       matrix:
         woocommerce: ['beta']
         wordpress:   ['latest']
         php:         ['7.4']
+    continue-on-error: true
     steps:
       # clone the repository
       - uses: actions/checkout@v2
