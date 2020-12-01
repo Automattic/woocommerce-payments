@@ -6,19 +6,6 @@ on:
       - master
 
 jobs:
-# TODO: allow to fail: "compatibility-edge: PHP 7.4, WP nightly, WC latest", compatibility-edge: PHP nightly, WP nightly, WC beta"
-#  # top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
-#  - name: "compatibility-edge: PHP 7.4, WP nightly, WC latest"
-#    php: 7.4
-#    env: WP_VERSION=nightly WC_VERSION=latest
-#  - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
-#    php: nightly
-#    env: WP_VERSION=nightly WC_VERSION=beta
-#  # bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
-#  - name: "compatibility-edge: PHP 7.0, WP oldest, WC oldest"
-#    php: 7.0
-#    env: WP_VERSION=$WP_OLDEST_SUPPORTED_VERSION WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
-
   woocommerce-compatibility:
     name:    WC compatibility
     runs-on: ubuntu-16.04
@@ -28,6 +15,7 @@ jobs:
       matrix:
         woocommerce: ['4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0']
         wordpress:   ['latest']
+        php:         ['7.4']
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -39,7 +27,101 @@ jobs:
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    none
+      # install dependencies and run tests
+      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: sudo systemctl start mysql.service
+      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
+      - run: bash ./bin/phpunit.sh
+
+  compatibility-oldest:
+    name:    Environment - oldest
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        woocommerce: ['4.0.0']
+        wordpress:   ['5.3']
+        php:         ['7.0']
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    none
+      # install dependencies and run tests
+      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: sudo systemctl start mysql.service
+      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
+      - run: bash ./bin/phpunit.sh
+
+  compatibility-php8:
+    name:    Environment - PHP 8
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        woocommerce: ['beta']
+        wordpress:   ['nightly']
+        php:         ['8.0']
+    steps:
+      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
+      continue-on-error: true
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    none
+      # install dependencies and run tests
+      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: sudo systemctl start mysql.service
+      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
+      - run: bash ./bin/phpunit.sh
+
+  compatibility-woocommerce-beta:
+    name:    Environment - WC beta
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast:    false
+      max-parallel: 10
+      matrix:
+        woocommerce: ['beta']
+        wordpress:   ['latest']
+        php:         ['7.4']
+    steps:
+      # allow to fail as we have to use unreleased WooCommerce/Wordpress versions
+      continue-on-error: true
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
       # install dependencies and run tests
