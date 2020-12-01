@@ -50,6 +50,8 @@ if [[ -n $CI ]]; then
 	redirect_output ls -al ./docker
 fi
 
+sleep?
+
 step "Setting up SERVER containers"
 redirect_output $SERVER_PATH/local/bin/docker-setup.sh
 
