@@ -256,6 +256,15 @@ class WC_Payments_Token_Service {
 			$account_is_live ? 'live' : 'test'
 		);
 
+		// Fall back to current customer ID if the optimistic migration customer does not exist.
+		if ( ! $customer_id && $account_is_live ) {
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id, 'test' );
+		}
+
+		if ( ! $customer_id ) {
+			return $tokens;
+		}
+
 		foreach ( $tokens as $token ) {
 			if ( ! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ) {
 				$token->update_meta_data(

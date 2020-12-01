@@ -411,6 +411,22 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'cus_12345', WC_Payment_Tokens::get( $old_token2->get_id() )->get_meta( '_wcpay_customer_id' ) );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_live_account_only_test_customer() {
+		$old_token = WC_Helper_Token::create_token( 'pm_mock0' );
+
+		$this->mock_account->method( 'get_is_live' )->willReturn( true );
+
+		$this->mock_customer_service
+			->method( 'get_customer_id_by_user_id' )
+			->withConsecutive( [ 1 ], [ 1, 'live' ], [ 1, 'test' ] )
+			->willReturnOnConsecutiveCalls( null, null, 'cus_12345' );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ $old_token ], 1, 'woocommerce_payments' );
+
+		$this->assertEmpty( $result );
+		$this->assertEquals( 'cus_12345', WC_Payment_Tokens::get( $old_token->get_id() )->get_meta( '_wcpay_customer_id' ) );
+	}
+
 	public function test_woocommerce_get_customer_payment_tokens_migrates_old_tokens_test_account() {
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
 		$old_token = WC_Helper_Token::create_token( 'pm_mock0' );
