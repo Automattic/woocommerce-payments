@@ -52,6 +52,16 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'manual_deposit' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -80,5 +90,10 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposit( $request ) {
 		$deposit_id = $request->get_params()['deposit_id'];
 		return $this->forward_request( 'get_deposit', [ $deposit_id ] );
+	}
+
+	public function manual_deposit( $request ) {
+		$params = $request->get_params();
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['transaction_ids'] ] );
 	}
 }

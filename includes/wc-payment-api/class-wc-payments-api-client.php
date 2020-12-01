@@ -334,6 +334,13 @@ class WC_Payments_API_Client {
 		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
 	}
 
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request( [
+			'type'            => $type,
+			'transaction_ids' => $transaction_ids,
+		], self::DEPOSITS_API, self::POST );
+	}
+
 	/**
 	 * Return summary for transactions.
 	 *
