@@ -30,8 +30,8 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: |
-            ${{ steps.composer-cache.outputs.dir }}
-            ${{ steps.npm-cache.outputs.dir }}
+            ~/.cache/composer/
+            ~/.npm
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
