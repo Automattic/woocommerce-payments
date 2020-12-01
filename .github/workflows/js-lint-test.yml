@@ -1,0 +1,41 @@
+name: JS linting and tests
+
+on:
+  pull_request:
+    branches:
+      - master
+
+#env:
+#  WP_VERSION: latest
+#  WC_VERSION: 4.5.0  # the most used version here
+
+jobs:
+  lint:
+    name:    JS linting
+    runs-on: ubuntu-16.04
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      # install dependencies and run linter
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    name:    JS testing
+    runs-on: ubuntu-16.04
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      # install dependencies and run linter
+      - run: npm ci
+      - run: npm run test
