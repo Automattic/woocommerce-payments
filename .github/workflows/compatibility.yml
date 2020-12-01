@@ -1,4 +1,4 @@
-name: WooCommerce, WordPress and PHP compatibility
+name: Cocmpatibility - WC, WP and PHP
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ jobs:
 #    env: WP_VERSION=$WP_OLDEST_SUPPORTED_VERSION WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
 
   woocommerce-compatibility:
-    name:    WooCommerce compatibility
+    name:    WC compatibility
     runs-on: ubuntu-16.04
     strategy:
       fail-fast:    false
