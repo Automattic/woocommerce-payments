@@ -314,4 +314,30 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
+
+	/**
+	 * Tests that an exception thrown in an action will be caught and a response is returned
+	 */
+	public function test_action_hook_exception_returns_response() {
+		// Setup test request data.
+		$this->request_body['type'] = 'account.updated';
+		$this->request_body['data'] = [
+			'foo' => 'bar',
+		];
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		add_action(
+			'woocommerce_payments_before_webhook_delivery',
+			function() {
+				throw new Exception( 'Crash' );
+			}
+		);
+
+		$response = $this->controller->handle_webhook( $this->request );
+
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 500, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'error' ], $response_data );
+	}
 }
