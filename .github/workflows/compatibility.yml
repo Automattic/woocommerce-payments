@@ -30,11 +30,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
-      # install dependencies and run tests
-      - run: composer self-update 2.0.6 && composer install --no-progress
-      - run: sudo systemctl start mysql.service
-      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
-      - run: bash ./bin/phpunit.sh
+      # run CI checks
+      - run: bash bin/run-ci-tests.bash
 
   compatibility-oldest:
     name:    Environment - oldest
@@ -58,12 +55,8 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
-      # install dependencies and run tests
-      - run: wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar
-      - run: composer self-update 2.0.6 && composer install --no-progress
-      - run: sudo systemctl start mysql.service
-      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
-      - run: bash ./bin/phpunit.sh
+      # run CI checks; we have to use older PHPUnit version here
+      - run: wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar && bash bin/run-ci-tests.bash
 
 #  compatibility-php8:
 #    name:    Environment - PHP 8
@@ -88,11 +81,8 @@ jobs:
 #          php-version: ${{ matrix.php }}
 #          tools:       composer
 #          coverage:    none
-#      # install dependencies and run tests
-#      - run: composer self-update 2.0.6 && composer install --no-progress
-#      - run: sudo systemctl start mysql.service
-#      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
-#      - run: bash ./bin/phpunit.sh
+#      # run CI checks
+#      - run: bash bin/run-ci-tests.bash
 
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
@@ -117,8 +107,5 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
-      # install dependencies and run tests
-      - run: composer self-update 2.0.6 && composer install --no-progress
-      - run: sudo systemctl start mysql.service
-      - run: WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost ${{ matrix.wordpress }} ${{ matrix.woocommerce }} false
-      - run: bash ./bin/phpunit.sh
+      # run CI checks
+      - run: bash bin/run-ci-tests.bash
