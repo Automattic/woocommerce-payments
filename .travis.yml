@@ -1,0 +1,60 @@
+language: php
+
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
+
+services:
+  - mysql
+
+# Different stages in order to only deploy when everything succeeds
+stages:
+  - name: compatibility
+    if: branch = master
+  - e2e-testing
+
+# 2. Also test against these combinations, as listed out explicitly one by one
+
+# Additional tests against stable PHP (min recommended version is 5.6) and past supported versions of WP
+# and code coverage report.
+matrix:
+  fast_finish: true
+  allow_failures:
+    - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
+      php: nightly
+      env: WP_VERSION=nightly WC_VERSION=beta
+      stage: compatibility
+  include:
+  - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
+    php: nightly
+    env: WP_VERSION=nightly WC_VERSION=beta
+    stage: compatibility
+  - name: "E2E tests"
+    env: WP_VERSION=latest WC_VERSION=4.5.0
+    stage: e2e-testing
+    script:
+      - npm run build:client && npm run test:e2e-setup && npm run test:e2e
+
+before_install:
+  - nvm install lts/erbium
+  - npm i -g npm@>=6.13.0
+  - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+
+install:
+  # Revert composer 2.0.7 to prevent error with Jetpack Autoloader
+  - composer self-update 2.0.6
+  - npm ci
+  - php --version && composer install
+  - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
+
+script:
+  - bash bin/phpunit.sh
+  - bash bin/phpcs.sh
+  - npm run lint
+  - npm test
+
+branches:
+  only:
+    - master
+    - /^feature\/.*$/
