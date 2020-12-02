@@ -321,7 +321,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 	public function test_exception_thrown() {
 		// Arrange: Reusable data.
-		$error_message = 'Error: No such customer: 123';
+		$error_message = 'Error: No such customer: 123.';
 		$order_id      = 123;
 		$total         = 12.23;
 
@@ -357,10 +357,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
 		$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
 
-		// Assert: No order note was added, besides the status change.
+		// Assert: No order note was added, besides the status change and failed transaction details.
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
-		$this->assertEquals( 1, count( $notes ) );
-		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[0]->content );
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( 'A payment of &pound;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );

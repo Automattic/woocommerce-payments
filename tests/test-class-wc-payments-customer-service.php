@@ -13,6 +13,9 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 
+	const CUSTOMER_LIVE_META_KEY = '_wcpay_customer_id_live';
+	const CUSTOMER_TEST_META_KEY = '_wcpay_customer_id_test';
+
 	/**
 	 * System under test.
 	 *
@@ -28,33 +31,95 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account    = $this->createMock( WC_Payments_Account::class );
 
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account );
 	}
 
 	/**
 	 * Post-test teardown
 	 */
 	public function tearDown() {
+		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
+		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		parent::tearDown();
 	}
 
 	/**
-	 * Test get customer ID by user ID.
+	 * Test get customer ID by user ID for live mode.
 	 */
 	public function test_get_customer_id_by_user_id() {
-		update_user_option( 1, '_wcpay_customer_id', 'cus_test12345' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
+	/**
+	 * Test get customer ID by user ID for test mode.
+	 */
+	public function test_get_customer_id_by_user_id_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		update_user_option( 1, self::CUSTOMER_TEST_META_KEY, 'cus_test12345' );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+	}
+
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_live_key_for_live_accounts() {
+		// We're using test mode here to assert the account is migrated to the live key regardless of it.
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+		$this->mock_account->method( 'get_is_live' )->willReturn( true );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertNull( $customer_id );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_live_key_for_undefined_accounts() {
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+		$this->mock_account->method( 'get_is_live' )->willReturn( null );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertEquals( 'cus_12345', $customer_id );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
+	}
+
+	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_test_key_for_test_accounts() {
+		// We're using live mode here to assert the account is migrated to the test key regardless of it.
+		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
+		$this->mock_account->method( 'get_is_live' )->willReturn( false );
+
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$this->assertNull( $customer_id );
+		$this->assertEquals( 'cus_12345', get_user_option( self::CUSTOMER_TEST_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( self::CUSTOMER_LIVE_META_KEY, 1 ) );
+		$this->assertFalse( get_user_option( '_wcpay_customer_id', 1 ) );
 	}
 
 	/**
@@ -85,7 +150,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test create customer for user.
+	 * Test create customer for user for live mode.
 	 *
 	 * @throws API_Exception
 	 */
@@ -101,6 +166,28 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+	}
+
+	/**
+	 * Test create customer for user for test mode.
+	 */
+	public function test_create_customer_for_user_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$user             = new WP_User( 1 );
+		$user->user_login = 'testUser';
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->willReturn( 'cus_test12345' );
+
+		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -133,7 +220,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test update customer for user when user not found.
+	 * Test update customer for user when user not found for live mode.
 	 *
 	 * @throws API_Exception
 	 */
@@ -168,6 +255,45 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertEquals( 'cus_test67890', $customer_id );
+		$this->assertEquals( 'cus_test67890', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
+	}
+
+	/**
+	 * Test update customer for user when user not found for test mode.
+	 */
+	public function test_update_customer_for_user_when_user_not_found_test_mode() {
+		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		$user             = new WP_User( 1 );
+		$user->user_login = 'testUser';
+
+		// Wire the mock to throw a resource not found exception.
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'update_customer' )
+			->with(
+				'cus_test12345',
+				[
+					'name'        => 'Test User',
+					'email'       => 'test.user@example.com',
+					'description' => 'Name: Test User, Username: testUser',
+				]
+			)
+			->willThrowException( new API_Exception( 'Error Message', 'resource_missing', 400 ) );
+
+		// Check that the API call to create customer happens.
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'create_customer' )
+			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->willReturn( 'cus_test67890' );
+
+		$customer_id = $this->customer_service->update_customer_for_user(
+			'cus_test12345',
+			$user,
+			'Test User',
+			'test.user@example.com'
+		);
+
+		$this->assertEquals( 'cus_test67890', $customer_id );
+		$this->assertEquals( 'cus_test67890', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
 	}
 
 	/**

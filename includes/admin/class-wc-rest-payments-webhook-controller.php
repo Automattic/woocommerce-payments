@@ -198,7 +198,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// Fetch the details of the expired auth so that we can find the associated order.
 		$charge_id = $this->read_rest_property( $event_object, 'id' );
-		$intent_id = $this->read_rest_property( $event_object, 'payment_intent' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
