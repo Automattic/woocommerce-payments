@@ -2,7 +2,7 @@
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
-const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const WordPressExternalDependenciesPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 
 const webpackConfig = {
 	mode: NODE_ENV,
