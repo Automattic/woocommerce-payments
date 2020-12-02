@@ -26,11 +26,16 @@ addFilter(
 	( pages ) => {
 		const { menuID, rootLink } = getMenuSettings();
 
+		const isNavigationEnabled = window.wcAdminFeatures.navigation;
+		const connectionPageTitle = isNavigationEnabled
+			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			: __( 'Connect', 'woocommerce-payments' );
+
 		pages.push( {
 			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Connect', 'woocommerce-payments' ) ],
+			breadcrumbs: [ rootLink, connectionPageTitle ],
 			navArgs: {
 				id: 'wc-payments',
 			},
