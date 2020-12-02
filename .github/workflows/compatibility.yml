@@ -47,6 +47,7 @@ jobs:
     name:    Environment - WC beta
     runs-on: ubuntu-16.04
     strategy:
+      fail-fast: false
       matrix:
         woocommerce: [ 'beta' ]
         wordpress:   [ 'nightly', 'latest' ]
