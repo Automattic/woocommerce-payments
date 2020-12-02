@@ -184,7 +184,10 @@ export const TransactionsList = ( props ) => {
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() )
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( txn.date ).local().toISOString()
+					)
 				),
 			},
 			type: {

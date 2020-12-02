@@ -63,13 +63,18 @@ const Info = ( { dispute, isLoading } ) => {
 				transactionId: 'Transaction link',
 		  }
 		: {
-				created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
+				created: dateI18n(
+					'M j, Y',
+					moment( dispute.created * 1000 ).toISOString()
+				),
 				amount: `${ currency.formatCurrency(
 					dispute.amount / 100
 				) } ${ dispute.currency.toUpperCase() }`,
 				dueBy: dateI18n(
 					'M j, Y - g:iA',
-					moment( dispute.evidence_details.due_by * 1000 )
+					moment(
+						dispute.evidence_details.due_by * 1000
+					).toISOString()
 				),
 				reason: composeDisputeReason( dispute ),
 				order: dispute.order ? (

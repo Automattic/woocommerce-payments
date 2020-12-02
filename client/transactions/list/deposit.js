@@ -20,7 +20,7 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 	const formattedDateAvailable =
 		dateAvailable != null &&
 		// Do not localize because it is intended as a date only, without time information.
-		dateI18n( 'M j, Y', moment.utc( dateAvailable ) );
+		dateI18n( 'M j, Y', moment.utc( dateAvailable ).toISOString() );
 
 	return depositId ? (
 		<Link href={ depositUrl }>

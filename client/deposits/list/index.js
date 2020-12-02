@@ -67,7 +67,10 @@ export const DepositsList = () => {
 
 		const dateDisplay = (
 			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-				{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
+				{ dateI18n(
+					'M j, Y',
+					moment.utc( deposit.date ).toISOString()
+				) }
 			</Link>
 		);
 

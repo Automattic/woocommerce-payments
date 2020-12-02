@@ -41,7 +41,10 @@ export const DepositOverview = ( { depositId } ) => {
 							'Deposit date',
 							'woocommerce-payments'
 						) }: ` }
-						{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
+						{ dateI18n(
+							'M j, Y',
+							moment.utc( deposit.date ).toISOString()
+						) }
 					</Loadable>
 				</div>
 				<div className="wcpay-deposit-status">

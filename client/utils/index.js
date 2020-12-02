@@ -67,7 +67,7 @@ export const formatStringValue = ( value ) =>
  */
 export const formatDateValue = ( date, upperBound = false ) => {
 	const adjustedDate = upperBound
-		? moment( date ).endOf( 'day' ).utc()
-		: moment( date ).startOf( 'day' ).utc();
+		? moment( date ).endOf( 'day' ).utc().toISOString()
+		: moment( date ).startOf( 'day' ).utc().toISOString();
 	return date && dateI18n( 'Y-m-d H:i:s', adjustedDate );
 };

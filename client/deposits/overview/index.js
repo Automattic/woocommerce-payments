@@ -22,7 +22,8 @@ import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
-const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
+const formatDate = ( format, date ) =>
+	dateI18n( format, moment.utc( date ).toISOString() );
 const getAmount = ( obj ) =>
 	currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
 const getDepositDate = ( deposit ) =>
