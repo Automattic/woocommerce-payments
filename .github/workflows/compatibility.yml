@@ -46,7 +46,6 @@ jobs:
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
     runs-on: ubuntu-16.04
-    continue-on-error: true
     strategy:
       matrix:
         woocommerce: [ 'beta' ]
@@ -79,3 +78,4 @@ jobs:
           coverage:    none
       # run CI checks
       - run: bash bin/run-ci-tests.bash
+        continue-on-error: true
