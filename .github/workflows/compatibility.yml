@@ -50,6 +50,7 @@ jobs:
     strategy:
       matrix:
         woocommerce: [ 'beta' ]
+        wordpress:   [ 'nightly', 'latest' ]
         include:
           # PHP 8 compatibility: the compatible WC/WP versions are not released yet
           - woocommerce: 'beta'
