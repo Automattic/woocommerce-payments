@@ -107,7 +107,11 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				. var_export( WC_Payments_Utils::redact_array( $body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			);
 
-			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $body );
+			try {
+				do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $body );
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
 
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
@@ -125,8 +129,11 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					break;
 			}
 
-			do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
-
+			try {
+				do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
 		} catch ( Rest_Request_Exception $e ) {
 			Logger::error( $e );
 			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
