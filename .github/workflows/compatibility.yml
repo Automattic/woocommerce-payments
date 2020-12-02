@@ -13,14 +13,14 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ 4.0.0, 4.3.0, 4.4.0, 4.5.0, 4.6.0 ]
-        wordpress:   [ latest ]
-        php:         [ 7.4 ]
+        woocommerce: [ '4.0.0', '4.3.0', '4.4.0', '4.5.0', '4.6.0' ]
+        wordpress:   [ 'latest' ]
+        php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: 4.0.0
-            wordpress:   5.3
-            php:         7.0
+          - woocommerce: '4.0.0'
+            wordpress:   '5.3'
+            php:         '7.0'
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
@@ -49,16 +49,16 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        woocommerce: [ beta ]
+        woocommerce: [ 'beta' ]
         include:
           # PHP 8 compatibility: the compatible WC/WP versions are not released yet
-          - woocommerce: beta
-            wordpress:   nightly
-            php:         8.0
+          - woocommerce: 'beta'
+            wordpress:   'nightly'
+            php:         '8.0'
           # WooCommerce beta compatibility: the rest stack is stable releases
-          - woocommerce: beta
-            wordpress:   latest
-            php:         7.4
+          - woocommerce: 'beta'
+            wordpress:   'latest'
+            php:         '7.4'
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
