@@ -69,5 +69,12 @@ export const formatDateValue = ( date, upperBound = false ) => {
 	const adjustedDate = upperBound
 		? moment( date ).endOf( 'day' ).utc().toISOString()
 		: moment( date ).startOf( 'day' ).utc().toISOString();
-	return date && dateI18n( 'Y-m-d H:i:s', adjustedDate );
+	return (
+		date &&
+		dateI18n(
+			'Y-m-d H:i:s',
+			adjustedDate,
+			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+		)
+	);
 };

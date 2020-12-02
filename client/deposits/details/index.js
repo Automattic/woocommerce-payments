@@ -43,7 +43,8 @@ export const DepositOverview = ( { depositId } ) => {
 						) }: ` }
 						{ dateI18n(
 							'M j, Y',
-							moment.utc( deposit.date ).toISOString()
+							moment.utc( deposit.date ).toISOString(),
+							true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 						) }
 					</Loadable>
 				</div>

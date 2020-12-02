@@ -20,7 +20,11 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 	const formattedDateAvailable =
 		dateAvailable != null &&
 		// Do not localize because it is intended as a date only, without time information.
-		dateI18n( 'M j, Y', moment.utc( dateAvailable ).toISOString() );
+		dateI18n(
+			'M j, Y',
+			moment.utc( dateAvailable ).toISOString(),
+			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+		);
 
 	return depositId ? (
 		<Link href={ depositUrl }>
