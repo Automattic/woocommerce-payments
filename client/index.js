@@ -26,7 +26,8 @@ addFilter(
 	( pages ) => {
 		const { menuID, rootLink } = getMenuSettings();
 
-		const isNavigationEnabled = window.wcAdminFeatures.navigation;
+		const isNavigationEnabled =
+			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
 		const connectionPageTitle = isNavigationEnabled
 			? __( 'WooCommerce Payments', 'woocommerce-payments' )
 			: __( 'Connect', 'woocommerce-payments' );
