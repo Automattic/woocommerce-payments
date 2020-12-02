@@ -22,8 +22,7 @@ jobs:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci
-      - run: npm run lint
+      - run: npm ci && npm run lint
 
   test:
     name:    JS testing
@@ -41,5 +40,4 @@ jobs:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # install dependencies and run linter
-      - run: npm ci
-      - run: npm run test
+      - run: npm ci && npm run test
