@@ -21,6 +21,9 @@ jobs:
           - woocommerce: 4.0.0
             wordpress:   5.3
             php:         7.0
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
@@ -43,6 +46,7 @@ jobs:
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
     runs-on: ubuntu-16.04
+    continue-on-error: true
     strategy:
       matrix:
         woocommerce: [ beta ]
@@ -55,7 +59,9 @@ jobs:
           - woocommerce: beta
             wordpress:   latest
             php:         7.4
-    continue-on-error: true
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
