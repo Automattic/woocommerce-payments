@@ -316,28 +316,46 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests that an exception thrown in an action will be caught and a response is returned
+	 * Tests that an exception thrown in an action will be caught but webhook will still be handled successfully
 	 */
 	public function test_action_hook_exception_returns_response() {
-		// Setup test request data.
-		$this->request_body['type'] = 'account.updated';
-		$this->request_body['data'] = [
-			'foo' => 'bar',
-		];
-		$this->request->set_body( wp_json_encode( $this->request_body ) );
-
 		add_action(
 			'woocommerce_payments_before_webhook_delivery',
 			function() {
-				throw new Exception( 'Crash' );
+				throw new Exception( 'Crash before' );
 			}
 		);
+
+		add_action(
+			'woocommerce_payments_after_webhook_delivery',
+			function() {
+				throw new Exception( 'Crash after' );
+			}
+		);
+
+		// Setup test request data.
+		$this->request_body['type'] = 'wcpay.notification';
+		$this->request_body['data'] = [
+			'title'   => 'test',
+			'content' => 'hello',
+		];
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$this->mock_remote_note_service
+			->expects( $this->once() )
+			->method( 'put_note' )
+			->with(
+				[
+					'title'   => 'test',
+					'content' => 'hello',
+				]
+			);
 
 		$response = $this->controller->handle_webhook( $this->request );
 
 		$response_data = $response->get_data();
 
-		$this->assertEquals( 500, $response->get_status() );
-		$this->assertEquals( [ 'result' => 'error' ], $response_data );
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
 	}
 }
