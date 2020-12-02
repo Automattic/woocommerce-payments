@@ -1,4 +1,4 @@
-name: Cocmpatibility - WC, WP and PHP
+name: Compatibility - WC, WP and PHP
 
 on:
   pull_request:
