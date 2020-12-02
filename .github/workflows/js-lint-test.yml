@@ -3,7 +3,7 @@ name: JS linting and tests
 on:
   pull_request:
     branches:
-      - *
+      - '**'
 
 jobs:
   lint:

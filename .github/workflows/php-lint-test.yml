@@ -3,7 +3,7 @@ name: PHP linting and tests
 on:
   pull_request:
     branches:
-      - *
+      - '**'
 
 env:
   WP_VERSION: latest
