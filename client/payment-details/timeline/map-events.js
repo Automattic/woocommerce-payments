@@ -98,7 +98,10 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n( 'M j, Y', moment( event.deposit.arrival_date * 1000 ) )
+			dateI18n(
+				'M j, Y',
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
+			)
 		);
 
 		const depositUrl = addQueryArgs( 'admin.php', {

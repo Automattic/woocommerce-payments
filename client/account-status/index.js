@@ -108,7 +108,10 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 					'To avoid disrupting deposits, <a>update this account</a> by %s with more information about the business.',
 					'woocommerce-payments'
 				),
-				dateI18n( 'ga M j, Y', moment( currentDeadline * 1000 ) )
+				dateI18n(
+					'ga M j, Y',
+					moment( currentDeadline * 1000 ).toISOString()
+				)
 			),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }

@@ -41,7 +41,11 @@ export const DepositOverview = ( { depositId } ) => {
 							'Deposit date',
 							'woocommerce-payments'
 						) }: ` }
-						{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
+						{ dateI18n(
+							'M j, Y',
+							moment.utc( deposit.date ).toISOString(),
+							true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+						) }
 					</Loadable>
 				</div>
 				<div className="wcpay-deposit-status">
