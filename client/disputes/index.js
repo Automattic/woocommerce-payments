@@ -133,7 +133,10 @@ export const DisputesList = () => {
 			created: {
 				value: dispute.created * 1000,
 				display: clickable(
-					dateI18n( 'M j, Y', moment( dispute.created * 1000 ) )
+					dateI18n(
+						'M j, Y',
+						moment( dispute.created * 1000 ).toISOString()
+					)
 				),
 			},
 			dueBy: {
@@ -141,7 +144,9 @@ export const DisputesList = () => {
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
-						moment( dispute.evidence_details.due_by * 1000 )
+						moment(
+							dispute.evidence_details.due_by * 1000
+						).toISOString()
 					)
 				),
 			},

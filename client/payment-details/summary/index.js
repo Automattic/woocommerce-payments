@@ -35,7 +35,10 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
+				? dateI18n(
+						'M j, Y, g:ia',
+						moment( charge.created * 1000 ).toISOString()
+				  )
 				: '–',
 		},
 		{
