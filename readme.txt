@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.7.1 - 2020-12-03 =
+= 1.7.1 - 2020-xx-xx =
 * Fix - Pass ISO strings instead of Moment objects to dateI18n.
 
 = 1.7.0 - 2020-11-17 =
