@@ -189,7 +189,10 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 
-		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
+		// Server exception is masked by generic exception.
+		$this->expectException( Exception::class );
+
+		$this->wcpay_account->try_is_stripe_connected();
 	}
 
 	public function test_try_is_stripe_connected_returns_false() {

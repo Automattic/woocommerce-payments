@@ -88,7 +88,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is connected, assumes the value of $on_error on server error
+	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
 	 *
@@ -103,14 +103,19 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is connected, throws on server error
+	 * Checks if the account is connected, throws on server error.
 	 *
-	 * @return bool True if the account is connected, false otherwise.
+	 * @return bool      True if the account is connected, false otherwise.
+	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
 	public function try_is_stripe_connected() {
 		$account = $this->get_cached_account_data();
 
-		if ( empty( $account ) ) {
+		if ( false === $account ) {
+			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
+		}
+
+		if ( is_array( $account ) && empty( $account ) ) {
 			// empty means no account.
 			return false;
 		}
