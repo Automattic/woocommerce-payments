@@ -251,10 +251,9 @@ class WC_Payments_Account {
 			return;
 		}
 
-		try {
-			$account = $this->get_cached_account_data();
-		} catch ( Exception $e ) {
-			// Return early. The exceptions have been logged in the http client.
+		$account = $this->get_cached_account_data();
+		if ( false === $account ) {
+			// Failed to retrieve account data. Exception is logged in http client.
 			return false;
 		}
 
@@ -523,9 +522,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
-	 * @return array Account data;
-	 *
-	 * @throws API_Exception Bubbles up if get_account_data call fails.
+	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
 	private function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -555,7 +552,9 @@ class WC_Payments_Account {
 				$account = [];
 				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
-				throw $e;
+				// Failed to retrieve account data. Exception is logged in http client.
+				// Return immediately to signal account retrieval error.
+				return false;
 			}
 		}
 
@@ -677,7 +676,7 @@ class WC_Payments_Account {
 	/**
 	 * Retrieves the latest ToS agreement for the account.
 	 *
-	 * @return array|null Eiter the agreement or null if unavailable.
+	 * @return array|null Either the agreement or null if unavailable.
 	 */
 	public function get_latest_tos_agreement() {
 		try {
