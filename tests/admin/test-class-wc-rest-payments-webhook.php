@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Exceptions\Rest_Request_Exception;
 
 /**
  * WC_REST_Payments_Webhook_Controller unit tests.
@@ -23,6 +24,11 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	 * @var WC_Payments_DB|MockObject
 	 */
 	private $mock_db_wrapper;
+
+	/**
+	 * @var WC_Payments_Remote_Note_Service|MockObject
+	 */
+	private $mock_remote_note_service;
 
 	/**
 	 * @var WP_REST_Request
@@ -55,7 +61,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 			->setMethods( [ 'order_from_charge_id' ] )
 			->getMock();
 
-		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account );
+		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
+
+		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(
@@ -247,6 +255,104 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$response = $this->controller->handle_webhook( $this->request );
 
 		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a remote note webhook puts the note in the inbox.
+	 */
+	public function test_remote_note_puts_note() {
+		// Setup test request data.
+		$this->request_body['type'] = 'wcpay.notification';
+		$this->request_body['data'] = [
+			'title'   => 'test',
+			'content' => 'hello',
+		];
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$this->mock_remote_note_service
+			->expects( $this->once() )
+			->method( 'put_note' )
+			->with(
+				[
+					'title'   => 'test',
+					'content' => 'hello',
+				]
+			);
+
+		$response = $this->controller->handle_webhook( $this->request );
+
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a remote note webhook handles service exceptions.
+	 */
+	public function test_remote_note_fails_returns_response() {
+		// Setup test request data.
+		$this->request_body['type'] = 'wcpay.notification';
+		$this->request_body['data'] = [
+			'foo' => 'bar',
+		];
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$this->mock_remote_note_service
+			->expects( $this->once() )
+			->method( 'put_note' )
+			->willThrowException( new Rest_Request_Exception( 'Invalid note.' ) );
+
+		$response = $this->controller->handle_webhook( $this->request );
+
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
+	}
+
+	/**
+	 * Tests that an exception thrown in an action will be caught but webhook will still be handled successfully
+	 */
+	public function test_action_hook_exception_returns_response() {
+		add_action(
+			'woocommerce_payments_before_webhook_delivery',
+			function() {
+				throw new Exception( 'Crash before' );
+			}
+		);
+
+		add_action(
+			'woocommerce_payments_after_webhook_delivery',
+			function() {
+				throw new Exception( 'Crash after' );
+			}
+		);
+
+		// Setup test request data.
+		$this->request_body['type'] = 'wcpay.notification';
+		$this->request_body['data'] = [
+			'title'   => 'test',
+			'content' => 'hello',
+		];
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$this->mock_remote_note_service
+			->expects( $this->once() )
+			->method( 'put_note' )
+			->with(
+				[
+					'title'   => 'test',
+					'content' => 'hello',
+				]
+			);
+
+		$response = $this->controller->handle_webhook( $this->request );
+
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );

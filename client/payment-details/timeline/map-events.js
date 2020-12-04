@@ -98,7 +98,10 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n( 'M j, Y', moment( event.deposit.arrival_date * 1000 ) )
+			dateI18n(
+				'M j, Y',
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
+			)
 		);
 
 		const depositUrl = addQueryArgs( 'admin.php', {
@@ -238,6 +241,24 @@ const mapEventToTimelineItems = ( event ) => {
 		];
 	} else if ( 'captured' === type ) {
 		const formattedNet = formatCurrency( event.amount - event.fee );
+		let feeString = stringWithAmount(
+			/* translators: %s is a monetary amount */
+			__( 'Fee: %s', 'woocommerce-payments' ),
+			event.fee
+		);
+
+		if ( event.fee_rates ) {
+			const { percentage, fixed } = event.fee_rates;
+
+			feeString = sprintf(
+				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
+				__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
+				formatCurrency( event.fee ),
+				percentage * 100,
+				formatCurrency( fixed )
+			);
+		}
+
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -257,11 +278,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-success',
 				[
-					stringWithAmount(
-						/* translators: %s is a monetary amount */
-						__( 'Fee: %s', 'woocommerce-payments' ),
-						event.fee
-					),
+					feeString,
 					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Net deposit: %s', 'woocommerce-payments' ),

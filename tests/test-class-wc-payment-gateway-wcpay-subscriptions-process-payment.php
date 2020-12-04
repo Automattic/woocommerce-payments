@@ -58,8 +58,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	 * @var array
 	 */
 	private $setup_intent = [
-		'id'     => self::SETUP_INTENT_ID,
-		'status' => 'succeeded',
+		'id'            => self::SETUP_INTENT_ID,
+		'status'        => 'succeeded',
+		'client_secret' => 'test_client_secret',
 	];
 
 	/**
@@ -181,8 +182,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
+			->method( 'create_and_confirm_setup_intent' )
+			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
@@ -214,8 +215,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
+			->method( 'create_and_confirm_setup_intent' )
+			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service
@@ -279,62 +280,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_wcs_order_contains_subscription( true );
 
+		// The card is already saved and there's no payment needed, so no Setup Intent needs to be created.
 		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
-			->willReturn( $this->setup_intent );
+			->expects( $this->never() )
+			->method( 'create_and_confirm_setup_intent' );
 
 		$this->mock_token_service
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
-		// Expect add token to order to be called, so it can be reused in renewals.
 		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->callback( $this->match_order_id( $order->get_id() ) ),
-				$this->token
-			);
+			->expects( $this->never() )
+			->method( 'add_token_to_order' );
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
 		$this->assertEquals( 'processing', $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
-	}
-
-	public function test_saved_card_is_added_before_status_update() {
-		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
-
-		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
-
-		$this->mock_wcs_order_contains_subscription( true );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
-			->willReturn( $this->setup_intent );
-
-		$this->mock_token_service
-			->expects( $this->never() )
-			->method( 'add_payment_method_to_user' );
-
-		// Expect add token to order to be called, so it can be reused in renewals.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'add_token_to_order' )
-			->with(
-				$this->logicalAnd(
-					$this->callback( $this->match_order_id( $order->get_id() ) ),
-					$this->callback( $this->match_order_status( 'pending' ) )
-				),
-				$this->token
-			);
-
-		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_card_is_saved_when_updating_subscription_payment_method() {
@@ -352,8 +315,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, 'true' )
+			->method( 'create_and_confirm_setup_intent' )
+			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
 			->willReturn( $this->setup_intent );
 
 		$this->mock_token_service

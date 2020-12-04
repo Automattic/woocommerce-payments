@@ -259,16 +259,15 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
 	 * @param string $customer_id            - ID of the customer.
-	 * @param bool   $confirm                - Flag to confirm the intent on creation if true.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_setup_intent( $payment_method_id, $customer_id, $confirm = 'false' ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
 			'payment_method' => $payment_method_id,
 			'customer'       => $customer_id,
-			'confirm'        => $confirm,
+			'confirm'        => 'true',
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -640,18 +639,22 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
-	 * @param string $return_url    - URL to redirect to at the end of the flow.
-	 * @param array  $business_data - data to prefill the form.
+	 * @param string $return_url     - URL to redirect to at the end of the flow.
+	 * @param array  $business_data  - Data to prefill the form.
+	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
 	 *
 	 * @return array An array containing the url and state fields.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, $business_data = [] ) {
+	public function get_oauth_data( $return_url, $business_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+				'actioned_notes'      => $actioned_notes,
 			]
 		);
 
@@ -796,6 +799,27 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::PAYMENT_METHODS_API . '/' . $payment_method_id . '/detach',
+			self::POST
+		);
+	}
+
+	/**
+	 * Records a new Terms of Service agreement.
+	 *
+	 * @param string $source     A string, which describes where the merchant agreed to the terms.
+	 * @param string $user_name  The user_login of the current user.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function add_tos_agreement( $source, $user_name ) {
+		return $this->request(
+			[
+				'source'    => $source,
+				'user_name' => $user_name,
+			],
+			self::ACCOUNTS_API . '/tos_agreements',
 			self::POST
 		);
 	}

@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Admin\Notes\DataStore;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use \Automattic\WooCommerce\Admin\Features\Onboarding;
@@ -172,6 +173,28 @@ class WC_Payments_Account {
 	public function get_statement_descriptor() {
 		$account = $this->get_cached_account_data();
 		return isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+	}
+
+	/**
+	 * Gets the current account fees for rendering on the settings page.
+	 *
+	 * @return array        Fees.
+	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_fees() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['fees'] ) ? $account['fees'] : [];
+	}
+
+	/**
+	 * Gets the account live mode value.
+	 *
+	 * @return bool|null     Account is_live value.
+	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 */
+	public function get_is_live() {
+		$account = $this->get_cached_account_data();
+		return isset( $account['is_live'] ) ? $account['is_live'] : null;
 	}
 
 	/**
@@ -436,7 +459,8 @@ class WC_Payments_Account {
 				'email'         => $current_user->user_email,
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
-			]
+			],
+			$this->get_actioned_notes()
 		);
 
 		// If an account already exists for this site, we're done.
@@ -546,12 +570,14 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Refetches account data.
+	 * Refetches account data and returns the fresh data.
+	 *
+	 * @return mixed Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		try {
 			delete_transient( self::ACCOUNT_TRANSIENT );
-			$this->get_cached_account_data();
+			return $this->get_cached_account_data();
 		} catch ( Exception $e ) {
 			Logger::error( "Failed to refresh account data. Error: $e" );
 		}
@@ -642,5 +668,77 @@ class WC_Payments_Account {
 
 		$diff = array_diff_assoc( $changes, $account );
 		return ! empty( $diff );
+	}
+
+	/**
+	 * Retrieves the latest ToS agreement for the account.
+	 *
+	 * @return array|null Eiter the agreement or null if unavailable.
+	 */
+	public function get_latest_tos_agreement() {
+		try {
+			$account = $this->get_cached_account_data();
+		} catch ( API_Exception $e ) {
+			return null;
+		}
+
+		return ! empty( $account ) && isset( $account['latest_tos_agreement'] )
+			? $account['latest_tos_agreement']
+			: null;
+	}
+
+	/**
+	 * Returns an array containing the names of all the WCPay related notes that have be actioned.
+	 *
+	 * @return array
+	 */
+	private function get_actioned_notes(): array {
+		$wcpay_note_names = [];
+
+		try {
+			/**
+			 * Data Store for admin notes
+			 *
+			 * @var DataStore $data_store
+			 */
+			$data_store = WC_Data_Store::load( 'admin-note' );
+		} catch ( Exception $e ) {
+			// Don't stop the on-boarding process if something goes wrong here. Log the error and return the empty array
+			// of actioned notes.
+			Logger::error( $e );
+			return $wcpay_note_names;
+		}
+
+		// Fetch the last 10 actioned wcpay-promo admin notifications.
+		$add_like_clause = function( $where_clause ) {
+			return $where_clause . " AND name like 'wcpay-promo-%'";
+		};
+
+		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+
+		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		$wcpay_promo_notes = $data_store->get_notes(
+			[
+				'status'     => [ $note_class::E_WC_ADMIN_NOTE_ACTIONED ],
+				'is_deleted' => false,
+				'per_page'   => 10,
+			]
+		);
+
+		remove_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		// If we didn't get an array back from the data store, return an empty array of results.
+		if ( ! is_array( $wcpay_promo_notes ) ) {
+			return $wcpay_note_names;
+		}
+
+		// Copy the name of each note into the results.
+		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
+			$note               = new $note_class( $wcpay_note->note_id );
+			$wcpay_note_names[] = $note->get_name();
+		}
+
+		return $wcpay_note_names;
 	}
 }

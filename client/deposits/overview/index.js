@@ -22,7 +22,12 @@ import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 
 const currency = new Currency();
-const formatDate = ( format, date ) => dateI18n( format, moment.utc( date ) );
+const formatDate = ( format, date ) =>
+	dateI18n(
+		format,
+		moment.utc( date ).toISOString(),
+		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+	);
 const getAmount = ( obj ) =>
 	currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
 const getDepositDate = ( deposit ) =>

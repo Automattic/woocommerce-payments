@@ -138,13 +138,29 @@ install_db() {
 		fi
 	fi
 
-	# drop database if exists
+	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
+	local WAITS=0
+
 	set +e
-	mysqladmin drop --force $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA &> /dev/null
+	# Wait for the database to be started before the setup.
+	mysqladmin status $ADMIN_EXTRA > /dev/null
+	while [[ $? -ne 0 ]]; do
+		((WAITS++))
+		if [ $WAITS -ge 12 ]; then
+			echo "Maximum DB wait time exceeded"
+			exit 1
+		fi;
+		echo "Waiting until the database container is ready..."
+		sleep 5
+		mysqladmin status $ADMIN_EXTRA > /dev/null
+	done
+
+	# drop database if exists
+	mysqladmin drop --force $DB_NAME $ADMIN_EXTRA &> /dev/null
 	set -e
 
 	# create database
-	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+	mysqladmin create $DB_NAME $ADMIN_EXTRA
 }
 
 install_woocommerce() {

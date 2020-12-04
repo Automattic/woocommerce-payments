@@ -1,0 +1,35 @@
+.woocommerce-payments__tos-modal {
+	.components-modal__header {
+		height: auto;
+		padding: 12px 24px;
+
+		.components-modal__header-heading {
+			font-size: 24px;
+			line-height: 32px;
+		}
+	}
+
+	.woocommerce-payments__tos-modal-message {
+		font-size: 14px;
+		line-height: 21px;
+		margin: 0 0 24px 0;
+	}
+
+	.woocommerce-payments__tos-footer {
+		display: flex;
+		justify-content: flex-end;
+
+		button.components-button,
+		button.components-button.is-button {
+			padding: 9px 16px;
+			margin-left: 16px;
+			font-size: 14px;
+			line-height: 18px;
+			height: auto;
+		}
+	}
+
+	.woocommerce-payments__tos-error {
+		margin: 0 0 1em;
+	}
+}

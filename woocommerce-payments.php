@@ -10,7 +10,7 @@
  * WC requires at least: 4.0
  * WC tested up to: 4.6
  * Requires WP: 5.3
- * Version: 1.6.0
+ * Version: 1.7.0
  *
  * @package WooCommerce\Payments
  */
@@ -40,43 +40,18 @@ function wcpay_activated() {
 	) {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
-
-	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-		/* add set up refund policy note (if not yet) */
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
-		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
-	}
 }
 
 /**
  * Plugin deactivation hook.
  */
 function wcpay_deactivated() {
-	if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-		/* drop set up refund policy note */
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
-		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_deactivation();
-	}
-}
-
-/**
- * Plugin update hook: receives information about updated components an ensures WCPay is one of them.
- *
- * @param \WP_Upgrader $upgrader_object The upgrader object.
- * @param array        $options         Extra details regarding updated components.
- */
-function wcpay_updated( $upgrader_object, $options ) {
-	$is_plugin_update = 'update' === $options['action'] && 'plugin' === $options['type'];
-	$is_wcpay_updated = $is_plugin_update && in_array( 'woocommerce-payments', (array) $options['plugins'], true );
-	if ( $is_wcpay_updated && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
-		( new WC_Payments_Notes_Set_Up_Refund_Policy() )->on_wcpay_activation();
-	}
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	WC_Payments::remove_woo_admin_notes();
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
-add_action( 'upgrader_process_complete', 'wcpay_updated' );
 
 /**
  * Initialize the Jetpack connection functionality.
@@ -121,7 +96,7 @@ add_action( 'plugins_loaded', 'wcpay_init', 11 );
  * @return bool True if the plugin can keep initializing itself, false otherwise.
  */
 function wcpay_check_old_jetpack_version() {
-	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) ) {
+	if ( defined( 'JETPACK__VERSION' ) && version_compare( JETPACK__VERSION, '8.2', '<' ) && JETPACK__VERSION !== 'wpcom' ) {
 		add_filter( 'admin_notices', 'wcpay_show_old_jetpack_notice' );
 		// Prevent the rest of the plugin from initializing.
 		remove_action( 'plugins_loaded', 'wcpay_init', 11 );

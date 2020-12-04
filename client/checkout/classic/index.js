@@ -125,6 +125,9 @@ jQuery( function ( $ ) {
 		$( document.body ).trigger( 'checkout_error' );
 	};
 
+	// Create payment method on submission.
+	let paymentMethodGenerated;
+
 	/**
 	 * Creates and authorizes a setup intent, saves its ID in a hidden input, and re-submits the form.
 	 *
@@ -155,6 +158,7 @@ jQuery( function ( $ ) {
 				$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
 			} )
 			.catch( function ( error ) {
+				paymentMethodGenerated = null;
 				$form.removeClass( 'processing' ).unblock();
 				showError( error.message );
 			} );
@@ -173,9 +177,6 @@ jQuery( function ( $ ) {
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
 	};
-
-	// Create payment method on submission.
-	let paymentMethodGenerated;
 
 	/**
 	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
@@ -367,7 +368,7 @@ jQuery( function ( $ ) {
 
 	// Handle hash change - used when authenticating payment with SCA on checkout page.
 	window.addEventListener( 'hashchange', () => {
-		if ( window.location.hash.startsWith( '#wcpay-confirm-pi' ) ) {
+		if ( window.location.hash.startsWith( '#wcpay-confirm-' ) ) {
 			maybeShowAuthenticationModal();
 		}
 	} );

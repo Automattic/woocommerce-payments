@@ -177,7 +177,14 @@ exports[`ConnectAccountPage should render correctly 1`] = `
         <p
           class="connect-account__description"
         >
-          Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.
+          Accept credit card payments the easy way! 
+          <a
+            href="https://docs.woocommerce.com/document/payments/faq/fees/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            No set up fees. No monthly fees.
+          </a>
         </p>
         <p
           class="connect-account__terms"
@@ -185,6 +192,8 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           By clicking “Set up,” you agree to the 
           <a
             href="https://wordpress.com/tos"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             Terms of Service
           </a>
@@ -385,7 +394,14 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
         <p
           class="connect-account__description"
         >
-          Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.
+          Accept credit card payments the easy way! 
+          <a
+            href="https://docs.woocommerce.com/document/payments/faq/fees/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            No set up fees. No monthly fees.
+          </a>
         </p>
         <p>
           We've temporarily paused new account creation.

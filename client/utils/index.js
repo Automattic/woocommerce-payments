@@ -34,6 +34,18 @@ export const getPaymentSettingsUrl = () => {
 };
 
 /**
+ * Returns the URL to the list of payment methods page.
+ *
+ * @returns {string} URL to the list of payment methods page.
+ */
+export const getPaymentMethodsUrl = () => {
+	return addQueryArgs( 'admin.php', {
+		page: 'wc-settings',
+		tab: 'checkout',
+	} );
+};
+
+/**
  * Basic formatting function to convert snake_case to display value.
  *
  * @param {string} value snake_case string to convert.
@@ -55,7 +67,14 @@ export const formatStringValue = ( value ) =>
  */
 export const formatDateValue = ( date, upperBound = false ) => {
 	const adjustedDate = upperBound
-		? moment( date ).endOf( 'day' ).utc()
-		: moment( date ).startOf( 'day' ).utc();
-	return date && dateI18n( 'Y-m-d H:i:s', adjustedDate );
+		? moment( date ).endOf( 'day' ).utc().toISOString()
+		: moment( date ).startOf( 'day' ).utc().toISOString();
+	return (
+		date &&
+		dateI18n(
+			'Y-m-d H:i:s',
+			adjustedDate,
+			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+		)
+	);
 };

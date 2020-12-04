@@ -19,6 +19,7 @@ const filesToCopy = [
 	'woocommerce-payments.php',
 	'changelog.txt',
 	'readme.txt',
+	'SECURITY.md',
 ];
 
 // run npm dist
@@ -36,7 +37,7 @@ cp( '-Rf', filesToCopy, targetFolder );
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
 );
-const archive = archiver( 'zip' );
+const archive = archiver( 'zip', { zlib: { level: 9 } } );
 
 output.on( 'close', () => {
 	console.log(
