@@ -1,0 +1,20 @@
+name: 'PHP Setup'
+description: 'Setup the PHP environment with cache and the required version.'
+inputs:
+  php-version:
+    description: 'The PHP version to setup'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    # enable dependencies caching
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/composer/
+        key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+    # setup PHP, but without debug extensions for reasonable performance
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools:       composer
+        coverage:    none

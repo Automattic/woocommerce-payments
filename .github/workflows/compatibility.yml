@@ -27,17 +27,9 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
-      # enable dependencies caching
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
+      - uses: ./.github/actions/php-setup
         with:
           php-version: ${{ matrix.php }}
-          tools:       composer
-          coverage:    none
       # run CI checks
       - run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       - run: bash bin/run-ci-tests.bash
@@ -66,17 +58,9 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
-      # enable dependencies caching
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
+      - uses: ./.github/actions/php-setup
         with:
           php-version: ${{ matrix.php }}
-          tools:       composer
-          coverage:    none
       # run CI checks
       - run: bash bin/run-ci-tests.bash
         continue-on-error: true
