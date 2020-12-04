@@ -40,7 +40,7 @@ class WC_Payments_Admin {
 		$this->account       = $account;
 
 		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 	}
 
@@ -66,34 +66,52 @@ class WC_Payments_Admin {
 				'capability' => 'manage_woocommerce',
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'nav_args'   => [
+					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'is_category'  => $stripe_connected,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
 			]
 		);
 
 		if ( $stripe_connected ) {
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-deposits',
-					'title'  => __( 'Deposits', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/deposits',
+					'id'       => 'wc-payments-deposits',
+					'title'    => __( 'Deposits', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/deposits',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 10,
+					],
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-transactions',
-					'title'  => __( 'Transactions', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/transactions',
+					'id'       => 'wc-payments-transactions',
+					'title'    => __( 'Transactions', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/transactions',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 20,
+					],
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes',
-					'title'  => __( 'Disputes', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/disputes',
+					'id'       => 'wc-payments-disputes',
+					'title'    => __( 'Disputes', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/disputes',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 30,
+					],
 				]
 			);
 
@@ -103,6 +121,12 @@ class WC_Payments_Admin {
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
 					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'nav_args'  => [
+						'parent' => 'wc-payments',
+						'title'  => __( 'Settings', 'woocommerce-payments' ),
+						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
+						'order'  => 40,
+					],
 				]
 			);
 			// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.

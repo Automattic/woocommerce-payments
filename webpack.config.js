@@ -88,6 +88,8 @@ const webpackConfig = {
 						return 'wc-currency';
 					case '@woocommerce/navigation':
 						return 'wc-navigation';
+					case '@woocommerce/blocks-registry':
+						return 'wc-blocks-registry';
 				}
 			},
 		} ),
