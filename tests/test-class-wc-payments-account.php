@@ -85,6 +85,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->throwException( new Exception() )
 		);
 
+		$this->expectException( Exception::class );
+
 		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
 	}
 
@@ -187,9 +189,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->throwException( new API_Exception( 'test', 'server_error', 500 ) )
 		);
 
-		$this->expectException( API_Exception::class );
-
-		$this->wcpay_account->try_is_stripe_connected();
+		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
 	}
 
 	public function test_try_is_stripe_connected_returns_false() {
@@ -272,9 +272,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
 		);
 
-		$this->expectException( API_Exception::class );
-
-		$this->wcpay_account->get_publishable_key( true );
+		$this->assertNull( $this->wcpay_account->get_publishable_key( true ) );
 	}
 
 	public function test_get_stripe_account_id() {
@@ -299,9 +297,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
 		);
 
-		$this->expectException( API_Exception::class );
-
-		$this->wcpay_account->get_stripe_account_id();
+		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
