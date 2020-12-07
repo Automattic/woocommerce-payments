@@ -60,8 +60,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
 
-		add_filter( 'woocommerce_subscriptions_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
-		add_filter( 'woocommerce_subscriptions_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
 
 		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
 		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
