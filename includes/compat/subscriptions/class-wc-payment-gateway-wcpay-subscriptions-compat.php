@@ -394,14 +394,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return string
 	 */
 	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
-		// make sure payment method is wcpay's
+		// make sure payment method is wcpay's.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $old_payment_method ) {
 			return $old_payment_method_title;
 		}
 
 		$new_payment_method = $subscription->get_payment_method();
 
-		// if old and new payment method are different, no need to show specific
+		// if old and new payment method are different, no need to show specific.
 		if ( $old_payment_method !== $new_payment_method ) {
 			return $old_payment_method_title;
 		}
@@ -412,14 +412,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		$last_order = wc_get_order( $last_order_id );
-		$token_ids = $last_order->get_payment_tokens();
+		$token_ids  = $last_order->get_payment_tokens();
 		// since old payment must be the second to last saved payment...
 		if ( count( $token_ids ) < 2 ) {
 			return $old_payment_method_title;
 		}
 
 		$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
-		$token = WC_Payment_Tokens::get( $second_to_last_token_id );
+		$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
 		if ( ! $token || ! ( $token instanceof WC_Payment_Token_CC && method_exists( $token, 'get_last4' ) ) ) {
 			return $old_payment_method_title;
 		}
@@ -437,20 +437,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return string
 	 */
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
-		// make sure payment method is wcpay's
+		// make sure payment method is wcpay's.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
 			return $new_payment_method_title;
 		}
 
 		$old_payment_method = $subscription->get_meta( '_old_payment_method' );
 
-		// if old and new payment method are different, no need to show specific
+		// if old and new payment method are different, no need to show specific.
 		if ( $new_payment_method !== $old_payment_method ) {
 			return $new_payment_method_title;
 		}
 
-		$request = isset( $_POST ) ? $_POST : array();
-		$token = WCPay\Payment_Information::get_token_from_request( $request );
+		$request = isset( $_POST ) ? $_POST : []; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$token   = WCPay\Payment_Information::get_token_from_request( $request );
 		if ( $token && $token instanceof WC_Payment_Token_CC && method_exists( $token, 'get_last4' ) ) {
 			// translators: 1: payment method likely credit card, 2: last 4 digit.
 			return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
