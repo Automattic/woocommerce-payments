@@ -61,4 +61,5 @@ script:
 branches:
   only:
     - master
+    - check/e2e-before-github-actions
     - /^feature\/.*$/
