@@ -26,17 +26,29 @@ addFilter(
 	( pages ) => {
 		const { menuID, rootLink } = getMenuSettings();
 
+		const isNavigationEnabled =
+			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
+		const connectionPageTitle = isNavigationEnabled
+			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			: __( 'Connect', 'woocommerce-payments' );
+
 		pages.push( {
 			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Connect', 'woocommerce-payments' ) ],
+			breadcrumbs: [ rootLink, connectionPageTitle ],
+			navArgs: {
+				id: 'wc-payments',
+			},
 		} );
 		pages.push( {
 			container: withTestNotice( DepositsPage, topics.deposits ),
 			path: '/payments/deposits',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Deposits', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-deposits',
+			},
 		} );
 		pages.push( {
 			container: withTestNotice(
@@ -62,6 +74,9 @@ addFilter(
 				rootLink,
 				__( 'Transactions', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-transactions',
+			},
 		} );
 		pages.push( {
 			container: withTestNotice(
@@ -84,6 +99,9 @@ addFilter(
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-disputes',
+			},
 		} );
 		pages.push( {
 			container: withTestNotice(

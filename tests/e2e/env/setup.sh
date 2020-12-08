@@ -12,7 +12,7 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 fi
 
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
-	step "Fetching server"
+	step "Fetching server (branch ${WCP_SERVER_BRANCH-master})"
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
 		echo "WCP_SERVER_REPO env variable is not defined"
@@ -21,7 +21,6 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 
 	rm -rf $SERVER_PATH
 	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-master} $WCP_SERVER_REPO $SERVER_PATH
-
 else
 	echo "Using cached server at ${SERVER_PATH}"
 fi
@@ -42,7 +41,7 @@ define( 'WCPAY_OAUTH_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYB
 printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
-step "Starting server containers"
+step "Starting SERVER containers"
 redirect_output docker-compose up --build --force-recreate -d
 
 if [[ -n $CI ]]; then
@@ -51,11 +50,11 @@ if [[ -n $CI ]]; then
 	redirect_output ls -al ./docker
 fi
 
-step "Setting up server containers"
-redirect_output local/bin/docker-setup.sh
+step "Setting up SERVER containers"
+$SERVER_PATH/local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
-redirect_output $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID
+$SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
 
 cd $cwd
 
@@ -70,14 +69,14 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-master} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
 fi
 
-step "Starting client containers"
+step "Starting CLIENT containers"
 redirect_output docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT/env/docker-compose.yml" up --build --force-recreate -d phpMyAdmin
 fi
 
 echo
-step "Setting up client site"
+step "Setting up CLIENT site"
 # Need to use those credentials to comply with @woocommerce/e2e-environment
 WP_ADMIN=admin
 WP_ADMIN_PASSWORD=password
@@ -91,10 +90,10 @@ set +e
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
-	sleep 5s
+	sleep 5
 	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
-
+echo "Client DB is up and running..."
 set -e
 
 echo

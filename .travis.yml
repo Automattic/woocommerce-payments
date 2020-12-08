@@ -10,19 +10,9 @@ services:
 
 # Different stages in order to only deploy when everything succeeds
 stages:
-  - test
   - name: compatibility
     if: branch = master
-  - name: compatibility-edge
-    if: branch = master
   - e2e-testing
-
-env:
-  global:
-    - WC_NEWEST_SUPPORTED_VERSION=4.6.0
-    - WC_MOST_USED_VERSION=4.5.0
-    - WC_OLDEST_SUPPORTED_VERSION=4.0.0
-    - WP_OLDEST_SUPPORTED_VERSION=5.3
 
 # 2. Also test against these combinations, as listed out explicitly one by one
 
@@ -31,56 +21,17 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    - php: 7.4
-      env: WP_VERSION=nightly WC_VERSION=latest
-      stage: compatibility-edge
-    - php: nightly
+    - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
+      php: nightly
       env: WP_VERSION=nightly WC_VERSION=beta
-      stage: compatibility-edge
+      stage: compatibility
   include:
-# PHP versions compatibility (latest WordPress and most used WooCommerce versions)
-  - php: 7.1
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION RUN_PHPCS=1
-    stage: test
-  - php: 7.1
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - php: 7.2
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - php: 7.3
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: test
-# bottom compatibility edge (oldest supported PHP/WordPress/WooCommerce versions)
-  - php: 7.0
-    env: WP_VERSION=$WP_OLDEST_SUPPORTED_VERSION WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
-    stage: compatibility-edge
-# WooCommerce versions compatibility (latest supported PHP/WordPress versions on target WooCommerce versions)
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=$WC_OLDEST_SUPPORTED_VERSION
-    stage: compatibility
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=4.4.0
-    stage: compatibility
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
-    stage: compatibility
-  - php: 7.4
-    env: WP_VERSION=latest WC_VERSION=$WC_NEWEST_SUPPORTED_VERSION
-    stage: compatibility
-# top compatibility edge (nightly versions of WordPress on latest supported WooCommerce/PHP version)
-  - php: 7.4
-    env: WP_VERSION=nightly WC_VERSION=latest
-    stage: compatibility-edge
-  - php: nightly
+  - name: "compatibility-edge: PHP nightly, WP nightly, WC beta"
+    php: nightly
     env: WP_VERSION=nightly WC_VERSION=beta
-    stage: compatibility-edge
-# E2E testing
+    stage: compatibility
   - name: "E2E tests"
-    env: WP_VERSION=latest WC_VERSION=$WC_MOST_USED_VERSION
+    env: WP_VERSION=latest WC_VERSION=4.5.0
     stage: e2e-testing
     script:
       - npm run build:client && npm run test:e2e-setup && npm run test:e2e
@@ -96,13 +47,6 @@ install:
   - npm ci
   - php --version && composer install
   - WCPAY_DIR="/home/travis/build/Automattic/woocommerce-payments/" bash ./bin/install-wp-tests.sh woocommerce_test root '' localhost $WP_VERSION $WC_VERSION false
-
-before_script:
-  - |
-    if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.0" ]]; then
-      echo "downloading phpunit"
-      wget https://phar.phpunit.de/phpunit-6.5.14.phar
-    fi
 
 script:
   - bash bin/phpunit.sh

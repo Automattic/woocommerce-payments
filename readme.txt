@@ -101,6 +101,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 1.8.0 - 2020-xx-xx =
+* Add - Include information about failing payment into order notes.
+* Fix - Fix crash when a user has 10 or more saved credit cards.
+* Fix - Fix crash if there's a problem connecting to the server.
+* Fix - Store Stripe customer for test and live mode.
+* Add - Display fee structure in transaction timelines.
+
 = 1.7.1 - 2020-12-03 =
 * Fix - Pass ISO strings instead of Moment objects to dateI18n.
 
