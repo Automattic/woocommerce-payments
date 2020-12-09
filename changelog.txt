@@ -7,6 +7,9 @@
 * Fix - Store Stripe customer for test and live mode.
 * Add - Display fee structure in transaction timelines.
 
+= 1.7.1 - 2020-12-03 =
+* Fix - Pass ISO strings instead of Moment objects to dateI18n.
+
 = 1.7.0 - 2020-11-17 =
 * Fix - Fix ordering of payment detail timeline events.
 * Fix - Payment form hides when saved card is selected.

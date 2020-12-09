@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.5
 Requires PHP: 7.0
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,9 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix crash if there's a problem connecting to the server.
 * Fix - Store Stripe customer for test and live mode.
 * Add - Display fee structure in transaction timelines.
+
+= 1.7.1 - 2020-12-03 =
+* Fix - Pass ISO strings instead of Moment objects to dateI18n.
 
 = 1.7.0 - 2020-11-17 =
 * Fix - Fix ordering of payment detail timeline events.

@@ -11,7 +11,9 @@ import { __ } from '@wordpress/i18n';
 import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
 
-const statusContainer = document.getElementById( 'wcpay-account-status-container' );
+const statusContainer = document.getElementById(
+	'wcpay-account-status-container'
+);
 if ( statusContainer ) {
 	ReactDOM.render(
 		<AccountStatus { ...wcpayAdminSettings } />,
@@ -21,10 +23,7 @@ if ( statusContainer ) {
 
 const feesContainer = document.getElementById( 'wcpay-account-fees-container' );
 if ( feesContainer ) {
-  ReactDOM.render(
-	  <AccountFees { ...wcpayAdminSettings } />,
-	  feesContainer
-  );
+	ReactDOM.render( <AccountFees { ...wcpayAdminSettings } />, feesContainer );
 }
 
 const settingsForm = document.querySelector( 'form#mainform' );
