@@ -128,7 +128,7 @@ class WC_Payments_Internal_REST_Request implements \WC_Payments_Http_Interface {
 	 *
 	 * @return \WC_Payments_Http_Interface.
 	 */
-	public static function load_wc_payments_http( $class ): WC_Payments_Http_Wrapper {
+	public static function load_wc_payments_http( $class ): WC_Payments_Internal_REST_Request {
 		return new self();
 	}
 }
