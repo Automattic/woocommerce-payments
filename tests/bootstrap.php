@@ -47,6 +47,7 @@ function _manually_load_plugin() {
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-internal-rest-request.php';
 
 	// Load the gateway files, so subscriptions can be tested.
 	require_once dirname( __FILE__ ) . '/../includes/class-wc-payment-gateway-wcpay.php';
