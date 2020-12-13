@@ -5,7 +5,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card } from '@woocommerce/components';
+import { Card, Link } from '@woocommerce/components';
+import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -20,6 +21,7 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency } from 'utils/currency';
+import { addQueryArgs } from '@wordpress/url';
 import './style.scss';
 
 const placeholderValues = {
@@ -41,7 +43,17 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: get( charge, 'billing_details.name' ) || '–',
+			content: get( charge, 'billing_details.name' ) ? (
+					<Link href={ addQueryArgs( 'admin.php', {
+						page: 'wc-admin',
+						path: '/payments/transactions',
+						search: ['Shendy Kurnia (shendy.kurnia@a8c.com)']
+					} ) }>
+						{ get( charge, 'billing_details.name' ) }
+					</Link>
+				) : (
+					'–'
+				),
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),
