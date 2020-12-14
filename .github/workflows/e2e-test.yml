@@ -7,8 +7,8 @@ on:
 
 env:
   WP_VERSION:                                  latest
-  WC_VERSION:                                  4.5.0  # the most used version here
-  CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}       # TODO: replace with one from CI-user
+  WC_VERSION:                                  4.5.0 # the most used version here
+  CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}
   WCP_DEV_TOOLS_REPO:                          ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_SERVER_REPO:                             ${{ secrets.WCP_SERVER_REPO }}
   E2E_WCPAY_STRIPE_ACCOUNT_ID:                 ${{ secrets.E2E_WCPAY_STRIPE_ACCOUNT_ID }}
@@ -31,8 +31,16 @@ jobs:
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
       - uses: actions/cache@v2
         with:
+          path: vendor/
+          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
+      - uses: actions/cache@v2
+        with:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      - uses: actions/cache@v2
+        with:
+          path: node_modules/
+          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
