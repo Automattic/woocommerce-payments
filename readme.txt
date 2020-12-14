@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix crash when a user has 10 or more saved credit cards.
 * Fix - Fix crash if there's a problem connecting to the server.
 * Fix - Store Stripe customer for test and live mode.
+* Fix - Display Payments menu in the sidebar if there's a problem connecting to the server.
 * Add - Display fee structure in transaction timelines.
 
 = 1.7.1 - 2020-12-03 =
