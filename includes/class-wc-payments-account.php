@@ -55,8 +55,6 @@ class WC_Payments_Account {
 	 * Return connected account ID
 	 *
 	 * @return string|null Account ID if connected, null if not connected or on error
-	 *
-	 * @throws Exception Bubbles up if get_account_data call fails.
 	 */
 	public function get_stripe_account_id() {
 		$account = $this->get_cached_account_data();
@@ -74,8 +72,6 @@ class WC_Payments_Account {
 	 * @param bool $is_test true to get the test key, false otherwise.
 	 *
 	 * @return string|null public key if connected, null if not connected.
-	 *
-	 * @throws Exception Bubbles up if get_account_data call fails.
 	 */
 	public function get_publishable_key( $is_test ) {
 		$account = $this->get_cached_account_data();
@@ -92,7 +88,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is connected, assumes the value of $on_error on server error
+	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
 	 *
@@ -107,17 +103,20 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is connected, throws on server error
+	 * Checks if the account is connected, throws on server error.
 	 *
-	 * @return bool True if the account is connected, false otherwise.
-	 *
-	 * @throws Exception Bubbles up if get_account_data call fails.
+	 * @return bool      True if the account is connected, false otherwise.
+	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
 	public function try_is_stripe_connected() {
 		$account = $this->get_cached_account_data();
 
+		if ( false === $account ) {
+			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
+		}
+
 		if ( is_array( $account ) && empty( $account ) ) {
-			// empty array means no account.
+			// empty means no account.
 			return false;
 		}
 
@@ -130,16 +129,10 @@ class WC_Payments_Account {
 	 * @return array An array containing the status data.
 	 */
 	public function get_account_status_data() {
-		try {
-			$account = $this->get_cached_account_data();
-		} catch ( Exception $e ) {
-			return [
-				'error' => true,
-			];
-		}
+		$account = $this->get_cached_account_data();
 
-		if ( is_array( $account ) && empty( $account ) ) {
-			// empty array means no account. This data should not be used when the account is not connected.
+		if ( empty( $account ) ) {
+			// empty means no account. This data should not be used when the account is not connected.
 			return [
 				'error' => true,
 			];
@@ -167,34 +160,31 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account statement descriptor for rendering on the settings page.
 	 *
-	 * @return string        Account statement descriptor.
-	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 * @return string Account statement descriptor.
 	 */
 	public function get_statement_descriptor() {
 		$account = $this->get_cached_account_data();
-		return isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
+		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
 	}
 
 	/**
 	 * Gets the current account fees for rendering on the settings page.
 	 *
-	 * @return array        Fees.
-	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 * @return array Fees.
 	 */
 	public function get_fees() {
 		$account = $this->get_cached_account_data();
-		return isset( $account['fees'] ) ? $account['fees'] : [];
+		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
 	}
 
 	/**
 	 * Gets the account live mode value.
 	 *
-	 * @return bool|null     Account is_live value.
-	 * @throws API_Exception Bubbles up from get_cached_account_data.
+	 * @return bool|null Account is_live value.
 	 */
 	public function get_is_live() {
 		$account = $this->get_cached_account_data();
-		return isset( $account['is_live'] ) ? $account['is_live'] : null;
+		return ! empty( $account ) && isset( $account['is_live'] ) ? $account['is_live'] : null;
 	}
 
 	/**
@@ -247,10 +237,9 @@ class WC_Payments_Account {
 			return;
 		}
 
-		try {
-			$account = $this->get_cached_account_data();
-		} catch ( Exception $e ) {
-			// Return early. The exceptions have been logged in the http client.
+		$account = $this->get_cached_account_data();
+		if ( false === $account ) {
+			// Failed to retrieve account data. Exception is logged in http client.
 			return false;
 		}
 
@@ -519,9 +508,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
-	 * @return array Account data;
-	 *
-	 * @throws API_Exception Bubbles up if get_account_data call fails.
+	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
 	private function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -551,7 +538,9 @@ class WC_Payments_Account {
 				$account = [];
 				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
-				throw $e;
+				// Failed to retrieve account data. Exception is logged in http client.
+				// Return immediately to signal account retrieval error.
+				return false;
 			}
 		}
 
@@ -575,12 +564,8 @@ class WC_Payments_Account {
 	 * @return mixed Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
-		try {
-			delete_transient( self::ACCOUNT_TRANSIENT );
-			return $this->get_cached_account_data();
-		} catch ( Exception $e ) {
-			Logger::error( "Failed to refresh account data. Error: $e" );
-		}
+		delete_transient( self::ACCOUNT_TRANSIENT );
+		return $this->get_cached_account_data();
 	}
 
 	/**
@@ -673,15 +658,10 @@ class WC_Payments_Account {
 	/**
 	 * Retrieves the latest ToS agreement for the account.
 	 *
-	 * @return array|null Eiter the agreement or null if unavailable.
+	 * @return array|null Either the agreement or null if unavailable.
 	 */
 	public function get_latest_tos_agreement() {
-		try {
-			$account = $this->get_cached_account_data();
-		} catch ( API_Exception $e ) {
-			return null;
-		}
-
+		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['latest_tos_agreement'] )
 			? $account['latest_tos_agreement']
 			: null;

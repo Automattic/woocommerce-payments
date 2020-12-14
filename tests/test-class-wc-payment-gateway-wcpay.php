@@ -117,16 +117,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
 	}
 
-	public function test_payment_fields_outputs_error() {
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->throwException( new API_Exception( 'test', 'test', 123 ) )
-		);
-
-		$this->wcpay_gateway->payment_fields();
-
-		$this->expectOutputRegex( '/An error was encountered when preparing the payment form\. Please try again later\./' );
-	}
-
 	protected function mock_level_3_order( $shipping_postcode ) {
 		// Setup the item.
 		$mock_item = $this->getMockBuilder( WC_Order_Item::class )

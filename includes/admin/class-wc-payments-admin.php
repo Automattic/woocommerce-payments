@@ -51,13 +51,13 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$stripe_connected = $this->account->try_is_stripe_connected();
+			$should_render_full_menu = $this->account->try_is_stripe_connected();
 		} catch ( Exception $e ) {
-			// do not render the menu if the server is unreachable.
-			return;
+			// There is an issue with connection but render full menu anyways to provide access to settings.
+			$should_render_full_menu = true;
 		}
 
-		$top_level_link = $stripe_connected ? '/payments/deposits' : '/payments/connect';
+		$top_level_link = $should_render_full_menu ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			[
@@ -75,7 +75,7 @@ class WC_Payments_Admin {
 			]
 		);
 
-		if ( $stripe_connected ) {
+		if ( $should_render_full_menu ) {
 			wc_admin_register_page(
 				[
 					'id'       => 'wc-payments-deposits',
