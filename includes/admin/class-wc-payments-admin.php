@@ -68,7 +68,7 @@ class WC_Payments_Admin {
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'nav_args'   => [
 					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
-					'is_category'  => $stripe_connected,
+					'is_category'  => $should_render_full_menu,
 					'menuId'       => 'plugins',
 					'is_top_level' => true,
 				],
