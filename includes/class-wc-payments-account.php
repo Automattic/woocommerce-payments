@@ -449,6 +449,9 @@ class WC_Payments_Account {
 				'business_name' => get_bloginfo( 'name' ),
 				'url'           => get_home_url(),
 			],
+			[
+				'site_username' => $current_user->user_login,
+			],
 			$this->get_actioned_notes()
 		);
 

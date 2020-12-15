@@ -451,6 +451,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'b' => 2,
 							'c' => 3,
 						],
+						'site_data'           => [
+							'site_username' => 'admin',
+						],
 						'create_live_account' => true,
 						'actioned_notes'      => [
 							'd' => 4,
@@ -477,6 +480,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				'a' => 1,
 				'b' => 2,
 				'c' => 3,
+			],
+			[
+				'site_username' => 'admin',
 			],
 			[
 				'd' => 4,
