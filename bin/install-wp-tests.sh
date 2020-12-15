@@ -158,6 +158,7 @@ install_db() {
 	fi
 
 	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
+	wait_db
 
 	# drop database if exists
 	set +e
