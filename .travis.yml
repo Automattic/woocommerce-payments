@@ -30,6 +30,9 @@ matrix:
     php: nightly
     env: WP_VERSION=nightly WC_VERSION=beta
     stage: compatibility
+    script:
+      - php -i | grep mysql
+      - bash bin/phpunit.sh
   - name: "E2E tests"
     env: WP_VERSION=latest WC_VERSION=4.5.0
     stage: e2e-testing

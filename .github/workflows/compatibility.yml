@@ -69,3 +69,4 @@ jobs:
           coverage:    none
       # run CI checks
       - run: bash bin/run-ci-tests.bash
+      - run: php -i | grep mysql
