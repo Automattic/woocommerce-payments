@@ -82,7 +82,7 @@ configure_wp() {
 	WP_SITE_URL="http://local.wordpress.test"
 
 	# Wait for the database to be started before the setup.
-	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS"
+	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
 	local WAITS=0
 	set +e
 	mysqladmin status $ADMIN_EXTRA > /dev/null
