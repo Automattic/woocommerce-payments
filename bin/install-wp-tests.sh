@@ -39,7 +39,7 @@ wp() {
 }
 
 wait_db() {
-	local MYSQLADMIN_FLAGS=$1;
+	local MYSQLADMIN_FLAGS=$1
 	local WAITS=0
 
 	set +e
