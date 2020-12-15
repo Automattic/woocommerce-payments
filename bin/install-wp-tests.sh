@@ -89,7 +89,7 @@ configure_wp() {
 	set +e
 	wp db check --path=$WP_CORE_DIR --quiet > /dev/null
 	while [[ $? -ne 0 ]]; do
-		echo "Waiting until the service is ready..."
+		echo "Waiting until the database is ready..."
 		sleep 5s
 		wp db check --path=$WP_CORE_DIR --quiet > /dev/null
 	done
