@@ -1,9 +1,7 @@
 name: Compatibility - WC, WP and PHP
 
 on:
-  pull_request:
-    branches:
-      - master
+  pull_request
 
 jobs:
 #  woocommerce-compatibility:
