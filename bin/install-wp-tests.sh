@@ -67,6 +67,8 @@ fi
 set -e
 
 install_wp() {
+	echo "Installing WP";
+
 	if [ -d $WP_CORE_DIR ]; then
 		return;
 	fi
@@ -79,26 +81,30 @@ install_wp() {
 }
 
 configure_wp() {
+	echo "Configuring WP";
+
 	WP_SITE_URL="http://local.wordpress.test"
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
 
-	# Wait for DB availability, so the core could be installed
-	set +e
-	wp db check --path=$WP_CORE_DIR --quiet > /dev/null
-	while [[ $? -ne 0 ]]; do
-		echo "Waiting until the database is ready..."
-		sleep 5s
-		wp db check --path=$WP_CORE_DIR --quiet > /dev/null
-	done
-	set -e
+#	# Wait for DB availability, so the core could be installed
+#	set +e
+#	wp db check --path=$WP_CORE_DIR --quiet > /dev/null
+#	while [[ $? -ne 0 ]]; do
+#		echo "Waiting until the database is ready..."
+#		sleep 5s
+#		wp db check --path=$WP_CORE_DIR --quiet > /dev/null
+#	done
+#	set -e
 
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
 
 install_test_suite() {
+	echo "Installing test suit";
+
 	# portable in-place argument for both GNU sed and Mac OSX sed
 	if [[ $(uname -s) == 'Darwin' ]]; then
 		local ioption='-i.bak'
