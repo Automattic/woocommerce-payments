@@ -39,7 +39,7 @@ wp() {
 }
 
 wait_db() {
-	local MYSQLADMIN_FLAGS=$1
+	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
 	local WAITS=0
 
 	set +e
@@ -99,7 +99,7 @@ install_wp() {
 
 configure_wp() {
 	WP_SITE_URL="http://local.wordpress.test"
-	wait_db "--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
+	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
@@ -137,7 +137,6 @@ install_test_suite() {
 }
 
 install_db() {
-
 	if [ ${SKIP_DB_CREATE} = "true" ]; then
 		return 0
 	fi
@@ -159,7 +158,6 @@ install_db() {
 	fi
 
 	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
-	wait_db $ADMIN_EXTRA
 
 	# drop database if exists
 	set +e
