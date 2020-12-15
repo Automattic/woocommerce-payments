@@ -85,6 +85,8 @@ configure_wp() {
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
+
+	cat "$WP_CORE_DIR/wp-config.php"
 }
 
 install_test_suite() {
