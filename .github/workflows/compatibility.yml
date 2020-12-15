@@ -48,7 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         woocommerce: [ 'beta' ]
-        wordpress:   [ 'nightly', 'latest' ]
+        wordpress:   [ 'latest' ]
         include:
           # PHP 8 compatibility: the compatible WC/WP versions are not released yet
           - woocommerce: 'beta'
