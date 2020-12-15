@@ -67,8 +67,6 @@ fi
 set -e
 
 install_wp() {
-	echo "Installing WP";
-
 	if [ -d $WP_CORE_DIR ]; then
 		return;
 	fi
@@ -81,9 +79,24 @@ install_wp() {
 }
 
 configure_wp() {
-	echo "Configuring WP";
-
 	WP_SITE_URL="http://local.wordpress.test"
+
+	# Wait for the database to be started before the setup.
+	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS"
+	local WAITS=0
+	set +e
+	mysqladmin status $ADMIN_EXTRA > /dev/null
+	while [[ $? -ne 0 ]]; do
+		((WAITS++))
+		if [ $WAITS -ge 12 ]; then
+			echo "Maximum database wait time exceeded"
+			exit 1
+		fi;
+		echo "Waiting until the database is available..."
+		sleep 5s
+		mysqladmin status $ADMIN_EXTRA > /dev/null
+	done
+	set -e
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
