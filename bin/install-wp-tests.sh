@@ -84,6 +84,17 @@ configure_wp() {
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
+
+	# Wait for DB availability, so the core could be installed
+	set +e
+	wp db check --path=$WP_CORE_DIR --quiet > /dev/null
+	while [[ $? -ne 0 ]]; do
+		echo "Waiting until the service is ready..."
+		sleep 5s
+		wp db check --path=$WP_CORE_DIR --quiet > /dev/null
+	done
+	set -e
+
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
 
