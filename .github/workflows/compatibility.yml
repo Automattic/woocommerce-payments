@@ -68,4 +68,5 @@ jobs:
           tools:       composer
           coverage:    none
       # run CI checks
+      - run: php -i | grep mysqli
       - run: bash bin/run-ci-tests.bash
