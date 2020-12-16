@@ -9,7 +9,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { formatCurrency } from 'utils/currency';
-import { TableCard, Search } from '@woocommerce/components';
+import { TableCard, Search, Link } from '@woocommerce/components';
 import {
 	onQueryChange,
 	getQuery,
@@ -28,6 +28,7 @@ import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
 import Deposit from './deposit';
 import autocompleter from 'transactions/autocompleter';
+import { addQueryArgs } from '@wordpress/url';
 import './style.scss';
 
 const getColumns = ( includeDeposit, includeSubscription ) =>
@@ -170,6 +171,18 @@ export const TransactionsList = ( props ) => {
 				i !== all.length - 1 && ', ',
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
+
+		const customerUrl = addQueryArgs( 'admin.php', {
+			page: 'wc-admin',
+			path: '/customers',
+			search: txn.customer_name,
+		} );
+		const customerName = (
+			<Link href={ customerUrl }>
+				{ txn.customer_name }
+			</Link>
+		);
+
 		const deposit = (
 			<Deposit
 				depositId={ txn.deposit_id }
@@ -209,7 +222,7 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
-				display: clickable( txn.customer_name ),
+				display: customerName
 			},
 			// eslint-disable-next-line camelcase
 			customer_email: {
