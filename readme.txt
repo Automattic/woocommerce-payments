@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 1.7.1
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.8.0 - 2020-xx-xx =
+= 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
 * Fix - Fix crash when a user has 10 or more saved credit cards.
 * Fix - Fix crash if there's a problem connecting to the server.
