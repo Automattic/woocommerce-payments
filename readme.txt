@@ -109,6 +109,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Display Payments menu in the sidebar if there's a problem connecting to the server.
 * Add - Display fee structure in transaction timelines.
 * Add - Use site username for recording ToS acceptance.
+* Update - Display transaction tables with full width.
+* Add - Action hooks before and after webhook delivery.
 
 = 1.7.1 - 2020-12-03 =
 * Fix - Pass ISO strings instead of Moment objects to dateI18n.
