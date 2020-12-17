@@ -9,8 +9,7 @@
 	>
 	<testsuites>
 		<testsuite name="WCPay">
-			<directory suffix=".php">./tests/</directory>
-			<exclude>./tests/e2e</exclude>
+			<directory suffix=".php">./tests/unit</directory>
 		</testsuite>
 	</testsuites>
 
