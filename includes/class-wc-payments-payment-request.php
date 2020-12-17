@@ -68,7 +68,7 @@ class WC_Payments_Payment_Request {
 		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
 		$this->total_label      = ! empty( $this->account->get_statement_descriptor() ) ? $this->account->get_statement_descriptor() : '';
 
-		$this->total_label = str_replace( "'", '', $this->total_label ) . apply_filters( 'wc_stripe_payment_request_total_label_suffix', ' (via WooCommerce)' );
+		$this->total_label = str_replace( "'", '', $this->total_label ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 
 		// Checks if Stripe Gateway is enabled.
 		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
@@ -296,7 +296,7 @@ class WC_Payments_Payment_Request {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
-			'label'   => apply_filters( 'wc_stripe_payment_request_total_label', $this->total_label ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->total_label ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $product->get_price() ),
 			'pending' => true,
 		];
@@ -305,7 +305,7 @@ class WC_Payments_Payment_Request {
 		$data['currency']        = strtolower( get_woocommerce_currency() );
 		$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
-		return apply_filters( 'wc_stripe_payment_request_product_data', $data, $product );
+		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
 
 	/**
@@ -411,7 +411,7 @@ class WC_Payments_Payment_Request {
 	 */
 	public function supported_product_types() {
 		return apply_filters(
-			'wc_stripe_payment_request_supported_types',
+			'wcpay_payment_request_supported_types',
 			[
 				'simple',
 				'variable',
@@ -487,7 +487,7 @@ class WC_Payments_Payment_Request {
 			'stripe'          => [
 				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::get_gateway()->is_in_test_mode() ),
 				'accountId'          => $this->account->get_stripe_account_id(),
-				'allow_prepaid_card' => apply_filters( 'wc_stripe_allow_prepaid_card', true ) ? 'yes' : 'no',
+				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
 			'nonce'           => [
 				'payment'                   => wp_create_nonce( 'wcpay-payment-request' ),
@@ -516,7 +516,7 @@ class WC_Payments_Payment_Request {
 				'type'         => $this->get_button_type(),
 				'theme'        => $this->get_button_theme(),
 				'height'       => $this->get_button_height(),
-				'locale'       => apply_filters( 'wc_stripe_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
+				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
 				'css_selector' => $this->custom_button_selector(),
@@ -557,7 +557,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		if ( is_checkout() && ! apply_filters( 'wc_stripe_show_payment_request_on_checkout', false, $post ) ) {
+		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
 			return;
 		}
 
@@ -603,7 +603,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		if ( is_checkout() && ! apply_filters( 'wc_stripe_show_payment_request_on_checkout', false, $post ) ) {
+		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
 			return;
 		}
 
@@ -624,7 +624,7 @@ class WC_Payments_Payment_Request {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_cart() {
-		if ( ! apply_filters( 'wc_stripe_show_payment_request_on_cart', true ) ) {
+		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
 			return false;
 		}
 		if ( ! $this->allowed_items_in_cart() ) {
@@ -645,7 +645,7 @@ class WC_Payments_Payment_Request {
 
 		$product = wc_get_product( $post->ID );
 
-		if ( apply_filters( 'wc_stripe_hide_payment_request_on_product_page', false, $post ) ) {
+		if ( apply_filters( 'wcpay_hide_payment_request_on_product_page', false, $post ) ) {
 			return false;
 		}
 
@@ -782,7 +782,7 @@ class WC_Payments_Payment_Request {
 
 			// Remember current shipping method before resetting.
 			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
-			$this->calculate_shipping( apply_filters( 'wc_stripe_payment_request_shipping_posted_values', $shipping_address ) );
+			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
 
 			$packages = WC()->shipping->get_packages();
 
@@ -919,7 +919,7 @@ class WC_Payments_Payment_Request {
 
 			// Force quantity to 1 if sold individually and check for existing item in cart.
 			if ( $product->is_sold_individually() ) {
-				$qty = apply_filters( 'wc_stripe_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
+				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
 			}
 
 			if ( ! $product->has_enough_stock( $qty ) ) {
@@ -1202,7 +1202,7 @@ class WC_Payments_Payment_Request {
 		$discounts = 0;
 
 		// Default show only subtotal instead of itemization.
-		if ( ! apply_filters( 'wc_stripe_payment_request_hide_itemization', true ) || $itemized_display_items ) {
+		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', true ) || $itemized_display_items ) {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
 				$subtotal      += $cart_item['line_subtotal'];
@@ -1274,7 +1274,7 @@ class WC_Payments_Payment_Request {
 			'displayItems' => $items,
 			'total'        => [
 				'label'   => $this->total_label,
-				'amount'  => max( 0, apply_filters( 'woocommerce_stripe_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
+				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
 		];
