@@ -273,8 +273,11 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
-	/* The summary will not work correctly for mixed currency and non-usd currency orders */
-	const summaryCurrency = getCurrency( 'USD' );
+	const summaryCurrency = getCurrency(
+		transactions.length > 0
+			? transactions[ 0 ].currency.toUpperCase()
+			: 'USD'
+	);
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{
