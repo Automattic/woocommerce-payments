@@ -173,9 +173,10 @@ const getMainTimelineItem = (
 const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
-	const currency = getCurrency( event.currency || 'USD' );
-	const formatCurrency = ( amount ) =>
-		currency.formatCurrency( Math.abs( amount / 100 ) );
+	const formatCurrency = ( amount, currency ) =>
+		getCurrency( currency || event.currency || 'USD' ).formatCurrency(
+			Math.abs( amount / 100 )
+		);
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount ) );
 
@@ -248,14 +249,14 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 		if ( event.fee_rates ) {
-			const { percentage, fixed } = event.fee_rates;
+			const { percentage, fixed, fixedCurrency } = event.fee_rates;
 
 			feeString = sprintf(
 				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
 				__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
 				formatCurrency( event.fee ),
 				percentage * 100,
-				formatCurrency( fixed )
+				formatCurrency( fixed, fixedCurrency )
 			);
 		}
 
