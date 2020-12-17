@@ -100,6 +100,7 @@ describe( 'mapTimelineEvents', () => {
 					fee_rates: {
 						percentage: 0.0195,
 						fixed: 15,
+						fixed_currency: 'USD',
 					},
 					type: 'captured',
 				},

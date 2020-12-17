@@ -249,7 +249,9 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 		if ( event.fee_rates ) {
-			const { percentage, fixed, fixedCurrency } = event.fee_rates;
+			const percentage = event.fee_rates.percentage;
+			const fixed = event.fee_rates.fixed;
+			const fixedCurrency = event.fee_rates.fixed_currency;
 
 			feeString = sprintf(
 				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
