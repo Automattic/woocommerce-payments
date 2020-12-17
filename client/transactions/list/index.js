@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { uniq } from 'lodash';
+import { find, uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
+import Currency, { getCurrencyData } from '@woocommerce/currency';
 import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
@@ -30,7 +30,28 @@ import Deposit from './deposit';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
-const currency = new Currency();
+const currencyData = getCurrencyData();
+
+/**
+ * Gets wc-admin Currency for the given currency code
+ *
+ * @param {String} currencyCode Currency code
+ *
+ * @return {Currency} Currency object
+ */
+const getCurrency = ( currencyCode ) => {
+	const currency = find( currencyData, { code: currencyCode } );
+	if ( currency ) {
+		return new Currency( currency );
+	}
+	window.console.warn(
+		sprintf(
+			'"%s" is not supported by @woocommerce/currency, falling back to "USD"',
+			currencyCode
+		)
+	);
+	return new Currency();
+};
 
 const getColumns = ( includeDeposit, includeSubscription ) =>
 	[
@@ -177,6 +198,7 @@ export const TransactionsList = ( props ) => {
 				dateAvailable={ txn.date_available }
 			/>
 		);
+		const currency = getCurrency( txn.currency.toUpperCase() );
 
 		// Map transaction into table row.
 		const data = {
@@ -251,23 +273,25 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
+	/* The summary will not work correctly for mixed currency and non-usd currency orders */
+	const summaryCurrency = getCurrency( 'USD' );
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{
 			label: 'total',
-			value: `${ currency.formatCurrency(
+			value: `${ summaryCurrency.formatCurrency(
 				transactionsSummary.total / 100
 			) }`,
 		},
 		{
 			label: 'fees',
-			value: `${ currency.formatCurrency(
+			value: `${ summaryCurrency.formatCurrency(
 				transactionsSummary.fees / 100
 			) }`,
 		},
 		{
 			label: 'net',
-			value: `${ currency.formatCurrency(
+			value: `${ summaryCurrency.formatCurrency(
 				transactionsSummary.net / 100
 			) }`,
 		},
