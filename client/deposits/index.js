@@ -8,7 +8,7 @@
  */
 import Page from 'components/page';
 import DepositsOverview from './overview';
-import DepositsList from './list';
+import DepositsList from './list/DepositsList.bs';
 
 const DepositsPage = () => {
 	return (

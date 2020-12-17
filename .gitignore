@@ -10,6 +10,7 @@ project.properties
 *.sublime-project
 *.sublime-workspace
 .sublimelinterrc
+.nova
 
 # Bundle
 dist
@@ -73,3 +74,8 @@ docker/logs
 /coverage
 
 local.env
+
+# ReScript
+.merlin
+lib
+*.bs.js

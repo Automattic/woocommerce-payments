@@ -18,6 +18,8 @@
     "build:client": "NODE_ENV=production webpack",
     "build:deps": "rm -rf vendor && composer install --no-dev --optimize-autoloader",
     "build:release": "node tasks/release.js && mv release/$npm_package_name.zip .",
+    "build:re": "bsb -make-world",
+    "clean:re": "bsb -clean-world",
     "test": "wp-scripts test-unit-js --config tests/js/jest.config.js",
     "test:watch": "npm run test -- --watch",
     "test:debug": "wp-scripts --inspect-brk test-unit-js --runInBand --no-cache --config tests/js/jest.config.js",
@@ -30,6 +32,7 @@
     "test:update-snapshots": "npm test -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "watch": "webpack --watch",
+    "watch:re": "bsb -make-world -w",
     "start": "npm run watch",
     "dev": "npm run up && npm run watch",
     "up": "docker-compose up --build --force-recreate -d && ./bin/docker-setup.sh",
@@ -69,6 +72,7 @@
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "lodash": "^4.17.14",
+    "reason-react": "^0.9.1",
     "wordpress-element": "npm:@wordpress/element@2.11.0"
   },
   "devDependencies": {
@@ -96,6 +100,7 @@
     "@wordpress/scripts": "12.4.0",
     "archiver": "5.0.2",
     "babel-loader": "8.1.0",
+    "bs-platform": "^8.4.2",
     "colors": "1.4.0",
     "config": "3.3.2",
     "core-js": "3.6.5",

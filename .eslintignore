@@ -10,3 +10,6 @@ vendor/*
 release/*
 tests/e2e/docker*
 tests/e2e/deps*
+
+# All ReScript generated files
+*.bs.js

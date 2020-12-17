@@ -24,3 +24,7 @@ trim_trailing_whitespace = false
 trim_trailing_whitespace = false
 indent_style = space
 indent_size = 2
+
+[*.{res, resi}]
+indent_style = space
+indent_size = 2
