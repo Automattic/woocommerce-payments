@@ -31,6 +31,12 @@ const getCurrency = ( currencyCode ) => {
 	if ( currency ) {
 		return new Currency( currency );
 	}
+	window.console.warn(
+		sprintf(
+			'"%s" is not supported by @woocommerce/currency, falling back to "USD"',
+			currencyCode
+		)
+	);
 	return new Currency();
 };
 
@@ -255,7 +261,7 @@ const mapEventToTimelineItems = ( event ) => {
 
 			feeString = sprintf(
 				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
-				__( 'Fee: -%1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
+				__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
 				formatCurrency( event.fee ),
 				percentage * 100,
 				formatCurrency( fixed, fixedCurrency )
