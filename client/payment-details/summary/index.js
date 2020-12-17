@@ -120,7 +120,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								placeholder="Fee amount"
 							>
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -fee / 100 ) }
+								-{ currency.formatCurrency( fee / 100 ) }
 							</Loadable>
 						</p>
 						<p>
