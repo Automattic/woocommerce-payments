@@ -184,6 +184,8 @@ let default = () => {
         )->React.string}
       </Link>
 
+    // Sort of a direct conversion from the original JS code, but this is also useful since the
+    // type system will give us a warning here if we ever add or remove columns!
     headers->Array.map(header => {
       open TableCard
       switch header.key {
