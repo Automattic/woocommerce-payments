@@ -23,7 +23,6 @@ module TableCard = {
     ~query: Externals_WooCommerce_Navigation.query,
     ~onQueryChange: Externals_WooCommerce_Navigation.function,
   ) => React.element = "TableCard"
-  // external make: (~title, ~isLoading, ~rowsPerPage, ~totalRows, ~headers, ~rows, ~query, ~onQueryChange) => React.element = "default";
 
   let make_column = (
     ~key,
