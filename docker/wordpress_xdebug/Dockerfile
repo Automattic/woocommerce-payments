@@ -1,5 +1,5 @@
 FROM wordpress:php7.3
-RUN pecl install xdebug \
+RUN pecl install xdebug-2.9.8 \
 	&& echo 'xdebug.remote_enable=1' >> $PHP_INI_DIR/php.ini \
 	&& echo 'xdebug.remote_port=9000' >> $PHP_INI_DIR/php.ini \
 	&& echo 'xdebug.remote_host=host.docker.internal' >> $PHP_INI_DIR/php.ini \
