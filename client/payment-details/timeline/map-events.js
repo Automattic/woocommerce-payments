@@ -179,10 +179,37 @@ const getMainTimelineItem = (
 const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
-	const formatCurrency = ( amount, currency ) =>
-		getCurrency( currency || event.currency || 'USD' ).formatCurrency(
+	const formatCurrency = ( amount, currency ) => {
+		const currencyCode = currency || event.currency || 'USD';
+		const zeroDecimalCurrencies = [
+			'bif',
+			'clp',
+			'djf',
+			'gnf',
+			'jpy',
+			'kmf',
+			'krw',
+			'mga',
+			'pyg',
+			'rwf',
+			'ugx',
+			'vnd',
+			'vuv',
+			'xaf',
+			'xof',
+			'xpf',
+		];
+		const isZeroDecimalCurrency = zeroDecimalCurrencies.includes(
+			currencyCode.toLowerCase()
+		);
+		if ( isZeroDecimalCurrency ) {
+			amount *= 100;
+		}
+
+		return getCurrency( currencyCode ).formatCurrency(
 			Math.abs( amount / 100 )
 		);
+	};
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount ) );
 
