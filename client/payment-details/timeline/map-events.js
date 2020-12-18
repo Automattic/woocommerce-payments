@@ -27,7 +27,7 @@ const currencyData = getCurrencyData();
  * @return {Currency} Currency object
  */
 const getCurrency = ( currencyCode ) => {
-	const currency = find( currencyData, { code: currencyCode } );
+	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		return new Currency( currency );
 	}
