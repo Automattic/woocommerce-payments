@@ -38,6 +38,25 @@ wp() {
 	cd "$WORKING_DIR"
 }
 
+wait_db() {
+	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
+	local WAITS=0
+
+	set +e
+	mysqladmin status $MYSQLADMIN_FLAGS > /dev/null
+	while [[ $? -ne 0 ]]; do
+		((WAITS++))
+		if [ $WAITS -ge 6 ]; then
+			echo "Maximum database wait time exceeded"
+			exit 1
+		fi;
+		echo "Waiting until the database is available..."
+		sleep 5s
+		mysqladmin status $MYSQLADMIN_FLAGS > /dev/null
+	done
+	set -e
+}
+
 if [[ $WP_VERSION =~ ^[0-9]+\.[0-9]+\-(beta|RC)[0-9]+$ ]]; then
 	WP_BRANCH=${WP_VERSION%\-*}
 	WP_TESTS_TAG="branches/$WP_BRANCH"
@@ -80,6 +99,7 @@ install_wp() {
 
 configure_wp() {
 	WP_SITE_URL="http://local.wordpress.test"
+	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
@@ -117,7 +137,6 @@ install_test_suite() {
 }
 
 install_db() {
-
 	if [ ${SKIP_DB_CREATE} = "true" ]; then
 		return 0
 	fi
@@ -139,23 +158,10 @@ install_db() {
 	fi
 
 	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
-	local WAITS=0
-
-	set +e
-	# Wait for the database to be started before the setup.
-	mysqladmin status $ADMIN_EXTRA > /dev/null
-	while [[ $? -ne 0 ]]; do
-		((WAITS++))
-		if [ $WAITS -ge 12 ]; then
-			echo "Maximum DB wait time exceeded"
-			exit 1
-		fi;
-		echo "Waiting until the database container is ready..."
-		sleep 5
-		mysqladmin status $ADMIN_EXTRA > /dev/null
-	done
+	wait_db
 
 	# drop database if exists
+	set +e
 	mysqladmin drop --force $DB_NAME $ADMIN_EXTRA &> /dev/null
 	set -e
 
