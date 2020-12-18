@@ -39,24 +39,26 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
 
-	require dirname( dirname( __FILE__ ) ) . '/woocommerce-payments.php';
+	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
-	require_once dirname( __FILE__ ) . '/../includes/class-wc-payments-db.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/models/class-wc-payments-api-intention.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-api-client.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http-interface.php';
-	require_once dirname( __FILE__ ) . '/../includes/wc-payment-api/class-wc-payments-http.php';
+	require $_plugin_dir . '/woocommerce-payments.php';
+
+	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
 
 	// Load the gateway files, so subscriptions can be tested.
-	require_once dirname( __FILE__ ) . '/../includes/class-wc-payment-gateway-wcpay.php';
-	require_once dirname( __FILE__ ) . '/../includes/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
+	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
+	require_once $_plugin_dir . 'includes/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 
-	require_once dirname( __FILE__ ) . '/../includes/exceptions/class-rest-request-exception.php';
-	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-payments-rest-controller.php';
-	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-webhook-controller.php';
-	require_once dirname( __FILE__ ) . '/../includes/admin/class-wc-rest-payments-tos-controller.php';
-	require_once dirname( __FILE__ ) . '/../includes/admin/tracks/class-tracker.php';
+	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
+	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
