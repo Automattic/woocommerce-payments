@@ -206,9 +206,7 @@ const mapEventToTimelineItems = ( event ) => {
 			amount *= 100;
 		}
 
-		return getCurrency( currencyCode ).formatCurrency(
-			Math.abs( amount / 100 )
-		);
+		return getCurrency( currencyCode ).formatCurrency( amount / 100 );
 	};
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount ) );

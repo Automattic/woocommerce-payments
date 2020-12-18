@@ -126,9 +126,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 			amount *= 100;
 		}
 
-		return getCurrency( currencyCode ).formatCurrency(
-			Math.abs( amount / 100 )
-		);
+		return getCurrency( currencyCode ).formatCurrency( amount / 100 );
 	};
 	const { net, fee, refunded } = charge.amount
 		? getChargeAmounts( charge )
