@@ -43,11 +43,11 @@ There are two modes for running tests:
 
 1. Headless mode: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
 
-2. Dev mode: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeter` to run tests in dev mode.
+2. Dev mode: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
 
 ## Writing tests
 
-Package `@automattic/puppeter-utils` overrides `it` method to attach custom reporter for failed tests.
+Package `@automattic/puppeteer-utils` overrides `it` method to attach custom reporter for failed tests.
 It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
 
 ## Debugging tests
