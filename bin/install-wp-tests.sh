@@ -58,8 +58,7 @@ get_db_connection_flags() {
 }
 
 wait_db() {
-	local EXTRA_FLAGS=$(get_db_connection_flags)
-	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS"
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
 	local WAITS=0
 
 	set +e
@@ -161,17 +160,16 @@ install_db() {
 		return 0
 	fi
 
-	local EXTRA_FLAGS=$(get_db_connection_flags)
-	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS"
 	wait_db
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
 
 	# drop database if exists
 	set +e
-	mysqladmin drop --force $DB_NAME $ADMIN_EXTRA &> /dev/null
+	mysqladmin drop --force $DB_NAME $MYSQLADMIN_FLAGS &> /dev/null
 	set -e
 
 	# create database
-	mysqladmin create $DB_NAME $ADMIN_EXTRA
+	mysqladmin create $DB_NAME $MYSQLADMIN_FLAGS
 }
 
 install_woocommerce() {
