@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 1.9.0 - 2021-xx-xx =
+* Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
+
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
 * Fix - Fix crash when a user has 10 or more saved credit cards.

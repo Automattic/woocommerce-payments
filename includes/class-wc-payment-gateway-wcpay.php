@@ -97,8 +97,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->supports           = [
 			'products',
 			'refunds',
-			'tokenization',
-			'add_payment_method',
 		];
 
 		// Define setting fields.
@@ -134,6 +132,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
 			],
+			'saved_cards'                  => [
+				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on our platform, not on your store.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
+			],
 			'test_mode'                    => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
@@ -153,6 +159,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Load the settings.
 		$this->init_settings();
+
+		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
+		if ( $this->is_saved_cards_enabled() ) {
+			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+		}
 
 		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
@@ -259,6 +270,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return parent::is_available() && ! $this->needs_setup();
+	}
+
+	/**
+	 * Checks if the setting to allow the user to save cards is enabled.
+	 *
+	 * @return bool Whether the setting to allow saved cards is enabled or not.
+	 */
+	public function is_saved_cards_enabled() {
+		return 'yes' === $this->get_option( 'saved_cards' );
 	}
 
 	/**
@@ -396,10 +416,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 
-				<?php
+			<?php
+			if ( $this->is_saved_cards_enabled() ) {
 				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 				$this->save_payment_method_checkbox( $force_save_payment );
-				?>
+			}
+			?>
 
 			</fieldset>
 			<?php
@@ -1000,7 +1022,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$stripe_connected = $this->account->try_is_stripe_connected();
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
-					/* translators: 1) dashboard login URL */
+				/* translators: 1) dashboard login URL */
 					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
 					[
 						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
