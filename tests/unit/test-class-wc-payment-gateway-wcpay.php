@@ -97,6 +97,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
+		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -115,6 +116,21 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
+	}
+
+	public function test_save_card_checkbox_not_displayed_when_saved_cards_disabled() {
+		$this->wcpay_gateway->update_option( 'saved_cards', 'no' );
+
+		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
+		$this->setOutputCallback(
+			function( $output ) {
+				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
+
+				$this->assertEquals( 0, $result );
+			}
+		);
+
+		$this->wcpay_gateway->payment_fields();
 	}
 
 	protected function mock_level_3_order( $shipping_postcode ) {

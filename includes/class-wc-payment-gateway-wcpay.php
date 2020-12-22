@@ -97,9 +97,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->supports           = [
 			'products',
 			'refunds',
-			'tokenization',
-			'add_payment_method',
 		];
+
+		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
+		if ( $this->is_saved_cards_enabled() ) {
+			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+		}
 
 		// Define setting fields.
 		$this->form_fields = [
@@ -133,6 +136,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type'        => 'checkbox',
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
+			],
+			'saved_cards'                  => [
+				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
+				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay with a saved card during checkout. Card details are saved on Stripe servers, not on your store.', 'woocommerce-payments' ),
+				'default'     => 'yes',
+				'desc_tip'    => true,
 			],
 			'test_mode'                    => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
@@ -262,6 +273,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the setting to allow the user to save cards is enabled.
+	 *
+	 * @return bool Whether the setting to allow saved cards is enabled or not.
+	 */
+	public function is_saved_cards_enabled() {
+		return 'yes' === $this->get_option( 'saved_cards' );
+	}
+
+	/**
 	 * Add notice to WooCommerce Payments settings page explaining test mode when it's enabled.
 	 */
 	public function admin_options() {
@@ -371,16 +391,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			<?php if ( $this->is_in_test_mode() ) : ?>
 				<p class="testmode-info">
-				<?php
+					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: link to Stripe testing page */
+					/* translators: link to Stripe testing page */
 						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
 							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
-				?>
+					?>
 				</p>
 			<?php endif; ?>
 
@@ -397,8 +417,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 
 				<?php
-				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
+				if ( $this->is_saved_cards_enabled() ) {
+					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+					$this->save_payment_method_checkbox( $force_save_payment );
+				}
 				?>
 
 			</fieldset>
@@ -437,7 +459,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $payment_information ) ) {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
+					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -595,7 +617,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					if ( $payment_needed ) {
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -612,7 +634,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				case 'requires_capture':
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
@@ -751,7 +773,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: error message */
+			/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
 				wc_price( $amount ),
 				$e->getMessage()
@@ -766,13 +788,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( empty( $reason ) ) {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount */
+			/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
 				wc_price( $amount )
 			);
 		} else {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: reason */
+			/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
 				wc_price( $amount ),
 				$reason
@@ -1000,7 +1022,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$stripe_connected = $this->account->try_is_stripe_connected();
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
-					/* translators: 1) dashboard login URL */
+				/* translators: 1) dashboard login URL */
 					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
 					[
 						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
@@ -1098,7 +1120,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__(
 						'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.',
 						'woocommerce-payments'
@@ -1112,7 +1134,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount, %2: error message  */
+				/* translators: %1: the failed capture amount, %2: error message  */
 					__(
 						'A capture of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 						'woocommerce-payments'
@@ -1129,7 +1151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount */
+				/* translators: %1: the failed capture amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
@@ -1185,7 +1207,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: error message  */
+				/* translators: %1: error message  */
 					__(
 						'Canceling authorization <strong>failed</strong> to complete with the following message: <code>%1$s</code>.',
 						'woocommerce-payments'
@@ -1295,9 +1317,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$intent_id          = $order->get_meta( '_intent_id', true );
 			$intent_id_received = isset( $_POST['intent_id'] )
-			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
-			/* translators: This will be used to indicate an unknown value for an ID. */
-			: __( 'unknown', 'woocommerce-payments' );
+				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+				/* translators: This will be used to indicate an unknown value for an ID. */
+				: __( 'unknown', 'woocommerce-payments' );
 
 			if ( empty( $intent_id ) ) {
 				throw new Intent_Authentication_Exception(
@@ -1331,7 +1353,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					case 'succeeded':
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1351,7 +1373,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					case 'requires_capture':
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1374,7 +1396,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					case 'requires_payment_method':
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1453,7 +1475,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
+						/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
 							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
 							[
 								'code' => '<code>',
