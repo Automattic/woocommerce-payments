@@ -39,7 +39,23 @@ wp() {
 }
 
 wait_db() {
-	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
+	# parse DB_HOST for port or socket references
+	local PARTS=(${DB_HOST//\:/ })
+	local DB_HOSTNAME=${PARTS[0]};
+	local DB_SOCK_OR_PORT=${PARTS[1]};
+	local EXTRA=""
+
+	if ! [ -z $DB_HOSTNAME ] ; then
+		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
+			EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
+		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
+			EXTRA=" --socket=$DB_SOCK_OR_PORT"
+		elif ! [ -z $DB_HOSTNAME ] ; then
+			EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
+		fi
+	fi
+
+	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS $EXTRA"
 	local WAITS=0
 
 	set +e
