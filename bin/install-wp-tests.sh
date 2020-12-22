@@ -38,8 +38,27 @@ wp() {
 	cd "$WORKING_DIR"
 }
 
+get_db_connection_flags() {
+	# parse DB_HOST for port or socket references
+	local DB_HOST_PARTS=(${DB_HOST//\:/ })
+	local DB_HOSTNAME=${DB_HOST_PARTS[0]};
+	local DB_SOCK_OR_PORT=${DB_HOST_PARTS[1]};
+	local EXTRA_FLAGS=""
+
+	if ! [ -z $DB_HOSTNAME ] ; then
+		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
+		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
+			EXTRA_FLAGS=" --socket=$DB_SOCK_OR_PORT"
+		elif ! [ -z $DB_HOSTNAME ] ; then
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
+		fi
+	fi
+	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
+}
+
 wait_db() {
-	local MYSQLADMIN_FLAGS="--user=$DB_USER --password=$DB_PASS --host=$DB_HOST"
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
 	local WAITS=0
 
 	set +e
@@ -141,32 +160,16 @@ install_db() {
 		return 0
 	fi
 
-	# parse DB_HOST for port or socket references
-	local PARTS=(${DB_HOST//\:/ })
-	local DB_HOSTNAME=${PARTS[0]};
-	local DB_SOCK_OR_PORT=${PARTS[1]};
-	local EXTRA=""
-
-	if ! [ -z $DB_HOSTNAME ] ; then
-		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
-			EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
-		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
-			EXTRA=" --socket=$DB_SOCK_OR_PORT"
-		elif ! [ -z $DB_HOSTNAME ] ; then
-			EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
-		fi
-	fi
-
-	local ADMIN_EXTRA="--user=$DB_USER --password=$DB_PASS $EXTRA"
 	wait_db
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
 
 	# drop database if exists
 	set +e
-	mysqladmin drop --force $DB_NAME $ADMIN_EXTRA &> /dev/null
+	mysqladmin drop --force $DB_NAME $MYSQLADMIN_FLAGS &> /dev/null
 	set -e
 
 	# create database
-	mysqladmin create $DB_NAME $ADMIN_EXTRA
+	mysqladmin create $DB_NAME $MYSQLADMIN_FLAGS
 }
 
 install_woocommerce() {
