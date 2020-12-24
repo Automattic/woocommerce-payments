@@ -12,7 +12,7 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 fi
 
 if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
-	step "Fetching server (branch ${WCP_SERVER_BRANCH-master})"
+	step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
 	if [[ -z $WCP_SERVER_REPO ]]; then
 		echo "WCP_SERVER_REPO env variable is not defined"
@@ -20,7 +20,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $SERVER_PATH ]]; then
 	fi
 
 	rm -rf $SERVER_PATH
-	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-master} $WCP_SERVER_REPO $SERVER_PATH
+	git clone --depth=1 --branch ${WCP_SERVER_BRANCH-trunk} $WCP_SERVER_REPO $SERVER_PATH
 else
 	echo "Using cached server at ${SERVER_PATH}"
 fi
@@ -66,7 +66,7 @@ if [[ $FORCE_E2E_DEPS_SETUP || ! -d $DEV_TOOLS_PATH ]]; then
 	fi
 
 	rm -rf $DEV_TOOLS_PATH
-	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-master} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
+	git clone --depth=1 --branch ${WCP_DEV_TOOLS_BRANCH-trunk} $WCP_DEV_TOOLS_REPO $DEV_TOOLS_PATH
 fi
 
 step "Starting CLIENT containers"
