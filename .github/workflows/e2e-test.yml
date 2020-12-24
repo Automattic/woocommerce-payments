@@ -3,7 +3,7 @@ name: E2E tests
 on:
   pull_request:
     branches:
-      - master
+      - trunk
 
 env:
   WP_VERSION:                                  latest
