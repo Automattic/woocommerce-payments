@@ -32,7 +32,7 @@ You don't need a paid plan for this.
 In a new terminal window run:
 
 ```
-ngrok http 8082 --host-header=rewrite
+ngrok http 8082
 ```
 
 You will see it give a forwarding address like this one:
