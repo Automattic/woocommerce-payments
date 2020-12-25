@@ -22,7 +22,7 @@ const pageEvents = [];
  * to the Puppeteer ConsoleMessage type, its value the corresponding function
  * on the console global object.
  *
- * @type {Object<string,string>}
+ * @type {object<string,string>}
  */
 const OBSERVED_CONSOLE_MESSAGE_TYPES = {
 	warning: 'warn',

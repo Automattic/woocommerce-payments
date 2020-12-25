@@ -3,7 +3,7 @@
  */
 import { useEffect } from '@wordpress/element';
 
-const includeStripeJS = () => {
+const useStripeJS = () => {
 	useEffect( () => {
 		const script = document.createElement( 'script' );
 		script.src = 'https://js.stripe.com/v3';
@@ -15,4 +15,4 @@ const includeStripeJS = () => {
 	}, [] );
 };
 
-export default includeStripeJS;
+export default useStripeJS;

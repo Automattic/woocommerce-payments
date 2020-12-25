@@ -45,6 +45,12 @@
 			{
 				"required": "id"
 			}
-		]
+		],
+		"inclusive-language/use-inclusive-words": [
+			"error",
+			{
+				"allowedTerms": [ "mastercard" ]
+			}
+		],
 	}
 }

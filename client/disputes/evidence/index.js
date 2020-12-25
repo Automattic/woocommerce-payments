@@ -291,7 +291,7 @@ export const DisputeEvidencePage = ( props ) => {
 /**
  * Retrieves product type from the dispute.
  *
- * @param {Object?} dispute Dispute object
+ * @param {?object} dispute Dispute object
  * @returns {string} dispute product type
  */
 const getDisputeProductType = ( dispute ) => {
@@ -447,7 +447,7 @@ export default ( { query } ) => {
 		);
 		/*
 			We rely on WC-Admin Transient notices to display success message.
-			https://github.com/woocommerce/woocommerce-admin/tree/master/client/layout/transient-notices.
+			https://github.com/woocommerce/woocommerce-admin/tree/main/client/layout/transient-notices.
 		*/
 		createSuccessNotice( message );
 

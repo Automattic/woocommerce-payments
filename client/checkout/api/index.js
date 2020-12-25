@@ -12,7 +12,7 @@ export default class WCPayAPI {
 	/**
 	 * Prepares the API.
 	 *
-	 * @param {Object}   options Options for the initialization.
+	 * @param {object}   options Options for the initialization.
 	 * @param {Function} request A function to use for AJAX requests.
 	 */
 	constructor( options, request ) {
@@ -24,7 +24,7 @@ export default class WCPayAPI {
 	/**
 	 * Generates a new instance of Stripe.
 	 *
-	 * @returns {Object} The Stripe Object.
+	 * @returns {object} The Stripe Object.
 	 */
 	getStripe() {
 		if ( ! this.stripe ) {
@@ -41,9 +41,9 @@ export default class WCPayAPI {
 	/**
 	 * Generates a Stripe payment method.
 	 *
-	 * @param {Object} elements A hash of all Stripe elements, used to enter card data.
-	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
-	 * @returns {Object} A request object, which will be prepared and then `.send()`.
+	 * @param {object} elements A hash of all Stripe elements, used to enter card data.
+	 * @param {object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
+	 * @returns {object} A request object, which will be prepared and then `.send()`.
 	 */
 	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
@@ -65,8 +65,8 @@ export default class WCPayAPI {
 			 * uses a default value if none is present.
 			 *
 			 * @param {string} name The key of the value.
-			 * @param {mixed} value The value to sanitize.
-			 * @returns {mixed}     The sanitized value, `undefined` if not present.
+			 * @param {any} value   The value to sanitize.
+			 * @returns {any}       The sanitized value, `undefined` if not present.
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
@@ -108,7 +108,7 @@ export default class WCPayAPI {
 			/**
 			 * Sends the request to Stripe once everything is ready.
 			 *
-			 * @return {Object} The payment method object if successfully loaded.
+			 * @return {object} The payment method object if successfully loaded.
 			 */
 			send() {
 				return stripe
@@ -128,9 +128,9 @@ export default class WCPayAPI {
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
-	 * @param {string} redirectUrl The redirect URL, returned from the server.
+	 * @param {string} redirectUrl         The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @returns {mixed} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @returns {any}                      A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(

@@ -396,7 +396,7 @@ const sections = [
  * @param {string} reason      Dispute reason for which to present fields.
  * @param {string} productType Product type for which to present fields.
  *
- * @returns {array} Sections of fields.
+ * @returns {Array} Sections of fields.
  */
 export default ( reason, productType ) => {
 	if ( ! reason || ! productType ) {

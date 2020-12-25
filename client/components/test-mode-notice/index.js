@@ -3,6 +3,7 @@
  */
 import { __, _n } from '@wordpress/i18n';
 import { Notice } from '@wordpress/components';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -36,12 +37,9 @@ const detailsTopics = [
 ];
 
 /**
- * Returns an <a> tag with the href attribute set to the Payments settings
- * page, and the provided text.
+ * Returns an <a> tag with the href attribute set to the Payments settings page.
  *
- * @param {string} topic The notice message topic.
- *
- * @returns {*} An HTML <a> component with a link to wcpay settings page.
+ * @returns {React.ReactNode} An HTML <a> component with a link to wcpay settings page.
  */
 export const getPaymentsSettingsUrlComponent = () => {
 	return (
@@ -120,10 +118,10 @@ export const getNotice = ( topic ) => {
 /**
  * Adds a test notice that will be displayed when test mode is enabled.
  *
- * @param {function|React.Component} Component The component to add the notice to.
+ * @param {Function | React.Component} Component The component to add the notice to.
  * @param {string} pageTopic                   The topic for this notice, e.g. 'transactions'.
  *
- * @returns {function} The wrapped component, including a notice when applicable.
+ * @returns {Function} The wrapped component, including a notice when applicable.
  */
 export const withTestNotice = ( Component, pageTopic ) => {
 	return ( props, ownProps ) => (

@@ -1,7 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentDetailsTimeline does not render when the feature flag is disabled 1`] = `<div />`;
-
 exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline component) 1`] = `
 <div>
   <div

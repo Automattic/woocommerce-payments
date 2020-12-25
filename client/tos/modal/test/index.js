@@ -23,7 +23,7 @@ jest.mock( '@wordpress/api-fetch', () => ( {
  *
  * Modal component is rendered inside React portal rather than inside container returned by testing-library,
  * hence cannot be accessed directly for snapshot matching.
- * https://github.com/WordPress/gutenberg/blob/master/packages/components/src/modal/index.js
+ * https://github.com/WordPress/gutenberg/blob/trunk/packages/components/src/modal/index.js
  *
  * @returns {HTMLElement} Modal element.
  */
