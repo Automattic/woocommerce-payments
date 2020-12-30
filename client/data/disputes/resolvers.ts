@@ -11,14 +11,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
-import { updateDispute, updateDisputes } from './actions';
+import { updateDispute, updateDisputes, Query } from './actions';
 
 /**
  * Retrieve a single dispute from the disputes API.
  *
  * @param {string} id Identifier for specified dispute to retrieve.
  */
-export function* getDispute( id ) {
+export function* getDispute( id: string ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes/${ id }` );
 
 	try {
@@ -38,14 +38,14 @@ export function* getDispute( id ) {
  *
  * @param {string} query Data on which to parameterize the selection.
  */
-export function* getDisputes( query ) {
+export function* getDisputes( query: Query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/disputes`, {
 		page: query.paged,
 		pagesize: query.perPage,
 	} );
 
 	try {
-		const results = yield apiFetch( { path } ) || {};
+		const results = ( yield apiFetch( { path } ) ) || {};
 		yield updateDisputes( query, results.data );
 
 		// Update resolution state on getDispute selector for each result.

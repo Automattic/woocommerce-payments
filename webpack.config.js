@@ -23,8 +23,8 @@ const webpackConfig = {
 	module: {
 		rules: [
 			{
-				test: /\.jsx?$/,
-				loader: 'babel-loader',
+				test: /\.(t|j)sx?$/,
+				loader: 'ts-loader',
 				exclude: /node_modules/,
 			},
 			{
@@ -34,7 +34,7 @@ const webpackConfig = {
 					'css-loader',
 					{
 						loader: 'sass-loader',
-						query: {
+						options: {
 							sassOptions: {
 								includePaths: [
 									'client/stylesheets/abstracts',
@@ -54,10 +54,17 @@ const webpackConfig = {
 					},
 				],
 			},
+			// Add TypeScript source map support.
+			{
+				enforce: 'pre',
+				test: /\.js$/,
+				exclude: /node_modules/,
+				loader: 'source-map-loader',
+			},
 		],
 	},
 	resolve: {
-		extensions: [ '.json', '.js', '.jsx' ],
+		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( __dirname, 'client' ), 'node_modules' ],
 	},
 	plugins: [
@@ -94,6 +101,8 @@ const webpackConfig = {
 			},
 		} ),
 	],
+	// Add TypeScript source map support.
+	devtool: 'source-map',
 };
 
 module.exports = webpackConfig;

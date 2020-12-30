@@ -14,14 +14,32 @@ import { __, sprintf } from '@wordpress/i18n';
 import { NAMESPACE, STORE_NAME } from '../constants';
 import TYPES from './action-types';
 
-export function updateDispute( data ) {
+/**
+ * Additional types and interfaces.
+ */
+type WooCommerceTracks = {
+	recordEvent: ( arg0: string ) => void;
+};
+
+declare global {
+	interface Window {
+		wcTracks: WooCommerceTracks;
+	}
+};
+
+export type Query = {
+	paged: number;
+	perPage: number;
+};
+
+export function updateDispute( data: any[] ) {
 	return {
 		type: TYPES.SET_DISPUTE,
 		data,
 	};
 }
 
-export function updateDisputes( query, data ) {
+export function updateDisputes( query: Query, data: any[] ) {
 	return {
 		type: TYPES.SET_DISPUTES,
 		query,
@@ -29,7 +47,7 @@ export function updateDisputes( query, data ) {
 	};
 }
 
-export function* acceptDispute( id ) {
+export function* acceptDispute( id: string ) {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
 
