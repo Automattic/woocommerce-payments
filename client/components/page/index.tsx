@@ -6,8 +6,21 @@ import React from 'react';
 import includeStripeJS from 'hooks/include-stripe-js';
 import './style.scss';
 
-const Page: React.FunctionComponent<{ maxWidth?: string, isNarrow?: Boolean, className?: string }> = ( { children, maxWidth, isNarrow, className = '' } ) => {
-	const customStyle: React.CSSProperties | undefined = maxWidth ? { maxWidth } : undefined;
+type pageProps = {
+	maxWidth?: string;
+	isNarrow?: boolean;
+	className?: string;
+};
+
+const Page: React.FunctionComponent< pageProps > = ( {
+	children,
+	maxWidth,
+	isNarrow,
+	className = '',
+} ) => {
+	const customStyle: React.CSSProperties | undefined = maxWidth
+		? { maxWidth }
+		: undefined;
 	const classNames = [ className, 'woocommerce-payments-page' ];
 	if ( isNarrow ) {
 		classNames.push( 'is-narrow' );
