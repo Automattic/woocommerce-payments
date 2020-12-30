@@ -8,7 +8,11 @@
     "target": "es5",            // specify ECMAScript target version
     "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
     "moduleResolution": "node",
-    "baseUrl": "./client"
+    "baseUrl": "./client",
+    "paths": {
+      "data": [ "data/" ],
+    },
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "./client/"

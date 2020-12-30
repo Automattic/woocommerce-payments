@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
@@ -85,7 +86,7 @@ export const DisputesList = () => {
 			  }
 			: null;
 
-		const clickable = ( children ) => (
+		const clickable = ( children: JSX.Element | string ) => (
 			<ClickableCell href={ getDetailsURL( dispute.id, 'disputes' ) }>
 				{ children }
 			</ClickableCell>

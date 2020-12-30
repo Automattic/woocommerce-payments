@@ -66,6 +66,7 @@
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^1.1.2",
+    "@types/react": "^16.14.0",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",

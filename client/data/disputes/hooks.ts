@@ -5,8 +5,10 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
+// Technically an internal dependency type declaration.
+import { WCAdminTableQuery } from '@woocommerce/navigation';
 
-export const useDispute = ( id ) => {
+export const useDispute = ( id: string ) => {
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
@@ -31,7 +33,7 @@ export const useDisputeEvidence = () => {
 };
 
 // eslint-disable-next-line camelcase
-export const useDisputes = ( { paged, per_page: perPage } ) =>
+export const useDisputes = ( { paged, per_page: perPage }: WCAdminTableQuery ) =>
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
@@ -43,8 +45,8 @@ export const useDisputes = ( { paged, per_page: perPage } ) =>
 					: perPage,
 			};
 
-			const disputes = getDisputes( query );
-			const isLoading = isResolving( 'getDisputes', [ query ] );
+			const disputes: any[] = getDisputes( query );
+			const isLoading: boolean = isResolving( 'getDisputes', [ query ] );
 
 			return { disputes, isLoading };
 		},
