@@ -75,7 +75,7 @@ const headers = [
 	},
 ];
 
-export const DisputesList = () => {
+export const DisputesList: React.FunctionComponent< void > = () => {
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const rows = disputes.map( ( dispute ) => {

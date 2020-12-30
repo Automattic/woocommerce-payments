@@ -25,21 +25,27 @@ declare global {
 	interface Window {
 		wcTracks: WooCommerceTracks;
 	}
-};
+}
 
 export type Query = {
 	paged: number;
 	perPage: number;
 };
 
-export function updateDispute( data: any[] ) {
+export type updateEvent = {
+	type: string;
+	data: any[];
+	query?: string | Query;
+};
+
+export function updateDispute( data: any[] ): updateEvent {
 	return {
 		type: TYPES.SET_DISPUTE,
 		data,
 	};
 }
 
-export function updateDisputes( query: Query, data: any[] ) {
+export function updateDisputes( query: Query, data: any[] ): updateEvent {
 	return {
 		type: TYPES.SET_DISPUTES,
 		query,
@@ -47,11 +53,11 @@ export function updateDisputes( query: Query, data: any[] ) {
 	};
 }
 
-export function* acceptDispute( id: string ) {
+export function* acceptDispute( id: string ): Generator< void | updateEvent > {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getDispute', [ id ] );
 
-		const dispute = yield apiFetch( {
+		const dispute: any = yield apiFetch( {
 			path: `${ NAMESPACE }/disputes/${ id }/close`,
 			method: 'post',
 		} );

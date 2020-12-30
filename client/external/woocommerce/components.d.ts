@@ -1,7 +1,8 @@
+// eslint-disable-next-line wpcalypso/import-docblock
 declare module '@woocommerce/components' {
 	import { WCAdminTableQuery } from '@woocommerce/navigation';
 
-	type orderOptions = "asc" | "desc";
+	type orderOptions = 'asc' | 'desc';
 
 	type tableHeader = {
 		defaultSort?: boolean;
@@ -16,7 +17,7 @@ declare module '@woocommerce/components' {
 	};
 
 	type tableCell = {
-		display: React.Component<any, any>;
+		display: React.Component< any, any >;
 		value: string | number | boolean;
 	};
 
@@ -30,15 +31,19 @@ declare module '@woocommerce/components' {
 		headers?: tableHeader[];
 		rows?: tableRow[];
 		query?: WCAdminTableQuery | string;
-		onQueryChange: ( param: string, path?: string, query?: WCAdminTableQuery | string ) => ( ( arg0: any ) => void );
+		onQueryChange: (
+			param: string,
+			path?: string,
+			query?: WCAdminTableQuery | string
+		) => ( arg0: any ) => void;
 	};
 
-	const TableCard: React.FunctionComponent<tableCardProperties>;
+	const TableCard: React.FunctionComponent< tableCardProperties >;
 
 	type linkProps = {
 		href: string;
 		type?: string;
 	};
 
-	const Link: React.FunctionComponent<linkProps>;
+	const Link: React.FunctionComponent< linkProps >;
 }

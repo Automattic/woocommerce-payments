@@ -1,4 +1,3 @@
-
 declare module '@woocommerce/currency' {
 	class Currency {
 		constructor();
