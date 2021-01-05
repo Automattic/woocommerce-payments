@@ -36,23 +36,7 @@ export const getCurrency = ( currencyCode ) => {
  * @return {boolean} true if currency is zero-decimal
  */
 export const isZeroDecimalCurrency = ( currencyCode ) => {
-	const zeroDecimalCurrencies = [
-		'bif',
-		'clp',
-		'djf',
-		'gnf',
-		'jpy',
-		'kmf',
-		'krw',
-		'mga',
-		'pyg',
-		'rwf',
-		'ugx',
-		'vnd',
-		'vuv',
-		'xaf',
-		'xof',
-		'xpf',
-	];
-	return zeroDecimalCurrencies.includes( currencyCode.toLowerCase() );
+	return wcpaySettings.zero_decimal_currencies.includes(
+		currencyCode.toLowerCase()
+	);
 };
