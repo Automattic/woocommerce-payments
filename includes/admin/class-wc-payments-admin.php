@@ -208,13 +208,13 @@ class WC_Payments_Admin {
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
 			[
-				'connectUrl'              => WC_Payments_Account::get_connect_url(),
-				'testMode'                => $this->wcpay_gateway->is_in_test_mode(),
-				'onBoardingDisabled'      => $on_boarding_disabled,
-				'errorMessage'            => $error_message,
-				'featureFlags'            => $this->get_frontend_feature_flags(),
-				'isSubscriptionsActive'   => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
-				'zero_decimal_currencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'connectUrl'            => WC_Payments_Account::get_connect_url(),
+				'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+				'onBoardingDisabled'    => $on_boarding_disabled,
+				'errorMessage'          => $error_message,
+				'featureFlags'          => $this->get_frontend_feature_flags(),
+				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 			]
 		);
 

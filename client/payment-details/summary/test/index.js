@@ -48,6 +48,7 @@ describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
+			zeroDecimalCurrencies: [],
 		};
 	} );
 

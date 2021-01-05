@@ -8,6 +8,9 @@ import mapTimelineEvents from '../map-events';
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
 	} );
 
 	test( 'handles falsey values', () => {

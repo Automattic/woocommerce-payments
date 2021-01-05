@@ -36,7 +36,22 @@ export const getCurrency = ( currencyCode ) => {
  * @return {boolean} true if currency is zero-decimal
  */
 export const isZeroDecimalCurrency = ( currencyCode ) => {
-	return wcpaySettings.zero_decimal_currencies.includes(
+	return wcpaySettings.zeroDecimalCurrencies.includes(
 		currencyCode.toLowerCase()
 	);
+};
+
+/**
+ * Gets wc-admin Currency for the given currency code
+ *
+ * @param {Number} amount       Amount
+ * @param {String} currencyCode Currency code
+ *
+ * @return {String} formatted currency representation
+ */
+export const formatCurrency = ( amount, currencyCode ) => {
+	if ( isZeroDecimalCurrency( currencyCode ) ) {
+		amount *= 100;
+	}
+	return getCurrency( currencyCode ).formatCurrency( amount / 100 );
 };
