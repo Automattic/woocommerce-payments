@@ -38,7 +38,6 @@ function _manually_load_plugin() {
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
-	require_once ABSPATH . '/wp-content/plugins/woocommerce/packages/woocommerce-admin/woocommerce-admin.php';
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
@@ -62,7 +61,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 }
 
-tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+tests_add_filter( 'plugins_loaded', '_manually_load_plugin' );
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
