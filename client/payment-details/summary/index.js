@@ -19,7 +19,7 @@ import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
-import { isZeroDecimalCurrency, getCurrency } from 'utils/currency';
+import { formatCurrency } from 'utils/currency';
 import './style.scss';
 
 const placeholderValues = {
@@ -76,13 +76,6 @@ const composePaymentSummaryItems = ( { charge } ) =>
 	].filter( Boolean );
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
-	const formatCurrency = ( amount, currency ) => {
-		const currencyCode = currency || charge.currency || 'USD';
-		if ( isZeroDecimalCurrency( currencyCode ) ) {
-			amount *= 100;
-		}
-		return getCurrency( currencyCode ).formatCurrency( amount / 100 );
-	};
 	const { net, fee, refunded } = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
@@ -98,7 +91,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						>
 							{ formatCurrency(
 								charge.amount || 0,
-								charge.currency
+								charge.currency || 'USD'
 							) }
 							<span className="payment-details-summary__amount-currency">
 								{ charge.currency || 'usd' }
@@ -117,7 +110,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								) }: ` }
 								{ formatCurrency(
 									-refunded,
-									charge.currency || 'usd'
+									charge.currency || 'USD'
 								) }
 							</p>
 						) : (
@@ -131,7 +124,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
 								{ formatCurrency(
 									-fee,
-									charge.currency || 'usd'
+									charge.currency || 'USD'
 								) }
 							</Loadable>
 						</p>
@@ -143,7 +136,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
 								{ formatCurrency(
 									net,
-									charge.currency || 'usd'
+									charge.currency || 'USD'
 								) }
 							</Loadable>
 						</p>

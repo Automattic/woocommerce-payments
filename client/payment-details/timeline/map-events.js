@@ -10,7 +10,7 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { isZeroDecimalCurrency, getCurrency } from 'utils/currency';
+import { formatCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
@@ -156,15 +156,8 @@ const getMainTimelineItem = (
 const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
-	const formatCurrency = ( amount, currency ) => {
-		const currencyCode = currency || event.currency || 'USD';
-		if ( isZeroDecimalCurrency( currencyCode ) ) {
-			amount *= 100;
-		}
-		return getCurrency( currencyCode ).formatCurrency( amount / 100 );
-	};
 	const stringWithAmount = ( headline, amount ) =>
-		sprintf( headline, formatCurrency( amount ) );
+		sprintf( headline, formatCurrency( amount, event.currency || 'USD' ) );
 
 	if ( 'authorized' === type ) {
 		return [
@@ -227,7 +220,10 @@ const mapEventToTimelineItems = ( event ) => {
 			),
 		];
 	} else if ( 'captured' === type ) {
-		const formattedNet = formatCurrency( event.amount - event.fee );
+		const formattedNet = formatCurrency(
+			event.amount - event.fee,
+			event.currency || 'USD'
+		);
 		let feeString = stringWithAmount(
 			/* translators: %s is a monetary amount */
 			__( 'Fee: %s', 'woocommerce-payments' ),
@@ -244,7 +240,7 @@ const mapEventToTimelineItems = ( event ) => {
 			feeString = sprintf(
 				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
 				__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
-				formatCurrency( event.fee ),
+				formatCurrency( event.fee, event.currency || 'USD' ),
 				percentage * 100,
 				formatCurrency( fixed, fixedCurrency )
 			);
@@ -279,7 +275,10 @@ const mapEventToTimelineItems = ( event ) => {
 			),
 		];
 	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
-		const formattedAmount = formatCurrency( event.amount_refunded );
+		const formattedAmount = formatCurrency(
+			event.amount_refunded,
+			event.currency || 'USD'
+		);
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -353,7 +352,8 @@ const mapEventToTimelineItems = ( event ) => {
 			};
 		} else {
 			const formattedTotal = formatCurrency(
-				Math.abs( event.amount ) + Math.abs( event.fee )
+				Math.abs( event.amount ) + Math.abs( event.fee ),
+				event.currency || 'USD'
 			);
 			depositTimelineItem = getDepositTimelineItem(
 				event,
@@ -401,7 +401,8 @@ const mapEventToTimelineItems = ( event ) => {
 		];
 	} else if ( 'dispute_won' === type ) {
 		const formattedTotal = formatCurrency(
-			Math.abs( event.amount ) + Math.abs( event.fee )
+			Math.abs( event.amount ) + Math.abs( event.fee ),
+			event.currency || 'USD'
 		);
 		return [
 			getStatusChangeTimelineItem(
