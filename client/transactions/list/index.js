@@ -3,12 +3,12 @@
 /**
  * External dependencies
  */
-import { find, uniq } from 'lodash';
+import { uniq } from 'lodash';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
+import { getCurrency } from 'utils/currency';
 import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
@@ -29,29 +29,6 @@ import { formatStringValue } from 'utils';
 import Deposit from './deposit';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
-
-const currencyData = getCurrencyData();
-
-/**
- * Gets wc-admin Currency for the given currency code
- *
- * @param {String} currencyCode Currency code
- *
- * @return {Currency} Currency object
- */
-const getCurrency = ( currencyCode ) => {
-	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
-	if ( currency ) {
-		return new Currency( currency );
-	}
-	window.console.warn(
-		sprintf(
-			'"%s" is not supported by @woocommerce/currency, falling back to "USD"',
-			currencyCode
-		)
-	);
-	return new Currency();
-};
 
 const getColumns = ( includeDeposit, includeSubscription ) =>
 	[

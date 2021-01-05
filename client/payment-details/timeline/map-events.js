@@ -3,42 +3,19 @@
 /**
  * External dependencies
  */
-import { flatMap, find } from 'lodash';
+import { flatMap } from 'lodash';
 import Gridicon from 'gridicons';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { isZeroDecimalCurrency, getCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
  */
 import { reasons as disputeReasons } from 'disputes/strings';
-
-const currencyData = getCurrencyData();
-
-/**
- * Gets wc-admin Currency for the given currency code
- *
- * @param {String} currencyCode Currency code
- *
- * @return {Currency} Currency object
- */
-const getCurrency = ( currencyCode ) => {
-	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
-	if ( currency ) {
-		return new Currency( currency );
-	}
-	window.console.warn(
-		sprintf(
-			'"%s" is not supported by @woocommerce/currency, falling back to "USD"',
-			currencyCode
-		)
-	);
-	return new Currency();
-};
 
 /**
  * Creates a Gridicon
@@ -181,31 +158,9 @@ const mapEventToTimelineItems = ( event ) => {
 
 	const formatCurrency = ( amount, currency ) => {
 		const currencyCode = currency || event.currency || 'USD';
-		const zeroDecimalCurrencies = [
-			'bif',
-			'clp',
-			'djf',
-			'gnf',
-			'jpy',
-			'kmf',
-			'krw',
-			'mga',
-			'pyg',
-			'rwf',
-			'ugx',
-			'vnd',
-			'vuv',
-			'xaf',
-			'xof',
-			'xpf',
-		];
-		const isZeroDecimalCurrency = zeroDecimalCurrencies.includes(
-			currencyCode.toLowerCase()
-		);
-		if ( isZeroDecimalCurrency ) {
+		if ( isZeroDecimalCurrency( currencyCode ) ) {
 			amount *= 100;
 		}
-
 		return getCurrency( currencyCode ).formatCurrency( amount / 100 );
 	};
 	const stringWithAmount = ( headline, amount ) =>
