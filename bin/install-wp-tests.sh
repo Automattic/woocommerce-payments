@@ -194,7 +194,6 @@ install_woocommerce() {
 			WC_INSTALL_EXTRA+=" --version=$WC_VERSION"
 		fi
 		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
-		wp plugin install woocommerce-admin --activate
 	fi
 }
 
