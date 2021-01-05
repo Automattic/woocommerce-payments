@@ -196,7 +196,7 @@ install_woocommerce() {
 		wp plugin install woocommerce --activate$WC_INSTALL_EXTRA
 
 		# starting the mentioned version here, woocommerce-admin was not initializing, hence we introduced this
-		if [[ $WC_VERSION == 'beta' ]] || [[ dpkg --compare-versions $WC_VERSION "ge" "4.9.0" ]]]; then
+		if [[ $WC_VERSION == 'beta' ]] || [[ $(version $WC_VERSION) -ge $(version "4.9.0") ]]; then
 			wp plugin install woocommerce-admin --activate
 		fi
 	fi
