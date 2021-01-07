@@ -162,8 +162,9 @@ export const TransactionsList = ( props ) => {
 		);
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const subscriptions =
-			txn.order &&
 			wcpaySettings.isSubscriptionsActive &&
+			txn.order &&
+			txn.order.subscriptions &&
 			txn.order.subscriptions.map( ( subscription, i, all ) => [
 				<OrderLink key={ i } order={ subscription } />,
 				i !== all.length - 1 && ', ',
