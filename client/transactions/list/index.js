@@ -8,7 +8,7 @@ import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { getCurrency } from 'utils/currency';
+import { formatCurrency } from 'utils/currency';
 import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
@@ -175,7 +175,7 @@ export const TransactionsList = ( props ) => {
 				dateAvailable={ txn.date_available }
 			/>
 		);
-		const currency = getCurrency( txn.currency.toUpperCase() );
+		const currency = txn.currency.toUpperCase();
 
 		// Map transaction into table row.
 		const data = {
@@ -222,20 +222,16 @@ export const TransactionsList = ( props ) => {
 			},
 			amount: {
 				value: txn.amount / 100,
-				display: clickable(
-					currency.formatCurrency( txn.amount / 100 )
-				),
+				display: clickable( formatCurrency( txn.amount, currency ) ),
 			},
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: {
 				value: txn.fees / 100,
-				display: clickable(
-					currency.formatCurrency( ( txn.fees / 100 ) * -1 )
-				),
+				display: clickable( formatCurrency( txn.fees * -1, currency ) ),
 			},
 			net: {
 				value: txn.net / 100,
-				display: clickable( currency.formatCurrency( txn.net / 100 ) ),
+				display: clickable( formatCurrency( txn.net, currency ) ),
 			},
 			// eslint-disable-next-line camelcase
 			risk_level: {
@@ -250,29 +246,31 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
-	const summaryCurrency = getCurrency(
+	const summaryCurrency =
 		transactions.length > 0
 			? transactions[ 0 ].currency.toUpperCase()
-			: 'USD'
-	);
+			: 'USD';
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{
 			label: 'total',
-			value: `${ summaryCurrency.formatCurrency(
-				transactionsSummary.total / 100
+			value: `${ formatCurrency(
+				transactionsSummary.total,
+				summaryCurrency
 			) }`,
 		},
 		{
 			label: 'fees',
-			value: `${ summaryCurrency.formatCurrency(
-				transactionsSummary.fees / 100
+			value: `${ formatCurrency(
+				transactionsSummary.fees,
+				summaryCurrency
 			) }`,
 		},
 		{
 			label: 'net',
-			value: `${ summaryCurrency.formatCurrency(
-				transactionsSummary.net / 100
+			value: `${ formatCurrency(
+				transactionsSummary.net,
+				summaryCurrency
 			) }`,
 		},
 	];

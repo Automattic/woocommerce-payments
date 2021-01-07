@@ -12,20 +12,14 @@ const currencyData = getCurrencyData();
  *
  * @param {String} currencyCode Currency code
  *
- * @return {Currency} Currency object
+ * @return {Currency|null} Currency object
  */
-export const getCurrency = ( currencyCode ) => {
+const getCurrency = ( currencyCode ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		return new Currency( currency );
 	}
-	window.console.warn(
-		sprintf(
-			'"%s" is not supported by @woocommerce/currency, falling back to "USD"',
-			currencyCode
-		)
-	);
-	return new Currency();
+	return null;
 };
 
 /**
@@ -35,7 +29,7 @@ export const getCurrency = ( currencyCode ) => {
  *
  * @return {boolean} true if currency is zero-decimal
  */
-export const isZeroDecimalCurrency = ( currencyCode ) => {
+const isZeroDecimalCurrency = ( currencyCode ) => {
 	return wcpaySettings.zeroDecimalCurrencies.includes(
 		currencyCode.toLowerCase()
 	);
@@ -50,8 +44,21 @@ export const isZeroDecimalCurrency = ( currencyCode ) => {
  * @return {String} formatted currency representation
  */
 export const formatCurrency = ( amount, currencyCode ) => {
-	if ( isZeroDecimalCurrency( currencyCode ) ) {
+	// Normalize amount with respect to zer decimal currencies and provided data formats
+	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
+	if ( isZeroDecimal ) {
 		amount *= 100;
 	}
-	return getCurrency( currencyCode ).formatCurrency( amount / 100 );
+	amount /= 100;
+
+	const currency = getCurrency( currencyCode );
+	if ( currency === null ) {
+		// Fallback for unsupported currencies: currency code and amount
+		return sprintf(
+			isZeroDecimal ? '%s %i' : '%s %.2f',
+			currencyCode.toUpperCase(),
+			amount
+		);
+	}
+	return currency.formatCurrency( amount );
 };
