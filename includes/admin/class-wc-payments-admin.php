@@ -214,6 +214,7 @@ class WC_Payments_Admin {
 				'errorMessage'          => $error_message,
 				'featureFlags'          => $this->get_frontend_feature_flags(),
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 			]
 		);
 

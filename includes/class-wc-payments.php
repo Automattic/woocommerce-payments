@@ -85,10 +85,6 @@ class WC_Payments {
 			return;
 		}
 
-		if ( ! self::check_multi_currency_disabled() ) {
-			return;
-		}
-
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
@@ -337,32 +333,6 @@ class WC_Payments {
 	private static function is_at_plugin_install_page() {
 		$cur_screen = get_current_screen();
 		return 'update' === $cur_screen->id && 'plugins' === $cur_screen->parent_base;
-	}
-
-	/**
-	 * Checks whether Woo Multi-Currency is disabled and displays admin error message if enabled.
-	 * TODO: Once Multi-Currency support is implemented, remove this check.
-	 *
-	 * @return bool True if Woo Multi-Currency is not enabled, false otherwise.
-	 */
-	public static function check_multi_currency_disabled() {
-		if ( class_exists( 'WOOMC\MultiCurrency\App' ) ) {
-			$message = sprintf(
-				/* translators: %1: WooCommerce Payments version */
-				__( 'WooCommerce Payments %1$s does not support WooCommerce Multi-Currency and has not been loaded.', 'woocommerce-payments' ),
-				WCPAY_VERSION_NUMBER
-			);
-
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					self::display_admin_error( $message );
-				}
-			);
-			return false;
-		}
-
-		return true;
 	}
 
 	/**

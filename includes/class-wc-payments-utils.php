@@ -110,7 +110,40 @@ class WC_Payments_Utils {
 	 * @return int The amount in cents.
 	 */
 	public static function prepare_amount( $amount, $currency = 'USD' ) {
-		return round( (float) $amount * 100 );
+		$conversion_rate = 100;
+
+		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
+			$conversion_rate = 1;
+		}
+
+		return round( (float) $amount * $conversion_rate );
+	}
+
+	/**
+	 * List of currencies supported by Stripe, the amounts for which are already in the smallest unit.
+	 * Sourced directly from https://stripe.com/docs/currencies#zero-decimal
+	 *
+	 * @return array $currencies
+	 */
+	public static function zero_decimal_currencies() {
+		return [
+			'bif', // Burundian Franc.
+			'clp', // Chilean Peso.
+			'djf', // Djiboutian Franc.
+			'gnf', // Guinean Franc.
+			'jpy', // Japanese Yen.
+			'kmf', // Comorian Franc.
+			'krw', // South Korean Won.
+			'mga', // Malagasy Ariary.
+			'pyg', // Paraguayan Guaraní.
+			'rwf', // Rwandan Franc.
+			'ugx', // Ugandan Shilling.
+			'vnd', // Vietnamese Đồng.
+			'vuv', // Vanuatu Vatu.
+			'xaf', // Central African Cfa Franc.
+			'xof', // West African Cfa Franc.
+			'xpf', // Cfp Franc.
+		];
 	}
 
 	/**

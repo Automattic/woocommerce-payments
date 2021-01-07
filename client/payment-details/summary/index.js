@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -20,9 +19,8 @@ import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
+import { formatCurrency } from 'utils/currency';
 import './style.scss';
-
-const currency = new Currency();
 
 const placeholderValues = {
 	net: 0,
@@ -91,11 +89,12 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							isLoading={ isLoading }
 							placeholder="Amount placeholder"
 						>
-							{ currency.formatCurrency(
-								( charge.amount || 0 ) / 100
+							{ formatCurrency(
+								charge.amount || 0,
+								charge.currency || 'USD'
 							) }
 							<span className="payment-details-summary__amount-currency">
-								{ charge.currency || 'cur' }
+								{ charge.currency || 'usd' }
 							</span>
 							<PaymentStatusChip
 								status={ getChargeStatus( charge ) }
@@ -109,7 +108,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									'Refunded',
 									'woocommerce-payments'
 								) }: ` }
-								{ currency.formatCurrency( -refunded / 100 ) }
+								{ formatCurrency(
+									-refunded,
+									charge.currency || 'USD'
+								) }
 							</p>
 						) : (
 							''
@@ -120,7 +122,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								placeholder="Fee amount"
 							>
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -fee / 100 ) }
+								{ formatCurrency(
+									-fee,
+									charge.currency || 'USD'
+								) }
 							</Loadable>
 						</p>
 						<p>
@@ -129,7 +134,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								placeholder="Net amount"
 							>
 								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( net / 100 ) }
+								{ formatCurrency(
+									net,
+									charge.currency || 'USD'
+								) }
 							</Loadable>
 						</p>
 					</div>

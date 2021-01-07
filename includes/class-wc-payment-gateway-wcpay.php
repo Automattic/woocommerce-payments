@@ -265,10 +265,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		if ( 'USD' !== get_woocommerce_currency() ) {
-			return false;
-		}
-
 		return parent::is_available() && ! $this->needs_setup();
 	}
 
@@ -564,8 +560,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $payment_needed ) {
 			// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 			$intent = $this->payments_api_client->create_and_confirm_intention(
-				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
-				'usd',
+				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
+				strtolower( $order->get_currency() ),
 				$payment_information->get_payment_method(),
 				$customer_id,
 				$payment_information->is_using_manual_capture(),
@@ -767,7 +763,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( is_null( $amount ) ) {
 				$refund = $this->payments_api_client->refund_charge( $charge_id );
 			} else {
-				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, 'USD' ) );
+				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 			}
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
@@ -1090,7 +1086,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
-				WC_Payments_Utils::prepare_amount( $amount, 'USD' ),
+				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
 				$this->get_level3_data_from_order( $order )
 			);
 
