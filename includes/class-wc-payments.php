@@ -357,10 +357,6 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
-
 		$http_class = self::get_wc_payments_http();
 
 		$payments_api_client = new WC_Payments_API_Client(
@@ -378,9 +374,6 @@ class WC_Payments {
 	 * @return WC_Payments_Http_Interface
 	 */
 	private static function get_wc_payments_http() {
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
-
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
