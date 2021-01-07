@@ -23,7 +23,7 @@ const getCurrency = ( currencyCode ) => {
 };
 
 /**
- * Gets wc-admin Currency for the given currency code
+ * Determines if the given currency is zero decimal.
  *
  * @param {String} currencyCode Currency code
  *
@@ -36,7 +36,7 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
 };
 
 /**
- * Gets wc-admin Currency for the given currency code
+ * Formats amount according to the given currency.
  *
  * @param {Number} amount       Amount
  * @param {String} currencyCode Currency code
@@ -46,10 +46,9 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
 export const formatCurrency = ( amount, currencyCode ) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
-	if ( isZeroDecimal ) {
-		amount *= 100;
+	if ( ! isZeroDecimal ) {
+		amount /= 100;
 	}
-	amount /= 100;
 
 	const currency = getCurrency( currencyCode );
 	if ( currency === null ) {
