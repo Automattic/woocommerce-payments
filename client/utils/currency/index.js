@@ -59,5 +59,5 @@ export const formatCurrency = ( amount, currencyCode ) => {
 			amount
 		);
 	}
-	return currency.formatAmount( amount );
+	return currency.formatCurrency( amount );
 };
