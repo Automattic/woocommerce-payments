@@ -20,6 +20,7 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency } from 'utils/currency';
+import CustomerLink from 'components/customer-link';
 import './style.scss';
 
 const placeholderValues = {
@@ -41,7 +42,7 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: get( charge, 'billing_details.name' ) || '–',
+			content: <CustomerLink customer={ charge.billing_details } />,
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),
