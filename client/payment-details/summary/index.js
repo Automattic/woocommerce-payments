@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -21,7 +20,6 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency } from 'utils/currency';
-import { addQueryArgs } from '@wordpress/url';
 import CustomerLink from 'components/customer-link';
 import './style.scss';
 
