@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Logger;
+use WCPay\Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -112,8 +112,27 @@ class WC_Payments {
 		if ( is_admin() ) {
 			new WC_Payments_Admin( self::$gateway, self::$account );
 
-			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
-			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
+			// Loaded on admin_init to ensure that we are in admin and that WC_Tracks is loaded.
+			add_action(
+				'admin_init',
+				function() {
+					if ( class_exists( 'WC_Tracks' ) ) {
+						// Move all events with priority 1 just before the admin_footer hook adds footer pixels.
+						add_action( 'admin_footer', [ Tracker::class, 'record_tracker_events' ], 1 );
+
+						/**
+						 * Send all events that were not handled in `admin_footer`.
+						 *
+						 * Between shutdown and admin footer many things can happen. Admin footer loads
+						 * scripts in the markup images that will call tracks from the browsers
+						 * side (which means it's faster as we're not doing network calls to wp.com server
+						 * side). Anything that is added afterward must be sent from the
+						 * server, but doing it on shutdown means it's not blocking anything.
+						 */
+						add_action( 'shutdown', [ Tracker::class, 'record_tracker_events' ], 1 );
+					}
+				}
+			);
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );

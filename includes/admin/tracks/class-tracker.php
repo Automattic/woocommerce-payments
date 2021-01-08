@@ -7,6 +7,8 @@
 
 namespace WCPay;
 
+use WC_Tracks;
+
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
@@ -52,5 +54,15 @@ class Tracker {
 	 */
 	public static function get_admin_events() {
 		return self::$admin_events;
+	}
+
+	/**
+	 * Records admin events.
+	 */
+	public static function record_tracker_events() {
+		foreach ( self::get_admin_events() as $event => $properties ) {
+			WC_Tracks::record_event( $event, $properties );
+			self::remove_admin_event( $event );
+		}
 	}
 }
