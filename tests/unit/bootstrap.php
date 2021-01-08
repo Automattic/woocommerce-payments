@@ -40,6 +40,8 @@ function _manually_load_plugin() {
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
+	require_once ABSPATH . '/wp-content/plugins/woocommerce/packages/woocommerce-blocks/woocommerce-gutenberg-products-block.php';
+	require_once ABSPATH . '/wp-content/plugins/woocommerce/packages/woocommerce-admin/woocommerce-admin.php';
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
