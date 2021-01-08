@@ -33,8 +33,10 @@ class Tracker {
 	 *
 	 * @param string $event_name The name of the event.
 	 * @param array  $properties Custom properties to send with the event.
+	 *
+	 * @retun void
 	 */
-	public static function track_admin( $event_name, $properties = [] ) {
+	public static function track_admin( string $event_name, array $properties = [] ) {
 		self::$admin_events[ $event_name ] = $properties;
 	}
 
@@ -42,8 +44,10 @@ class Tracker {
 	 * Remove a track event.
 	 *
 	 * @param string $event_name The name of the event that should be removed.
+	 *
+	 * @retun void
 	 */
-	public static function remove_admin_event( $event_name ) {
+	public static function remove_admin_event( string $event_name ) {
 		if ( isset( self::$admin_events ) ) {
 			unset( self::$admin_events[ $event_name ] );
 		}
@@ -51,13 +55,17 @@ class Tracker {
 
 	/**
 	 * Remove a track event.
+	 *
+	 * @retun array
 	 */
-	public static function get_admin_events() {
+	public static function get_admin_events(): array {
 		return self::$admin_events;
 	}
 
 	/**
 	 * Records admin events.
+	 *
+	 * @retun void
 	 */
 	public static function record_tracker_events() {
 		foreach ( self::get_admin_events() as $event => $properties ) {
