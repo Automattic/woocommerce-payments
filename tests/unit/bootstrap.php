@@ -40,7 +40,6 @@ function _manually_load_plugin() {
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
-	Packages::on_init();
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
