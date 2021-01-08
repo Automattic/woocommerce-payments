@@ -57,7 +57,7 @@ Install and activate the WooCommerce and WooCommerce Payments plugins, if you ha
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world in USD.
+If you are an individual or business based in the United States, you can sign-up with WooCommerce Payments. After completing sign up, you can accept payments from customers anywhere in the world.
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooCommerce Payments launch next](https://woocommerce.com/payments/#request-invite).
 
@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 = 1.9.0 - 2021-xx-xx =
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
+* Update - Link customer name on transaction detail page to filtered transaction list page.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.

@@ -90,6 +90,7 @@ describe( 'Transactions list', () => {
 				customSearch: true,
 			},
 			isSubscriptionsActive: false,
+			zeroDecimalCurrencies: [],
 		};
 	} );
 
