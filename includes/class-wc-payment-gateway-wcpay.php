@@ -752,13 +752,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  float  $amount   - the amount to refund.
 	 * @param  string $reason   - the reason for refunding.
 	 *
-	 * @return bool - Whether the refund went through.
+	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			return false;
+		}
+
+		// If this order is not authorized yet, don't try and refund it. Instead, return an appropriate error message.
+		if ( 'requires_capture' === $order->get_meta( '_intention_status', true ) ) {
+			return new WP_Error( 'on-hold-payment', "As this payment is currently on-hold and has not been charged yet, it is not possible to refund this order. To cancel this order, use the 'Cancel Authorization' option in the 'Order Actions' drop-down menu." );
 		}
 
 		$charge_id = $order->get_meta( '_charge_id', true );
@@ -783,7 +788,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->add_order_note( $note );
 
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
-			return new WP_Error( $e->getMessage() );
+			return new WP_Error( $e->getCode(), $e->getMessage() );
 		}
 
 		if ( empty( $reason ) ) {
