@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 1.9.0 - 2021-xx-xx =
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
+* Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
