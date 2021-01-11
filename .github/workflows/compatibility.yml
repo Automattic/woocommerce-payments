@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        woocommerce: [ 'beta' ]
+        woocommerce: [ '4.9.0-beta.1' ]
         wordpress:   [ 'latest' ]
         php:         [ '7.1', '8.0' ]
     env:
