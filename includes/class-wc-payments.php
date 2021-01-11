@@ -118,14 +118,10 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account          = new WC_Payments_Account( self::$api_client );
-		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		try {
-			self::$remote_note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		} catch ( \Exception $missing_store ) {
-			Logger::error( $missing_store->getMessage() );
-		}
+		self::$account             = new WC_Payments_Account( self::$api_client );
+		self::$customer_service    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.

@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use Automattic\WooCommerce\Packages;
-
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
