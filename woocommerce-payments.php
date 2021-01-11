@@ -23,6 +23,7 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 
+// For some reason, JetPack's Rest_Authentication is not available when activating the plugin from console.
 if ( class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) ) {
 	// Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 	Automattic\Jetpack\Connection\Rest_Authentication::init();
