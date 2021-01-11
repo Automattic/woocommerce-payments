@@ -100,7 +100,12 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <span
                 class="woocommerce-list__item-content"
               >
-                Customer name
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                >
+                  Customer name
+                </a>
               </span>
             </div>
           </div>
@@ -290,7 +295,12 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               <span
                 class="woocommerce-list__item-content"
               >
-                Customer name
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                >
+                  Customer name
+                </a>
               </span>
             </div>
           </div>
@@ -510,7 +520,12 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               <span
                 class="woocommerce-list__item-content"
               >
-                Customer name
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                >
+                  Customer name
+                </a>
               </span>
             </div>
           </div>
@@ -782,7 +797,12 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               <span
                 class="woocommerce-list__item-content"
               >
-                Customer name
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                >
+                  Customer name
+                </a>
               </span>
             </div>
           </div>
@@ -975,7 +995,12 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
               <span
                 class="woocommerce-list__item-content"
               >
-                Customer name
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name"
+                >
+                  Customer name
+                </a>
               </span>
             </div>
           </div>

@@ -31,6 +31,7 @@ describe( 'PaymentDetailsTimeline', () => {
 			featureFlags: {
 				paymentTimeline: true,
 			},
+			zeroDecimalCurrencies: [],
 		};
 	} );
 
