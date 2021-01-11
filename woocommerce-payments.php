@@ -23,6 +23,9 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 
+// Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
+Automattic\Jetpack\Connection\Rest_Authentication::init();
+
 /**
  * Plugin activation hook.
  */
@@ -69,8 +72,6 @@ function wcpay_jetpack_init() {
 		]
 	);
 }
-// Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
-\Automattic\Jetpack\Connection\Rest_Authentication::init();
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
