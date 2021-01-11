@@ -150,7 +150,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertEquals( 'on-hold-payment', $result->get_error_code() );
+		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
 	}
 
 	public function test_payment_fields_outputs_fields() {
