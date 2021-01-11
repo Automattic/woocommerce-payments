@@ -21,13 +21,7 @@ define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
-require_once __DIR__ . '/vendor/autoload_packages.php';
-
-// For some reason, JetPack's Rest_Authentication is not available when activating the plugin from console.
-if ( class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) ) {
-	// Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
-	Automattic\Jetpack\Connection\Rest_Authentication::init();
-}
+require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 
 /**
  * Plugin activation hook.
@@ -75,6 +69,8 @@ function wcpay_jetpack_init() {
 		]
 	);
 }
+// Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
+Automattic\Jetpack\Connection\Rest_Authentication::init();
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
