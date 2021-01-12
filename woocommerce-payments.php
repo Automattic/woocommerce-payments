@@ -71,7 +71,7 @@ function wcpay_jetpack_init() {
 }
 
 if ( ! class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) ) {
-	require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
+	require_once WCPAY_ABSPATH . 'vendor/autoload.php';
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
