@@ -129,7 +129,7 @@ echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
 echo "Installing and activating WooCommerce..."
-cli wp plugin install woocommerce --activate
+cli wp plugin install woocommerce --activate --version=4.8.0
 
 echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
@@ -154,6 +154,7 @@ cli wp plugin install wordpress-importer --activate
 echo "Importing some sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
+exit
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
 cli wp plugin activate woocommerce-payments

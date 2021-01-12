@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f3459d98c0ed0a5fa3d2b41098e52efb",
+    "content-hash": "c354ccf8aad13e955cd9efb6fa34f25f",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -41,23 +41,23 @@
         },
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v2.6.0",
+            "version": "v2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "47dde8dbca6b1e30f176725f2f748a9abefcaf58"
+                "reference": "d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/47dde8dbca6b1e30f176725f2f748a9abefcaf58",
-                "reference": "47dde8dbca6b1e30f176725f2f748a9abefcaf58",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a",
+                "reference": "d6d89b71c0f9ba13bbbfb28a75a9174c79193d2a",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.1 || ^2.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5"
+                "yoast/phpunit-polyfills": "0.2.0"
             },
             "type": "composer-plugin",
             "extra": {
@@ -77,9 +77,9 @@
             ],
             "description": "Creates a custom autoloader for a plugin or theme.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v2.6.0"
+                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v2.7.0"
             },
-            "time": "2020-11-19T21:20:12+00:00"
+            "time": "2020-12-08T17:35:08+00:00"
         },
         {
             "name": "automattic/jetpack-config",
@@ -2480,16 +2480,16 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.20.0",
+            "version": "v1.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "f4ba089a5b6366e453971d3aad5fe8e897b37f41"
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/f4ba089a5b6366e453971d3aad5fe8e897b37f41",
-                "reference": "f4ba089a5b6366e453971d3aad5fe8e897b37f41",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/c6c942b1ac76c82448322025e084cadc56048b4e",
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e",
                 "shasum": ""
             },
             "require": {
@@ -2501,7 +2501,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.22-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -2539,7 +2539,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.20.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.22.0"
             },
             "funding": [
                 {
@@ -2555,7 +2555,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-10-23T14:02:19+00:00"
+            "time": "2021-01-07T16:49:33+00:00"
         },
         {
             "name": "theseer/tokenizer",
