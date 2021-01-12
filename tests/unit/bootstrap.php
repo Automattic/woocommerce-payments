@@ -37,7 +37,6 @@ function _manually_load_plugin() {
 	define( 'WCPAY_TEST_ENV', true );
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
-	define( 'JETPACK_AUTOLOAD_DEV', true );
 	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
