@@ -173,6 +173,8 @@ cli wp plugin activate $DEV_TOOLS_DIR
 echo "Setting Jetpack blog_id"
 cli wp wcpay_dev set_blog_id $BLOG_ID
 
+cli wp plugin list
+
 echo "Setting redirection to local server"
 
 # host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
