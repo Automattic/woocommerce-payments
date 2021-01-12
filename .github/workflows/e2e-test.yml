@@ -7,7 +7,7 @@ on:
 
 env:
   WP_VERSION:                                  latest
-  WC_VERSION:                                  4.8.0
+  WC_VERSION:                                  4.5.0
   CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}
   WCP_DEV_TOOLS_REPO:                          ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_SERVER_REPO:                             ${{ secrets.WCP_SERVER_REPO }}
@@ -49,7 +49,7 @@ jobs:
           extensions:  mysql
           coverage:    none
       # install dependencies
-      - run: composer self-update 2.0.6 && composer install --no-progress
+      - run: composer self-update 2.0.6 && composer install --no-progress --classmap-authoritative
       - run: npm ci && npm run build:client
       # prepare testing resources and run E2E tests
       - run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
