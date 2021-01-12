@@ -53,12 +53,6 @@ function wcpay_deactivated() {
 register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
 
-// At this point we need to ensure that third-party packages are loading properly.
-$is_autoloading_functioning = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) && class_exists( MyCLabs\Enum\Enum::class );
-if ( ! $is_autoloading_functioning ) {
-	return;
-}
-
 /**
  * Initialize the Jetpack connection functionality.
  */
