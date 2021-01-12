@@ -21,7 +21,7 @@ define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
-require_once WCPAY_ABSPATH . 'vendor/autoload.php';
+require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
 
 /**
  * Plugin activation hook.
