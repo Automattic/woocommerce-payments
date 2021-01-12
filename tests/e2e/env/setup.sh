@@ -156,7 +156,7 @@ cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --a
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 echo "Activating the WooCommerce Payments plugin..."
-cli wp plugin activate woocommerce woocommerce-payments
+cli wp plugin activate woocommerce-payments
 
 echo "Setting up WooCommerce Payments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
