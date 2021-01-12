@@ -1797,7 +1797,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws API_Exception If payment method does not exist.
 	 */
-	public function get_payment_method( $payment_method_id ) {
+	protected function get_payment_method( $payment_method_id ) {
 		return $this->payments_api_client->get_payment_method( $payment_method_id );
 	}
 }

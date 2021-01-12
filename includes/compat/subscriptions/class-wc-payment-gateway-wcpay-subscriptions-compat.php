@@ -420,7 +420,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
 		$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
-		if ( ! $token || ! ( $token instanceof WC_Payment_Token_CC && method_exists( $token, 'get_last4' ) ) ) {
+		if ( ! $token || ! ( $token instanceof WC_Payment_Token_CC ) ) {
 			return $old_payment_method_title;
 		}
 
@@ -451,7 +451,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$request = isset( $_POST ) ? $_POST : []; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$token   = WCPay\Payment_Information::get_token_from_request( $request );
-		if ( $token && $token instanceof WC_Payment_Token_CC && method_exists( $token, 'get_last4' ) ) {
+		if ( $token && $token instanceof WC_Payment_Token_CC ) {
 			// translators: 1: payment method likely credit card, 2: last 4 digit.
 			return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
 		}
