@@ -23,6 +23,12 @@ define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 
+// Ensure the JetPack autoloader is not broken, otherwise fallback to standard composer autoloader.
+$are_dependencies_available = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) && class_exists( MyCLabs\Enum\Enum::class );
+if ( ! $are_dependencies_available && defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70100 ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
+
 /**
  * Plugin activation hook.
  */
