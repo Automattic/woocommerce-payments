@@ -35,7 +35,7 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
  * Helper component for rendering loadable block which takes several lines in the ui.
  *
  * @param {Object} props Component props.
- * @param {Number} props.numLines Vertical size of the component in lines.
+ * @param {number} props.numLines Vertical size of the component in lines.
  *
  * @returns {ReactNode} Loadable content
  */

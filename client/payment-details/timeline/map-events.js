@@ -20,8 +20,8 @@ import { reasons as disputeReasons } from 'disputes/strings';
 /**
  * Creates a Gridicon
  *
- * @param {String} icon Icon to render
- * @param {String} className Extra class name, defaults to empty
+ * @param {string} icon Icon to render
+ * @param {string} className Extra class name, defaults to empty
  *
  * @return {Gridicon} Gridicon component
  */
@@ -33,7 +33,7 @@ const getIcon = ( icon, className = '' ) => (
  * Creates a timeline item about a payment status change
  *
  * @param {Object} event An event triggering the status change
- * @param {String} status Localized status description
+ * @param {string} status Localized status description
  *
  * @return {Object} Formatted status change timeline item
  */
@@ -54,8 +54,8 @@ const getStatusChangeTimelineItem = ( event, status ) => {
  * Creates a timeline item about a deposit
  *
  * @param {Object} event An event affecting the deposit
- * @param {Number} formattedAmount Formatted amount
- * @param {Boolean} isPositive Whether the amount will be added or deducted
+ * @param {number} formattedAmount Formatted amount
+ * @param {boolean} isPositive Whether the amount will be added or deducted
  * @param {Array} body Any extra subitems that should be included as item body
  *
  * @return {Object} Deposit timeline item
@@ -126,9 +126,9 @@ const getDepositTimelineItem = (
  * Formats the main item for the event
  *
  * @param {Object} event Event object
- * @param {String|Object} headline Headline describing the event
- * @param {String} icon Icon to render for this event
- * @param {String} iconClass Icon class
+ * @param {string | Object} headline Headline describing the event
+ * @param {string} icon Icon to render for this event
+ * @param {string} iconClass Icon class
  * @param {Array} body Body to include in this item, defaults to empty
  *
  * @return {Object} Formatted main item

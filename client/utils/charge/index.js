@@ -62,12 +62,12 @@ export const getChargeStatus = ( charge = {} ) => {
 /**
  * Calculates display values for charge amounts.
  *
- * @param {object} charge The full charge object.
- * @return {object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
+ * @param {Object} charge The full charge object.
+ * @return {Object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
 	// The base fee is the application fee.
-	let fee      = charge.application_fee_amount;
+	let fee = charge.application_fee_amount;
 	let refunded = 0;
 
 	if ( isChargeDisputed( charge ) ) {

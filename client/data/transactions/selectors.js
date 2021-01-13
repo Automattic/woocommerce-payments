@@ -9,9 +9,9 @@ import { getResourceId } from 'utils/data';
  * Retrieves the transactions state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
  *
- * @param {object} state Current wp.data state.
+ * @param {Object} state Current wp.data state.
  *
- * @returns {object} The transactions state.
+ * @returns {Object} The transactions state.
  */
 const getTransactionsState = ( state ) => {
 	if ( ! state ) {
@@ -25,10 +25,10 @@ const getTransactionsState = ( state ) => {
  * Retrieves the transactions corresponding to the provided query or a sane
  * default if they don't exist.
  *
- * @param {object} state Current wp.data state.
- * @param {object} query The transactions query.
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The transactions query.
  *
- * @returns {object} The list of transactions for the given query.
+ * @returns {Object} The list of transactions for the given query.
  */
 const getTransactionsForQuery = ( state, query ) => {
 	const index = getResourceId( query );
@@ -46,10 +46,10 @@ export const getTransactionsError = ( state, query ) => {
 /**
  * Retrieves the transaction summary corresponding to the provided query.
  *
- * @param {object} state Current wp.data state.
- * @param {object} query The transactions summary query.
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The transactions summary query.
  *
- * @returns {object} The transaction summary for the given query.
+ * @returns {Object} The transaction summary for the given query.
  */
 const getTransactionsSummaryForQuery = ( state, query ) => {
 	const index = getResourceId( query );
