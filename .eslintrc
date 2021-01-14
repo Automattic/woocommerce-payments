@@ -54,6 +54,10 @@
 				]
 			}
 		],
+		"yoda": [
+			"error",
+			"never"
+		],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types":                "off",
 		"jsdoc/require-param":                     "off",
@@ -65,7 +69,6 @@
 		"@woocommerce/dependency-group":           "off",
 		"react-hooks/exhaustive-deps":             "off",
 		"react-hooks/rules-of-hooks":              "off",
-		"react/jsx-key":                           "off",
 		"jest/no-conditional-expect":              "off",
 		"jest/valid-title":                        "off",
 		"jest/expect-expect":                      "off",
@@ -73,7 +76,6 @@
 		"jest/no-standalone-expect":               "off",
 		"jest/no-identical-title":                 "off",
 		"jest/no-deprecated-functions":            "off",
-		"yoda":                                    "off",
 		"no-alert":                                "off",
 		"object-shorthand":                        "off",
 		"no-multi-str":                            "off"

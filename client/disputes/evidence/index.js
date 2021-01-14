@@ -191,8 +191,8 @@ export const DisputeEvidencePage = ( props ) => {
 	} = props;
 	const readOnly =
 		dispute &&
-		'needs_response' !== dispute.status &&
-		'warning_needs_response' !== dispute.status;
+		dispute.status !== 'needs_response' &&
+		dispute.status !== 'warning_needs_response';
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
@@ -333,7 +333,7 @@ export default ( { query } ) => {
 			evidence,
 			( disputeValue, formValue ) => {
 				// Treat null and '' as equal values.
-				if ( null === disputeValue && ! formValue ) {
+				if ( disputeValue === null && ! formValue ) {
 					return true;
 				}
 			}

@@ -159,7 +159,7 @@ const mapEventToTimelineItems = ( event ) => {
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount, event.currency || 'USD' ) );
 
-	if ( 'authorized' === type ) {
+	if ( type === 'authorized' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -179,7 +179,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-warning'
 			),
 		];
-	} else if ( 'authorization_voided' === type ) {
+	} else if ( type === 'authorization_voided' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -199,7 +199,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-warning'
 			),
 		];
-	} else if ( 'authorization_expired' === type ) {
+	} else if ( type === 'authorization_expired' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -219,7 +219,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( 'captured' === type ) {
+	} else if ( type === 'captured' ) {
 		const formattedNet = formatCurrency(
 			event.amount - event.fee,
 			event.currency || 'USD'
@@ -274,7 +274,7 @@ const mapEventToTimelineItems = ( event ) => {
 				]
 			),
 		];
-	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
+	} else if ( type === 'partial_refund' || type === 'full_refund' ) {
 		const formattedAmount = formatCurrency(
 			event.amount_refunded,
 			event.currency || 'USD'
@@ -282,7 +282,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getStatusChangeTimelineItem(
 				event,
-				'full_refund' === type
+				type === 'full_refund'
 					? __( 'Refunded', 'woocommerce-payments' )
 					: __( 'Partial Refund', 'woocommerce-payments' )
 			),
@@ -301,7 +301,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( 'failed' === type ) {
+	} else if ( type === 'failed' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -318,7 +318,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( 'dispute_needs_response' === type ) {
+	} else if ( type === 'dispute_needs_response' ) {
 		let reasonHeadline = __( 'Payment disputed', 'woocommerce-payments' );
 		if ( disputeReasons[ event.reason ] ) {
 			reasonHeadline = sprintf(
@@ -335,7 +335,7 @@ const mapEventToTimelineItems = ( event ) => {
 		} );
 
 		let depositTimelineItem;
-		if ( null === event.amount ) {
+		if ( event.amount === null ) {
 			depositTimelineItem = {
 				date: new Date( event.datetime * 1000 ),
 				icon: getIcon( 'info-outline' ),
@@ -381,12 +381,13 @@ const mapEventToTimelineItems = ( event ) => {
 			),
 			depositTimelineItem,
 			getMainTimelineItem( event, reasonHeadline, 'cross', 'is-error', [
+				// eslint-disable-next-line react/jsx-key
 				<a href={ disputeUrl }>
 					{ __( 'View dispute', 'woocommerce-payments' ) }
 				</a>,
 			] ),
 		];
-	} else if ( 'dispute_in_review' === type ) {
+	} else if ( type === 'dispute_in_review' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -399,7 +400,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( 'dispute_won' === type ) {
+	} else if ( type === 'dispute_won' ) {
 		const formattedTotal = formatCurrency(
 			Math.abs( event.amount ) + Math.abs( event.fee ),
 			event.currency || 'USD'
@@ -431,7 +432,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( 'dispute_lost' === type ) {
+	} else if ( type === 'dispute_lost' ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -447,7 +448,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( 'dispute_warning_closed' === type ) {
+	} else if ( type === 'dispute_warning_closed' ) {
 		return [
 			getMainTimelineItem(
 				event,
@@ -459,7 +460,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( 'dispute_charge_refunded' === type ) {
+	} else if ( type === 'dispute_charge_refunded' ) {
 		return [
 			getMainTimelineItem(
 				event,

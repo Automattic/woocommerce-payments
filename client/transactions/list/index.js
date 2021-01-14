@@ -145,8 +145,8 @@ export const TransactionsList = ( props ) => {
 
 	// match background of details and date when sorting
 	const detailsColumn =
-		columnsToDisplay.find( ( el ) => 'details' === el.key ) || {};
-	if ( ! getQuery().orderby || 'date' === getQuery().orderby ) {
+		columnsToDisplay.find( ( el ) => el.key === 'details' ) || {};
+	if ( ! getQuery().orderby || getQuery().orderby === 'date' ) {
 		detailsColumn.cellClassName = 'info-button is-sorted';
 	} else {
 		detailsColumn.cellClassName = 'info-button';

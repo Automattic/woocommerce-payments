@@ -27,8 +27,8 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 		<Actions
 			id={ dispute.id }
 			needsResponse={
-				'needs_response' === dispute.status ||
-				'warning_needs_response' === dispute.status
+				dispute.status === 'needs_response' ||
+				dispute.status === 'warning_needs_response'
 			}
 			isSubmitted={
 				dispute.evidence_details &&

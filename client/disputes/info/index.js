@@ -90,7 +90,7 @@ const Info = ( { dispute, isLoading } ) => {
 	return (
 		<div className="wcpay-dispute-info">
 			{ fields.map( ( { key, label } ) => {
-				if ( null == data[ key ] ) {
+				if ( data[ key ] == null ) {
 					return null;
 				}
 				return (

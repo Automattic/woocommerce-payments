@@ -70,11 +70,11 @@ export default class WCPayAPI {
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
-				if ( 'undefined' === typeof value || 0 === value.length ) {
+				if ( typeof value === 'undefined' || value.length === 0 ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
 				}
 
-				if ( 'undefined' !== typeof value && 0 < value.length ) {
+				if ( typeof value !== 'undefined' && value.length > 0 ) {
 					return value;
 				}
 			}
@@ -87,7 +87,7 @@ export default class WCPayAPI {
 			 */
 			setBillingDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details[ name ] = preparedValue;
 				}
 			}
@@ -100,7 +100,7 @@ export default class WCPayAPI {
 			 */
 			setAddressDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( 'undefined' !== typeof preparedValue ) {
+				if ( typeof preparedValue !== 'undefined' ) {
 					this.args.billing_details.address[ name ] = preparedValue;
 				}
 			}
