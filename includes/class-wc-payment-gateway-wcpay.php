@@ -568,10 +568,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
-			return [
-				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
-			];
 		}
 
 		if ( $payment_needed ) {
