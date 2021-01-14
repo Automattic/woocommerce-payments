@@ -16,6 +16,7 @@ import Info from '../info';
 import Paragraphs from 'components/paragraphs';
 import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import { TestNotice, topics } from 'components/test-mode-notice';
 import '../style.scss';
 
 const DisputeDetails = ( { query: { id: disputeId } } ) => {
@@ -40,9 +41,12 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 
 	const mapping = reasons[ dispute.reason ] || {};
 
+	const testNotice = <TestNotice topic={ topics.disputeDetails } />;
+
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
+				{ testNotice }
 				<Card>
 					<div>
 						{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
@@ -54,6 +58,7 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-details">
+			{ testNotice }
 			<Card
 				title={
 					<Loadable

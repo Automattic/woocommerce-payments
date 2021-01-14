@@ -98,38 +98,16 @@ export const getNoticeMessage = ( topic ) => {
 	);
 };
 
-/**
- * Returns a Notice element with the appropriate message based on the topic provided.
- *
- * @param {string} topic The notice topic, also represents a page, e.g. 'transactions'.
- *
- * @returns {Notice} The notice element containing the appropriate message.
- */
-export const getNotice = ( topic ) => {
+export const TestNotice = ( { topic } ) => {
 	return (
-		<Notice
-			className="wcpay-test-mode-notice"
-			status="warning"
-			isDismissible={ false }
-		>
-			{ getNoticeMessage( topic ) }
-		</Notice>
-	);
-};
-
-/**
- * Adds a test notice that will be displayed when test mode is enabled.
- *
- * @param {function|React.Component} Component The component to add the notice to.
- * @param {string} pageTopic                   The topic for this notice, e.g. 'transactions'.
- *
- * @returns {function} The wrapped component, including a notice when applicable.
- */
-export const withTestNotice = ( Component, pageTopic ) => {
-	return ( props, ownProps ) => (
-		<div>
-			{ isInTestMode() ? getNotice( pageTopic ) : null }
-			{ Component( props, ownProps ) }
-		</div>
+		isInTestMode() && (
+			<Notice
+				className="wcpay-test-mode-notice"
+				status="warning"
+				isDismissible={ false }
+			>
+				{ getNoticeMessage( topic ) }
+			</Notice>
+		)
 	);
 };

@@ -19,6 +19,7 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
+import { TestNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 
@@ -171,6 +172,7 @@ export const DisputesList = () => {
 
 	return (
 		<Page>
+			<TestNotice topic={ topics.disputes } />
 			<TableCard
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }

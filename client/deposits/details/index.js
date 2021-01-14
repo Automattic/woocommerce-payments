@@ -17,6 +17,7 @@ import { displayStatus } from '../strings';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import Loadable from 'components/loadable';
+import { TestNotice, topics } from 'components/test-mode-notice';
 import './style.scss';
 
 const currency = new Currency();
@@ -80,6 +81,7 @@ export const DepositOverview = ( { depositId } ) => {
 
 export const DepositDetails = ( { query: { id: depositId } } ) => (
 	<Page>
+		<TestNotice topic={ topics.depositDetails } />
 		<DepositOverview depositId={ depositId } />
 		<TransactionsList depositId={ depositId } />
 	</Page>
