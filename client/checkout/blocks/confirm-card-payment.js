@@ -17,7 +17,7 @@ export default async function confirmCardPayment(
 		const confirmation = api.confirmIntent( redirect );
 
 		// `true` means there is no intent to confirm.
-		if ( true === confirmation ) {
+		if ( confirmation === true ) {
 			return {
 				type: 'success',
 				redirectUrl: redirect,

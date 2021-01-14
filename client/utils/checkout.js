@@ -17,7 +17,7 @@ export const getConfig = ( name ) => {
 
 export const setConfig = ( name, value ) => {
 	// eslint-disable-next-line camelcase
-	if ( 'undefined' !== typeof wcpay_config ) {
+	if ( typeof wcpay_config !== 'undefined' ) {
 		// Classic checkout
 		// eslint-disable-next-line camelcase
 		wcpay_config[ name ] = value;

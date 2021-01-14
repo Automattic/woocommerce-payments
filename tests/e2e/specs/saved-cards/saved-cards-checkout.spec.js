@@ -38,7 +38,7 @@ describe( 'Saved cards ', () => {
 				await fillCardDetails( page, card );
 				await CustomerFlow.toggleSavePaymentMethod();
 
-				if ( 'basic' === cardType ) {
+				if ( cardType === 'basic' ) {
 					await CustomerFlow.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );
@@ -66,7 +66,7 @@ describe( 'Saved cards ', () => {
 					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 				);
 
-				if ( 'basic' === cardType ) {
+				if ( cardType === 'basic' ) {
 					await CustomerFlow.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );

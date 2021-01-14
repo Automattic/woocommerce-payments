@@ -18,13 +18,13 @@ import './style.scss';
 const renderStatusChip = ( status ) => {
 	let description = __( 'Unknown', 'woocommerce-payments' );
 	let type = 'light';
-	if ( 'complete' === status ) {
+	if ( status === 'complete' ) {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'primary';
-	} else if ( 'restricted_soon' === status ) {
+	} else if ( status === 'restricted_soon' ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
-	} else if ( 'restricted' === status ) {
+	} else if ( status === 'restricted' ) {
 		description = __( 'Restricted', 'woocommerce-payments' );
 		type = 'alert';
 	} else if ( status.startsWith( 'rejected' ) ) {
@@ -66,17 +66,17 @@ const renderDepositsStatus = ( depositsStatus ) => {
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ 18 } />;
 
-	if ( 'disabled' === depositsStatus ) {
+	if ( depositsStatus === 'disabled' ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
 		className = 'account-status__info__red';
 		icon = <GridiconNotice size={ 18 } />;
-	} else if ( 'daily' === depositsStatus ) {
+	} else if ( depositsStatus === 'daily' ) {
 		description = __( 'Daily', 'woocommerce-payments' );
-	} else if ( 'weekly' === depositsStatus ) {
+	} else if ( depositsStatus === 'weekly' ) {
 		description = __( 'Weekly', 'woocommerce-payments' );
-	} else if ( 'monthly' === depositsStatus ) {
+	} else if ( depositsStatus === 'monthly' ) {
 		description = __( 'Monthly', 'woocommerce-payments' );
-	} else if ( 'manual' === depositsStatus ) {
+	} else if ( depositsStatus === 'manual' ) {
 		description = __( 'Manual', 'woocommerce-payments' );
 	} else {
 		description = __( 'Unknown', 'woocommerce-payments' );
@@ -95,12 +95,12 @@ const renderDepositsStatus = ( depositsStatus ) => {
 
 const renderAccountStatusDescription = ( accountStatus ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
-	if ( 'complete' === status ) {
+	if ( status === 'complete' ) {
 		return '';
 	}
 
 	let description = '';
-	if ( 'restricted_soon' === status ) {
+	if ( status === 'restricted_soon' ) {
 		description = createInterpolateElement(
 			sprintf(
 				/* translators: %s - formatted requirements current deadline, <a> - dashboard login URL */
@@ -116,7 +116,7 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( 'restricted' === status && pastDue ) {
+	} else if ( status === 'restricted' && pastDue ) {
 		description = createInterpolateElement(
 			/* translators: <a> - dashboard login URL */
 			__(
@@ -126,17 +126,17 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
-	} else if ( 'restricted' === status ) {
+	} else if ( status === 'restricted' ) {
 		description = __(
 			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',
 			'woocommerce-payments'
 		);
-	} else if ( 'rejected.fraud' === status ) {
+	} else if ( status === 'rejected.fraud' ) {
 		description = __(
 			'This account has been rejected because of suspected fraudulent activity.',
 			'woocommerce-payments'
 		);
-	} else if ( 'rejected.terms_of_service' === status ) {
+	} else if ( status === 'rejected.terms_of_service' ) {
 		description = __(
 			'This account has been rejected due to a Terms of Service violation.',
 			'woocommerce-payments'
