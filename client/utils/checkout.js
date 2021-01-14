@@ -7,11 +7,10 @@
  * @returns {*}         The value of the parameter of null.
  */
 export const getConfig = ( name ) => {
-	// eslint-disable-next-line camelcase
-	const config = ( 'undefined' !== typeof wcpay_config )
+	// Classic checkout or blocks-based one.
+	const config =
 		// eslint-disable-next-line camelcase
-		? wcpay_config // Classic checkout
-		: wc.wcSettings.getSetting( 'woocommerce_payments_data' ); // Blocks
+		wcpay_config || wc.wcSettings.getSetting( 'woocommerce_payments_data' );
 
 	return config[ name ] || null;
 };
@@ -28,4 +27,4 @@ export const setConfig = ( name, value ) => {
 		config[ name ] = value;
 		wc.wcSettings.setSetting( 'woocommerce_payments_data', config );
 	}
-}
+};

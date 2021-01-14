@@ -14,20 +14,24 @@ import WCPayFields from './fields.js';
 import request from './request.js';
 
 // Create an API object, which will be used throughout the checkout.
-const api = new WCPayAPI( {
-	publishableKey: getConfig( 'publishableKey' ),
-	accountId: getConfig( 'accountId' ),
-}, request );
+const api = new WCPayAPI(
+	{
+		publishableKey: getConfig( 'publishableKey' ),
+		accountId: getConfig( 'accountId' ),
+	},
+	request
+);
 
 // Add the payment method to the blocks registry.
 registerPaymentMethod(
-	( PaymentMethodConfig ) => new PaymentMethodConfig( {
-		name: PAYMENT_METHOD_NAME,
-		content: <WCPayFields api={ api } />,
-		edit: <WCPayFields api={ api } />,
-		canMakePayment: () => !! api.getStripe(),
-		paymentMethodId: PAYMENT_METHOD_NAME,
-		label: __( 'Credit Card', 'woocommerce-payments' ),
-		ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
-	} )
+	( PaymentMethodConfig ) =>
+		new PaymentMethodConfig( {
+			name: PAYMENT_METHOD_NAME,
+			content: <WCPayFields api={ api } />,
+			edit: <WCPayFields api={ api } />,
+			canMakePayment: () => !! api.getStripe(),
+			paymentMethodId: PAYMENT_METHOD_NAME,
+			label: __( 'Credit Card', 'woocommerce-payments' ),
+			ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+		} )
 );

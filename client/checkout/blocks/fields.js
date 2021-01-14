@@ -6,10 +6,7 @@ import {
 	ElementsConsumer,
 	CardElement,
 } from '@stripe/react-stripe-js';
-import {
-	useEffect,
-	useState,
-} from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -23,9 +20,7 @@ const WCPayFields = ( {
 	activePaymentMethod,
 	stripe,
 	elements,
-	billing: {
-		billingData,
-	},
+	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
@@ -36,35 +31,42 @@ const WCPayFields = ( {
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
-		() => onPaymentProcessing( () => {
-			if ( PAYMENT_METHOD_NAME !== activePaymentMethod ) {
-				return;
-			}
+		() =>
+			onPaymentProcessing( () => {
+				if ( PAYMENT_METHOD_NAME !== activePaymentMethod ) {
+					return;
+				}
 
-			if ( errorMessage ) {
-				return {
-					type: 'error',
-					message: errorMessage,
+				if ( errorMessage ) {
+					return {
+						type: 'error',
+						message: errorMessage,
+					};
+				}
+
+				const cardElement = elements.getElement( CardElement );
+				const paymentElements = {
+					card: cardElement,
 				};
-			}
 
-			const cardElement = elements.getElement( CardElement );
-			const paymentElements = {
-				card: cardElement,
-			};
-
-			return generatePaymentMethod( api, paymentElements, billingData );
-		} ),
-	[ elements, stripe, activePaymentMethod ] );
+				return generatePaymentMethod(
+					api,
+					paymentElements,
+					billingData
+				);
+			} ),
+		[ elements, stripe, activePaymentMethod ]
+	);
 
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
-		() => onCheckoutAfterProcessingWithSuccess(
-			( { processingResponse: { paymentDetails } } ) => (
-				confirmCardPayment( api, paymentDetails, emitResponse )
-			)
-		),
-	[ elements, stripe ] );
+		() =>
+			onCheckoutAfterProcessingWithSuccess(
+				( { processingResponse: { paymentDetails } } ) =>
+					confirmCardPayment( api, paymentDetails, emitResponse )
+			),
+		[ elements, stripe ]
+	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const checkForErrors = ( { error } ) => {
@@ -78,10 +80,9 @@ const WCPayFields = ( {
 		},
 	};
 
-	return <CardElement
-		options={ elementOptions }
-		onChange={ checkForErrors }
-	/>;
+	return (
+		<CardElement options={ elementOptions } onChange={ checkForErrors } />
+	);
 };
 
 /**
@@ -94,7 +95,12 @@ const ConsumableWCPayFields = ( { api, ...props } ) => (
 	<Elements stripe={ api.getStripe() }>
 		<ElementsConsumer>
 			{ ( { elements, stripe } ) => (
-				<WCPayFields api={ api } elements={ elements } stripe={ stripe } { ...props } />
+				<WCPayFields
+					api={ api }
+					elements={ elements }
+					stripe={ stripe }
+					{ ...props }
+				/>
 			) }
 		</ElementsConsumer>
 	</Elements>

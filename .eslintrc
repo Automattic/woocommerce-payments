@@ -66,7 +66,6 @@
 		"jest/no-standalone-expect":               "off",
 		"jest/no-identical-title":                 "off",
 		"jest/no-deprecated-functions":            "off",
-		"prettier/prettier":                       "off",
 		"yoda":                                    "off",
 		"no-alert":                                "off",
 		"object-shorthand":                        "off",
