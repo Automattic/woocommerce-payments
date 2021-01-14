@@ -15,6 +15,12 @@ jest.mock( 'data', () => ( {
 } ) );
 
 describe( 'Disputes list', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
+	} );
+
 	test( 'renders correctly', () => {
 		useDisputes.mockReturnValue( {
 			isLoading: false,

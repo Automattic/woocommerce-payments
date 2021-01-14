@@ -145,6 +145,12 @@ describe( 'Dispute evidence form', () => {
 } );
 
 describe( 'Dispute evidence page', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
+	} );
+
 	test( 'renders correctly', () => {
 		const { container: form } = render(
 			<DisputeEvidencePage
