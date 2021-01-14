@@ -748,13 +748,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  float  $amount   - the amount to refund.
 	 * @param  string $reason   - the reason for refunding.
 	 *
-	 * @return bool - Whether the refund went through.
+	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order ) {
 			return false;
+		}
+
+		// If this order is not captured yet, don't try and refund it. Instead, return an appropriate error message.
+		if ( 'requires_capture' === $order->get_meta( '_intention_status', true ) ) {
+			return new WP_Error(
+				'uncaptured-payment',
+				/* translators: an error message which will appear if a user tries to refund an order which is has been authorized but not yet charged. */
+				__( "This payment is not captured yet. To cancel this order, please go to 'Order Actions' > 'Cancel Authorization'. To proceed with a refund, please go to 'Order Actions' > 'Capture charge' to charge the payment card, and then trigger a refund via the 'Refund' button.", 'woocommerce-payments' )
+			);
 		}
 
 		$charge_id = $order->get_meta( '_charge_id', true );
@@ -779,7 +788,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->add_order_note( $note );
 
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
-			return new WP_Error( $e->getMessage() );
+			return new WP_Error( $e->getCode(), $e->getMessage() );
 		}
 
 		if ( empty( $reason ) ) {
