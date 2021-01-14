@@ -4,7 +4,7 @@
  * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
  * @param {Object}   paymentDetails Details about the payment, received from the server.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
- * @returns {Object}                An object, which contains the result from the action.
+ * @return {Object}                An object, which contains the result from the action.
  */
 export default async function confirmCardPayment(
 	api,

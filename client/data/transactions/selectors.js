@@ -11,7 +11,7 @@ import { getResourceId } from 'utils/data';
  *
  * @param {Object} state Current wp.data state.
  *
- * @returns {Object} The transactions state.
+ * @return {Object} The transactions state.
  */
 const getTransactionsState = ( state ) => {
 	if ( ! state ) {
@@ -28,7 +28,7 @@ const getTransactionsState = ( state ) => {
  * @param {Object} state Current wp.data state.
  * @param {Object} query The transactions query.
  *
- * @returns {Object} The list of transactions for the given query.
+ * @return {Object} The list of transactions for the given query.
  */
 const getTransactionsForQuery = ( state, query ) => {
 	const index = getResourceId( query );
@@ -49,7 +49,7 @@ export const getTransactionsError = ( state, query ) => {
  * @param {Object} state Current wp.data state.
  * @param {Object} query The transactions summary query.
  *
- * @returns {Object} The transaction summary for the given query.
+ * @return {Object} The transaction summary for the given query.
  */
 const getTransactionsSummaryForQuery = ( state, query ) => {
 	const index = getResourceId( query );

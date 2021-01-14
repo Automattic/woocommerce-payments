@@ -89,7 +89,7 @@ const WCPayFields = ( {
  * Wraps WCPayFields within the necessary Stripe consumer components.
  *
  * @param {Object} props All props given by WooCommerce Blocks.
- * @returns {Object}     The wrapped React element.
+ * @return {Object}     The wrapped React element.
  */
 const ConsumableWCPayFields = ( { api, ...props } ) => (
 	<Elements stripe={ api.getStripe() }>

@@ -4,7 +4,7 @@
  * Retrieves a configuration value.
  *
  * @param {string} name The name of the config parameter.
- * @returns {*}         The value of the parameter of null.
+ * @return {*}         The value of the parameter of null.
  */
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.

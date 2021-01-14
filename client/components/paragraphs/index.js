@@ -5,7 +5,7 @@
  *
  * @param {Array} Strings to render as separate paragraphs.
  *
- * @returns	{Array} Paragraph elements.
+ * @return	{Array} Paragraph elements.
  */
 const Paragraphs = ( { children = [] } ) => {
 	return children.map( ( p, i ) => <p key={ i }>{ p }</p> );

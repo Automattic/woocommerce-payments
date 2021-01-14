@@ -1,7 +1,7 @@
 /**
  * Checks if site tracking is enabled.
  *
- * @returns {boolean} True if site tracking is enabled.
+ * @return {boolean} True if site tracking is enabled.
  */
 function isEnabled() {
 	return window.wcTracks.isEnabled;

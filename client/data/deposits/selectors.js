@@ -11,7 +11,7 @@ import { getResourceId } from 'utils/data';
  *
  * @param {Object} state Current wp.data state.
  *
- * @returns {Object} The deposits state.
+ * @return {Object} The deposits state.
  */
 const getDepositsState = ( state ) => {
 	if ( ! state ) {
@@ -43,7 +43,7 @@ export const getDepositsOverviewError = ( state ) => {
  * @param {Object} state Current wp.data state.
  * @param {Object} query The deposits query.
  *
- * @returns {Object} The list of deposits for the given query.
+ * @return {Object} The list of deposits for the given query.
  */
 const getDepositsForQuery = ( state, query ) => {
 	const index = getResourceId( query );

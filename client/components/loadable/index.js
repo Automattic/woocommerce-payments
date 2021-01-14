@@ -13,7 +13,7 @@ import './style.scss';
  * @param {ReactNode} props.value Content rendered when data are loaded. Has lower priority than `children`.
  * @param {ReactNode} props.children Content rendered when data are loaded. Has higher priority than `value`.
  *
- * @returns {ReactNode} Loadable content
+ * @return {ReactNode} Loadable content
  */
 const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 	isLoading ? (
@@ -37,7 +37,7 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
  * @param {Object} props Component props.
  * @param {number} props.numLines Vertical size of the component in lines.
  *
- * @returns {ReactNode} Loadable content
+ * @return {ReactNode} Loadable content
  */
 export const LoadableBlock = ( { numLines = 1, ...loadableProps } ) => {
 	const placeholder = (

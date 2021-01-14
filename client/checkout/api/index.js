@@ -24,7 +24,7 @@ export default class WCPayAPI {
 	/**
 	 * Generates a new instance of Stripe.
 	 *
-	 * @returns {Object} The Stripe Object.
+	 * @return {Object} The Stripe Object.
 	 */
 	getStripe() {
 		if ( ! this.stripe ) {
@@ -43,7 +43,7 @@ export default class WCPayAPI {
 	 *
 	 * @param {Object} elements A hash of all Stripe elements, used to enter card data.
 	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
-	 * @returns {Object} A request object, which will be prepared and then `.send()`.
+	 * @return {Object} A request object, which will be prepared and then `.send()`.
 	 */
 	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
 		const stripe = this.getStripe();
@@ -66,7 +66,7 @@ export default class WCPayAPI {
 			 *
 			 * @param {string} name The key of the value.
 			 * @param {mixed} value The value to sanitize.
-			 * @returns {mixed}     The sanitized value, `undefined` if not present.
+			 * @return {mixed}     The sanitized value, `undefined` if not present.
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
@@ -130,7 +130,7 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} redirectUrl The redirect URL, returned from the server.
 	 * @param {string} paymentMethodToSave The ID of a Payment Method if it should be saved (optional).
-	 * @returns {mixed} A redirect URL on success, or `true` if no confirmation is needed.
+	 * @return {mixed} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, paymentMethodToSave ) {
 		const partials = redirectUrl.match(
@@ -225,7 +225,7 @@ export default class WCPayAPI {
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.
-	 * @returns {Promise} The final promise for the request to the server.
+	 * @return {Promise} The final promise for the request to the server.
 	 */
 	setupIntent( paymentMethodId ) {
 		return this.request( getConfig( 'ajaxUrl' ), {

@@ -11,7 +11,7 @@ import { getResourceId } from 'utils/data';
  *
  * @param {Object} state Current wp.data state.
  *
- * @returns {Object} The disputes state.
+ * @return {Object} The disputes state.
  */
 const getDisputesState = ( state ) => {
 	if ( ! state ) {
@@ -33,7 +33,7 @@ export const getDispute = ( state, id ) => {
  * @param {Object} state Current wp.data state.
  * @param {Object} query The disputes query.
  *
- * @returns {Object} The list of disputes for the given query.
+ * @return {Object} The list of disputes for the given query.
  */
 const getDisputesForQuery = ( state, query ) => {
 	const index = getResourceId( query );

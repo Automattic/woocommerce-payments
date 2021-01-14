@@ -25,7 +25,7 @@ jest.mock( '@wordpress/api-fetch', () => ( {
  * hence cannot be accessed directly for snapshot matching.
  * https://github.com/WordPress/gutenberg/blob/master/packages/components/src/modal/index.js
  *
- * @returns {HTMLElement} Modal element.
+ * @return {HTMLElement} Modal element.
  */
 const getModalContainer = () => {
 	const [ modalContainer ] = document.body.getElementsByClassName(

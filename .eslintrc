@@ -46,8 +46,15 @@
 				"required": "id"
 			}
 		],
+		"jsdoc/check-tag-names": [
+			"error",
+			{
+				"definedTags": [
+					"format"
+				]
+			}
+		],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
-		"jsdoc/check-tag-names":                   "off",
 		"jsdoc/no-undefined-types":                "off",
 		"jsdoc/require-param":                     "off",
 		"jsdoc/check-param-names":                 "off",
