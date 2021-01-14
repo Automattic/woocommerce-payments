@@ -65,10 +65,10 @@ const Info = ( { dispute, isLoading } ) => {
 					'M j, Y',
 					moment( dispute.created * 1000 ).toISOString()
 				),
-				amount: `${ formatCurrency(
+				amount: formatCurrency(
 					dispute.amount || 0,
 					dispute.currency || 'USD'
-				) } ${ dispute.currency.toUpperCase() }`,
+				),
 				dueBy: dateI18n(
 					'M j, Y - g:iA',
 					moment(
