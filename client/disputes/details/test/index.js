@@ -15,6 +15,12 @@ jest.mock( 'data', () => ( {
 } ) );
 
 describe( 'Dispute details screen', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
+	} );
+
 	const reasons = [
 		'bank_cannot_process',
 		'check_returned',
