@@ -78,6 +78,63 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	}
 
 	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param WC_Cart                   $cart Cart.
+	 * @param WCPay\Payment_Information $payment_information Payment info.
+	 *
+	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                Error processing the payment.
+	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 */
+	public function process_payment_for_order( $cart, $payment_information ) {
+		$order = $payment_information->get_order();
+
+		if ( ! wcs_order_contains_subscription( $order->get_id() ) || ! $this->is_changing_payment_method_for_subscription() ) {
+			return parent::process_payment_for_order( $cart, $payment_information );
+		}
+
+		// At this point, we know the order is a subscription and user is changing payment method.
+		if ( ! $payment_information->is_using_saved_payment_method() ) {
+			$user        = $order->get_user() ?? wp_get_current_user();
+			$name        = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+			$email       = sanitize_email( $order->get_billing_email() );
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+			if ( null === $customer_id ) {
+				// Create a new customer.
+				$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+			} else {
+				// Update the existing customer with the current details. In the event the old customer can't be
+				// found a new one is created, so we update the customer ID here as well.
+				$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+			}
+
+			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
+				$payment_information->get_payment_method(),
+				$customer_id
+			);
+			// TODO use or if not necessary, remove $intent variables.
+			$intent_id     = $intent['id'];
+			$status        = $intent['status'];
+			$charge_id     = '';
+			$client_secret = $intent['client_secret'];
+
+			// TODO handle if intent failed.
+			$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
+			$payment_information->set_token( $token );
+		}
+
+		$token = $payment_information->get_payment_token();
+		$this->add_token_to_order( $order, $token );
+
+		return [
+			'result'   => 'success',
+			'redirect' => $this->get_return_url( $order ),
+		];
+	}
+
+	/**
 	 * Prepares the payment information object.
 	 *
 	 * @param WC_Order $order The order whose payment will be processed.

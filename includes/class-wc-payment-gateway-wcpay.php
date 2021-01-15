@@ -45,7 +45,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_API_Client
 	 */
-	private $payments_api_client;
+	protected $payments_api_client;
 
 	/**
 	 * WC_Payments_Account instance to get information about the account
@@ -59,14 +59,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
-	private $customer_service;
+	protected $customer_service;
 
 	/**
 	 * WC_Payments_Token instance for working with customer tokens
 	 *
 	 * @var WC_Payments_Token_Service
 	 */
-	private $token_service;
+	protected $token_service;
 
 	/**
 	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
@@ -568,6 +568,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			];
 		}
 
 		if ( $payment_needed ) {
