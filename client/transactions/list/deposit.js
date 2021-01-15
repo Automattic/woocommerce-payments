@@ -18,7 +18,7 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 	} );
 
 	const formattedDateAvailable =
-		dateAvailable != null &&
+		null != dateAvailable &&
 		// Do not localize because it is intended as a date only, without time information.
 		dateI18n(
 			'M j, Y',

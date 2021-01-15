@@ -76,7 +76,7 @@ jQuery( function ( $ ) {
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
 	 *
-	 * @param {object} $form The jQuery object for the form.
+	 * @param {Object} $form The jQuery object for the form.
 	 */
 	const blockUI = ( $form ) => {
 		$form.addClass( 'processing' ).block( {
@@ -131,8 +131,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Creates and authorizes a setup intent, saves its ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form         The jQuery object for the form.
-	 * @param {object} paymentMethod Payment method object.
+	 * @param {Object} $form         The jQuery object for the form.
+	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleAddCard = ( $form, paymentMethod ) => {
 		api.setupIntent( paymentMethod.id )
@@ -167,8 +167,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Saves the payment method ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form         The jQuery object for the form.
-	 * @param {object} paymentMethod Payment method object.
+	 * @param {Object} $form         The jQuery object for the form.
+	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
 		// Populate form with the payment method.
@@ -181,8 +181,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form The jQuery object for the form.
-	 * @param {function} successHandler    Callback to be executed when payment method is generated.
+	 * @param {Object} $form The jQuery object for the form.
+	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */

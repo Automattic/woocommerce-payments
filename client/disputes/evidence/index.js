@@ -74,7 +74,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		const error =
 			evidence.uploadingErrors &&
 			( evidence.uploadingErrors[ field.key ] || '' );
-		const isDone = ! isLoading && fileName.length > 0;
+		const isDone = ! isLoading && 0 < fileName.length;
 		const accept = '.pdf, image/png, image/jpeg';
 		return {
 			field,
@@ -292,7 +292,7 @@ export const DisputeEvidencePage = ( props ) => {
  * Retrieves product type from the dispute.
  *
  * @param {Object?} dispute Dispute object
- * @returns {string} dispute product type
+ * @return {string} dispute product type
  */
 const getDisputeProductType = ( dispute ) => {
 	if ( ! dispute ) {

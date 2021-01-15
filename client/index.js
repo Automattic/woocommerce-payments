@@ -142,7 +142,7 @@ addFilter(
 /**
  * Get menu settings based on the top level link being connect or deposits
  *
- * @returns { { menuID, rootLink } }  Object containing menuID and rootLink
+ * @return { { menuID, rootLink } }  Object containing menuID and rootLink
  */
 function getMenuSettings() {
 	const connectPage = document.querySelector(

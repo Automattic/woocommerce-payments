@@ -32,7 +32,7 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 			}
 			isSubmitted={
 				dispute.evidence_details &&
-				dispute.evidence_details.submission_count > 0
+				0 < dispute.evidence_details.submission_count
 			}
 			onAccept={ doAccept }
 		/>

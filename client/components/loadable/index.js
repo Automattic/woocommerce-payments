@@ -13,7 +13,7 @@ import './style.scss';
  * @param {ReactNode} props.value Content rendered when data are loaded. Has lower priority than `children`.
  * @param {ReactNode} props.children Content rendered when data are loaded. Has higher priority than `value`.
  *
- * @returns {ReactNode} Loadable content
+ * @return {ReactNode} Loadable content
  */
 const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
 	isLoading ? (
@@ -35,9 +35,9 @@ const Loadable = ( { isLoading, display, placeholder, value, children } ) =>
  * Helper component for rendering loadable block which takes several lines in the ui.
  *
  * @param {Object} props Component props.
- * @param {Number} props.numLines Vertical size of the component in lines.
+ * @param {number} props.numLines Vertical size of the component in lines.
  *
- * @returns {ReactNode} Loadable content
+ * @return {ReactNode} Loadable content
  */
 export const LoadableBlock = ( { numLines = 1, ...loadableProps } ) => {
 	const placeholder = (

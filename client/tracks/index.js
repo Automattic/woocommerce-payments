@@ -1,7 +1,7 @@
 /**
  * Checks if site tracking is enabled.
  *
- * @returns {Boolean} True if site tracking is enabled.
+ * @return {boolean} True if site tracking is enabled.
  */
 function isEnabled() {
 	return window.wcTracks.isEnabled;
@@ -10,7 +10,7 @@ function isEnabled() {
 /**
  * Records site event.
  *
- * @param {String}  eventName       Name of the event.
+ * @param {string}  eventName       Name of the event.
  * @param {Object?} eventProperties Event properties.
  */
 function recordEvent( eventName, eventProperties ) {
