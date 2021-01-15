@@ -11,6 +11,12 @@ import { render } from '@testing-library/react';
 import Info from '../';
 
 describe( 'Dispute info', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
+	} );
+
 	test( 'renders correctly', () => {
 		/* eslint-disable camelcase */
 		const dispute = {

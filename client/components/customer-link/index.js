@@ -19,19 +19,15 @@ const CustomerLink = ( props ) => {
 
 	let searchTerm = customer.name;
 	if ( customer.email ) {
-		searchTerm = `${customer.name} (${customer.email})`;
+		searchTerm = `${ customer.name } (${ customer.email })`;
 	}
 	const url = addQueryArgs( 'admin.php', {
 		page: 'wc-admin',
 		path: '/payments/transactions',
-		search: [ searchTerm ]
+		search: [ searchTerm ],
 	} );
 
-	return (
-		<Link href={ url }>
-			{ customer.name }
-		</Link>
-	);
+	return <Link href={ url }>{ customer.name }</Link>;
 };
 
 export default CustomerLink;

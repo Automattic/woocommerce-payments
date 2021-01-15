@@ -11,7 +11,7 @@ import { dateI18n } from '@wordpress/date';
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
  *
- * @returns {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
+ * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
  */
 export const isInTestMode = ( fallback = false ) => {
 	if ( 'undefined' === typeof wcpaySettings ) {
@@ -23,7 +23,7 @@ export const isInTestMode = ( fallback = false ) => {
 /**
  * Returns the URL to the WooCommerce Payments settings.
  *
- * @returns {string} URL to the WooCommerce Payments settings menu.
+ * @return {string} URL to the WooCommerce Payments settings menu.
  */
 export const getPaymentSettingsUrl = () => {
 	return addQueryArgs( 'admin.php', {
@@ -36,7 +36,7 @@ export const getPaymentSettingsUrl = () => {
 /**
  * Returns the URL to the list of payment methods page.
  *
- * @returns {string} URL to the list of payment methods page.
+ * @return {string} URL to the list of payment methods page.
  */
 export const getPaymentMethodsUrl = () => {
 	return addQueryArgs( 'admin.php', {

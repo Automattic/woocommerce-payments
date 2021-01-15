@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
@@ -22,8 +21,7 @@ import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-
-const currency = new Currency();
+import { formatCurrency } from 'utils/currency';
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
@@ -110,7 +108,10 @@ export const DisputesList = () => {
 			amount: {
 				value: dispute.amount / 100,
 				display: clickable(
-					currency.formatCurrency( dispute.amount / 100 )
+					formatCurrency(
+						dispute.amount || 0,
+						dispute.currency || 'USD'
+					)
 				),
 			},
 			status: {

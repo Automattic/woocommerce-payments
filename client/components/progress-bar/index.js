@@ -5,7 +5,7 @@
 import './style.scss';
 
 const ProgressBar = ( { progressLabel, totalLabel, progress } ) => {
-	const useInnerLabel = progress > 0.5;
+	const useInnerLabel = 0.5 < progress;
 	return (
 		<div className="progressbar">
 			<div className="progressbar__container">

@@ -21,7 +21,7 @@ define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 
-require_once WCPAY_ABSPATH . 'vendor/autoload_packages.php';
+require_once __DIR__ . '/vendor/autoload_packages.php';
 
 /**
  * Plugin activation hook.
@@ -52,6 +52,12 @@ function wcpay_deactivated() {
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
+
+// The JetPack autoloader might not catch up yet when activating the plugin. If so, we'll stop here to avoid JetPack connection failures.
+$is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) && class_exists( MyCLabs\Enum\Enum::class );
+if ( ! $is_autoloading_ready ) {
+	return;
+}
 
 /**
  * Initialize the Jetpack connection functionality.

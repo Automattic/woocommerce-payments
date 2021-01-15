@@ -248,7 +248,7 @@ export const TransactionsList = ( props ) => {
 	} );
 
 	const summaryCurrency =
-		transactions.length > 0
+		0 < transactions.length
 			? transactions[ 0 ].currency.toUpperCase()
 			: 'USD';
 	const summary = [

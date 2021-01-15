@@ -41,7 +41,7 @@ const detailsTopics = [
  *
  * @param {string} topic The notice message topic.
  *
- * @returns {*} An HTML <a> component with a link to wcpay settings page.
+ * @return {*} An HTML <a> component with a link to wcpay settings page.
  */
 export const getPaymentsSettingsUrlComponent = () => {
 	return (
@@ -59,7 +59,7 @@ export const getPaymentsSettingsUrlComponent = () => {
  *
  * @param {string} topic The notice message topic.
  *
- * @returns {string} The specific details the notice is supposed to contain.
+ * @return {string} The specific details the notice is supposed to contain.
  */
 export const getTopicDetails = ( topic ) => {
 	return _n(
@@ -78,7 +78,7 @@ export const getTopicDetails = ( topic ) => {
  *
  * @param {string} topic The notice message topic.
  *
- * @returns {string} The correct notice message.
+ * @return {string} The correct notice message.
  */
 export const getNoticeMessage = ( topic ) => {
 	const urlComponent = getPaymentsSettingsUrlComponent();

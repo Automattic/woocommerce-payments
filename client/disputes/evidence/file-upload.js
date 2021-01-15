@@ -18,7 +18,7 @@ export const FileUploadControl = ( props ) => {
 		onFileRemove,
 		help,
 	} = props;
-	const hasError = error && error.length > 0;
+	const hasError = error && 0 < error.length;
 	const getIcon = () => {
 		return (
 			<Gridicon

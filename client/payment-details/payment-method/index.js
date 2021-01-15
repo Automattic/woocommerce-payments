@@ -16,8 +16,8 @@ import PaymentDetailsPaymentMethodCheck from './check';
 /**
  * Extracts and formats payment method details from a charge.
  *
- * @param {object} charge The charge object.
- * @return {object}       A flat hash of all necessary values.
+ * @param {Object} charge The charge object.
+ * @return {Object}       A flat hash of all necessary values.
  */
 const formatPaymentMethodDetails = ( charge ) => {
 	const {

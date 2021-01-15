@@ -14,24 +14,24 @@ export const getChargeOutcomeType = ( charge = {} ) =>
 	charge.outcome ? charge.outcome.type : null;
 
 export const isChargeSuccessful = ( charge = {} ) =>
-	charge.status === 'succeeded' && charge.paid === true;
+	'succeeded' === charge.status && true === charge.paid;
 
 export const isChargeFailed = ( charge = {} ) =>
-	charge.status === 'failed' &&
+	'failed' === charge.status &&
 	failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
 export const isChargeBlocked = ( charge = {} ) =>
-	charge.status === 'failed' &&
+	'failed' === charge.status &&
 	blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeCaptured = ( charge = {} ) => charge.captured === true;
+export const isChargeCaptured = ( charge = {} ) => true === charge.captured;
 
-export const isChargeDisputed = ( charge = {} ) => charge.disputed === true;
+export const isChargeDisputed = ( charge = {} ) => true === charge.disputed;
 
-export const isChargeRefunded = ( charge = {} ) => charge.amount_refunded > 0;
+export const isChargeRefunded = ( charge = {} ) => 0 < charge.amount_refunded;
 
 export const isChargeFullyRefunded = ( charge = {} ) =>
-	charge.refunded === true;
+	true === charge.refunded;
 
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
@@ -62,12 +62,12 @@ export const getChargeStatus = ( charge = {} ) => {
 /**
  * Calculates display values for charge amounts.
  *
- * @param {object} charge The full charge object.
- * @return {object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
+ * @param {Object} charge The full charge object.
+ * @return {Object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
 	// The base fee is the application fee.
-	let fee      = charge.application_fee_amount;
+	let fee = charge.application_fee_amount;
 	let refunded = 0;
 
 	if ( isChargeDisputed( charge ) ) {
