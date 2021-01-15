@@ -16,15 +16,18 @@ import PaymentDetailsPayment from './payment';
 import PaymentDetailsPaymentMethod from './payment-method';
 import PaymentDetailsSession from './session';
 import Page from 'components/page';
+import { TestModeNotice, topics } from 'components/test-mode-notice';
 
 const PaymentDetails = ( props ) => {
 	const chargeId = props.query.id;
 	const { charge, isLoading, chargeError } = useCharge( chargeId );
+	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
 	// Check instance of chargeError because its default value is empty object
 	if ( ! isLoading && chargeError instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
+				{ testModeNotice }
 				<Card>
 					<div>
 						{ __(
@@ -39,6 +42,7 @@ const PaymentDetails = ( props ) => {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
+			{ testModeNotice }
 			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
 			<PaymentDetailsTimeline chargeId={ chargeId } />
 			{

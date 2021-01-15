@@ -18,7 +18,6 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
-import { withTestNotice, topics } from 'components/test-mode-notice';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -42,7 +41,7 @@ addFilter(
 			},
 		} );
 		pages.push( {
-			container: withTestNotice( DepositsPage, topics.deposits ),
+			container: DepositsPage,
 			path: '/payments/deposits',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Deposits', 'woocommerce-payments' ) ],
@@ -51,10 +50,7 @@ addFilter(
 			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DepositDetailsPage,
-				topics.depositDetails
-			),
+			container: DepositDetailsPage,
 			path: '/payments/deposits/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -67,7 +63,7 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice( TransactionsPage, topics.transactions ),
+			container: TransactionsPage,
 			path: '/payments/transactions',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -79,10 +75,7 @@ addFilter(
 			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				PaymentDetailsPage,
-				topics.paymentDetails
-			),
+			container: PaymentDetailsPage,
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -95,7 +88,7 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice( DisputesPage, topics.disputes ),
+			container: DisputesPage,
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
@@ -104,10 +97,7 @@ addFilter(
 			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DisputeDetailsPage,
-				topics.disputeDetails
-			),
+			container: DisputeDetailsPage,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -120,10 +110,7 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DisputeEvidencePage,
-				topics.disputeDetails
-			),
+			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

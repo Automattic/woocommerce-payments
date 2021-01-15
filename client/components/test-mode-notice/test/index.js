@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Notice } from '@wordpress/components';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -12,8 +12,7 @@ import {
 	getPaymentsSettingsUrlComponent,
 	getTopicDetails,
 	getNoticeMessage,
-	getNotice,
-	withTestNotice,
+	TestModeNotice,
 } from '../index';
 
 jest.mock( 'utils', () => ( {
@@ -92,89 +91,15 @@ describe( 'Test mode notification', () => {
 		}
 	);
 
-	test.each( allTopics )( 'Returns correct notice', ( topic ) => {
-		const expected = (
-			<Notice
-				className="wcpay-test-mode-notice"
-				status="warning"
-				isDismissible={ false }
-			>
-				{ getNoticeMessage( topic ) }
-			</Notice>
-		);
-
-		expect( getNotice( topic ) ).toStrictEqual( expected );
-	} );
-
 	test.each( topicsWithTestMode )(
-		'Simple component is wrapped correctly',
+		'Component is rendered correctly',
 		( topic, isTestMode ) => {
 			isInTestMode.mockReturnValue( isTestMode );
-
-			const wrappedComponent = () => (
-				<p>This component will be wrapped.</p>
-			);
-			const expected = (
-				<div>
-					{ isTestMode ? getNotice( topic ) : null }
-					{ wrappedComponent() }
-				</div>
+			const { container: testModeNotice } = render(
+				<TestModeNotice topic={ topic } />
 			);
 
-			expect( withTestNotice( wrappedComponent, topic )() ).toStrictEqual(
-				expected
-			);
-		}
-	);
-
-	test.each( topicsWithTestMode )(
-		'Component with props is wrapped correctly',
-		( topic, isTestMode ) => {
-			isInTestMode.mockReturnValue( isTestMode );
-
-			const propToPass = { text: 'test prop' };
-			const wrappedComponent = ( props ) => (
-				<p>This component with { props.text } will be wrapped.</p>
-			);
-			const expected = (
-				<div>
-					{ isTestMode ? getNotice( topic ) : null }
-					{ wrappedComponent( propToPass ) }
-				</div>
-			);
-
-			expect(
-				withTestNotice( wrappedComponent, topic )( propToPass )
-			).toStrictEqual( expected );
-		}
-	);
-
-	test.each( topicsWithTestMode )(
-		'Component with props and ownProps is wrapped correctly',
-		( topic, isTestMode ) => {
-			isInTestMode.mockReturnValue( isTestMode );
-
-			const mockProps = { text: 'test prop' };
-			const mockOwnProps = { text: 'test ownProp' };
-			const wrappedComponent = ( props, ownProps ) => (
-				<p>
-					This component with { props.text } and { ownProps.text }{ ' ' }
-					will be wrapped.
-				</p>
-			);
-			const expected = (
-				<div>
-					{ isTestMode ? getNotice( topic ) : null }
-					{ wrappedComponent( mockProps, mockOwnProps ) }
-				</div>
-			);
-
-			expect(
-				withTestNotice( wrappedComponent, topic )(
-					mockProps,
-					mockOwnProps
-				)
-			).toStrictEqual( expected );
+			expect( testModeNotice ).toMatchSnapshot();
 		}
 	);
 } );
