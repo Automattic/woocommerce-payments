@@ -91,15 +91,6 @@ describe( 'Test mode notification', () => {
 		}
 	);
 
-	test.each( allTopics )( 'Component returns correct notice', ( topic ) => {
-		isInTestMode.mockReturnValue( true );
-		const { container: testModeNotice } = render(
-			<TestModeNotice topic={ topic } />
-		);
-
-		expect( testModeNotice ).toMatchSnapshot();
-	} );
-
 	test.each( topicsWithTestMode )(
 		'Component is rendered correctly according to test mode',
 		( topic, isTestMode ) => {
