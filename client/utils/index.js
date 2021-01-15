@@ -14,10 +14,10 @@ import { dateI18n } from '@wordpress/date';
  * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
  */
 export const isInTestMode = ( fallback = false ) => {
-	if ( typeof wcpaySettings === 'undefined' ) {
+	if ( 'undefined' === typeof wcpaySettings ) {
 		return fallback;
 	}
-	return wcpaySettings.testMode === '1' || fallback;
+	return '1' === wcpaySettings.testMode || fallback;
 };
 
 /**

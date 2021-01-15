@@ -271,7 +271,7 @@ jQuery( function ( $ ) {
 		);
 
 		// Boolean `true` means that there is nothing to confirm.
-		if ( confirmation === true ) {
+		if ( true === confirmation ) {
 			return;
 		}
 

@@ -22,7 +22,7 @@ const addWCPayCards = ( {
 	);
 
 	// Abort if the input doesn't exist or is already a select element
-	if ( ! paymentMethodInput || paymentMethodInput.tagName === 'SELECT' ) {
+	if ( ! paymentMethodInput || 'SELECT' === paymentMethodInput.tagName ) {
 		return;
 	}
 

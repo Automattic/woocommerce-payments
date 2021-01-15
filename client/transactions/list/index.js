@@ -145,8 +145,8 @@ export const TransactionsList = ( props ) => {
 
 	// match background of details and date when sorting
 	const detailsColumn =
-		columnsToDisplay.find( ( el ) => el.key === 'details' ) || {};
-	if ( ! getQuery().orderby || getQuery().orderby === 'date' ) {
+		columnsToDisplay.find( ( el ) => 'details' === el.key ) || {};
+	if ( ! getQuery().orderby || 'date' === getQuery().orderby ) {
 		detailsColumn.cellClassName = 'info-button is-sorted';
 	} else {
 		detailsColumn.cellClassName = 'info-button';
@@ -248,7 +248,7 @@ export const TransactionsList = ( props ) => {
 	} );
 
 	const summaryCurrency =
-		transactions.length > 0
+		0 < transactions.length
 			? transactions[ 0 ].currency.toUpperCase()
 			: 'USD';
 	const summary = [

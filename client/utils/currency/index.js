@@ -51,7 +51,7 @@ export const formatCurrency = ( amount, currencyCode ) => {
 	}
 
 	const currency = getCurrency( currencyCode );
-	if ( currency === null ) {
+	if ( null === currency ) {
 		// Fallback for unsupported currencies: currency code and amount
 		return sprintf(
 			isZeroDecimal ? '%s %i' : '%s %.2f',

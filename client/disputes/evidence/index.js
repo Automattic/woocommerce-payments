@@ -74,7 +74,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		const error =
 			evidence.uploadingErrors &&
 			( evidence.uploadingErrors[ field.key ] || '' );
-		const isDone = ! isLoading && fileName.length > 0;
+		const isDone = ! isLoading && 0 < fileName.length;
 		const accept = '.pdf, image/png, image/jpeg';
 		return {
 			field,
@@ -191,8 +191,8 @@ export const DisputeEvidencePage = ( props ) => {
 	} = props;
 	const readOnly =
 		dispute &&
-		dispute.status !== 'needs_response' &&
-		dispute.status !== 'warning_needs_response';
+		'needs_response' !== dispute.status &&
+		'warning_needs_response' !== dispute.status;
 	const disputeIsAvailable = ! isLoading && dispute.id;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
@@ -333,7 +333,7 @@ export default ( { query } ) => {
 			evidence,
 			( disputeValue, formValue ) => {
 				// Treat null and '' as equal values.
-				if ( disputeValue === null && ! formValue ) {
+				if ( null === disputeValue && ! formValue ) {
 					return true;
 				}
 			}

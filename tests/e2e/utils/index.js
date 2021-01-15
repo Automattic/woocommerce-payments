@@ -62,7 +62,7 @@ const setCheckbox = async ( selector ) => {
 	const checkboxStatus = await (
 		await checkbox.getProperty( 'checked' )
 	 ).jsonValue();
-	if ( checkboxStatus !== true ) {
+	if ( true !== checkboxStatus ) {
 		await page.click( selector );
 	}
 };
@@ -78,7 +78,7 @@ const unsetCheckbox = async ( selector ) => {
 	const checkboxStatus = await (
 		await checkbox.getProperty( 'checked' )
 	 ).jsonValue();
-	if ( checkboxStatus === true ) {
+	if ( true === checkboxStatus ) {
 		await page.click( selector );
 	}
 };
@@ -117,7 +117,7 @@ const verifyPublishAndTrash = async (
 	await expect( page ).toMatchElement( publishNotice, {
 		text: publishVerification,
 	} );
-	if ( button === '.order_actions li .save_order' ) {
+	if ( '.order_actions li .save_order' === button ) {
 		await expect( page ).toMatchElement(
 			'#select2-order_status-container',
 			{ text: 'Processing' }

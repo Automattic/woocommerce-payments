@@ -49,7 +49,7 @@ const getNextDepositLabelFormatted = ( deposit ) => {
 				deposit.date
 		  ) }`
 		: '—';
-	if ( deposit && deposit.status === 'in_transit' ) {
+	if ( deposit && 'in_transit' === deposit.status ) {
 		return `${ baseLabel } - ${ __(
 			'In transit',
 			'woocommerce-payments'
@@ -103,7 +103,7 @@ const getDepositScheduleDescriptor = ( {
 	account: { deposits_schedule: schedule, deposits_disabled: disabled },
 	last_deposit: last,
 } ) => {
-	if ( disabled || schedule.interval === 'manual' ) {
+	if ( disabled || 'manual' === schedule.interval ) {
 		const learnMoreHref =
 			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(

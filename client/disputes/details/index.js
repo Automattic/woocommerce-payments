@@ -27,12 +27,12 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 		<Actions
 			id={ dispute.id }
 			needsResponse={
-				dispute.status === 'needs_response' ||
-				dispute.status === 'warning_needs_response'
+				'needs_response' === dispute.status ||
+				'warning_needs_response' === dispute.status
 			}
 			isSubmitted={
 				dispute.evidence_details &&
-				dispute.evidence_details.submission_count > 0
+				0 < dispute.evidence_details.submission_count
 			}
 			onAccept={ doAccept }
 		/>

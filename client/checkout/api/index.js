@@ -70,11 +70,11 @@ export default class WCPayAPI {
 			 */
 			prepareValue( name, value ) {
 				// Fall back to the value in `preparedCustomerData`.
-				if ( typeof value === 'undefined' || value.length === 0 ) {
+				if ( 'undefined' === typeof value || 0 === value.length ) {
 					value = preparedCustomerData[ name ]; // `undefined` if not set.
 				}
 
-				if ( typeof value !== 'undefined' && value.length > 0 ) {
+				if ( 'undefined' !== typeof value && 0 < value.length ) {
 					return value;
 				}
 			}
@@ -87,7 +87,7 @@ export default class WCPayAPI {
 			 */
 			setBillingDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
+				if ( 'undefined' !== typeof preparedValue ) {
 					this.args.billing_details[ name ] = preparedValue;
 				}
 			}
@@ -100,7 +100,7 @@ export default class WCPayAPI {
 			 */
 			setAddressDetail( name, value ) {
 				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
+				if ( 'undefined' !== typeof preparedValue ) {
 					this.args.billing_details.address[ name ] = preparedValue;
 				}
 			}
@@ -141,7 +141,7 @@ export default class WCPayAPI {
 			return true;
 		}
 
-		const isSetupIntent = partials[ 1 ] === 'si';
+		const isSetupIntent = 'si' === partials[ 1 ];
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		// Update the current order status nonce with the new one to ensure that the update
@@ -150,7 +150,7 @@ export default class WCPayAPI {
 		setConfig( 'updateOrderStatusNonce', partials[ 4 ] );
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
-		const isOrderPage = orderPayIndex > -1;
+		const isOrderPage = -1 < orderPayIndex;
 
 		// If we're on the Pay for Order page, get the order ID
 		// directly from the URL instead of relying on the hash.
@@ -238,7 +238,7 @@ export default class WCPayAPI {
 				throw response.data.error;
 			}
 
-			if ( response.data.status === 'succeeded' ) {
+			if ( 'succeeded' === response.data.status ) {
 				// No need for further authentication.
 				return response.data;
 			}

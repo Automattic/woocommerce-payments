@@ -97,7 +97,7 @@ describe( 'Transactions list', () => {
 	test( 'renders correctly when filtered to deposit', () => {
 		useTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn ) => txn.deposit_id === 'po_mock'
+				( txn ) => 'po_mock' === txn.deposit_id
 			),
 			isLoading: false,
 		} );

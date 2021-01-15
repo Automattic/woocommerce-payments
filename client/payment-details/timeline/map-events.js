@@ -159,7 +159,7 @@ const mapEventToTimelineItems = ( event ) => {
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount, event.currency || 'USD' ) );
 
-	if ( type === 'authorized' ) {
+	if ( 'authorized' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -179,7 +179,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-warning'
 			),
 		];
-	} else if ( type === 'authorization_voided' ) {
+	} else if ( 'authorization_voided' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -199,7 +199,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-warning'
 			),
 		];
-	} else if ( type === 'authorization_expired' ) {
+	} else if ( 'authorization_expired' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -219,7 +219,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( type === 'captured' ) {
+	} else if ( 'captured' === type ) {
 		const formattedNet = formatCurrency(
 			event.amount - event.fee,
 			event.currency || 'USD'
@@ -274,7 +274,7 @@ const mapEventToTimelineItems = ( event ) => {
 				]
 			),
 		];
-	} else if ( type === 'partial_refund' || type === 'full_refund' ) {
+	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
 		const formattedAmount = formatCurrency(
 			event.amount_refunded,
 			event.currency || 'USD'
@@ -282,7 +282,7 @@ const mapEventToTimelineItems = ( event ) => {
 		return [
 			getStatusChangeTimelineItem(
 				event,
-				type === 'full_refund'
+				'full_refund' === type
 					? __( 'Refunded', 'woocommerce-payments' )
 					: __( 'Partial Refund', 'woocommerce-payments' )
 			),
@@ -301,7 +301,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( type === 'failed' ) {
+	} else if ( 'failed' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -318,7 +318,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( type === 'dispute_needs_response' ) {
+	} else if ( 'dispute_needs_response' === type ) {
 		let reasonHeadline = __( 'Payment disputed', 'woocommerce-payments' );
 		if ( disputeReasons[ event.reason ] ) {
 			reasonHeadline = sprintf(
@@ -335,7 +335,7 @@ const mapEventToTimelineItems = ( event ) => {
 		} );
 
 		let depositTimelineItem;
-		if ( event.amount === null ) {
+		if ( null === event.amount ) {
 			depositTimelineItem = {
 				date: new Date( event.datetime * 1000 ),
 				icon: getIcon( 'info-outline' ),
@@ -387,7 +387,7 @@ const mapEventToTimelineItems = ( event ) => {
 				</a>,
 			] ),
 		];
-	} else if ( type === 'dispute_in_review' ) {
+	} else if ( 'dispute_in_review' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -400,7 +400,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( type === 'dispute_won' ) {
+	} else if ( 'dispute_won' === type ) {
 		const formattedTotal = formatCurrency(
 			Math.abs( event.amount ) + Math.abs( event.fee ),
 			event.currency || 'USD'
@@ -432,7 +432,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( type === 'dispute_lost' ) {
+	} else if ( 'dispute_lost' === type ) {
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -448,7 +448,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-error'
 			),
 		];
-	} else if ( type === 'dispute_warning_closed' ) {
+	} else if ( 'dispute_warning_closed' === type ) {
 		return [
 			getMainTimelineItem(
 				event,
@@ -460,7 +460,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'is-success'
 			),
 		];
-	} else if ( type === 'dispute_charge_refunded' ) {
+	} else if ( 'dispute_charge_refunded' === type ) {
 		return [
 			getMainTimelineItem(
 				event,

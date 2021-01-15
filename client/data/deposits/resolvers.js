@@ -22,7 +22,7 @@ import {
 const convertStripePayoutToDeposit = ( stripePayout ) => ( {
 	id: stripePayout.id,
 	date: +new Date( stripePayout.arrival_date * 1000 ),
-	type: stripePayout.amount > 0 ? 'deposit' : 'withdrawal',
+	type: 0 < stripePayout.amount ? 'deposit' : 'withdrawal',
 	amount: stripePayout.amount,
 	status: stripePayout.status,
 	bankAccount:
@@ -45,7 +45,7 @@ export function* getDeposit( id ) {
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.
-		if ( result.object === 'payout' ) {
+		if ( 'payout' === result.object ) {
 			result = convertStripePayoutToDeposit( result );
 		}
 
@@ -70,13 +70,13 @@ export function* getDepositsOverview() {
 
 		// If using Stripe API objects directly, map to deposits.
 		// TODO Remove this mapping when these deposits are formatted by the server.
-		if ( result.last_deposit && result.last_deposit.object === 'payout' ) {
+		if ( result.last_deposit && 'payout' === result.last_deposit.object ) {
 			// eslint-disable-next-line camelcase
 			result.last_deposit = convertStripePayoutToDeposit(
 				result.last_deposit
 			);
 		}
-		if ( result.next_deposit && result.next_deposit.object === 'payout' ) {
+		if ( result.next_deposit && 'payout' === result.next_deposit.object ) {
 			// eslint-disable-next-line camelcase
 			result.next_deposit = convertStripePayoutToDeposit(
 				result.next_deposit
@@ -113,7 +113,7 @@ export function* getDeposits( query ) {
 		if (
 			results.data &&
 			results.data.length &&
-			results.data[ 0 ].object === 'payout'
+			'payout' === results.data[ 0 ].object
 		) {
 			results.data = results.data.map( convertStripePayoutToDeposit );
 		}

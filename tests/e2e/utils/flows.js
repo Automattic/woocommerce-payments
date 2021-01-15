@@ -107,8 +107,8 @@ const PaymentsCustomerFlow = {
 
 	selectNewPaymentMethod: async () => {
 		if (
-			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) ) !==
-			null
+			null !==
+			( await page.$( '#wc-woocommerce_payments-payment-token-new' ) )
 		) {
 			await expect( page ).toClick(
 				'#wc-woocommerce_payments-payment-token-new'

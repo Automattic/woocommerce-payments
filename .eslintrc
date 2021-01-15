@@ -56,7 +56,7 @@
 		],
 		"yoda": [
 			"error",
-			"never"
+			"always"
 		],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types":                "off",

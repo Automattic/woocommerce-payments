@@ -403,7 +403,7 @@ export default ( reason, productType ) => {
 		return [];
 	}
 
-	if ( productType === 'multiple' ) {
+	if ( 'multiple' === productType ) {
 		return sections
 			.map( ( section ) => {
 				if ( section.denormalized ) {

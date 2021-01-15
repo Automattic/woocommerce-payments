@@ -23,7 +23,7 @@ export default function computeSuggestionMatch( suggestion, query ) {
 		.toLocaleLowerCase()
 		.indexOf( query.toLocaleLowerCase() );
 
-	if ( indexOfMatch === -1 ) {
+	if ( -1 === indexOfMatch ) {
 		return null;
 	}
 
