@@ -98,7 +98,7 @@ export const getNoticeMessage = ( topic ) => {
 	);
 };
 
-export const TestNotice = ( { topic } ) => {
+export const TestModeNotice = ( { topic } ) => {
 	return (
 		isInTestMode() && (
 			<Notice

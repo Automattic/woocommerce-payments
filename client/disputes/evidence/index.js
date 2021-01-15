@@ -29,7 +29,7 @@ import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 import Loadable, { LoadableBlock } from 'components/loadable';
-import { TestNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
@@ -195,12 +195,12 @@ export const DisputeEvidencePage = ( props ) => {
 		'needs_response' !== dispute.status &&
 		'warning_needs_response' !== dispute.status;
 	const disputeIsAvailable = ! isLoading && dispute.id;
-	const testNotice = <TestNotice topic={ topics.disputeDetails } />;
+	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
-				{ testNotice }
+				{ testModeNotice }
 				<div>
 					{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
 				</div>
@@ -210,7 +210,7 @@ export const DisputeEvidencePage = ( props ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
-			{ testNotice }
+			{ testModeNotice }
 			<Card
 				title={
 					<Loadable
