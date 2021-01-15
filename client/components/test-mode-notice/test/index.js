@@ -92,7 +92,7 @@ describe( 'Test mode notification', () => {
 	);
 
 	test.each( topicsWithTestMode )(
-		'Component is rendered correctly according to test mode',
+		'Component is rendered correctly',
 		( topic, isTestMode ) => {
 			isInTestMode.mockReturnValue( isTestMode );
 			const { container: testModeNotice } = render(

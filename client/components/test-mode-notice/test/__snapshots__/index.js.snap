@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Test mode notification Component is rendered correctly according to test mode 1`] = `
+exports[`Test mode notification Component is rendered correctly 1`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -22,7 +22,7 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 2`] = `
+exports[`Test mode notification Component is rendered correctly 2`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -44,7 +44,7 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 3`] = `
+exports[`Test mode notification Component is rendered correctly 3`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -66,7 +66,7 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 4`] = `
+exports[`Test mode notification Component is rendered correctly 4`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -92,7 +92,7 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 5`] = `
+exports[`Test mode notification Component is rendered correctly 5`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -118,7 +118,7 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 6`] = `
+exports[`Test mode notification Component is rendered correctly 6`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -144,14 +144,14 @@ exports[`Test mode notification Component is rendered correctly according to tes
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 7`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 7`] = `<div />`;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 8`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 8`] = `<div />`;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 9`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 9`] = `<div />`;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 10`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 10`] = `<div />`;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 11`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 11`] = `<div />`;
 
-exports[`Test mode notification Component is rendered correctly according to test mode 12`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 12`] = `<div />`;
