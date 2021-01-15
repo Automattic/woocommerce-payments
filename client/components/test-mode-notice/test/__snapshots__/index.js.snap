@@ -1,0 +1,301 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test mode notification Component is rendered correctly according to test mode 1`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 2`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 3`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 4`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test deposit:
+        </b>
+         
+        WooCommerce Payments was in test mode when these orders were placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 5`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test dispute:
+        </b>
+         
+        WooCommerce Payments was in test mode when this order was placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 6`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test payment:
+        </b>
+         
+        WooCommerce Payments was in test mode when this order was placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 7`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 8`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 9`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 10`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 11`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly according to test mode 12`] = `<div />`;
+
+exports[`Test mode notification Component returns correct notice 1`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component returns correct notice 2`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test deposits. To view live deposits, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component returns correct notice 3`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        Viewing test disputes. To view live disputes, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component returns correct notice 4`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test deposit:
+        </b>
+         
+        WooCommerce Payments was in test mode when these orders were placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component returns correct notice 5`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test dispute:
+        </b>
+         
+        WooCommerce Payments was in test mode when this order was placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component returns correct notice 6`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test payment:
+        </b>
+         
+        WooCommerce Payments was in test mode when this order was placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings.
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
