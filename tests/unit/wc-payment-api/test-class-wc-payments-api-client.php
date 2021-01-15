@@ -327,13 +327,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
-					'method'  => 'POST',
-					'headers' => [
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345',
+					'method'          => 'POST',
+					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
 						'User-Agent'   => 'Unit Test Agent/0.1.0',
 					],
-					'timeout' => 70,
+					'timeout'         => 70,
+					'connect_timeout' => 70,
 				],
 				wp_json_encode(
 					[
@@ -434,13 +435,14 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'     => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
-					'method'  => 'POST',
-					'headers' => [
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/oauth/init',
+					'method'          => 'POST',
+					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
 						'User-Agent'   => 'Unit Test Agent/0.1.0',
 					],
-					'timeout' => 70,
+					'timeout'         => 70,
+					'connect_timeout' => 70,
 				],
 				wp_json_encode(
 					[
