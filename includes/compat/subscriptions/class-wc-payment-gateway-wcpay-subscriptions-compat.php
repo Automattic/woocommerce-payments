@@ -90,12 +90,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	public function process_payment_for_order( $cart, $payment_information ) {
 		$order = $payment_information->get_order();
 
-		if ( ! wcs_order_contains_subscription( $order->get_id() ) || ! $this->is_changing_payment_method_for_subscription() ) {
+		if ( ! $this->is_changing_payment_method_for_subscription() ) {
 			return parent::process_payment_for_order( $cart, $payment_information );
 		}
 
 		// At this point, we know the order is a subscription and user is changing payment method.
-		if ( ! $payment_information->is_using_saved_payment_method() ) {
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			$this->add_token_to_order( $order, $token );
+			$order->payment_complete();
+		} else {
 			$user        = $order->get_user() ?? wp_get_current_user();
 			$name        = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 			$email       = sanitize_email( $order->get_billing_email() );
@@ -120,13 +124,37 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
 
-			// TODO handle if intent failed.
+			// TODO handles when intent requires action
+//			if ($status === 'requires_action') {
+//				$response = [
+//					'result'   => 'success',
+//					// Include a new nonce for update_order_status to ensure the update order
+//					// status call works when a guest user creates an account during checkout.
+//					'redirect' => sprintf(
+//						'#wcpay-confirm-%s:%s:%s:%s',
+//						$payment_needed ? 'pi' : 'si',
+//						$order_id,
+//						$client_secret,
+//						wp_create_nonce( 'wcpay_update_order_status_nonce' )
+//					),
+//				];
+//			}
+
 			$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
 			$payment_information->set_token( $token );
+
+			$token = $payment_information->get_payment_token();
+			$this->add_token_to_order( $order, $token );
+			$order->payment_complete( $intent_id );
+
+			$order->set_transaction_id( $intent_id );
+			$order->update_meta_data( '_intent_id', $intent_id );
+			$order->update_meta_data( '_charge_id', $charge_id );
+			$order->update_meta_data( '_intention_status', $status );
+			$order->save();
 		}
 
-		$token = $payment_information->get_payment_token();
-		$this->add_token_to_order( $order, $token );
+		// TODO add order note
 
 		return [
 			'result'   => 'success',
