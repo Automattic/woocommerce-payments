@@ -188,6 +188,76 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the various anti-fraud services that must be included on every WCPay-related page.
+	 *
+	 * @return array Assoc array. Each key is the slug of a fraud service that must be incorporated to every page, the value is service-specific config for it.
+	 */
+	public function get_fraud_services_config() {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account ) || ! isset( $account['fraud_services'] ) ) {
+			// This was the default before adding new anti-fraud providers, preserve backwards-compatibility.
+			return [ 'stripe' => [] ];
+		}
+		$services_config = $account['fraud_services'];
+		foreach ( $services_config as $service_id => $config ) {
+			$prepare_func = [ $this, "prepare_fraud_${service_id}_config" ];
+			if ( is_callable( $prepare_func ) ) {
+				$services_config[ $service_id ] = call_user_func( $prepare_func, $config );
+			}
+		}
+		return $services_config;
+	}
+
+	/**
+	 * Adds site-specific config needed to initialize the SIFT anti-fraud JS.
+	 *
+	 * @param array $config Associative array with the SIFT-related configuration returned from the server.
+	 *
+	 * @return array|NULL Assoc array, ready for the client to consume, or NULL if the client shouldn't enqueue this script.
+	 */
+	private function prepare_fraud_sift_config( $config ) {
+		// The server returns both production and sandbox beacon keys. Use the sandbox one if test mode is enabled.
+		if ( WC_Payments::get_gateway()->is_in_test_mode() ) {
+			$config['beacon_key'] = $config['sandbox_beacon_key'];
+		}
+		unset( $config['sandbox_beacon_key'] );
+
+		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
+		if ( ! $wpcom_blog_id ) {
+			// Don't enqueue the SIFT script if Jetpack hasn't been connected yet.
+			return null;
+		}
+
+		if ( is_user_logged_in() ) {
+			if ( is_admin() ) {
+				$config['user_id'] = $this->get_stripe_account_id();
+			} else {
+				$config['user_id'] = $wpcom_blog_id . '_' . get_current_user_id();
+			}
+			$config['session_id'] = $wpcom_blog_id . '_' . get_current_user_id();
+
+			$session_handler = WC()->session;
+			if ( $session_handler ) {
+				$cookie = $session_handler->get_session_cookie();
+				if ( $cookie ) {
+					$cookie_customer_id = $cookie[0];
+					if ( $session_handler->get_customer_id() !== $cookie_customer_id ) {
+						// The session changed during the current page load, for example if the user just logged in.
+						// In this case, send the old session's customer ID alongside the new user_id so SIFT can link them.
+						// TODO: This only works if the post-login page where the user lands also enqueues the SIFT JS.
+						$config['session_id'] = $wpcom_blog_id . '_' . $cookie_customer_id;
+					}
+				}
+			}
+		} else {
+			$config['user_id']    = '';
+			$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
+		}
+
+		return $config;
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *

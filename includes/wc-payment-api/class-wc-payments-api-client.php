@@ -100,6 +100,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
+	 *
+	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
+	 */
+	public function get_blog_id() {
+		return $this->is_server_connected() ? $this->http_client->get_blog_id() : null;
+	}
+
+	/**
 	 * Starts the Jetpack connection process. Note that running this function will immediately redirect
 	 * to the Jetpack flow, so any PHP code after it will never be executed.
 	 *
