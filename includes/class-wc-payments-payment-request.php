@@ -57,9 +57,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @since   3.0.0
-	 * @version 4.0.0
-	 *
 	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
@@ -94,7 +91,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Get this instance.
 	 *
-	 * @since  4.0.6
 	 * @return class
 	 */
 	public static function instance() {
@@ -105,7 +101,6 @@ class WC_Payments_Payment_Request {
 	 * Sets the WC customer session if one is not set.
 	 * This is needed so nonces can be verified by AJAX Request.
 	 *
-	 * @since  4.0.0
 	 * @return void
 	 */
 	public function set_session() {
@@ -119,8 +114,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Initialize hooks.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  void
 	 */
 	public function init() {
@@ -153,8 +146,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the button type.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  string
 	 */
 	public function get_button_type() {
@@ -164,8 +155,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the button theme.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  string
 	 */
 	public function get_button_theme() {
@@ -175,8 +164,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the button height.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  string
 	 */
 	public function get_button_height() {
@@ -186,8 +173,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Checks if the button is branded.
 	 *
-	 * @since   4.4.0
-	 * @version 4.4.0
 	 * @return  boolean
 	 */
 	public function is_branded_button() {
@@ -197,8 +182,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the branded button type.
 	 *
-	 * @since   4.4.0
-	 * @version 4.4.0
 	 * @return  string
 	 */
 	public function get_button_branded_type() {
@@ -208,8 +191,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Checks if the button is custom.
 	 *
-	 * @since   4.4.0
-	 * @version 4.4.0
 	 * @return  boolean
 	 */
 	public function is_custom_button() {
@@ -219,8 +200,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Returns custom button css selector.
 	 *
-	 * @since   4.4.0
-	 * @version 4.4.0
 	 * @return  string
 	 */
 	public function custom_button_selector() {
@@ -230,8 +209,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the custom button label.
 	 *
-	 * @since   4.4.0
-	 * @version 4.4.0
 	 * @return  string
 	 */
 	public function get_button_label() {
@@ -241,8 +218,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the product data for the currently viewed page
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  mixed Returns false if not on a product page, the product information otherwise.
 	 */
 	public function get_product_data() {
@@ -340,9 +315,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Removes postal code validation from WC.
 	 *
-	 * @since   3.1.4
-	 * @version 4.0.0
-	 *
 	 * @param bool   $valid Whether postal code is valid.
 	 * @param string $postcode Postal code.
 	 * @param string $country Country.
@@ -380,8 +352,6 @@ class WC_Payments_Payment_Request {
 	 * @param integer $order_id    The order ID.
 	 * @param array   $posted_data The posted data from checkout form.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 * @return  void
 	 */
 	public function add_order_meta( $order_id, $posted_data ) {
@@ -407,8 +377,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Checks to make sure product type is supported.
 	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 * @return  array
 	 */
 	public function supported_product_types() {
@@ -432,8 +400,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Checks the cart to see if all items are allowed to used.
 	 *
-	 * @since   3.1.4
-	 * @version 4.0.0
 	 * @return  boolean
 	 */
 	public function allowed_items_in_cart() {
@@ -460,9 +426,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Load public scripts and styles.
-	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 */
 	public function scripts() {
 		// If account is not connected then bail.
@@ -543,9 +506,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Display the payment request button.
-	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 */
 	public function display_payment_request_button_html() {
 		global $post;
@@ -588,9 +548,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Display payment request button separator.
-	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 */
 	public function display_payment_request_button_separator_html() {
 		global $post;
@@ -622,7 +579,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Whether payment button html should be rendered on the Cart
 	 *
-	 * @since  4.4.1
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_cart() {
@@ -639,7 +595,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Whether payment button html should be rendered
 	 *
-	 * @since  4.3.2
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_product_page() {
@@ -681,9 +636,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Log errors coming from Payment Request
-	 *
-	 * @since   3.1.4
-	 * @version 4.0.0
 	 */
 	public function ajax_log_errors() {
 		check_ajax_referer( 'wcpay-log-errors', 'security' );
@@ -701,9 +653,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Clears cart.
-	 *
-	 * @since   3.1.4
-	 * @version 4.0.0
 	 */
 	public function ajax_clear_cart() {
 		check_ajax_referer( 'wcpay-clear-cart', 'security' );
@@ -888,9 +837,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Gets the selected product data.
 	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
-	 *
 	 * @throws Exception If product or stock is unavailable - caught inside function.
 	 */
 	public function ajax_get_selected_product_data() {
@@ -983,9 +929,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Adds the current product to the cart. Used on product detail page.
-	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 */
 	public function ajax_add_to_cart() {
 		check_ajax_referer( 'wcpay-add-to-cart', 'security' );
@@ -1031,9 +974,6 @@ class WC_Payments_Payment_Request {
 	 * cases, the state/county field is formatted differently from
 	 * what WC is expecting and throws an error. An example
 	 * for Ireland the county dropdown in Chrome shows "Co. Clare" format
-	 *
-	 * @since   4.0.0
-	 * @version 4.0.0
 	 */
 	public function normalize_state() {
 		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
@@ -1072,9 +1012,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Create order. Security is handled by WC.
-	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 */
 	public function ajax_create_order() {
 		if ( WC()->cart->is_empty() ) {
@@ -1096,9 +1033,6 @@ class WC_Payments_Payment_Request {
 	 * Calculate and set shipping method.
 	 *
 	 * @param array $address Shipping address.
-	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 */
 	protected function calculate_shipping( $address = [] ) {
 		$country   = $address['country'];
@@ -1163,8 +1097,6 @@ class WC_Payments_Payment_Request {
 	/**
 	 * Builds the shipping methods to pass to Payment Request
 	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 * @param array $shipping_methods Shipping methods.
 	 */
 	protected function build_shipping_methods( $shipping_methods ) {
@@ -1188,9 +1120,6 @@ class WC_Payments_Payment_Request {
 
 	/**
 	 * Builds the line items to pass to Payment Request
-	 *
-	 * @since   3.1.0
-	 * @version 4.0.0
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
