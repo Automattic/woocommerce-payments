@@ -76,10 +76,7 @@ jQuery( ( $ ) => {
 		/**
 		 * Get order data.
 		 *
-		 * @since 3.1.0
-		 * @version 4.0.0
 		 * @param {Object} evt Event.
-		 *
 		 * @return {Object} Order data.
 		 */
 		getOrderData: ( evt ) => {
@@ -163,8 +160,6 @@ jQuery( ( $ ) => {
 		/**
 		 * Generate error message HTML.
 		 *
-		 * @since 3.1.0
-		 * @version 4.0.0
 		 * @param  {string} message Error message.
 		 * @return {Object} Error message HTML.
 		 */
@@ -174,8 +169,6 @@ jQuery( ( $ ) => {
 		/**
 		 * Abort payment and display error messages.
 		 *
-		 * @since 3.1.0
-		 * @version 4.0.0
 		 * @param {PaymentResponse} payment Payment response instance.
 		 * @param {string}          message Error message to display.
 		 */
@@ -214,8 +207,6 @@ jQuery( ( $ ) => {
 		/**
 		 * Complete payment.
 		 *
-		 * @since 3.1.0
-		 * @version 4.0.0
 		 * @param {PaymentResponse} payment Payment response instance.
 		 * @param {string}          url     Order thank you page URL.
 		 */
@@ -379,9 +370,6 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Starts the payment request
-		 *
-		 * @since 4.0.0
-		 * @version 4.0.0
 		 *
 		 * @param {Object} cart Cart data.
 		 */
@@ -878,9 +866,6 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Initialize event handlers and UI state
-		 *
-		 * @since 4.0.0
-		 * @version 4.0.0
 		 */
 		init: () => {
 			if ( wcpayPaymentRequestParams.is_product_page ) {
