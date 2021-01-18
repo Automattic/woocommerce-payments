@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Logger;
+
 /**
  * WC_Payments_Payment_Request class.
  */
@@ -43,7 +45,7 @@ class WC_Payments_Payment_Request {
 	 *
 	 * @var WC_Payments_Payment_Request
 	 */
-	private static $_this;
+	private static $instance;
 
 	/**
 	 * WC_Payments_Account instance to get information about the account
@@ -63,7 +65,7 @@ class WC_Payments_Payment_Request {
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
 
-		self::$_this            = $this;
+		self::$instance         = $this;
 		$this->gateway_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
 		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
 		$this->total_label      = ! empty( $this->account->get_statement_descriptor() ) ? $this->account->get_statement_descriptor() : '';
@@ -81,7 +83,7 @@ class WC_Payments_Payment_Request {
 		}
 
 		// Don't load for change payment method page.
-		if ( isset( $_GET['change_payment_method'] ) ) {
+		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -96,7 +98,7 @@ class WC_Payments_Payment_Request {
 	 * @return class
 	 */
 	public static function instance() {
-		return self::$_this;
+		return self::$instance;
 	}
 
 	/**
@@ -253,7 +255,7 @@ class WC_Payments_Payment_Request {
 		$product = wc_get_product( $post->ID );
 
 		if ( 'variable' === $product->get_type() ) {
-			$attributes = wc_clean( wp_unslash( $_GET ) );
+			$attributes = wc_clean( wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
@@ -353,7 +355,7 @@ class WC_Payments_Payment_Request {
 			return $valid;
 		}
 
-		$payment_request_type = isset( $_POST['payment_request_type'] ) ? wc_clean( wp_unslash( $_POST['payment_request_type'] ) ) : '';
+		$payment_request_type = isset( $_POST['payment_request_type'] ) ? wc_clean( wp_unslash( $_POST['payment_request_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( 'apple_pay' !== $payment_request_type ) {
 			return $valid;
@@ -383,13 +385,13 @@ class WC_Payments_Payment_Request {
 	 * @return  void
 	 */
 	public function add_order_meta( $order_id, $posted_data ) {
-		if ( empty( $_POST['payment_request_type'] ) ) {
+		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
 		$order = wc_get_order( $order_id );
 
-		$payment_request_type = wc_clean( wp_unslash( $_POST['payment_request_type'] ) );
+		$payment_request_type = wc_clean( wp_unslash( $_POST['payment_request_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( 'apple_pay' === $payment_request_type ) {
 			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
@@ -474,7 +476,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		if ( ! is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) {
+		if ( ! is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -553,7 +555,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) {
+		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -599,7 +601,7 @@ class WC_Payments_Payment_Request {
 			return;
 		}
 
-		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) {
+		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -760,7 +762,7 @@ class WC_Payments_Payment_Request {
 			]
 		);
 		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ?: filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
+		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
 		wp_send_json( $data );
@@ -857,7 +859,7 @@ class WC_Payments_Payment_Request {
 		WC()->cart->calculate_totals();
 
 		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_STRING ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ?: filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
+		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data           = [];
 		$data          += $this->build_display_items( $should_show_itemized_view );
@@ -1047,7 +1049,7 @@ class WC_Payments_Payment_Request {
 			// Valid states found for country.
 			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
 				foreach ( $valid_states as $state_abbr => $state ) {
-					if ( preg_match( '/' . preg_quote( $state ) . '/i', $billing_state ) ) {
+					if ( preg_match( '/' . preg_quote( $state, '/' ) . '/i', $billing_state ) ) {
 						$_POST['billing_state'] = $state_abbr;
 					}
 				}
@@ -1060,7 +1062,7 @@ class WC_Payments_Payment_Request {
 			// Valid states found for country.
 			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
 				foreach ( $valid_states as $state_abbr => $state ) {
-					if ( preg_match( '/' . preg_quote( $state ) . '/i', $shipping_state ) ) {
+					if ( preg_match( '/' . preg_quote( $state, '/' ) . '/i', $shipping_state ) ) {
 						$_POST['shipping_state'] = $state_abbr;
 					}
 				}
