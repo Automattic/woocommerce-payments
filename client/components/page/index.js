@@ -16,7 +16,8 @@ const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 		classNames.push( 'is-narrow' );
 	}
 
-	const fraudScriptsConfig = 'undefined' !== typeof wcpaySettings ? wcpaySettings.fraudServices : [];
+	const fraudScriptsConfig =
+		'undefined' !== typeof wcpaySettings ? wcpaySettings.fraudServices : [];
 	useEffect( () => enqueueFraudScripts( fraudScriptsConfig ), [] );
 
 	return (

@@ -16,7 +16,9 @@ export default ( config ) => {
 			continue;
 		}
 
-		service.init && service.init( config[ serviceName ] );
+		if ( service.init ) {
+			service.init( config[ serviceName ] );
+		}
 
 		if ( ! document.querySelector( `[src="${ service.src }"]` ) ) {
 			const script = document.createElement( 'script' );
