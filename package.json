@@ -98,7 +98,7 @@
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/scripts": "12.4.0",
     "archiver": "5.2.0",
-    "babel-loader": "8.1.0",
+    "babel-loader": "8.2.2",
     "colors": "1.4.0",
     "config": "3.3.2",
     "core-js": "3.8.3",
