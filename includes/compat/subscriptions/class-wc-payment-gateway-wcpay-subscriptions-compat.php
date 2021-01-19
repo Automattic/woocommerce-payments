@@ -88,16 +88,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
-		$order = $payment_information->get_order();
+		$order    = $payment_information->get_order();
+		$order_id = $order->get_id();
 
 		if ( ! $this->is_changing_payment_method_for_subscription() ) {
 			return parent::process_payment_for_order( $cart, $payment_information );
 		}
 
-		// At this point, we know the order is a subscription and user is changing payment method.
+		// At this point, we know the order is a subscription and user is to change payment method.
 		if ( $payment_information->is_using_saved_payment_method() ) {
 			$token = $payment_information->get_payment_token();
+			$note  = sprintf(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( 'Payment method is changed to: <strong>Credit Card ending in %1</strong>.', 'woocommerce-payments' ),
+				$token->get_last4()
+			);
+
 			$this->add_token_to_order( $order, $token );
+			$order->add_order_note( $note );
 			$order->payment_complete();
 		} else {
 			$user        = $order->get_user() ?? wp_get_current_user();
@@ -118,27 +126,26 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				$payment_information->get_payment_method(),
 				$customer_id
 			);
-			// TODO use or if not necessary, remove $intent variables.
+
+			// TODO handle when intent failed.
+			// TODO add order note
+
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
 
-			// TODO handles when intent requires action
-//			if ($status === 'requires_action') {
-//				$response = [
-//					'result'   => 'success',
-//					// Include a new nonce for update_order_status to ensure the update order
-//					// status call works when a guest user creates an account during checkout.
-//					'redirect' => sprintf(
-//						'#wcpay-confirm-%s:%s:%s:%s',
-//						$payment_needed ? 'pi' : 'si',
-//						$order_id,
-//						$client_secret,
-//						wp_create_nonce( 'wcpay_update_order_status_nonce' )
-//					),
-//				];
-//			}
+			if ($status === 'requires_action') {
+				return [
+					'result'   => 'success',
+					'redirect' => sprintf(
+						'#wcpay-confirm-si:%s:%s:%s',
+						$order_id,
+						$client_secret,
+						wp_create_nonce( 'wcpay_update_order_status_nonce' )
+					),
+				];
+			}
 
 			$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
 			$payment_information->set_token( $token );
@@ -153,8 +160,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 		}
-
-		// TODO add order note
 
 		return [
 			'result'   => 'success',
