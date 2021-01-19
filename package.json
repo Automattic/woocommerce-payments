@@ -82,7 +82,7 @@
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "2.0.0",
     "@woocommerce/date": "2.1.0",
-    "@woocommerce/eslint-plugin": "^1.0.0-beta.0",
+    "@woocommerce/eslint-plugin": "1.0.0-beta.0",
     "@wordpress/api-fetch": "3.3.0",
     "@wordpress/babel-preset-default": "4.3.0",
     "@wordpress/base-styles": "1.0.0",
