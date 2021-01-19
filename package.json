@@ -45,7 +45,8 @@
     "format": "npm run format:js && npm run format:css",
     "format:js": "npm run format:provided '**/*.js'",
     "format:css": "npm run format:provided '**/*.scss' '**/*.css'",
-    "format:provided": "prettier --write"
+    "format:provided": "prettier --write",
+    "setup:jurassic-tube": "./bin/jurassic-tube-setup.sh"
   },
   "husky": {
     "hooks": {
