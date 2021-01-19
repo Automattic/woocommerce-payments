@@ -66,6 +66,13 @@ class WC_Payments {
 	private static $remote_note_service;
 
 	/**
+	 * Instance of WC_Payments_Action_Scheduler_Service, created in init function
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private static $action_scheduler_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -79,10 +86,6 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
-		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
-
-		// Add ActionScheduler actions.
-		WC_Payments_Action_Scheduler_Service::add_action_scheduler_hooks();
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', [ __CLASS__, 'check_plugin_dependencies' ] );
@@ -118,14 +121,16 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
+		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account             = new WC_Payments_Account( self::$api_client );
-		self::$customer_service    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$account                  = new WC_Payments_Account( self::$api_client );
+		self::$customer_service         = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service();
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
