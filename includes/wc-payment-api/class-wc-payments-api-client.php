@@ -37,6 +37,7 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
+	const TRACKING_API        = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -822,6 +823,27 @@ class WC_Payments_API_Client {
 				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
+			self::POST
+		);
+	}
+
+	/**
+	 * Track a order creation event.
+	 *
+	 * @param int   $order_id    The ID of the order.
+	 * @param array $order_data  The order data, as an array.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function track_order_create( $order_id, $order_data ) {
+		return $this->request(
+			[
+				'order_id'   => $order_id,
+				'order_data' => $order_data,
+			],
+			self::TRACKING_API . '/order_create',
 			self::POST
 		);
 	}
