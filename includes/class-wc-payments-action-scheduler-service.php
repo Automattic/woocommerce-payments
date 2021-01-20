@@ -17,30 +17,52 @@ class WC_Payments_Action_Scheduler_Service {
 	const DEFAULT_PRIORITY = 10;
 
 	/**
-	 * Constructor for WC_Payments_Action_Scheduler_Service.
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
 	 */
-	public function __construct() {
+	private $payments_api_client;
+
+
+	/**
+	 * Constructor for WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 */
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client
+	) {
+		$this->payments_api_client = $payments_api_client;
+
 		$this->add_action_scheduler_hooks();
 	}
 
 	/**
-	 * Add hooks for all ActionScheduler actions.
+	 * Attach hooks for all ActionScheduler actions.
 	 *
 	 * @return void
 	 */
 	public function add_action_scheduler_hooks() {
-		add_action( 'wcpay-track_create_order', [ $this, 'track_create_order' ], self::DEFAULT_PRIORITY, 2 );
+		add_action( 'wcpay-track_create_order', [ $this, 'track_order_create_action' ], self::DEFAULT_PRIORITY, 2 );
 	}
 
 	/**
-	 * Schedule an ActionScheduler job to track order creation.
+	 * This function is a hook that will be called by ActionScheduler when an order is created.
+	 * It will make a request to the Payments API to track this event.
 	 *
 	 * @param int   $order_id    The ID of the order that has been created.
 	 * @param array $order_data  The data for the order which has been created.
 	 *
-	 * @return void
+	 * @return bool
 	 */
-	public function track_create_order( $order_id, $order_data ) {
-		// TODO: implement.
+	public function track_order_create_action( $order_id, $order_data ) {
+		// @todo Do we need to add logging here of whether the API call was successful?
+
+		// Ensure that we have an order ID and order data to send.
+		if ( is_null( $order_id ) || empty( $order_data ) ) {
+			return false;
+		}
+
+		$result = $this->payments_api_client->track_order_create( $order_id, $order_data );
 	}
 }
