@@ -77,94 +77,110 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		return false;
 	}
 
-	/**
-	 * Process the payment for a given order.
-	 *
-	 * @param WC_Cart                   $cart Cart.
-	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 *
-	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                Error processing the payment.
-	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
-	 */
-	public function process_payment_for_order( $cart, $payment_information ) {
-		$order    = $payment_information->get_order();
-		$order_id = $order->get_id();
-
+	public function process_payment( $order_id ) {
 		if ( ! $this->is_changing_payment_method_for_subscription() ) {
-			return parent::process_payment_for_order( $cart, $payment_information );
+			return parent::process_payment( $order_id );
 		}
 
-		// At this point, we know the order is a subscription and user is to change payment method.
+		$order = wc_get_order( $order_id );
+		$payment_information = $this->prepare_payment_information( $order );
+		$user        = $order->get_user() ?? wp_get_current_user();
+		$name        = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
+		$email       = sanitize_email( $order->get_billing_email() );
+
+		$this->upsert_customer($user,$name,$email);
+
 		if ( $payment_information->is_using_saved_payment_method() ) {
 			$token = $payment_information->get_payment_token();
-			$note  = sprintf(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'Payment method is changed to: <strong>Credit Card ending in %1</strong>.', 'woocommerce-payments' ),
+			$this->add_token_to_order( $order, $token );
+
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the last 4 digit of the credit card */
+					__( 'Payment method is changed to: <strong>Credit Card ending in %1</strong>.', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+					]
+				),
 				$token->get_last4()
 			);
-
-			$this->add_token_to_order( $order, $token );
 			$order->add_order_note( $note );
+
 			$order->payment_complete();
-		} else {
-			$user        = $order->get_user() ?? wp_get_current_user();
-			$name        = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-			$email       = sanitize_email( $order->get_billing_email() );
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 
-			if ( null === $customer_id ) {
-				// Create a new customer.
-				$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
-			} else {
-				// Update the existing customer with the current details. In the event the old customer can't be
-				// found a new one is created, so we update the customer ID here as well.
-				$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
-			}
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			];
+		}
 
+		$intent = null;
+		try {
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
 				$customer_id
 			);
+		} catch (Exception $e) {
+			wc_add_notice( $e->getMessage(), 'error' );
 
-			// TODO handle when intent failed.
-			// TODO add order note
-
-			$intent_id     = $intent['id'];
-			$status        = $intent['status'];
-			$charge_id     = '';
-			$client_secret = $intent['client_secret'];
-
-			if ($status === 'requires_action') {
-				return [
-					'result'   => 'success',
-					'redirect' => sprintf(
-						'#wcpay-confirm-si:%s:%s:%s',
-						$order_id,
-						$client_secret,
-						wp_create_nonce( 'wcpay_update_order_status_nonce' )
+			if ( ! empty( $payment_information ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
 					),
-				];
+					wc_price( $order->get_total() ),
+					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$order->add_order_note( $note );
 			}
 
-			$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
-			$payment_information->set_token( $token );
-
-			$token = $payment_information->get_payment_token();
-			$this->add_token_to_order( $order, $token );
-			$order->payment_complete( $intent_id );
-
-			$order->set_transaction_id( $intent_id );
-			$order->update_meta_data( '_intent_id', $intent_id );
-			$order->update_meta_data( '_charge_id', $charge_id );
-			$order->update_meta_data( '_intention_status', $status );
-			$order->save();
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
 		}
 
-		return [
-			'result'   => 'success',
-			'redirect' => $this->get_return_url( $order ),
-		];
+		// TODO handle when intent failed.
+		// TODO add order note
+
+		$intent_id     = $intent['id'];
+		$status        = $intent['status'];
+		$charge_id     = '';
+		$client_secret = $intent['client_secret'];
+
+		if ($status === 'requires_action') {
+			$order_id = $order->get_id();
+			return [
+				'result'   => 'success',
+				'redirect' => sprintf(
+					'#wcpay-confirm-si:%s:%s:%s',
+					$order_id,
+					$client_secret,
+					wp_create_nonce( 'wcpay_update_order_status_nonce' )
+				),
+			];
+		}
+
+		$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
+		$payment_information->set_token( $token );
+
+		$token = $payment_information->get_payment_token();
+		$this->add_token_to_order( $order, $token );
+		$order->payment_complete( $intent_id );
+
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $status );
+		$order->save();
 	}
 
 	/**
