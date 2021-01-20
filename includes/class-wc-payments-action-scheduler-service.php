@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Logger;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -43,7 +41,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function add_action_scheduler_hooks() {
-		add_action( 'wcpay-track_create_order', [ $this, 'track_order_create_action' ], self::DEFAULT_PRIORITY, 2 );
+		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ], self::DEFAULT_PRIORITY, 2 );
 	}
 
 	/**
@@ -55,7 +53,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 *
 	 * @return bool
 	 */
-	public function track_order_create_action( $order_id, $order_data ) {
+	public function track_new_order_action( $order_id, $order_data ) {
 		// @todo Do we need to add logging here of whether the API call was successful?
 
 		// Ensure that we have an order ID and order data to send.
@@ -63,6 +61,6 @@ class WC_Payments_Action_Scheduler_Service {
 			return false;
 		}
 
-		$result = $this->payments_api_client->track_order_create( $order_id, $order_data );
+		$result = $this->payments_api_client->track_new_order( $order_id, $order_data );
 	}
 }

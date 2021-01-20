@@ -179,7 +179,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
-		add_action( 'woocommerce_new_order', [ $this, 'schedule_order_create_tracking' ], 10, 2 );
+		add_action( 'woocommerce_new_order', [ $this, 'schedule_new_order_tracking' ], 10, 2 );
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -1577,7 +1577,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int      $order_id  The ID of the order that has been created.
 	 * @param WC_Order $order     The order that has been created.
 	 */
-	public function schedule_order_create_tracking( $order_id, $order ) {
+	public function schedule_new_order_tracking( $order_id, $order ) {
 		// We only want to track orders created by our payment gateway.
 		if ( ! $order->get_payment_method_title() === self::GATEWAY_ID ) {
 			return;
@@ -1585,8 +1585,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Schedule the action to send this information to the payment server.
 		as_schedule_single_action(
-			strtotime( '+10 minutes' ),
-			'wcpay-track_create_order',
+			strtotime( 'now' ),
+			'wcpay_track_new_order',
 			[ $order_id, $order->get_data() ],
 			self::GATEWAY_ID
 		);

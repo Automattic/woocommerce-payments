@@ -837,13 +837,13 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function track_order_create( $order_id, $order_data ) {
+	public function track_new_order( $order_id, $order_data ) {
 		return $this->request(
 			[
 				'order_id'   => $order_id,
 				'order_data' => $order_data,
 			],
-			self::TRACKING_API . '/order_create',
+			self::TRACKING_API . '/new_order',
 			self::POST
 		);
 	}
