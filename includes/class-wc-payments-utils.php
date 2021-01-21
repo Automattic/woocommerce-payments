@@ -307,4 +307,19 @@ class WC_Payments_Utils {
 
 		return $result;
 	}
+
+	/**
+	 * Get original order currency stored, or if not found, get order's currency
+	 *
+	 * @param WC_Order $order The order whose currency we want to get.
+	 *
+	 * @return string The currency.
+	 */
+	public static function get_order_original_currency( $order ) {
+		$original_currency = $order->get_meta( '_wcpay_original_order_currency' );
+		if ( $original_currency ) {
+			return $original_currency;
+		}
+		return $order->get_currency();
+	}
 }

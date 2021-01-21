@@ -146,6 +146,22 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action( 'woocommerce_before_order_object_save', [ __CLASS__, 'maybe_set_original_order_currency' ] );
+	}
+
+	/**
+	 * Set order's original currency.
+	 *
+	 * @param WC_Order $order The order whose original currency we want to save.
+	 */
+	public static function maybe_set_original_order_currency( $order ) {
+		$currency          = $order->get_currency();
+		$key               = '_wcpay_original_order_currency';
+		$original_currency = $order->get_meta( $key );
+		if ( ! $currency || $original_currency ) {
+			return;
+		}
+		$order->update_meta_data( $key, $currency );
 	}
 
 	/**
