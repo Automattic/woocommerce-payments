@@ -316,4 +316,15 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected, $result );
 	}
+
+	public function test_get_order_original_currency() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_order_currency', 'EUR' );
+		$order->save();
+		$this->assertEquals( WC_Payments_Utils::get_order_original_currency( $order ), 'EUR' );
+
+		$order->update_meta_data( '_wcpay_original_order_currency', 'CAD' );
+		$order->save();
+		$this->assertEquals( WC_Payments_Utils::get_order_original_currency( $order ), 'CAD' );
+	}
 }
