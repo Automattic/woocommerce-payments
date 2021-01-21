@@ -190,7 +190,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					'code'   => '<code>',
 				]
 			),
-			wc_price( $amount / 100 ),
+			wc_price( $amount / 100, array( 'currency' => $order->get_currency() ) ),
 			$refund_id
 		);
 		$order->add_order_note( $note );

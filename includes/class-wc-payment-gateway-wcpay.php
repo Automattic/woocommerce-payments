@@ -784,7 +784,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) ),
 				$e->getMessage()
 			);
 
@@ -799,13 +799,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				wc_price( $amount )
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) )
 			);
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) ),
 				$reason
 			);
 		}
@@ -1137,7 +1137,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
@@ -1154,7 +1154,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'code'   => '<code>',
 					]
 				),
-				wc_price( $amount ),
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) ),
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
@@ -1165,7 +1165,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, array( 'currency' => $order->get_currency() ) )
 			);
 			$order->add_order_note( $note );
 		}
