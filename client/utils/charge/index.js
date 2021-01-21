@@ -74,14 +74,6 @@ export const getChargeAmounts = ( charge ) => {
 		net: 0,
 	};
 
-	if ( isChargeDisputed( charge ) ) {
-		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
-		balance.refunded -= sumBy(
-			charge.dispute.balance_transactions,
-			'amount'
-		);
-	}
-
 	if ( isChargeRefunded( charge ) ) {
 		balance.refunded += charge.amount_refunded;
 	}
@@ -95,8 +87,6 @@ export const getChargeAmounts = ( charge ) => {
 		balance.fee = charge.balance_transaction.fee;
 		balance.refunded = 0;
 
-		// TODO: Calculate disputed amounts.
-
 		if ( isChargeRefunded( charge ) ) {
 			// Refund balance_transactions have negative amount.
 			balance.refunded -= sumBy(
@@ -104,6 +94,15 @@ export const getChargeAmounts = ( charge ) => {
 				'balance_transaction.amount'
 			);
 		}
+	}
+
+	// Dispute balance transactions are always in settlement currency.
+	if ( isChargeDisputed( charge ) ) {
+		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
+		balance.refunded -= sumBy(
+			charge.dispute.balance_transactions,
+			'amount'
+		);
 	}
 
 	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
