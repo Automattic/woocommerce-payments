@@ -112,6 +112,16 @@ export function* getDeposits( query ) {
 	try {
 		const results = yield apiFetch( { path } ) || {};
 
+		// If using Stripe API objects directly, map to deposits.
+		// TODO Remove this mapping when these deposits are formatted by the server.
+		for ( const i in results.data ) {
+			if ( results.data[ i ] && results.data[ i ].object === 'payout' ) {
+				results.data[ i ] = convertStripePayoutToDeposit(
+					results.data[ i ]
+				);
+			}
+		}
+
 		yield updateDeposits( query, results.data );
 		yield updateDepositsCount( results.count );
 
