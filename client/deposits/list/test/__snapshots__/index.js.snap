@@ -83,7 +83,7 @@ exports[`Deposits list renders correctly 1`] = `
           <tbody>
             <tr>
               <th
-                class="woocommerce-table__header info-button"
+                class="woocommerce-table__header info-button is-sorted"
                 role="columnheader"
                 scope="col"
               >
@@ -92,14 +92,40 @@ exports[`Deposits list renders correctly 1`] = `
                 />
               </th>
               <th
-                class="woocommerce-table__header date-time is-left-aligned"
+                aria-sort="descending"
+                class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
                 role="columnheader"
                 scope="col"
               >
-                <span
-                  aria-hidden="false"
+                <button
+                  aria-describedby="header-0-1"
+                  class="components-button"
+                  type="button"
                 >
-                  Date
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="false"
+                  >
+                    Date
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-0-1"
+                >
+                  Sort by undefined in ascending order
                 </span>
               </th>
               <th
@@ -114,14 +140,40 @@ exports[`Deposits list renders correctly 1`] = `
                 </span>
               </th>
               <th
-                class="woocommerce-table__header is-numeric"
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
-                <span
-                  aria-hidden="false"
+                <button
+                  aria-describedby="header-0-3"
+                  class="components-button"
+                  type="button"
                 >
-                  Amount
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="false"
+                  >
+                    Amount
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-0-3"
+                >
+                  Sort by undefined in descending order
                 </span>
               </th>
               <th
@@ -149,7 +201,7 @@ exports[`Deposits list renders correctly 1`] = `
             </tr>
             <tr>
               <th
-                class="woocommerce-table__item info-button"
+                class="woocommerce-table__item info-button is-sorted"
                 scope="row"
               >
                 <a
@@ -172,7 +224,7 @@ exports[`Deposits list renders correctly 1`] = `
                 </a>
               </th>
               <td
-                class="woocommerce-table__item date-time is-left-aligned"
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
               >
                 <a
                   data-link-type="wc-admin"
@@ -232,7 +284,7 @@ exports[`Deposits list renders correctly 1`] = `
             </tr>
             <tr>
               <th
-                class="woocommerce-table__item info-button"
+                class="woocommerce-table__item info-button is-sorted"
                 scope="row"
               >
                 <a
@@ -255,7 +307,7 @@ exports[`Deposits list renders correctly 1`] = `
                 </a>
               </th>
               <td
-                class="woocommerce-table__item date-time is-left-aligned"
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
               >
                 <a
                   data-link-type="wc-admin"
