@@ -43,7 +43,7 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
  *
  * @return {string} formatted currency representation
  */
-export const formatCurrency = ( amount, currencyCode ) => {
+export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
 	if ( ! isZeroDecimal ) {
@@ -52,12 +52,23 @@ export const formatCurrency = ( amount, currencyCode ) => {
 
 	const currency = getCurrency( currencyCode );
 	if ( null === currency ) {
-		// Fallback for unsupported currencies: currency code and amount
-		return sprintf(
-			isZeroDecimal ? '%s %i' : '%s %.2f',
-			currencyCode.toUpperCase(),
-			amount
-		);
+		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
-	return currency.formatCurrency( amount );
+
+	try {
+		return 'function' === typeof currency.formatAmount
+			? currency.formatAmount( amount )
+			: currency.formatCurrency( amount );
+	} catch ( err ) {
+		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+	}
 };
+
+function composeFallbackCurrency( amount, currencyCode = '', isZeroDecimal ) {
+	// Fallback for unsupported currencies: currency code and amount
+	return sprintf(
+		isZeroDecimal ? '%s %i' : '%s %.2f',
+		currencyCode.toUpperCase(),
+		amount
+	);
+}
