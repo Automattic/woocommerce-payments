@@ -69,23 +69,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $token_service;
 
 	/**
+	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account          $account             - Account class instance.
-	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
-	 * @param WC_Payments_Token_Service    $token_service       - Token class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                  - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
-		WC_Payments_Token_Service $token_service
+		WC_Payments_Token_Service $token_service,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->account             = $account;
-		$this->customer_service    = $customer_service;
-		$this->token_service       = $token_service;
+		$this->payments_api_client      = $payments_api_client;
+		$this->account                  = $account;
+		$this->customer_service         = $customer_service;
+		$this->token_service            = $token_service;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -1584,7 +1594,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Schedule the action to send this information to the payment server.
-		as_schedule_single_action(
+		$this->action_scheduler_service->schedule_job(
 			strtotime( 'now' ),
 			'wcpay_track_new_order',
 			[ $order_id, $order->get_data() ],

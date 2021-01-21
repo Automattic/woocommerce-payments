@@ -63,4 +63,18 @@ class WC_Payments_Action_Scheduler_Service {
 
 		$result = $this->payments_api_client->track_new_order( $order_id, $order_data );
 	}
+
+	/**
+	 * Schedule an action scheduler job.
+	 *
+	 * @param int    $timestamp - When the job will run.
+	 * @param string $hook      - The hook to trigger.
+	 * @param array  $args      - An array containing the arguments to be passed to the hook.
+	 * @param string $group     - The group to assign this job to.
+	 *
+	 * @return void
+	 */
+	public function schedule_job( $timestamp, $hook, $args = [], $group = '' ) {
+		as_schedule_single_action( $timestamp, $hook, $args, $group );
+	}
 }
