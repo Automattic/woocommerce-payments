@@ -34,7 +34,7 @@ const webpackConfig = {
 					'css-loader',
 					{
 						loader: 'sass-loader',
-						query: {
+						options: {
 							sassOptions: {
 								includePaths: [
 									'client/stylesheets/abstracts',
