@@ -193,6 +193,30 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
+	test( 'multi-currency basic charge', () => {
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			balance_transaction: {
+				amount: getExchangedAmount( 1800 ),
+				fee: getExchangedAmount( 82 ),
+				currency: 'eur',
+			},
+		};
+		/* eslint-enable camelcase */
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: charge.balance_transaction.amount,
+			currency: charge.balance_transaction.currency,
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee,
+			fee: charge.balance_transaction.fee,
+			refunded: 0,
+		} );
+	} );
+
 	test( 'partial refund', () => {
 		const charge = {
 			amount: 1800,
@@ -214,6 +238,44 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
+	test( 'multi-currency partial refund', () => {
+		const refunds = [ 1000, 500 ].map( getExchangedAmount );
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			amount_refunded: 1500,
+			balance_transaction: {
+				currency: 'eur',
+				amount: getExchangedAmount( 1800 ),
+				fee: getExchangedAmount( 82 ),
+			},
+			refunds: {
+				data: refunds.map( ( refundedAmount ) => ( {
+					balance_transaction: {
+						amount: -refundedAmount,
+					},
+				} ) ),
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const expectedRefunds = refunds.reduce(
+			( refund, acc ) => refund + acc,
+			0
+		);
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: getExchangedAmount( 1800 ),
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee -
+				expectedRefunds,
+			fee: getExchangedAmount( 82 ),
+			refunded: expectedRefunds,
+		} );
+	} );
+
 	test( 'full refund', () => {
 		const charge = {
 			amount: 1800,
@@ -232,6 +294,47 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test( 'multi-currency full refund', () => {
+		// Refund at higher rate
+		const refunds = [ 1000, 800 ].map( ( refund ) =>
+			getExchangedAmount( refund, 1.15 )
+		);
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			amount_refunded: 1800,
+			balance_transaction: {
+				currency: 'eur',
+				amount: getExchangedAmount( 1800 ),
+				fee: getExchangedAmount( 82 ),
+			},
+			refunds: {
+				data: refunds.map( ( refundedAmount ) => ( {
+					balance_transaction: {
+						amount: -refundedAmount,
+					},
+				} ) ),
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const expectedRefunds = refunds.reduce(
+			( refund, acc ) => refund + acc,
+			0
+		);
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: getExchangedAmount( 1800 ),
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee -
+				expectedRefunds,
+			fee: getExchangedAmount( 82 ),
+			refunded: expectedRefunds,
 		} );
 	} );
 
@@ -293,6 +396,44 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
+	test( 'multi-currency full dispute', () => {
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			application_fee_amount: 82,
+			balance_transaction: {
+				currency: 'eur',
+				amount: getExchangedAmount( 1800 ),
+				fee: getExchangedAmount( 82 ),
+			},
+			disputed: true,
+			dispute: {
+				amount: 1800,
+				balance_transactions: [
+					{
+						amount: -getExchangedAmount( 1800, 1.15 ),
+						fee: 1500,
+						currency: 'eur',
+					},
+				],
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const disputedAmount = -charge.dispute.balance_transactions[ 0 ].amount;
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: getExchangedAmount( 1800 ),
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				disputedAmount -
+				getExchangedAmount( 82 ) -
+				1500,
+			fee: getExchangedAmount( 82 ) + 1500,
+			refunded: disputedAmount,
+		} );
+	} );
+
 	test( 'inquiry', () => {
 		const charge = {
 			amount: 1800,
@@ -315,3 +456,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 } );
+
+function getExchangedAmount( amount, exchangeRate = 1.1 ) {
+	return Math.round( amount * exchangeRate );
+}
