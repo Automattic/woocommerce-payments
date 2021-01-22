@@ -185,6 +185,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
@@ -201,6 +203,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
@@ -220,6 +224,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
@@ -248,6 +254,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
@@ -277,6 +285,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
@@ -297,6 +307,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'USD',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
