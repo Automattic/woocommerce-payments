@@ -13,7 +13,9 @@ defined( 'ABSPATH' ) || exit;
  * Class WC_Payments_Notes_Set_Https_For_Checkout
  */
 class WC_Payments_Notes_Set_Https_For_Checkout {
-	use NoteTraits;
+	use NoteTraits {
+		can_be_added as protected trait_can_be_added;
+	}
 
 	/**
 	 * Name of the note for use in the database.
@@ -26,15 +28,23 @@ class WC_Payments_Notes_Set_Https_For_Checkout {
 	const NOTE_DOCUMENTATION_URL = 'https://docs.woocommerce.com/document/ssl-and-https/#section-7';
 
 	/**
-	 * Get the note.
+	 * Checks if a note can and should be added.
+	 *
+	 * @return bool
 	 */
-	public static function get_note() {
-
+	public static function can_be_added() {
 		// This note only makes sense if HTTPS is not enforced yet.
 		if ( 'yes' === get_option( 'woocommerce_force_ssl_checkout' ) || wc_site_is_https() ) {
 			return;
 		}
 
+		return self::trait_can_be_added();
+	}
+
+	/**
+	 * Get the note.
+	 */
+	public static function get_note() {
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note       = new $note_class();
 
