@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.0.0 - 2021-xx-xx =
 * Update - Render customer details in transactions list as text instead of link if order missing.
+* Update - Render transaction summary on details page for multi-currency transactions.
 
 = 1.9.2 - 2021-xx-xx =
 * Fix - Added better notices for end users if there are connection errors when making payments. 
