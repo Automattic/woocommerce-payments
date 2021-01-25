@@ -11,16 +11,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Logger;
+
 /**
  * WC_Payments_Apple_Pay_Registration class.
  */
 class WC_Payments_Apple_Pay_Registration {
 	/**
-	 * Enabled.
+	 * Gateway settings.
 	 *
 	 * @var array
 	 */
-	public $stripe_settings;
+	public $gateway_settings;
 
 	/**
 	 * Apple Pay Domain Set.
@@ -43,31 +45,31 @@ class WC_Payments_Apple_Pay_Registration {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ] );
 		add_filter( 'query_vars', [ $this, 'whitelist_domain_association_query_param' ], 10, 1 );
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
 
-		add_action( 'woocommerce_stripe_updated', [ $this, 'verify_domain_if_configured' ] );
-		add_action( 'add_option_woocommerce_stripe_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
-		add_action( 'update_option_woocommerce_stripe_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
+		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
+		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
-		$this->stripe_settings         = get_option( 'woocommerce_stripe_settings', [] );
+		$this->gateway_settings        = get_option( 'woocommerce_woocommerce_payments_settings', [] );
 		$this->apple_pay_domain_set    = 'yes' === $this->get_option( 'apple_pay_domain_set', 'no' );
 		$this->apple_pay_verify_notice = '';
 	}
 
 	/**
-	 * Gets the Stripe settings.
+	 * Gets the Gateway settings.
 	 *
-	 * @param string $setting
-	 * @param string $default
-	 * @return string $setting_value
+	 * @param string $setting Setting key.
+	 * @param string $default Default value.
+	 * @return string $setting_value Setting value or default value.
 	 */
 	public function get_option( $setting = '', $default = '' ) {
-		if ( empty( $this->stripe_settings ) ) {
+		if ( empty( $this->gateway_settings ) ) {
 			return $default;
 		}
 
-		if ( ! empty( $this->stripe_settings[ $setting ] ) ) {
-			return $this->stripe_settings[ $setting ];
+		if ( ! empty( $this->gateway_settings[ $setting ] ) ) {
+			return $this->gateway_settings[ $setting ];
 		}
 
 		return $default;
@@ -79,10 +81,57 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string Whether Apple Pay required settings are enabled.
 	 */
 	private function is_enabled() {
-		$stripe_enabled                 = 'yes' === $this->get_option( 'enabled', 'no' );
-		$payment_request_button_enabled = 'yes' === $this->get_option( 'payment_request', 'yes' );
+		$gateway_enabled         = 'yes' === $this->get_option( 'enabled', 'no' );
+		$payment_request_enabled = 'yes' === $this->get_option( 'payment_request', 'yes' );
 
-		return $stripe_enabled && $payment_request_button_enabled;
+		return $gateway_enabled && $payment_request_enabled;
+	}
+
+	/**
+	 * Updates the Apple Pay domain association file.
+	 * Reports failure only if file isn't already being served properly.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	public function update_domain_association_file() {
+		$path     = untrailingslashit( $_SERVER['DOCUMENT_ROOT'] );
+		$dir      = '.well-known';
+		$file     = 'apple-developer-merchantid-domain-association';
+		$fullpath = $path . '/' . $dir . '/' . $file;
+
+		$existing_contents = @file_get_contents( $fullpath ); // @codingStandardsIgnoreLine
+		$new_contents      = @file_get_contents( WCPAY_ABSPATH . '/' . $file ); // @codingStandardsIgnoreLine
+		if ( $existing_contents === $new_contents ) {
+			return true;
+		}
+
+		$error = null;
+		if ( ! file_exists( $path . '/' . $dir ) ) {
+			if ( ! @mkdir( $path . '/' . $dir, 0755 ) ) { // @codingStandardsIgnoreLine
+				$error = __( 'Unable to create domain association folder to domain root.', 'woocommerce-payments' );
+			}
+		}
+
+		if ( ! @copy( WCPAY_ABSPATH . '/' . $file, $fullpath ) ) { // @codingStandardsIgnoreLine
+			$error = __( 'Unable to copy domain association file to domain root.', 'woocommerce-payments' );
+		}
+
+		if ( isset( $error ) ) {
+			$url            = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $dir . '/' . $file;
+			$response       = @wp_remote_get( $url ); // @codingStandardsIgnoreLine
+			$already_hosted = @wp_remote_retrieve_body( $response ) === $new_contents; // @codingStandardsIgnoreLine
+			if ( ! $already_hosted ) {
+				Logger::log(
+					'Error: ' . $error . ' ' .
+					/* translators: expected domain association file URL */
+					sprintf( __( 'To enable Apple Pay, domain association file must be hosted at %s.', 'woocommerce-payments' ), $url )
+				);
+			}
+			return $already_hosted;
+		}
+
+		Logger::log( 'Domain association file updated.' );
+		return true;
 	}
 
 	/**
@@ -191,22 +240,22 @@ class WC_Payments_Apple_Pay_Registration {
 			$this->make_domain_registration_request( $secret_key );
 
 			// No errors to this point, verification success!
-			$this->stripe_settings['apple_pay_domain_set'] = 'yes';
-			$this->apple_pay_domain_set                    = true;
+			$this->gateway_settings['apple_pay_domain_set'] = 'yes';
+			$this->apple_pay_domain_set                     = true;
 
-			update_option( 'woocommerce_stripe_settings', $this->stripe_settings );
+			update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
-			WC_Stripe_Logger::log( 'Your domain has been verified with Apple Pay!' );
+			Logger::log( 'Your domain has been verified with Apple Pay!' );
 
 			return true;
 
 		} catch ( Exception $e ) {
-			$this->stripe_settings['apple_pay_domain_set'] = 'no';
-			$this->apple_pay_domain_set                    = false;
+			$this->gateway_settings['apple_pay_domain_set'] = 'no';
+			$this->apple_pay_domain_set                     = false;
 
-			update_option( 'woocommerce_stripe_settings', $this->stripe_settings );
+			update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
-			WC_Stripe_Logger::log( 'Error: ' . $e->getMessage() );
+			Logger::log( 'Error: ' . $e->getMessage() );
 
 			return false;
 		}
@@ -216,20 +265,22 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Process the Apple Pay domain verification if proper settings are configured.
 	 */
 	public function verify_domain_if_configured() {
-		$secret_key = $this->get_secret_key();
-
-		if ( ! $this->is_enabled() || empty( $secret_key ) ) {
+		if ( ! $this->is_enabled() ) {
 			return;
 		}
 
 		// Ensure that domain association file will be served.
 		flush_rewrite_rules();
 
+		// The rewrite rule method doesn't work if permalinks are set to Plain.
+		// Create/update domain association file by copying it from the plugin folder as a fallback.
+		$this->update_domain_association_file();
+
 		// Register the domain with Apple Pay.
-		$verification_complete = $this->register_domain_with_apple( $secret_key );
+		// $verification_complete = $this->register_domain_with_apple( $secret_key );
 
 		// Show/hide notes if necessary.
-		WC_Stripe_Inbox_Notes::notify_on_apple_pay_domain_verification( $verification_complete );
+		// WC_Stripe_Inbox_Notes::notify_on_apple_pay_domain_verification( $verification_complete );
 	}
 
 	/**
@@ -247,10 +298,10 @@ class WC_Payments_Apple_Pay_Registration {
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
 		// Grab previous state and then update cached settings.
-		$this->stripe_settings = $prev_settings;
-		$prev_secret_key       = $this->get_secret_key();
-		$prev_is_enabled       = $this->is_enabled();
-		$this->stripe_settings = $settings;
+		$this->gateway_settings = $prev_settings;
+		$prev_secret_key        = $this->get_secret_key();
+		$prev_is_enabled        = $this->is_enabled();
+		$this->gateway_settings = $settings;
 
 		// If Stripe or Payment Request Button wasn't enabled (or secret key was different) then might need to verify now.
 		if ( ! $prev_is_enabled || ( $this->get_secret_key() !== $prev_secret_key ) ) {
