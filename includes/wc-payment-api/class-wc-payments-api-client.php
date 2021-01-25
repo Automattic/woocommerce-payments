@@ -906,10 +906,11 @@ class WC_Payments_API_Client {
 
 		$response = $this->http_client->remote_request(
 			[
-				'url'     => $url,
-				'method'  => $method,
-				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout' => self::API_TIMEOUT_SECONDS,
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific

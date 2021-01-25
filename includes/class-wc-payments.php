@@ -505,6 +505,9 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 		}
 	}
 
@@ -517,6 +520,9 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 		}
 	}
 }
