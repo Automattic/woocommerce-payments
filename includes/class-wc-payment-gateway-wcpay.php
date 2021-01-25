@@ -189,7 +189,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
-		add_action( 'woocommerce_new_order', [ $this, 'schedule_new_order_tracking' ], 10, 2 );
+		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -1587,19 +1587,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int      $order_id  The ID of the order that has been created.
 	 * @param WC_Order $order     The order that has been created.
 	 */
-	public function schedule_new_order_tracking( $order_id, $order ) {
+	public function schedule_order_tracking( $order_id, $order ) {
 		// We only want to track orders created by our payment gateway.
 		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
 			return;
 		}
 
-		// Schedule the action to send this information to the payment server.
-		$this->action_scheduler_service->schedule_job(
-			strtotime( 'now' ),
-			'wcpay_track_new_order',
-			[ $order_id, $order->get_data() ],
-			self::GATEWAY_ID
-		);
+		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
+		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
+			return;
+		}
+
+		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
+			// Schedule the action to send this information to the payment server.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_new_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
+
+			// Update the metadata to reflect that the order creation event has been fired.
+			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+			$order->save_meta_data();
+		}
 	}
 
 	/**

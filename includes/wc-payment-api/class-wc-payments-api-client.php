@@ -830,17 +830,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Track a order creation event.
 	 *
-	 * @param int   $order_id    The ID of the order.
 	 * @param array $order_data  The order data, as an array.
 	 *
 	 * @return array An array, containing a `success` flag.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function track_new_order( $order_id, $order_data ) {
+	public function track_new_order( $order_data ) {
 		return $this->request(
 			[
-				'order_id'   => $order_id,
 				'order_data' => $order_data,
 			],
 			self::TRACKING_API . '/new_order',
