@@ -1589,7 +1589,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function schedule_new_order_tracking( $order_id, $order ) {
 		// We only want to track orders created by our payment gateway.
-		if ( $order->get_payment_method_title() !== self::GATEWAY_ID ) {
+		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
 			return;
 		}
 
