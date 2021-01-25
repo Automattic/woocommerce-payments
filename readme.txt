@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
 * Add - New notification to urge setting SSL for checkout pages if store doesn't use HTTPS
+* Fix - Fixed connection timeout configuration.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
