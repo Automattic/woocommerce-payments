@@ -62,6 +62,8 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		$result = $this->payments_api_client->track_new_order( $order_id, $order_data );
+
+		return $result;
 	}
 
 	/**

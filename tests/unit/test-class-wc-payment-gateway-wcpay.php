@@ -697,7 +697,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_schedule_new_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method_title( 'square' );
+		$order->set_payment_method( 'square' );
 
 		// If the payment gateway isn't WC Pay, this function should never get called.
 		$this->mock_action_scheduler_service
@@ -709,7 +709,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_schedule_new_order_tracking() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method_title( 'woocommerce_payments' );
+		$order->set_payment_method( 'woocommerce_payments' );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
