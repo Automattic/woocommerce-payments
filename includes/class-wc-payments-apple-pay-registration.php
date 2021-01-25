@@ -90,11 +90,9 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Updates the Apple Pay domain association file.
 	 * Reports failure only if file isn't already being served properly.
-	 *
-	 * @return bool True on success, false on failure.
 	 */
 	public function update_domain_association_file() {
-		$path     = untrailingslashit( $_SERVER['DOCUMENT_ROOT'] );
+		$path     = untrailingslashit( ABSPATH );
 		$dir      = '.well-known';
 		$file     = 'apple-developer-merchantid-domain-association';
 		$fullpath = $path . '/' . $dir . '/' . $file;
@@ -102,7 +100,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$existing_contents = @file_get_contents( $fullpath ); // @codingStandardsIgnoreLine
 		$new_contents      = @file_get_contents( WCPAY_ABSPATH . '/' . $file ); // @codingStandardsIgnoreLine
 		if ( $existing_contents === $new_contents ) {
-			return true;
+			return;
 		}
 
 		$error = null;
@@ -117,7 +115,7 @@ class WC_Payments_Apple_Pay_Registration {
 		}
 
 		if ( isset( $error ) ) {
-			$url            = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $dir . '/' . $file;
+			$url            = get_site_url() . '/' . $dir . '/' . $file;
 			$response       = @wp_remote_get( $url ); // @codingStandardsIgnoreLine
 			$already_hosted = @wp_remote_retrieve_body( $response ) === $new_contents; // @codingStandardsIgnoreLine
 			if ( ! $already_hosted ) {
@@ -127,11 +125,9 @@ class WC_Payments_Apple_Pay_Registration {
 					sprintf( __( 'To enable Apple Pay, domain association file must be hosted at %s.', 'woocommerce-payments' ), $url )
 				);
 			}
-			return $already_hosted;
 		}
 
 		Logger::log( 'Domain association file updated.' );
-		return true;
 	}
 
 	/**
