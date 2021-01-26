@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
+* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
