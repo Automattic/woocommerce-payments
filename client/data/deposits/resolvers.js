@@ -20,20 +20,6 @@ import {
 	updateErrorForDepositsOverview,
 } from './actions';
 
-const convertStripePayoutToDeposit = ( stripePayout ) => ( {
-	id: stripePayout.id,
-	date: +new Date( stripePayout.arrival_date * 1000 ),
-	type: 0 < stripePayout.amount ? 'deposit' : 'withdrawal',
-	amount: stripePayout.amount,
-	currency: stripePayout.currency,
-	status: stripePayout.status,
-	bankAccount:
-		stripePayout.destination.bank_name &&
-		`${ stripePayout.destination.bank_name } ` +
-			`•••• ${ stripePayout.destination.last4 } ` +
-			`(${ stripePayout.destination.currency.toUpperCase() })`,
-} );
-
 /**
  * Retrieve a single deposit from the deposits API.
  *
@@ -43,14 +29,7 @@ export function* getDeposit( id ) {
 	const path = addQueryArgs( `${ NAMESPACE }/deposits/${ id }` );
 
 	try {
-		let result = yield apiFetch( { path } );
-
-		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are formatted by the server.
-		if ( 'payout' === result.object ) {
-			result = convertStripePayoutToDeposit( result );
-		}
-
+		const result = yield apiFetch( { path } );
 		yield updateDeposit( result );
 	} catch ( e ) {
 		yield dispatch(
@@ -69,22 +48,6 @@ export function* getDepositsOverview() {
 
 	try {
 		const result = yield apiFetch( { path } );
-
-		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are formatted by the server.
-		if ( result.last_deposit && 'payout' === result.last_deposit.object ) {
-			// eslint-disable-next-line camelcase
-			result.last_deposit = convertStripePayoutToDeposit(
-				result.last_deposit
-			);
-		}
-		if ( result.next_deposit && 'payout' === result.next_deposit.object ) {
-			// eslint-disable-next-line camelcase
-			result.next_deposit = convertStripePayoutToDeposit(
-				result.next_deposit
-			);
-		}
-
 		yield updateDepositsOverview( result );
 	} catch ( e ) {
 		yield dispatch(
@@ -111,16 +74,6 @@ export function* getDeposits( query ) {
 
 	try {
 		const results = yield apiFetch( { path } ) || {};
-
-		// If using Stripe API objects directly, map to deposits.
-		// TODO Remove this mapping when these deposits are formatted by the server.
-		for ( const i in results.data ) {
-			if ( results.data[ i ] && results.data[ i ].object === 'payout' ) {
-				results.data[ i ] = convertStripePayoutToDeposit(
-					results.data[ i ]
-				);
-			}
-		}
 
 		yield updateDeposits( query, results.data );
 		yield updateDepositsCount( results.count );

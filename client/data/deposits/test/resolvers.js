@@ -19,37 +19,7 @@ import {
 } from '../actions';
 import { getDepositsOverview, getDeposit, getDeposits } from '../resolvers';
 
-const stripePayouts = {
-	data: [
-		{
-			id: 'test_po_1',
-			object: 'payout',
-			amount: 3930,
-			arrival_date: 1585617029,
-			status: 'paid',
-			destination: {
-				bank_name: 'STRIPE TEST BANK',
-				currency: 'usd',
-				last4: '6789',
-			},
-		},
-		{
-			id: 'test_po_2',
-			object: 'payout',
-			amount: 4500,
-			arrival_date: 1585617555,
-			status: 'in_transit',
-			destination: {
-				bank_name: 'STRIPE TEST BANK',
-				currency: 'usd',
-				last4: '8599',
-			},
-		},
-	],
-	count: 2,
-};
-
-const convertedStripePayouts = {
+const payouts = {
 	data: [
 		{
 			id: 'test_po_1',
@@ -75,8 +45,8 @@ const errorResponse = { code: 'error' };
 
 describe( 'getDepositsOverview resolver', () => {
 	const successfulResponse = {
-		last_deposit: convertedStripePayouts.data[ 0 ],
-		next_deposit: convertedStripePayouts.data[ 1 ],
+		last_deposit: payouts.data[ 0 ],
+		next_deposit: payouts.data[ 1 ],
 		balance: { pending: { amount: 5500 }, available: { amount: 0 } },
 		deposits_schedule: { interval: 'daily' },
 	};
@@ -96,19 +66,6 @@ describe( 'getDepositsOverview resolver', () => {
 	describe( 'on success', () => {
 		test( 'should update state with deposits overview', () => {
 			expect( generator.next( successfulResponse ).value ).toEqual(
-				updateDepositsOverview( successfulResponse )
-			);
-		} );
-
-		test( 'should convert payout to deposits', () => {
-			const successfulPayoutResponse = {
-				...successfulResponse,
-				...{
-					last_deposit: stripePayouts.data[ 0 ],
-					next_deposit: stripePayouts.data[ 1 ],
-				},
-			};
-			expect( generator.next( successfulPayoutResponse ).value ).toEqual(
 				updateDepositsOverview( successfulResponse )
 			);
 		} );
@@ -146,14 +103,8 @@ describe( 'getDeposit resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with deposit data', () => {
-			expect(
-				generator.next( convertedStripePayouts.data[ 0 ] ).value
-			).toEqual( updateDeposit( convertedStripePayouts.data[ 0 ] ) );
-		} );
-
-		test( 'should convert payout to deposit', () => {
-			expect( generator.next( stripePayouts.data[ 0 ] ).value ).toEqual(
-				updateDeposit( convertedStripePayouts.data[ 0 ] )
+			expect( generator.next( payouts.data[ 0 ] ).value ).toEqual(
+				updateDeposit( payouts.data[ 0 ] )
 			);
 		} );
 	} );
@@ -188,33 +139,15 @@ describe( 'getDeposits resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with deposits data', () => {
-			expect( generator.next( convertedStripePayouts ).value ).toEqual(
-				updateDeposits( query, convertedStripePayouts.data )
+			expect( generator.next( payouts ).value ).toEqual(
+				updateDeposits( query, payouts.data )
 			);
 
 			expect( generator.next().value ).toEqual(
-				updateDepositsCount( convertedStripePayouts.count )
+				updateDepositsCount( payouts.count )
 			);
 
-			convertedStripePayouts.data.forEach( ( payout ) => {
-				expect( generator.next().value ).toEqual(
-					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [
-						payout.id,
-					] )
-				);
-			} );
-		} );
-
-		test( 'should convert payout to deposits', () => {
-			expect( generator.next( stripePayouts ).value ).toEqual(
-				updateDeposits( query, convertedStripePayouts.data )
-			);
-
-			expect( generator.next().value ).toEqual(
-				updateDepositsCount( stripePayouts.count )
-			);
-
-			convertedStripePayouts.data.forEach( ( payout ) => {
+			payouts.data.forEach( ( payout ) => {
 				expect( generator.next().value ).toEqual(
 					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [
 						payout.id,
