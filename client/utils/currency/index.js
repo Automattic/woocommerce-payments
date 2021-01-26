@@ -64,7 +64,7 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 	}
 };
 
-function composeFallbackCurrency( amount, currencyCode = '', isZeroDecimal ) {
+function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
 	return sprintf(
 		isZeroDecimal ? '%s %i' : '%s %.2f',
