@@ -27,6 +27,9 @@ const mockDeposit = {
 describe( 'Deposit overview', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
 	} );
 
 	test( 'renders correctly', () => {

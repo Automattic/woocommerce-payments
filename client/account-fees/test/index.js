@@ -15,6 +15,10 @@ describe( 'AccountFees', () => {
 		return render( <AccountFees accountFees={ accountFees } /> );
 	};
 
+	beforeEach( () => {
+		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+	} );
+
 	test( 'renders normal base fee', () => {
 		const { container: accountFees } = renderAccountFees( {
 			base: {

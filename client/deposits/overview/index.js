@@ -6,7 +6,6 @@ import {
 	SummaryList,
 	SummaryNumber,
 } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import Gridicon from 'gridicons';
@@ -20,16 +19,15 @@ import './style.scss';
 import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
+import { formatCurrency } from 'utils/currency';
 
-const currency = new Currency();
 const formatDate = ( format, date ) =>
 	dateI18n(
 		format,
 		moment.utc( date ).toISOString(),
 		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 	);
-const getAmount = ( obj ) =>
-	currency.formatCurrency( ( obj ? obj.amount : 0 ) / 100 );
+const getAmount = ( obj ) => formatCurrency( obj ? obj.amount : 0 );
 const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>

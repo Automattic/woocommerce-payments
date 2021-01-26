@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { Card, OrderStatus } from '@woocommerce/components';
 
 /**
@@ -18,9 +17,8 @@ import TransactionsList from 'transactions/list';
 import Page from 'components/page';
 import Loadable from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { formatCurrency } from 'utils/currency';
 import './style.scss';
-
-const currency = new Currency();
 
 const Status = ( { status } ) => (
 	// Re-purpose order status indicator for deposit status.
@@ -71,7 +69,7 @@ export const DepositOverview = ( { depositId } ) => {
 						placeholder="Amount"
 						display="inline"
 					>
-						{ currency.formatCurrency( deposit.amount / 100 ) }
+						{ formatCurrency( deposit.amount ) }
 					</Loadable>
 				</div>
 			</div>
