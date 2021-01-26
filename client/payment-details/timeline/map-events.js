@@ -197,14 +197,28 @@ const composeFeeString = ( event ) => {
 };
 
 const composeFXString = ( event ) => {
-	if ( isFXEvent( event ) ) {
-		return formatFX(
-			{ currency: event.currency, amount: event.amount },
-			{
-				currency: event.store_currency,
-				amount: event.store_amount,
-			}
-		);
+	if ( ! isFXEvent( event ) ) {
+		return;
+	}
+
+	switch ( event.type ) {
+		case 'captured':
+			return formatFX(
+				{ currency: event.currency, amount: event.amount },
+				{
+					currency: event.store_currency,
+					amount: event.store_amount,
+				}
+			);
+		case 'partial_refund':
+		case 'full_refund':
+			return formatFX(
+				{ currency: event.currency, amount: event.amount_refunded },
+				{
+					currency: event.store_currency,
+					amount: event.store_amount,
+				}
+			);
 	}
 };
 
@@ -319,6 +333,10 @@ const mapEventToTimelineItems = ( event ) => {
 			event.amount_refunded,
 			event.currency
 		);
+		const depositAmount = isFXEvent( event )
+			? formatCurrency( event.store_amount, event.store_currency )
+			: formattedAmount;
+		const fxString = composeFXString( event );
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -326,7 +344,7 @@ const mapEventToTimelineItems = ( event ) => {
 					? __( 'Refunded', 'woocommerce-payments' )
 					: __( 'Partial Refund', 'woocommerce-payments' )
 			),
-			getDepositTimelineItem( event, formattedAmount, false ),
+			getDepositTimelineItem( event, depositAmount, false ),
 			getMainTimelineItem(
 				event,
 				sprintf(
@@ -338,7 +356,8 @@ const mapEventToTimelineItems = ( event ) => {
 					formattedAmount
 				),
 				'checkmark',
-				'is-success'
+				'is-success',
+				[ fxString ]
 			),
 		];
 	} else if ( 'failed' === type ) {
