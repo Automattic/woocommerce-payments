@@ -1245,18 +1245,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_level3_data_from_order( $order ) {
 		// Get the order items. Don't need their keys, only their values.
 		// Order item IDs are used as keys in the original order items array.
-		$order_items = array_values( $order->get_items() );
+		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
 		$process_item  = function( $item ) use ( $currency ) {
+
+			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
+			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
+				$subtotal   = $item->get_subtotal();
+				$product_id = $item->get_variation_id()
+					? $item->get_variation_id()
+					: $item->get_product_id();
+			} else {
+				$subtotal   = $item->get_total();
+				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
+			}
+
 			$description     = substr( $item->get_name(), 0, 26 );
 			$quantity        = $item->get_quantity();
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
+			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total(), $currency );
-			$product_id      = $item->get_variation_id()
-				? $item->get_variation_id()
-				: $item->get_product_id();
+			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
 
 			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
