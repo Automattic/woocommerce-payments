@@ -3,7 +3,6 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency from '@woocommerce/currency';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
@@ -12,8 +11,7 @@ import moment from 'moment';
  * Internal dependencies
  */
 import ProgressBar from 'components/progress-bar';
-
-const currency = new Currency();
+import { formatCurrency } from 'utils/currency';
 
 const ExpirationBar = ( {
 	feeData: {
@@ -26,8 +24,8 @@ const ExpirationBar = ( {
 	}
 	return (
 		<ProgressBar
-			progressLabel={ currency.formatCurrency( currentVolume / 100 ) }
-			totalLabel={ currency.formatCurrency( volumeAllowance / 100 ) }
+			progressLabel={ formatCurrency( currentVolume ) }
+			totalLabel={ formatCurrency( volumeAllowance ) }
 			progress={ currentVolume / volumeAllowance }
 		/>
 	);
@@ -44,7 +42,7 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires after the first %1$s of total payment volume or on %2$s.',
 				'woocommerce-payments'
 			),
-			currency.formatCurrency( volumeAllowance / 100 ),
+			formatCurrency( volumeAllowance ),
 			dateI18n( 'F j, Y', moment( endTime ).toISOString() )
 		);
 	} else if ( volumeAllowance ) {
@@ -54,7 +52,7 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires after the first %1$s of total payment volume.',
 				'woocommerce-payments'
 			),
-			currency.formatCurrency( volumeAllowance / 100 )
+			formatCurrency( volumeAllowance )
 		);
 	} else if ( endTime ) {
 		description = sprintf(
@@ -79,7 +77,7 @@ const AccountFees = ( { accountFees } ) => {
 		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
 		__( '%1$.1f%% + %2$s per transaction', 'woocommerce-payments' ),
 		currentFee.percentage_rate * 100,
-		currency.formatCurrency( currentFee.fixed_rate / 100 )
+		formatCurrency( currentFee.fixed_rate )
 	);
 
 	if ( accountFees.discount.length ) {
@@ -105,7 +103,7 @@ const AccountFees = ( { accountFees } ) => {
 			),
 			feeDescription,
 			percentage * 100,
-			currency.formatCurrency( fixed / 100 )
+			formatCurrency( fixed )
 		);
 
 		if ( currentFee.discount ) {

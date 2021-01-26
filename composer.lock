@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c1ca8ba2be93dea03cb3e0a2b197ef81",
+    "content-hash": "32e05ecc8ee8b8b12b61e46002c6b7da",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -83,19 +83,22 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v1.4.2",
+            "version": "v1.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "0f4b1f66f276cc2352d5fa0c29f98566df8efdd3"
+                "reference": "6bc77aa73d90510c9488e2d8fdaad4b056d3a066"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/0f4b1f66f276cc2352d5fa0c29f98566df8efdd3",
-                "reference": "0f4b1f66f276cc2352d5fa0c29f98566df8efdd3",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/6bc77aa73d90510c9488e2d8fdaad4b056d3a066",
+                "reference": "6bc77aa73d90510c9488e2d8fdaad4b056d3a066",
                 "shasum": ""
             },
             "type": "library",
+            "extra": {
+                "mirror-repo": "Automattic/jetpack-config"
+            },
             "autoload": {
                 "classmap": [
                     "src/"
@@ -107,9 +110,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v1.4.2"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v1.4.3"
             },
-            "time": "2020-10-28T19:00:23+00:00"
+            "time": "2021-01-19T14:25:05+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
