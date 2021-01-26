@@ -78,6 +78,9 @@
 		"jest/no-deprecated-functions":            "off",
 		"no-alert":                                "off",
 		"object-shorthand":                        "off",
-		"no-multi-str":                            "off"
+		"no-multi-str":                            "off",
+		"import/no-extraneous-dependencies":       "off",
+		"import/no-unresolved": 				   "off",
+		"@wordpress/no-global-event-listener":     "off"
 	}
 }
