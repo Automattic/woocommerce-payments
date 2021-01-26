@@ -25,6 +25,7 @@ class WC_Payments_API_Client {
 	const API_TIMEOUT_SECONDS = 70;
 
 	const ACCOUNTS_API        = 'accounts';
+	const APPLE_PAY_API       = 'apple_pay';
 	const CHARGES_API         = 'charges';
 	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
@@ -903,6 +904,25 @@ class WC_Payments_API_Client {
 				'ip'         => WC_Geolocation::get_ip_address(),
 			],
 			self::TRACKING_API . '/forter-token',
+			self::POST
+		);
+	}
+
+	/**
+	 * Registers a new domain with Apple Pay.
+	 *
+	 * @param string $domain_name Domain name which to register for Apple Pay.
+	 *
+	 * @return array An array containing an id in case it has succeeded, or an error message in case it has failed.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function register_domain_with_apple( $domain_name ) {
+		return $this->request(
+			[
+				'domain_name' => $domain_name,
+			],
+			self::APPLE_PAY_API . '/domains',
 			self::POST
 		);
 	}
