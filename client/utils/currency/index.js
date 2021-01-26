@@ -64,6 +64,24 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 	}
 };
 
+export const formatFX = ( from, to ) => {
+	const fromAmount = isZeroDecimalCurrency( from.currency )
+		? from.amount
+		: from.amount / 100;
+	const toAmount = isZeroDecimalCurrency( to.currency )
+		? to.amount
+		: to.amount / 100;
+	const precision = Math.pow( 10, 4 );
+	const exchangeRate =
+		Math.round( ( toAmount / fromAmount ) * precision ) / precision;
+
+	// TODO: Cover with tests and fix formatting for various cases.
+	return `${ formatCurrency( 100, from.currency ) } → ${ formatCurrency(
+		exchangeRate * 100,
+		to.currency
+	) }: ${ formatCurrency( to.amount, to.currency ) }`;
+};
+
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
 	return sprintf(

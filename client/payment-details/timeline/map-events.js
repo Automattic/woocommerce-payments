@@ -10,12 +10,12 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { formatCurrency } from 'utils/currency';
 
 /**
  * Internal dependencies
  */
 import { reasons as disputeReasons } from 'disputes/strings';
+import { formatCurrency, formatFX } from 'utils/currency';
 
 /**
  * Creates a Gridicon
@@ -146,6 +146,68 @@ const getMainTimelineItem = (
 	body,
 } );
 
+const isFXEvent = ( event ) => {
+	return (
+		event.currency &&
+		event.store_currency &&
+		event.store_currency !== event.currency
+	);
+};
+
+const composeNetString = ( event ) => {
+	if ( ! isFXEvent( event ) ) {
+		return formatCurrency( event.amount - event.fee, event.currency );
+	}
+
+	return formatCurrency(
+		event.store_amount - event.store_fee,
+		event.store_currency
+	);
+};
+
+const composeFeeString = ( event ) => {
+	if ( ! event.fee_rates ) {
+		return sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'Fee: %s', 'woocommerce-payments' ),
+			formatCurrency( event.fee, event.currency )
+		);
+	}
+
+	const {
+		percentage,
+		fixed,
+		fixed_currency: fixedCurrency,
+	} = event.fee_rates;
+	let feeAmount = event.fee;
+	let feeCurrency = event.currency;
+
+	if ( isFXEvent( event ) ) {
+		feeAmount = event.store_fee;
+		feeCurrency = event.store_currency;
+	}
+
+	return sprintf(
+		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
+		__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
+		formatCurrency( feeAmount, feeCurrency ),
+		percentage * 100,
+		formatCurrency( fixed, fixedCurrency )
+	);
+};
+
+const composeFXString = ( event ) => {
+	if ( isFXEvent( event ) ) {
+		return formatFX(
+			{ currency: event.currency, amount: event.amount },
+			{
+				currency: event.store_currency,
+				amount: event.store_amount,
+			}
+		);
+	}
+};
+
 /**
  * Formats an event into one or more payment timeline items
  *
@@ -157,7 +219,7 @@ const mapEventToTimelineItems = ( event ) => {
 	const { type } = event;
 
 	const stringWithAmount = ( headline, amount ) =>
-		sprintf( headline, formatCurrency( amount, event.currency || 'USD' ) );
+		sprintf( headline, formatCurrency( amount, event.currency ) );
 
 	if ( 'authorized' === type ) {
 		return [
@@ -220,32 +282,9 @@ const mapEventToTimelineItems = ( event ) => {
 			),
 		];
 	} else if ( 'captured' === type ) {
-		const formattedNet = formatCurrency(
-			event.amount - event.fee,
-			event.currency || 'USD'
-		);
-		let feeString = stringWithAmount(
-			/* translators: %s is a monetary amount */
-			__( 'Fee: %s', 'woocommerce-payments' ),
-			event.fee
-		);
-
-		if ( event.fee_rates ) {
-			const {
-				percentage,
-				fixed,
-				fixed_currency: fixedCurrency,
-			} = event.fee_rates;
-
-			feeString = sprintf(
-				/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
-				__( 'Fee: %1$s (%2$.1f%% + %3$s)', 'woocommeerce-payments' ),
-				formatCurrency( event.fee, event.currency || 'USD' ),
-				percentage * 100,
-				formatCurrency( fixed, fixedCurrency )
-			);
-		}
-
+		const formattedNet = composeNetString( event );
+		const feeString = composeFeeString( event );
+		const fxString = composeFXString( event );
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -265,6 +304,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-success',
 				[
+					fxString,
 					feeString,
 					sprintf(
 						/* translators: %s is a monetary amount */
@@ -277,7 +317,7 @@ const mapEventToTimelineItems = ( event ) => {
 	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
 		const formattedAmount = formatCurrency(
 			event.amount_refunded,
-			event.currency || 'USD'
+			event.currency
 		);
 		return [
 			getStatusChangeTimelineItem(
@@ -353,7 +393,7 @@ const mapEventToTimelineItems = ( event ) => {
 		} else {
 			const formattedTotal = formatCurrency(
 				Math.abs( event.amount ) + Math.abs( event.fee ),
-				event.currency || 'USD'
+				event.currency
 			);
 			depositTimelineItem = getDepositTimelineItem(
 				event,
@@ -403,7 +443,7 @@ const mapEventToTimelineItems = ( event ) => {
 	} else if ( 'dispute_won' === type ) {
 		const formattedTotal = formatCurrency(
 			Math.abs( event.amount ) + Math.abs( event.fee ),
-			event.currency || 'USD'
+			event.currency
 		);
 		return [
 			getStatusChangeTimelineItem(
