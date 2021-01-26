@@ -695,7 +695,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'error', $result['result'] );
 	}
 
-	public function test_schedule_new_order_tracking_with_wrong_payment_gateway() {
+	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'square' );
 
@@ -704,18 +704,45 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'schedule_job' );
 
-		$this->wcpay_gateway->schedule_new_order_tracking( $order->get_id(), $order );
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
-	public function test_schedule_new_order_tracking() {
+	public function test_schedule_order_tracking_without_intent_id() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
+		$order->delete_meta_data( '_intent_id' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
 			->method( 'schedule_job' );
 
-		$this->wcpay_gateway->schedule_new_order_tracking( $order->get_id(), $order );
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_on_already_created_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
 	/**
