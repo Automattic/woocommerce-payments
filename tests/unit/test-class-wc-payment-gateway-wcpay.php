@@ -163,6 +163,30 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
 	}
 
+	public function test_process_refund_on_api_error() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_status( 'processing' );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'refund_charge' )
+			->willThrowException( new \Exception( 'Test message' ) );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
+		$this->assertEquals( 'Test message', $result->get_error_message() );
+	}
+
 	public function test_payment_fields_outputs_fields() {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
