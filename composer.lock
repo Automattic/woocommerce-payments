@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4d9d6191a45e83e01e56eecad4ec3b8a",
+    "content-hash": "98bda976453b2ca68e48e99e53513bc1",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -77,19 +77,22 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v1.4.2",
+            "version": "v1.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "0f4b1f66f276cc2352d5fa0c29f98566df8efdd3"
+                "reference": "6bc77aa73d90510c9488e2d8fdaad4b056d3a066"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/0f4b1f66f276cc2352d5fa0c29f98566df8efdd3",
-                "reference": "0f4b1f66f276cc2352d5fa0c29f98566df8efdd3",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/6bc77aa73d90510c9488e2d8fdaad4b056d3a066",
+                "reference": "6bc77aa73d90510c9488e2d8fdaad4b056d3a066",
                 "shasum": ""
             },
             "type": "library",
+            "extra": {
+                "mirror-repo": "Automattic/jetpack-config"
+            },
             "autoload": {
                 "classmap": [
                     "src/"
@@ -100,7 +103,7 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
-            "time": "2020-10-28T19:00:23+00:00"
+            "time": "2021-01-19T14:25:05+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
@@ -2439,12 +2442,12 @@
             "version": "1.9.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
+                "url": "https://github.com/webmozarts/assert.git",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "shasum": ""
             },
