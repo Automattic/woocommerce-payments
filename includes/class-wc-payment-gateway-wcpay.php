@@ -788,7 +788,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->add_order_note( $note );
 
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
-			return new WP_Error( $e->getCode(), $e->getMessage() );
+			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
 
 		if ( empty( $reason ) ) {
