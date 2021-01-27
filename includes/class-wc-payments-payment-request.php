@@ -60,10 +60,11 @@ class WC_Payments_Payment_Request {
 	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
-		$this->account = $account;
+		self::$instance = $this;
 
-		self::$instance         = $this;
-		$this->gateway_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		// Add default settings in case the payment request options are missing.
+		$this->gateway_settings = array_merge( self::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
+		$this->account          = $account;
 		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
 		$this->total_label      = ! empty( $this->account->get_statement_descriptor() ) ? $this->account->get_statement_descriptor() : '';
 
@@ -86,6 +87,22 @@ class WC_Payments_Payment_Request {
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
 		$this->init();
+	}
+
+	/**
+	 * Payment request default settings.
+	 *
+	 * @return array Default settings.
+	 */
+	public static function get_default_settings() {
+		return [
+			'payment_request'                     => 'yes',
+			'payment_request_button_type'         => 'buy',
+			'payment_request_button_theme'        => 'dark',
+			'payment_request_button_height'       => '44',
+			'payment_request_button_label'        => __( 'Buy now', 'woocommerce-payments' ),
+			'payment_request_button_branded_type' => 'long',
+		];
 	}
 
 	/**
