@@ -210,9 +210,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->payment_fields();
 	}
 
-	protected function mock_level_3_order( $shipping_postcode ) {
+	protected function mock_level_3_order( $shipping_postcode, $with_fee = false ) {
 		// Setup the item.
-		$mock_item = $this->getMockBuilder( WC_Order_Item::class )
+		$mock_item = $this->getMockBuilder( WC_Order_Item_Product::class )
 			->disableOriginalConstructor()
 			->setMethods( [ 'get_name', 'get_quantity', 'get_subtotal', 'get_total_tax', 'get_total', 'get_variation_id', 'get_product_id' ] )
 			->getMock();
@@ -245,6 +245,34 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_product_id' )
 			->will( $this->returnValue( 30 ) );
 
+		$mock_items[] = $mock_item;
+
+		if ( $with_fee ) {
+			// Setup the fee.
+			$mock_fee = $this->getMockBuilder( WC_Order_Item_Fee::class )
+				->disableOriginalConstructor()
+				->setMethods( [ 'get_name', 'get_quantity', 'get_total_tax', 'get_total' ] )
+				->getMock();
+
+			$mock_fee
+				->method( 'get_name' )
+				->will( $this->returnValue( 'fee' ) );
+
+			$mock_fee
+				->method( 'get_quantity' )
+				->will( $this->returnValue( 1 ) );
+
+			$mock_fee
+				->method( 'get_total' )
+				->will( $this->returnValue( 10 ) );
+
+			$mock_fee
+				->method( 'get_total_tax' )
+				->will( $this->returnValue( 1.5 ) );
+
+			$mock_items[] = $mock_fee;
+		}
+
 		// Setup the order.
 		$mock_order = $this->getMockBuilder( WC_Order::class )
 			->disableOriginalConstructor()
@@ -257,7 +285,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$mock_order
 			->method( 'get_items' )
-			->will( $this->returnValue( [ $mock_item ] ) );
+			->will( $this->returnValue( $mock_items ) );
 
 		$mock_order
 			->method( 'get_currency' )
@@ -301,7 +329,41 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertEquals( $expected_data, $level_3_data );
+	}
+
+	public function test_full_level3_data_with_fee() {
+		$expected_data = [
+			'merchant_reference'   => '210',
+			'shipping_amount'      => 3800,
+			'line_items'           => [
+				(object) [
+					'product_code'        => 30,
+					'product_description' => 'Beanie with Logo',
+					'unit_cost'           => 1800,
+					'quantity'            => 1,
+					'tax_amount'          => 270,
+					'discount_amount'     => 0,
+				],
+				(object) [
+					'product_code'        => 'fee',
+					'product_description' => 'fee',
+					'unit_cost'           => 1000,
+					'quantity'            => 1,
+					'tax_amount'          => 150,
+					'discount_amount'     => 0,
+				],
+			],
+			'shipping_address_zip' => '98012',
+			'shipping_from_zip'    => '94110',
+		];
+
+		update_option( 'woocommerce_store_postcode', '94110' );
+
+		$mock_order   = $this->mock_level_3_order( '98012', true );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+
+		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_us_store_level_3_data() {
@@ -335,7 +397,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_capture_charge_success() {
