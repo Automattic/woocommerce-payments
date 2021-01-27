@@ -39,6 +39,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	public function add_action_scheduler_hooks() {
 		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ] );
+		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 	}
 
 	/**
@@ -50,14 +51,31 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return bool
 	 */
 	public function track_new_order_action( $order_data ) {
-		// @todo Do we need to add logging here of whether the API call was successful?
-
 		// Ensure that we have the order data to send.
 		if ( empty( $order_data ) ) {
 			return false;
 		}
 
-		$result = $this->payments_api_client->track_new_order( $order_data );
+		$result = $this->payments_api_client->track_order( $order_data, false );
+
+		return $result;
+	}
+
+	/**
+	 * This function is a hook that will be called by ActionScheduler when an order is updated.
+	 * It will make a request to the Payments API to track this event.
+	 *
+	 * @param array $order_data  The data for the order which has been updated.
+	 *
+	 * @return bool
+	 */
+	public function track_update_order_action( $order_data ) {
+		// Ensure that we have the order data to send.
+		if ( empty( $order_data ) ) {
+			return false;
+		}
+
+		$result = $this->payments_api_client->track_order( $order_data, true );
 
 		return $result;
 	}

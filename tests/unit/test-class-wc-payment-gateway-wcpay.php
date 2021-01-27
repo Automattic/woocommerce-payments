@@ -763,7 +763,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 
 		$this->mock_action_scheduler_service
-			->expects( $this->never() )
+			->expects( $this->once() )
 			->method( 'schedule_job' );
 
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );

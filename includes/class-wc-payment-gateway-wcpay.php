@@ -1610,6 +1610,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Update the metadata to reflect that the order creation event has been fired.
 			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 			$order->save_meta_data();
+		} else {
+			// Schedule an update action.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_update_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
 		}
 	}
 
