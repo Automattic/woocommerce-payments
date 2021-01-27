@@ -45,6 +45,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_token_service;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -81,11 +88,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
 
+		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
 		);
 	}
 
@@ -151,6 +161,30 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'uncaptured-payment', $result->get_error_code() );
+	}
+
+	public function test_process_refund_on_api_error() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_status( 'processing' );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'refund_charge' )
+			->willThrowException( new \Exception( 'Test message' ) );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
+		$this->assertEquals( 'Test message', $result->get_error_message() );
 	}
 
 	public function test_payment_fields_outputs_fields() {
@@ -683,6 +717,56 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->add_payment_method();
 
 		$this->assertEquals( 'error', $result['result'] );
+	}
+
+	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'square' );
+
+		// If the payment gateway isn't WC Pay, this function should never get called.
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_without_intent_id() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->delete_meta_data( '_intent_id' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_on_already_created_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
 	/**

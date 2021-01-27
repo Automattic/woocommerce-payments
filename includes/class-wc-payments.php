@@ -66,6 +66,13 @@ class WC_Payments {
 	private static $remote_note_service;
 
 	/**
+	 * Instance of WC_Payments_Action_Scheduler_Service, created in init function
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private static $action_scheduler_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -114,14 +121,16 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
+		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account             = new WC_Payments_Account( self::$api_client );
-		self::$customer_service    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
-		self::$token_service       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$account                  = new WC_Payments_Account( self::$api_client );
+		self::$customer_service         = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
@@ -130,7 +139,7 @@ class WC_Payments {
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
-		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service );
+		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -496,6 +505,9 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 		}
 	}
 
@@ -508,6 +520,9 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 		}
 	}
 }

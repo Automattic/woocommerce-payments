@@ -37,6 +37,7 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
+	const TRACKING_API        = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -836,6 +837,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Track a order creation/update event.
+	 *
+	 * @param array $order_data  The order data, as an array.
+	 * @param bool  $update      Is this an update event? (Defaults to false, which is a creation event).
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function track_order( $order_data, $update = false ) {
+		return $this->request(
+			[
+				'order_data' => $order_data,
+				'update'     => $update,
+			],
+			self::TRACKING_API . '/order',
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -893,10 +915,11 @@ class WC_Payments_API_Client {
 
 		$response = $this->http_client->remote_request(
 			[
-				'url'     => $url,
-				'method'  => $method,
-				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout' => self::API_TIMEOUT_SECONDS,
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific

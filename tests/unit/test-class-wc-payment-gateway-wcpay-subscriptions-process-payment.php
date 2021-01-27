@@ -46,6 +46,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -105,6 +112,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay_Subscriptions_Compat' )
 			->setConstructorArgs(
 				[
@@ -112,6 +123,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 					$this->wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
 				]
 			)
 			->setMethods(

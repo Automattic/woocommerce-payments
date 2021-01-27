@@ -102,9 +102,14 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 1.9.0 - 2021-xx-xx =
+* Add - Improved fraud prevention.
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
+* Update - Test mode notice width is now consistent across all pages.
+* Add - New notification to urge setting SSL for checkout pages if store doesn't use HTTPS
+* Fix - Fixed connection timeout configuration.
+* Fix - Specify error code when refund fails in admin to prevent blank alert.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.

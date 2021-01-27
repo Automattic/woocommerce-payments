@@ -38,6 +38,13 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -81,6 +88,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		// Arrange: Mock WC_Payments_Action_Scheduler_Service so its methods aren't called directly.
+		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
 		$this->mock_token_service
 			->expects( $this->any() )
@@ -96,6 +108,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 					$this->wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
 				]
 			)
 			->setMethods(
