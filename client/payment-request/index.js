@@ -1,5 +1,8 @@
 /* global wcpayPaymentRequestParams, Stripe, jQuery, wc_add_to_cart_variation_params */
 
+/**
+ * Internal dependencies
+ */
 import './style.scss';
 
 jQuery( ( $ ) => {
