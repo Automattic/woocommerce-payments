@@ -860,6 +860,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Link the current customer with the browsing session, for tracking purposes.
+	 *
+	 * @param string $session_id  Session ID, specific to this site.
+	 * @param string $customer_id Stripe customer ID.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function link_session_to_customer( $session_id, $customer_id ) {
+		return $this->request(
+			[
+				'session'  => $session_id,
+				'customer' => $customer_id,
+			],
+			self::TRACKING_API . '/link-session',
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

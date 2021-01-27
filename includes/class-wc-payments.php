@@ -73,6 +73,13 @@ class WC_Payments {
 	private static $action_scheduler_service;
 
 	/**
+	 * Instance of WC_Payments_Fraud_Service, created in init function
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	private static $fraud_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -122,6 +129,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
+		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
@@ -131,6 +139,7 @@ class WC_Payments {
 		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
