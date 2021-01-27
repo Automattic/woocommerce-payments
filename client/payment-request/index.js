@@ -1,4 +1,7 @@
 /* global wcpayPaymentRequestParams, Stripe, jQuery, wc_add_to_cart_variation_params */
+
+import './style.scss';
+
 jQuery( ( $ ) => {
 	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
 		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,

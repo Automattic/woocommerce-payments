@@ -491,6 +491,9 @@ class WC_Payments_Payment_Request {
 			'product'         => $this->get_product_data(),
 		];
 
+		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
+		wp_enqueue_style( 'payment_request_styles' );
+
 		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', [], '3.0', true );
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
