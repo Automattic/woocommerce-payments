@@ -536,8 +536,7 @@ class WC_Payments_Payment_Request {
 					$label      = esc_html( $this->get_button_label() );
 					$class_name = esc_attr( 'button ' . $this->get_button_theme() );
 					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
-					$html       = "<button id=\"wcpay-custom-button\" class=\"$class_name\" style=\"$style\"> $label </button>";
-					echo esc_html( $html );
+					echo '<button id="wcpay-custom-button" class="' . esc_attr( $class_name ) . '" style="' . esc_attr( $style ) . '">' . esc_html( $label ) . '</button>';
 				}
 				?>
 				<!-- A Stripe Element will be inserted here. -->
