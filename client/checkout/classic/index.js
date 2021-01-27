@@ -44,8 +44,12 @@ jQuery( function ( $ ) {
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
 	$( document.body ).on( 'updated_checkout', () => {
-		// Don't re-mount if already mounted in DOM.
-		if ( $( '#wcpay-card-element' ).children().length ) {
+		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
+		// We also don't re-mount if already mounted in DOM.
+		if (
+			! $( '#wcpay-card-element' ).length ||
+			$( '#wcpay-card-element' ).children().length
+		) {
 			return;
 		}
 
