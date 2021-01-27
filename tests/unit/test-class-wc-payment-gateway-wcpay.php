@@ -56,7 +56,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	/**
 	 * Pre-test setup
@@ -82,7 +82,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
@@ -92,7 +92,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
-			$this->wcpay_account,
+			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service
@@ -188,18 +188,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_payment_fields_outputs_fields() {
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_live_',
-					'test_publishable_key'     => 'pk_test_',
-					'has_pending_requirements' => false,
-					'is_live'                  => true,
-				]
-			)
-		);
-
 		$this->wcpay_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
