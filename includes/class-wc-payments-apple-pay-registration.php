@@ -48,6 +48,8 @@ class WC_Payments_Apple_Pay_Registration {
 
 	/**
 	 * Initialize class actions.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ] );
@@ -185,24 +187,29 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return bool Whether domain verification succeeded.
 	 */
 	public function register_domain_with_apple() {
-		$domain = $_SERVER['HTTP_HOST']; // @codingStandardsIgnoreLine
-		$registration_response = $this->payments_api_client->register_domain_with_apple( $domain );
+		try {
+			$domain = $_SERVER['HTTP_HOST']; // @codingStandardsIgnoreLine
+			$registration_response = $this->payments_api_client->register_domain_with_apple( $domain );
 
-		if ( isset( $registration_response['id'] ) ) {
-			$this->gateway_settings['apple_pay_verified_domain'] = $domain;
-			update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
+			if ( isset( $registration_response['id'] ) ) {
+				$this->gateway_settings['apple_pay_verified_domain'] = $domain;
+				update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
-			Logger::log( 'Your domain has been verified with Apple Pay!' );
+				Logger::log( 'Your domain has been verified with Apple Pay!' );
 
-			return true;
-		} elseif ( isset( $registration_response['error'] ) && isset( $registration_response['error']['message'] ) ) {
-			$this->gateway_settings['apple_pay_verified_domain'] = '';
-			update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
-
-			Logger::log( 'Error: ' . $registration_response['error']['message'] );
-
-			return false;
+				return true;
+			} elseif ( isset( $registration_response['error'] ) && isset( $registration_response['error']['message'] ) ) {
+				$error = $registration_response['error']['message'];
+			}
+		} catch ( Exception $e ) {
+			$error = $e->getMessage();
 		}
+
+		$this->gateway_settings['apple_pay_verified_domain'] = '';
+		update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
+		Logger::log( 'Error: ' . $error );
+
+		return false;
 	}
 
 	/**
@@ -224,7 +231,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$verification_complete = $this->register_domain_with_apple();
 
 		// Show/hide notes if necessary.
-		// WC_Stripe_Inbox_Notes::notify_on_apple_pay_domain_verification( $verification_complete );
+		// WC_Stripe_Inbox_Notes::notify_on_apple_pay_domain_verification( $verification_complete );.
 	}
 
 	/**
