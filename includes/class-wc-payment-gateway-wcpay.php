@@ -1589,6 +1589,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order     The order that has been created.
 	 */
 	public function schedule_order_tracking( $order_id, $order ) {
+		// If Sift is not enabled, exit out and don't do the tracking here.
+		if ( ! array_key_exists( 'sift', $this->account->get_fraud_services_config() ) ) {
+			return;
+		}
+
 		// We only want to track orders created by our payment gateway.
 		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
 			return;
