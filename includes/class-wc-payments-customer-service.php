@@ -105,8 +105,12 @@ class WC_Payments_Customer_Service {
 	public function create_customer_for_user( $user, $name, $email ) {
 		$description = $this->build_description_string( $user, $name );
 
+		// Include the session ID for the user.
+		$fraud_config = $this->account->get_fraud_services_config();
+		$session_id   = isset( $fraud_config['sift']['session_id'] ) ? $fraud_config['sift']['session_id'] : null;
+
 		// Create a customer on the WCPay server.
-		$customer_id = $this->payments_api_client->create_customer( $name, $email, $description );
+		$customer_id = $this->payments_api_client->create_customer( $name, $email, $description, $session_id );
 
 		if ( $user->ID > 0 ) {
 			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id );
