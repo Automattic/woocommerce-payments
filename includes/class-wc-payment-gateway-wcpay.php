@@ -1590,7 +1590,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function schedule_order_tracking( $order_id, $order ) {
 		// If Sift is not enabled, exit out and don't do the tracking here.
-		if ( ! array_key_exists( 'sift', $this->account->get_fraud_services_config() ) ) {
+		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
 			return;
 		}
 

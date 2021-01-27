@@ -728,6 +728,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'schedule_job' );
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
+
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
@@ -741,6 +751,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'schedule_job' );
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
+
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
@@ -753,6 +773,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
 			->method( 'schedule_job' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
 
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
