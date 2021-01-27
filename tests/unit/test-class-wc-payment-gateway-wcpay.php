@@ -329,7 +329,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_full_level3_data_with_fee() {
@@ -363,7 +363,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012', true );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_us_store_level_3_data() {
@@ -397,7 +397,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$mock_order   = $this->mock_level_3_order( '98012' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
-		$this->assertEquals( $level_3_data, $expected_data );
+		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
 	public function test_capture_charge_success() {
