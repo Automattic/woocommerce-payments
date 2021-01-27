@@ -61,10 +61,11 @@ class WC_Payments_Apple_Pay_Registration {
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
-		$this->payments_api_client     = $payments_api_client;
-		$this->gateway_settings        = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		// Add default settings in case the payment request options are missing.
+		$this->gateway_settings        = array_merge( WC_Payments_Payment_Request::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
 		$this->apple_pay_domain_set    = 'yes' === $this->get_option( 'apple_pay_domain_set', 'no' );
 		$this->apple_pay_verify_notice = '';
+		$this->payments_api_client     = $payments_api_client;
 	}
 
 	/**
