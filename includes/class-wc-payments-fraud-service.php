@@ -38,9 +38,9 @@ class WC_Payments_Fraud_Service {
 	/**
 	 * Constructor for WC_Payments_Fraud_Service.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                  - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
+	 * @param WC_Payments_API_Client       $payments_api_client      - WooCommerce Payments API client.
+	 * @param WC_Payments_Customer_Service $customer_service         - Customer class instance.
+	 * @param WC_Payments_Account          $account                  - Account class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -57,7 +57,9 @@ class WC_Payments_Fraud_Service {
 	}
 
 	/**
-	 * @param array $config      Existing config data for the given anti-fraud service.
+	 * Prepares the fraud config for a service.
+	 *
+	 * @param array  $config     Existing config data for the given anti-fraud service.
 	 * @param string $service_id Identifier of the anti-fraud service provider.
 	 *
 	 * @return array|NULL Array with all the required data to initialize the anti-fraud script, or NULL if the service shouldn't be used.
@@ -121,7 +123,7 @@ class WC_Payments_Fraud_Service {
 	public function check_if_user_just_logged_in() {
 		WC()->initialize_session();
 		$session_handler = WC()->session;
-		$cookie = $session_handler->get_session_cookie();
+		$cookie          = $session_handler->get_session_cookie();
 		if ( ! $cookie ) {
 			return false;
 		}

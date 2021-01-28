@@ -197,7 +197,7 @@ class WC_Payments_Account {
 			// This was the default before adding new anti-fraud providers, preserve backwards-compatibility.
 			return [ 'stripe' => [] ];
 		}
-		$services_config = $account['fraud_services'];
+		$services_config          = $account['fraud_services'];
 		$filtered_services_config = [];
 		foreach ( $services_config as $service_id => $config ) {
 			$filtered_services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
