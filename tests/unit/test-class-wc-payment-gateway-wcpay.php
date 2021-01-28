@@ -108,8 +108,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->save();
 
 		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
@@ -133,16 +131,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
-		$notes             = wc_get_order_notes(
-			[
-				'order_id' => $order->get_id(),
-				'limit'    => 1,
-			]
-		);
-		$latest_wcpay_note = $notes[0];
-
-		$this->assertContains( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 		$this->assertTrue( $result );
 	}
 
@@ -504,8 +492,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -532,7 +518,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[1]; // The latest note is the "status changed" message, we want the previous one.
 
 		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
-		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+		$this->assertContains( wc_price( $order->get_total() ), $latest_wcpay_note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'succeeded' );
 		$this->assertEquals( $order->get_status(), 'processing' );
 	}
@@ -546,8 +532,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -573,7 +557,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		)[0];
 
 		$this->assertContains( 'failed', $note->content );
-		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $note->content );
+		$this->assertContains( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
 		$this->assertEquals( $order->get_status(), 'on-hold' );
 	}
@@ -587,8 +571,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -618,7 +600,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->assertContains( 'failed', $note->content );
 		$this->assertContains( 'test exception', $note->content );
-		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $note->content );
+		$this->assertContains( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
 		$this->assertEquals( $order->get_status(), 'on-hold' );
 	}
