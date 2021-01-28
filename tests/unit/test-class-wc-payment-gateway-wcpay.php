@@ -301,7 +301,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
 		$this->assertEquals( 'Test message', $result->get_error_message() );
 		$this->assertContains( 'failed to complete', $latest_wcpay_note->content );
-		$this->assertContains( 'test exception', $latest_wcpay_note->content );
+		$this->assertContains( 'Test message', $latest_wcpay_note->content );
 		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
