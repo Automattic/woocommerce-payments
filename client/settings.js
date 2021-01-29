@@ -77,7 +77,6 @@ const toggleDisplay = ( el, display ) => {
 	}
 };
 
-const evt = new Event( 'change' );
 const paymentRequest = document.getElementById(
 	'woocommerce_woocommerce_payments_payment_request'
 );
@@ -109,7 +108,7 @@ paymentRequest.addEventListener( 'change', () => {
 		} );
 	}
 
-	paymentRequestButtonType.dispatchEvent( evt );
+	paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
 } );
 
 // Toggle Custom Payment Request configs.
@@ -165,5 +164,5 @@ paymentRequestButtonType.addEventListener( 'change', () => {
 	}
 } );
 
-paymentRequest.dispatchEvent( evt );
-paymentRequestButtonType.dispatchEvent( evt );
+paymentRequest.dispatchEvent( new Event( 'change' ) );
+paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
