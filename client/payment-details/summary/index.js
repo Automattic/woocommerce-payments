@@ -24,6 +24,8 @@ import CustomerLink from 'components/customer-link';
 import './style.scss';
 
 const placeholderValues = {
+	amount: 0,
+	currency: 'USD',
 	net: 0,
 	fee: 0,
 	refunded: null,
@@ -91,11 +93,11 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							placeholder="Amount placeholder"
 						>
 							{ formatCurrency(
-								charge.amount || 0,
-								charge.currency || 'USD'
+								balance.amount,
+								balance.currency
 							) }
 							<span className="payment-details-summary__amount-currency">
-								{ charge.currency || 'usd' }
+								{ balance.currency }
 							</span>
 							<PaymentStatusChip
 								status={ getChargeStatus( charge ) }
@@ -106,10 +108,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						{ balance.currency !== charge.currency ? (
 							<p>
 								{ formatCurrency(
-									balance.amount,
-									balance.currency
+									charge.amount,
+									charge.currency
 								) }{ ' ' }
-								{ balance.currency.toUpperCase() }
+								{ ( charge.currency || 'USD' ).toUpperCase() }
 							</p>
 						) : null }
 						{ balance.refunded ? (

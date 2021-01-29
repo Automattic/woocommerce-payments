@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { sumBy, isObject } from 'lodash';
+import { sumBy } from 'lodash';
 
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
@@ -67,36 +67,21 @@ export const getChargeStatus = ( charge = {} ) => {
  */
 export const getChargeAmounts = ( charge ) => {
 	const balance = {
-		currency: charge.currency || 'USD',
-		amount: charge.amount,
-		fee: charge.application_fee_amount,
+		currency: charge.balance_transaction.currency,
+		amount: charge.balance_transaction.amount,
+		fee: charge.balance_transaction.fee,
 		refunded: 0,
 		net: 0,
 	};
 
 	if ( isChargeRefunded( charge ) ) {
-		balance.refunded += charge.amount_refunded;
+		// Refund balance_transactions have negative amount.
+		balance.refunded -= sumBy(
+			charge.refunds.data,
+			'balance_transaction.amount'
+		);
 	}
 
-	if (
-		isObject( charge.balance_transaction ) &&
-		charge.balance_transaction.currency !== charge.currency
-	) {
-		balance.currency = charge.balance_transaction.currency;
-		balance.amount = charge.balance_transaction.amount;
-		balance.fee = charge.balance_transaction.fee;
-		balance.refunded = 0;
-
-		if ( isChargeRefunded( charge ) ) {
-			// Refund balance_transactions have negative amount.
-			balance.refunded -= sumBy(
-				charge.refunds.data,
-				'balance_transaction.amount'
-			);
-		}
-	}
-
-	// Dispute balance transactions are always in settlement currency.
 	if ( isChargeDisputed( charge ) ) {
 		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
 		balance.refunded -= sumBy(
