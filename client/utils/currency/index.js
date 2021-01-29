@@ -65,6 +65,9 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 };
 
 export const formatFX = ( from, to ) => {
+	if ( ! from.currency || ! to.currency ) {
+		return;
+	}
 	const fromAmount = isZeroDecimalCurrency( from.currency )
 		? from.amount
 		: from.amount / 100;
