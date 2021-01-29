@@ -37,6 +37,7 @@ const mockDeposits = [
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
 	test( 'renders correctly', () => {

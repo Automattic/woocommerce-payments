@@ -5,8 +5,11 @@
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
 * Update - Test mode notice width is now consistent across all pages.
+* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 * Add - New notification to urge setting SSL for checkout pages if store doesn't use HTTPS
 * Fix - Fixed connection timeout configuration.
+* Fix - Specify error code when refund fails in admin to prevent blank alert.
+* Fix - Add fees as line items sent to Stripe to prevent Level 3 errors.
 * Add - Localized notification if order amount is too low to process.
 
 = 1.8.0 - 2020-12-16 =
