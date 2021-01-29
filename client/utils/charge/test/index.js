@@ -180,6 +180,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 	test( 'basic charge', () => {
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
 			// eslint-disable-next-line camelcase
@@ -203,10 +204,11 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		/* eslint-disable camelcase */
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			application_fee_amount: 82,
 			balance_transaction: {
-				amount: getExchangedAmount( 1800 ),
-				fee: getExchangedAmount( 82 ),
+				amount: 1482,
+				fee: 68,
 				currency: 'eur',
 			},
 		};
@@ -261,16 +263,17 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 	} );
 
 	test( 'multi-currency partial refund', () => {
-		const refunds = [ 1000, 500 ].map( getExchangedAmount );
+		const refunds = [ 1000, 500 ];
 		/* eslint-disable camelcase */
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			application_fee_amount: 82,
 			amount_refunded: 1500,
 			balance_transaction: {
 				currency: 'eur',
-				amount: getExchangedAmount( 1800 ),
-				fee: getExchangedAmount( 82 ),
+				amount: 1482,
+				fee: 68,
 			},
 			refunds: {
 				data: refunds.map( ( refundedAmount ) => ( {
@@ -287,13 +290,13 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			0
 		);
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			amount: getExchangedAmount( 1800 ),
+			amount: 1482,
 			currency: 'eur',
 			net:
 				charge.balance_transaction.amount -
 				charge.balance_transaction.fee -
 				expectedRefunds,
-			fee: getExchangedAmount( 82 ),
+			fee: 68,
 			refunded: expectedRefunds,
 		} );
 	} );
@@ -337,18 +340,17 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 
 	test( 'multi-currency full refund', () => {
 		// Refund at higher rate
-		const refunds = [ 1000, 800 ].map( ( refund ) =>
-			getExchangedAmount( refund, 1.15 )
-		);
+		const refunds = [ 1000, 800 ];
 		/* eslint-disable camelcase */
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			application_fee_amount: 82,
 			amount_refunded: 1800,
 			balance_transaction: {
 				currency: 'eur',
-				amount: getExchangedAmount( 1800 ),
-				fee: getExchangedAmount( 82 ),
+				amount: 1482,
+				fee: 68,
 			},
 			refunds: {
 				data: refunds.map( ( refundedAmount ) => ( {
@@ -365,13 +367,13 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			0
 		);
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			amount: getExchangedAmount( 1800 ),
+			amount: 1482,
 			currency: 'eur',
 			net:
 				charge.balance_transaction.amount -
 				charge.balance_transaction.fee -
 				expectedRefunds,
-			fee: getExchangedAmount( 82 ),
+			fee: 68,
 			refunded: expectedRefunds,
 		} );
 	} );
@@ -450,18 +452,19 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		/* eslint-disable camelcase */
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			application_fee_amount: 82,
 			balance_transaction: {
 				currency: 'eur',
-				amount: getExchangedAmount( 1800 ),
-				fee: getExchangedAmount( 82 ),
+				amount: 1482,
+				fee: 68,
 			},
 			disputed: true,
 			dispute: {
 				amount: 1800,
 				balance_transactions: [
 					{
-						amount: -getExchangedAmount( 1800, 1.15 ),
+						amount: 1482,
 						fee: 1500,
 						currency: 'eur',
 					},
@@ -472,14 +475,10 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 
 		const disputedAmount = -charge.dispute.balance_transactions[ 0 ].amount;
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			amount: getExchangedAmount( 1800 ),
+			amount: 1482,
 			currency: 'eur',
-			net:
-				charge.balance_transaction.amount -
-				disputedAmount -
-				getExchangedAmount( 82 ) -
-				1500,
-			fee: getExchangedAmount( 82 ) + 1500,
+			net: charge.balance_transaction.amount - disputedAmount - 68 - 1500,
+			fee: 68 + 1500,
 			refunded: disputedAmount,
 		} );
 	} );
@@ -512,7 +511,3 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 } );
-
-function getExchangedAmount( amount, exchangeRate = 1.1 ) {
-	return Math.round( amount * exchangeRate );
-}
