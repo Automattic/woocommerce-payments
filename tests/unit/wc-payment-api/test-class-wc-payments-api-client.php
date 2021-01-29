@@ -173,6 +173,36 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test parsing responses with a minimum required amount violation.
+	 */
+	public function test_create_intention_fail_for_minimum_amount() {
+		$this->set_http_mock_response(
+			400,
+			[
+				'error' => [
+					'code'    => 'wcpay_amount_too_low',
+					'message' => 'Sorry, the minimum allowed order total is $0.50 USD to use this payment method.',
+				],
+				'data'  => [
+					'status'     => 400,
+					'min_amount' => 60,
+					'currency'   => 'usd',
+				],
+			],
+		);
+
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Sorry, the minimum allowed order total is <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>0.60</bdi></span> to use this payment method.' );
+
+		$result = $this->payments_api_client->create_and_confirm_intention(
+			40,
+			'usd',
+			'pm_123456789',
+			1
+		);
+	}
+
+	/**
 	 * Test a successful call to capture intention.
 	 *
 	 * @throws Exception - In the event of test failure.
