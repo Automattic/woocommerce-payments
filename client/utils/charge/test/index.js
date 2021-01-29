@@ -182,11 +182,17 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			amount: 1800,
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
@@ -224,11 +230,27 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			application_fee_amount: 82,
 			// eslint-disable-next-line camelcase
 			amount_refunded: 300,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						// eslint-disable-next-line camelcase
+						balance_transaction: {
+							amount: -300,
+						},
+					},
+				],
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
@@ -283,11 +305,27 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			application_fee_amount: 82,
 			// eslint-disable-next-line camelcase
 			amount_refunded: 1800,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						// eslint-disable-next-line camelcase
+						balance_transaction: {
+							amount: -1800,
+						},
+					},
+				],
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
@@ -343,6 +381,12 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			amount: 1800,
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 			disputed: true,
 			dispute: {
 				amount: 1800,
@@ -358,7 +402,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
@@ -370,6 +414,12 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			amount: 1800,
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 			disputed: true,
 			dispute: {
 				amount: 1800,
@@ -389,7 +439,7 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
@@ -445,11 +495,17 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				// eslint-disable-next-line camelcase
 				balance_transactions: [],
 			},
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
 			amount: 1800,
-			currency: 'USD',
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
