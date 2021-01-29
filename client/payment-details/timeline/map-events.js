@@ -146,7 +146,18 @@ const getMainTimelineItem = (
 	body,
 } );
 
-const isFXEvent = ( event ) => {
+const isFXEvent = ( event = {} ) => {
+	const { type = '' } = event;
+
+	// Dispute events hold store values in amount and currency props.
+	if ( type.startsWith( 'dispute' ) ) {
+		return (
+			event.currency &&
+			event.customer_currency &&
+			event.customer_currency !== event.currency
+		);
+	}
+
 	return (
 		event.currency &&
 		event.store_currency &&
@@ -414,20 +425,36 @@ const mapEventToTimelineItems = ( event ) => {
 				Math.abs( event.amount ) + Math.abs( event.fee ),
 				event.currency
 			);
+			const disputedAmount = isFXEvent( event )
+				? formatCurrency(
+						event.customer_amount,
+						event.customer_currency
+				  )
+				: formatCurrency( event.amount, event.currency );
 			depositTimelineItem = getDepositTimelineItem(
 				event,
 				formattedTotal,
 				false,
 				[
-					stringWithAmount(
+					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Disputed amount: %s', 'woocommerce-payments' ),
-						event.amount
+						disputedAmount
 					),
-					stringWithAmount(
+					formatFX(
+						{
+							amount: event.customer_amount,
+							currency: event.customer_currency,
+						},
+						{
+							amount: event.amount,
+							currency: event.currency,
+						}
+					),
+					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Fee: %s', 'woocommerce-payments' ),
-						event.fee
+						formatCurrency( event.fee, event.currency )
 					),
 				]
 			);
