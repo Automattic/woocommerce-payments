@@ -215,12 +215,12 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		/* eslint-enable camelcase */
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
-			amount: charge.balance_transaction.amount,
-			currency: charge.balance_transaction.currency,
+			amount: 1482,
+			currency: 'eur',
 			net:
 				charge.balance_transaction.amount -
 				charge.balance_transaction.fee,
-			fee: charge.balance_transaction.fee,
+			fee: 68,
 			refunded: 0,
 		} );
 	} );
