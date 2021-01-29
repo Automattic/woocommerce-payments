@@ -192,7 +192,12 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		);
 
 		$this->expectException( API_Exception::class );
-		$this->expectExceptionMessage( 'Sorry, the minimum allowed order total is <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>0.60</bdi></span> to use this payment method.' );
+		$this->expectExceptionMessage(
+			sprintf(
+				'Sorry, the minimum allowed order total is %s to use this payment method.',
+				wc_price( 0.6, [ 'currency' => 'USD' ] )
+			)
+		);
 
 		$result = $this->payments_api_client->create_and_confirm_intention(
 			40,
