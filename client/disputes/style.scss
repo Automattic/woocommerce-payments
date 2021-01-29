@@ -56,6 +56,9 @@
 	}
 
 	// Evidence form
+	.components-base-control {
+		position: relative;
+	}
 	.components-base-control .components-base-control__label {
 		font-size: 12px;
 		color: $dark-gray-500;
