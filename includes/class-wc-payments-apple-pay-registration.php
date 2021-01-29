@@ -177,8 +177,8 @@ class WC_Payments_Apple_Pay_Registration {
 		}
 
 		$path = WCPAY_ABSPATH . '/apple-developer-merchantid-domain-association';
-		header( 'Content-Type: application/octet-stream' );
-		echo esc_html( wp_remote_get( $path ) );
+		header( 'Content-Type: text/plain;charset=utf-8' );
+		echo esc_html( @file_get_contents( $path ) ); // @codingStandardsIgnoreLine
 		exit;
 	}
 
