@@ -188,7 +188,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'min_amount' => 60,
 					'currency'   => 'usd',
 				],
-			],
+			]
 		);
 
 		$this->expectException( API_Exception::class );
