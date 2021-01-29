@@ -82,6 +82,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
+	const renderCustomerPrice =
+		charge.currency && balance.currency !== charge.currency;
 
 	return (
 		<Card className="payment-details-summary-details">
@@ -105,7 +107,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ balance.currency !== charge.currency ? (
+						{ renderCustomerPrice ? (
 							<p>
 								{ formatCurrency(
 									charge.amount,
