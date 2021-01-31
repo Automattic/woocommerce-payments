@@ -20,6 +20,11 @@ class WC_Payments_Utils {
 	const MAX_ARRAY_DEPTH = 10;
 
 	/**
+	 * Order meta data key that holds the currency of order's intent transaction.
+	 */
+	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -327,17 +332,24 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Get original order currency stored, or if not found, get order's currency
+	 * Gets order intent currency from meta data or order currency.
 	 *
-	 * @param WC_Order $order The order whose currency we want to get.
+	 * @param WC_Order $order The order whose intent currency we want to get.
 	 *
 	 * @return string The currency.
 	 */
-	public static function get_order_original_currency( $order ) {
-		$original_currency = $order->get_meta( '_wcpay_original_order_currency' );
-		if ( $original_currency ) {
-			return $original_currency;
-		}
-		return $order->get_currency();
+	public static function get_order_intent_currency( $order ) {
+		return $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY ) ?? $order->get_currency();
+	}
+
+	/**
+	 * Saves intent currency in order meta data.
+	 *
+	 * @param WC_Order $order The order whose intent currency we want to set.
+	 * @param string   $currency The intent currency.
+	 *
+	 */
+	public static function set_order_intent_currency( $order, $currency ) {
+		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
 	}
 }

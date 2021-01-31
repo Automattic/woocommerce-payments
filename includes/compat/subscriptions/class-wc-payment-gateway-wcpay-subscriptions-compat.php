@@ -152,7 +152,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 							'code'   => '<code>',
 						]
 					),
-					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_original_currency( $renewal_order ) ] ),
+					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$renewal_order->add_order_note( $note );

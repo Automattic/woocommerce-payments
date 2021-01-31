@@ -199,7 +199,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'succeeded',
 					self::CHARGE_ID,
-					''
+					'',
+					'USD'
 				)
 			);
 

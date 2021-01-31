@@ -88,7 +88,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			new DateTime(),
 			'succeeded',
 			self::CHARGE_ID,
-			''
+			'',
+			'USD'
 		);
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )

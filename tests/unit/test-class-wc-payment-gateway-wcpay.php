@@ -547,7 +547,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'succeeded',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -589,7 +590,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'succeeded',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -629,7 +631,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -670,7 +673,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -712,7 +716,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -757,7 +762,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -800,7 +806,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'canceled',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			)
 		);
@@ -845,7 +852,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					new DateTime(),
 					'canceled',
 					$charge_id,
-					'...'
+					'...',
+					'USD'
 				)
 			);
 
