@@ -265,9 +265,9 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 		$this->request->set_body( wp_json_encode( $this->request_body ) );
 
 		$mock_order = $this->getMockBuilder( WC_Order::class )
-		                   ->disableOriginalConstructor()
-		                   ->setMethods( [ 'add_order_note' ] )
-		                   ->getMock();
+			->disableOriginalConstructor()
+			->setMethods( [ 'add_order_note' ] )
+			->getMock();
 
 		$mock_order
 			->expects( $this->once() )

@@ -347,7 +347,6 @@ class WC_Payments_Utils {
 	 *
 	 * @param WC_Order $order The order whose intent currency we want to set.
 	 * @param string   $currency The intent currency.
-	 *
 	 */
 	public static function set_order_intent_currency( $order, $currency ) {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
