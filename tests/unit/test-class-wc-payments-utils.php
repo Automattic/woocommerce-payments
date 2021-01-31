@@ -334,4 +334,9 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_wcpay_original_order_currency', 'CAD' );
 		$this->assertEquals( WC_Payments_Utils::get_order_original_currency( $order ), 'CAD' );
 	}
+
+	public function test_interpret_stripe_amount() {
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'USD' ), 1 );
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'JPY' ), 100 );
+	}
 }

@@ -120,6 +120,24 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Interprets amount from Stripe API.
+	 *
+	 * @param float  $amount   The amount returned by Stripe API.
+	 * @param string $currency The currency we get from Stripe API for the amount.
+	 *
+	 * @return int The interpreted amount.
+	 */
+	public static function interpret_stripe_amount( $amount, $currency = 'usd' ) {
+		$conversion_rate = 100;
+
+		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+			$conversion_rate = 1;
+		}
+
+		return round( (float) $amount / $conversion_rate );
+	}
+
+	/**
 	 * List of currencies supported by Stripe, the amounts for which are already in the smallest unit.
 	 * Sourced directly from https://stripe.com/docs/currencies#zero-decimal
 	 *

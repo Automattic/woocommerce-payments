@@ -249,6 +249,52 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a valid failed refund update webhook for zero decimal currency.
+	 */
+	public function test_valid_failed_refund_update_webhook_zero_decimal_currency() {
+		// Setup test request data.
+		$this->request_body['type']           = 'charge.refund.updated';
+		$this->request_body['data']['object'] = [
+			'status'   => 'failed',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'jpy',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->getMockBuilder( WC_Order::class )
+		                   ->disableOriginalConstructor()
+		                   ->setMethods( [ 'add_order_note' ] )
+		                   ->getMock();
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->matchesRegularExpression(
+					'~^A refund of <span class="woocommerce-Price-amount amount">(<bdi>)?<span class="woocommerce-Price-currencySymbol">&yen;</span>999(</bdi>)?</span> was <strong>unsuccessful</strong> using WooCommerce Payments \(<code>test_refund_id</code>\).$~'
+				)
+			);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
 	 * Test a valid failed refund update webhook with an unknown charge ID.
 	 */
 	public function test_valid_failed_refund_update_webhook_with_unknown_charge_id() {
