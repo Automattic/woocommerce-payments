@@ -171,12 +171,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', $status ]
+				[ '_intention_status', $status ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -271,12 +272,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', $status ]
+				[ '_intention_status', $status ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -429,12 +431,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', 'requires_action' ]
+				[ '_intention_status', 'requires_action' ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: Order status was not updated.

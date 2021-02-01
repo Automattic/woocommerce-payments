@@ -125,6 +125,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'source_transfer_reversal' => null,
 					'status'                   => 'succeeded',
 					'transfer_reversal'        => null,
+					'currency'                 => 'usd',
 				]
 			)
 		);
@@ -141,8 +142,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->save();
 
 		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
@@ -160,6 +159,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'source_transfer_reversal' => null,
 					'status'                   => 'succeeded',
 					'transfer_reversal'        => null,
+					'currency'                 => 'eur',
 				]
 			)
 		);
@@ -179,15 +179,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertContains( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
-	public function test_process_refund_with_reason() {
+	public function test_process_refund_with_reason_non_usd() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->save();
 
 		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
@@ -205,6 +203,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'source_transfer_reversal' => null,
 					'status'                   => 'succeeded',
 					'transfer_reversal'        => null,
+					'currency'                 => 'eur',
 				]
 			)
 		);
@@ -275,8 +274,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
 		$order->update_status( 'processing' );
 		$order->save();
 
@@ -548,7 +546,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'succeeded',
 					$charge_id,
 					'...',
-					'USD'
+					$order->get_currency()
 				)
 			)
 		);
@@ -578,8 +576,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -591,7 +587,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'succeeded',
 					$charge_id,
 					'...',
-					'USD'
+					'eur'
 				)
 			)
 		);
@@ -632,7 +628,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'requires_capture',
 					$charge_id,
 					'...',
-					'USD'
+					$order->get_currency()
 				)
 			)
 		);
@@ -661,8 +657,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -674,7 +668,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'requires_capture',
 					$charge_id,
 					'...',
-					'USD'
+					'eur'
 				)
 			)
 		);
@@ -747,9 +741,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_meta_data( '_wcpay_original_order_currency', 'EUR' );
-		$order->set_currency( 'EUR' );
 		$order->update_status( 'on-hold' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
 			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
@@ -763,7 +756,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'requires_capture',
 					$charge_id,
 					'...',
-					'USD'
+					'JPY'
 				)
 			)
 		);

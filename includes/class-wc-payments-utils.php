@@ -139,7 +139,7 @@ class WC_Payments_Utils {
 			$conversion_rate = 1;
 		}
 
-		return round( (float) $amount / $conversion_rate );
+		return (float) $amount / $conversion_rate;
 	}
 
 	/**
@@ -339,7 +339,11 @@ class WC_Payments_Utils {
 	 * @return string The currency.
 	 */
 	public static function get_order_intent_currency( $order ) {
-		return $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY ) ?? $order->get_currency();
+		$intent_currency = $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY );
+		if ( ! empty( $intent_currency ) ) {
+			return $intent_currency;
+		}
+		return $order->get_currency();
 	}
 
 	/**

@@ -579,6 +579,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent->get_status();
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
+			$currency      = $intent->get_currency();
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
@@ -686,6 +687,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', $status );
+		if ( ! empty( $currency ) ) {
+			WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		}
 		$order->save();
 
 		if ( isset( $response ) ) {

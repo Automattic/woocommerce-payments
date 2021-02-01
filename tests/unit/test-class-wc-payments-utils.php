@@ -317,26 +317,17 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
-	public function test_get_order_original_currency() {
-		$order             = WC_Helper_Order::create_order();
-		$original_currency = $order->get_currency();
+	public function get_order_intent_currency() {
+		$order = WC_Helper_Order::create_order();
 
-		// make sure WC_Payments::maybe_set_original_order_currency() sets _wcpay_original_order_currency.
-		$this->assertEquals( $order->get_meta( '_wcpay_original_order_currency' ), $original_currency );
+		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), $order->get_currency() );
 
-		$order->set_currency( 'EUR' );
-		// make sure the value of _wcpay_original_order_currency does not change.
-		$this->assertEquals( $order->get_meta( '_wcpay_original_order_currency' ), $original_currency );
-
-		$order->delete_meta_data( '_wcpay_original_order_currency' );
-		$this->assertEquals( WC_Payments_Utils::get_order_original_currency( $order ), 'EUR' );
-
-		$order->update_meta_data( '_wcpay_original_order_currency', 'CAD' );
-		$this->assertEquals( WC_Payments_Utils::get_order_original_currency( $order ), 'CAD' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), 'EUR' );
 	}
 
 	public function test_interpret_stripe_amount() {
-		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'USD' ), 1 );
-		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'JPY' ), 100 );
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'usd' ), 1 );
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'jpy' ), 100 );
 	}
 }
