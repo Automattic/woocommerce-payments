@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -464,8 +464,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
-			wc_add_notice( $e->getMessage(), 'error' );
+			// TODO: Create more exceptions to handle merchant specific errors.
+			$error_message = $e->getMessage();
+			if ( is_a( $e, Connection_Exception::class ) ) {
+				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			}
+
+			wc_add_notice( $error_message, 'error' );
 
 			$order->update_status( 'failed' );
 

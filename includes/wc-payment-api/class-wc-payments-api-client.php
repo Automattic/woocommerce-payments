@@ -15,7 +15,7 @@ use WCPay\Logger;
  */
 class WC_Payments_API_Client {
 
-	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
+	const ENDPOINT_BASE          = 'https://public-api.wordpress.com:123/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
 
