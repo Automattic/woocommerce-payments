@@ -196,8 +196,21 @@ install_woocommerce() {
 	fi
 }
 
+install_gutenberg() {
+	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
+
+	if [[ -n $INSTALLED_GUTENBERG_VERSION ]]; then
+		# Gutenberg is already installed, we just must update it to the latest stable version
+		wp plugin update gutenberg
+		wp plugin activate gutenberg
+	else
+		wp plugin install gutenberg --activate
+	fi
+}
+
 install_wp
 install_db
 configure_wp
 install_test_suite
+install_gutenberg
 install_woocommerce
