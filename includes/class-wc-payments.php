@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Logger;
+use WCPay\Tracker;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -78,8 +78,6 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
-		include_once __DIR__ . '/class-wc-payments-utils.php';
-
 		if ( ! self::check_plugin_dependencies( true ) ) {
 			add_filter( 'admin_notices', [ __CLASS__, 'check_plugin_dependencies' ] );
 			return;
@@ -90,34 +88,9 @@ class WC_Payments {
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
-		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
-		require_once __DIR__ . '/exceptions/class-base-exception.php';
-		require_once __DIR__ . '/exceptions/class-api-exception.php';
-
-		self::$api_client = self::create_api_client();
-
-		include_once __DIR__ . '/class-wc-payments-account.php';
-		include_once __DIR__ . '/class-wc-payments-customer-service.php';
-		include_once __DIR__ . '/class-logger.php';
-		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
-		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/exceptions/class-base-exception.php';
-		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
-		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
-		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
-		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
-		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
-		include_once __DIR__ . '/constants/class-payment-type.php';
-		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
-		include_once __DIR__ . '/constants/class-payment-capture-type.php';
-		include_once __DIR__ . '/class-payment-information.php';
-		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
-
-		// Always load tracker to avoid class not found errors.
-		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
-
+		self::$api_client          = self::create_api_client();
 		self::$account             = new WC_Payments_Account( self::$api_client );
 		self::$customer_service    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -126,7 +99,6 @@ class WC_Payments {
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
-			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
@@ -138,11 +110,29 @@ class WC_Payments {
 
 		// Add admin screens.
 		if ( is_admin() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$gateway, self::$account );
 
-			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
-			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
+			// Loaded on admin_init to ensure that we are in admin and that WC_Tracks is loaded.
+			add_action(
+				'admin_init',
+				function() {
+					if ( class_exists( 'WC_Tracks' ) ) {
+						// Move all events with priority 1 just before the admin_footer hook adds footer pixels.
+						add_action( 'admin_footer', [ Tracker::class, 'record_tracker_events' ], 1 );
+
+						/**
+						 * Send all events that were not handled in `admin_footer`.
+						 *
+						 * Between shutdown and admin footer many things can happen. Admin footer loads
+						 * scripts in the markup images that will call tracks from the browsers
+						 * side (which means it's faster as we're not doing network calls to wp.com server
+						 * side). Anything that is added afterward must be sent from the
+						 * server, but doing it on shutdown means it's not blocking anything.
+						 */
+						add_action( 'shutdown', [ Tracker::class, 'record_tracker_events' ], 1 );
+					}
+				}
+			);
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -386,10 +376,6 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
-
 		$http_class = self::get_wc_payments_http();
 
 		$payments_api_client = new WC_Payments_API_Client(
@@ -407,9 +393,6 @@ class WC_Payments {
 	 * @return WC_Payments_Http_Interface
 	 */
 	private static function get_wc_payments_http() {
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
-
 		$http_class = apply_filters( 'wc_payments_http', null );
 
 		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
@@ -423,34 +406,24 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
-		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-transactions-controller.php';
 		$transactions_controller = new WC_REST_Payments_Transactions_Controller( self::$api_client );
 		$transactions_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
 		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service );
 		$webhook_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 		$webhook_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
 		$webhook_controller->register_routes();
 	}
@@ -484,8 +457,6 @@ class WC_Payments {
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
-		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
@@ -494,7 +465,6 @@ class WC_Payments {
 	 */
 	public static function add_woo_admin_notes() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
@@ -509,7 +479,6 @@ class WC_Payments {
 		self::$remote_note_service->delete_notes();
 
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
