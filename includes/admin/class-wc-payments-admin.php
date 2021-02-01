@@ -276,6 +276,14 @@ class WC_Payments_Admin {
 			]
 		);
 
+		// wcpaySettings.zeroDecimalCurrencies must be included as part of the WCPAY_ADMIN_SETTINGS as
+		// it's used in the settings page by the AccountFees component.
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpaySettings',
+			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
+		);
+
 		wp_register_style(
 			'WCPAY_ADMIN_SETTINGS',
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
