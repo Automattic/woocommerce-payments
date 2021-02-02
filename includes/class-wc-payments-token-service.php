@@ -236,7 +236,8 @@ class WC_Payments_Token_Service {
 		return array_filter(
 			$tokens,
 			function ( $token ) use ( $customer_id ) {
-				return $token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id;
+				return $token->get_gateway_id() !== WC_Payment_Gateway_WCPay::GATEWAY_ID ||
+					$token->get_meta( self::CUSTOMER_ID_META_KEY ) === $customer_id;
 			}
 		);
 	}

@@ -224,11 +224,11 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$token2->add_meta_data( '_wcpay_customer_id', 'cus_12345' );
 		$unavailable_token->add_meta_data( '_wcpay_customer_id', 'cus_67890' );
 
-		$tokens = [
-			$token1,
-			$unavailable_token,
-			$token2,
-		];
+		$another_gateway_token = WC_Helper_Token::create_token( 'another_gateway_token' );
+		$another_gateway_token->set_gateway_id( 'other_gateway' );
+		$another_gateway_token->save();
+
+		$tokens = [ $token1, $unavailable_token, $another_gateway_token, $token2 ];
 
 		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
 
@@ -240,9 +240,10 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 
 		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
 		$result_tokens = array_values( $result );
-		$this->assertCount( 2, $result_tokens );
+		$this->assertCount( 3, $result_tokens );
 		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
-		$this->assertEquals( 'pm_mock2', $result_tokens[1]->get_token() );
+		$this->assertEquals( 'another_gateway_token', $result_tokens[1]->get_token() );
+		$this->assertEquals( 'pm_mock2', $result_tokens[2]->get_token() );
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_imports_tokens() {
