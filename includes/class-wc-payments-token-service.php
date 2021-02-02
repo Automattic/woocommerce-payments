@@ -268,7 +268,10 @@ class WC_Payments_Token_Service {
 		}
 
 		foreach ( $tokens as $token ) {
-			if ( ! $token->meta_exists( self::CUSTOMER_ID_META_KEY ) ) {
+			if (
+				$token->get_gateway_id() === WC_Payment_Gateway_WCPay::GATEWAY_ID &&
+				! $token->meta_exists( self::CUSTOMER_ID_META_KEY )
+			) {
 				$token->update_meta_data(
 					self::CUSTOMER_ID_META_KEY,
 					$customer_id
