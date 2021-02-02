@@ -992,11 +992,11 @@ class WC_Payments_API_Client {
 			);
 
 			if ( 'wcpay_amount_too_low' === $error_code
-				&& isset( $response_body['data']['min_amount'] )
-				&& isset( $response_body['data']['currency'] ) ) {
+				&& isset( $response_body['data']['min_amount'], $response_body['data']['currency'] )
+			) {
 
 				$min_amount = $response_body['data']['min_amount'];
-				$currency   = wc_strtolower( $response_body['data']['currency'] );
+				$currency   = strtolower( $response_body['data']['currency'] );
 
 				if ( ! in_array( $currency, WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
 					$min_amount = $min_amount / 100;
@@ -1006,12 +1006,11 @@ class WC_Payments_API_Client {
 				// use to build a specific message for a client.
 				$message = sprintf(
 					// translators: %1$s is a formatted amount with currency code.
-					_x(
+					__(
 						'Sorry, the minimum allowed order total is %1$s to use this payment method.',
-						'Error message with a minimum required order amount',
 						'woocommerce-payments'
 					),
-					wc_price( $min_amount, [ 'currency' => wc_strtoupper( $currency ) ] )
+					wc_price( $min_amount, [ 'currency' => strtoupper( $currency ) ] )
 				);
 			}
 
