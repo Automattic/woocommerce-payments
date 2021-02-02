@@ -75,4 +75,15 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected_file_contents, $this->file_contents );
 	}
+
+	public function test_add_domain_association_rewrite_rule() {
+		$this->set_permalink_structure( '/%postname%/' );
+		$this->wc_apple_pay_registration->add_domain_association_rewrite_rule();
+		flush_rewrite_rules();
+
+		global $wp_rewrite;
+		$rewrite_rule = 'index.php?' . $this->file_name . '=1';
+
+		$this->assertContains( $rewrite_rule, $wp_rewrite->rewrite_rules() );
+	}
 }
