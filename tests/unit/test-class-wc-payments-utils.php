@@ -317,7 +317,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
-	public function get_order_intent_currency() {
+	public function test_get_order_intent_currency() {
 		$order = WC_Helper_Order::create_order();
 
 		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), $order->get_currency() );
