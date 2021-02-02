@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
-use \Automattic\WooCommerce\Admin\Features\Onboarding;
 
 /**
  * Class handling any account connection functionality
@@ -185,6 +184,25 @@ class WC_Payments_Account {
 	public function get_is_live() {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['is_live'] ) ? $account['is_live'] : null;
+	}
+
+	/**
+	 * Gets the various anti-fraud services that must be included on every WCPay-related page.
+	 *
+	 * @return array Assoc array. Each key is the slug of a fraud service that must be incorporated to every page, the value is service-specific config for it.
+	 */
+	public function get_fraud_services_config() {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account ) || ! isset( $account['fraud_services'] ) ) {
+			// This was the default before adding new anti-fraud providers, preserve backwards-compatibility.
+			return [ 'stripe' => [] ];
+		}
+		$services_config          = $account['fraud_services'];
+		$filtered_services_config = [];
+		foreach ( $services_config as $service_id => $config ) {
+			$filtered_services_config[ $service_id ] = apply_filters( 'wcpay_prepare_fraud_config', $config, $service_id );
+		}
+		return $filtered_services_config;
 	}
 
 	/**

@@ -69,23 +69,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $token_service;
 
 	/**
+	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account          $account             - Account class instance.
-	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
-	 * @param WC_Payments_Token_Service    $token_service       - Token class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                  - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
-		WC_Payments_Token_Service $token_service
+		WC_Payments_Token_Service $token_service,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->account             = $account;
-		$this->customer_service    = $customer_service;
-		$this->token_service       = $token_service;
+		$this->payments_api_client      = $payments_api_client;
+		$this->account                  = $account;
+		$this->customer_service         = $customer_service;
+		$this->token_service            = $token_service;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -178,6 +188,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+
+		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -315,6 +327,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'          => $this->account->get_fraud_services_config(),
 		];
 	}
 
@@ -1578,6 +1591,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [
 				'result' => 'error',
 			];
+		}
+	}
+
+	/**
+	 * When an order is created, we want to add an ActionScheduler job to send this data to
+	 * the payment server.
+	 *
+	 * @param int      $order_id  The ID of the order that has been created.
+	 * @param WC_Order $order     The order that has been created.
+	 */
+	public function schedule_order_tracking( $order_id, $order ) {
+		// If Sift is not enabled, exit out and don't do the tracking here.
+		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
+			return;
+		}
+
+		// We only want to track orders created by our payment gateway.
+		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
+			return;
+		}
+
+		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
+		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
+			return;
+		}
+
+		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
+			// Schedule the action to send this information to the payment server.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_new_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
+
+			// Update the metadata to reflect that the order creation event has been fired.
+			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+			$order->save_meta_data();
+		} else {
+			// Schedule an update action.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_update_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
 		}
 	}
 

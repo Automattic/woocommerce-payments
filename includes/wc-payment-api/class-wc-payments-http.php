@@ -56,7 +56,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 			);
 		}
 
-		$args['blog_id'] = Jetpack_Options::get_option( 'id' );
+		$args['blog_id'] = $this->get_blog_id();
 		$args['user_id'] = $this->connection_manager->get_connection_owner_id();
 
 		if ( $is_site_specific ) {
@@ -103,6 +103,15 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 */
 	public function is_connected() {
 		return $this->connection_manager->is_plugin_enabled() && $this->connection_manager->is_active();
+	}
+
+	/**
+	 * Gets the current WP.com blog ID.
+	 *
+	 * @return integer Current WPCOM blog ID.
+	 */
+	public function get_blog_id() {
+		return Jetpack_Options::get_option( 'id' );
 	}
 
 	/**

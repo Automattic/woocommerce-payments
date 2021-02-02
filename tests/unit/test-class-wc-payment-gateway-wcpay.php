@@ -45,11 +45,18 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	private $mock_token_service;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	/**
 	 * Pre-test setup
@@ -75,17 +82,20 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
 		$this->mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
 
+		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
-			$this->wcpay_account,
+			$this->mock_wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
 		);
 	}
 
@@ -178,18 +188,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_payment_fields_outputs_fields() {
-		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
-			$this->returnValue(
-				[
-					'account_id'               => 'acc_test',
-					'live_publishable_key'     => 'pk_live_',
-					'test_publishable_key'     => 'pk_test_',
-					'has_pending_requirements' => false,
-					'is_live'                  => true,
-				]
-			)
-		);
-
 		$this->wcpay_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-card-element"><\/div>/' );
@@ -769,6 +767,105 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->add_payment_method();
 
 		$this->assertEquals( 'error', $result['result'] );
+	}
+
+	public function test_schedule_order_tracking_with_wrong_payment_gateway() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'square' );
+
+		// If the payment gateway isn't WC Pay, this function should never get called.
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_without_intent_id() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->delete_meta_data( '_intent_id' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_with_sift_disabled() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+				]
+			);
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->delete_meta_data( '_new_order_tracking_complete' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_schedule_order_tracking_on_already_created_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
+		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn(
+				[
+					'stripe' => [],
+					'sift'   => [],
+				]
+			);
+
+		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
 	/**
