@@ -216,6 +216,9 @@ class WC_Payments_Apple_Pay_Registration {
 			$error = $e->getMessage();
 		}
 
+		// Display error message in notice.
+		$this->apple_pay_verify_notice = $error;
+
 		$this->gateway_settings['apple_pay_verified_domain'] = $this->domain_name;
 		$this->gateway_settings['apple_pay_domain_set']      = 'no';
 		update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
@@ -242,9 +245,6 @@ class WC_Payments_Apple_Pay_Registration {
 
 		// Register the domain with Apple Pay.
 		$verification_complete = $this->register_domain_with_apple();
-
-		// Show/hide notes if necessary.
-		// WC_Stripe_Inbox_Notes::notify_on_apple_pay_domain_verification( $verification_complete );.
 	}
 
 	/**
@@ -303,21 +303,28 @@ class WC_Payments_Apple_Pay_Registration {
 				'title' => [],
 			],
 		];
+		$payment_request_button_text       = __( 'Payment Request Button:', 'woocommerce-payments' );
 		$verification_failed_without_error = __( 'Apple Pay domain verification failed.', 'woocommerce-payments' );
 		$verification_failed_with_error    = __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
 		$check_log_text                    = sprintf(
 			/* translators: 1) HTML anchor open tag 2) HTML anchor closing tag */
-			esc_html__( 'Please check the %1$slogs%2$s for more details on this issue. Logging must be enabled to see recorded logs.', 'woocommerce-payments' ),
+			esc_html__( 'Please check the %1$slogs%2$s for more details on this issue. Debug log must be enabled to see recorded logs.', 'woocommerce-payments' ),
 			'<a href="' . admin_url( 'admin.php?page=wc-status&tab=logs' ) . '">',
 			'</a>'
 		);
 
 		?>
-		<div class="error stripe-apple-pay-message">
+		<div class="error apple-pay-message">
 			<?php if ( $empty_notice ) : ?>
-				<p><?php echo esc_html( $verification_failed_without_error ); ?></p>
+				<p>
+					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
+					<?php echo esc_html( $verification_failed_without_error ); ?>
+				</p>
 			<?php else : ?>
-				<p><?php echo esc_html( $verification_failed_with_error ); ?></p>
+				<p>
+					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
+					<?php echo esc_html( $verification_failed_with_error ); ?>
+				</p>
 				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
 			<?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
