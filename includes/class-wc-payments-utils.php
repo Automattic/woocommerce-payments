@@ -127,12 +127,12 @@ class WC_Payments_Utils {
 	/**
 	 * Interprets amount from Stripe API.
 	 *
-	 * @param float  $amount   The amount returned by Stripe API.
+	 * @param int    $amount   The amount returned by Stripe API.
 	 * @param string $currency The currency we get from Stripe API for the amount.
 	 *
-	 * @return int The interpreted amount.
+	 * @return float The interpreted amount.
 	 */
-	public static function interpret_stripe_amount( $amount, $currency = 'usd' ) {
+	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
 		$conversion_rate = 100;
 
 		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
@@ -338,7 +338,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return string The currency.
 	 */
-	public static function get_order_intent_currency( $order ) {
+	public static function get_order_intent_currency( WC_Order $order ): string {
 		$intent_currency = $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY );
 		if ( ! empty( $intent_currency ) ) {
 			return $intent_currency;
@@ -352,7 +352,7 @@ class WC_Payments_Utils {
 	 * @param WC_Order $order The order whose intent currency we want to set.
 	 * @param string   $currency The intent currency.
 	 */
-	public static function set_order_intent_currency( $order, $currency ) {
+	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
 	}
 }

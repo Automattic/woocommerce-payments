@@ -591,6 +591,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent['status'];
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
+			$currency      = $order->get_currency();
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -687,9 +688,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', $status );
-		if ( ! empty( $currency ) ) {
-			WC_Payments_Utils::set_order_intent_currency( $order, $currency );
-		}
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
 		$order->save();
 
 		if ( isset( $response ) ) {

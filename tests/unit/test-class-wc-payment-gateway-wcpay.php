@@ -542,11 +542,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					$order->get_currency(),
 					new DateTime(),
 					'succeeded',
 					$charge_id,
-					'...',
-					$order->get_currency()
+					'...'
 				)
 			)
 		);
@@ -583,11 +583,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'eur',
 					new DateTime(),
 					'succeeded',
 					$charge_id,
-					'...',
-					'eur'
+					'...'
 				)
 			)
 		);
@@ -624,11 +624,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					$order->get_currency(),
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...',
-					$order->get_currency()
+					'...'
 				)
 			)
 		);
@@ -664,11 +664,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'eur',
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...',
-					'eur'
+					'...'
 				)
 			)
 		);
@@ -707,11 +707,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'usd',
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...',
-					'USD'
+					'...'
 				)
 			)
 		);
@@ -752,11 +752,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'jpy',
 					new DateTime(),
 					'requires_capture',
 					$charge_id,
-					'...',
-					'JPY'
+					'...'
 				)
 			)
 		);
@@ -796,11 +796,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'usd',
 					new DateTime(),
 					'canceled',
 					$charge_id,
-					'...',
-					'USD'
+					'...'
 				)
 			)
 		);
@@ -842,11 +842,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					$intent_id,
 					1500,
+					'usd',
 					new DateTime(),
 					'canceled',
 					$charge_id,
-					'...',
-					'USD'
+					'...'
 				)
 			);
 
