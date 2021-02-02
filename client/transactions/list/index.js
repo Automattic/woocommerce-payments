@@ -9,7 +9,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { formatCurrency } from 'utils/currency';
-import { TableCard, Search, Link } from '@woocommerce/components';
+import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
 	getQuery,
@@ -173,14 +173,11 @@ export const TransactionsList = ( props ) => {
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
 		const customerUrl = addQueryArgs( 'admin.php', {
-			page: 'wc-admin',
-			path: '/customers',
-			search: txn.customer_name,
+			'wcpay-customer-by-order': txn.order.number,
 		} );
-		const customerName = (
-			<Link href={ customerUrl }>
-				{ txn.customer_name }
-			</Link>
+		const customerName = <a href={ customerUrl }>{ txn.customer_name }</a>;
+		const customerEmail = (
+			<a href={ customerUrl }>{ txn.customer_email }</a>
 		);
 
 		const deposit = (
@@ -222,12 +219,12 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
-				display: customerName
+				display: customerName,
 			},
 			// eslint-disable-next-line camelcase
 			customer_email: {
 				value: txn.customer_email,
-				display: clickable( txn.customer_email ),
+				display: customerEmail,
 			},
 			// eslint-disable-next-line camelcase
 			customer_country: {

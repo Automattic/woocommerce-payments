@@ -485,8 +485,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 class="woocommerce-table__item"
               >
                 <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fcustomers&search=My%20name"
+                  href="admin.php?wcpay-customer-by-order=125"
                 >
                   My name
                 </a>
@@ -1087,8 +1086,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 class="woocommerce-table__item"
               >
                 <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fcustomers&search=Another%20customer"
+                  href="admin.php?wcpay-customer-by-order=123"
                 >
                   Another customer
                 </a>
@@ -1214,8 +1212,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 class="woocommerce-table__item"
               >
                 <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fcustomers&search=My%20name"
+                  href="admin.php?wcpay-customer-by-order=125"
                 >
                   My name
                 </a>
@@ -1800,8 +1797,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 class="woocommerce-table__item"
               >
                 <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fcustomers&search=Another%20customer"
+                  href="admin.php?wcpay-customer-by-order=123"
                 >
                   Another customer
                 </a>
@@ -1924,8 +1920,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 class="woocommerce-table__item"
               >
                 <a
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fcustomers&search=My%20name"
+                  href="admin.php?wcpay-customer-by-order=125"
                 >
                   My name
                 </a>
