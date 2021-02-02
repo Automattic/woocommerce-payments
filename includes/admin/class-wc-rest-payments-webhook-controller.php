@@ -167,6 +167,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$charge_id = $this->read_rest_property( $event_object, 'charge' );
 		$refund_id = $this->read_rest_property( $event_object, 'id' );
 		$amount    = $this->read_rest_property( $event_object, 'amount' );
+		$currency  = $this->read_rest_property( $event_object, 'currency' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -190,7 +191,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					'code'   => '<code>',
 				]
 			),
-			wc_price( $amount / 100 ),
+			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
 			$refund_id
 		);
 		$order->add_order_note( $note );

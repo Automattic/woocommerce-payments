@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
+import enqueueFraudScripts from 'fraud-scripts';
 
 const statusContainer = document.getElementById(
 	'wcpay-account-status-container'
@@ -51,3 +52,7 @@ authorization and order will be canceled. Are you sure you want to enable it?',
 		}
 	} );
 }
+
+window.addEventListener( 'load', () => {
+	enqueueFraudScripts( wcpayAdminSettings.fraudServices );
+} );

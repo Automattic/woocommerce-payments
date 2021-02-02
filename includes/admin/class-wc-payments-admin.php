@@ -215,6 +215,7 @@ class WC_Payments_Admin {
 				'featureFlags'          => $this->get_frontend_feature_flags(),
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'fraudServices'         => $this->account->get_fraud_services_config(),
 			]
 		);
 
@@ -223,14 +224,6 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/index.css' )
-		);
-
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
 		);
 
 		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
@@ -252,17 +245,13 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.css' )
 		);
 
-		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
-		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
-		$settings_script_dependencies = array_merge(
-			$settings_script_asset['dependencies'],
-			[ 'stripe' ]
-		);
+		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
+		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
+		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
-			$settings_script_dependencies,
+			$settings_script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
 		);
@@ -273,7 +262,16 @@ class WC_Payments_Admin {
 			[
 				'accountStatus' => $this->account->get_account_status_data(),
 				'accountFees'   => $this->account->get_fees(),
+				'fraudServices' => $this->account->get_fraud_services_config(),
 			]
+		);
+
+		// wcpaySettings.zeroDecimalCurrencies must be included as part of the WCPAY_ADMIN_SETTINGS as
+		// it's used in the settings page by the AccountFees component.
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpaySettings',
+			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
 		);
 
 		wp_register_style(

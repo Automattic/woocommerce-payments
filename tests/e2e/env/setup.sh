@@ -128,6 +128,9 @@ cli wp core update-db --quiet
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
+echo "Installing and activating Gutenberg..."
+cli wp plugin install gutenberg --activate
+
 echo "Installing and activating WooCommerce..."
 cli wp plugin install woocommerce --activate
 

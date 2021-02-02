@@ -316,4 +316,18 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected, $result );
 	}
+
+	public function test_get_order_intent_currency() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), $order->get_currency() );
+
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$this->assertEquals( WC_Payments_Utils::get_order_intent_currency( $order ), 'EUR' );
+	}
+
+	public function test_interpret_stripe_amount() {
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'usd' ), 1 );
+		$this->assertEquals( WC_Payments_Utils::interpret_stripe_amount( 100, 'jpy' ), 100 );
+	}
 }

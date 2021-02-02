@@ -170,6 +170,13 @@ export const TransactionsList = ( props ) => {
 				i !== all.length - 1 && ', ',
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
+
+		const customerUrl = txn.order.customer_url;
+		const customerName = <a href={ customerUrl }>{ txn.customer_name }</a>;
+		const customerEmail = (
+			<a href={ customerUrl }>{ txn.customer_email }</a>
+		);
+
 		const deposit = (
 			<Deposit
 				depositId={ txn.deposit_id }
@@ -209,12 +216,12 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
-				display: clickable( txn.customer_name ),
+				display: customerName,
 			},
 			// eslint-disable-next-line camelcase
 			customer_email: {
 				value: txn.customer_email,
-				display: clickable( txn.customer_email ),
+				display: customerEmail,
 			},
 			// eslint-disable-next-line camelcase
 			customer_country: {
