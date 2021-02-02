@@ -65,7 +65,6 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_domain_association_file() {
-		// Unlink domain association file before tests.
 		$path     = untrailingslashit( ABSPATH );
 		$dir      = '.well-known';
 		$fullpath = $path . '/' . $dir . '/' . $this->file_name;

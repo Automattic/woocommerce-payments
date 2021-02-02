@@ -30,21 +30,21 @@ class WC_Payments_Apple_Pay_Registration {
 	 *
 	 * @var array
 	 */
-	public $gateway_settings;
+	private $gateway_settings;
 
 	/**
 	 * Current domain name.
 	 *
 	 * @var bool
 	 */
-	public $domain_name;
+	private $domain_name;
 
 	/**
 	 * Stores Apple Pay domain verification issues.
 	 *
 	 * @var string
 	 */
-	public $apple_pay_verify_notice;
+	private $apple_pay_verify_notice;
 
 	/**
 	 * Initialize class actions.
@@ -198,6 +198,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return bool Whether domain verification succeeded.
 	 */
 	public function register_domain_with_apple() {
+		$error = null;
 		try {
 			$registration_response = $this->payments_api_client->register_domain_with_apple( $this->domain_name );
 
