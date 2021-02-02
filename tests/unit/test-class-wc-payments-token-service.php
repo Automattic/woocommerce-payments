@@ -465,4 +465,16 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'cus_12345_test', $result[ $old_token->get_id() ]->get_meta( '_wcpay_customer_id' ) );
 		$this->assertEquals( 'cus_12345_test', $result[ $token->get_id() ]->get_meta( '_wcpay_customer_id' ) );
 	}
+
+	public function test_woocommerce_get_customer_payment_tokens_catches_payment_methods_exception() {
+		$this->mock_customer_service->method( 'get_customer_id_by_user_id' )->willReturn( 'cus_12345' );
+		$this->mock_customer_service
+			->expects( $this->atLeastOnce() )
+			->method( 'get_payment_methods_for_customer' )
+			->willThrowException( new Exception( 'some error message' ) );
+
+		$this->assertEmpty(
+			$this->token_service->woocommerce_get_customer_payment_tokens( [], 1, 'woocommerce_payments' )
+		);
+	}
 }

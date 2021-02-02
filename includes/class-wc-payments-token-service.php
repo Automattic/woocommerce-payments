@@ -127,7 +127,11 @@ class WC_Payments_Token_Service {
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
 		$tokens = $this->migrate_customerless_tokens( $tokens, $user_id );
-		$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
+		try {
+			$tokens = $this->import_customer_tokens( $tokens, $customer_id, $user_id );
+		} catch ( Exception $e ) {
+			Logger::error( 'Error when importing customer payment methods: ' . $e->getMessage() );
+		}
 		$tokens = $this->remove_unavailable_tokens( $tokens, $customer_id );
 
 		return $tokens;
@@ -176,6 +180,8 @@ class WC_Payments_Token_Service {
 	 * @param int    $user_id     User ID.
 	 *
 	 * @return array Token list with imported tokens.
+	 *
+	 * @throws API_Exception When the payment methods cannot be fetched.
 	 */
 	private function import_customer_tokens( $tokens, $customer_id, $user_id ) {
 		if ( null === $customer_id ) {
