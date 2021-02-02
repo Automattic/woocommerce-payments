@@ -28,7 +28,6 @@ import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
 import Deposit from './deposit';
 import autocompleter from 'transactions/autocompleter';
-import { addQueryArgs } from '@wordpress/url';
 import './style.scss';
 
 const getColumns = ( includeDeposit, includeSubscription ) =>
@@ -172,9 +171,7 @@ export const TransactionsList = ( props ) => {
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
-		const customerUrl = addQueryArgs( 'admin.php', {
-			'wcpay-customer-by-order': txn.order.number,
-		} );
+		const customerUrl = txn.order.customer_url;
 		const customerName = <a href={ customerUrl }>{ txn.customer_name }</a>;
 		const customerEmail = (
 			<a href={ customerUrl }>{ txn.customer_email }</a>

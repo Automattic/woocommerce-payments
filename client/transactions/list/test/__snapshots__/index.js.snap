@@ -484,9 +484,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  href="admin.php?wcpay-customer-by-order=125"
-                >
+                <a>
                   My name
                 </a>
               </td>
@@ -1085,9 +1083,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  href="admin.php?wcpay-customer-by-order=123"
-                >
+                <a>
                   Another customer
                 </a>
               </td>
@@ -1211,9 +1207,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  href="admin.php?wcpay-customer-by-order=125"
-                >
+                <a>
                   My name
                 </a>
               </td>
@@ -1796,9 +1790,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  href="admin.php?wcpay-customer-by-order=123"
-                >
+                <a>
                   Another customer
                 </a>
               </td>
@@ -1919,9 +1911,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  href="admin.php?wcpay-customer-by-order=125"
-                >
+                <a>
                   My name
                 </a>
               </td>

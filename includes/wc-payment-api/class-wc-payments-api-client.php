@@ -1072,8 +1072,19 @@ class WC_Payments_API_Client {
 		$object['order'] = null;
 		if ( $order ) {
 			$object['order'] = [
-				'number' => $order->get_order_number(),
-				'url'    => $order->get_edit_order_url(),
+				'number'       => $order->get_order_number(),
+				'url'          => $order->get_edit_order_url(),
+				'customer_url' => admin_url(
+					add_query_arg(
+						[
+							'page'      => 'wc-admin',
+							'path'      => '/customers',
+							'filter'    => 'single_customer',
+							'customers' => $order->get_customer_id(),
+						],
+						'admin.php'
+					)
+				),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {

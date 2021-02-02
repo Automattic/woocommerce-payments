@@ -64,54 +64,6 @@ class WC_Payments_Customer_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
-
-		add_action( 'admin_init', [ $this, 'maybe_handle_routes' ] );
-	}
-
-	/**
-	 * Handle customer related routes.
-	 */
-	public function maybe_handle_routes() {
-		if ( ! is_admin() ) {
-			return;
-		}
-
-		if ( isset( $_GET['wcpay-customer-by-order'] ) && check_admin_referer() ) {
-			try {
-				$order_id = sanitize_text_field( wp_unslash( $_GET['wcpay-customer-by-order'] ) );
-				$this->redirect_to_single_customer( $order_id );
-			} catch ( Exception $e ) {
-				$this->add_notice_to_settings_page(
-					__( 'There was a problem redirecting you to the customer page. Please try again.', 'woocommerce-payments' ),
-					'notice-error'
-				);
-			}
-			return;
-		}
-	}
-
-	/**
-	 * Given order id, redirect to single customer page.
-	 *
-	 * @param string $order_id The order ID to look for a customer ID with.
-	 */
-	private function redirect_to_single_customer( string $order_id ) {
-		$order       = wc_get_order( $order_id );
-		$customer_id = $order->get_customer_id();
-
-		$url = admin_url(
-			add_query_arg(
-				[
-					'page'      => 'wc-admin',
-					'path'      => '/customers',
-					'filter'    => 'single_customer',
-					'customers' => $customer_id,
-				],
-				'admin.php'
-			)
-		);
-		wp_safe_redirect( $url );
-		exit;
 	}
 
 	/**
