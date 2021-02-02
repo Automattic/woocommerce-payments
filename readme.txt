@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.9.0 - 2021-xx-xx =
+= 1.9.0 - 2021-02-02 =
 * Add - Improved fraud prevention.
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
