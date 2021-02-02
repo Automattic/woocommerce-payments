@@ -592,6 +592,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent->get_status();
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
+			$currency      = $intent->get_currency();
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
@@ -603,6 +604,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent['status'];
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
+			$currency      = $order->get_currency();
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -699,6 +701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', $status );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
 		$order->save();
 
 		if ( isset( $response ) ) {
@@ -768,7 +771,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order = wc_get_order( $order_id );
+		$order    = wc_get_order( $order_id );
+		$currency = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		if ( ! $order ) {
 			return false;
@@ -791,13 +795,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 			}
+			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				$e->getMessage()
 			);
 
@@ -812,13 +817,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				$reason
 			);
 		}
@@ -1109,6 +1114,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$is_authorization_expired = false;
 		$status                   = null;
 		$error_message            = null;
+		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
 			$intent = $this->payments_api_client->capture_intention(
@@ -1117,7 +1123,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_level3_data_from_order( $order )
 			);
 
-			$status = $intent->get_status();
+			$status   = $intent->get_status();
+			$currency = $intent->get_currency();
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
@@ -1150,7 +1157,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
@@ -1167,7 +1174,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'code'   => '<code>',
 					]
 				),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
@@ -1178,7 +1185,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 			$order->add_order_note( $note );
 		}

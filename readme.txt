@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fixed connection timeout configuration.
 * Fix - Specify error code when refund fails in admin to prevent blank alert.
 * Fix - Add fees as line items sent to Stripe to prevent Level 3 errors.
+* Fix - Currency format in non-USD order note when capturing, refunding, and processing subscription renewal.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.

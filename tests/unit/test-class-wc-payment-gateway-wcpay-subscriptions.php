@@ -208,6 +208,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					self::PAYMENT_INTENT_ID,
 					1500,
+					'usd',
 					new DateTime(),
 					'succeeded',
 					self::CHARGE_ID,
@@ -262,6 +263,33 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
+	}
+
+	public function test_scheduled_subscription_payment_fails_when_payment_processing_fails_non_usd() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->set_currency( 'EUR' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertContains( 'failed', $latest_wcpay_note->content );
+		$this->assertContains( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_subscription_payment_method_filter_bypass_other_payment_methods() {

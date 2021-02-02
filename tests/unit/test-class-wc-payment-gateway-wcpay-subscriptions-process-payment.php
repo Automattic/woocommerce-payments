@@ -92,6 +92,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$this->payment_intent = new WC_Payments_API_Intention(
 			self::PAYMENT_INTENT_ID,
 			1500,
+			'usd',
 			new DateTime(),
 			'succeeded',
 			self::CHARGE_ID,
