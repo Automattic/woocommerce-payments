@@ -69,7 +69,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Handle customer related routes
+	 * Handle customer related routes.
 	 */
 	public function maybe_handle_routes() {
 		if ( ! is_admin() ) {
