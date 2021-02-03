@@ -77,7 +77,9 @@ const renderDepositsStatus = ( depositsStatus ) => {
 	} else if ( 'monthly' === depositsStatus ) {
 		description = __( 'Monthly', 'woocommerce-payments' );
 	} else if ( 'manual' === depositsStatus ) {
-		description = __( 'Manual', 'woocommerce-payments' );
+		description = __( 'Temporarily suspended', 'woocommerce-payments' );
+		className = 'account-status__info__red';
+		icon = <GridiconNotice size={ 18 } />;
 	} else {
 		description = __( 'Unknown', 'woocommerce-payments' );
 	}
