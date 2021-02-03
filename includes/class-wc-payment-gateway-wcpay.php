@@ -1605,13 +1605,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * When an order is created, we want to add an ActionScheduler job to send this data to
 	 * the payment server.
 	 *
-	 * @param int      $order_id  The ID of the order that has been created.
-	 * @param WC_Order $order     The order that has been created.
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
 	 */
-	public function schedule_order_tracking( $order_id, $order ) {
+	public function schedule_order_tracking( $order_id, $order = null ) {
 		// If Sift is not enabled, exit out and don't do the tracking here.
 		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
 			return;
+		}
+
+		// Sometimes the woocommerce_update_order hook might be called with just the order ID parameter,
+		// so we need to fetch the order here.
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
 		}
 
 		// We only want to track orders created by our payment gateway.
