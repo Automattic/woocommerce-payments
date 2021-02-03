@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 1.9.1 - 2021-xx-xx =
+= 1.9.1 - 2021-02-03 =
 * Fix - Incompatibility with WC Subscriptions.
 * Fix - Missing order causing broken transactions list.
 
