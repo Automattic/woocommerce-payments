@@ -49,13 +49,3 @@ exports[`Chip renders an alert chip 1`] = `
   </span>
 </div>
 `;
-
-exports[`Chip renders default if type is invalid 1`] = `
-<div>
-  <span
-    class="chip chip-primary"
-  >
-    Message
-  </span>
-</div>
-`;

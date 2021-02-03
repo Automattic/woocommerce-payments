@@ -2,14 +2,19 @@
 /**
  * External dependencies
  */
+import * as React from 'react';
 import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import Chip from '../';
+import Chip, { chipType } from '../';
 
 describe( 'Chip', () => {
+	function renderChip( type: chipType | undefined, message: string ) {
+		return render( <Chip type={ type } message={ message } /> );
+	}
+
 	test( 'renders an alert chip', () => {
 		const { container: chip } = renderChip( 'alert', 'Alert message' );
 		expect( chip ).toMatchSnapshot();
@@ -34,13 +39,4 @@ describe( 'Chip', () => {
 		const { container: chip } = renderChip( 'warning', 'Alert message' );
 		expect( chip ).toMatchSnapshot();
 	} );
-
-	test( 'renders default if type is invalid', () => {
-		const { container: chip } = renderChip( 'invalidtype', 'Message' );
-		expect( chip ).toMatchSnapshot();
-	} );
-
-	function renderChip( type, message ) {
-		return render( <Chip type={ type } message={ message } /> );
-	}
 } );
