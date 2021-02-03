@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 1.9.1 - 2021-xx-xx =
 * Fix - Incompatibility with WC Subscriptions.
+* Fix - Missing order causing broken transactions list.
 
 = 1.9.0 - 2021-02-02 =
 * Add - Improved fraud prevention.
