@@ -64,6 +64,19 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 	}
 };
 
+/**
+ * Formats exchange rate string from one currency to another.
+ *
+ * @param {Object} from          Source currency and amount for exchange rate calculation.
+ * @param {string} from.currency Source currency code.
+ * @param {number} from.amount   Source amount.
+ * @param {Object} to            Target currency and amount for exchange rate calculation.
+ * @param {string} to.currency   Target currency code.
+ * @param {number} to.amount     Target amount.
+ *
+ * @return {string?} formatted string like `€1,00 → $1,19: $29.99`.
+ *
+ * */
 export const formatFX = ( from, to ) => {
 	if ( ! from.currency || ! to.currency ) {
 		return;
