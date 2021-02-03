@@ -54,7 +54,7 @@ const getStatusChangeTimelineItem = ( event, status ) => {
  * Creates a timeline item about a deposit
  *
  * @param {Object} event An event affecting the deposit
- * @param {number} formattedAmount Formatted amount
+ * @param {string} formattedAmount Formatted amount string
  * @param {boolean} isPositive Whether the amount will be added or deducted
  * @param {Array} body Any extra subitems that should be included as item body
  *
@@ -147,22 +147,15 @@ const getMainTimelineItem = (
 } );
 
 const isFXEvent = ( event = {} ) => {
-	const { type = '' } = event;
-
-	// Dispute events hold store values in amount and currency props.
-	if ( type.startsWith( 'dispute' ) ) {
-		return (
-			event.currency &&
-			event.customer_currency &&
-			event.customer_currency !== event.currency
-		);
-	}
-
+	/* eslint-disable camelcase */
+	const { transaction_details = {} } = event;
+	const { customer_currency, store_currency } = transaction_details;
 	return (
-		event.currency &&
-		event.store_currency &&
-		event.store_currency !== event.currency
+		customer_currency &&
+		store_currency &&
+		customer_currency !== store_currency
 	);
+	/* eslint-enable camelcase */
 };
 
 const composeNetString = ( event ) => {
@@ -171,8 +164,9 @@ const composeNetString = ( event ) => {
 	}
 
 	return formatCurrency(
-		event.store_amount - event.store_fee,
-		event.store_currency
+		event.transaction_details.store_amount -
+			event.transaction_details.store_fee,
+		event.transaction_details.store_currency
 	);
 };
 
@@ -194,8 +188,8 @@ const composeFeeString = ( event ) => {
 	let feeCurrency = event.currency;
 
 	if ( isFXEvent( event ) ) {
-		feeAmount = event.store_fee;
-		feeCurrency = event.store_currency;
+		feeAmount = event.transaction_details.store_fee;
+		feeCurrency = event.transaction_details.store_currency;
 	}
 
 	return sprintf(
@@ -211,26 +205,23 @@ const composeFXString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return;
 	}
-
-	switch ( event.type ) {
-		case 'captured':
-			return formatFX(
-				{ currency: event.currency, amount: event.amount },
-				{
-					currency: event.store_currency,
-					amount: event.store_amount,
-				}
-			);
-		case 'partial_refund':
-		case 'full_refund':
-			return formatFX(
-				{ currency: event.currency, amount: event.amount_refunded },
-				{
-					currency: event.store_currency,
-					amount: event.store_amount,
-				}
-			);
-	}
+	/* eslint-disable camelcase */
+	const {
+		transaction_details: {
+			customer_currency,
+			customer_amount,
+			store_currency,
+			store_amount,
+		},
+	} = event;
+	return formatFX(
+		{ currency: customer_currency, amount: customer_amount },
+		{
+			currency: store_currency,
+			amount: store_amount,
+		}
+	);
+	/* eslint-enable camelcase */
 };
 
 /**
@@ -309,7 +300,6 @@ const mapEventToTimelineItems = ( event ) => {
 	} else if ( 'captured' === type ) {
 		const formattedNet = composeNetString( event );
 		const feeString = composeFeeString( event );
-		const fxString = composeFXString( event );
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -329,7 +319,7 @@ const mapEventToTimelineItems = ( event ) => {
 				'checkmark',
 				'is-success',
 				[
-					fxString,
+					composeFXString( event ),
 					feeString,
 					sprintf(
 						/* translators: %s is a monetary amount */
@@ -345,9 +335,11 @@ const mapEventToTimelineItems = ( event ) => {
 			event.currency
 		);
 		const depositAmount = isFXEvent( event )
-			? formatCurrency( event.store_amount, event.store_currency )
+			? formatCurrency(
+					event.transaction_details.store_amount,
+					event.transaction_details.store_currency
+			  )
 			: formattedAmount;
-		const fxString = composeFXString( event );
 		return [
 			getStatusChangeTimelineItem(
 				event,
@@ -368,7 +360,7 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				'checkmark',
 				'is-success',
-				[ fxString ]
+				[ composeFXString( event ) ]
 			),
 		];
 	} else if ( 'failed' === type ) {
@@ -427,8 +419,8 @@ const mapEventToTimelineItems = ( event ) => {
 			);
 			const disputedAmount = isFXEvent( event )
 				? formatCurrency(
-						event.customer_amount,
-						event.customer_currency
+						event.transaction_details.customer_amount,
+						event.transaction_details.customer_currency
 				  )
 				: formatCurrency( event.amount, event.currency );
 			depositTimelineItem = getDepositTimelineItem(
@@ -441,16 +433,7 @@ const mapEventToTimelineItems = ( event ) => {
 						__( 'Disputed amount: %s', 'woocommerce-payments' ),
 						disputedAmount
 					),
-					formatFX(
-						{
-							amount: event.customer_amount,
-							currency: event.customer_currency,
-						},
-						{
-							amount: event.amount,
-							currency: event.currency,
-						}
-					),
+					composeFXString( event ),
 					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Fee: %s', 'woocommerce-payments' ),
@@ -492,7 +475,10 @@ const mapEventToTimelineItems = ( event ) => {
 			event.currency
 		);
 		const disputedAmount = isFXEvent( event )
-			? formatCurrency( event.customer_amount, event.customer_currency )
+			? formatCurrency(
+					event.transaction_details.customer_amount,
+					event.transaction_details.customer_currency
+			  )
 			: formatCurrency( event.amount, event.currency );
 		return [
 			getStatusChangeTimelineItem(
@@ -505,16 +491,7 @@ const mapEventToTimelineItems = ( event ) => {
 					__( 'Disputed amount: %s', 'woocommerce-payments' ),
 					disputedAmount
 				),
-				formatFX(
-					{
-						amount: event.customer_amount,
-						currency: event.customer_currency,
-					},
-					{
-						amount: event.amount,
-						currency: event.currency,
-					}
-				),
+				composeFXString( event ),
 				sprintf(
 					/* translators: %s is a monetary amount */
 					__( 'Fee: %s', 'woocommerce-payments' ),
