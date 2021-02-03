@@ -39,11 +39,11 @@
     "install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:php",
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
-    "lint:js": "eslint . --ext=js,jsx",
+    "lint:js": "eslint . --ext=js,jsx,ts,tsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "format": "npm run format:js && npm run format:css",
-    "format:js": "npm run format:provided '**/*.js'",
+    "format:js": "npm run format:provided '**/*.js' '**/*.ts' '**/*.tsx'",
     "format:css": "npm run format:provided '**/*.scss' '**/*.css'",
     "format:provided": "prettier --write",
     "setup:jurassic-tube": "./bin/jurassic-tube-setup.sh"
@@ -54,7 +54,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx}": [
+    "*.{js,jsx,ts,tsx}": [
       "npm run format:provided",
       "npm run lint:js"
     ],
@@ -81,6 +81,8 @@
     "@testing-library/react": "11.2.3",
     "@testing-library/user-event": "10.4.1",
     "@types/react": "^17.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.14.2",
+    "@typescript-eslint/parser": "^4.14.2",
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
