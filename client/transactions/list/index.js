@@ -171,7 +171,7 @@ export const TransactionsList = ( props ) => {
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
-		const customerUrl = txn.order.customer_url;
+		const customerUrl = txn.order ? txn.order.customer_url : '#';
 		const customerName = <a href={ customerUrl }>{ txn.customer_name }</a>;
 		const customerEmail = (
 			<a href={ customerUrl }>{ txn.customer_email }</a>
