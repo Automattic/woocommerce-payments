@@ -391,9 +391,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 	public function test_connection_exception_thrown() {
 		// Arrange: Reusable data.
-		$error_message = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
-		$order_id      = 123;
-		$total         = 12.23;
+		$error_message = 'Test error.';
+		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -419,22 +418,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Assert: Order status was updated.
 		$this->assertEquals( 'failed', $result_order->get_status() );
 
-		// Assert: Order transaction ID was not set.
-		$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
-
-		// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
-		$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_charge_id' ) );
-		$this->assertEquals( '', $result_order->get_meta( '_intention_status' ) );
-
 		// Assert: No order note was added, besides the status change and failed transaction details.
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertContains( 'A payment of &pound;50.00 failed to complete with the following message: ', strip_tags( $notes[0]->content, '' ) );
+		$this->assertContains( 'A payment of &pound;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
 
 		// Assert: A WooCommerce notice was added.
-		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'fail', $result['result'] );
