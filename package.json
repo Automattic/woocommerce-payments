@@ -67,6 +67,7 @@
     "composer.json": "composer validate --strict --no-check-all"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^1.1.0",
     "@stripe/react-stripe-js": "^1.1.2",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
