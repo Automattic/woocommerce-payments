@@ -237,182 +237,254 @@ const mapEventToTimelineItems = ( event ) => {
 	const stringWithAmount = ( headline, amount ) =>
 		sprintf( headline, formatCurrency( amount, event.currency ) );
 
-	if ( 'authorized' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorized', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				stringWithAmount(
-					/* translators: %s is a monetary amount */
-					__(
-						'A payment of %s was successfully authorized',
-						'woocommerce-payments'
-					),
-					event.amount
+	switch ( type ) {
+		case 'authorized':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Authorized', 'woocommerce-payments' )
 				),
-				'checkmark',
-				'is-warning'
-			),
-		];
-	} else if ( 'authorization_voided' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorization Voided', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				stringWithAmount(
-					__(
+				getMainTimelineItem(
+					event,
+					stringWithAmount(
 						/* translators: %s is a monetary amount */
-						'Authorization for %s was voided',
-						'woocommerce-payments'
+						__(
+							'A payment of %s was successfully authorized',
+							'woocommerce-payments'
+						),
+						event.amount
 					),
-					event.amount
+					'checkmark',
+					'is-warning'
 				),
-				'checkmark',
-				'is-warning'
-			),
-		];
-	} else if ( 'authorization_expired' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Authorization Expired', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				stringWithAmount(
-					__(
-						/* translators: %s is a monetary amount */
-						'Authorization for %s expired',
-						'woocommerce-payments'
+			];
+		case 'authorization_voided':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Authorization Voided', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					stringWithAmount(
+						__(
+							/* translators: %s is a monetary amount */
+							'Authorization for %s was voided',
+							'woocommerce-payments'
+						),
+						event.amount
 					),
-					event.amount
+					'checkmark',
+					'is-warning'
 				),
-				'cross',
-				'is-error'
-			),
-		];
-	} else if ( 'captured' === type ) {
-		const formattedNet = composeNetString( event );
-		const feeString = composeFeeString( event );
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Paid', 'woocommerce-payments' )
-			),
-			getDepositTimelineItem( event, formattedNet, true ),
-			getMainTimelineItem(
-				event,
-				stringWithAmount(
-					__(
-						/* translators: %s is a monetary amount */
-						'A payment of %s was successfully charged',
-						'woocommerce-payments'
+			];
+		case 'authorization_expired':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Authorization Expired', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					stringWithAmount(
+						__(
+							/* translators: %s is a monetary amount */
+							'Authorization for %s expired',
+							'woocommerce-payments'
+						),
+						event.amount
 					),
-					event.amount
+					'cross',
+					'is-error'
 				),
-				'checkmark',
-				'is-success',
-				[
-					composeFXString( event ),
-					feeString,
-					sprintf(
-						/* translators: %s is a monetary amount */
-						__( 'Net deposit: %s', 'woocommerce-payments' ),
-						formattedNet
+			];
+		case 'captured':
+			const formattedNet = composeNetString( event );
+			const feeString = composeFeeString( event );
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Paid', 'woocommerce-payments' )
+				),
+				getDepositTimelineItem( event, formattedNet, true ),
+				getMainTimelineItem(
+					event,
+					stringWithAmount(
+						__(
+							/* translators: %s is a monetary amount */
+							'A payment of %s was successfully charged',
+							'woocommerce-payments'
+						),
+						event.amount
 					),
-				]
-			),
-		];
-	} else if ( 'partial_refund' === type || 'full_refund' === type ) {
-		const formattedAmount = formatCurrency(
-			event.amount_refunded,
-			event.currency
-		);
-		const depositAmount = isFXEvent( event )
-			? formatCurrency(
-					event.transaction_details.store_amount,
-					event.transaction_details.store_currency
-			  )
-			: formattedAmount;
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				'full_refund' === type
-					? __( 'Refunded', 'woocommerce-payments' )
-					: __( 'Partial Refund', 'woocommerce-payments' )
-			),
-			getDepositTimelineItem( event, depositAmount, false ),
-			getMainTimelineItem(
-				event,
-				sprintf(
-					__(
-						/* translators: %s is a monetary amount */
-						'A payment of %s was successfully refunded',
-						'woocommerce-payments'
-					),
-					formattedAmount
+					'checkmark',
+					'is-success',
+					[
+						composeFXString( event ),
+						feeString,
+						sprintf(
+							/* translators: %s is a monetary amount */
+							__( 'Net deposit: %s', 'woocommerce-payments' ),
+							formattedNet
+						),
+					]
 				),
-				'checkmark',
-				'is-success',
-				[ composeFXString( event ) ]
-			),
-		];
-	} else if ( 'failed' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Failed', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				stringWithAmount(
-					/* translators: %s is a monetary amount */
-					__( 'A payment of %s failed', 'woocommerce-payments' ),
-					event.amount
-				),
-				'cross',
-				'is-error'
-			),
-		];
-	} else if ( 'dispute_needs_response' === type ) {
-		let reasonHeadline = __( 'Payment disputed', 'woocommerce-payments' );
-		if ( disputeReasons[ event.reason ] ) {
-			reasonHeadline = sprintf(
-				/* translators: %s is a monetary amount */
-				__( 'Payment disputed as %s', 'woocommerce-payments' ),
-				disputeReasons[ event.reason ].display
+			];
+		case 'partial_refund':
+		case 'full_refund':
+			const formattedAmount = formatCurrency(
+				event.amount_refunded,
+				event.currency
 			);
-		}
-
-		const disputeUrl = addQueryArgs( 'admin.php', {
-			page: 'wc-admin',
-			path: '/payments/disputes/details',
-			id: event.dispute_id,
-		} );
-
-		let depositTimelineItem;
-		if ( null === event.amount ) {
-			depositTimelineItem = {
-				date: new Date( event.datetime * 1000 ),
-				icon: getIcon( 'info-outline' ),
-				headline: __(
-					'No funds have been withdrawn yet',
-					'woocommerce-payments'
+			const depositAmount = isFXEvent( event )
+				? formatCurrency(
+						event.transaction_details.store_amount,
+						event.transaction_details.store_currency
+				  )
+				: formattedAmount;
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					'full_refund' === type
+						? __( 'Refunded', 'woocommerce-payments' )
+						: __( 'Partial Refund', 'woocommerce-payments' )
 				),
-				body: [
-					__(
-						"The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
-						'woocommerce-services'
+				getDepositTimelineItem( event, depositAmount, false ),
+				getMainTimelineItem(
+					event,
+					sprintf(
+						__(
+							/* translators: %s is a monetary amount */
+							'A payment of %s was successfully refunded',
+							'woocommerce-payments'
+						),
+						formattedAmount
 					),
-				],
-			};
-		} else {
+					'checkmark',
+					'is-success',
+					[ composeFXString( event ) ]
+				),
+			];
+		case 'failed':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Failed', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					stringWithAmount(
+						/* translators: %s is a monetary amount */
+						__( 'A payment of %s failed', 'woocommerce-payments' ),
+						event.amount
+					),
+					'cross',
+					'is-error'
+				),
+			];
+		case 'dispute_needs_response':
+			let reasonHeadline = __(
+				'Payment disputed',
+				'woocommerce-payments'
+			);
+			if ( disputeReasons[ event.reason ] ) {
+				reasonHeadline = sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Payment disputed as %s', 'woocommerce-payments' ),
+					disputeReasons[ event.reason ].display
+				);
+			}
+
+			const disputeUrl = addQueryArgs( 'admin.php', {
+				page: 'wc-admin',
+				path: '/payments/disputes/details',
+				id: event.dispute_id,
+			} );
+
+			let depositTimelineItem;
+			if ( null === event.amount ) {
+				depositTimelineItem = {
+					date: new Date( event.datetime * 1000 ),
+					icon: getIcon( 'info-outline' ),
+					headline: __(
+						'No funds have been withdrawn yet',
+						'woocommerce-payments'
+					),
+					body: [
+						__(
+							// eslint-disable-next-line max-len
+							"The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
+							'woocommerce-services'
+						),
+					],
+				};
+			} else {
+				const formattedTotal = formatCurrency(
+					Math.abs( event.amount ) + Math.abs( event.fee ),
+					event.currency
+				);
+				const disputedAmount = isFXEvent( event )
+					? formatCurrency(
+							event.transaction_details.customer_amount,
+							event.transaction_details.customer_currency
+					  )
+					: formatCurrency( event.amount, event.currency );
+				depositTimelineItem = getDepositTimelineItem(
+					event,
+					formattedTotal,
+					false,
+					[
+						sprintf(
+							/* translators: %s is a monetary amount */
+							__( 'Disputed amount: %s', 'woocommerce-payments' ),
+							disputedAmount
+						),
+						composeFXString( event ),
+						sprintf(
+							/* translators: %s is a monetary amount */
+							__( 'Fee: %s', 'woocommerce-payments' ),
+							formatCurrency( event.fee, event.currency )
+						),
+					]
+				);
+			}
+
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Disputed: Needs Response', 'woocommerce-payments' )
+				),
+				depositTimelineItem,
+				getMainTimelineItem(
+					event,
+					reasonHeadline,
+					'cross',
+					'is-error',
+					[
+						// eslint-disable-next-line react/jsx-key
+						<a href={ disputeUrl }>
+							{ __( 'View dispute', 'woocommerce-payments' ) }
+						</a>,
+					]
+				),
+			];
+		case 'dispute_in_review':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Disputed: In Review', 'woocommerce-payments' )
+				),
+				getMainTimelineItem(
+					event,
+					__(
+						'Challenge evidence submitted',
+						'woocommerce-payments'
+					),
+					'checkmark',
+					'is-success'
+				),
+			];
+		case 'dispute_won':
 			const formattedTotal = formatCurrency(
 				Math.abs( event.amount ) + Math.abs( event.fee ),
 				event.currency
@@ -423,11 +495,12 @@ const mapEventToTimelineItems = ( event ) => {
 						event.transaction_details.customer_currency
 				  )
 				: formatCurrency( event.amount, event.currency );
-			depositTimelineItem = getDepositTimelineItem(
-				event,
-				formattedTotal,
-				false,
-				[
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Disputed: Won', 'woocommerce-payments' )
+				),
+				getDepositTimelineItem( event, formattedTotal, true, [
 					sprintf(
 						/* translators: %s is a monetary amount */
 						__( 'Disputed amount: %s', 'woocommerce-payments' ),
@@ -439,118 +512,60 @@ const mapEventToTimelineItems = ( event ) => {
 						__( 'Fee: %s', 'woocommerce-payments' ),
 						formatCurrency( event.fee, event.currency )
 					),
-				]
-			);
-		}
-
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: Needs Response', 'woocommerce-payments' )
-			),
-			depositTimelineItem,
-			getMainTimelineItem( event, reasonHeadline, 'cross', 'is-error', [
-				// eslint-disable-next-line react/jsx-key
-				<a href={ disputeUrl }>
-					{ __( 'View dispute', 'woocommerce-payments' ) }
-				</a>,
-			] ),
-		];
-	} else if ( 'dispute_in_review' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: In Review', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				__( 'Challenge evidence submitted', 'woocommerce-payments' ),
-				'checkmark',
-				'is-success'
-			),
-		];
-	} else if ( 'dispute_won' === type ) {
-		const formattedTotal = formatCurrency(
-			Math.abs( event.amount ) + Math.abs( event.fee ),
-			event.currency
-		);
-		const disputedAmount = isFXEvent( event )
-			? formatCurrency(
-					event.transaction_details.customer_amount,
-					event.transaction_details.customer_currency
-			  )
-			: formatCurrency( event.amount, event.currency );
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: Won', 'woocommerce-payments' )
-			),
-			getDepositTimelineItem( event, formattedTotal, true, [
-				sprintf(
-					/* translators: %s is a monetary amount */
-					__( 'Disputed amount: %s', 'woocommerce-payments' ),
-					disputedAmount
+				] ),
+				getMainTimelineItem(
+					event,
+					__(
+						'Dispute won! The bank ruled in your favor',
+						'woocommerce-payments'
+					),
+					'notice-outline',
+					'is-success'
 				),
-				composeFXString( event ),
-				sprintf(
-					/* translators: %s is a monetary amount */
-					__( 'Fee: %s', 'woocommerce-payments' ),
-					formatCurrency( event.fee, event.currency )
+			];
+		case 'dispute_lost':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Disputed: Lost', 'woocommerce-payments' )
 				),
-			] ),
-			getMainTimelineItem(
-				event,
-				__(
-					'Dispute won! The bank ruled in your favor',
-					'woocommerce-payments'
+				getMainTimelineItem(
+					event,
+					__(
+						'Dispute lost. The bank ruled favor of your customer',
+						'woocommerce-payments'
+					),
+					'cross',
+					'is-error'
 				),
-				'notice-outline',
-				'is-success'
-			),
-		];
-	} else if ( 'dispute_lost' === type ) {
-		return [
-			getStatusChangeTimelineItem(
-				event,
-				__( 'Disputed: Lost', 'woocommerce-payments' )
-			),
-			getMainTimelineItem(
-				event,
-				__(
-					'Dispute lost. The bank ruled favor of your customer',
-					'woocommerce-payments'
+			];
+		case 'dispute_warning_closed':
+			return [
+				getMainTimelineItem(
+					event,
+					__(
+						'Dispute inquiry closed. The bank chose not to pursue this dispute.',
+						'woocommerce-payments'
+					),
+					'notice-outline',
+					'is-success'
 				),
-				'cross',
-				'is-error'
-			),
-		];
-	} else if ( 'dispute_warning_closed' === type ) {
-		return [
-			getMainTimelineItem(
-				event,
-				__(
-					'Dispute inquiry closed. The bank chose not to pursue this dispute.',
-					'woocommerce-payments'
+			];
+		case 'dispute_charge_refunded':
+			return [
+				getMainTimelineItem(
+					event,
+					__(
+						'The disputed charge has been refunded.',
+						'woocommerce-payments'
+					),
+					'notice-outline',
+					'is-success'
 				),
-				'notice-outline',
-				'is-success'
-			),
-		];
-	} else if ( 'dispute_charge_refunded' === type ) {
-		return [
-			getMainTimelineItem(
-				event,
-				__(
-					'The disputed charge has been refunded.',
-					'woocommerce-payments'
-				),
-				'notice-outline',
-				'is-success'
-			),
-		];
+			];
+		default:
+			return [];
 	}
-
-	return [];
 };
 
 /**
