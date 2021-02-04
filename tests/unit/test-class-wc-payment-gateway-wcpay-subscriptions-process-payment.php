@@ -358,7 +358,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
 		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
-		$_GET = [ 'change_payment_method' => 10 ];
+		$_GET  = [ 'change_payment_method' => 10 ];
 
 		$this->mock_wcs_order_contains_subscription( false );
 
