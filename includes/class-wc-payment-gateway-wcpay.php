@@ -45,7 +45,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_API_Client
 	 */
-	private $payments_api_client;
+	protected $payments_api_client;
 
 	/**
 	 * WC_Payments_Account instance to get information about the account
@@ -1786,18 +1786,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function enable() {
 		$this->update_option( 'enabled', 'yes' );
-	}
-
-	/**
-	 * Get payment method details.
-	 *
-	 * @param string $payment_method_id Payment method ID.
-	 *
-	 * @return array Payment method details.
-	 *
-	 * @throws API_Exception If payment method does not exist.
-	 */
-	protected function get_payment_method( $payment_method_id ) {
-		return $this->payments_api_client->get_payment_method( $payment_method_id );
 	}
 }

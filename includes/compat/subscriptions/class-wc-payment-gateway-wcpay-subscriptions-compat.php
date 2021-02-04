@@ -458,7 +458,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
 		try {
-			$payment_method = $this->get_payment_method( $payment_method_id );
+			$payment_method = $this->payments_api_client->get_payment_method( $payment_method_id );
 			if ( isset( $payment_method['card']['last4'] ) ) {
 				// translators: 1: payment method likely credit card, 2: last 4 digit.
 				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
