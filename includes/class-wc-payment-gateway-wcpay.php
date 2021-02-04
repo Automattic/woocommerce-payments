@@ -513,7 +513,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $payment_information;
 	}
 
-	protected function upsert_customer($user, $name, $email) {
+	/**
+	 * Upserts customer from user, name, and email.
+	 *
+	 * @param WP_User $user The user associated to customer.
+	 * @param string  $name The customer's name.
+	 * @param string  $email The customer's email.
+	 *
+	 * @return string|null Customer id.
+	 */
+	protected function upsert_customer( $user, $name, $email ) {
+		if ( ! $user ) {
+			return;
+		}
+
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 
@@ -525,6 +538,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// found a new one is created, so we update the customer ID here as well.
 			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
 		}
+
+		return $customer_id;
 	}
 
 	/**
@@ -554,7 +569,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'payment_type'   => $payment_information->get_payment_type(),
 		];
 
-		$this->upsert_customer($user,$name,$email);
+		$customer_id = $this->upsert_customer( $user, $name, $email );
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 		if ( $payment_information->is_using_saved_payment_method() ) {
