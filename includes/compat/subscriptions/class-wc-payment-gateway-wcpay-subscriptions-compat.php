@@ -399,13 +399,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return $old_payment_method_title;
 		}
 
-		$new_payment_method = $subscription->get_payment_method();
-
-		// if old and new payment method are different, no need to show specific.
-		if ( $old_payment_method !== $new_payment_method ) {
-			return $old_payment_method_title;
-		}
-
 		$last_order_id = $subscription->get_last_order();
 		if ( ! $last_order_id ) {
 			return $old_payment_method_title;
@@ -439,13 +432,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
 		// make sure payment method is wcpay's.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
-			return $new_payment_method_title;
-		}
-
-		$old_payment_method = $subscription->get_meta( '_old_payment_method' );
-
-		// if old and new payment method are different, no need to show specific.
-		if ( $new_payment_method !== $old_payment_method ) {
 			return $new_payment_method_title;
 		}
 
