@@ -14,8 +14,8 @@ import { Charge } from './types';
 
 const isCharge = ( apiResponse: any ): apiResponse is Charge => {
 	return (
-		( apiResponse as Charge ).id !== undefined &&
-		( apiResponse as Charge ).amount !== undefined
+		( apiResponse as Charge ).object !== undefined &&
+		'charge' === ( apiResponse as Charge ).object
 	);
 };
 
