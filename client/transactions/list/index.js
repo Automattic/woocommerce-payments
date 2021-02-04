@@ -171,10 +171,15 @@ export const TransactionsList = ( props ) => {
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
-		const customerUrl = txn.order ? txn.order.customer_url : '#';
-		const customerName = <a href={ customerUrl }>{ txn.customer_name }</a>;
-		const customerEmail = (
-			<a href={ customerUrl }>{ txn.customer_email }</a>
+		const customerName = txn.order ? (
+			<a href={ txn.order.customer_url }>{ txn.customer_name }</a>
+		) : (
+			txn.customer_name
+		);
+		const customerEmail = txn.order ? (
+			<a href={ txn.order.customer_url }>{ txn.customer_email }</a>
+		) : (
+			txn.customer_email
 		);
 
 		const deposit = (

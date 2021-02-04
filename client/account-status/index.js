@@ -77,7 +77,27 @@ const renderDepositsStatus = ( depositsStatus ) => {
 	} else if ( 'monthly' === depositsStatus ) {
 		description = __( 'Monthly', 'woocommerce-payments' );
 	} else if ( 'manual' === depositsStatus ) {
-		description = __( 'Manual', 'woocommerce-payments' );
+		const learnMoreHref =
+			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
+		description = createInterpolateElement(
+			/* translators: <a> - suspended accounts FAQ URL */
+			__(
+				'Temporarily suspended (<a>learn more</a>)',
+				'woocommerce-payments'
+			),
+			{
+				a: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ learnMoreHref }
+						target="_blank"
+						rel="noopener noreferrer"
+					/>
+				),
+			}
+		);
+		className = 'account-status__info__yellow';
+		icon = <GridiconNotice size={ 18 } />;
 	} else {
 		description = __( 'Unknown', 'woocommerce-payments' );
 	}
