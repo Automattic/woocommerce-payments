@@ -47,6 +47,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -72,11 +79,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
 		);
 	}
 
@@ -196,6 +208,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 				new WC_Payments_API_Intention(
 					self::PAYMENT_INTENT_ID,
 					1500,
+					'usd',
 					new DateTime(),
 					'succeeded',
 					self::CHARGE_ID,
@@ -250,6 +263,33 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
 		$this->assertEquals( 'failed', $renewal_order->get_status() );
+	}
+
+	public function test_scheduled_subscription_payment_fails_when_payment_processing_fails_non_usd() {
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+		$renewal_order->set_currency( 'EUR' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willThrowException( new API_Exception( 'Error', 'error', 500 ) );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $renewal_order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertEquals( 'failed', $renewal_order->get_status() );
+		$this->assertContains( 'failed', $latest_wcpay_note->content );
+		$this->assertContains( wc_price( $renewal_order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_subscription_payment_method_filter_bypass_other_payment_methods() {
@@ -496,7 +536,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
 		);
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
@@ -510,7 +551,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
-			$this->mock_token_service
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

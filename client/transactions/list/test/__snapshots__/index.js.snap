@@ -484,12 +484,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
+                <a>
                   My name
                 </a>
               </td>
@@ -1088,12 +1083,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
+                <a>
                   Another customer
                 </a>
               </td>
@@ -1217,12 +1207,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
+                <a>
                   My name
                 </a>
               </td>
@@ -1805,12 +1790,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
-                  tabindex="-1"
-                >
+                <a>
                   Another customer
                 </a>
               </td>
@@ -1931,12 +1911,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               <td
                 class="woocommerce-table__item"
               >
-                <a
-                  class="woocommerce-table__clickable-cell"
-                  data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
-                  tabindex="-1"
-                >
+                <a>
                   My name
                 </a>
               </td>

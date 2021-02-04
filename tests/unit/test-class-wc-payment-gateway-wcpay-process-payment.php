@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -40,6 +41,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -66,7 +74,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -82,6 +90,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		// Arrange: Mock WC_Payments_Action_Scheduler_Service so its methods aren't called directly.
+		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -91,6 +104,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 					$this->wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
 				]
 			)
 			->setMethods(
@@ -149,6 +163,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$intent = new WC_Payments_API_Intention(
 			$intent_id,
 			1500,
+			'usd',
 			new DateTime(),
 			$status,
 			$charge_id,
@@ -170,12 +185,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', $status ]
+				[ '_intention_status', $status ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -248,6 +264,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$intent = new WC_Payments_API_Intention(
 			$intent_id,
 			1500,
+			'usd',
 			new DateTime(),
 			$status,
 			$charge_id,
@@ -269,12 +286,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', $status ]
+				[ '_intention_status', $status ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: The order note contains all the information we want:
@@ -371,6 +389,50 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
+	public function test_connection_exception_thrown() {
+		// Arrange: Reusable data.
+		$error_message = 'Test error.';
+		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Throw an exception in create_and_confirm_intention.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new Connection_Exception(
+						$error_message,
+						'wcpay_http_request_failed',
+						500
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order status was updated.
+		$this->assertEquals( 'failed', $result_order->get_status() );
+
+		// Assert: No order note was added, besides the status change and failed transaction details.
+		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( 'A payment of &pound;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+
+		// Assert: A WooCommerce notice was added.
+		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( '', $result['redirect'] );
+	}
+
+
 	/**
 	 * Test processing payment with the status "requires_action".
 	 * This is the status returned when the payment requires
@@ -405,6 +467,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$intent = new WC_Payments_API_Intention(
 			$intent_id,
 			1500,
+			'usd',
 			new DateTime(),
 			$status,
 			$charge_id,
@@ -426,12 +489,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 4 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', 'requires_action' ]
+				[ '_intention_status', 'requires_action' ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
 		// Assert: Order status was not updated.
@@ -484,7 +548,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_saved_card_at_checkout() {
 		$order = WC_Helper_Order::create_order();
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
 		$this->mock_api_client
 			->expects( $this->any() )
@@ -505,7 +569,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_not_saved_card_at_checkout() {
 		$order = WC_Helper_Order::create_order();
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
 		$this->mock_api_client
 			->expects( $this->any() )
@@ -523,7 +587,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	public function test_does_not_update_new_payment_method() {
 		$order = WC_Helper_Order::create_order();
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
 		$this->mock_api_client
 			->expects( $this->any() )
@@ -542,7 +606,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
 
 		$this->mock_api_client
 			->expects( $this->any() )

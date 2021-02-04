@@ -36,6 +36,13 @@ interface WC_Payments_Http_Interface {
 	public function is_connected();
 
 	/**
+	 * Gets the current WP.com blog ID.
+	 *
+	 * @return integer Current WPCOM blog ID.
+	 */
+	public function get_blog_id();
+
+	/**
 	 * Starts the Jetpack connection process. Note that running this function will immediately redirect
 	 * to the Jetpack flow, so any PHP code after it will never be executed.
 	 *

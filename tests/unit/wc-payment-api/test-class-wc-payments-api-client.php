@@ -83,6 +83,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				],
 				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
 			]
 		);
 
@@ -164,6 +165,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				],
 				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
 			]
 		);
 
@@ -201,6 +203,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				],
 				'client_secret'   => 'test_client_secret',
+				'currency'        => 'usd',
 			]
 		);
 
@@ -235,6 +238,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				],
 				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
 			]
 		);
 

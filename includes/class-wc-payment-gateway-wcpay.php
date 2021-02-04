@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -69,23 +69,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private $token_service;
 
 	/**
+	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client       $payments_api_client - WooCommerce Payments API client.
-	 * @param WC_Payments_Account          $account             - Account class instance.
-	 * @param WC_Payments_Customer_Service $customer_service    - Customer class instance.
-	 * @param WC_Payments_Token_Service    $token_service       - Token class instance.
+	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                  - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		WC_Payments_Customer_Service $customer_service,
-		WC_Payments_Token_Service $token_service
+		WC_Payments_Token_Service $token_service,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->account             = $account;
-		$this->customer_service    = $customer_service;
-		$this->token_service       = $token_service;
+		$this->payments_api_client      = $payments_api_client;
+		$this->account                  = $account;
+		$this->customer_service         = $customer_service;
+		$this->token_service            = $token_service;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		$this->id                 = self::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -179,6 +189,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
+		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 	}
@@ -265,6 +277,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( ! $this->is_in_dev_mode() && 'USD' !== get_woocommerce_currency() ) {
+			return false;
+		}
+
 		return parent::is_available() && ! $this->needs_setup();
 	}
 
@@ -311,6 +327,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'updateOrderStatusNonce' => wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'          => $this->account->get_fraud_services_config(),
 		];
 	}
 
@@ -447,8 +464,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
-			wc_add_notice( $e->getMessage(), 'error' );
+			// TODO: Create more exceptions to handle merchant specific errors.
+			$error_message = $e->getMessage();
+			if ( is_a( $e, Connection_Exception::class ) ) {
+				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			}
+
+			wc_add_notice( $error_message, 'error' );
 
 			$order->update_status( 'failed' );
 
@@ -575,6 +597,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent->get_status();
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
+			$currency      = $intent->get_currency();
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
@@ -586,6 +609,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$status        = $intent['status'];
 			$charge_id     = '';
 			$client_secret = $intent['client_secret'];
+			$currency      = $order->get_currency();
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -682,6 +706,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', $status );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
 		$order->save();
 
 		if ( isset( $response ) ) {
@@ -751,7 +776,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool|WP_Error - Whether the refund went through. Returns a WP_Error if an Exception occurs during execution.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$order = wc_get_order( $order_id );
+		$order    = wc_get_order( $order_id );
+		$currency = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		if ( ! $order ) {
 			return false;
@@ -774,13 +800,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 			}
+			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				$e->getMessage()
 			);
 
@@ -795,13 +822,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 		} else {
 			$note = sprintf(
 				/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				$reason
 			);
 		}
@@ -1092,6 +1119,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$is_authorization_expired = false;
 		$status                   = null;
 		$error_message            = null;
+		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
 			$intent = $this->payments_api_client->capture_intention(
@@ -1100,7 +1128,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_level3_data_from_order( $order )
 			);
 
-			$status = $intent->get_status();
+			$status   = $intent->get_status();
+			$currency = $intent->get_currency();
 
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
@@ -1133,7 +1162,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 			$order->add_order_note( $note );
 			$order->payment_complete();
@@ -1150,7 +1179,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'code'   => '<code>',
 					]
 				),
-				wc_price( $amount ),
+				wc_price( $amount, [ 'currency' => $currency ] ),
 				esc_html( $error_message )
 			);
 			$order->add_order_note( $note );
@@ -1161,7 +1190,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
-				wc_price( $amount )
+				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 			$order->add_order_note( $note );
 		}
@@ -1245,18 +1274,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_level3_data_from_order( $order ) {
 		// Get the order items. Don't need their keys, only their values.
 		// Order item IDs are used as keys in the original order items array.
-		$order_items = array_values( $order->get_items() );
+		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
 		$process_item  = function( $item ) use ( $currency ) {
+
+			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
+			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
+				$subtotal   = $item->get_subtotal();
+				$product_id = $item->get_variation_id()
+					? $item->get_variation_id()
+					: $item->get_product_id();
+			} else {
+				$subtotal   = $item->get_total();
+				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
+			}
+
 			$description     = substr( $item->get_name(), 0, 26 );
 			$quantity        = $item->get_quantity();
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $item->get_subtotal() / $quantity, $currency );
+			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $item->get_subtotal() - $item->get_total(), $currency );
-			$product_id      = $item->get_variation_id()
-				? $item->get_variation_id()
-				: $item->get_product_id();
+			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
 
 			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
@@ -1565,6 +1603,58 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [
 				'result' => 'error',
 			];
+		}
+	}
+
+	/**
+	 * When an order is created, we want to add an ActionScheduler job to send this data to
+	 * the payment server.
+	 *
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
+	 */
+	public function schedule_order_tracking( $order_id, $order = null ) {
+		// If Sift is not enabled, exit out and don't do the tracking here.
+		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
+			return;
+		}
+
+		// Sometimes the woocommerce_update_order hook might be called with just the order ID parameter,
+		// so we need to fetch the order here.
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		// We only want to track orders created by our payment gateway.
+		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
+			return;
+		}
+
+		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
+		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
+			return;
+		}
+
+		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
+			// Schedule the action to send this information to the payment server.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_new_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
+
+			// Update the metadata to reflect that the order creation event has been fired.
+			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+			$order->save_meta_data();
+		} else {
+			// Schedule an update action.
+			$this->action_scheduler_service->schedule_job(
+				strtotime( 'now' ),
+				'wcpay_track_update_order',
+				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				self::GATEWAY_ID
+			);
 		}
 	}
 
