@@ -229,7 +229,7 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.20: $21.59",
+      "€1,00 → $1.19944: $21.59",
       "Fee: $0.62 (2.9% + $0.30)",
       "Net deposit: $20.97",
     ],
@@ -275,7 +275,7 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.20: $21.59",
+      "€1,00 → $1.19944: $21.59",
       "Fee: €0,52",
       "Net deposit: $20.97",
     ],
@@ -305,7 +305,7 @@ Array [
   Object {
     "body": Array [
       "Disputed amount: €18,00",
-      "€1,00 → $1.20: $21.60",
+      "€1,00 → $1.2: $21.60",
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
@@ -350,7 +350,7 @@ Array [
   Object {
     "body": Array [
       "Disputed amount: €25,00",
-      "€1,00 → $1.20: $29.99",
+      "€1,00 → $1.1996: $29.99",
       "Fee: $-15.00",
     ],
     "date": 2020-04-04T16:20:50.000Z,
@@ -405,7 +405,7 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.20: $21.64",
+      "€1,00 → $1.20222: $21.64",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of €18,00 was successfully refunded",
@@ -442,7 +442,7 @@ Array [
   },
   Object {
     "body": Array [
-      "€1,00 → $1.20: $6.00",
+      "€1,00 → $1.2: $6.00",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of €5,00 was successfully refunded",
