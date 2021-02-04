@@ -107,8 +107,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
-		require_once __DIR__ . '/exceptions/class-base-exception.php';
-		require_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-base-exception.php';
+		include_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-connection-exception.php';
 
 		self::$api_client = self::create_api_client();
 
@@ -117,7 +118,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';

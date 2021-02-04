@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Logger;
 
 /**
@@ -76,7 +77,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param string $body - The body passed to the HTTP request.
 	 *
 	 * @return array HTTP response on success.
-	 * @throws API_Exception - If request returns WP_Error.
+	 * @throws Connection_Exception - If request returns WP_Error.
 	 */
 	private static function make_request( $args, $body ) {
 		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, $body );
@@ -88,7 +89,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new API_Exception( $message, 'wcpay_http_request_failed', 500 );
+			throw new Connection_Exception( $message, 'wcpay_http_request_failed', 500 );
 		}
 
 		return $response;

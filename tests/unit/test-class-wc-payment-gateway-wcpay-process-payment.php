@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -387,6 +388,50 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'fail', $result['result'] );
 		$this->assertEquals( '', $result['redirect'] );
 	}
+
+	public function test_connection_exception_thrown() {
+		// Arrange: Reusable data.
+		$error_message = 'Test error.';
+		$error_notice  = 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.';
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Throw an exception in create_and_confirm_intention.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new Connection_Exception(
+						$error_message,
+						'wcpay_http_request_failed',
+						500
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order status was updated.
+		$this->assertEquals( 'failed', $result_order->get_status() );
+
+		// Assert: No order note was added, besides the status change and failed transaction details.
+		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( 'A payment of &pound;50.00 failed to complete with the following message: Test error.', strip_tags( $notes[0]->content, '' ) );
+
+		// Assert: A WooCommerce notice was added.
+		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( '', $result['redirect'] );
+	}
+
 
 	/**
 	 * Test processing payment with the status "requires_action".
