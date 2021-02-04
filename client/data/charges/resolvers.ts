@@ -24,10 +24,11 @@ export function* getCharge( id: string ) {
 		const results = yield apiFetch( {
 			path: `${ NAMESPACE }/charges/${ id }`,
 		} );
+
 		if ( isCharge( results ) ) {
 			yield updateCharge( id, results );
 		}
 	} catch ( e ) {
-		yield updateErrorForCharge( id, undefined, e );
+		yield updateErrorForCharge( id, e );
 	}
 }

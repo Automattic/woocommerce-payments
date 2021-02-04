@@ -13,15 +13,10 @@ export function updateCharge( id: string, data: Charge ) {
 	};
 }
 
-export function updateErrorForCharge(
-	id: string,
-	data: Charge | undefined,
-	error: Error
-) {
+export function updateErrorForCharge( id: string, error: Error ) {
 	return {
 		type: 'SET_ERROR_FOR_CHARGE' as const,
 		id,
-		data,
 		error,
 	};
 }
