@@ -34,6 +34,10 @@ export const errors: Reducer< Record< string, Error >, ChargeAction > = (
 	action
 ) => {
 	switch ( action.type ) {
+		case 'SET_CHARGE':
+			// Clear error state when charge is updated.
+			delete state[ action.id ];
+			return state;
 		case 'SET_ERROR_FOR_CHARGE':
 			return {
 				...state,
