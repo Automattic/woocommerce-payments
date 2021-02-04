@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.0.0 - 2021-xx-xx =
+* Fix - Updating payment method using saved payment for WC Subscriptions orders.
+
 = 1.9.1 - 2021-02-03 =
 * Fix - Incompatibility with WC Subscriptions.
 * Fix - Missing order causing broken transactions list.
