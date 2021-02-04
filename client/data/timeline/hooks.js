@@ -27,7 +27,11 @@ export const useTimeline = ( chargeId ) =>
 				};
 			}
 
+<<<<<<< HEAD
 			const { payment_intent: intentionId } = getCharge( chargeId ) ?? {};
+=======
+			const { payment_intent: intentionId } = getCharge( chargeId ) || {};
+>>>>>>> d73f3a9 (WIP: migrate charges data layer)
 			if ( ! intentionId ) {
 				// If intention ID is not available, do not render the timeline, but also don't indicate the API error.
 				return {
