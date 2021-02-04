@@ -4,40 +4,50 @@
  * External dependencies
  */
 import { Reducer } from 'redux';
+import { combineReducers } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { ChargeAction } from './actions';
-import { ChargesStateEntry } from './types';
+import { Charge } from './types';
 
-export const receiveCharges: Reducer<
-	Record< string, ChargesStateEntry >,
-	ChargeAction
-> = ( state = {}, action ) => {
+export const data: Reducer< Record< string, Charge >, ChargeAction > = (
+	state = {},
+	action
+) => {
 	switch ( action.type ) {
 		case 'SET_CHARGE':
-			state = {
+			return {
 				...state,
 				[ action.id ]: {
 					...state[ action.id ],
-					data: action.data,
+					...action.data,
 				},
 			};
-			break;
-		case 'SET_ERROR_FOR_CHARGE':
-			state = {
-				...state,
-				[ action.id ]: {
-					...state[ action.id ],
-					error: action.error,
-				},
-			};
-			break;
 	}
 	return state;
 };
 
-export type ChargeState = ReturnType< typeof receiveCharges >;
+export const errors: Reducer< Record< string, Error >, ChargeAction > = (
+	state = {},
+	action
+) => {
+	switch ( action.type ) {
+		case 'SET_ERROR_FOR_CHARGE':
+			return {
+				...state,
+				[ action.id ]: action.error,
+			};
+	}
+	return state;
+};
 
-export default receiveCharges;
+const reducer = combineReducers( {
+	data,
+	errors,
+} );
+
+export type ChargeState = ReturnType< typeof reducer >;
+
+export default reducer;
