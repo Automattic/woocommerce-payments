@@ -113,7 +113,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 							'woocommerce-payments'
 						),
 						[
-							'code'   => '<code>',
+							'code' => '<code>',
 						]
 					),
 					esc_html( rtrim( $e->getMessage(), '.' ) )
