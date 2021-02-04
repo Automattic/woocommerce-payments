@@ -3,7 +3,7 @@
  */
 import { sprintf } from '@wordpress/i18n';
 import Currency, { getCurrencyData } from '@woocommerce/currency';
-import { find } from 'lodash';
+import { find, trimEnd, endsWith } from 'lodash';
 
 const currencyData = getCurrencyData();
 
@@ -81,23 +81,52 @@ export const formatFX = ( from, to ) => {
 	if ( ! from.currency || ! to.currency ) {
 		return;
 	}
-	const fromAmount = isZeroDecimalCurrency( from.currency )
-		? from.amount
-		: from.amount / 100;
-	const toAmount = isZeroDecimalCurrency( to.currency )
-		? to.amount
-		: to.amount / 100;
-	const precision = Math.pow( 10, 4 );
-	const exchangeRate = Math.abs(
-		Math.round( ( toAmount / fromAmount ) * precision ) / precision
-	);
 
-	// TODO: Cover with tests and fix formatting for various cases.
-	return `${ formatCurrency( 100, from.currency ) } → ${ formatCurrency(
-		exchangeRate * 100,
+	const fromAmount = isZeroDecimalCurrency( from.currency ) ? 1 : 100;
+	return `${ formatCurrency(
+		fromAmount,
+		from.currency
+	) } → ${ formatExchangeRate( from, to ) }: ${ formatCurrency(
+		Math.abs( to.amount ),
 		to.currency
-	) }: ${ formatCurrency( Math.abs( to.amount ), to.currency ) }`;
+	) }`;
 };
+
+function formatExchangeRate( from, to ) {
+	let exchangeRate =
+		'number' === typeof to.amount &&
+		'number' === typeof from.amount &&
+		0 !== from.amount
+			? Math.abs( to.amount / from.amount )
+			: 0;
+	if ( isZeroDecimalCurrency( to.currency ) ) {
+		exchangeRate *= 100;
+	}
+
+	if ( isZeroDecimalCurrency( from.currency ) ) {
+		exchangeRate /= 100;
+	}
+
+	const exchangeCurrencyConfig = find( currencyData, {
+		code: to.currency.toUpperCase(),
+	} );
+
+	const precision = 1 > exchangeRate ? 6 : 5;
+	const isZeroDecimal = isZeroDecimalCurrency( to.currency );
+
+	if ( ! exchangeCurrencyConfig ) {
+		sprintf(
+			isZeroDecimal ? '%s %i' : '%s %.5f',
+			to.currency.toUpperCase(),
+			exchangeRate
+		);
+	}
+	const exchangeCurrency = new Currency( {
+		...exchangeCurrencyConfig,
+		precision,
+	} );
+	return trimEndingZeroes( exchangeCurrency.formatAmount( exchangeRate ) );
+}
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
@@ -106,4 +135,13 @@ function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 		currencyCode.toUpperCase(),
 		amount
 	);
+}
+
+function trimEndingZeroes( formattedCurrencyAmount = '' ) {
+	return formattedCurrencyAmount
+		.split( ' ' )
+		.map( ( chunk ) =>
+			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
+		)
+		.join( ' ' );
 }
