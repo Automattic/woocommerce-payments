@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import { getTimeline, getTimelineError } from '../selectors';
+import { TimelineState } from '../reducer';
 
 describe( 'Timeline selectors', () => {
 	const mockIntentionId1 = 'pi_1';
@@ -12,30 +13,35 @@ describe( 'Timeline selectors', () => {
 			id: '1',
 		},
 	];
-	const mockError = {
-		message: 'This is an error.',
-	};
+	const mockError = new Error( 'This is an error.' );
 
-	const mockSuccessState = {
+	const mockSuccessState: { timeline: TimelineState } = {
 		timeline: {
-			[ mockIntentionId1 ]: {
-				data: mockTimeline1,
+			data: {
+				[ mockIntentionId1 ]: mockTimeline1,
 			},
+			errors: {},
 		},
 	};
-	const mockErrorState = {
+	const mockErrorState: { timeline: TimelineState } = {
 		timeline: {
-			[ mockIntentionId1 ]: {
-				error: mockError,
+			data: {},
+			errors: {
+				[ mockIntentionId1 ]: mockError,
 			},
 		},
 	};
 
 	test( 'Returns empty timeline list when timeline data is empty', () => {
-		expect( getTimeline( {}, mockIntentionId1 ) ).toStrictEqual( {} );
-		expect( getTimeline( mockErrorState, mockIntentionId1 ) ).toStrictEqual(
-			{}
-		);
+		expect(
+			getTimeline(
+				{ timeline: { data: {}, errors: {} } },
+				mockIntentionId1
+			)
+		).toBeUndefined();
+		expect(
+			getTimeline( mockErrorState, mockIntentionId1 )
+		).toBeUndefined();
 	} );
 
 	test( 'Returns timeline list from state for a given ID', () => {
@@ -45,10 +51,15 @@ describe( 'Timeline selectors', () => {
 	} );
 
 	test( 'Returns empty timeline list error when error is empty', () => {
-		expect( getTimelineError( {}, mockIntentionId1 ) ).toStrictEqual( {} );
+		expect(
+			getTimelineError(
+				{ timeline: { data: {}, errors: {} } },
+				mockIntentionId1
+			)
+		).toBeUndefined();
 		expect(
 			getTimelineError( mockSuccessState, mockIntentionId1 )
-		).toStrictEqual( {} );
+		).toBeUndefined();
 	} );
 
 	test( 'Returns timeline list error from state', () => {

@@ -20,10 +20,7 @@ const data: Reducer< Record< string, Timeline >, TimelineAction > = (
 		case 'SET_TIMELINE':
 			return {
 				...state,
-				[ action.id ]: {
-					...state[ action.id ],
-					...action.data,
-				},
+				[ action.id ]: action.data,
 			};
 	}
 	return state;
@@ -34,6 +31,10 @@ const errors: Reducer< Record< string, Error >, TimelineAction > = (
 	action
 ) => {
 	switch ( action.type ) {
+		case 'SET_TIMELINE':
+			// Unset error if the action is updated.
+			delete state[ action.id ];
+			return state;
 		case 'SET_ERROR_FOR_TIMELINE':
 			return {
 				...state,
