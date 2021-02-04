@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for disputes.
+ * REST controller for terminal tokens.
  */
 class WC_REST_Payments_Connection_Tokens_Controller extends WC_Payments_REST_Controller {
 
