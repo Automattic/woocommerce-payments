@@ -26,6 +26,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
+	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
 	const INTENTIONS_API      = 'intentions';
 	const REFUNDS_API         = 'refunds';
@@ -601,6 +602,29 @@ class WC_Payments_API_Client {
 				$e->get_http_code()
 			);
 		}
+	}
+
+	/**
+	 * Create a connection token.
+	 *
+	 * @param string $request request object received.
+	 *
+	 * @return array
+	 * @throws API_Exception - If request throws.
+	 */
+	public function create_token( $request ) {
+		$response = $this->request( [], self::CONN_TOKENS_API, self::POST );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		// As an aid to mobile clients, tuck in the test_mode flag (added by the request method call above) in the response.
+		if ( is_array( $response ) ) {
+			$response['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+		}
+
+		return $response;
 	}
 
 	/**
