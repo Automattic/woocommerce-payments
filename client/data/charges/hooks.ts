@@ -5,7 +5,14 @@
 import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useCharge = ( chargeId ) =>
+/**
+ * Internal dependencies
+ */
+import { Charge } from './types';
+
+export const useCharge = (
+	chargeId: string
+): { charge?: Charge; chargeError?: Error; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
 			const { getCharge, getChargeError, isResolving } = select(
