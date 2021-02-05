@@ -7,6 +7,7 @@
 * Fix - Added better notices for end users if there are connection errors when making payments.
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
+* Fix - Checkout and cart blocks aren't usable when WooCommerce Payments is enabled.
 * Add - Localized notification if order amount is too low to process.
 
 = 1.9.1 - 2021-02-03 =

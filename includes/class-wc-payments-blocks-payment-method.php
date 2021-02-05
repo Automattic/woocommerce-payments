@@ -35,6 +35,14 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 */
 	public function get_payment_method_script_handles() {
 		wp_register_script(
+			'stripe',
+			'https://js.stripe.com/v3/',
+			[],
+			'3.0',
+			true
+		);
+
+		wp_register_script(
 			'wc-payment-method-wcpay',
 			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe' ],
