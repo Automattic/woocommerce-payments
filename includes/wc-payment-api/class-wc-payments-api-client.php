@@ -974,6 +974,7 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
+			$additional_data = isset( $response_body['data'] ) ? $response_body['data'] : [];
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
@@ -991,31 +992,8 @@ class WC_Payments_API_Client {
 				$error_message
 			);
 
-			if ( 'wcpay_amount_too_low' === $error_code
-				&& isset( $response_body['data']['min_amount'], $response_body['data']['currency'] )
-			) {
-
-				$min_amount = $response_body['data']['min_amount'];
-				$currency   = strtolower( $response_body['data']['currency'] );
-
-				if ( ! in_array( $currency, WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
-					$min_amount = $min_amount / 100;
-				}
-
-				// Response contains a minumum order amount which we will
-				// use to build a specific message for a client.
-				$message = sprintf(
-					// translators: %1$s is a formatted amount with currency code.
-					__(
-						'Sorry, the minimum allowed order total is %1$s to use this payment method.',
-						'woocommerce-payments'
-					),
-					wc_price( $min_amount, [ 'currency' => strtoupper( $currency ) ] )
-				);
-			}
-
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code );
+			throw new API_Exception( $message, $error_code, $response_code, 0, null, $additional_data );
 		}
 
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].

@@ -371,6 +371,48 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
+	public function test_api_exception_filters_are_run() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		$error_data = [
+			'currency'   => 'usd',
+			'min_amount' => 60,
+		];
+
+		// Arrange: Throw an exception in create_and_confirm_intention.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						'Test',
+						'wcpay_amount_too_low',
+						400,
+						0,
+						null,
+						$error_data
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+
+		$error_message = sprintf(
+			// translators: %1$s is a formatted amount with currency code.
+			__(
+				'Sorry, the minimum allowed order total is %1$s to use this payment method.',
+				'woocommerce-payments'
+			),
+			wc_price( $error_data['min_amount'] / 100, [ 'currency' => strtoupper( $error_data['currency'] ) ] )
+		);
+
+		// Assert: A WooCommerce notice was added.
+		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );
+	}
+
 	/**
 	 * Test processing payment with the status "requires_action".
 	 * This is the status returned when the payment requires

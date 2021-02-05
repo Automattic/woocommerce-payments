@@ -316,4 +316,77 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected, $result );
 	}
+
+	public function test_wc_format_api_exception() {
+		$error_data = [
+			'currency'   => 'usd',
+			'min_amount' => 60,
+		];
+
+		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, $error_data );
+		$this->assertEquals(
+			sprintf(
+				// translators: %1$s is a formatted amount with currency code.
+				__(
+					'Sorry, the minimum allowed order total is %1$s to use this payment method.',
+					'woocommerce-payments'
+				),
+				wc_price( $error_data['min_amount'] / 100, [ 'currency' => strtoupper( $error_data['currency'] ) ] )
+			),
+			WC_Payments_Utils::wc_format_api_exception_message( $e_with_data->getMessage(), $e_with_data )
+		);
+
+		$e_is_not_api_exception = new Exception( 'Test', 0, null );
+		$this->assertEquals(
+			'Test',
+			WC_Payments_Utils::wc_format_api_exception_message( $e_is_not_api_exception->getMessage(), $e_is_not_api_exception )
+		);
+	}
+
+	public function test_wc_format_amount_too_low_exception() {
+		$e_without_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, [] );
+		$this->assertEquals(
+			__(
+				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',
+				'woocommerce-payments'
+			),
+			WC_Payments_Utils::wc_format_amount_too_low_exception( $e_without_data )
+		);
+
+		$error_data = [
+			'currency'   => 'usd',
+			'min_amount' => 60,
+		];
+
+		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, $error_data );
+		$this->assertEquals(
+			sprintf(
+				// translators: %1$s is a formatted amount with currency code.
+				__(
+					'Sorry, the minimum allowed order total is %1$s to use this payment method.',
+					'woocommerce-payments'
+				),
+				wc_price( $error_data['min_amount'] / 100, [ 'currency' => strtoupper( $error_data['currency'] ) ] )
+			),
+			WC_Payments_Utils::wc_format_amount_too_low_exception( $e_with_data )
+		);
+
+		$e_with_data_wrong_code = new WCPay\Exceptions\API_Exception( 'Test', 'foobar', 400, 0, null, [] );
+		$this->assertEquals(
+			__(
+				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',
+				'woocommerce-payments'
+			),
+			WC_Payments_Utils::wc_format_amount_too_low_exception( $e_with_data_wrong_code )
+		);
+
+		$e_is_not_api_exception = new Exception( 'Test', 0, null );
+		$this->assertEquals(
+			__(
+				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',
+				'woocommerce-payments'
+			),
+			WC_Payments_Utils::wc_format_amount_too_low_exception( $e_is_not_api_exception )
+		);
+	}
 }

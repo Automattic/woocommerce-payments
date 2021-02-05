@@ -452,7 +452,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
-			wc_add_notice( $e->getMessage(), 'error' );
+			$error_message = apply_filters( 'woocommerce_exception_message', $e->getMessage(), $e );
+			wc_add_notice( $error_message, 'error' );
 
 			$order->update_status( 'failed' );
 
