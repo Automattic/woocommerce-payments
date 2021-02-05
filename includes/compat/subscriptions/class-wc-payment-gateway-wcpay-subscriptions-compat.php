@@ -112,17 +112,27 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			if ( ! empty( $payment_information ) ) {
+				if ( $payment_information->is_using_saved_payment_method() ) {
+					$token = $payment_information->get_payment_token();
+					$last4 = $token->get_last4();
+				} else {
+					$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
+					$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+					$last4             = $payment_method['card']['last4'];
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %s: error message  */
+						/* translators: %1: the last 4 digit of the credit card, %2: error message  */
 						__(
-							'Failed to change payment method with the following message: <code>%s</code>.',
+							'Failed to change payment method to Credit Card ending in %1$s with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
 						),
 						[
 							'code' => '<code>',
 						]
 					),
+					$last4,
 					esc_html( rtrim( $e->getMessage(), '.' ) )
 				);
 				$order->add_order_note( $note );
