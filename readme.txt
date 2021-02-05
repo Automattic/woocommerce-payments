@@ -101,6 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 1.9.2 - 2021-xx-xx =
+* Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.
+* Fix - Missing global config error in Checkout block integration, and incompatibility with latest block API.
+
 = 1.9.1 - 2021-02-03 =
 * Fix - Incompatibility with WC Subscriptions.
 * Fix - Missing order causing broken transactions list.
