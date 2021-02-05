@@ -469,8 +469,8 @@ class WC_Payments {
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$webhook_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
-		$webhook_controller->register_routes();
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$tos_controller->register_routes();
 	}
 
 	/**
