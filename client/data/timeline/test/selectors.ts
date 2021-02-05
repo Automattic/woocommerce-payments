@@ -5,14 +5,11 @@
  */
 import { getTimeline, getTimelineError } from '../selectors';
 import { TimelineState } from '../reducer';
+import { Event } from '../mocks/types';
 
 describe( 'Timeline selectors', () => {
 	const mockIntentionId1 = 'pi_1';
-	const mockTimeline1 = [
-		{
-			id: '1',
-		},
-	];
+	const mockTimeline1 = [ new Event( '1', 0 ) ];
 	const mockError = new Error( 'This is an error.' );
 
 	const mockSuccessState: { timeline: TimelineState } = {

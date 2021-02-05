@@ -4,23 +4,13 @@
  * Internal dependencies
  */
 import reducer, { TimelineState } from '../reducer';
+import { Event } from '../mocks/types';
 
 describe( 'Timeline reducer tests', () => {
 	const mockIntentionId1 = 'pi_1';
-	const mockTimeline1 = [
-		{
-			id: '1',
-		},
-	];
+	const mockTimeline1 = [ new Event( '1', 0 ) ];
 	const mockIntentionId2 = 'pi_2';
-	const mockTimeline2 = [
-		{
-			id: '2a',
-		},
-		{
-			id: '2b',
-		},
-	];
+	const mockTimeline2 = [ new Event( '2a', 0 ), new Event( '2b', 1 ) ];
 	const mockError = new Error( 'This is an error.' );
 	const mockUnrelatedData = [
 		{
