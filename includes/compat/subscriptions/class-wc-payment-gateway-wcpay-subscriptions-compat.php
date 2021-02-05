@@ -94,10 +94,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$user                = $order->get_user() ?? wp_get_current_user();
 		$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email               = sanitize_email( $order->get_billing_email() );
-		$customer_id         = $this->upsert_customer( $user, $name, $email );
 
 		try {
-			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
+			$customer_id = $this->upsert_customer( $user, $name, $email );
+			$intent      = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
 				$customer_id
 			);
@@ -130,10 +130,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// TODO handle when intent failed.
 		// TODO add order note.
 
-		$intent_id     = $intent['id'];
-		$status        = $intent['status'];
-		$charge_id     = '';
-		$client_secret = $intent['client_secret'];
+		$intent_id = $intent['id'];
+		$status    = $intent['status'];
 
 		if ( 'requires_action' === $status ) {
 			$order_id = $order->get_id();
@@ -142,7 +140,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 				'redirect' => sprintf(
 					'#wcpay-confirm-si:%s:%s:%s',
 					$order_id,
-					$client_secret,
+					$intent['client_secret'],
 					wp_create_nonce( 'wcpay_update_order_status_nonce' )
 				),
 			];
@@ -150,7 +148,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_charge_id', '' );
 		$order->update_meta_data( '_intention_status', $status );
 		$order->save();
 

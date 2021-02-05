@@ -520,13 +520,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string  $name The customer's name.
 	 * @param string  $email The customer's email.
 	 *
-	 * @return string|null Customer id.
+	 * @return string Customer id.
+	 *
+	 * @throws API_Exception Error creating / updating customer.
 	 */
-	protected function upsert_customer( $user, $name, $email ) {
-		if ( ! $user ) {
-			return;
-		}
-
+	protected function upsert_customer( WP_User $user, string $name, string $email ) {
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 
