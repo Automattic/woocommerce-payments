@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.9.2 - 2021-xx-xx =
+= 1.9.2 - 2021-02-05 =
 * Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.
 * Fix - Missing global config error in Checkout block integration, and incompatibility with latest block API.
 
