@@ -530,8 +530,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
-		$order               = $payment_information->get_order();
-		$save_payment_method = $payment_information->should_save_payment_method();
+		$order                                       = $payment_information->get_order();
+		$save_payment_method                         = $payment_information->should_save_payment_method();
+		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -574,6 +575,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
+
+			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
+				$token = $payment_information->get_payment_token();
+				$this->add_token_to_order( $order, $token );
+
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the last 4 digit of the credit card */
+						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					$token->get_last4()
+				);
+				$order->add_order_note( $note );
+			}
+
 			return [
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),

@@ -84,7 +84,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return Payment_Information An object, which describes the payment.
 	 */
 	protected function prepare_payment_information( $order ) {
-		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $this->is_changing_payment_method_for_subscription() ) {
+		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
+		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $is_changing_payment ) {
 			return parent::prepare_payment_information( $order );
 		}
 
@@ -94,6 +95,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
+		$payment_information->set_is_changing_payment_method_for_subscription( $is_changing_payment );
 
 		return $payment_information;
 	}
