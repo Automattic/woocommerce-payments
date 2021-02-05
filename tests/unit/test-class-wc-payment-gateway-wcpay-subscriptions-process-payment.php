@@ -368,11 +368,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			}
 		);
 
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
 		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( self::PAYMENT_METHOD_ID, self::CUSTOMER_ID )
-			->willReturn( $this->setup_intent );
+			->expects( $this->never() )
+			->method( 'create_and_confirm_setup_intent' );
 
 		$this->mock_wcpay_gateway
 			->expects( $this->once() )

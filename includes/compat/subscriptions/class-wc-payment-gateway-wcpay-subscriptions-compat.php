@@ -98,7 +98,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the last 4 digit of the credit card */
+					/* translators: %1: the last 4 digit of the credit card */
 					__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
 					[
 						'strong' => '<strong>',
@@ -124,8 +124,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			if ( ! empty( $payment_information ) ) {
-				$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
-				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				$payment_method    = $this->payments_api_client->get_payment_method( $payment_information->get_payment_method() );
 				$last4             = $payment_method['card']['last4'];
 
 				$note = sprintf(
@@ -154,9 +153,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$intent_id = $intent['id'];
 		$status    = $intent['status'];
 
-		if ( ! in_array( $status, ['succeeded', 'processing', 'requires_action'], true ) ) {
-			$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
-			$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+		if ( ! in_array( $status, [ 'succeeded', 'processing', 'requires_action' ], true ) ) {
+			$payment_method    = $this->payments_api_client->get_payment_method( $payment_information->get_payment_method() );
 			$last4             = $payment_method['card']['last4'];
 
 			$note = sprintf(
