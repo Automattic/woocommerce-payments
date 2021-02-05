@@ -46,17 +46,23 @@ class WC_Payments_Action_Scheduler_Service {
 	 * This function is a hook that will be called by ActionScheduler when an order is created.
 	 * It will make a request to the Payments API to track this event.
 	 *
-	 * @param array $order_data  The data for the order which has been created.
+	 * @param array $order_id  The ID of the order that has been created.
 	 *
 	 * @return bool
 	 */
-	public function track_new_order_action( $order_data ) {
-		// Ensure that we have the order data to send.
-		if ( empty( $order_data ) ) {
+	public function track_new_order_action( $order_id ) {
+		// Get the order details.
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
 			return false;
 		}
 
-		$result = $this->payments_api_client->track_order( $order_data, false );
+		// Send the order data to the Payments API to track it.
+		$result = $this->payments_api_client->track_order(
+			array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ),
+			true
+		);
 
 		return $result;
 	}
@@ -65,17 +71,23 @@ class WC_Payments_Action_Scheduler_Service {
 	 * This function is a hook that will be called by ActionScheduler when an order is updated.
 	 * It will make a request to the Payments API to track this event.
 	 *
-	 * @param array $order_data  The data for the order which has been updated.
+	 * @param int $order_id  The ID of the order which has been updated.
 	 *
 	 * @return bool
 	 */
-	public function track_update_order_action( $order_data ) {
-		// Ensure that we have the order data to send.
-		if ( empty( $order_data ) ) {
+	public function track_update_order_action( $order_id ) {
+		// Get the order details.
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
 			return false;
 		}
 
-		$result = $this->payments_api_client->track_order( $order_data, true );
+		// Send the order data to the Payments API to track it.
+		$result = $this->payments_api_client->track_order(
+			array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ),
+			true
+		);
 
 		return $result;
 	}
@@ -91,6 +103,10 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( $timestamp, $hook, $args = [], $group = '' ) {
+		// Unschedule any previously scheduled instances of this particular job.
+		as_unschedule_action( $hook, $args, $group );
+
+		// Schedule the job.
 		as_schedule_single_action( $timestamp, $hook, $args, $group );
 	}
 }

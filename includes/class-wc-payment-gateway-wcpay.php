@@ -1636,12 +1636,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Check whether this is an order we haven't previously tracked a creation event for.
 		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
 			// Schedule the action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+10 seconds' ),
 				'wcpay_track_new_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[ $order_id ],
 				self::GATEWAY_ID
 			);
 
@@ -1649,11 +1650,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 			$order->save_meta_data();
 		} else {
-			// Schedule an update action.
+			// Schedule an update action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+10 seconds' ),
 				'wcpay_track_update_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[ $order_id ],
 				self::GATEWAY_ID
 			);
 		}
