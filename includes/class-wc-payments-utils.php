@@ -354,9 +354,9 @@ class WC_Payments_Utils {
 	 */
 	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
-  }
-  
-  /**
+	}
+
+	/**
 	 * Returns a formatted message suitable for end-user notice
 	 *
 	 * @param string    $message Suggested message.

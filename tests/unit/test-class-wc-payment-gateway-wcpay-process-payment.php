@@ -398,7 +398,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			'min_amount' => 60,
 		];
 
-    // Arrange: Throw an exception in create_and_confirm_intention.
+		// Arrange: Throw an exception in create_and_confirm_intention.
 		$this->mock_api_client
 			->expects( $this->any() )
 			->method( 'create_and_confirm_intention' )
@@ -415,7 +415,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 				)
 			);
 
-    $result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 
 		$error_message = sprintf(
 			// translators: %1$s is a formatted amount with currency code.
