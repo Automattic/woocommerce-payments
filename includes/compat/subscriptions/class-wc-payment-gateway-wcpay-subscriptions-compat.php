@@ -85,7 +85,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	protected function prepare_payment_information( $order ) {
 		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
-		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $is_changing_payment ) {
+		if ( ! $is_changing_payment && ! wcs_order_contains_subscription( $order->get_id() ) ) {
 			return parent::prepare_payment_information( $order );
 		}
 
