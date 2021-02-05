@@ -15,6 +15,13 @@ exports[`FileUploadControl renders default file upload control 1`] = `
         Upload file
       </label>
       <div
+        class="components-drop-zone__provider"
+      >
+        <div
+          class="components-drop-zone"
+        />
+      </div>
+      <div
         class="file-upload"
       >
         <div
@@ -69,6 +76,13 @@ exports[`FileUploadControl renders disabled state 1`] = `
       >
         Upload file
       </label>
+      <div
+        class="components-drop-zone__provider"
+      >
+        <div
+          class="components-drop-zone"
+        />
+      </div>
       <div
         class="file-upload"
       >
@@ -128,6 +142,13 @@ exports[`FileUploadControl renders loading state 1`] = `
         Upload file
       </label>
       <div
+        class="components-drop-zone__provider"
+      >
+        <div
+          class="components-drop-zone"
+        />
+      </div>
+      <div
         class="file-upload"
       >
         <div
@@ -183,6 +204,13 @@ exports[`FileUploadControl renders upload done state 1`] = `
       >
         Upload file
       </label>
+      <div
+        class="components-drop-zone__provider"
+      >
+        <div
+          class="components-drop-zone"
+        />
+      </div>
       <div
         class="file-upload"
       >
@@ -259,6 +287,13 @@ exports[`FileUploadControl renders upload failed state 1`] = `
       >
         Upload file
       </label>
+      <div
+        class="components-drop-zone__provider"
+      >
+        <div
+          class="components-drop-zone"
+        />
+      </div>
       <div
         class="file-upload"
       >

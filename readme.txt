@@ -107,6 +107,7 @@ Please note that our support for the checkout block is still experimental and th
 = 1.9.2 - 2021-xx-xx =
 * Fix - Added better notices for end users if there are connection errors when making payments. 
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
+* Add - Add file dropzones to dispute evidence upload fields
 
 = 1.9.1 - 2021-02-03 =
 * Fix - Incompatibility with WC Subscriptions.
