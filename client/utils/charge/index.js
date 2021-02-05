@@ -60,27 +60,38 @@ export const getChargeStatus = ( charge = {} ) => {
 };
 
 /**
- * Calculates display values for charge amounts.
+ * Calculates display values for charge amounts in settlement currency.
  *
  * @param {Object} charge The full charge object.
- * @return {Object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
+ * @return {Object} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
-	// The base fee is the application fee.
-	let fee = charge.application_fee_amount;
-	let refunded = 0;
-
-	if ( isChargeDisputed( charge ) ) {
-		fee += sumBy( charge.dispute.balance_transactions, 'fee' );
-		refunded -= sumBy( charge.dispute.balance_transactions, 'amount' );
-	}
+	const balance = {
+		currency: charge.balance_transaction.currency,
+		amount: charge.balance_transaction.amount,
+		fee: charge.balance_transaction.fee,
+		refunded: 0,
+		net: 0,
+	};
 
 	if ( isChargeRefunded( charge ) ) {
-		refunded += charge.amount_refunded;
+		// Refund balance_transactions have negative amount.
+		balance.refunded -= sumBy(
+			charge.refunds.data,
+			'balance_transaction.amount'
+		);
+	}
+
+	if ( isChargeDisputed( charge ) ) {
+		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
+		balance.refunded -= sumBy(
+			charge.dispute.balance_transactions,
+			'amount'
+		);
 	}
 
 	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
-	const net = charge.amount - fee - refunded;
+	balance.net = balance.amount - balance.fee - balance.refunded;
 
-	return { net, fee, refunded };
+	return balance;
 };
