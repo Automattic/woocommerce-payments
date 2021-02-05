@@ -180,13 +180,47 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 	test( 'basic charge', () => {
 		const charge = {
 			amount: 1800,
+			currency: 'usd',
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
+			refunded: 0,
+		} );
+	} );
+
+	test( 'multi-currency basic charge', () => {
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			balance_transaction: {
+				amount: 1482,
+				fee: 68,
+				currency: 'eur',
+			},
+		};
+		/* eslint-enable camelcase */
+
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1482,
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee,
+			fee: 68,
 			refunded: 0,
 		} );
 	} );
@@ -198,15 +232,72 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			application_fee_amount: 82,
 			// eslint-disable-next-line camelcase
 			amount_refunded: 300,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						// eslint-disable-next-line camelcase
+						balance_transaction: {
+							amount: -300,
+						},
+					},
+				],
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
 				charge.amount_refunded,
 			fee: charge.application_fee_amount,
 			refunded: charge.amount_refunded,
+		} );
+	} );
+
+	test( 'multi-currency partial refund', () => {
+		const refunds = [ 1000, 500 ];
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			amount_refunded: 1500,
+			balance_transaction: {
+				currency: 'eur',
+				amount: 1482,
+				fee: 68,
+			},
+			refunds: {
+				data: refunds.map( ( refundedAmount ) => ( {
+					balance_transaction: {
+						amount: -refundedAmount,
+					},
+				} ) ),
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const expectedRefunds = refunds.reduce(
+			( refund, acc ) => refund + acc,
+			0
+		);
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1482,
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee -
+				expectedRefunds,
+			fee: 68,
+			refunded: expectedRefunds,
 		} );
 	} );
 
@@ -217,9 +308,27 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			application_fee_amount: 82,
 			// eslint-disable-next-line camelcase
 			amount_refunded: 1800,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
+			refunds: {
+				data: [
+					{
+						// eslint-disable-next-line camelcase
+						balance_transaction: {
+							amount: -1800,
+						},
+					},
+				],
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net:
 				charge.amount -
 				charge.application_fee_amount -
@@ -229,11 +338,57 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 
+	test( 'multi-currency full refund', () => {
+		// Refund at higher rate
+		const refunds = [ 1000, 800 ];
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			amount_refunded: 1800,
+			balance_transaction: {
+				currency: 'eur',
+				amount: 1482,
+				fee: 68,
+			},
+			refunds: {
+				data: refunds.map( ( refundedAmount ) => ( {
+					balance_transaction: {
+						amount: -refundedAmount,
+					},
+				} ) ),
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const expectedRefunds = refunds.reduce(
+			( refund, acc ) => refund + acc,
+			0
+		);
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1482,
+			currency: 'eur',
+			net:
+				charge.balance_transaction.amount -
+				charge.balance_transaction.fee -
+				expectedRefunds,
+			fee: 68,
+			refunded: expectedRefunds,
+		} );
+	} );
+
 	test( 'full dispute', () => {
 		const charge = {
 			amount: 1800,
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 			disputed: true,
 			dispute: {
 				amount: 1800,
@@ -248,6 +403,8 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net: 0 - charge.application_fee_amount - 1500,
 			fee: charge.application_fee_amount + 1500,
 			refunded: charge.dispute.amount,
@@ -259,6 +416,12 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 			amount: 1800,
 			// eslint-disable-next-line camelcase
 			application_fee_amount: 82,
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 			disputed: true,
 			dispute: {
 				amount: 1800,
@@ -277,9 +440,46 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
+		} );
+	} );
+
+	test( 'multi-currency full dispute', () => {
+		/* eslint-disable camelcase */
+		const charge = {
+			amount: 1800,
+			currency: 'usd',
+			application_fee_amount: 82,
+			balance_transaction: {
+				currency: 'eur',
+				amount: 1482,
+				fee: 68,
+			},
+			disputed: true,
+			dispute: {
+				amount: 1800,
+				balance_transactions: [
+					{
+						amount: 1482,
+						fee: 1500,
+						currency: 'eur',
+					},
+				],
+			},
+		};
+		/* eslint-enable camelcase */
+
+		const disputedAmount = -charge.dispute.balance_transactions[ 0 ].amount;
+		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1482,
+			currency: 'eur',
+			net: charge.balance_transaction.amount - disputedAmount - 68 - 1500,
+			fee: 68 + 1500,
+			refunded: disputedAmount,
 		} );
 	} );
 
@@ -294,9 +494,17 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 				// eslint-disable-next-line camelcase
 				balance_transactions: [],
 			},
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: 1800,
+				currency: 'usd',
+				fee: 82,
+			},
 		};
 
 		expect( utils.getChargeAmounts( charge ) ).toEqual( {
+			amount: 1800,
+			currency: 'usd',
 			net: charge.amount - charge.application_fee_amount,
 			fee: charge.application_fee_amount,
 			refunded: 0,
