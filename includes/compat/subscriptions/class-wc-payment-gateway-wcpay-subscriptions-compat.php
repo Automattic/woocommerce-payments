@@ -91,35 +91,42 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$order               = wc_get_order( $order_id );
 		$payment_information = $this->prepare_payment_information( $order );
-		$user                = $order->get_user() ?? wp_get_current_user();
-		$name                = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
-		$email               = sanitize_email( $order->get_billing_email() );
+
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			$this->add_token_to_order( $order, $token );
+
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the last 4 digit of the credit card */
+					__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+					]
+				),
+				$token->get_last4()
+			);
+			$order->add_order_note( $note );
+			$order->payment_complete();
+
+			return [
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			];
+		}
 
 		try {
-			// Determine the customer making the payment, create one if we don't have one already.
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-			if ( null === $customer_id ) {
-				// Create a new customer.
-				$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
-			}
-
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
-				$customer_id
+				$order->get_customer_id()
 			);
 		} catch ( Exception $e ) {
 			wc_add_notice( $e->getMessage(), 'error' );
 
 			if ( ! empty( $payment_information ) ) {
-				if ( $payment_information->is_using_saved_payment_method() ) {
-					$token = $payment_information->get_payment_token();
-					$last4 = $token->get_last4();
-				} else {
-					$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
-					$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
-					$last4             = $payment_method['card']['last4'];
-				}
+				$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
+				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				$last4             = $payment_method['card']['last4'];
 
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
@@ -144,12 +151,38 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			];
 		}
 
-		// TODO handle when intent failed.
-		// TODO add order note.
-
 		$intent_id = $intent['id'];
 		$status    = $intent['status'];
 
+		if ( ! in_array( $status, ['succeeded', 'processing', 'requires_action'], true ) ) {
+			$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
+			$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+			$last4             = $payment_method['card']['last4'];
+
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the last 4 digit of the credit card  */
+					__(
+						'Failed to change payment method to Credit Card ending in %1$s.',
+						'woocommerce-payments'
+					),
+					[
+						'code' => '<code>',
+					]
+				),
+				$last4
+			);
+			$order->add_order_note( $note );
+
+			Logger::log( 'Failed updating payment for subscriptions order ' . $order->get_order_number() . ' because intent status: ' . $status );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
+		}
+
+		// TODO support SCA.
 		if ( 'requires_action' === $status ) {
 			$order_id = $order->get_id();
 			return [
@@ -163,34 +196,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			];
 		}
 
-		$order->set_transaction_id( $intent_id );
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', '' );
-		$order->update_meta_data( '_intention_status', $status );
-		$order->save();
-
-		if ( $payment_information->is_using_saved_payment_method() ) {
-			$token = $payment_information->get_payment_token();
-			$this->add_token_to_order( $order, $token );
-
-			$note = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the last 4 digit of the credit card */
-					__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-					]
-				),
-				$token->get_last4()
-			);
-			$order->add_order_note( $note );
-			$order->payment_complete();
-		} else {
-			$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
-			$payment_information->set_token( $token );
-			$this->add_token_to_order( $order, $token );
-			$order->payment_complete( $intent_id );
-		}
+		$token = $this->token_service->add_payment_method_to_user( $payment_information->get_payment_method(), $user );
+		$payment_information->set_token( $token );
+		$this->add_token_to_order( $order, $token );
+		$order->payment_complete( $intent_id );
 
 		return [
 			'result'   => 'success',
