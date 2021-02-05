@@ -94,4 +94,15 @@ describe( 'AccountStatus', () => {
 		} );
 		expect( accountStatus ).toMatchSnapshot();
 	} );
+
+	test( 'renders manual (suspended) deposits', () => {
+		const { container: accountStatus } = renderAccountStatus( {
+			status: 'complete',
+			paymentsEnabled: true,
+			depositsStatus: 'manual',
+			currentDeadline: 0,
+			accountLink: '',
+		} );
+		expect( accountStatus ).toMatchSnapshot();
+	} );
 } );

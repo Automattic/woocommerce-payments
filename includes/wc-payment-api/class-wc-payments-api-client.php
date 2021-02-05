@@ -37,6 +37,7 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
+	const TRACKING_API        = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -97,6 +98,15 @@ class WC_Payments_API_Client {
 	 */
 	public function is_server_connected() {
 		return $this->http_client->is_connected();
+	}
+
+	/**
+	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
+	 *
+	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
+	 */
+	public function get_blog_id() {
+		return $this->is_server_connected() ? $this->http_client->get_blog_id() : null;
 	}
 
 	/**
@@ -687,17 +697,19 @@ class WC_Payments_API_Client {
 	 * @param string|null $name        Customer's full name.
 	 * @param string|null $email       Customer's email address.
 	 * @param string|null $description Description of customer.
+	 * @param string|null $session_id  Customer's session ID.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer( $name = null, $email = null, $description = null ) {
+	public function create_customer( $name = null, $email = null, $description = null, $session_id = null ) {
 		$customer_array = $this->request(
 			[
 				'name'        => $name,
 				'email'       => $email,
 				'description' => $description,
+				'session_id'  => $session_id,
 			],
 			self::CUSTOMERS_API,
 			self::POST
@@ -822,6 +834,48 @@ class WC_Payments_API_Client {
 				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
+			self::POST
+		);
+	}
+
+	/**
+	 * Track a order creation/update event.
+	 *
+	 * @param array $order_data  The order data, as an array.
+	 * @param bool  $update      Is this an update event? (Defaults to false, which is a creation event).
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function track_order( $order_data, $update = false ) {
+		return $this->request(
+			[
+				'order_data' => $order_data,
+				'update'     => $update,
+			],
+			self::TRACKING_API . '/order',
+			self::POST
+		);
+	}
+
+	/**
+	 * Link the current customer with the browsing session, for tracking purposes.
+	 *
+	 * @param string $session_id  Session ID, specific to this site.
+	 * @param string $customer_id Stripe customer ID.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function link_session_to_customer( $session_id, $customer_id ) {
+		return $this->request(
+			[
+				'session'  => $session_id,
+				'customer' => $customer_id,
+			],
+			self::TRACKING_API . '/link-session',
 			self::POST
 		);
 	}
@@ -1019,8 +1073,19 @@ class WC_Payments_API_Client {
 		$object['order'] = null;
 		if ( $order ) {
 			$object['order'] = [
-				'number' => $order->get_order_number(),
-				'url'    => $order->get_edit_order_url(),
+				'number'       => $order->get_order_number(),
+				'url'          => $order->get_edit_order_url(),
+				'customer_url' => admin_url(
+					add_query_arg(
+						[
+							'page'      => 'wc-admin',
+							'path'      => '/customers',
+							'filter'    => 'single_customer',
+							'customers' => $order->get_customer_id(),
+						],
+						'admin.php'
+					)
+				),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1083,6 +1148,7 @@ class WC_Payments_API_Client {
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
+			$intention_array['currency'],
 			$created,
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,

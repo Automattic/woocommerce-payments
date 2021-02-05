@@ -20,6 +20,11 @@ class WC_Payments_Utils {
 	const MAX_ARRAY_DEPTH = 10;
 
 	/**
+	 * Order meta data key that holds the currency of order's intent transaction.
+	 */
+	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -117,6 +122,24 @@ class WC_Payments_Utils {
 		}
 
 		return round( (float) $amount * $conversion_rate );
+	}
+
+	/**
+	 * Interprets amount from Stripe API.
+	 *
+	 * @param int    $amount   The amount returned by Stripe API.
+	 * @param string $currency The currency we get from Stripe API for the amount.
+	 *
+	 * @return float The interpreted amount.
+	 */
+	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
+		$conversion_rate = 100;
+
+		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+			$conversion_rate = 1;
+		}
+
+		return (float) $amount / $conversion_rate;
 	}
 
 	/**
@@ -309,6 +332,31 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Gets order intent currency from meta data or order currency.
+	 *
+	 * @param WC_Order $order The order whose intent currency we want to get.
+	 *
+	 * @return string The currency.
+	 */
+	public static function get_order_intent_currency( WC_Order $order ): string {
+		$intent_currency = $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY );
+		if ( ! empty( $intent_currency ) ) {
+			return $intent_currency;
+		}
+		return $order->get_currency();
+	}
+
+	/**
+	 * Saves intent currency in order meta data.
+	 *
+	 * @param WC_Order $order The order whose intent currency we want to set.
+	 * @param string   $currency The intent currency.
+	 */
+	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
+		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
+  }
+  
+  /**
 	 * Returns a formatted message suitable for end-user notice
 	 *
 	 * @param string    $message Suggested message.

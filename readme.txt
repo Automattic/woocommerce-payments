@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 1.8.0
+Stable tag: 1.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,21 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 1.9.0 - 2021-xx-xx =
+= 2.0.0 - 2021-xx-xx =
+* Update - Render customer details in transactions list as text instead of link if order missing.
+
+= 1.9.2 - 2021-xx-xx =
+* Fix - Added better notices for end users if there are connection errors when making payments. 
+* Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
+* Add - Add file dropzones to dispute evidence upload fields
+* Add - Localized notification if order amount is too low to process.
+
+= 1.9.1 - 2021-02-03 =
+* Fix - Incompatibility with WC Subscriptions.
+* Fix - Missing order causing broken transactions list.
+
+= 1.9.0 - 2021-02-02 =
+* Add - Improved fraud prevention.
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
@@ -111,7 +125,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fixed connection timeout configuration.
 * Fix - Specify error code when refund fails in admin to prevent blank alert.
 * Fix - Add fees as line items sent to Stripe to prevent Level 3 errors.
-* Add - Localized notification if order amount is too low to process.
+* Fix - Currency format in non-USD order note when capturing, refunding, and processing subscription renewal.
+* Update - Link customer name from transaction list page to WooCommerce's Customers page filtered by the customer's name.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.

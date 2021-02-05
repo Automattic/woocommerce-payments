@@ -1,7 +1,12 @@
 /**
+ * External dependencies
+ */
+import { useEffect } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
-import includeStripeJS from 'hooks/include-stripe-js';
+import enqueueFraudScripts from 'fraud-scripts';
 import './style.scss';
 
 const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
@@ -11,7 +16,9 @@ const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 		classNames.push( 'is-narrow' );
 	}
 
-	includeStripeJS();
+	const fraudScriptsConfig =
+		'undefined' !== typeof wcpaySettings ? wcpaySettings.fraudServices : [];
+	useEffect( () => enqueueFraudScripts( fraudScriptsConfig ), [] );
 
 	return (
 		<div className={ classNames.join( ' ' ) } style={ customStyle }>

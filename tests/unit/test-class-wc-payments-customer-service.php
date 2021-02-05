@@ -190,6 +190,27 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
 	}
 
+	public function test_create_customer_for_user_adds_session_id() {
+		$user             = new WP_User( 1 );
+		$user->user_login = 'testUser';
+
+		$this->mock_account
+			->method( 'get_fraud_services_config' )
+			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_customer' )
+			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser', 'woo_session_id' )
+			->willReturn( 'cus_test12345' );
+
+		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
+
+		$this->assertEquals( 'cus_test12345', $customer_id );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+	}
+
 	/**
 	 * Test update customer for user.
 	 *

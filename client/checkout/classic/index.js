@@ -7,8 +7,11 @@ import './style.scss';
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
+import enqueueFraudScripts from 'fraud-scripts';
 
 jQuery( function ( $ ) {
+	enqueueFraudScripts( getConfig( 'fraudServices' ) );
+
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {

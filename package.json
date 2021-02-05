@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "1.8.0",
+  "version": "1.9.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
@@ -103,7 +103,7 @@
     "config": "3.3.3",
     "core-js": "3.8.3",
     "dotenv": "8.2.0",
-    "eslint": "7.18.0",
+    "eslint": "7.19.0",
     "eslint-config-prettier": "7.2.0",
     "eslint-config-wpcalypso": "4.0.1",
     "eslint-loader": "4.0.2",
