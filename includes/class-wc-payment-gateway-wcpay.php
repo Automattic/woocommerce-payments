@@ -514,33 +514,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Upserts customer from user, name, and email.
-	 *
-	 * @param WP_User $user The user associated to customer.
-	 * @param string  $name The customer's name.
-	 * @param string  $email The customer's email.
-	 *
-	 * @return string Customer id.
-	 *
-	 * @throws API_Exception Error creating / updating customer.
-	 */
-	protected function upsert_customer( WP_User $user, string $name, string $email ) {
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-		if ( null === $customer_id ) {
-			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
-		} else {
-			// Update the existing customer with the current details. In the event the old customer can't be
-			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
-		}
-
-		return $customer_id;
-	}
-
-	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart                   $cart Cart.
@@ -567,7 +540,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'payment_type'   => $payment_information->get_payment_type(),
 		];
 
-		$customer_id = $this->upsert_customer( $user, $name, $email );
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+		if ( null === $customer_id ) {
+			// Create a new customer.
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+		} else {
+			// Update the existing customer with the current details. In the event the old customer can't be
+			// found a new one is created, so we update the customer ID here as well.
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+		}
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 		if ( $payment_information->is_using_saved_payment_method() ) {

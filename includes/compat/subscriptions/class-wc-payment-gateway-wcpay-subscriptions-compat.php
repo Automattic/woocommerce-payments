@@ -96,8 +96,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$email               = sanitize_email( $order->get_billing_email() );
 
 		try {
-			$customer_id = $this->upsert_customer( $user, $name, $email );
-			$intent      = $this->payments_api_client->create_and_confirm_setup_intent(
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+			if ( null === $customer_id ) {
+				// Create a new customer.
+				$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+			}
+
+			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 				$payment_information->get_payment_method(),
 				$customer_id
 			);
