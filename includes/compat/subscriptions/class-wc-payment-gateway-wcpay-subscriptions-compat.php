@@ -413,7 +413,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
 		$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
-		if ( ! $token || ! ( $token instanceof WC_Payment_Token_CC ) ) {
+		if ( ! $token || ! $token instanceof WC_Payment_Token_CC ) {
 			return $old_payment_method_title;
 		}
 
