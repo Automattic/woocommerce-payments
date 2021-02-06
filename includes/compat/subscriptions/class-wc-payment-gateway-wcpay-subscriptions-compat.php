@@ -462,7 +462,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		try {
 			$payment_information = $this->prepare_payment_information( $order );
-		} catch (Exception $e) {
+		} catch ( Exception $e ) {
 			return $new_payment_method_title;
 		}
 
