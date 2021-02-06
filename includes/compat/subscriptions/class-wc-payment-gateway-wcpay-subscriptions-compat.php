@@ -399,26 +399,41 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return $old_payment_method_title;
 		}
 
-		$last_order_id = $subscription->get_last_order();
-		if ( ! $last_order_id ) {
-			return $old_payment_method_title;
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$token_ids = $subscription->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $old_payment_method_title;
+			}
+
+			$last_order = wc_get_order( $last_order_id );
+			$token_ids  = $last_order->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
 		}
 
-		$last_order = wc_get_order( $last_order_id );
-		$token_ids  = $last_order->get_payment_tokens();
-		// since old payment must be the second to last saved payment...
-		if ( count( $token_ids ) < 2 ) {
-			return $old_payment_method_title;
-		}
-
-		$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
-		$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
-		if ( ! $token || ! $token instanceof WC_Payment_Token_CC ) {
-			return $old_payment_method_title;
-		}
-
-		// translators: 1: payment method likely credit card, 2: last 4 digit.
-		return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+		return $old_payment_method_title;
 	}
 
 	/**
@@ -435,22 +450,39 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return $new_payment_method_title;
 		}
 
-		$request = isset( $_POST ) ? $_POST : []; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$token   = WCPay\Payment_Information::get_token_from_request( $request );
-		if ( $token && $token instanceof WC_Payment_Token_CC ) {
-			// translators: 1: payment method likely credit card, 2: last 4 digit.
-			return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$order = $subscription;
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $new_payment_method_title;
+			}
+			$order = wc_get_order( $last_order_id );
 		}
 
-		$payment_method_id = WCPay\Payment_Information::get_payment_method_from_request( $request );
 		try {
-			$payment_method = $this->payments_api_client->get_payment_method( $payment_method_id );
-			if ( isset( $payment_method['card']['last4'] ) ) {
+			$payment_information = $this->prepare_payment_information( $order );
+		} catch (Exception $e) {
+			return $new_payment_method_title;
+		}
+
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
 				// translators: 1: payment method likely credit card, 2: last 4 digit.
-				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
 			}
-		} catch ( Exception $e ) {
-			Logger::error( $e );
+		} else {
+			try {
+				$payment_method_id = $payment_information->get_payment_method();
+				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				if ( ! empty( $payment_method['card']['last4'] ) ) {
+					// translators: 1: payment method likely credit card, 2: last 4 digit.
+					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+				}
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
 		}
 
 		return $new_payment_method_title;
