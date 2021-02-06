@@ -10,7 +10,7 @@
  *
  * This helper class should ONLY be used for unit tests!.
  */
-class WC_Subscription extends WC_Order {
+class WC_Subscription {
 	/**
 	 * Helper variable for mocking get_related_orders.
 	 *
