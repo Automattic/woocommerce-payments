@@ -1642,7 +1642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+10 seconds' ),
 				'wcpay_track_new_order',
-				[ $order_id ],
+				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
 
@@ -1654,7 +1654,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+10 seconds' ),
 				'wcpay_track_update_order',
-				[ $order_id ],
+				[
+					'order_id'      => $order_id,
+					'date_modified' => $order->get_date_modified(),
+				],
 				self::GATEWAY_ID
 			);
 		}

@@ -37,12 +37,12 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 	}
 
-	public function test_track_new_order_action_with_empty_order() {
-		$this->assertFalse( $this->action_scheduler_service->track_new_order_action( [] ) );
+	public function test_track_new_order_action_with_invalid_order_id() {
+		$this->assertFalse( $this->action_scheduler_service->track_new_order_action( -4 ) );
 	}
 
-	public function test_track_update_order_action_with_empty_order() {
-		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( [] ) );
+	public function test_track_update_order_action_with_invalid_order_id() {
+		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( -4 ) );
 	}
 
 	public function test_track_new_order_action() {
@@ -50,10 +50,10 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
-			->with( $order->get_data(), false )
+			->with( $this->get_order_data_mock( $order->get_id() ), false )
 			->willReturn( true );
 
-		$this->assertTrue( $this->action_scheduler_service->track_new_order_action( $order->get_data() ) );
+		$this->assertTrue( $this->action_scheduler_service->track_new_order_action( $order->get_id() ) );
 	}
 
 	public function test_track_update_order_action() {
@@ -61,9 +61,23 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
-			->with( $order->get_data(), true )
+			->with( $this->get_order_data_mock( $order->get_id() ), true )
 			->willReturn( true );
 
-		$this->assertTrue( $this->action_scheduler_service->track_update_order_action( $order->get_data() ) );
+		$this->assertTrue( $this->action_scheduler_service->track_update_order_action( $order->get_id() ) );
+	}
+
+	/**
+	 * Get a mock of the order data expected to be passed into the `track_order` function.
+	 *
+	 * @return array
+	 */
+	private function get_order_data_mock( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		return array_merge(
+			$order->get_data(),
+			[ '_intent_id' => $order->get_meta( '_intent_id' ) ]
+		);
 	}
 }

@@ -61,7 +61,7 @@ class WC_Payments_Action_Scheduler_Service {
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
 			array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ),
-			true
+			false
 		);
 
 		return $result;
@@ -93,7 +93,9 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action scheduler job.
+	 * Schedule an action scheduler job. Also unschedules (replaces) any previous instances of the same job.
+	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
+	 * The `as_unschedule_action` function will only replace a job which has the same $hook, $args AND $group.
 	 *
 	 * @param int    $timestamp - When the job will run.
 	 * @param string $hook      - The hook to trigger.
