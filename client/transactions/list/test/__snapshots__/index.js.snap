@@ -200,7 +200,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
+                class="woocommerce-table__header amount is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -422,7 +422,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item is-numeric"
+                class="woocommerce-table__item amount is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -430,7 +430,29 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                   tabindex="-1"
                 >
-                  $15.00
+                  <div
+                    class="converted-amount"
+                  >
+                    <span
+                      class="conversion-indicator"
+                      data-testid="conversion-indicator"
+                    >
+                      <svg
+                        class="gridicon gridicons-sync"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+                    $15.00
+                  </div>
                 </a>
               </td>
               <td
@@ -757,7 +779,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
+                class="woocommerce-table__header amount is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -1011,7 +1033,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item is-numeric"
+                class="woocommerce-table__item amount is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1142,7 +1164,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item is-numeric"
+                class="woocommerce-table__item amount is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1150,7 +1172,29 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                   tabindex="-1"
                 >
-                  $15.00
+                  <div
+                    class="converted-amount"
+                  >
+                    <span
+                      class="conversion-indicator"
+                      data-testid="conversion-indicator"
+                    >
+                      <svg
+                        class="gridicon gridicons-sync"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+                    $15.00
+                  </div>
                 </a>
               </td>
               <td
@@ -1490,7 +1534,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header is-sortable is-numeric"
+                class="woocommerce-table__header amount is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -1728,7 +1772,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </a>
               </td>
               <td
-                class="woocommerce-table__item is-numeric"
+                class="woocommerce-table__item amount is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1849,7 +1893,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </a>
               </td>
               <td
-                class="woocommerce-table__item is-numeric"
+                class="woocommerce-table__item amount is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1857,7 +1901,29 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
                   tabindex="-1"
                 >
-                  $15.00
+                  <div
+                    class="converted-amount"
+                  >
+                    <span
+                      class="conversion-indicator"
+                      data-testid="conversion-indicator"
+                    >
+                      <svg
+                        class="gridicon gridicons-sync"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+                    $15.00
+                  </div>
                 </a>
               </td>
               <td
