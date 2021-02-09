@@ -82,7 +82,7 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
-	const renderCustomerPrice =
+	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
 	return (
@@ -94,12 +94,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							isLoading={ isLoading }
 							placeholder="Amount placeholder"
 						>
-							{ formatCurrency(
-								balance.amount,
-								balance.currency
-							) }
+							{ formatCurrency( charge.amount, charge.currency ) }
 							<span className="payment-details-summary__amount-currency">
-								{ balance.currency }
+								{ charge.currency || 'USD' }
 							</span>
 							<PaymentStatusChip
 								status={ getChargeStatus( charge ) }
@@ -107,13 +104,13 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ renderCustomerPrice ? (
+						{ renderStorePrice ? (
 							<p>
 								{ formatCurrency(
-									charge.amount,
-									charge.currency
+									balance.amount,
+									balance.currency
 								) }{ ' ' }
-								{ ( charge.currency || 'USD' ).toUpperCase() }
+								{ balance.currency.toUpperCase() }
 							</p>
 						) : null }
 						{ balance.refunded ? (
