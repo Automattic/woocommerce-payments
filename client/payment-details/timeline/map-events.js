@@ -489,12 +489,6 @@ const mapEventToTimelineItems = ( event ) => {
 				Math.abs( event.amount ) + Math.abs( event.fee ),
 				event.currency
 			);
-			const disputedAmount = isFXEvent( event )
-				? formatCurrency(
-						event.transaction_details.customer_amount,
-						event.transaction_details.customer_currency
-				  )
-				: formatCurrency( event.amount, event.currency );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -503,14 +497,13 @@ const mapEventToTimelineItems = ( event ) => {
 				getDepositTimelineItem( event, formattedTotal, true, [
 					sprintf(
 						/* translators: %s is a monetary amount */
-						__( 'Disputed amount: %s', 'woocommerce-payments' ),
-						disputedAmount
+						__( 'Dispute reversal: %s', 'woocommerce-payments' ),
+						formatCurrency( event.amount, event.currency )
 					),
-					composeFXString( event ),
 					sprintf(
 						/* translators: %s is a monetary amount */
-						__( 'Fee: %s', 'woocommerce-payments' ),
-						formatCurrency( event.fee, event.currency )
+						__( 'Fee refund: %s', 'woocommerce-payments' ),
+						formatCurrency( Math.abs( event.fee ), event.currency )
 					),
 				] ),
 				getMainTimelineItem(

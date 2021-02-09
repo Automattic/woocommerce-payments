@@ -349,9 +349,8 @@ Array [
   },
   Object {
     "body": Array [
-      "Disputed amount: €25,00",
-      "€1,00 → $1.1996: $29.99",
-      "Fee: $-15.00",
+      "Dispute reversal: $29.99",
+      "Fee refund: $15.00",
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
@@ -631,9 +630,8 @@ Array [
   },
   Object {
     "body": Array [
-      "Disputed amount: $100.00",
-      undefined,
-      "Fee: $15.00",
+      "Dispute reversal: $100.00",
+      "Fee refund: $15.00",
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
