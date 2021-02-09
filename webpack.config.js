@@ -82,6 +82,8 @@ const webpackConfig = {
 						return [ 'wc', 'navigation' ];
 					case '@woocommerce/blocks-registry':
 						return [ 'wc', 'wcBlocksRegistry' ];
+					case 'wp-mediaelement':
+						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
@@ -96,6 +98,8 @@ const webpackConfig = {
 						return 'wc-navigation';
 					case '@woocommerce/blocks-registry':
 						return 'wc-blocks-registry';
+					case 'wp-mediaelement':
+						return 'wp-mediaelement';
 				}
 			},
 		} ),
