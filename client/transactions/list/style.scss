@@ -1,6 +1,19 @@
+@import 'node_modules/@wordpress/components/src/tooltip/style.scss';
+
 .transactions-list {
-	.date-time {
+	.woocommerce-table__item.date-time {
 		min-width: 195px;
+	}
+
+	.woocommerce-table__item.amount .converted-amount {
+		display: flex; // Necessary for conversion tooltip to show.
+		justify-content: flex-end;
+
+		.conversion-indicator {
+			margin-right: 6px;
+			height: 18px;
+			fill: $studio-gray-30;
+		}
 	}
 }
 

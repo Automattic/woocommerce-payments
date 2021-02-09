@@ -61,6 +61,7 @@ const getColumns = ( includeDeposit, includeSubscription ) =>
 			screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
 			isNumeric: true,
 			isSortable: true,
+			cellClassName: 'amount',
 		},
 		{
 			key: 'fees',
