@@ -107,6 +107,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Added better notices for end users if there are connection errors when making payments. 
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
+* Add - Currency conversion indicator to Transactions list.
 
 = 1.9.2 - 2021-02-05 =
 * Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.
