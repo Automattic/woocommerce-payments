@@ -200,7 +200,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header amount is-sortable is-numeric"
+                class="woocommerce-table__header is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -422,7 +422,7 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item amount is-numeric"
+                class="woocommerce-table__item is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -779,7 +779,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header amount is-sortable is-numeric"
+                class="woocommerce-table__header is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -1033,7 +1033,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item amount is-numeric"
+                class="woocommerce-table__item is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1164,7 +1164,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                 </a>
               </td>
               <td
-                class="woocommerce-table__item amount is-numeric"
+                class="woocommerce-table__item is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1534,7 +1534,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
               </th>
               <th
                 aria-sort="none"
-                class="woocommerce-table__header amount is-sortable is-numeric"
+                class="woocommerce-table__header is-sortable is-numeric"
                 role="columnheader"
                 scope="col"
               >
@@ -1772,7 +1772,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </a>
               </td>
               <td
-                class="woocommerce-table__item amount is-numeric"
+                class="woocommerce-table__item is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"
@@ -1893,7 +1893,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                 </a>
               </td>
               <td
-                class="woocommerce-table__item amount is-numeric"
+                class="woocommerce-table__item is-numeric"
               >
                 <a
                   class="woocommerce-table__clickable-cell"

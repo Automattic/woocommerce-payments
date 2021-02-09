@@ -1,11 +1,11 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
 .transactions-list {
-	.woocommerce-table__item.date-time {
+	.date-time {
 		min-width: 195px;
 	}
 
-	.woocommerce-table__item.amount .converted-amount {
+	.converted-amount {
 		display: flex; // Necessary for conversion tooltip to show.
 		justify-content: flex-end;
 
