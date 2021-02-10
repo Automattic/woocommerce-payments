@@ -337,7 +337,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 			'min_amount' => 60,
 		];
 
-		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, $error_data );
+		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, $error_data );
 		$this->assertEquals(
 			sprintf(
 				// translators: %1$s is a formatted amount with currency code.
@@ -358,7 +358,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 	}
 
 	public function test_wc_format_amount_too_low_exception() {
-		$e_without_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, [] );
+		$e_without_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, [] );
 		$this->assertEquals(
 			__(
 				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',
@@ -372,7 +372,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 			'min_amount' => 60,
 		];
 
-		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, 0, null, $error_data );
+		$e_with_data = new WCPay\Exceptions\API_Exception( 'Test', 'wcpay_amount_too_low', 400, $error_data );
 		$this->assertEquals(
 			sprintf(
 				// translators: %1$s is a formatted amount with currency code.
@@ -385,7 +385,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 			WC_Payments_Utils::wc_format_amount_too_low_exception( $e_with_data )
 		);
 
-		$e_with_data_wrong_code = new WCPay\Exceptions\API_Exception( 'Test', 'foobar', 400, 0, null, [] );
+		$e_with_data_wrong_code = new WCPay\Exceptions\API_Exception( 'Test', 'foobar', 400, [] );
 		$this->assertEquals(
 			__(
 				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',

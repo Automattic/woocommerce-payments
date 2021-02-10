@@ -408,8 +408,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 						'Test',
 						'wcpay_amount_too_low',
 						400,
-						0,
-						null,
 						$error_data
 					)
 				)
