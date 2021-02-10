@@ -613,18 +613,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If request throws.
 	 */
 	public function create_token( $request ) {
-		$response = $this->request( [], self::CONN_TOKENS_API, self::POST );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		// As an aid to mobile clients, tuck in the test_mode flag (added by the request method call above) in the response.
-		if ( is_array( $response ) ) {
-			$response['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
-		}
-
-		return $response;
+		return $this->request( [], self::CONN_TOKENS_API, self::POST );
 	}
 
 	/**

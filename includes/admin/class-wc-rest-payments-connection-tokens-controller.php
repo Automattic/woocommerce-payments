@@ -40,6 +40,17 @@ class WC_REST_Payments_Connection_Tokens_Controller extends WC_Payments_REST_Con
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function create_token( $request ) {
-		return $this->forward_request( 'create_token', [ $request ] );
+		$response = $this->forward_request( 'create_token', [ $request ] );
+
+		// As an aid to mobile clients, tuck in the test_mode flag in the response returned to the request.
+		if ( is_a( $response, 'WP_REST_Response' ) ) {
+			if ( property_exists( $response, 'data' ) ) {
+				if ( is_array( $response->data ) ) {
+					$response->data['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+				}
+			}
+		}
+
+		return $response;
 	}
 }
