@@ -20,7 +20,7 @@ export default ( config ) => {
 			service.init( config[ serviceName ] );
 		}
 
-		if ( ! document.querySelector( `[src="${ service.src }"]` ) ) {
+		if ( ! document.querySelector( `[src^="${ service.src }"]` ) ) {
 			const script = document.createElement( 'script' );
 			script.src = service.src;
 			script.async = true;
