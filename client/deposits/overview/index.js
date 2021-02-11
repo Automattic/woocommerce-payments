@@ -30,7 +30,7 @@ const formatDate = ( format, date ) =>
 const getAmount = ( obj ) => {
 	return formatCurrency(
 		obj ? obj.amount : 0,
-		obj && obj.currency ? obj.currency : null
+		obj && obj.currency ? obj.currency : undefined
 	);
 };
 const getDepositDate = ( deposit ) =>
