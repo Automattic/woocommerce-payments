@@ -694,23 +694,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a customer.
 	 *
-	 * @param string|null $name        Customer's full name.
-	 * @param string|null $email       Customer's email address.
-	 * @param string|null $description Description of customer.
-	 * @param string|null $session_id  Customer's session ID.
+	 * @param array $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer( $name = null, $email = null, $description = null, $session_id = null ) {
+	public function create_customer( $customer_data ) {
 		$customer_array = $this->request(
-			[
-				'name'        => $name,
-				'email'       => $email,
-				'description' => $description,
-				'session_id'  => $session_id,
-			],
+			$customer_data,
 			self::CUSTOMERS_API,
 			self::POST
 		);

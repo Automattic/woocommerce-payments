@@ -547,15 +547,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_data = WC_Payments_Customer_Service::construct_customer_data( $order, new WC_Customer( $user->ID ) );
 
 		if ( null === $customer_id ) {
 			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
 			// Update the existing customer with the current details. In the event the old customer can't be
 			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
 		}
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
@@ -1669,10 +1670,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = Payment_Information::from_payment_request( $_POST );
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
-		$user        = wp_get_current_user();
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$user          = wp_get_current_user();
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_data = WC_Payments_Customer_Service::construct_customer_data( null, new WC_Customer( $user->ID ) );
 		if ( null === $customer_id ) {
-			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		return $this->payments_api_client->create_and_confirm_setup_intent(
