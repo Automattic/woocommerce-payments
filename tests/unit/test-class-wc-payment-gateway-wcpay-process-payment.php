@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Low_Exception;
 use WCPay\Exceptions\Connection_Exception;
 
 /**
@@ -389,7 +390,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
-	public function test_api_exception_filters_are_run() {
+	public function test_amount_too_low_exception_notice() {
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
 
@@ -404,7 +405,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will(
 				$this->throwException(
-					new API_Exception(
+					new Amount_Too_Low_Exception(
 						'Test',
 						'wcpay_amount_too_low',
 						400,

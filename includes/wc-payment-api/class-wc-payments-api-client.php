@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Amount_Too_Low_Exception;
 use WCPay\Logger;
 
 /**
@@ -1047,6 +1048,10 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
+
+			if ( 'wcpay_amount_too_low' === $error_code ) {
+				throw new Amount_Too_Low_Exception( $message, $error_code, $response_code, $additional_data );
+			}
 			throw new API_Exception( $message, $error_code, $response_code, $additional_data );
 		}
 

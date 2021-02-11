@@ -110,6 +110,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-api-exception.php';
 		include_once __DIR__ . '/exceptions/class-connection-exception.php';
+		include_once __DIR__ . '/exceptions/class-amount-too-low-exception.php';
 
 		self::$api_client = self::create_api_client();
 
