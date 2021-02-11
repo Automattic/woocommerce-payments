@@ -132,7 +132,7 @@
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-wordpress": "17.0.0",
     "ts-jest": "26.5.1",
-    "ts-loader": "8.0.14",
+    "ts-loader": "8.0.17",
     "typescript": "4.1.3",
     "webpack": "5.20.1",
     "webpack-cli": "4.5.0"
