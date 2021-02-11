@@ -15,7 +15,7 @@ export interface BillingDetails {
 	phone?: string;
 }
 
-export interface CardPaymentMethodDetails {
+export interface CardDetails {
 	brand:
 		| 'amex'
 		| 'diners'
@@ -103,28 +103,116 @@ export interface PaymentMethodDetails {
 		| 'sofort'
 		| 'stripe_account'
 		| 'wechat';
-	ach_credit_transfer?: unknown;
-	ach_debit?: unknown;
-	alipay?: unknown;
-	au_becs_debit?: unknown;
-	bacs_debit?: unknown;
-	bancontact?: unknown;
-	card?: CardPaymentMethodDetails;
-	card_present?: unknown;
-	eps?: unknown;
-	fpx?: unknown;
-	giropay?: unknown;
-	grabpay?: unknown;
-	ideal?: unknown;
-	interac_present?: unknown;
-	klarna?: unknown;
-	multibanco?: unknown;
-	oxxo?: unknown;
-	p24?: unknown;
-	sepa_debit?: unknown;
-	sofort?: unknown;
-	stripe_account?: unknown;
-	wechat?: unknown;
+}
+
+export interface AchCreditTransfer extends PaymentMethodDetails {
+	type: 'ach_credit_transfer';
+	ach_credit_transfer: unknown;
+}
+
+export interface AchDebit extends PaymentMethodDetails {
+	type: 'ach_debit';
+	ach_debit: unknown;
+}
+
+export interface AliPay extends PaymentMethodDetails {
+	type: 'alipay';
+	alipay: unknown;
+}
+
+export interface AuBecsDebit extends PaymentMethodDetails {
+	type: 'au_becs_debit';
+	au_becs_debit: unknown;
+}
+
+export interface BacsDebit extends PaymentMethodDetails {
+	type: 'bacs_debit';
+	bacs_debit: unknown;
+}
+
+export interface BanContact extends PaymentMethodDetails {
+	type: 'bancontact';
+	bancontact: unknown;
+}
+
+export interface Card extends PaymentMethodDetails {
+	type: 'card';
+	card: CardDetails;
+}
+
+export interface CardPresent extends PaymentMethodDetails {
+	type: 'card_present';
+	card_present: unknown;
+}
+
+export interface EPS extends PaymentMethodDetails {
+	type: 'eps';
+	eps: unknown;
+}
+
+export interface FPX extends PaymentMethodDetails {
+	type: 'fpx';
+	fpx: unknown;
+}
+
+export interface GiroPay extends PaymentMethodDetails {
+	type: 'giropay';
+	giropay: unknown;
+}
+
+export interface GrabPay extends PaymentMethodDetails {
+	type: 'grabpay';
+	grabpay: unknown;
+}
+
+export interface Ideal extends PaymentMethodDetails {
+	type: 'ideal';
+	ideal: unknown;
+}
+
+export interface InteracPresent extends PaymentMethodDetails {
+	type: 'interac_present';
+	interac_present: unknown;
+}
+
+export interface Klarna extends PaymentMethodDetails {
+	type: 'klarna';
+	klarna: unknown;
+}
+
+export interface Multibanco extends PaymentMethodDetails {
+	type: 'multibanco';
+	multibanco: unknown;
+}
+
+export interface Oxxo extends PaymentMethodDetails {
+	type: 'oxxo';
+	oxxo: unknown;
+}
+
+export interface P24 extends PaymentMethodDetails {
+	type: 'p24';
+	p24: unknown;
+}
+
+export interface SepaDebit extends PaymentMethodDetails {
+	type: 'sepa_debit';
+	sepa_debit: unknown;
+}
+
+export interface Sofort extends PaymentMethodDetails {
+	type: 'sofort';
+	sofort: unknown;
+}
+
+export interface StripeAccount extends PaymentMethodDetails {
+	type: 'stripe_account';
+	stripe_account: unknown;
+}
+
+export interface WeChat extends PaymentMethodDetails {
+	type: 'wechat';
+	wechat: unknown;
 }
 
 export interface Charge {
@@ -147,7 +235,29 @@ export interface Charge {
 	paid: boolean;
 	payment_intent?: string;
 	payment_method?: string;
-	payment_method_details?: PaymentMethodDetails;
+	payment_method_details?:
+		| AchCreditTransfer
+		| AchDebit
+		| AliPay
+		| AuBecsDebit
+		| BacsDebit
+		| BanContact
+		| Card
+		| CardPresent
+		| EPS
+		| FPX
+		| GiroPay
+		| GrabPay
+		| Ideal
+		| InteracPresent
+		| Klarna
+		| Multibanco
+		| Oxxo
+		| P24
+		| SepaDebit
+		| Sofort
+		| StripeAccount
+		| WeChat;
 	receipt_email?: string;
 	receipt_number?: string;
 	receipt_url?: string;
