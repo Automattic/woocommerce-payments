@@ -28,7 +28,10 @@ const formatDate = ( format, date ) =>
 		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 	);
 const getAmount = ( obj ) => {
-	return formatCurrency( obj ? obj.amount : 0, obj ? obj.currency : 'USD' );
+	return formatCurrency(
+		obj ? obj.amount : 0,
+		obj && obj.currency ? obj.currency : null
+	);
 };
 const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
