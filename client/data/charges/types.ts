@@ -221,7 +221,7 @@ export interface Charge {
 	amount_captured: number;
 	amount_refunded: number;
 	balance_transaction: string;
-	billing_details?: BillingDetails;
+	billing_details: BillingDetails;
 	calculated_statement_descriptor?: string;
 	captured: boolean;
 	created: number;
