@@ -130,6 +130,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Add fees as line items sent to Stripe to prevent Level 3 errors.
 * Fix - Currency format in non-USD order note when capturing, refunding, and processing subscription renewal.
 * Update - Link customer name from transaction list page to WooCommerce's Customers page filtered by the customer's name.
+* Fix - Use proper currency information when rendering deposits overview and details.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.
