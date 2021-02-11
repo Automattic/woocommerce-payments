@@ -61,4 +61,43 @@ class API_Exception extends Base_Exception {
 	public function get_additional_data() {
 		return $this->additional_data;
 	}
+
+
+	/**
+	 * Returns a user-friendly error message which can be displayed on
+	 * front-end.
+	 *
+	 * @return string User-friendly error message.
+	 */
+	public function get_user_message() {
+
+		if ( 'wcpay_amount_too_low' === $this->get_error_code() ) {
+			if ( isset( $this->additional_data['min_amount'], $this->additional_data['currency'] ) ) {
+				$min_amount = $this->additional_data['min_amount'];
+				$currency   = strtolower( $this->additional_data['currency'] );
+
+				if ( ! in_array( $currency, \WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
+					$min_amount = $min_amount / 100;
+				}
+
+				// Response contains a minumum order amount which we will
+				// use to build a specific message for a client.
+				return sprintf(
+					// translators: %1$s is a formatted amount with currency code.
+					__(
+						'Sorry, the minimum allowed order total is %1$s to use this payment method.',
+						'woocommerce-payments'
+					),
+					wc_price( $min_amount, [ 'currency' => strtoupper( $currency ) ] )
+				);
+			}
+
+			return __(
+				'The specified amount is less than the minimum amount allowed. Use a higher amount and try again.',
+				'woocommerce-payments'
+			);
+		}
+
+		return $this->getMessage();
+	}
 }
