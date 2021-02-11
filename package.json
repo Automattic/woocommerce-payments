@@ -128,7 +128,7 @@
     "sass-loader": "10.1.1",
     "shelljs": "0.8.4",
     "source-map-loader": "2.0.1",
-    "stylelint": "13.9.0",
+    "stylelint": "13.10.0",
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-wordpress": "17.0.0",
     "ts-jest": "26.5.1",
