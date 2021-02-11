@@ -1659,9 +1659,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
-		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
+		$payment_token = $this->get_payment_token( $order );
+		if ( is_null( $payment_token ) ) {
 			return;
+		}
+
+		// Make sure that the order meta data key for payment_token is set to the most recent token.
+		if ( $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
+			$order->add_meta_data( '_payment_method_token', $payment_token->get_token(), true );
+			$order->save_meta_data();
 		}
 
 		// Check whether this is an order we haven't previously tracked a creation event for.
@@ -1670,11 +1676,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+10 seconds' ),
 				'wcpay_track_new_order',
-				[ 'order_id' => $order_id ],
+				[
+					'order_id'     => $order_id,
+					'date_created' => $order->get_date_created(),
+				],
 				self::GATEWAY_ID
 			);
 
-			// Update the metadata to reflect that the order creation event has been fired.
+			// Update the metadata to reflect that the order creation event has finished.
 			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 			$order->save_meta_data();
 		} else {

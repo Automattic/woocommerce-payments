@@ -60,7 +60,7 @@ class WC_Payments_Action_Scheduler_Service {
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ),
+			array_merge( $order->get_data(), [ '_payment_method_token' => $order->get_meta( '_payment_method_token' ) ] ),
 			false
 		);
 
@@ -85,7 +85,7 @@ class WC_Payments_Action_Scheduler_Service {
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ),
+			array_merge( $order->get_data(), [ '_payment_method_token' => $order->get_meta( '_payment_method_token' ) ] ),
 			true
 		);
 
