@@ -27,10 +27,10 @@ const formatDate = ( format, date ) =>
 		moment.utc( date ).toISOString(),
 		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 	);
-const getAmount = ( obj ) => {
+const getAmount = ( obj, defaultCurrency ) => {
 	return formatCurrency(
 		obj ? obj.amount : 0,
-		obj && obj.currency ? obj.currency : undefined
+		obj && obj.currency ? obj.currency : defaultCurrency
 	);
 };
 const getDepositDate = ( deposit ) =>
@@ -194,7 +194,10 @@ const DepositsOverview = () => {
 									'Last deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.last_deposit ) }
+								value={ getAmount(
+									overview.last_deposit,
+									overview.account.default_currency
+								) }
 								prevLabel={ getDepositDate(
 									overview.last_deposit
 								) }
@@ -213,7 +216,10 @@ const DepositsOverview = () => {
 									'Next deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.next_deposit ) }
+								value={ getAmount(
+									overview.next_deposit,
+									overview.account.default_currency
+								) }
 								prevLabel={ getNextDepositLabelFormatted(
 									overview.next_deposit
 								) }
@@ -232,7 +238,10 @@ const DepositsOverview = () => {
 									'Pending balance',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.balance.pending ) }
+								value={ getAmount(
+									overview.balance.pending,
+									overview.account.default_currency
+								) }
 								prevLabel={ getBalanceDepositCount(
 									overview.balance.pending
 								) }
@@ -244,7 +253,8 @@ const DepositsOverview = () => {
 									'woocommerce-payments'
 								) }
 								value={ getAmount(
-									overview.balance.available
+									overview.balance.available,
+									overview.account.default_currency
 								) }
 								prevLabel=""
 							/>,
