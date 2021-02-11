@@ -400,7 +400,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		// If this order doesn't have an _intent_id attached, try and get the parent ID instead.
 		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
-			$order = wc_get_order( $order->get_parent_id() );
+			$order_id = $order->get_parent_id();
+			$order    = wc_get_order( $order_id );
 		}
 
 		parent::schedule_order_tracking( $order_id, $order );
