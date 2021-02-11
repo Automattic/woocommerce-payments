@@ -109,6 +109,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		];
 
+		// Default values for Payment Request.
+		$payment_request_default_settings = WC_Payments_Payment_Request::get_default_settings();
+
 		// Define setting fields.
 		$this->form_fields = [
 			'enabled'                             => [
@@ -161,7 +164,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				),
 				'type'        => 'checkbox',
 				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
-				'default'     => 'yes',
+				'default'     => $payment_request_default_settings['payment_request'],
 				'desc_tip'    => true,
 			],
 			'payment_request_button_type'         => [
@@ -169,7 +172,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Button Type', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-				'default'     => 'buy',
+				'default'     => $payment_request_default_settings['payment_request_button_type'],
 				'desc_tip'    => true,
 				'options'     => [
 					'default' => __( 'Default', 'woocommerce-payments' ),
@@ -184,7 +187,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Button Theme', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
-				'default'     => 'dark',
+				'default'     => $payment_request_default_settings['payment_request_button_theme'],
 				'desc_tip'    => true,
 				'options'     => [
 					'dark'          => __( 'Dark', 'woocommerce-payments' ),
@@ -197,7 +200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Button Height', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
-				'default'     => '44',
+				'default'     => $payment_request_default_settings['payment_request_button_height'],
 				'desc_tip'    => true,
 			],
 			'payment_request_button_label'        => [
@@ -205,7 +208,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Button Label', 'woocommerce-payments' ),
 				'type'        => 'text',
 				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
-				'default'     => __( 'Buy now', 'woocommerce-payments' ),
+				'default'     => $payment_request_default_settings['payment_request_button_label'],
 				'desc_tip'    => true,
 			],
 			'payment_request_button_branded_type' => [
@@ -213,7 +216,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Branded Button Label Format', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
-				'default'     => 'long',
+				'default'     => $payment_request_default_settings['payment_request_button_branded_type'],
 				'desc_tip'    => true,
 				'options'     => [
 					'short' => __( 'Logo only', 'woocommerce-payments' ),
