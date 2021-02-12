@@ -1,3 +1,5 @@
+const { jsWithBabel: tsjPreset } = require( 'ts-jest/presets' );
+
 module.exports = {
 	rootDir: '../../',
 	moduleDirectories: [ 'node_modules', '<rootDir>/client' ],
@@ -19,6 +21,11 @@ module.exports = {
 		'<rootDir>/tests/js/jest-extensions-setup.js',
 	],
 	preset: '@wordpress/jest-preset-default',
+	testMatch: [
+		'**/__tests__/**/*.(js|ts|tsx)',
+		'**/?(*.)(spec|test).(js|ts|tsx)',
+		'**/test/*.(js|ts|tsx)',
+	],
 	testPathIgnorePatterns: [
 		'/node_modules/',
 		'/vendor/',
@@ -27,6 +34,7 @@ module.exports = {
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
 	],
+	transform: { ...tsjPreset.transform },
 	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
 	verbose: true,
 };
