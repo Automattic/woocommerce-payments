@@ -125,7 +125,7 @@
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-test-renderer": "16.14.0",
-    "sass-loader": "10.1.1",
+    "sass-loader": "11.0.1",
     "shelljs": "0.8.4",
     "source-map-loader": "2.0.1",
     "stylelint": "13.10.0",
