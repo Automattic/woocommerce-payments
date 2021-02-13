@@ -210,7 +210,7 @@ class WC_Payments_Apple_Pay_Registration {
 				Logger::log( __( 'Your domain has been verified with Apple Pay!', 'woocommerce-payments' ) );
 
 				return true;
-			} elseif ( isset( $registration_response['error'] ) && isset( $registration_response['error']['message'] ) ) {
+			} elseif ( isset( $registration_response['error']['message'] ) ) {
 				$error = $registration_response['error']['message'];
 			}
 		} catch ( Exception $e ) {
