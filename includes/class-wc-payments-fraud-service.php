@@ -68,6 +68,8 @@ class WC_Payments_Fraud_Service {
 		switch ( $service_id ) {
 			case 'sift':
 				return $this->prepare_sift_config( $config );
+			case 'forter':
+				return $this->prepare_forter_config( $config );
 		}
 		return $config;
 	}
@@ -109,6 +111,33 @@ class WC_Payments_Fraud_Service {
 			$config['session_id'] = $this->get_cookie_session_id();
 		} else {
 			$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Adds site-specific config needed to initialize the Forter anti-fraud JS.
+	 *
+	 * @param array $config Associative array with the Forter-related configuration returned from the server.
+	 *
+	 * @return array|NULL Assoc array, ready for the client to consume, or NULL if the client shouldn't enqueue this script.
+	 */
+	private function prepare_forter_config( $config ) {
+		// The server returns both production and sandbox site IDs. Use the sandbox one if test mode is enabled.
+		if ( WC_Payments::get_gateway()->is_in_test_mode() ) {
+			$config['site_id'] = $config['sandbox_site_id'];
+		}
+		unset( $config['sandbox_site_id'] );
+
+		if ( ! $this->account->is_stripe_connected() ) {
+			// Don't enqueue the Forter script if WCPay hasn't been connected yet.
+			return null;
+		}
+
+		if ( ! is_admin() ) {
+			// Only include Forter in admin pages.
+			return null;
 		}
 
 		return $config;
