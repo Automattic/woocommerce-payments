@@ -1,8 +1,8 @@
 /**
  * Internal dependencies
  */
-import * as sift from './sift';
-import * as stripe from './stripe';
+import sift from './sift';
+import stripe from './stripe';
 
 const services = {
 	sift,
@@ -16,15 +16,6 @@ export default ( config ) => {
 			continue;
 		}
 
-		if ( service.init ) {
-			service.init( config[ serviceName ] );
-		}
-
-		if ( ! document.querySelector( `[src^="${ service.src }"]` ) ) {
-			const script = document.createElement( 'script' );
-			script.src = service.src;
-			script.async = true;
-			document.body.appendChild( script );
-		}
+		service( config[ serviceName ] );
 	}
 };
