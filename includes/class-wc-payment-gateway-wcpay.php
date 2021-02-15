@@ -673,17 +673,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					break;
 				case 'requires_action':
 					if ( $payment_needed ) {
-						$transaction_url = $this->compose_transaction_url( $charge_id );
-
 						// Add a note in case the customer does not complete the payment (exits the page),
 						// so the store owner has some information about what happened to create an order.
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+									'code'   => '<code>',
 								]
 							),
 							wc_price( $amount ),
