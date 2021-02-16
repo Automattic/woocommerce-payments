@@ -158,12 +158,23 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
+		$mock_customer_data = $this->get_mock_customer_data();
+
+		$this->mock_account->expects( $this->once() )
+			->method( 'get_fraud_services_config' )
+			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				array_merge(
+					$mock_customer_data,
+					[ 'session_id' => 'woo_session_id' ]
+				)
+			)
 			->willReturn( 'cus_test12345' );
 
-		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
+		$customer_id = $this->customer_service->create_customer_for_user( $user, $mock_customer_data );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
 		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
@@ -178,37 +189,27 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'create_customer' )
-			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
-			->willReturn( 'cus_test12345' );
-
-		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
-
-		$this->assertEquals( 'cus_test12345', $customer_id );
-		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
-		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
-	}
-
-	public function test_create_customer_for_user_adds_session_id() {
-		$user             = new WP_User( 1 );
-		$user->user_login = 'testUser';
+		$mock_customer_data = $this->get_mock_customer_data();
 
 		$this->mock_account
 			->method( 'get_fraud_services_config' )
 			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
 
-		$this->mock_api_client
-			->expects( $this->once() )
+		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser', 'woo_session_id' )
+			->with(
+				array_merge(
+					$mock_customer_data,
+					[ 'session_id' => 'woo_session_id' ]
+				)
+			)
 			->willReturn( 'cus_test12345' );
 
-		$customer_id = $this->customer_service->create_customer_for_user( $user, 'Test User', 'test.user@example.com' );
+		$customer_id = $this->customer_service->create_customer_for_user( $user, $mock_customer_data );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
-		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
-		$this->assertEquals( false, get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+		$this->assertEquals( 'cus_test12345', get_user_option( self::CUSTOMER_TEST_META_KEY, $user->ID ) );
+		$this->assertEquals( false, get_user_option( self::CUSTOMER_LIVE_META_KEY, $user->ID ) );
 	}
 
 	/**
@@ -219,22 +220,19 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	public function test_update_customer_for_user() {
 		$user = new WP_User( 0 );
 
+		$mock_customer_data = $this->get_mock_customer_data();
+
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
 			->with(
 				'cus_test12345',
-				[
-					'name'        => 'Test User',
-					'email'       => 'test.user@example.com',
-					'description' => 'Name: Test User, Guest',
-				]
+				$mock_customer_data
 			);
 
 		$customer_id = $this->customer_service->update_customer_for_user(
 			'cus_test12345',
 			$user,
-			'Test User',
-			'test.user@example.com'
+			$mock_customer_data
 		);
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
@@ -249,30 +247,32 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
+		$mock_customer_data = $this->get_mock_customer_data();
+
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
 			->with(
 				'cus_test12345',
-				[
-					'name'        => 'Test User',
-					'email'       => 'test.user@example.com',
-					'description' => 'Name: Test User, Username: testUser',
-				]
+				$mock_customer_data
 			)
 			->willThrowException( new API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		// Check that the API call to create customer happens.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				array_merge(
+					$mock_customer_data,
+					[ 'session_id' => null ]
+				)
+			)
 			->willReturn( 'cus_test67890' );
 
 		$customer_id = $this->customer_service->update_customer_for_user(
 			'cus_test12345',
 			$user,
-			'Test User',
-			'test.user@example.com'
+			$mock_customer_data
 		);
 
 		$this->assertEquals( 'cus_test67890', $customer_id );
@@ -287,30 +287,32 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
+		$mock_customer_data = $this->get_mock_customer_data();
+
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
 			->with(
 				'cus_test12345',
-				[
-					'name'        => 'Test User',
-					'email'       => 'test.user@example.com',
-					'description' => 'Name: Test User, Username: testUser',
-				]
+				$mock_customer_data
 			)
 			->willThrowException( new API_Exception( 'Error Message', 'resource_missing', 400 ) );
 
 		// Check that the API call to create customer happens.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with( 'Test User', 'test.user@example.com', 'Name: Test User, Username: testUser' )
+			->with(
+				array_merge(
+					$mock_customer_data,
+					[ 'session_id' => null ]
+				)
+			)
 			->willReturn( 'cus_test67890' );
 
 		$customer_id = $this->customer_service->update_customer_for_user(
 			'cus_test12345',
 			$user,
-			'Test User',
-			'test.user@example.com'
+			$mock_customer_data
 		);
 
 		$this->assertEquals( 'cus_test67890', $customer_id );
@@ -326,16 +328,14 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
+		$mock_customer_data = $this->get_mock_customer_data();
+
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
 			->with(
 				'cus_test12345',
-				[
-					'name'        => 'Test User',
-					'email'       => 'test.user@example.com',
-					'description' => 'Name: Test User, Username: testUser',
-				]
+				$mock_customer_data
 			)
 			->willThrowException( new API_Exception( 'Generic Error Message', 'generic_error', 500 ) );
 
@@ -345,8 +345,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->customer_service->update_customer_for_user(
 			'cus_test12345',
 			$user,
-			'Test User',
-			'test.user@example.com'
+			$mock_customer_data
 		);
 	}
 
@@ -449,5 +448,128 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		} catch ( API_Exception $e ) {
 			$this->fail( 'customer_service->get_payment_methods_for_customer not handling the resource_missing code of API_Exception.' );
 		}
+	}
+
+	public function test_map_customer_data_from_order() {
+		$mock_order    = $this->get_mock_wc_object_for_customer_data( WC_Order::class );
+		$expected_data = $this->get_mock_customer_data();
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $mock_order );
+
+		$this->assertEquals( $expected_data, $customer_data );
+	}
+
+	public function test_map_customer_data_from_customer() {
+		$mock_customer = $this->get_mock_wc_object_for_customer_data( WC_Customer::class );
+		$expected_data = $this->get_mock_customer_data();
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( null, $mock_customer );
+
+		$this->assertEquals( $expected_data, $customer_data );
+	}
+
+	public function test_map_customer_data_from_logged_in_customer() {
+		$mock_customer = $this->get_mock_wc_object_for_customer_data( WC_Customer::class );
+		$mock_customer->method( 'get_username' )->willReturn( 'testUser' );
+
+		// Logged-in user should have a description.
+		$expected_data = $this->get_mock_customer_data( [ 'description' => 'Name: Test Name, Username: testUser' ] );
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( null, $mock_customer );
+
+		$this->assertEquals( $expected_data, $customer_data );
+	}
+
+	public function test_map_customer_data_from_order_and_customer() {
+		$order_email = 'mock@order.email';
+
+		$mock_order    = $this->get_mock_wc_object_for_customer_data( WC_Order::class, [ 'get_billing_email' => $order_email ] );
+		$mock_customer = $this->get_mock_wc_object_for_customer_data( WC_Customer::class );
+		$mock_customer->method( 'get_username' )->willReturn( 'testUser' );
+
+		$expected_data = $this->get_mock_customer_data(
+			[
+				// The email on order should override the customer email.
+				'email'       => 'mock@order.email',
+				// Logged-in user should have a description.
+				'description' => 'Name: Test Name, Username: testUser',
+			]
+		);
+
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $mock_order, $mock_customer );
+
+		$this->assertEquals( $expected_data, $customer_data );
+	}
+
+	public function test_map_customer_data_from_nulls() {
+		$customer_data = WC_Payments_Customer_Service::map_customer_data();
+		$this->assertEmpty( $customer_data );
+	}
+
+	private function get_mock_wc_object_for_customer_data( $object_class, $mock_return_overrides = [] ) {
+		$mock_object = $this->getMockBuilder( $object_class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_return_values = array_merge(
+			[
+				'get_billing_first_name'  => 'Test',
+				'get_billing_last_name'   => 'Name',
+				'get_billing_email'       => 'test@customer.email',
+				'get_billing_phone'       => '123456',
+				'get_billing_address_1'   => '1 Street St',
+				'get_billing_address_2'   => '',
+				'get_billing_postcode'    => '09876',
+				'get_billing_city'        => 'City',
+				'get_billing_state'       => 'State',
+				'get_billing_country'     => 'US',
+				'get_shipping_first_name' => 'Shipping',
+				'get_shipping_last_name'  => 'Ship',
+				'get_shipping_address_1'  => '2 Street St',
+				'get_shipping_address_2'  => '',
+				'get_shipping_postcode'   => '76543',
+				'get_shipping_city'       => 'City2',
+				'get_shipping_state'      => 'State2',
+				'get_shipping_country'    => 'US',
+			],
+			$mock_return_overrides
+		);
+
+		foreach ( $mock_return_values as $method => $value ) {
+			$mock_object->method( $method )->willReturn( $value );
+		}
+
+		return $mock_object;
+	}
+
+	private function get_mock_customer_data( $overrides = [] ) {
+		return array_merge(
+			[
+				'name'        => 'Test Name',
+				'description' => 'Name: Test Name, Guest',
+				'email'       => 'test@customer.email',
+				'phone'       => '123456',
+				'address'     => [
+					'line1'       => '1 Street St',
+					'line2'       => '',
+					'postal_code' => '09876',
+					'city'        => 'City',
+					'state'       => 'State',
+					'country'     => 'US',
+				],
+				'shipping'    => [
+					'name'    => 'Shipping Ship',
+					'address' => [
+						'line1'       => '2 Street St',
+						'line2'       => '',
+						'postal_code' => '76543',
+						'city'        => 'City2',
+						'state'       => 'State2',
+						'country'     => 'US',
+					],
+				],
+			],
+			$overrides
+		);
 	}
 }
