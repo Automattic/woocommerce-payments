@@ -86,7 +86,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		$order->delete_meta_data( '_payment_method_token' );
 		$order->save_meta_data();
 
-		$this->assertFalse ( $this->action_scheduler_service->track_update_order_action( $order ) );
+		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( $order ) );
 	}
 
 	public function test_track_update_order_action_with_invalid_order_id() {
