@@ -72,6 +72,7 @@ const InstantDepositButton = ( { balance: { amount, fee, net, transaction_ids } 
 			await apiFetch( {
 				path: '/wc/v3/payments/deposits',
 				method: 'POST',
+				// eslint-disable-next-line camelcase
 				data: {
 					type: 'instant',
 					transaction_ids,
