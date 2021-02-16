@@ -53,14 +53,19 @@ class WC_Payments_Action_Scheduler_Service {
 	public function track_new_order_action( $order_id ) {
 		// Get the order details.
 		$order = wc_get_order( $order_id );
-
 		if ( ! $order ) {
+			return false;
+		}
+
+		// If we do not have a valid payment method token for this order, don't send the request.
+		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
+		if ( empty( $payment_method ) ) {
 			return false;
 		}
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_payment_method_token' => $order->get_meta( '_payment_method_token' ) ] ),
+			array_merge( $order->get_data(), [ '_payment_method_token' => $payment_method ] ),
 			false
 		);
 
@@ -78,14 +83,19 @@ class WC_Payments_Action_Scheduler_Service {
 	public function track_update_order_action( $order_id ) {
 		// Get the order details.
 		$order = wc_get_order( $order_id );
-
 		if ( ! $order ) {
+			return false;
+		}
+
+		// If we do not have a valid payment method token for this order, don't send the request.
+		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
+		if ( empty( $payment_method ) ) {
 			return false;
 		}
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_payment_method_token' => $order->get_meta( '_payment_method_token' ) ] ),
+			array_merge( $order->get_data(), [ '_payment_method_token' => $payment_method ] ),
 			true
 		);
 

@@ -39,6 +39,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_new_order_action() {
 		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_payment_method_token', 'pm_131535132531', true );
+		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
@@ -46,6 +48,14 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertTrue( $this->action_scheduler_service->track_new_order_action( $order->get_id() ) );
+	}
+
+	public function test_track_new_order_action_with_no_payment_method() {
+		$order = WC_Helper_Order::create_order();
+		$order->delete_meta_data( '_payment_method_token' );
+		$order->save_meta_data();
+
+		$this->assertFalse( $this->action_scheduler_service->track_new_order_action( $order ) );
 	}
 
 	public function test_track_new_order_action_with_invalid_order_id() {
@@ -60,6 +70,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_update_order_action() {
 		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_payment_method_token', 'pm_131535132531', true );
+		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
@@ -67,6 +79,14 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertTrue( $this->action_scheduler_service->track_update_order_action( $order->get_id() ) );
+	}
+
+	public function test_track_update_order_action_with_no_payment_method() {
+		$order = WC_Helper_Order::create_order();
+		$order->delete_meta_data( '_payment_method_token' );
+		$order->save_meta_data();
+
+		$this->assertFalse ( $this->action_scheduler_service->track_update_order_action( $order ) );
 	}
 
 	public function test_track_update_order_action_with_invalid_order_id() {
@@ -89,7 +109,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 		return array_merge(
 			$order->get_data(),
-			[ '_intent_id' => $order->get_meta( '_intent_id' ) ]
+			[ '_payment_method_token' => $order->get_meta( '_payment_method_token' ) ]
 		);
 	}
 }

@@ -1636,7 +1636,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * When an order is created, we want to add an ActionScheduler job to send this data to
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
 	 * the payment server.
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
@@ -1659,15 +1659,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_token = $this->get_payment_token( $order );
-		if ( is_null( $payment_token ) ) {
-			return;
-		}
-
 		// Make sure that the order meta data key for payment_token is set to the most recent token.
-		if ( $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
-			$order->add_meta_data( '_payment_method_token', $payment_token->get_token(), true );
-			$order->save_meta_data();
+		$payment_token = $this->get_payment_token( $order );
+		if ( ! is_null( $payment_token ) && $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
+				$order->add_meta_data( '_payment_method_token', $payment_token->get_token(), true );
+				$order->save_meta_data();
 		}
 
 		// Check whether this is an order we haven't previously tracked a creation event for.
@@ -1683,7 +1679,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				self::GATEWAY_ID
 			);
 
-			// Update the metadata to reflect that the order creation event has finished.
+			// Update the metadata to reflect that the order creation event has been fired.
 			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 			$order->save_meta_data();
 		} else {

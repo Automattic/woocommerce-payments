@@ -1038,28 +1038,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
-	public function test_schedule_order_tracking_without_intent_id() {
-		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
-		$order->delete_meta_data( '_intent_id' );
-
-		$this->mock_action_scheduler_service
-			->expects( $this->never() )
-			->method( 'schedule_job' );
-
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_fraud_services_config' )
-			->willReturn(
-				[
-					'stripe' => [],
-					'sift'   => [],
-				]
-			);
-
-		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
-	}
-
 	public function test_schedule_order_tracking_with_sift_disabled() {
 		$order = WC_Helper_Order::create_order();
 
@@ -1082,7 +1060,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_schedule_order_tracking() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
-		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
 		$order->delete_meta_data( '_new_order_tracking_complete' );
 
 		$this->mock_action_scheduler_service
@@ -1105,7 +1082,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_schedule_order_tracking_on_already_created_order() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
-		$order->add_meta_data( '_intent_id', 'pi_1325347347437' );
 		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 
 		$this->mock_action_scheduler_service
