@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add file dropzones to dispute evidence upload fields
 * Add - Currency conversion indicator to Transactions list.
 * Add - Transaction timeline details for multi-currency transactions.
+* Update - Link order note with transaction details page.
 
 = 1.9.2 - 2021-02-05 =
 * Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.

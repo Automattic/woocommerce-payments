@@ -636,13 +636,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			switch ( $status ) {
 				case 'succeeded':
 					if ( $payment_needed ) {
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $charge_id );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -653,13 +654,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->payment_complete( $intent_id );
 					break;
 				case 'requires_capture':
-					$note = sprintf(
+					$transaction_url = $this->compose_transaction_url( $charge_id );
+					$note            = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
-								'code'   => '<code>',
+								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
 						wc_price( $amount ),
@@ -1396,13 +1398,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				switch ( $status ) {
 					case 'succeeded':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1416,13 +1419,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$order->payment_complete( $intent_id );
 						break;
 					case 'requires_capture':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1439,13 +1443,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$order->set_transaction_id( $intent_id );
 						break;
 					case 'requires_payment_method':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1721,7 +1726,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_transaction_url( $order ) {
 		$charge_id = $order->get_meta( '_charge_id' );
+		return $this->compose_transaction_url( $charge_id );
+	}
 
+	/**
+	 * Composes url for transaction details page.
+	 *
+	 * @param  string $charge_id Charge id.
+	 * @return string            Transaction details page url.
+	 */
+	private function compose_transaction_url( $charge_id ) {
 		if ( empty( $charge_id ) ) {
 			return '';
 		}
