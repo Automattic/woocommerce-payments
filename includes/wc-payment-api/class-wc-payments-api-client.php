@@ -1029,7 +1029,6 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
-			$additional_data = isset( $response_body['data'] ) ? $response_body['data'] : [];
 			if ( isset( $response_body['error'] ) ) {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
@@ -1049,6 +1048,7 @@ class WC_Payments_API_Client {
 
 			Logger::error( "$error_message ($error_code)" );
 
+			$additional_data = isset( $response_body['data'] ) ? $response_body['data'] : [];
 			if ( 'wcpay_amount_too_low' === $error_code ) {
 				throw new Amount_Too_Low_Exception( $message, $error_code, $response_code, $additional_data );
 			}
