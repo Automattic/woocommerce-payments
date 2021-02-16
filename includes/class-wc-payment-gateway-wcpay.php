@@ -1670,11 +1670,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = Payment_Information::from_payment_request( $_POST );
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
-		$user          = wp_get_current_user();
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		return $this->payments_api_client->create_and_confirm_setup_intent(
