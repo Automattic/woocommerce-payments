@@ -61,6 +61,7 @@ const InstantDepositModal = ( { amount, fee, net, onClose, onSubmit, inProgress 
 }
 
 // TODO: Properly style :allthethings:
+// eslint-disable-next-line camelcase
 const InstantDepositButton = ( { balance: { amount, fee, net, transaction_ids } } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const [ inProgress, setInProgress ] = useState( false );
@@ -72,9 +73,9 @@ const InstantDepositButton = ( { balance: { amount, fee, net, transaction_ids } 
 			await apiFetch( {
 				path: '/wc/v3/payments/deposits',
 				method: 'POST',
-				// eslint-disable-next-line camelcase
 				data: {
 					type: 'instant',
+					// eslint-disable-next-line camelcase
 					transaction_ids,
 				},
 			} );
