@@ -246,7 +246,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function construct_customer_data( $wc_order = null, $wc_customer = null ) {
+	public static function map_customer_data( $wc_order = null, $wc_customer = null ) {
 		if ( null === $wc_customer && null === $wc_order ) {
 			return [];
 		}

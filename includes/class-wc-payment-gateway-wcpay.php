@@ -548,7 +548,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::construct_customer_data( $order, new WC_Customer( $user->ID ) );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 
 		if ( null === $customer_id ) {
 			// Create a new customer.
@@ -1672,7 +1672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user          = wp_get_current_user();
 		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::construct_customer_data( null, new WC_Customer( $user->ID ) );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
 		if ( null === $customer_id ) {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
