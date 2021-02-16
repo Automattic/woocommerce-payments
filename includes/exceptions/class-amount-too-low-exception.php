@@ -30,12 +30,8 @@ class Amount_Too_Low_Exception extends API_Exception {
 			'woocommerce-payments'
 		);
 		if ( is_array( $additional_data ) && isset( $additional_data['min_amount'], $additional_data['currency'] ) ) {
-			$min_amount = $additional_data['min_amount'];
 			$currency   = strtolower( $additional_data['currency'] );
-
-			if ( ! in_array( $currency, \WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
-				$min_amount = $min_amount / 100;
-			}
+			$min_amount = \WC_Payments_Utils::interpret_stripe_amount( $additional_data['min_amount'], $currency );
 
 			// Response contains a minumum order amount which we will
 			// use to build a specific message for a client.
