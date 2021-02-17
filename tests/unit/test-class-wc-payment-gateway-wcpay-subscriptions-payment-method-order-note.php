@@ -139,15 +139,58 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertEquals( $filtered_new_payment_method_title, $new_payment_method_title );
 	}
 
-	public function test_failed_renewal_using_new_to_be_saved_payment() {
+	/**
+	 * Case: Same payment method, different last 4, new payment is saved.
+	 * expect old and new title to be modified. Renewal order is updated.
+	 */
+	public function test_failed_renewal_using_saved_payment() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'cc';
+		$new_payment_method_title = 'cc';
+
+		$this->renewal_order->update_meta_data( '_old_payment_method', $old_payment_method );
+		$this->renewal_order->update_meta_data( '_old_payment_method_title', $old_payment_method_title );
+		$this->renewal_order->set_payment_method( $new_payment_method );
+		$this->renewal_order->set_payment_method_title( $new_payment_method_title );
+
+		$_POST[ $this->post_payment_token_parameter ] = $this->token2->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
 	}
 
-	public function test_failed_renewal_using_saved_payment() {
+	public function test_failed_renewal_using_new_payment_method() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'cc';
+		$new_payment_method_title = 'cc';
+
+		$payment_method_id                             = 'test-payment-method-id';
+		$_POST[ $this->post_payment_token_parameter ]  = '';
+		$_POST[ $this->post_payment_method_parameter ] = $payment_method_id;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( $payment_method_id )
+			->willReturn(
+				[
+					'card' => [
+						'last4' => $this->last4digits[3],
+					],
+				]
+			);
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 	}
 
 	/**
-	 * Case 1: same payment method, different last 4, new payment is saved.
-	 * expect old and new title to be modified.
+	 * Case: Same payment method, different last 4, new payment is saved.
+	 * expect old and new title to be modified. Subscription order is updated.
 	 */
 	public function test_subscriptions_order_using_saved_payment() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
@@ -169,9 +212,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	}
 
 	/**
-	 * Case 2: same payment method, different last 4, new payment is *not*
+	 * Case: same payment method, different last 4, new payment is *not*
 	 * saved. expect api call called once and both old and new title to be
-	 * modified.
+	 * modified. Subscription order is updated.
 	 */
 	public function test_subscriptions_order_using_new_payment_method() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
@@ -200,7 +243,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	}
 
 	/**
-	 * Case 4: different payment method. expect both old and new title not modified.
+	 * Case: different payment method. expect both old and new title not
+	 * modified.
 	 */
 	public function test_new_payment_method_non_wc_pay() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
@@ -216,9 +260,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
 		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
-	}
-
-	public function test_failed_renewal_using_new_payment() {
 	}
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
