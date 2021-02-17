@@ -162,8 +162,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			);
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[3], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 
 		// case 4: different payment method. expect both old and new title not modified.
 		$old_payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
@@ -172,7 +172,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->subscription->set_payment_method( $new_payment_method );
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 	}
 
@@ -195,8 +195,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[2], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
 	}
 
 	/**
