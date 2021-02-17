@@ -700,7 +700,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer( $customer_data ) {
+	public function create_customer( array $customer_data ): string {
 		$customer_array = $this->request(
 			$customer_data,
 			self::CUSTOMERS_API,

@@ -101,7 +101,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer_for_user( $user, $customer_data ) {
+	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
 		// Include the session ID for the user.
 		$fraud_config                = $this->account->get_fraud_services_config();
 		$customer_data['session_id'] = $fraud_config['sift']['session_id'] ?? null;
@@ -131,7 +131,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @throws API_Exception Error updating the customer.
 	 */
-	public function update_customer_for_user( $customer_id, $user, $customer_data ) {
+	public function update_customer_for_user( string $customer_id, WP_User $user, array $customer_data ): string {
 		try {
 			// Update the customer on the WCPay server.
 			$this->payments_api_client->update_customer(
@@ -246,7 +246,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( $wc_order = null, $wc_customer = null ) {
+	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
 		if ( null === $wc_customer && null === $wc_order ) {
 			return [];
 		}
@@ -307,7 +307,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	private function recreate_customer( $user, $customer_data ) {
+	private function recreate_customer( WP_User $user, array $customer_data ): string {
 		if ( $user->ID > 0 ) {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
