@@ -101,8 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.x.x - 2021-xx-xx =
+
+= 2.1.0 - 2021-xx-xx =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
+* Update - Enable multiple customer currencies support in live mode.
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
