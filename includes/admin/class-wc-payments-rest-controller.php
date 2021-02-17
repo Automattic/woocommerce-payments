@@ -42,7 +42,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	 *
 	 * @param string $api_method - API method name.
 	 * @param array  $args - API method args.
-	 * @param string $err_code - Optional error code to use for WP_Error.
+	 * @param string $err_code - Deprecated in favor of error_code returned from API_Exception.
 	 *
 	 * @return WP_Error|mixed - Method result of WP_Error in case of API_Exception.
 	 */
@@ -50,7 +50,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 		try {
 			$response = call_user_func_array( [ $this->api_client, $api_method ], $args );
 		} catch ( API_Exception $e ) {
-			$code     = $err_code ? $err_code : 'wcpay_' . $api_method;
+			$code     = $e->get_error_code() ? $e->get_error_code() : 'wcpay_' . $api_method;
 			$response = new WP_Error( $code, $e->getMessage() );
 		}
 
