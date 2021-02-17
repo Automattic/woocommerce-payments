@@ -66,13 +66,21 @@ export const getChargeStatus = ( charge = {} ) => {
  * @return {Object} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
-	const balance = {
-		currency: charge.balance_transaction.currency,
-		amount: charge.balance_transaction.amount,
-		fee: charge.balance_transaction.fee,
-		refunded: 0,
-		net: 0,
-	};
+	const balance = charge.balance_transaction
+		? {
+				currency: charge.balance_transaction.currency,
+				amount: charge.balance_transaction.amount,
+				fee: charge.balance_transaction.fee,
+				refunded: 0,
+				net: 0,
+		  }
+		: {
+				currency: charge.currency,
+				amount: charge.amount,
+				fee: charge.application_fee_amount,
+				refunded: 0,
+				net: 0,
+		  };
 
 	if ( isChargeRefunded( charge ) ) {
 		// Refund balance_transactions have negative amount.

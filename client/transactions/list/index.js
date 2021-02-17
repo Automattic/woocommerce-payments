@@ -8,7 +8,6 @@ import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { formatCurrency } from 'utils/currency';
 import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
@@ -26,7 +25,9 @@ import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
+import { formatCurrency } from 'utils/currency';
 import Deposit from './deposit';
+import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
@@ -235,7 +236,14 @@ export const TransactionsList = ( props ) => {
 			},
 			amount: {
 				value: txn.amount / 100,
-				display: clickable( formatCurrency( txn.amount, currency ) ),
+				display: clickable(
+					<ConvertedAmount
+						amount={ txn.amount }
+						currency={ currency }
+						fromAmount={ txn.customer_amount }
+						fromCurrency={ txn.customer_currency.toUpperCase() }
+					/>
+				),
 			},
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: {
