@@ -49,8 +49,7 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 		try {
 			$response = call_user_func_array( [ $this->api_client, $api_method ], $args );
 		} catch ( API_Exception $e ) {
-			$code     = $e->get_error_code() ? $e->get_error_code() : 'wcpay_' . $api_method;
-			$response = new WP_Error( $code, $e->getMessage() );
+			$response = new WP_Error( $e->get_error_code(), $e->getMessage() );
 		}
 
 		return rest_ensure_response( $response );
