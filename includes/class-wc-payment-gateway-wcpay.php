@@ -1661,8 +1661,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Make sure that the order meta data key for payment_token is set to the most recent token.
 		$payment_token = $this->get_payment_token( $order );
-		if ( ! is_null( $payment_token ) && $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
-				$order->add_meta_data( '_payment_method_token', $payment_token->get_token(), true );
+		if ( ! is_null( $payment_token ) && $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
+				$order->add_meta_data( '_payment_method_id', $payment_token->get_token(), true );
 				$order->save_meta_data();
 		}
 
