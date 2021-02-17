@@ -201,6 +201,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 	public function test_update_payment_method_order_note_failed_renewal_using_saved_payment() {
 		$last4_1 = '1122';
 		$last4_2 = '3344';
+		$last4_3 = '5566';
 
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
@@ -262,16 +263,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$this->assertContains( $last4_1, $old_payment_method_title_modified );
 		$this->assertContains( $last4_3, $new_payment_method_title_modified );
 
-		// case 3: non wcpay. expect both old and new title not modified.
-		$old_payment_method = 'non-wc-pay';
-		$new_payment_method = 'non-wc-pay';
-		$subscription->update_meta_data( '_old_payment_method', $old_payment_method );
-		$subscription->set_payment_method( $new_payment_method );
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $subscription );
-		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
-		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
-
 		// case 4: different payment method. expect both old and new title not modified.
 		$old_payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$new_payment_method = 'non-wc-pay';
@@ -279,10 +270,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->set_payment_method( $new_payment_method );
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $subscription );
-		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
+		$this->assertContains( $last4_1, $old_payment_method_title_modified );
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 	}
 
+	/**
 //	public function test_update_payment_method_order_note_failed_renewal_using_new_payment() {
 //	}
 //
@@ -381,6 +373,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 //		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
 //		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 //	}
+	 */
 
 	public function test_scheduled_subscription_payment() {
 		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
