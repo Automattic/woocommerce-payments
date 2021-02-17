@@ -535,7 +535,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$user     = $order->get_user() ?? wp_get_current_user();
+		$user     = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
