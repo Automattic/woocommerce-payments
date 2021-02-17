@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { Button, Modal } from '@wordpress/components';
+import { Button, Modal, Notice } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
@@ -12,7 +12,15 @@ import apiFetch from '@wordpress/api-fetch';
 
 const currency = new Currency();
 
-const InstantDepositModal = ( { amount, fee, net, onClose, onSubmit, inProgress } ) => {
+const InstantDepositModal = ( {
+	amount,
+	fee,
+	net,
+	onClose,
+	onSubmit,
+	inProgress,
+	hasError,
+} ) => {
 	// TODO: add proper url for instant payout doc
 	const learnMoreHref = '';
 	const description = createInterpolateElement(
@@ -29,19 +37,24 @@ const InstantDepositModal = ( { amount, fee, net, onClose, onSubmit, inProgress 
 		<Modal
 			title={ __( 'Instant deposit', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
-			className='wcpay-instant-deposits-modal'
+			className="wcpay-instant-deposits-modal"
 		>
+			{ hasError && <InstantDepositSubmitNotice error={ hasError } /> }
+
 			<p>{ description }</p>
 			<ul>
-				<li className='wcpay-instant-deposits-modal__balance'>
-					{ __( 'Balance available for instant deposit: ', 'woocommerce-payments' ) }
+				<li className="wcpay-instant-deposits-modal__balance">
+					{ __(
+						'Balance available for instant deposit: ',
+						'woocommerce-payments'
+					) }
 					<span>{ currency.formatCurrency( amount / 100 ) }</span>
 				</li>
-				<li className='wcpay-instant-deposits-modal__fee'>
+				<li className="wcpay-instant-deposits-modal__fee">
 					{ __( '1% service fee: ', 'woocommerce-payments' ) }
 					<span>-{ currency.formatCurrency( fee / 100 ) }</span>
 				</li>
-				<li className='wcpay-instant-deposits-modal__net'>
+				<li className="wcpay-instant-deposits-modal__net">
 					{ __( 'Net deposit amount: ', 'woocommerce-payments' ) }
 					<span>{ currency.formatCurrency( net / 100 ) }</span>
 				</li>
@@ -54,38 +67,67 @@ const InstantDepositModal = ( { amount, fee, net, onClose, onSubmit, inProgress 
 				) }
 			</Button>
 			<Button isDefault onClick={ onClose }>
-				{ __('Cancel', 'woocommerce-payments') }
+				{ __( 'Cancel', 'woocommerce-payments' ) }
 			</Button>
 		</Modal>
-	)
-}
+	);
+};
+
+const InstantDepositSubmitNotice = ( { error } ) => {
+	let message = '';
+	// TODO: supply proper error notices.
+	switch ( error.code ) {
+		case 'balance_insufficient':
+			message = __(
+				'Balance is not sufficient for instant deposit.',
+				'woocommerce-payments'
+			);
+			break;
+
+		default:
+			message = __(
+				'There was an error, please try again.',
+				'woocommerce-payments'
+			);
+	}
+
+	return (
+		<Notice status="error" isDismissible={ false }>
+			<p>
+				<strong>{ message }</strong>
+			</p>
+		</Notice>
+	);
+};
 
 // TODO: Properly style :allthethings:
-// eslint-disable-next-line camelcase
-const InstantDepositButton = ( { balance: { amount, fee, net, transaction_ids } } ) => {
+const InstantDepositButton = ( {
+	balance: { amount, fee, net, transaction_ids: transactionIds },
+} ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const [ inProgress, setInProgress ] = useState( false );
+	const [ hasError, setHasError ] = useState( false );
 
 	// TODO: Use wp.data
 	const submit = async () => {
 		try {
 			setInProgress( true );
+			setHasError( false );
 			await apiFetch( {
 				path: '/wc/v3/payments/deposits',
 				method: 'POST',
 				data: {
 					type: 'instant',
-					// eslint-disable-next-line camelcase
-					transaction_ids,
+					transactionIds,
 				},
 			} );
 			// TODO: Success notice? Full-reload the page so the new deposit appears?
 		} catch ( err ) {
 			// TODO: Real error management
-			alert( 'An error has occurred: ' + err );
+			setHasError( err );
 		} finally {
 			setInProgress( false );
-			setModalOpen( false );
+			//setModalOpen( false ); // Commented out due to it was closing modal on error.
 		}
 	};
 
@@ -94,13 +136,20 @@ const InstantDepositButton = ( { balance: { amount, fee, net, transaction_ids } 
 			<Button isDefault onClick={ () => setModalOpen( true ) }>
 				{ __( 'Instant deposit', 'woocommerce-payments' ) }
 			</Button>
-			{ isModalOpen && <InstantDepositModal
-				amount={ amount }
-				fee={ fee }
-				net={ net }
-				inProgress={ inProgress }
-				onSubmit={ submit }
-				onClose={ () => setModalOpen( false ) } /> }
+			{ isModalOpen && (
+				<InstantDepositModal
+					amount={ amount }
+					fee={ fee }
+					net={ net }
+					inProgress={ inProgress }
+					onSubmit={ submit }
+					onClose={ () => {
+						setModalOpen( false );
+						setHasError( false );
+					} }
+					hasError={ hasError }
+				/>
+			) }
 		</>
 	);
 };

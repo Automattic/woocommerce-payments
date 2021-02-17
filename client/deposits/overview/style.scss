@@ -57,6 +57,15 @@
 div.wcpay-instant-deposits-modal {
 	max-width: 500px;
 
+	.components-notice {
+		margin-left: 0;
+		margin-right: 0;
+
+		p {
+			color: $studio-black;
+		}
+	}
+
 	p {
 		color: $studio-gray-40;
 	}
@@ -81,7 +90,6 @@ div.wcpay-instant-deposits-modal {
 		}
 
 		.wcpay-instant-deposits-modal__fee {
-
 			span {
 				color: $studio-red-50;
 			}
