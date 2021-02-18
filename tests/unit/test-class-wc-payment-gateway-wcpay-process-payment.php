@@ -136,13 +136,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_success() {
 		// Arrange: Reusable data.
-		$intent_id         = 'pi_123';
-		$charge_id         = 'ch_123';
-		$customer_id       = 'cu_123';
-		$status            = 'succeeded';
-		$secret            = 'client_secret_123';
-		$order_id          = 123;
-		$total             = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'succeeded';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -310,13 +310,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_requires_capture() {
 		// Arrange: Reusable data.
-		$intent_id         = 'pi_123';
-		$charge_id         = 'ch_123';
-		$customer_id       = 'cu_123';
-		$status            = 'requires_capture';
-		$secret            = 'client_secret_123';
-		$order_id          = 123;
-		$total             = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'requires_capture';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -521,13 +521,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action() {
 		// Arrange: Reusable data.
-		$intent_id         = 'pi_123';
-		$charge_id         = 'ch_123';
-		$customer_id       = 'cu_123';
-		$status            = 'requires_action';
-		$secret            = 'client_secret_123';
-		$order_id          = 123;
-		$total             = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'requires_action';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );

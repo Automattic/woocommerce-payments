@@ -65,7 +65,7 @@ class WC_Payments_Action_Scheduler_Service {
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( 
+			array_merge(
 				$order->get_data(),
 				[
 					'_payment_method_token' => $payment_method,
@@ -101,7 +101,7 @@ class WC_Payments_Action_Scheduler_Service {
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( 
+			array_merge(
 				$order->get_data(),
 				[
 					'_payment_method_token' => $payment_method,
