@@ -257,7 +257,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$payment_method_id                             = 'test-payment-method-id';
 		$_POST[ $this->post_payment_token_parameter ]  = '';
 		$_POST[ $this->post_payment_method_parameter ] = $payment_method_id;
-		$_GET['change_payment_method']                 = 1;
+
+		// Simulate is_changing_payment_method_for_subscription being true.
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		// is_changing_payment_method_for_subscription flow expects WC_Order
+		// instance to create Payment_Information instance from. However our
+		// mock WC_Subscription is not inherited from WC_Order, therefore we
+		// provide a separate mock instance for this test case.
+		$mock_subscription = $this->createMock( WC_Order::class );
+		$mock_subscription->expects( $this->once() )
+				->method( 'get_payment_tokens' )
+				->will( $this->returnValue( [ $this->token1->get_id(), $this->token2->get_id() ] ) );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -269,10 +286,21 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 					],
 				]
 			);
-		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
-		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
+
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $mock_subscription );
 		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertContains( $this->last4digits[3], $new_payment_method_title_modified );
+
+		// If previous method tokens are unavailable, payment method title
+		// should not change.
+		$mock_subscription = $this->createMock( WC_Order::class );
+		$mock_subscription->expects( $this->once() )
+				->method( 'get_payment_tokens' )
+				->will( $this->returnValue( [ $this->token1->get_id() ] ) );
+
+		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
+		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );
 	}
 
 	/**
