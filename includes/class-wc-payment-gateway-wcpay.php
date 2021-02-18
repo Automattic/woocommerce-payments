@@ -466,11 +466,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// TODO: Create more exceptions to handle merchant specific errors.
-			$error_message = $e->getMessage();
-			if ( is_a( $e, Connection_Exception::class ) ) {
-				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
-			}
-			wc_add_notice( $error_message, 'error' );
+			wc_add_notice( $e->getMessage(), 'error' );
 
 			$order->update_status( 'failed' );
 
