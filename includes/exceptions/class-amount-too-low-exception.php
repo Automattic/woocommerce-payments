@@ -41,7 +41,7 @@ class Amount_Too_Low_Exception extends API_Exception {
 					'Sorry, the minimum allowed order total is %1$s to use this payment method.',
 					'woocommerce-payments'
 				),
-				wc_price( $min_amount, [ 'currency' => strtoupper( $currency ) ] )
+				\WC_Payments_Utils::format_amount( $additional_data['min_amount'], $additional_data['currency'] )
 			);
 		}
 

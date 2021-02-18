@@ -416,14 +416,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 
-		$error_message = sprintf(
-			// translators: %1$s is a formatted amount with currency code.
-			__(
-				'Sorry, the minimum allowed order total is %1$s to use this payment method.',
-				'woocommerce-payments'
-			),
-			wc_price( $error_data['min_amount'] / 100, [ 'currency' => strtoupper( $error_data['currency'] ) ] )
-		);
+		$error_message = 'Sorry, the minimum allowed order total is $0.60 to use this payment method.';
 
 		// Assert: A WooCommerce notice was added.
 		$this->assertTrue( wc_has_notice( $error_message, 'error' ) );

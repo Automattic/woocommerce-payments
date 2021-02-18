@@ -356,4 +356,22 @@ class WC_Payments_Utils {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
 	}
 
+
+	/**
+	 * Takes a "Stripe" amount and currency and returns a formatted text-only
+	 * price string.
+	 *
+	 * @param int    $amount Amount to format.
+	 * @param string $currency Currency.
+	 */
+	public static function format_amount( int $amount, string $currency ) {
+		return html_entity_decode(
+			wp_strip_all_tags(
+				wc_price(
+					self::interpret_stripe_amount( $amount, strtolower( $currency ) ),
+					[ 'currency' => strtoupper( $currency ) ]
+				)
+			)
+		);
+	}
 }
