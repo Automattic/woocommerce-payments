@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 2.1.0 - 2021-xx-xx =
+* Add - Add UI styling and notices for instant deposits.
+
 = 2.0.0 - 2021-xx-xx =
 * Update - Render customer details in transactions list as text instead of link if order missing.
 * Update - Render transaction summary on details page for multi-currency transactions.

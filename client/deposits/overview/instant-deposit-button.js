@@ -77,13 +77,6 @@ const InstantDepositSubmitNotice = ( { error } ) => {
 	let message = '';
 	// TODO: supply proper error notices.
 	switch ( error.code ) {
-		case 'balance_insufficient':
-			message = __(
-				'Balance is not sufficient for instant deposit.',
-				'woocommerce-payments'
-			);
-			break;
-
 		default:
 			message = __(
 				'There was an error, please try again.',
@@ -93,14 +86,11 @@ const InstantDepositSubmitNotice = ( { error } ) => {
 
 	return (
 		<Notice status="error" isDismissible={ false }>
-			<p>
-				<strong>{ message }</strong>
-			</p>
+			<p>{ message }</p>
 		</Notice>
 	);
 };
 
-// TODO: Properly style :allthethings:
 const InstantDepositButton = ( {
 	balance: { amount, fee, net, transaction_ids: transactionIds },
 } ) => {
@@ -123,11 +113,9 @@ const InstantDepositButton = ( {
 			} );
 			// TODO: Success notice? Full-reload the page so the new deposit appears?
 		} catch ( err ) {
-			// TODO: Real error management
 			setHasError( err );
 		} finally {
 			setInProgress( false );
-			//setModalOpen( false ); // Commented out due to it was closing modal on error.
 		}
 	};
 
