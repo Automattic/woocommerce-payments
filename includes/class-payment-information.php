@@ -70,6 +70,13 @@ class Payment_Information {
 	private $save_payment_method = false;
 
 	/**
+	 * Indicates whether user is changing payment method for subscriptions order.
+	 *
+	 * @var bool
+	 */
+	private $is_changing_payment_method_for_subscription = false;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -275,5 +282,23 @@ class Payment_Information {
 	 */
 	public function should_save_payment_method() {
 		return ! $this->is_using_saved_payment_method() && $this->save_payment_method;
+	}
+
+	/**
+	 * Mark that we are changing payment for subscriptions order or not.
+	 *
+	 * @param bool $is_changing_payment_method_for_subscription Whether or not we are changing payment for subscriptions order.
+	 */
+	public function set_is_changing_payment_method_for_subscription( bool $is_changing_payment_method_for_subscription ) {
+		$this->is_changing_payment_method_for_subscription = $is_changing_payment_method_for_subscription;
+	}
+
+	/**
+	 * Returns the flag of whether or not we are changing payment for subscriptions order.
+	 *
+	 * @return bool Whether or not we are changing payment for subscriptions order.
+	 */
+	public function is_changing_payment_method_for_subscription(): bool {
+		return $this->is_changing_payment_method_for_subscription;
 	}
 }

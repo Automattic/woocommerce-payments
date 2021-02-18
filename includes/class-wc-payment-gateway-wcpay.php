@@ -529,8 +529,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
-		$order               = $payment_information->get_order();
-		$save_payment_method = $payment_information->should_save_payment_method();
+		$order                                       = $payment_information->get_order();
+		$save_payment_method                         = $payment_information->should_save_payment_method();
+		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
@@ -573,6 +574,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
+
+			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
+				$token = $payment_information->get_payment_token();
+				$this->add_token_to_order( $order, $token );
+
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the last 4 digit of the credit card */
+						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					$token->get_last4()
+				);
+				$order->add_order_note( $note );
+			}
+
 			return [
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),
@@ -1640,12 +1659,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Check whether this is an order we haven't previously tracked a creation event for.
 		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
 			// Schedule the action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+10 seconds' ),
 				'wcpay_track_new_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
 
@@ -1653,11 +1673,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 			$order->save_meta_data();
 		} else {
-			// Schedule an update action.
+			// Schedule an update action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+10 seconds' ),
 				'wcpay_track_update_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[
+					'order_id'      => $order_id,
+					'date_modified' => $order->get_date_modified(),
+				],
 				self::GATEWAY_ID
 			);
 		}
