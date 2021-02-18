@@ -156,6 +156,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'get_total' )
 			->willReturn( $total );
 
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
 
@@ -233,6 +238,71 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test processing payment with the status 'succeeded'.
+	 */
+	public function test_intent_status_success_logged_out_user() {
+		// Arrange: Reusable data.
+		$intent_id = 'pi_123';
+		$charge_id = 'ch_123';
+		$status    = 'succeeded';
+		$secret    = 'client_secret_123';
+		$order_id  = 123;
+		$total     = 12.23;
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
+
+		// Arrange: Set false as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( false );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$intent = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			'usd',
+			new DateTime(),
+			$status,
+			$charge_id,
+			$secret
+		);
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		// Assert: customer_service should still be called with a WP_User object (representing a logged-out user).
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->with( $this->isInstanceOf( WP_User::class ) );
+
+		// Act: process a successful payment.
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $this->return_url, $result['redirect'] );
+	}
+
+	/**
 	 * Test processing payment with the status "requires_capture".
 	 */
 	public function test_intent_status_requires_capture() {
@@ -256,6 +326,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
@@ -459,6 +534,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );

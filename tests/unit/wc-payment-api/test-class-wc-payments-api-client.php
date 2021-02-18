@@ -298,9 +298,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_create_customer_success() {
-		$name        = 'Test Customer';
-		$email       = 'test.customer@example.com';
-		$description = 'Test Customer Description';
+		$customer_data = [
+			'name'        => 'Test Customer',
+			'email'       => 'test.customer@example.com',
+			'description' => 'Test Customer Description',
+		];
 
 		$this->set_http_mock_response(
 			200,
@@ -310,7 +312,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$customer_id = $this->payments_api_client->create_customer( $name, $email, $description );
+		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
 	}
