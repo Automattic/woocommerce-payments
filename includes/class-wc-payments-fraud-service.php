@@ -54,6 +54,7 @@ class WC_Payments_Fraud_Service {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'woocommerce_init', [ $this, 'link_session_if_user_just_logged_in' ] );
+		add_action( 'admin_init', [ $this, 'send_forter_cookie_token' ] );
 	}
 
 	/**
@@ -124,17 +125,6 @@ class WC_Payments_Fraud_Service {
 	 * @return array|NULL Assoc array, ready for the client to consume, or NULL if the client shouldn't enqueue this script.
 	 */
 	private function prepare_forter_config( $config ) {
-		// The server returns both production and sandbox site IDs. Use the sandbox one if test mode is enabled.
-		if ( WC_Payments::get_gateway()->is_in_test_mode() ) {
-			$config['site_id'] = $config['sandbox_site_id'];
-		}
-		unset( $config['sandbox_site_id'] );
-
-		if ( ! $this->account->is_stripe_connected() ) {
-			// Don't enqueue the Forter script if WCPay hasn't been connected yet.
-			return null;
-		}
-
 		if ( ! is_admin() ) {
 			// Only include Forter in admin pages.
 			return null;
@@ -216,5 +206,21 @@ class WC_Payments_Fraud_Service {
 		}
 		$cookie_customer_id = $cookie[0];
 		return $wpcom_blog_id . '_' . $cookie_customer_id;
+	}
+
+	/**
+	 * If a "forterToken" cookie is present, send it to the WCPay server so the
+	 * current browsing session can be linked to the account. It will only be sent once.
+	 */
+	public function send_forter_cookie_token() {
+		if ( ! $this->account->is_stripe_connected() || ! isset( $_COOKIE['forterToken'] ) ) {
+			return;
+		}
+
+		$account_id = $this->account->get_stripe_account_id();
+		if ( get_option( 'wcpay_forter_token_sent' ) !== $account_id ) {
+			update_option( 'wcpay_forter_token_sent', $account_id );
+			$this->payments_api_client->send_forter_token( $_COOKIE['forterToken'] );
+		}
 	}
 }
