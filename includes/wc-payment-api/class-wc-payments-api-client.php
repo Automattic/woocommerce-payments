@@ -905,7 +905,7 @@ class WC_Payments_API_Client {
 	public function send_forter_token( $token ) {
 		return $this->request(
 			[
-				'token'  => $token,
+				'token' => $token,
 			],
 			self::TRACKING_API . '/forter-token',
 			self::POST

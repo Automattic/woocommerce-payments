@@ -219,8 +219,11 @@ class WC_Payments_Fraud_Service {
 
 		$account_id = $this->account->get_stripe_account_id();
 		if ( get_option( 'wcpay_forter_token_sent' ) !== $account_id ) {
-			update_option( 'wcpay_forter_token_sent', $account_id );
-			$this->payments_api_client->send_forter_token( $_COOKIE['forterToken'] );
+			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$response = $this->payments_api_client->send_forter_token( $_COOKIE['forterToken'] );
+			if ( isset( $response['result'] ) && 'success' === $response['result'] ) {
+				update_option( 'wcpay_forter_token_sent', $account_id );
+			}
 		}
 	}
 }
