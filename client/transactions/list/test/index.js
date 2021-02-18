@@ -43,6 +43,10 @@ const getMockTransactions = () => [
 		net: 950,
 		currency: 'usd',
 		// eslint-disable-next-line camelcase
+		customer_amount: 1000,
+		// eslint-disable-next-line camelcase
+		customer_currency: 'usd',
+		// eslint-disable-next-line camelcase
 		risk_level: 0,
 		// eslint-disable-next-line camelcase
 		deposit_id: null,
@@ -71,6 +75,10 @@ const getMockTransactions = () => [
 		fees: 50,
 		net: 1450,
 		currency: 'usd',
+		// eslint-disable-next-line camelcase
+		customer_amount: 3000,
+		// eslint-disable-next-line camelcase
+		customer_currency: 'mok',
 		// eslint-disable-next-line camelcase
 		risk_level: 2,
 		// eslint-disable-next-line camelcase
