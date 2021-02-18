@@ -51,31 +51,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return bool
 	 */
 	public function track_new_order_action( $order_id ) {
-		// Get the order details.
-		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
-			return false;
-		}
-
-		// If we do not have a valid payment method for this order, don't send the request.
-		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
-		if ( empty( $payment_method ) ) {
-			return false;
-		}
-
-		// Send the order data to the Payments API to track it.
-		$result = $this->payments_api_client->track_order(
-			array_merge(
-				$order->get_data(),
-				[
-					'_payment_method_token' => $payment_method,
-					'_stripe_customer_id'   => $order->get_meta( '_stripe_customer_id' ),
-				]
-			),
-			false
-		);
-
-		return $result;
+		return $this->track_order( $order_id, false );
 	}
 
 	/**
@@ -87,6 +63,18 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return bool
 	 */
 	public function track_update_order_action( $order_id ) {
+		return $this->track_order( $order_id, true );
+	}
+
+	/**
+	 * Track an order by making a request to the Payments API.
+	 *
+	 * @param int  $order_id   The ID of the order which has been updated/created.
+	 * @param bool $is_update  Is this an update event. If false, it is assumed this is a creation event.
+	 *
+	 * @return bool
+	 */
+	private function track_order( $order_id, $is_update = false ) {
 		// Get the order details.
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
@@ -94,24 +82,30 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		// If we do not have a valid payment method for this order, don't send the request.
-		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
+		$payment_method = $order->get_meta( ( '_payment_method_id' ) );
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
 
 		// Send the order data to the Payments API to track it.
-		$result = $this->payments_api_client->track_order(
+		$response = $this->payments_api_client->track_order(
 			array_merge(
 				$order->get_data(),
 				[
-					'_payment_method_token' => $payment_method,
-					'_stripe_customer_id'   => $order->get_meta( '_stripe_customer_id' ),
+					'_payment_method_id'  => $payment_method,
+					'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
 				]
 			),
-			true
+			$is_update
 		);
 
-		return $result;
+		if ( 'success' === $response['result'] && ! $is_update ) {
+			// Update the metadata to reflect that the order creation event has been fired.
+			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+			$order->save_meta_data();
+		}
+
+		return $response;
 	}
 
 	/**

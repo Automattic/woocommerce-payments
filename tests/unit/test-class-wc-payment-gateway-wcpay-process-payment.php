@@ -194,7 +194,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_payment_method_token', 'pm_mock' ],
+				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
@@ -368,7 +368,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_payment_method_token', 'pm_mock' ],
+				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
@@ -579,7 +579,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_payment_method_token', 'pm_mock' ],
+				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],

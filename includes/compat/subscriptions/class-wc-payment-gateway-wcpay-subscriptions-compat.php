@@ -402,20 +402,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// If we can't get the payment token for this order, then we check if we already have a payment token
 		// set in the order metadata. If we don't, then we try and get the parent order's token from the metadata.
 		if ( is_null( $payment_token ) ) {
-			if ( empty( $order->get_meta( '_payment_method_token' ) ) ) {
+			if ( empty( $order->get_meta( '_payment_method_id' ) ) ) {
 				$parent_order = wc_get_order( $order->get_parent_id() );
 
 				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
-				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_token' ) ) ) {
+				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_id' ) ) ) {
 					return;
 				}
 
-				$order->update_meta_data( '_payment_method_token', $parent_order->get_meta( '_payment_method_token' ) );
+				$order->update_meta_data( '_payment_method_id', $parent_order->get_meta( '_payment_method_id' ) );
 				$save_meta_data = true;
 			}
-		} elseif ( $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
+		} elseif ( $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
 			// If the payment token stored in the metadata already doesn't reflect the latest token, update it.
-			$order->update_meta_data( '_payment_method_token', $payment_token->get_token() );
+			$order->update_meta_data( '_payment_method_id', $payment_token->get_token() );
 			$save_meta_data = true;
 		}
 

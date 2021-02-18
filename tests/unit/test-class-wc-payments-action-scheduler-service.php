@@ -39,7 +39,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_new_order_action() {
 		$order = WC_Helper_Order::create_order();
-		$order->add_meta_data( '_payment_method_token', 'pm_131535132531', true );
+		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
 		$order->save_meta_data();
 
@@ -53,7 +53,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_new_order_action_with_no_payment_method() {
 		$order = WC_Helper_Order::create_order();
-		$order->delete_meta_data( '_payment_method_token' );
+		$order->delete_meta_data( '_payment_method_id' );
 		$order->save_meta_data();
 
 		$this->assertFalse( $this->action_scheduler_service->track_new_order_action( $order ) );
@@ -71,7 +71,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_update_order_action() {
 		$order = WC_Helper_Order::create_order();
-		$order->add_meta_data( '_payment_method_token', 'pm_131535132531', true );
+		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
 		$order->save_meta_data();
 
@@ -85,7 +85,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 
 	public function test_track_update_order_action_with_no_payment_method() {
 		$order = WC_Helper_Order::create_order();
-		$order->delete_meta_data( '_payment_method_token' );
+		$order->delete_meta_data( '_payment_method_id' );
 		$order->save_meta_data();
 
 		$this->assertFalse( $this->action_scheduler_service->track_update_order_action( $order ) );
@@ -112,8 +112,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		return array_merge(
 			$order->get_data(),
 			[
-				'_payment_method_token' => $order->get_meta( '_payment_method_token' ),
-				'_stripe_customer_id'   => $order->get_meta( '_stripe_customer_id' ),
+				'_payment_method_id'  => $order->get_meta( '_payment_method_id' ),
+				'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
 			]
 		);
 	}
