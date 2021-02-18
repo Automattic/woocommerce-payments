@@ -157,6 +157,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'get_total' )
 			->willReturn( $total );
 
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
 		// Arrange: Set a good return value for customer ID.
 		$this->mock_customer_service->expects( $this->once() )
 			->method( 'create_customer_for_user' )
@@ -330,6 +335,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
 
 		// Arrange: Set a good return value for customer ID.
 		$this->mock_customer_service->expects( $this->once() )
@@ -541,6 +551,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_total' )
 			->willReturn( $total );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
 
 		// Arrange: Set a good return value for customer ID.
 		$this->mock_customer_service->expects( $this->once() )
