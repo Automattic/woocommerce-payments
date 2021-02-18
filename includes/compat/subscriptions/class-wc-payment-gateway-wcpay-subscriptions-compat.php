@@ -382,4 +382,58 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 		echo '</select>';
 	}
+
+	/**
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
+	 * the payment server.
+	 *
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
+	 */
+	public function schedule_order_tracking( $order_id, $order = null ) {
+		$save_meta_data = false;
+
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		$payment_token = $this->get_payment_token( $order );
+
+		// If we can't get the payment token for this order, then we check if we already have a payment token
+		// set in the order metadata. If we don't, then we try and get the parent order's token from the metadata.
+		if ( is_null( $payment_token ) ) {
+			if ( empty( $order->get_meta( '_payment_method_token' ) ) ) {
+				$parent_order = wc_get_order( $order->get_parent_id() );
+
+				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
+				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_token' ) ) ) {
+					return;
+				}
+
+				$order->update_meta_data( '_payment_method_token', $parent_order->get_meta( '_payment_method_token' ) );
+				$save_meta_data = true;
+			}
+		} elseif ( $order->get_meta( '_payment_method_token' ) !== $payment_token->get_token() ) {
+			// If the payment token stored in the metadata already doesn't reflect the latest token, update it.
+			$order->update_meta_data( '_payment_method_token', $payment_token->get_token() );
+			$save_meta_data = true;
+		}
+
+		// If the stripe customer ID metadata isn't set for this order, try and get this data from the metadata of the parent order.
+		if ( empty( $order->get_meta( '_stripe_customer_id' ) ) ) {
+			$parent_order = wc_get_order( $order->get_parent_id() );
+			if ( ! empty( $parent_order ) && ! empty( $parent_order->get_meta( '_stripe_customer_id' ) ) ) {
+				$order->update_meta_data( '_stripe_customer_id', $parent_order->get_meta( '_stripe_customer_id' ) );
+				$save_meta_data = true;
+			}
+		}
+
+		// If we need to, save our changes to the metadata for this order.
+		if ( $save_meta_data ) {
+			$order->save_meta_data();
+		}
+
+		// Call the parent logic to schedule the order tracking.
+		parent::schedule_order_tracking( $order_id, $order );
+	}
 }

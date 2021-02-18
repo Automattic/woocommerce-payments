@@ -576,6 +576,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
+		// Make sure that we attach the payment method and the customer ID to the order meta data.
+		$payment_method = $payment_information->get_payment_method();
+		$order->update_meta_data( '_payment_method_token', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
@@ -1654,16 +1659,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order = wc_get_order( $order_id );
 		}
 
-		// We only want to track orders created by our payment gateway.
-		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
+		// We only want to track orders created by our payment gateway, and orders with a payment method set.
+		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_token' ) ) ) {
 			return;
-		}
-
-		// Make sure that the order meta data key for payment_token is set to the most recent token.
-		$payment_token = $this->get_payment_token( $order );
-		if ( ! is_null( $payment_token ) && $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
-				$order->add_meta_data( '_payment_method_id', $payment_token->get_token(), true );
-				$order->save_meta_data();
 		}
 
 		// Check whether this is an order we haven't previously tracked a creation event for.

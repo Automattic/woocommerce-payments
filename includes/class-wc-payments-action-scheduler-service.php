@@ -58,14 +58,20 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		// If we do not have a valid payment method for this order, don't send the request.
-		$payment_method = $order->get_meta( ( '_payment_method_id' ) );
+		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_payment_method_id' => $payment_method ] ),
+			array_merge( 
+				$order->get_data(),
+				[
+					'_payment_method_token' => $payment_method,
+					'_stripe_customer_id'   => $order->get_meta( '_stripe_customer_id' ),
+				]
+			),
 			false
 		);
 
@@ -88,14 +94,20 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		// If we do not have a valid payment method for this order, don't send the request.
-		$payment_method = $order->get_meta( ( '_payment_method_id' ) );
+		$payment_method = $order->get_meta( ( '_payment_method_token' ) );
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
 
 		// Send the order data to the Payments API to track it.
 		$result = $this->payments_api_client->track_order(
-			array_merge( $order->get_data(), [ '_payment_method_id' => $payment_method ] ),
+			array_merge( 
+				$order->get_data(),
+				[
+					'_payment_method_token' => $payment_method,
+					'_stripe_customer_id'   => $order->get_meta( '_stripe_customer_id' ),
+				]
+			),
 			true
 		);
 
