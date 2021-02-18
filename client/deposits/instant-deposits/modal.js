@@ -3,12 +3,16 @@
 /**
  * External dependencies
  */
-import { Button, Modal, Notice } from '@wordpress/components';
+import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 import Currency from '@woocommerce/currency';
-import apiFetch from '@wordpress/api-fetch';
+
+/**
+ * Internal dependencies
+ */
+import './style.scss';
+import InstantDepositSubmitNotice from './notice';
 
 const currency = new Currency();
 
@@ -73,73 +77,4 @@ const InstantDepositModal = ( {
 	);
 };
 
-const InstantDepositSubmitNotice = ( { error } ) => {
-	let message = '';
-	// TODO: supply proper error notices.
-	switch ( error.code ) {
-		default:
-			message = __(
-				'There was an error, please try again.',
-				'woocommerce-payments'
-			);
-	}
-
-	return (
-		<Notice status="error" isDismissible={ false }>
-			<p>{ message }</p>
-		</Notice>
-	);
-};
-
-const InstantDepositButton = ( {
-	balance: { amount, fee, net, transaction_ids: transactionIds },
-} ) => {
-	const [ isModalOpen, setModalOpen ] = useState( false );
-	const [ inProgress, setInProgress ] = useState( false );
-	const [ hasError, setHasError ] = useState( false );
-
-	// TODO: Use wp.data
-	const submit = async () => {
-		try {
-			setInProgress( true );
-			setHasError( false );
-			await apiFetch( {
-				path: '/wc/v3/payments/deposits',
-				method: 'POST',
-				data: {
-					type: 'instant',
-					transactionIds,
-				},
-			} );
-			// TODO: Success notice? Full-reload the page so the new deposit appears?
-		} catch ( err ) {
-			setHasError( err );
-		} finally {
-			setInProgress( false );
-		}
-	};
-
-	return (
-		<>
-			<Button isDefault onClick={ () => setModalOpen( true ) }>
-				{ __( 'Instant deposit', 'woocommerce-payments' ) }
-			</Button>
-			{ isModalOpen && (
-				<InstantDepositModal
-					amount={ amount }
-					fee={ fee }
-					net={ net }
-					inProgress={ inProgress }
-					onSubmit={ submit }
-					onClose={ () => {
-						setModalOpen( false );
-						setHasError( false );
-					} }
-					hasError={ hasError }
-				/>
-			) }
-		</>
-	);
-};
-
-export default InstantDepositButton;
+export default InstantDepositModal;
