@@ -55,6 +55,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
+		// Used to filter out unwanted metadata on new renewal orders.
+		add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
@@ -435,5 +438,21 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		// Call the parent logic to schedule the order tracking.
 		parent::schedule_order_tracking( $order_id, $order );
+	}
+
+	/**
+	 * Action called when a renewal order is created, allowing us to strip metadata that we do not
+	 * want it to inherit from the parent order.
+	 *
+	 * @param string $order_meta_query The metadata query (a valid SQL query).
+	 * @param int    $to_order         The renewal order.
+	 * @param int    $from_order       The source (parent) order.
+	 *
+	 * @return string
+	 */
+	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
+		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+
+		return $order_meta_query;
 	}
 }

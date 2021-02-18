@@ -1665,7 +1665,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Check whether this is an order we haven't previously tracked a creation event for.
-		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' || is_null( $order->get_date_modified() ) ) {
+		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
 			// Schedule the action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+5 seconds' ),
