@@ -105,7 +105,7 @@ class WC_Payments_Action_Scheduler_Service {
 			$order->save_meta_data();
 		}
 
-		return $response;
+		return ( 'success' === ( $response['result'] ?? null ) );
 	}
 
 	/**
