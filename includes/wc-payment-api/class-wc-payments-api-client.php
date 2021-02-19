@@ -681,7 +681,7 @@ class WC_Payments_API_Client {
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
 				'actioned_notes'      => $actioned_notes,
 				'client_data'         => [
-					'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+					'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
 					'ip'         => WC_Geolocation::get_ip_address(),
 				],
 			]
@@ -910,7 +910,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[
 				'token'      => $token,
-				'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
 				'ip'         => WC_Geolocation::get_ip_address(),
 			],
 			self::TRACKING_API . '/forter-token',
