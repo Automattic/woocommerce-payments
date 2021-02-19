@@ -577,6 +577,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
+		// Make sure that we attach the payment method and the customer ID to the order meta data.
+		$payment_method = $payment_information->get_payment_method();
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
@@ -1637,7 +1642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * When an order is created, we want to add an ActionScheduler job to send this data to
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
 	 * the payment server.
 	 *
 	 * @param int           $order_id  The ID of the order that has been created.
@@ -1655,13 +1660,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order = wc_get_order( $order_id );
 		}
 
-		// We only want to track orders created by our payment gateway.
-		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
-			return;
-		}
-
-		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
-		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
+		// We only want to track orders created by our payment gateway, and orders with a payment method set.
+		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_id' ) ) ) {
 			return;
 		}
 
@@ -1669,24 +1669,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
 			// Schedule the action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( '+10 seconds' ),
+				strtotime( '+5 seconds' ),
 				'wcpay_track_new_order',
 				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
-
-			// Update the metadata to reflect that the order creation event has been fired.
-			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
-			$order->save_meta_data();
 		} else {
 			// Schedule an update action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( '+10 seconds' ),
+				strtotime( '+5 seconds' ),
 				'wcpay_track_update_order',
-				[
-					'order_id'      => $order_id,
-					'date_modified' => $order->get_date_modified(),
-				],
+				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
 		}

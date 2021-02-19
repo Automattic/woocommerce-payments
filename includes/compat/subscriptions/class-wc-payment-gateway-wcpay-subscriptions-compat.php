@@ -55,6 +55,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
+		// Used to filter out unwanted metadata on new renewal orders.
+		add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
@@ -381,5 +384,75 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
+	 * the payment server.
+	 *
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
+	 */
+	public function schedule_order_tracking( $order_id, $order = null ) {
+		$save_meta_data = false;
+
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		$payment_token = $this->get_payment_token( $order );
+
+		// If we can't get the payment token for this order, then we check if we already have a payment token
+		// set in the order metadata. If we don't, then we try and get the parent order's token from the metadata.
+		if ( is_null( $payment_token ) ) {
+			if ( empty( $order->get_meta( '_payment_method_id' ) ) ) {
+				$parent_order = wc_get_order( $order->get_parent_id() );
+
+				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
+				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_id' ) ) ) {
+					return;
+				}
+
+				$order->update_meta_data( '_payment_method_id', $parent_order->get_meta( '_payment_method_id' ) );
+				$save_meta_data = true;
+			}
+		} elseif ( $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
+			// If the payment token stored in the metadata already doesn't reflect the latest token, update it.
+			$order->update_meta_data( '_payment_method_id', $payment_token->get_token() );
+			$save_meta_data = true;
+		}
+
+		// If the stripe customer ID metadata isn't set for this order, try and get this data from the metadata of the parent order.
+		if ( empty( $order->get_meta( '_stripe_customer_id' ) ) ) {
+			$parent_order = wc_get_order( $order->get_parent_id() );
+			if ( ! empty( $parent_order ) && ! empty( $parent_order->get_meta( '_stripe_customer_id' ) ) ) {
+				$order->update_meta_data( '_stripe_customer_id', $parent_order->get_meta( '_stripe_customer_id' ) );
+				$save_meta_data = true;
+			}
+		}
+
+		// If we need to, save our changes to the metadata for this order.
+		if ( $save_meta_data ) {
+			$order->save_meta_data();
+		}
+
+		// Call the parent logic to schedule the order tracking.
+		parent::schedule_order_tracking( $order_id, $order );
+	}
+
+	/**
+	 * Action called when a renewal order is created, allowing us to strip metadata that we do not
+	 * want it to inherit from the parent order.
+	 *
+	 * @param string $order_meta_query The metadata query (a valid SQL query).
+	 * @param int    $to_order         The renewal order.
+	 * @param int    $from_order       The source (parent) order.
+	 *
+	 * @return string
+	 */
+	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
+		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+
+		return $order_meta_query;
 	}
 }

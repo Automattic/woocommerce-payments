@@ -136,12 +136,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_success() {
 		// Arrange: Reusable data.
-		$intent_id = 'pi_123';
-		$charge_id = 'ch_123';
-		$status    = 'succeeded';
-		$secret    = 'client_secret_123';
-		$order_id  = 123;
-		$total     = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'succeeded';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -160,6 +161,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_user' )
 			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for customer ID.
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->willReturn( $customer_id );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
@@ -190,9 +196,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -307,12 +315,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_requires_capture() {
 		// Arrange: Reusable data.
-		$intent_id = 'pi_123';
-		$charge_id = 'ch_123';
-		$status    = 'requires_capture';
-		$secret    = 'client_secret_123';
-		$order_id  = 123;
-		$total     = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'requires_capture';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -331,6 +340,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_user' )
 			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for customer ID.
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->willReturn( $customer_id );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
@@ -361,9 +375,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -515,12 +531,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action() {
 		// Arrange: Reusable data.
-		$intent_id = 'pi_123';
-		$charge_id = 'ch_123';
-		$status    = 'requires_action';
-		$secret    = 'client_secret_123';
-		$order_id  = 123;
-		$total     = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$customer_id = 'cu_123';
+		$status      = 'requires_action';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -539,6 +556,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$mock_order
 			->method( 'get_user' )
 			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for customer ID.
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->willReturn( $customer_id );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
@@ -569,12 +591,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 4 ) )
+			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
-				[ '_intention_status', 'requires_action' ],
+				[ '_intention_status', $status ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ]
 			);
 
