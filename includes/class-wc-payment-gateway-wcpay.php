@@ -547,6 +547,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
+			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_information->get_payment_type(),
 		];
 
