@@ -482,7 +482,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				]
 			);
-		$_SERVER['REMOTE_ADDR'] = '1.2.3.4';
+		$_SERVER['REMOTE_ADDR']     = '1.2.3.4';
 		$_SERVER['HTTP_USER_AGENT'] = 'Fake Browser 1.0 / Like Gecko';
 
 		// Call the method under test.
