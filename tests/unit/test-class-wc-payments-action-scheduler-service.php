@@ -78,7 +78,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
 			->with( $this->get_order_data_mock( $order->get_id() ), true )
-			->willReturn( [ 'result' => 'success'] );
+			->willReturn( [ 'result' => 'success' ] );
 
 		$this->assertTrue( $this->action_scheduler_service->track_update_order_action( $order->get_id() ) );
 	}
