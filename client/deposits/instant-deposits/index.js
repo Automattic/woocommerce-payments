@@ -15,7 +15,8 @@ import './style.scss';
 import InstantDepositModal from './modal';
 
 const InstantDepositButton = ( {
-	balance: { amount, fee, net, transaction_ids: transactionIds },
+	// eslint-disable-next-line camelcase
+	balance: { amount, fee, net, transaction_ids },
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const [ inProgress, setInProgress ] = useState( false );
@@ -31,7 +32,8 @@ const InstantDepositButton = ( {
 				method: 'POST',
 				data: {
 					type: 'instant',
-					transactionIds,
+					// eslint-disable-next-line camelcase
+					transaction_ids,
 				},
 			} );
 			// TODO: Success notice? Full-reload the page so the new deposit appears?
