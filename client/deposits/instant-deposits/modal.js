@@ -23,7 +23,7 @@ const InstantDepositModal = ( {
 	onClose,
 	onSubmit,
 	inProgress,
-	hasError,
+	hasNotice,
 } ) => {
 	// TODO: add proper url for instant payout doc
 	const learnMoreHref = '';
@@ -43,7 +43,7 @@ const InstantDepositModal = ( {
 			onRequestClose={ onClose }
 			className="wcpay-instant-deposits-modal"
 		>
-			{ hasError && <InstantDepositSubmitNotice error={ hasError } /> }
+			{ hasNotice && <InstantDepositSubmitNotice notice={ hasNotice } /> }
 
 			<p>{ description }</p>
 			<ul>
@@ -63,15 +63,18 @@ const InstantDepositModal = ( {
 					<span>{ currency.formatCurrency( net / 100 ) }</span>
 				</li>
 			</ul>
-			<Button isPrimary onClick={ onSubmit } isBusy={ inProgress }>
-				{ sprintf(
-					/* translators: %s: Monetary amount to deposit */
-					__( 'Deposit %s now', 'woocommerce-payments' ),
-					currency.formatCurrency( net / 100 )
-				) }
-			</Button>
+
+			{ ! hasNotice &&
+				<Button isPrimary onClick={ onSubmit } isBusy={ inProgress }>
+					{ sprintf(
+						/* translators: %s: Monetary amount to deposit */
+						__( 'Deposit %s now', 'woocommerce-payments' ),
+						currency.formatCurrency( net / 100 )
+					) }
+				</Button>
+			}
 			<Button isDefault onClick={ onClose }>
-				{ __( 'Cancel', 'woocommerce-payments' ) }
+				{ __( 'Close', 'woocommerce-payments' ) }
 			</Button>
 		</Modal>
 	);

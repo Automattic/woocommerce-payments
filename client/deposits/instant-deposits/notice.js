@@ -6,19 +6,28 @@
 import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
-const InstantDepositSubmitNotice = ( { error } ) => {
+const InstantDepositSubmitNotice = ( { notice } ) => {
+	const type = 'success' === notice ? 'success' : 'error';
 	let message = '';
-	// TODO: supply proper error notices.
-	switch ( error.code ) {
-		default:
-			message = __(
-				'There was an error, please try again.',
-				'woocommerce-payments'
-			);
+
+	if ( 'success' === type ) {
+		message = __(
+			'The deposit was successful! Please close this window to refresh the page.',
+			'woocommerce-payments'
+		);
+	} else {
+		// TODO: supply proper error notices.
+		switch ( notice.code ) {
+			default:
+				message = __(
+					'There was an error, please try again.',
+					'woocommerce-payments'
+				);
+		}
 	}
 
 	return (
-		<Notice status="error" isDismissible={ false }>
+		<Notice status={ type } isDismissible={ false }>
 			<p>{ message }</p>
 		</Notice>
 	);
