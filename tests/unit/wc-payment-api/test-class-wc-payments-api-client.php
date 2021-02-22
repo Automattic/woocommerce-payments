@@ -466,10 +466,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'e' => 5,
 							'f' => 6,
 						],
-						'client_data'         => [
-							'user_agent' => 'Fake Browser 1.0 / Like Gecko',
-							'ip'         => '1.2.3.4',
-						],
 					]
 				)
 			)
@@ -482,8 +478,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					],
 				]
 			);
-		$_SERVER['REMOTE_ADDR']     = '1.2.3.4';
-		$_SERVER['HTTP_USER_AGENT'] = 'Fake Browser 1.0 / Like Gecko';
 
 		// Call the method under test.
 		$result = $this->payments_api_client->get_oauth_data(

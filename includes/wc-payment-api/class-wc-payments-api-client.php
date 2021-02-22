@@ -680,11 +680,6 @@ class WC_Payments_API_Client {
 				'site_data'           => $site_data,
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
 				'actioned_notes'      => $actioned_notes,
-				'client_data'         => [
-					//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-					'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-					'ip'         => WC_Geolocation::get_ip_address(),
-				],
 			]
 		);
 
