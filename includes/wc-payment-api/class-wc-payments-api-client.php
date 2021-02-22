@@ -886,6 +886,28 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Sends the contents of the "forterToken" cookie to the server.
+	 *
+	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function send_forter_token( $token ) {
+		return $this->request(
+			[
+				'token'      => $token,
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+				'ip'         => WC_Geolocation::get_ip_address(),
+			],
+			self::TRACKING_API . '/forter-token',
+			self::POST
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

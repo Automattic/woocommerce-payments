@@ -54,6 +54,7 @@ class WC_Payments_Fraud_Service {
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
 		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'woocommerce_init', [ $this, 'link_session_if_user_just_logged_in' ] );
+		add_action( 'admin_init', [ $this, 'send_forter_cookie_token' ] );
 	}
 
 	/**
@@ -68,6 +69,8 @@ class WC_Payments_Fraud_Service {
 		switch ( $service_id ) {
 			case 'sift':
 				return $this->prepare_sift_config( $config );
+			case 'forter':
+				return $this->prepare_forter_config( $config );
 		}
 		return $config;
 	}
@@ -109,6 +112,22 @@ class WC_Payments_Fraud_Service {
 			$config['session_id'] = $this->get_cookie_session_id();
 		} else {
 			$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Adds site-specific config needed to initialize the Forter anti-fraud JS.
+	 *
+	 * @param array $config Associative array with the Forter-related configuration returned from the server.
+	 *
+	 * @return array|NULL Assoc array, ready for the client to consume, or NULL if the client shouldn't enqueue this script.
+	 */
+	private function prepare_forter_config( $config ) {
+		if ( ! is_admin() ) {
+			// Only include Forter in admin pages.
+			return null;
 		}
 
 		return $config;
@@ -187,5 +206,32 @@ class WC_Payments_Fraud_Service {
 		}
 		$cookie_customer_id = $cookie[0];
 		return $wpcom_blog_id . '_' . $cookie_customer_id;
+	}
+
+	/**
+	 * If a "forterToken" cookie is present, send it to the WCPay server so the
+	 * current browsing session can be linked to the account. It will only be sent once.
+	 */
+	public function send_forter_cookie_token() {
+		if ( ! $this->account->is_stripe_connected() || ! isset( $_COOKIE['forterToken'] ) || ! isset( $this->account->get_fraud_services_config()['forter'] ) ) {
+			return;
+		}
+
+		$account_id = $this->account->get_stripe_account_id();
+		if ( get_option( 'wcpay_forter_token_sent' ) !== $account_id ) {
+			// Optimistically set the "Forter token already sent" database option, so it's not sent twice if there are several admin requests in parallel.
+			update_option( 'wcpay_forter_token_sent', $account_id );
+			try {
+				// The cookie contents are opaque to us, so it's better to not sanitize them.
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				$response = $this->payments_api_client->send_forter_token( $_COOKIE['forterToken'] );
+				if ( ! isset( $response['result'] ) || 'success' !== $response['result'] ) {
+					delete_option( 'wcpay_forter_token_sent' );
+				}
+			} catch ( API_Exception $e ) {
+				delete_option( 'wcpay_forter_token_sent' );
+				Logger::log( '[Tracking] Error when sending Forter token: ' . $e->getMessage() );
+			}
+		}
 	}
 }
