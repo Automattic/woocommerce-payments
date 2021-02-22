@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.0.0 - 2021-xx-xx =
+= 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
 * Update - Render transaction summary on details page for multi-currency transactions.
 * Update - Improvements to fraud prevention.
