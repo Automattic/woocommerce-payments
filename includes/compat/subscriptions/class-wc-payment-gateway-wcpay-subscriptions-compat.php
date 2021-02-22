@@ -491,9 +491,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		return $new_payment_method_title;
-  }
-  
-  /**
+	}
+
+	/**
 	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
 	 * the payment server.
 	 *
