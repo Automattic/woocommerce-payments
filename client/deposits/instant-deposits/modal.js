@@ -13,7 +13,7 @@ import Currency from '@woocommerce/currency';
  */
 import './style.scss';
 import InstantDepositSubmitNotice from './notice';
-
+// TODO: Use the proper WCPay currency.
 const currency = new Currency();
 
 const InstantDepositModal = ( {
@@ -23,7 +23,7 @@ const InstantDepositModal = ( {
 	onClose,
 	onSubmit,
 	inProgress,
-	hasNotice,
+	notice,
 } ) => {
 	// TODO: add proper url for instant payout doc
 	const learnMoreHref = '';
@@ -43,7 +43,7 @@ const InstantDepositModal = ( {
 			onRequestClose={ onClose }
 			className="wcpay-instant-deposits-modal"
 		>
-			{ hasNotice && <InstantDepositSubmitNotice notice={ hasNotice } /> }
+			{ notice && <InstantDepositSubmitNotice notice={ notice } /> }
 
 			<p>{ description }</p>
 			<ul>
@@ -64,7 +64,7 @@ const InstantDepositModal = ( {
 				</li>
 			</ul>
 
-			{ ! hasNotice &&
+			{ ! notice &&
 				<Button isPrimary onClick={ onSubmit } isBusy={ inProgress }>
 					{ sprintf(
 						/* translators: %s: Monetary amount to deposit */

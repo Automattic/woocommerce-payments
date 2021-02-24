@@ -20,13 +20,13 @@ const InstantDepositButton = ( {
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const [ inProgress, setInProgress ] = useState( false );
-	const [ hasNotice, setHasNotice ] = useState( false );
+	const [ notice, setNotice ] = useState( null );
 
 	// TODO: Use wp.data
 	const submit = async () => {
 		try {
 			setInProgress( true );
-			setHasNotice( false );
+			setNotice( false );
 			await apiFetch( {
 				path: '/wc/v3/payments/deposits',
 				method: 'POST',
@@ -37,9 +37,9 @@ const InstantDepositButton = ( {
 				},
 			} );
 			// TODO: Success notice? Full-reload the page so the new deposit appears?
-			setHasNotice( 'success' );
+			setNotice( { result: 'success' } );
 		} catch ( err ) {
-			setHasNotice( err );
+			setNotice( { result: 'error', code: err.code, message: err.message } );
 		} finally {
 			setInProgress( false );
 		}
@@ -47,11 +47,10 @@ const InstantDepositButton = ( {
 
 	const onClose = () => {
 		// If it has a notice, we want to refresh the page.
-		if ( hasNotice ) {
+		if ( notice ) {
 			document.location.reload();
 		} else {
 			setModalOpen( false );
-			setHasNotice( false );
 		}
 	}
 
@@ -68,7 +67,7 @@ const InstantDepositButton = ( {
 					inProgress={ inProgress }
 					onSubmit={ submit }
 					onClose={ onClose }
-					hasNotice={ hasNotice }
+					notice={ notice }
 				/>
 			) }
 		</>

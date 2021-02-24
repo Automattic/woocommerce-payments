@@ -7,7 +7,7 @@ import { Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const InstantDepositSubmitNotice = ( { notice } ) => {
-	const type = 'success' === notice ? 'success' : 'error';
+	const type = 'success' === notice.result ? 'success' : 'error';
 	let message = '';
 
 	if ( 'success' === type ) {
