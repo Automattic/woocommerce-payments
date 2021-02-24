@@ -24,6 +24,7 @@ const convertStripePayoutToDeposit = ( stripePayout ) => ( {
 	date: +new Date( stripePayout.arrival_date * 1000 ),
 	type: 0 < stripePayout.amount ? 'deposit' : 'withdrawal',
 	amount: stripePayout.amount,
+	currency: stripePayout.currency,
 	status: stripePayout.status,
 	bankAccount:
 		stripePayout.destination.bank_name &&

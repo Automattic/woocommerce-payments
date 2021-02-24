@@ -83,7 +83,9 @@ export const DepositsList = () => {
 			},
 			amount: {
 				value: deposit.amount / 100,
-				display: clickable( formatCurrency( deposit.amount ) ),
+				display: clickable(
+					formatCurrency( deposit.amount, deposit.currency )
+				),
 			},
 			status: {
 				value: deposit.status,

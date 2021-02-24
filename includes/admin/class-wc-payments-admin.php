@@ -216,6 +216,7 @@ class WC_Payments_Admin {
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
+				'defaultCurrency'       => $this->account->get_default_currency(),
 			]
 		);
 

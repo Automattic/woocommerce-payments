@@ -206,6 +206,20 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the account's default currency.
+	 *
+	 * @return string Currency code
+	 */
+	public function get_default_currency() {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account ) || ! isset( $account['default_currency'] ) ) {
+			return 'USD';
+		}
+
+		return $account['default_currency'];
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *

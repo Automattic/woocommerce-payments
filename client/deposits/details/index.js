@@ -69,7 +69,7 @@ export const DepositOverview = ( { depositId } ) => {
 						placeholder="Amount"
 						display="inline"
 					>
-						{ formatCurrency( deposit.amount ) }
+						{ formatCurrency( deposit.amount, deposit.currency ) }
 					</Loadable>
 				</div>
 			</div>

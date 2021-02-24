@@ -11,7 +11,7 @@ export const TransactionsPage = () => {
 		<Page>
 			<TestModeNotice topic={ topics.transactions } />
 			<TransactionsFilters />
-			<TransactionsList />
+			<TransactionsList currency={ wcpaySettings.defaultCurrency } />
 		</Page>
 	);
 };
