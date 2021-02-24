@@ -267,31 +267,27 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
-	const summaryCurrency =
-		0 < transactions.length
-			? transactions[ 0 ].currency.toUpperCase()
-			: 'USD';
 	const summary = [
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{
 			label: 'total',
 			value: `${ formatCurrency(
 				transactionsSummary.total,
-				summaryCurrency
+				transactionsSummary.currency
 			) }`,
 		},
 		{
 			label: 'fees',
 			value: `${ formatCurrency(
 				transactionsSummary.fees,
-				summaryCurrency
+				transactionsSummary.currency
 			) }`,
 		},
 		{
 			label: 'net',
 			value: `${ formatCurrency(
 				transactionsSummary.net,
-				summaryCurrency
+				transactionsSummary.currency
 			) }`,
 		},
 	];
