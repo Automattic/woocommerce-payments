@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Define constant for the group to be used for scheduled actions.
 * Update - Enable multiple customer currencies support in live mode.
 * Add - Rate limit failed account connection checks.
+* Add - Support displaying non-USD base fees on settings page.
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
