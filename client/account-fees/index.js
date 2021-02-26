@@ -77,7 +77,7 @@ const AccountFees = ( { accountFees } ) => {
 		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
 		__( '%1$.1f%% + %2$s per transaction', 'woocommerce-payments' ),
 		currentFee.percentage_rate * 100,
-		formatCurrency( currentFee.fixed_rate )
+		formatCurrency( currentFee.fixed_rate, baseFee.currency )
 	);
 
 	if ( accountFees.discount.length ) {
@@ -103,7 +103,7 @@ const AccountFees = ( { accountFees } ) => {
 			),
 			feeDescription,
 			percentage * 100,
-			formatCurrency( fixed )
+			formatCurrency( fixed, baseFee.currency )
 		);
 
 		if ( currentFee.discount ) {
