@@ -27,6 +27,8 @@ export function* getCharge( id: string ) {
 
 		if ( isCharge( results ) ) {
 			yield updateCharge( id, results );
+		} else {
+			throw new Error( 'Received invalid Charge object from WCPay API' );
 		}
 	} catch ( e ) {
 		yield updateErrorForCharge( id, e );
