@@ -13,14 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * Class WC_Payments_Notes_Set_Https_For_Checkout
  */
 class WC_Payments_Notes_Instant_Deposits_Eligible {
-	use NoteTraits {
-		can_be_added as protected trait_can_be_added;
-	}
-
-	/**
-	 * The transient that the account data is stored in.
-	 */
-	const ACCOUNT_TRANSIENT = 'wcpay_account_data';
+	use NoteTraits;
 
 	/**
 	 * Name of the note for use in the database.
@@ -32,20 +25,6 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	 */
 	// TODO: Get the proper doc url.
 	const NOTE_DOCUMENTATION_URL = '';
-
-	/**
-	 * Checks if a note can and should be added.
-	 *
-	 * @return bool
-	 */
-	public static function can_be_added() {
-		$account = get_transient( self::ACCOUNT_TRANSIENT );
-
-		// If the flag exists and is true, we return that the note should be added.
-		if ( isset( $account['instant_deposits_eligible'] ) && $account['instant_deposits_eligible'] ) {
-			return self::trait_can_be_added();
-		}
-	}
 
 	/**
 	 * Get the note.

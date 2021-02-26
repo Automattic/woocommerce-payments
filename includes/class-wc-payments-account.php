@@ -39,6 +39,7 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_notices' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 	}
@@ -567,6 +568,9 @@ class WC_Payments_Account {
 
 		// Cache the account details so we don't call the server every time.
 		$this->cache_account( $account );
+
+		// Allow us to tie in functionality to an account refresh.
+		do_action( 'woocommerce_payments_account_refreshed', $account );
 		return $account;
 	}
 
@@ -741,5 +745,15 @@ class WC_Payments_Account {
 		}
 
 		return $wcpay_note_names;
+	}
+
+	public function handle_instant_deposits_inbox_notices( $account = null ) {
+
+		if ( isset( $account['instant_deposits_eligible'] ) && $account['instant_deposits_eligible'] ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+		}
+
+		// TODO: set up a way to make the notice recur every 3 months.
 	}
 }
