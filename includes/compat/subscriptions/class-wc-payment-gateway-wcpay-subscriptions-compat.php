@@ -62,6 +62,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
+
+		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
+
 		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
 		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
@@ -384,6 +388,109 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * Add specific data like last 4 digit of wcpay payment gateway
+	 *
+	 * @param string          $old_payment_method_title Payment method title, eg: Credit card.
+	 * @param string          $old_payment_method Payment gateway id.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return string
+	 */
+	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
+		// make sure payment method is wcpay's.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $old_payment_method ) {
+			return $old_payment_method_title;
+		}
+
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$token_ids = $subscription->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $old_payment_method_title;
+			}
+
+			$last_order = wc_get_order( $last_order_id );
+			$token_ids  = $last_order->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
+		}
+
+		return $old_payment_method_title;
+	}
+
+	/**
+	 * Add specific data like last 4 digit of wcpay payment gateway
+	 *
+	 * @param string          $new_payment_method_title Payment method title, eg: Credit card.
+	 * @param string          $new_payment_method Payment gateway id.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return string
+	 */
+	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
+		// make sure payment method is wcpay's.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			return $new_payment_method_title;
+		}
+
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$order = $subscription;
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $new_payment_method_title;
+			}
+			$order = wc_get_order( $last_order_id );
+		}
+
+		try {
+			$payment_information = $this->prepare_payment_information( $order );
+		} catch ( Exception $e ) {
+			return $new_payment_method_title;
+		}
+
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
+			}
+		} else {
+			try {
+				$payment_method_id = $payment_information->get_payment_method();
+				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				if ( ! empty( $payment_method['card']['last4'] ) ) {
+					// translators: 1: payment method likely credit card, 2: last 4 digit.
+					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+				}
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
+		}
+
+		return $new_payment_method_title;
 	}
 
 	/**

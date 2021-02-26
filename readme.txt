@@ -112,6 +112,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Transaction timeline details for multi-currency transactions.
 * Update - Link order note with transaction details page.
 * Fix - Updating payment method using saved payment for WC Subscriptions orders.
+* Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 
 = 1.9.2 - 2021-02-05 =
 * Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.
