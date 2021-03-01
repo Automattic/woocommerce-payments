@@ -35,7 +35,7 @@ class WC_Payments_Account {
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
-		$this->payments_api_client      = $payments_api_client;
+		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
