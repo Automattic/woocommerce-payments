@@ -35,11 +35,12 @@ class WC_Payments_Account {
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
-		$this->payments_api_client = $payments_api_client;
+		$this->payments_api_client      = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_notices' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 	}
@@ -747,13 +748,50 @@ class WC_Payments_Account {
 		return $wcpay_note_names;
 	}
 
-	public function handle_instant_deposits_inbox_notices( $account = null ) {
-
-		if ( isset( $account['instant_deposits_eligible'] ) && $account['instant_deposits_eligible'] ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
-			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+	/**
+	 * Handles adding a note if the merchant is eligible for Instant Deposits.
+	 *
+	 * @param array|null $account The merchant account data.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_note( $account = null ): void {
+		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+			return;
 		}
 
-		// TODO: set up a way to make the notice recur every 3 months.
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles removing note about merchant Instant Deposits eligibility.
+	 * Hands off to handle_instant_deposits_inbox_note to add the new note.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_reminder(): void {
+		$account = $this->get_cached_account_data();
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+		$this->handle_instant_deposits_inbox_note( $account );
+	}
+
+	/**
+	 * Handles adding scheduled action for the Instant Deposit note reminder.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_instant_deposit_note_reminder(): void {
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+
+		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+			return;
+		}
+
+		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
+		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 }

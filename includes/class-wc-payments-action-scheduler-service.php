@@ -11,6 +11,8 @@ defined( 'ABSPATH' ) || exit;
  * Class which handles setting up all ActionScheduler hooks.
  */
 class WC_Payments_Action_Scheduler_Service {
+
+	const GROUP_ID = 'woocommerce_payments';
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -104,11 +106,28 @@ class WC_Payments_Action_Scheduler_Service {
 	 *
 	 * @return void
 	 */
-	public function schedule_job( $timestamp, $hook, $args = [], $group = '' ) {
+	public function schedule_job( $timestamp, $hook, $args = [], $group = self::GROUP_ID ) {
 		// Unschedule any previously scheduled instances of this particular job.
 		as_unschedule_action( $hook, $args, $group );
 
 		// Schedule the job.
 		as_schedule_single_action( $timestamp, $hook, $args, $group );
+	}
+
+	/**
+	 * Checks to see if there is a Pending action with the same hook already.
+	 *
+	 * @param $hook
+	 *
+	 * @return bool
+	 */
+	public function pending_action_exists( $hook ) {
+		$actions = as_get_scheduled_actions( [
+			'hook'   => $hook,
+			'status' => ActionScheduler_Store::STATUS_PENDING,
+			'group'  => self::GROUP_ID,
+		] );
+
+		return count( $actions ) > 0;
 	}
 }
