@@ -500,4 +500,67 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
 	}
+
+	public function test_handle_instant_deposits_inbox_note() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => true,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->wcpay_account->handle_instant_deposits_inbox_note();
+
+		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test to see if scheduled action was created.
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
+	}
+
+	public function test_handle_instant_deposits_inbox_note_not_eligible() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => false,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->wcpay_account->handle_instant_deposits_inbox_note();
+
+		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_instant_deposits_inbox_reminder() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		// This will create and log the first note, like what we would see in the wild.
+		$this->test_handle_instant_deposits_inbox_note();
+		$note_id    = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$first_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
+
+		// This will delete the first note and create a new note since it calls test_handle_instant_deposits_inbox_note again.
+		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
+		$second_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
+
+		// So we make sure the two are different.
+		$this->assertNotSame( $first_note, $second_note );
+	}
 }

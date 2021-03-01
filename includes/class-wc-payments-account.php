@@ -783,10 +783,9 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function handle_instant_deposits_inbox_reminder(): void {
-		$account = $this->get_cached_account_data();
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
-		$this->handle_instant_deposits_inbox_note( $account );
+		$this->handle_instant_deposits_inbox_note();
 	}
 
 	/**
@@ -802,7 +801,7 @@ class WC_Payments_Account {
 			return;
 		}
 
-		$reminder_time = time() + 30; //( 90 * DAY_IN_SECONDS );
+		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
 		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 }
