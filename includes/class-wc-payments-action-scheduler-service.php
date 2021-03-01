@@ -121,7 +121,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 *
 	 * @return bool
 	 */
-	public function pending_action_exists( $hook ) {
+	public function pending_action_exists( $hook ): bool {
 		$actions = as_get_scheduled_actions( [
 			'hook'   => $hook,
 			'status' => ActionScheduler_Store::STATUS_PENDING,
