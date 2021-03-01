@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.x.x - 2021-xx-xx =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
+* Update - Define constant for the group to be used for scheduled actions.
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.

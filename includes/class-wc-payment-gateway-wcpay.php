@@ -1671,16 +1671,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+5 seconds' ),
 				'wcpay_track_new_order',
-				[ 'order_id' => $order_id ],
-				self::GATEWAY_ID
+				[ 'order_id' => $order_id ]
 			);
 		} else {
 			// Schedule an update action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
 				strtotime( '+5 seconds' ),
 				'wcpay_track_update_order',
-				[ 'order_id' => $order_id ],
-				self::GATEWAY_ID
+				[ 'order_id' => $order_id ]
 			);
 		}
 	}
