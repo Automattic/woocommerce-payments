@@ -106,7 +106,8 @@ class WC_Payments {
 			return;
 		}
 
-		add_action( 'admin_init', [ __CLASS__, 'install' ] );
+		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'install_actions' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -526,8 +527,7 @@ class WC_Payments {
 	/**
 	 * Handles upgrade routines.
 	 */
-	public static function install() {
-		self::add_woo_admin_notes();
+	public static function install_actions() {
 		if ( WCPAY_VERSION_NUMBER !== get_option( 'woocommerce_woocommerce_payments_version' ) ) {
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
