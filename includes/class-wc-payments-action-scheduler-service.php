@@ -11,6 +11,9 @@ defined( 'ABSPATH' ) || exit;
  * Class which handles setting up all ActionScheduler hooks.
  */
 class WC_Payments_Action_Scheduler_Service {
+
+	const GROUP_ID = 'woocommerce_payments';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -116,15 +119,14 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param int    $timestamp - When the job will run.
 	 * @param string $hook      - The hook to trigger.
 	 * @param array  $args      - An array containing the arguments to be passed to the hook.
-	 * @param string $group     - The group to assign this job to.
 	 *
 	 * @return void
 	 */
-	public function schedule_job( $timestamp, $hook, $args = [], $group = '' ) {
+	public function schedule_job( $timestamp, $hook, $args = [] ) {
 		// Unschedule any previously scheduled instances of this particular job.
-		as_unschedule_action( $hook, $args, $group );
+		as_unschedule_action( $hook, $args, self::GROUP_ID );
 
 		// Schedule the job.
-		as_schedule_single_action( $timestamp, $hook, $args, $group );
+		as_schedule_single_action( $timestamp, $hook, $args, self::GROUP_ID );
 	}
 }
