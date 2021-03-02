@@ -20,7 +20,7 @@ import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 import { formatCurrency } from 'utils/currency';
-import InstantDepositButton from './instant-deposit-button';
+import InstantDepositButton from '../instant-deposits';
 
 const formatDate = ( format, date ) =>
 	dateI18n(
@@ -177,7 +177,11 @@ const DepositsOverview = () => {
 						</Loadable>
 					</span>
 				</p>
-				{ overview && overview.instant_balance && <InstantDepositButton balance={ overview.instant_balance } /> }
+				{ overview && overview.instant_balance && (
+					<InstantDepositButton
+						balance={ overview.instant_balance }
+					/>
+				) }
 			</div>
 			{ isLoading || ! overview ? (
 				<SummaryListPlaceholder numberOfItems={ 4 } />

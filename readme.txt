@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.1.0 - 2021-xx-xx =
+* Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
+
 = 2.0.0 - 2021-xx-xx =
 * Update - Render customer details in transactions list as text instead of link if order missing.
 * Update - Render transaction summary on details page for multi-currency transactions.
