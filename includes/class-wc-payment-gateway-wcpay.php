@@ -277,10 +277,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		if ( ! $this->is_in_dev_mode() && 'USD' !== get_woocommerce_currency() ) {
-			return false;
-		}
-
 		return parent::is_available() && ! $this->needs_setup();
 	}
 
