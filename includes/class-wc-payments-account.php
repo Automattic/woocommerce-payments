@@ -766,7 +766,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function handle_instant_deposits_inbox_note(): void {
+	public function handle_instant_deposits_inbox_note() {
 		if ( ! $this->is_instant_deposits_eligible() ) {
 			return;
 		}
@@ -782,7 +782,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function handle_instant_deposits_inbox_reminder(): void {
+	public function handle_instant_deposits_inbox_reminder() {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
 		$this->handle_instant_deposits_inbox_note();
@@ -793,7 +793,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function maybe_add_instant_deposit_note_reminder(): void {
+	public function maybe_add_instant_deposit_note_reminder() {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
 		$action_hook              = 'wcpay_instant_deposit_reminder';
 
