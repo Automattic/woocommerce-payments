@@ -68,38 +68,24 @@ class WC_Payments_Apple_Pay_Registration {
 
 		// Add default settings in case the payment request options are missing.
 		$this->gateway_settings        = array_merge( WC_Payments_Payment_Request::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
-		$this->domain_name             = isset( $_SERVER['HTTP_HOST'] ) ? $_SERVER['HTTP_HOST'] : str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
+		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
 	}
 
 	/**
-	 * Gets the Gateway settings.
-	 *
-	 * @param string $setting Setting key.
-	 * @param string $default Default value.
-	 * @return string $setting_value Setting value or default value.
-	 */
-	public function get_option( $setting = '', $default = '' ) {
-		if ( empty( $this->gateway_settings ) ) {
-			return $default;
-		}
-
-		if ( ! empty( $this->gateway_settings[ $setting ] ) ) {
-			return $this->gateway_settings[ $setting ];
-		}
-
-		return $default;
-	}
-
-	/**
 	 * Whether the gateway and Payment Request Button (prerequisites for Apple Pay) are enabled.
+	 *
+	 * @param array|null $settings Gateway settings.
 	 *
 	 * @return string Whether Apple Pay required settings are enabled.
 	 */
-	private function is_enabled() {
-		$gateway_enabled         = 'yes' === $this->get_option( 'enabled', 'no' );
-		$payment_request_enabled = 'yes' === $this->get_option( 'payment_request', 'yes' );
+	private function is_enabled( $settings = null ) {
+		// Use given settings array or use default cached settings.
+		$settings = $settings ?? $this->gateway_settings;
+
+		$gateway_enabled         = 'yes' === ( $settings['enabled'] ?? 'no' );
+		$payment_request_enabled = 'yes' === ( $settings['payment_request'] ?? 'yes' );
 
 		return $gateway_enabled && $payment_request_enabled;
 	}
@@ -108,7 +94,8 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Trigger Apple Pay registration upon domain name change.
 	 */
 	public function verify_domain_on_domain_name_change() {
-		if ( $this->domain_name !== $this->get_option( 'apple_pay_verified_domain' ) ) {
+		$verified_domain = $this->gateway_settings['apple_pay_verified_domain'] ?? '';
+		if ( $this->domain_name !== $verified_domain ) {
 			$this->verify_domain_if_configured();
 		}
 	}
@@ -286,13 +273,10 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param array $settings      Settings after update.
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
-		// Grab previous state and then update cached settings.
-		$this->gateway_settings = $prev_settings;
-		$prev_is_enabled        = $this->is_enabled();
 		$this->gateway_settings = $settings;
 
 		// If Gateway or Payment Request Button wasn't enabled, then might need to verify now.
-		if ( ! $prev_is_enabled ) {
+		if ( ! $this->is_enabled( $prev_settings ) ) {
 			$this->verify_domain_if_configured();
 		}
 	}
@@ -310,7 +294,10 @@ class WC_Payments_Apple_Pay_Registration {
 		}
 
 		$empty_notice = empty( $this->apple_pay_verify_notice );
-		if ( $empty_notice && 'no' !== $this->get_option( 'apple_pay_domain_set' ) ) {
+		$domain_set   = $this->gateway_settings['apple_pay_domain_set'] ?? '';
+		// Don't display error notice if verification notice is empty and
+		// apple_pay_domain_set option equals to '' or 'yes'.
+		if ( $empty_notice && 'no' !== $domain_set ) {
 			return;
 		}
 
