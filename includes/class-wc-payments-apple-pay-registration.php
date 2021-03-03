@@ -218,8 +218,6 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Processes the Apple Pay domain verification.
 	 *
-	 * @return bool Whether domain verification succeeded.
-	 *
 	 * @throws API_Exception Exception thrown on registration failure.
 	 */
 	public function register_domain_with_apple() {
@@ -234,7 +232,7 @@ class WC_Payments_Apple_Pay_Registration {
 
 				Logger::log( __( 'Your domain has been verified with Apple Pay!', 'woocommerce-payments' ) );
 
-				return true;
+				return;
 			} elseif ( isset( $registration_response['error']['message'] ) ) {
 				$error = $registration_response['error']['message'];
 			}
@@ -250,8 +248,6 @@ class WC_Payments_Apple_Pay_Registration {
 		update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
 		Logger::log( 'Error registering domain with Apple: ' . $error );
-
-		return false;
 	}
 
 	/**
@@ -270,7 +266,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->update_domain_association_file();
 
 		// Register the domain with Apple Pay.
-		$verification_complete = $this->register_domain_with_apple();
+		$this->register_domain_with_apple();
 	}
 
 	/**
