@@ -119,7 +119,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 *
 	 * @return bool Wether file is up to date or not.
 	 */
-	private function verify_hosted_domain_association_file_is_up_to_date() {
+	private function is_hosted_domain_association_file_up_to_date() {
 		// Contents of domain association file from plugin dir.
 		$new_contents = @file_get_contents( WCPAY_ABSPATH . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ); // @codingStandardsIgnoreLine
 		// Get file contents from local path and remote URL and check if either of which matches.
@@ -157,7 +157,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Reports failure only if file isn't already being served properly.
 	 */
 	public function update_domain_association_file() {
-		if ( $this->verify_hosted_domain_association_file_is_up_to_date() ) {
+		if ( $this->is_hosted_domain_association_file_up_to_date() ) {
 			return;
 		}
 
