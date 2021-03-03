@@ -528,17 +528,16 @@ class WC_Payments {
 	 * Handles upgrade routines.
 	 */
 	public static function install_actions() {
-		if ( WCPAY_VERSION_NUMBER !== get_option( 'woocommerce_woocommerce_payments_version' ) ) {
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
 			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
 	}
 
 	/**
-	 * Updates the plugin version in db
+	 * Updates the plugin version in db.
 	 */
 	public static function update_plugin_version() {
-		delete_option( 'woocommerce_woocommerce_payments_version' );
 		update_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER );
 	}
 
