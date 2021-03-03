@@ -64,7 +64,7 @@ const InstantDepositModal = ( {
 				</li>
 			</ul>
 
-			{ ! notice &&
+			{ ! notice && (
 				<Button isPrimary onClick={ onSubmit } isBusy={ inProgress }>
 					{ sprintf(
 						/* translators: %s: Monetary amount to deposit */
@@ -72,7 +72,7 @@ const InstantDepositModal = ( {
 						currency.formatCurrency( net / 100 )
 					) }
 				</Button>
-			}
+			) }
 			<Button isDefault onClick={ onClose }>
 				{ __( 'Close', 'woocommerce-payments' ) }
 			</Button>

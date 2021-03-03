@@ -39,7 +39,11 @@ const InstantDepositButton = ( {
 			// TODO: Success notice? Full-reload the page so the new deposit appears?
 			setNotice( { result: 'success' } );
 		} catch ( err ) {
-			setNotice( { result: 'error', code: err.code, message: err.message } );
+			setNotice( {
+				result: 'error',
+				code: err.code,
+				message: err.message,
+			} );
 		} finally {
 			setInProgress( false );
 		}
@@ -52,7 +56,7 @@ const InstantDepositButton = ( {
 		} else {
 			setModalOpen( false );
 		}
-	}
+	};
 
 	return (
 		<>

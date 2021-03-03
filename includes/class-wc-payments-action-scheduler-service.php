@@ -117,16 +117,18 @@ class WC_Payments_Action_Scheduler_Service {
 	/**
 	 * Checks to see if there is a Pending action with the same hook already.
 	 *
-	 * @param $hook
+	 * @param string $hook Hook name.
 	 *
 	 * @return bool
 	 */
 	public function pending_action_exists( $hook ): bool {
-		$actions = as_get_scheduled_actions( [
-			'hook'   => $hook,
-			'status' => ActionScheduler_Store::STATUS_PENDING,
-			'group'  => self::GROUP_ID,
-		] );
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => $hook,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => self::GROUP_ID,
+			]
+		);
 
 		return count( $actions ) > 0;
 	}
