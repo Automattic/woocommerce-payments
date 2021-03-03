@@ -920,6 +920,7 @@ class WC_Payments_API_Client {
 	public function register_domain_with_apple( $domain_name ) {
 		return $this->request(
 			[
+				'test_mode'   => false, // Force live mode - Domain registration doesn't work in test mode.
 				'domain_name' => $domain_name,
 			],
 			self::APPLE_PAY_API . '/domains',
