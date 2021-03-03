@@ -140,6 +140,9 @@ class WC_Payments_Fraud_Service {
 	 * @return boolean True if the user has just logged in, false in any other case.
 	 */
 	public function check_if_user_just_logged_in() {
+		if ( ! get_current_user_id() ) {
+			return false;
+		}
 		WC()->initialize_session();
 		$session_handler = WC()->session;
 		$cookie          = $session_handler->get_session_cookie();
@@ -161,13 +164,13 @@ class WC_Payments_Fraud_Service {
 			return;
 		}
 
-		$fraud_config = $this->account->get_fraud_services_config();
-		if ( ! isset( $fraud_config['sift'] ) ) {
-			// Only Sift needs to send data when the user logs in.
+		if ( ! $this->check_if_user_just_logged_in() ) {
 			return;
 		}
 
-		if ( ! $this->check_if_user_just_logged_in() ) {
+		$fraud_config = $this->account->get_fraud_services_config();
+		if ( ! isset( $fraud_config['sift'] ) ) {
+			// Only Sift needs to send data when the user logs in.
 			return;
 		}
 
