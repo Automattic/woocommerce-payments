@@ -19,6 +19,7 @@ use WCPay\Logger;
 class WC_Payments_Account {
 
 	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
 
@@ -542,6 +543,12 @@ class WC_Payments_Account {
 			return $account;
 		}
 
+		// If the transient contains the error value and has not expired, return false early and do not attempt another
+		// API call.
+		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+			return false;
+		}
+
 		try {
 			// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
 			// below re-create it if the server tells us on-boarding is still disabled.
@@ -560,7 +567,9 @@ class WC_Payments_Account {
 				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
 				// Failed to retrieve account data. Exception is logged in http client.
-				// Return immediately to signal account retrieval error.
+				// Rate limit the account retrieval failures - set a transient for a short time.
+				set_transient( self::ACCOUNT_TRANSIENT, self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+				// Return false to signal account retrieval error.
 				return false;
 			}
 		}
@@ -592,7 +601,7 @@ class WC_Payments_Account {
 	/**
 	 * Checks if the cached account can be used in the current plugin state.
 	 *
-	 * @param bool|array $account cached account data.
+	 * @param bool|string|array $account cached account data.
 	 *
 	 * @return bool True if the cached account is valid.
 	 */
@@ -602,8 +611,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// the rate limiting mechanism has detected an error - not a valid account.
+		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+			return false;
+		}
+
 		// empty array - special value to indicate that there's no account connected.
-		if ( empty( $account ) ) {
+		if ( is_array( $account ) && empty( $account ) ) {
 			return true;
 		}
 
