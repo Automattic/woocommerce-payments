@@ -233,11 +233,11 @@ class WC_Payments_Account {
 	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * @return bool True if the account is connected properly.
+	 * @return bool True if the redirection happened.
 	 */
 	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return;
+			return false;
 		}
 
 		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
