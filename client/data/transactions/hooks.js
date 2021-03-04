@@ -88,6 +88,7 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		currency_is: currencyIs,
 		search,
 	},
 	depositId
@@ -105,6 +106,7 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				currencyIs,
 				depositId,
 				search,
 			};
@@ -121,6 +123,7 @@ export const useTransactionsSummary = (
 			dateBetween,
 			typeIs,
 			typeIsNot,
+			currencyIs,
 			depositId,
 			search,
 		]
