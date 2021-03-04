@@ -319,6 +319,10 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
+	// Summary will be rendered if it's available and deposit currency filter has been applied.
+	const showSummary =
+		! isSummaryLoading && 'string' === typeof getQuery().currency_is;
+
 	return (
 		<TableCard
 			className="transactions-list woocommerce-report-table has-search"
@@ -332,8 +336,7 @@ export const TransactionsList = ( props ) => {
 			totalRows={ transactionsSummary.count || 0 }
 			headers={ columnsToDisplay }
 			rows={ rows }
-			// TODO: summary is loaded only when a specific currency filter has been applied
-			summary={ isSummaryLoading ? null : summary }
+			summary={ showSummary ? summary : null }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
 			actions={ [
