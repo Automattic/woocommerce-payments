@@ -16,6 +16,28 @@ const transactionTypesOptions = Object.entries( displayType )
 
 export const filters = [
 	{
+		label: __( 'Deposit currency', 'woocommerce-payments' ),
+		param: 'currency_is',
+		// TODO: test with other filters/search to ensure the parameter is not getting lost
+		staticParams: [ 'paged', 'per_page', 'search' ],
+		showFilters: () => true,
+		filters: [
+			{
+				label: __( 'All transactions', 'woocommerce-payments' ),
+				value: 'all',
+			},
+			// TODO: read the setting object here
+			{
+				label: 'USD',
+				value: 'usd',
+			},
+			{
+				label: 'EUR',
+				value: 'eur',
+			},
+		],
+	},
+	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
 		staticParams: [ 'paged', 'per_page', 'search' ],

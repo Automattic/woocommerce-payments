@@ -332,6 +332,7 @@ export const TransactionsList = ( props ) => {
 			totalRows={ transactionsSummary.count || 0 }
 			headers={ columnsToDisplay }
 			rows={ rows }
+			// TODO: summary is loaded only when a specific currency filter has been applied
 			summary={ isSummaryLoading ? null : summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }

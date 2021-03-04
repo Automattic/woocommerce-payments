@@ -22,6 +22,7 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		currency_is: currencyIs,
 		search,
 	},
 	depositId
@@ -51,6 +52,7 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				currencyIs,
 				depositId,
 				search,
 			};
@@ -72,6 +74,7 @@ export const useTransactions = (
 			dateBetween,
 			typeIs,
 			typeIsNot,
+			currencyIs,
 			depositId,
 			search,
 		]
