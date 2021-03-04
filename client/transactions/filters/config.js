@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
+//import Currency, { getCurrencyData } from '@woocommerce/currency';
 
 /**
  * Internal dependencies
@@ -13,6 +14,13 @@ const transactionTypesOptions = Object.entries( displayType )
 	// TODO: Remove line below when implementing APMs support. See https://github.com/Automattic/woocommerce-payments/issues/692.
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
 	.map( ( [ type, label ] ) => ( { label, value: type } ) );
+
+const depositCurrenciesOptions = wcpaySettings.currencies.supported.map(
+	( value ) => ( {
+		label: wcpaySettings.currencies.names[ value ],
+		value: value,
+	} )
+);
 
 export const filters = [
 	{
@@ -26,15 +34,7 @@ export const filters = [
 				label: __( 'All transactions', 'woocommerce-payments' ),
 				value: 'all',
 			},
-			// TODO: read the setting object here
-			{
-				label: 'USD',
-				value: 'usd',
-			},
-			{
-				label: 'EUR',
-				value: 'eur',
-			},
+			...depositCurrenciesOptions,
 		],
 	},
 	{
