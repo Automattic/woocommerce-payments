@@ -242,6 +242,10 @@ class WC_Payments_Admin {
 				'featureFlags'          => $this->get_frontend_feature_flags(),
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'currencies'            => [
+					'default'   => $this->account->get_default_store_currency(),
+					'supported' => $this->account->get_supported_store_currencies(),
+				],
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 			]
 		);
