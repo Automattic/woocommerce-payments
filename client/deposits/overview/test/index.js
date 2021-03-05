@@ -58,7 +58,10 @@ const getMockedOverview = ( additionalData ) =>
 
 describe( 'Deposits overview', () => {
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			currencies: { default: 'usd' },
+			zeroDecimalCurrencies: [],
+		};
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();

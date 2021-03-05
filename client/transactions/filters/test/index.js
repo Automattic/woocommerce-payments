@@ -24,7 +24,7 @@ describe( 'Transactions filters', () => {
 
 		// select advanced filter view
 		user.click(
-			screen.getByRole( 'button', { name: /All transactions/i } )
+			screen.getAllByRole( 'button', { name: /All transactions/i } )[ 1 ]
 		);
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
@@ -36,7 +36,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector;
 
 		beforeEach( () => {
-			addFilter( 'Date' );
+			addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction date filter/i,
 			} );
@@ -87,7 +87,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector;
 
 		beforeEach( () => {
-			addFilter( 'Type' );
+			addAdvancedFilter( 'Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction type filter/i,
 			} );
@@ -140,7 +140,7 @@ describe( 'Transactions filters', () => {
 		} );
 	} );
 
-	function addFilter( filter ) {
+	function addAdvancedFilter( filter ) {
 		user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 		user.click( screen.getByRole( 'button', { name: filter } ) );
 	}
