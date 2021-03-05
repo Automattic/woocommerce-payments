@@ -19,6 +19,8 @@ import { formatStringValue } from 'util';
 import { formatCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
+import { DepositOverview } from '../details';
+import Page from '../../components/page';
 
 const getColumns = ( sortByDate ) => [
 	{
@@ -124,18 +126,25 @@ export const DepositsList = () => {
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
+	// Summary will be rendered if it's available and deposit currency filter has been applied.
+	const showOverview =
+		! isLoading && 'string' === typeof getQuery().currency_is;
+
 	return (
-		<TableCard
-			// className="deposits-list"
-			title={ __( 'Deposit history', 'woocommerce-payments' ) }
-			isLoading={ isLoading }
+		<Page>
+			{ showOverview && <DepositOverview /> }
+			<TableCard
+				// className="deposits-list"
+				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				isLoading={ isLoading }
 			rowsPerPage={ getQuery().per_page || 25 }
 			totalRows={ depositsCount }
-			headers={ columns }
-			rows={ rows }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-		/>
+				headers={ columns }
+				rows={ rows }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+			/>
+		</Page>
 	);
 };
 
