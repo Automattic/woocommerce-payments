@@ -91,18 +91,25 @@ describe( 'Transactions list', () => {
 		jest.clearAllMocks();
 		// the query string is preserved across tests, so we need to reset it
 		if ( ! isEmpty( getQuery() ) ) {
-			updateQueryString( {}, '/', {} );
+			updateQueryString( { currencyIs: 'usd' }, '/', {} );
 		}
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
 			},
 			isSubscriptionsActive: false,
+			currencies: {
+				default: 'usd',
+				supported: [ 'usd' ],
+				names: {
+					usd: 'United States (US) dollar',
+				},
+			},
 			zeroDecimalCurrencies: [],
 		};
 	} );
 
-	test( 'renders correctly when filtered to deposit', () => {
+	test( 'renders correctly when filtered by deposit', () => {
 		useTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn ) => 'po_mock' === txn.deposit_id
