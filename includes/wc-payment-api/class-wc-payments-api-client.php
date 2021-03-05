@@ -26,6 +26,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
+	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
 	const INTENTIONS_API      = 'intentions';
 	const REFUNDS_API         = 'refunds';
@@ -604,6 +605,18 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a connection token.
+	 *
+	 * @param string $request request object received.
+	 *
+	 * @return array
+	 * @throws API_Exception - If request throws.
+	 */
+	public function create_token( $request ) {
+		return $this->request( [], self::CONN_TOKENS_API, self::POST );
+	}
+
+	/**
 	 * Get timeline of events for an intention
 	 *
 	 * @param string $intention_id The payment intention ID.
@@ -694,23 +707,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a customer.
 	 *
-	 * @param string|null $name        Customer's full name.
-	 * @param string|null $email       Customer's email address.
-	 * @param string|null $description Description of customer.
-	 * @param string|null $session_id  Customer's session ID.
+	 * @param array $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer( $name = null, $email = null, $description = null, $session_id = null ) {
+	public function create_customer( array $customer_data ): string {
 		$customer_array = $this->request(
-			[
-				'name'        => $name,
-				'email'       => $email,
-				'description' => $description,
-				'session_id'  => $session_id,
-			],
+			$customer_data,
 			self::CUSTOMERS_API,
 			self::POST
 		);
@@ -876,6 +881,28 @@ class WC_Payments_API_Client {
 				'customer' => $customer_id,
 			],
 			self::TRACKING_API . '/link-session',
+			self::POST
+		);
+	}
+
+	/**
+	 * Sends the contents of the "forterToken" cookie to the server.
+	 *
+	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function send_forter_token( $token ) {
+		return $this->request(
+			[
+				'token'      => $token,
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+				'ip'         => WC_Geolocation::get_ip_address(),
+			],
+			self::TRACKING_API . '/forter-token',
 			self::POST
 		);
 	}

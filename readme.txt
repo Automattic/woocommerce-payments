@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 1.9.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,8 +101,29 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.0.0 - 2021-xx-xx =
+= 2.x.x - 2021-xx-xx =
+* Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 * Fix - Assign saved payment methods to Stripe customer.
+
+= 2.0.0 - 2021-02-22 =
+* Update - Render customer details in transactions list as text instead of link if order missing.
+* Update - Render transaction summary on details page for multi-currency transactions.
+* Update - Improvements to fraud prevention.
+* Fix - Added better notices for end users if there are connection errors when making payments. 
+* Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
+* Add - Add file dropzones to dispute evidence upload fields
+* Add - Currency conversion indicator to Transactions list.
+* Add - Transaction timeline details for multi-currency transactions.
+* Update - Link order note with transaction details page.
+* Fix - Updating payment method using saved payment for WC Subscriptions orders.
+
+= 1.9.2 - 2021-02-05 =
+* Fix - Checkout and cart blocks aren't usable in editor when WooCommerce Payments is enabled.
+* Fix - Missing global config error in Checkout block integration, and incompatibility with latest block API.
+
+= 1.9.1 - 2021-02-03 =
+* Fix - Incompatibility with WC Subscriptions.
+* Fix - Missing order causing broken transactions list.
 
 = 1.9.0 - 2021-02-02 =
 * Add - Improved fraud prevention.
@@ -117,6 +138,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Add fees as line items sent to Stripe to prevent Level 3 errors.
 * Fix - Currency format in non-USD order note when capturing, refunding, and processing subscription renewal.
 * Update - Link customer name from transaction list page to WooCommerce's Customers page filtered by the customer's name.
+* Fix - Use proper currency information when rendering deposits overview and details.
 
 = 1.8.0 - 2020-12-16 =
 * Add - Include information about failing payment into order notes.

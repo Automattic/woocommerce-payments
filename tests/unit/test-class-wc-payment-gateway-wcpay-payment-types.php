@@ -160,8 +160,9 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				// Metadata argument.
 				$this->callback(
-					function( $metadata ) {
+					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'single' );
+						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
 						return is_array( $metadata );
 					}
 				)
@@ -188,8 +189,9 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				// Metadata argument.
 				$this->callback(
-					function( $metadata ) {
+					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'recurring' );
+						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
 						return is_array( $metadata );
 					}
 				)
@@ -222,8 +224,9 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				// Metadata argument.
 				$this->callback(
-					function( $metadata ) {
+					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'recurring' );
+						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
 						return is_array( $metadata );
 					}
 				)

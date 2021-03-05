@@ -46,42 +46,72 @@ class WC_Payments_Action_Scheduler_Service {
 	 * This function is a hook that will be called by ActionScheduler when an order is created.
 	 * It will make a request to the Payments API to track this event.
 	 *
-	 * @param array $order_data  The data for the order which has been created.
+	 * @param array $order_id  The ID of the order that has been created.
 	 *
 	 * @return bool
 	 */
-	public function track_new_order_action( $order_data ) {
-		// Ensure that we have the order data to send.
-		if ( empty( $order_data ) ) {
-			return false;
-		}
-
-		$result = $this->payments_api_client->track_order( $order_data, false );
-
-		return $result;
+	public function track_new_order_action( $order_id ) {
+		return $this->track_order( $order_id, false );
 	}
 
 	/**
 	 * This function is a hook that will be called by ActionScheduler when an order is updated.
 	 * It will make a request to the Payments API to track this event.
 	 *
-	 * @param array $order_data  The data for the order which has been updated.
+	 * @param int $order_id  The ID of the order which has been updated.
 	 *
 	 * @return bool
 	 */
-	public function track_update_order_action( $order_data ) {
-		// Ensure that we have the order data to send.
-		if ( empty( $order_data ) ) {
-			return false;
-		}
-
-		$result = $this->payments_api_client->track_order( $order_data, true );
-
-		return $result;
+	public function track_update_order_action( $order_id ) {
+		return $this->track_order( $order_id, true );
 	}
 
 	/**
-	 * Schedule an action scheduler job.
+	 * Track an order by making a request to the Payments API.
+	 *
+	 * @param int  $order_id   The ID of the order which has been updated/created.
+	 * @param bool $is_update  Is this an update event. If false, it is assumed this is a creation event.
+	 *
+	 * @return bool
+	 */
+	private function track_order( $order_id, $is_update = false ) {
+		// Get the order details.
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return false;
+		}
+
+		// If we do not have a valid payment method for this order, don't send the request.
+		$payment_method = $order->get_meta( ( '_payment_method_id' ) );
+		if ( empty( $payment_method ) ) {
+			return false;
+		}
+
+		// Send the order data to the Payments API to track it.
+		$response = $this->payments_api_client->track_order(
+			array_merge(
+				$order->get_data(),
+				[
+					'_payment_method_id'  => $payment_method,
+					'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
+				]
+			),
+			$is_update
+		);
+
+		if ( 'success' === $response['result'] && ! $is_update ) {
+			// Update the metadata to reflect that the order creation event has been fired.
+			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+			$order->save_meta_data();
+		}
+
+		return ( 'success' === ( $response['result'] ?? null ) );
+	}
+
+	/**
+	 * Schedule an action scheduler job. Also unschedules (replaces) any previous instances of the same job.
+	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
+	 * The `as_unschedule_action` function will only replace a job which has the same $hook, $args AND $group.
 	 *
 	 * @param int    $timestamp - When the job will run.
 	 * @param string $hook      - The hook to trigger.
@@ -91,6 +121,10 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( $timestamp, $hook, $args = [], $group = '' ) {
+		// Unschedule any previously scheduled instances of this particular job.
+		as_unschedule_action( $hook, $args, $group );
+
+		// Schedule the job.
 		as_schedule_single_action( $timestamp, $hook, $args, $group );
 	}
 }

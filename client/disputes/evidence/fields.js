@@ -378,6 +378,7 @@ const sections = [
 			},
 			{
 				key: 'uncategorized_file',
+				label: __( 'Additional document', 'woocommerce-payments' ),
 				type: 'file',
 			},
 		],

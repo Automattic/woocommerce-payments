@@ -107,8 +107,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
-		require_once __DIR__ . '/exceptions/class-base-exception.php';
-		require_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-base-exception.php';
+		include_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-connection-exception.php';
 
 		self::$api_client = self::create_api_client();
 
@@ -117,7 +118,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -460,6 +460,10 @@ class WC_Payments {
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$gateway, self::$account );
+		$conn_tokens_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
@@ -469,8 +473,8 @@ class WC_Payments {
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$webhook_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
-		$webhook_controller->register_routes();
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$tos_controller->register_routes();
 	}
 
 	/**

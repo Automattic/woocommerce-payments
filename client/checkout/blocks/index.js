@@ -34,6 +34,9 @@ registerPaymentMethod(
 			paymentMethodId: PAYMENT_METHOD_NAME,
 			label: __( 'Credit Card', 'woocommerce-payments' ),
 			ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+			supports: {
+				features: getConfig( 'features' ),
+			},
 		} )
 );
 

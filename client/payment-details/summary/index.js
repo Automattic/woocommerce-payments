@@ -24,6 +24,8 @@ import CustomerLink from 'components/customer-link';
 import './style.scss';
 
 const placeholderValues = {
+	amount: 0,
+	currency: 'USD',
 	net: 0,
 	fee: 0,
 	refunded: null,
@@ -77,9 +79,11 @@ const composePaymentSummaryItems = ( { charge } ) =>
 	].filter( Boolean );
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
-	const { net, fee, refunded } = charge.amount
+	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
+	const renderStorePrice =
+		charge.currency && balance.currency !== charge.currency;
 
 	return (
 		<Card className="payment-details-summary-details">
@@ -90,12 +94,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							isLoading={ isLoading }
 							placeholder="Amount placeholder"
 						>
-							{ formatCurrency(
-								charge.amount || 0,
-								charge.currency || 'USD'
-							) }
+							{ formatCurrency( charge.amount, charge.currency ) }
 							<span className="payment-details-summary__amount-currency">
-								{ charge.currency || 'usd' }
+								{ charge.currency || 'USD' }
 							</span>
 							<PaymentStatusChip
 								status={ getChargeStatus( charge ) }
@@ -103,15 +104,24 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ refunded ? (
+						{ renderStorePrice ? (
+							<p>
+								{ formatCurrency(
+									balance.amount,
+									balance.currency
+								) }{ ' ' }
+								{ balance.currency.toUpperCase() }
+							</p>
+						) : null }
+						{ balance.refunded ? (
 							<p>
 								{ `${ __(
 									'Refunded',
 									'woocommerce-payments'
 								) }: ` }
 								{ formatCurrency(
-									-refunded,
-									charge.currency || 'USD'
+									-balance.refunded,
+									balance.currency
 								) }
 							</p>
 						) : (
@@ -124,8 +134,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							>
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
 								{ formatCurrency(
-									-fee,
-									charge.currency || 'USD'
+									-balance.fee,
+									balance.currency
 								) }
 							</Loadable>
 						</p>
@@ -136,8 +146,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							>
 								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
 								{ formatCurrency(
-									net,
-									charge.currency || 'USD'
+									balance.net,
+									balance.currency
 								) }
 							</Loadable>
 						</p>

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -45,7 +45,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_API_Client
 	 */
-	private $payments_api_client;
+	protected $payments_api_client;
 
 	/**
 	 * WC_Payments_Account instance to get information about the account
@@ -328,6 +328,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'          => $this->account->get_fraud_services_config(),
+			'features'               => $this->supports,
 		];
 	}
 
@@ -464,8 +465,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// TODO: Create plugin specific exceptions so that we can be smarter about what we create notices for.
-			wc_add_notice( $e->getMessage(), 'error' );
+			// TODO: Create more exceptions to handle merchant specific errors.
+			$error_message = $e->getMessage();
+			if ( is_a( $e, Connection_Exception::class ) ) {
+				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			}
+
+			wc_add_notice( $error_message, 'error' );
 
 			$order->update_status( 'failed' );
 
@@ -524,12 +530,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information ) {
-		$order               = $payment_information->get_order();
-		$save_payment_method = $payment_information->should_save_payment_method();
+		$order                                       = $payment_information->get_order();
+		$save_payment_method                         = $payment_information->should_save_payment_method();
+		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$user     = $order->get_user() ?? wp_get_current_user();
+		$user     = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
@@ -537,19 +547,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order_id,
+			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_information->get_payment_type(),
 		];
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 
 		if ( null === $customer_id ) {
 			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $name, $email );
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
 			// Update the existing customer with the current details. In the event the old customer can't be
 			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $name, $email );
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
 		}
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
@@ -565,9 +577,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
+		// Make sure that we attach the payment method and the customer ID to the order meta data.
+		$payment_method = $payment_information->get_payment_method();
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
+
+			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
+				$token = $payment_information->get_payment_token();
+				$this->add_token_to_order( $order, $token );
+
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the last 4 digit of the credit card */
+						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					$token->get_last4()
+				);
+				$order->add_order_note( $note );
+			}
+
 			return [
 				'result'   => 'success',
 				'redirect' => $this->get_return_url( $order ),
@@ -630,13 +665,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			switch ( $status ) {
 				case 'succeeded':
 					if ( $payment_needed ) {
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $charge_id );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -647,13 +683,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$order->payment_complete( $intent_id );
 					break;
 				case 'requires_capture':
-					$note = sprintf(
+					$transaction_url = $this->compose_transaction_url( $charge_id );
+					$note            = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
 							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
-								'code'   => '<code>',
+								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
 						wc_price( $amount ),
@@ -1390,13 +1427,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				switch ( $status ) {
 					case 'succeeded':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1410,13 +1448,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$order->payment_complete( $intent_id );
 						break;
 					case 'requires_capture':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1433,13 +1472,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$order->set_transaction_id( $intent_id );
 						break;
 					case 'requires_payment_method':
-						$note = sprintf(
+						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
 								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
-									'code'   => '<code>',
+									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 								]
 							),
 							wc_price( $amount ),
@@ -1602,46 +1642,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * When an order is created, we want to add an ActionScheduler job to send this data to
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
 	 * the payment server.
 	 *
-	 * @param int      $order_id  The ID of the order that has been created.
-	 * @param WC_Order $order     The order that has been created.
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
 	 */
-	public function schedule_order_tracking( $order_id, $order ) {
+	public function schedule_order_tracking( $order_id, $order = null ) {
 		// If Sift is not enabled, exit out and don't do the tracking here.
 		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
 			return;
 		}
 
-		// We only want to track orders created by our payment gateway.
-		if ( $order->get_payment_method() !== self::GATEWAY_ID ) {
+		// Sometimes the woocommerce_update_order hook might be called with just the order ID parameter,
+		// so we need to fetch the order here.
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		// We only want to track orders created by our payment gateway, and orders with a payment method set.
+		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_id' ) ) ) {
 			return;
 		}
 
-		// This event may fire multiple times during order creation. If it fires before the Intent ID is attached to the event, then we don't want to send the event yet.
-		if ( empty( $order->get_meta( '_intent_id' ) ) ) {
-			return;
-		}
-
+		// Check whether this is an order we haven't previously tracked a creation event for.
 		if ( $order->get_meta( '_new_order_tracking_complete' ) !== 'yes' ) {
 			// Schedule the action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+5 seconds' ),
 				'wcpay_track_new_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
-
-			// Update the metadata to reflect that the order creation event has been fired.
-			$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
-			$order->save_meta_data();
 		} else {
-			// Schedule an update action.
+			// Schedule an update action to send this information to the payment server.
 			$this->action_scheduler_service->schedule_job(
-				strtotime( 'now' ),
+				strtotime( '+5 seconds' ),
 				'wcpay_track_update_order',
-				[ array_merge( $order->get_data(), [ '_intent_id' => $order->get_meta( '_intent_id' ) ] ) ],
+				[ 'order_id' => $order_id ],
 				self::GATEWAY_ID
 			);
 		}
@@ -1660,7 +1698,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$user        = wp_get_current_user();
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
-			$customer_id = $this->customer_service->create_customer_for_user( $user, "{$user->first_name} {$user->last_name}", $user->user_email );
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		return $this->payments_api_client->create_and_confirm_setup_intent(
@@ -1709,7 +1748,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_transaction_url( $order ) {
 		$charge_id = $order->get_meta( '_charge_id' );
+		return $this->compose_transaction_url( $charge_id );
+	}
 
+	/**
+	 * Composes url for transaction details page.
+	 *
+	 * @param  string $charge_id Charge id.
+	 * @return string            Transaction details page url.
+	 */
+	private function compose_transaction_url( $charge_id ) {
 		if ( empty( $charge_id ) ) {
 			return '';
 		}

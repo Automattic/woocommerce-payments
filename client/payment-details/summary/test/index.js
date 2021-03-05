@@ -24,6 +24,14 @@ const getBaseCharge = () => ( {
 	status: 'succeeded',
 	paid: true,
 	captured: true,
+	balance_transaction: {
+		amount: 2000,
+		currency: 'usd',
+		fee: 70,
+	},
+	refunds: {
+		data: [],
+	},
 	order: {
 		number: 45981,
 		url: 'https://somerandomorderurl.com/?edit_order=45981',
@@ -62,6 +70,12 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.refunded = false;
 		// eslint-disable-next-line camelcase
 		charge.amount_refunded = 1200;
+		charge.refunds.data.push( {
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: -charge.amount_refunded,
+			},
+		} );
 
 		const paymentDetailsSummary = renderCharge( charge );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
@@ -72,6 +86,12 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.refunded = true;
 		// eslint-disable-next-line camelcase
 		charge.amount_refunded = 2000;
+		charge.refunds.data.push( {
+			// eslint-disable-next-line camelcase
+			balance_transaction: {
+				amount: -charge.amount_refunded,
+			},
+		} );
 
 		const paymentDetailsSummary = renderCharge( charge );
 		expect( paymentDetailsSummary ).toMatchSnapshot();
