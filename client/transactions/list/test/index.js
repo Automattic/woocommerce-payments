@@ -90,7 +90,7 @@ describe( 'Transactions list', () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
-		updateQueryString( { currencyIs: 'usd' }, '/', {} );
+		updateQueryString( { currency_is: 'usd' }, '/', {} );
 
 		global.wcpaySettings = {
 			featureFlags: {
@@ -137,7 +137,7 @@ describe( 'Transactions list', () => {
 		let container, rerender;
 		beforeEach( () => {
 			// the query string is preserved across tests, so we need to reset it
-			updateQueryString( { currencyIs: 'usd' }, '/', {} );
+			updateQueryString( { currency_is: 'usd' }, '/', {} );
 
 			useTransactions.mockReturnValue( {
 				transactions: getMockTransactions(),
