@@ -514,66 +514,6 @@ exports[`Transactions list renders correctly when filtered to deposit 1`] = `
           </tbody>
         </table>
       </div>
-      <ul
-        class="woocommerce-table__summary"
-      >
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            3
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            transactions
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $3.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            total
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $0.30
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            fees
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $2.70
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            net
-          </span>
-        </li>
-      </ul>
     </div>
   </div>
 </div>
@@ -1269,66 +1209,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           </tbody>
         </table>
       </div>
-      <ul
-        class="woocommerce-table__summary"
-      >
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            10
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            transactions
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $10.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            total
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $1.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            fees
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $9.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            net
-          </span>
-        </li>
-      </ul>
     </div>
   </div>
 </div>
@@ -1995,66 +1875,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           </tbody>
         </table>
       </div>
-      <ul
-        class="woocommerce-table__summary"
-      >
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            10
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            transactions
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $10.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            total
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $1.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            fees
-          </span>
-        </li>
-        <li
-          class="woocommerce-table__summary-item"
-        >
-          <span
-            class="woocommerce-table__summary-value"
-          >
-            $9.00
-          </span>
-          <span
-            class="woocommerce-table__summary-label"
-          >
-            net
-          </span>
-        </li>
-      </ul>
     </div>
   </div>
 </div>

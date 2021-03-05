@@ -15,12 +15,16 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
 	.map( ( [ type, label ] ) => ( { label, value: type } ) );
 
-const depositCurrenciesOptions = wcpaySettings.currencies.supported.map(
-	( value ) => ( {
+const depositCurrenciesOptions = () => {
+	const supportedCurrencies =
+		'undefined' === typeof wcpaySettings
+			? []
+			: wcpaySettings.currencies.supported;
+	return supportedCurrencies.map( ( value ) => ( {
 		label: wcpaySettings.currencies.names[ value ],
 		value: value,
-	} )
-);
+	} ) );
+};
 
 export const filters = [
 	{
@@ -34,7 +38,7 @@ export const filters = [
 				label: __( 'All transactions', 'woocommerce-payments' ),
 				value: 'all',
 			},
-			...depositCurrenciesOptions,
+			...depositCurrenciesOptions(),
 		],
 	},
 	{
