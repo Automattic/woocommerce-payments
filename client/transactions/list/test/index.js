@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
-import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -137,6 +136,9 @@ describe( 'Transactions list', () => {
 	describe( 'when not filtered by deposit', () => {
 		let container, rerender;
 		beforeEach( () => {
+			// the query string is preserved across tests, so we need to reset it
+			updateQueryString( { currencyIs: 'usd' }, '/', {} );
+
 			useTransactions.mockReturnValue( {
 				transactions: getMockTransactions(),
 				isLoading: false,
