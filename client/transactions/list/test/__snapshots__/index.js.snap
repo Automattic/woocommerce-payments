@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Transactions list renders correctly when filtered to deposit 1`] = `
+exports[`Transactions list renders correctly when filtered by deposit 1`] = `
 <div>
   <div
     class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
