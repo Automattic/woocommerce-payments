@@ -11,7 +11,7 @@ export const filters = () => [
 		showFilters: () => true,
 		filters: [
 			{
-				label: __( 'All transactions', 'woocommerce-payments' ),
+				label: __( 'All', 'woocommerce-payments' ),
 				value: 'all',
 			},
 			...wcpaySettings.currencies.supported.map( ( value ) => ( {
