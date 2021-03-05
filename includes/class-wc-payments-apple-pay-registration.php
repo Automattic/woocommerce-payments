@@ -204,8 +204,6 @@ class WC_Payments_Apple_Pay_Registration {
 
 	/**
 	 * Processes the Apple Pay domain verification.
-	 *
-	 * @throws API_Exception Exception thrown on registration failure.
 	 */
 	public function register_domain_with_apple() {
 		$error = null;
