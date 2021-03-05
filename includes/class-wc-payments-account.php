@@ -604,7 +604,7 @@ class WC_Payments_Account {
 	 * @return string Default currency code.
 	 */
 	public function get_default_store_currency(): string {
-		$account = $this->get_cached_account_data() ?: [];
+		$account = $this->get_cached_account_data();
 		return $account['store_currencies']['default'] ?? 'usd';
 	}
 
@@ -614,7 +614,7 @@ class WC_Payments_Account {
 	 * @return string[] Supported store currencies.
 	 */
 	public function get_supported_store_currencies(): array {
-		$account = $this->get_cached_account_data() ?: [];
+		$account = $this->get_cached_account_data();
 		return $account['store_currencies']['supported'] ?? [];
 	}
 
