@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-//import Currency, { getCurrencyData } from '@woocommerce/currency';
 
 /**
  * Internal dependencies
@@ -19,8 +18,17 @@ export const filters = () => [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'currency_is',
-		// TODO: test with other filters/search to ensure the parameter is not getting lost
-		staticParams: [ 'paged', 'per_page', 'search' ],
+		staticParams: [
+			'paged',
+			'per_page',
+			'search',
+			'filter',
+			'type_is',
+			'type_is_not',
+			'date_before',
+			'date_after',
+			'date_between',
+		],
 		showFilters: () => true,
 		filters: [
 			{
@@ -36,7 +44,7 @@ export const filters = () => [
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [ 'paged', 'per_page', 'search' ],
+		staticParams: [ 'paged', 'per_page', 'search', 'currency_is' ],
 		showFilters: () => true,
 		filters: [
 			{
