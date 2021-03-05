@@ -101,9 +101,7 @@ describe( 'Transactions list', () => {
 			currencies: {
 				default: 'usd',
 				supported: [ 'usd' ],
-				names: {
-					usd: 'United States (US) dollar',
-				},
+				names: { usd: 'United States (US) dollar' },
 			},
 			zeroDecimalCurrencies: [],
 		};

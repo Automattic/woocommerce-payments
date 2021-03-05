@@ -12,8 +12,8 @@ import { filters, advancedFilters } from './config';
 export const TransactionsFilters = () => {
 	return (
 		<ReportFilters
-			filters={ filters }
-			advancedFilters={ advancedFilters }
+			filters={ filters() }
+			advancedFilters={ advancedFilters() }
 			showDatePicker={ false }
 			path="/payments/transactions"
 			query={ getQuery() }
