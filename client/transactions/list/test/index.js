@@ -89,10 +89,10 @@ const getMockTransactions = () => [
 describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+
 		// the query string is preserved across tests, so we need to reset it
-		if ( ! isEmpty( getQuery() ) ) {
-			updateQueryString( { currencyIs: 'usd' }, '/', {} );
-		}
+		updateQueryString( { currencyIs: 'usd' }, '/', {} );
+
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
