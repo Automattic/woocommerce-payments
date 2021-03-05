@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
-import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -16,9 +15,15 @@ import { TransactionsFilters } from '../';
 describe( 'Transactions filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
-		if ( ! isEmpty( getQuery() ) ) {
-			updateQueryString( {}, '/', {} );
-		}
+		updateQueryString( {}, '/', {} );
+
+		global.wcpaySettings = {
+			currencies: {
+				default: 'usd',
+				supported: [ 'usd' ],
+				names: { usd: 'United States (US) dollar' },
+			},
+		};
 
 		const { rerender } = render( <TransactionsFilters /> );
 

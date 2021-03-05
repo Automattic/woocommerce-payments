@@ -15,18 +15,7 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
 	.map( ( [ type, label ] ) => ( { label, value: type } ) );
 
-const depositCurrenciesOptions = () => {
-	const supportedCurrencies =
-		'undefined' === typeof wcpaySettings
-			? []
-			: wcpaySettings.currencies.supported;
-	return supportedCurrencies.map( ( value ) => ( {
-		label: wcpaySettings.currencies.names[ value ],
-		value: value,
-	} ) );
-};
-
-export const filters = [
+export const filters = () => [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'currency_is',
@@ -38,7 +27,10 @@ export const filters = [
 				label: __( 'All transactions', 'woocommerce-payments' ),
 				value: 'all',
 			},
-			...depositCurrenciesOptions(),
+			...wcpaySettings.currencies.supported.map( ( value ) => ( {
+				label: wcpaySettings.currencies.names[ value ],
+				value: value,
+			} ) ),
 		],
 	},
 	{
@@ -59,8 +51,8 @@ export const filters = [
 	},
 ];
 
-/*eslint-disable max-len, camelcase*/
-export const advancedFilters = {
+/*eslint-disable max-len*/
+export const advancedFilters = () => ( {
 	/** translators: A sentence describing filters for Transactions. See screen shot for context: https://d.pr/i/NcGpwL */
 	title: __(
 		'Transactions match {{select /}} filters',
@@ -153,5 +145,5 @@ export const advancedFilters = {
 			},
 		},
 	},
-};
-/*eslint-enable max-len, camelcase*/
+} );
+/*eslint-enable max-len*/
