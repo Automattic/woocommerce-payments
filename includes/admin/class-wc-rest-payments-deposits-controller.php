@@ -83,4 +83,21 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		$deposit_id = $request->get_params()['deposit_id'];
 		return $this->forward_request( 'get_deposit', [ $deposit_id ] );
 	}
+
+	/**
+	 * Extract deposits filters from request
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	private function get_transactions_filters( $request ) {
+		return array_filter(
+			[
+				'match'       => $request->get_param( 'match' ),
+				'currency_is' => $request->get_param( 'currency_is' ),
+			],
+			static function ( $filter ) {
+				return null !== $filter;
+			}
+		);
+	}
 }
