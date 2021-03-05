@@ -30,7 +30,7 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	);
 
 	return (
-		<CardFooter>
+		<div>
 			<Link
 				href={ challengeUrl }
 				className="components-button is-button is-primary is-large"
@@ -49,7 +49,6 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 			{ needsResponse && (
 				<Button
 					isDefault
-					isLarge
 					onClick={ () =>
 						window.confirm( acceptMessage ) && onAccept()
 					}
@@ -57,7 +56,7 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 					{ __( 'Accept dispute', 'woocommerce-payments' ) }
 				</Button>
 			) }
-		</CardFooter>
+		</div>
 	);
 };
 

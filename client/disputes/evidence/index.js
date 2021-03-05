@@ -15,7 +15,12 @@ import {
 	TextareaControl,
 	SelectControl,
 } from '@wordpress/components';
-import { Card } from '@woocommerce/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+} from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
 
 /**
@@ -119,9 +124,14 @@ export const DisputeEvidenceForm = ( props ) => {
 
 	const evidenceSections = fields.map( ( section ) => {
 		return (
-			<Card key={ section.key } title={ section.title }>
-				{ section.description && <p>{ section.description }</p> }
-				{ section.fields.map( composeFieldControl ) }
+			<Card size="large">
+				<CardHeader>
+					{ section.title }
+				</CardHeader> 
+				<CardBody>
+					{ section.description && <p>{ section.description }</p> }
+					{ section.fields.map( composeFieldControl ) }
+				</CardBody>
 			</Card>
 		);
 	} );
@@ -137,33 +147,34 @@ export const DisputeEvidenceForm = ( props ) => {
 		<>
 			{ evidenceSections }
 			{ readOnly ? null : (
-				<Card>
-					<p>
-						{ __(
-							// eslint-disable-next-line max-len
-							"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
-							'woocommerce-payments'
-						) }
-					</p>
-					<p>
-						<strong>
+				<Card size="large">
+					<CardBody>
+						<p>
 							{ __(
-								'Evidence submission is final.',
+								// eslint-disable-next-line max-len
+								"When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.",
 								'woocommerce-payments'
 							) }
-						</strong>{ ' ' }
-						{ __(
-							'You can also save this evidence for later instead of submitting it immediately.',
-							'woocommerce-payments'
-						) }{ ' ' }
-						<strong>
+						</p>
+						<p>
+							<strong>
+								{ __(
+									'Evidence submission is final.',
+									'woocommerce-payments'
+								) }
+							</strong>{ ' ' }
 							{ __(
-								'We will automatically submit any saved evidence at the due date.',
+								'You can also save this evidence for later instead of submitting it immediately.',
 								'woocommerce-payments'
-							) }
-						</strong>
-					</p>
-
+							) }{ ' ' }
+							<strong>
+								{ __(
+									'We will automatically submit any saved evidence at the due date.',
+									'woocommerce-payments'
+								) }
+							</strong>
+						</p>
+					</CardBody>
 					<CardFooter>
 						<Button isPrimary isLarge onClick={ handleSubmit }>
 							{ __( 'Submit evidence', 'woocommerce-payments' ) }
@@ -211,8 +222,9 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
-			<Card
-				title={
+			<Card size="large">
+				<CardHeader>
+					{
 					<Loadable
 						isLoading={ isLoading }
 						value={ __(
@@ -220,18 +232,22 @@ export const DisputeEvidencePage = ( props ) => {
 							'woocommerce-payments'
 						) }
 					/>
-				}
-			>
-				<Info dispute={ dispute } isLoading={ isLoading } />
+					}
+				</CardHeader>
+				<CardBody>
+					<Info dispute={ dispute } isLoading={ isLoading } />
+				</CardBody>
 			</Card>
-			<Card
-				title={
-					<Loadable
-						isLoading={ isLoading }
-						value={ __( 'Product type', 'woocommerce-payments' ) }
-					/>
+			<Card size="large">
+				<CardHeader>
+				{
+				<Loadable
+					isLoading={ isLoading }
+					value={ __( 'Product type', 'woocommerce-payments' ) }
+				/>
 				}
-			>
+				</CardHeader>
+				<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 					<SelectControl
 						value={ productType }
@@ -277,6 +293,7 @@ export const DisputeEvidencePage = ( props ) => {
 						disabled={ readOnly }
 					/>
 				</LoadableBlock>
+				</CardBody>
 			</Card>
 			{
 				// Don't render the form placeholder while the dispute is being loaded.
