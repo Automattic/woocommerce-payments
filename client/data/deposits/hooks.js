@@ -40,6 +40,7 @@ export const useDeposits = ( {
 	per_page: perPage,
 	orderby = 'date',
 	order = 'desc',
+	currency_is: currencyIs,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -57,6 +58,7 @@ export const useDeposits = ( {
 					: perPage,
 				orderby,
 				order,
+				currencyIs,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -65,5 +67,5 @@ export const useDeposits = ( {
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, orderby, order ]
+		[ paged, perPage, orderby, order, currencyIs ]
 	);
