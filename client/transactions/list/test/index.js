@@ -90,6 +90,7 @@ describe( 'Transactions list', () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
+		// eslint-disable-next-line camelcase
 		updateQueryString( { currency_is: 'usd' }, '/', {} );
 
 		global.wcpaySettings = {
@@ -136,9 +137,6 @@ describe( 'Transactions list', () => {
 	describe( 'when not filtered by deposit', () => {
 		let container, rerender;
 		beforeEach( () => {
-			// the query string is preserved across tests, so we need to reset it
-			updateQueryString( { currency_is: 'usd' }, '/', {} );
-
 			useTransactions.mockReturnValue( {
 				transactions: getMockTransactions(),
 				isLoading: false,
