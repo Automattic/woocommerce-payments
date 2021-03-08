@@ -10,36 +10,13 @@
 	}
 }
 
-.woocommerce-card__body {
-	> :first-child {
+.components-card__body {
+	> *:first-child {
 		margin-top: 0;
 	}
 
-	> :last-child {
+	> *:last-child {
 		margin-bottom: 0;
-	}
-
-	hr.full-width {
-		/* Accounting for woocommerce-card__body padding */
-		margin: 0 -16px;
-		margin-bottom: -1px;
-	}
-
-	textarea {
-		/* Make textarea take full width of the card */
-		width: 100%;
-		padding: 6px 8px;
-
-		/**
-		 * This styling makes focused textarea look like other inputs.
-		 * Original styling is defined here https://github.com/woocommerce/woocommerce-admin/blob/c5811495987a05010513ce51e3dfcf538d52049a/client/stylesheets/shared/_global.scss.
-		 * TODO: remove if PR released (https://github.com/woocommerce/woocommerce-admin/pull/3655).
-		 */
-		&:focus {
-			color: $dark-gray-700;
-			border-color: $studio-woocommerce-purple-60;
-			box-shadow: 0 0 2px rgba( $studio-woocommerce-purple-60, 0.8 );
-		}
 	}
 }
 
