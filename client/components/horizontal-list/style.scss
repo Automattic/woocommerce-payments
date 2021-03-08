@@ -1,13 +1,11 @@
 /** @format */
 
-.woocommerce-card__body {
-	.woocommerce-list--horizontal {
-		/* Account for Card margin when applying borders between lines */
-		margin: 0 -16px 0 -16px;
-	}
+.woocommerce-list--horizontal {
+	/* Account for Card margin when applying borders between lines */
+	margin: 0 -16px 0 -16px;
 }
 
-.woocommerce-card__body .woocommerce-list--horizontal,
+.woocommerce-list--horizontal,
 .woocommerce-list--horizontal {
 	display: flex;
 	align-items: stretch;

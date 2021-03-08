@@ -10,8 +10,6 @@ import { OrderStatus } from '@woocommerce/components';
 import {
 	Card,
 	CardBody,
-	CardFooter,
-	CardHeader,
 } from '@wordpress/components';
 
 /**
