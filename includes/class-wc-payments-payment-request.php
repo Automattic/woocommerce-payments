@@ -27,13 +27,6 @@ class WC_Payments_Payment_Request {
 	public $gateway_settings;
 
 	/**
-	 * Total label
-	 *
-	 * @var string
-	 */
-	public $total_label;
-
-	/**
 	 * Is test mode active?
 	 *
 	 * @var bool
@@ -66,9 +59,6 @@ class WC_Payments_Payment_Request {
 		$this->gateway_settings = array_merge( self::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
 		$this->account          = $account;
 		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
-		$this->total_label      = ! empty( $this->account->get_statement_descriptor() ) ? $this->account->get_statement_descriptor() : '';
-
-		$this->total_label = str_replace( "'", '', $this->total_label ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 
 		// Checks if Stripe Gateway is enabled.
 		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
@@ -112,6 +102,17 @@ class WC_Payments_Payment_Request {
 	 */
 	public static function instance() {
 		return self::$instance;
+	}
+
+	/**
+	 * Get total label.
+	 *
+	 * @return string
+	 */
+	public function get_total_label() {
+		// Get statement descriptor from API/cached account data.
+		$statement_descriptor = $this->account->get_statement_descriptor();
+		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
 	/**
@@ -290,7 +291,7 @@ class WC_Payments_Payment_Request {
 
 		$data['displayItems'] = $items;
 		$data['total']        = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->total_label ),
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
 			'amount'  => WC_Payments_Utils::prepare_amount( $product->get_price() ),
 			'pending' => true,
 		];
@@ -931,7 +932,7 @@ class WC_Payments_Payment_Request {
 
 			$data['displayItems'] = $items;
 			$data['total']        = [
-				'label'   => $this->total_label,
+				'label'   => $this->get_total_label(),
 				'amount'  => WC_Payments_Utils::prepare_amount( $total ),
 				'pending' => true,
 			];
@@ -1223,7 +1224,7 @@ class WC_Payments_Payment_Request {
 		return [
 			'displayItems' => $items,
 			'total'        => [
-				'label'   => $this->total_label,
+				'label'   => $this->get_total_label(),
 				'amount'  => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total ), $order_total, WC()->cart ) ),
 				'pending' => false,
 			],
