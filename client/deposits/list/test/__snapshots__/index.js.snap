@@ -3,7 +3,7 @@
 exports[`Deposits list renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card woocommerce-table woocommerce-analytics__card has-menu"
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card deposits-list woocommerce-report-table has-menu"
   >
     <div
       class="woocommerce-card__header"
@@ -393,6 +393,38 @@ exports[`Deposits list renders correctly 1`] = `
           </tbody>
         </table>
       </div>
+      <ul
+        class="woocommerce-table__summary"
+      >
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            3
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            deposits
+          </span>
+        </li>
+        <li
+          class="woocommerce-table__summary-item"
+        >
+          <span
+            class="woocommerce-table__summary-value"
+          >
+            $3.00
+          </span>
+          <span
+            class="woocommerce-table__summary-label"
+          >
+            total
+          </span>
+        </li>
+      </ul>
     </div>
   </div>
 </div>
