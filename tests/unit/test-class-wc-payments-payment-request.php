@@ -1,14 +1,14 @@
 <?php
 /**
- * These tests make assertions against class WC_Payments_Payment_Request.
+ * These tests make assertions against class WC_Payments_Payment_Request_Button_Handler.
  *
  * @package WooCommerce\Payments\Tests
  */
 
 /**
- * WC_Payments_Payment_Request_Test class.
+ * WC_Payments_Payment_Request_Button_Handler_Test class.
  */
-class WC_Payments_Payment_Request_Test extends WP_UnitTestCase {
+class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	const SHIPPING_ADDRESS = [
 		'country'   => 'US',
 		'state'     => 'CA',
@@ -21,7 +21,7 @@ class WC_Payments_Payment_Request_Test extends WP_UnitTestCase {
 	/**
 	 * Payment request instance.
 	 *
-	 * @var WC_Payments_Payment_Request
+	 * @var WC_Payments_Payment_Request_Button_Handler
 	 */
 	private $pr;
 
@@ -64,7 +64,7 @@ class WC_Payments_Payment_Request_Test extends WP_UnitTestCase {
 
 		$account = new WC_Payments_Account( $this->mock_api_client );
 
-		$this->pr = new WC_Payments_Payment_Request( $account );
+		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $account );
 
 		$this->simple_product = WC_Helper_Product::create_simple_product();
 

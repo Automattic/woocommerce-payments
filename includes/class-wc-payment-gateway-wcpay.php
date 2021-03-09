@@ -110,7 +110,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		// Default values for Payment Request.
-		$payment_request_default_settings = WC_Payments_Payment_Request::get_default_settings();
+		$payment_request_default_settings = WC_Payments_Payment_Request_Button_Handler::get_default_settings();
 
 		// Define setting fields.
 		$this->form_fields = [

@@ -80,6 +80,13 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Payment_Request_Button_Handler
+	 */
+	private static $payment_request_button_handler;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -151,7 +158,7 @@ class WC_Payments {
 
 		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
-		new WC_Payments_Payment_Request( self::$account );
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );

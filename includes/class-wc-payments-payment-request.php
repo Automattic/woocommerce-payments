@@ -16,9 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 
 /**
- * WC_Payments_Payment_Request class.
+ * WC_Payments_Payment_Request_Button_Handler class.
  */
-class WC_Payments_Payment_Request {
+class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Gateway settings.
 	 *
@@ -36,7 +36,7 @@ class WC_Payments_Payment_Request {
 	/**
 	 * This Instance.
 	 *
-	 * @var WC_Payments_Payment_Request
+	 * @var WC_Payments_Payment_Request_Button_Handler
 	 */
 	private static $instance;
 
