@@ -97,7 +97,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposit( $request ) {
-		$deposit_id = $request->get_params()['deposit_id'];
+		$deposit_id = $request->get_param( 'deposit_id' );
 		return $this->forward_request( 'get_deposit', [ $deposit_id ] );
 	}
 
