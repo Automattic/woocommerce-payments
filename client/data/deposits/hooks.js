@@ -69,3 +69,8 @@ export const useDeposits = ( {
 		},
 		[ paged, perPage, orderby, order, currencyIs ]
 	);
+
+export const useDepositsSummary = ( { currency_is: currencyIs } ) => ( {
+	depositsSummary: { count: 20, total: 100, currency: currencyIs },
+	isLoading: false,
+} );
