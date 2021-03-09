@@ -70,7 +70,19 @@ export const useDeposits = ( {
 		[ paged, perPage, orderby, order, currencyIs ]
 	);
 
-export const useDepositsSummary = ( { currency_is: currencyIs } ) => ( {
-	depositsSummary: { count: 20, total: 100, currency: currencyIs },
-	isLoading: false,
-} );
+export const useDepositsSummary = ( { currency_is: currencyIs } ) =>
+	useSelect(
+		( select ) => {
+			const { getDepositsSummary, isResolving } = select( STORE_NAME );
+
+			const query = {
+				currencyIs,
+			};
+
+			return {
+				depositsSummary: getDepositsSummary( query ),
+				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
+			};
+		},
+		[ currencyIs ]
+	);

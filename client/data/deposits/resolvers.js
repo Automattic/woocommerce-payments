@@ -18,6 +18,8 @@ import {
 	updateErrorForDepositQuery,
 	updateDepositsOverview,
 	updateErrorForDepositsOverview,
+	updateDepositsSummary,
+	updateErrorForDepositsSummary,
 } from './actions';
 
 /**
@@ -98,5 +100,24 @@ export function* getDeposits( query ) {
 			__( 'Error retrieving deposits.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositQuery( query, null, e );
+	}
+}
+
+/**
+ * Retrieves the deposits summary from the summary API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
+ */
+export function* getDepositsSummary( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/deposits/summary`,
+		formatQueryFilters( query )
+	);
+
+	try {
+		const summary = yield apiFetch( { path } );
+		yield updateDepositsSummary( query, summary );
+	} catch ( e ) {
+		yield updateErrorForDepositsSummary( query, null, e );
 	}
 }
