@@ -1,9 +1,16 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal Dependencies
  */
 import TYPES from './action-types';
+import { STORE_NAME } from '../constants';
 
 export function updateDeposit( data ) {
 	return {
@@ -41,4 +48,55 @@ export function updateErrorForDepositQuery( query, data, error ) {
 		data,
 		error,
 	};
+}
+
+export function updateInstantDeposit( data ) {
+	return {
+		type: TYPES.SET_INSTANT_DEPOSIT,
+		data,
+	};
+}
+
+export function updateDepositsPage( data ) {
+	return {
+		type: TYPES.SET_DEPOSITS_PAGE,
+		data,
+	};
+}
+
+export function* submitInstantDeposit( transaction_ids ) {
+	try {
+		yield dispatch( STORE_NAME, 'startResolution', 'getInstantDeposit', [ transaction_ids ] );
+
+		const deposit = yield apiFetch( {
+			path: '/wc/v3/payments/deposits',
+			method: 'POST',
+			data: {
+				type: 'instant',
+				// eslint-disable-next-line camelcase
+				transaction_ids,
+			},
+		} );
+
+		yield updateInstantDeposit( deposit );
+		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [ transaction_ids ] );
+
+		let needsReload = true;
+		yield updateDepositsPage( needsReload );
+		needsReload = false;
+		yield updateDepositsPage( needsReload );
+
+		yield dispatch(
+			'core/notices',
+			'createSuccessNotice',
+			__( 'Instant deposit successful.', 'woocommerce-payments' )
+		);
+	} catch ( e ) {
+		yield updateInstantDeposit( e );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error creating instant deposit.', 'woocommerce-payments' )
+		);
+	}
 }

@@ -59,3 +59,15 @@ export const getDeposits = ( state, query ) => {
 export const getDepositQueryError = ( state, query ) => {
 	return getDepositsForQuery( state, query ).error || {};
 };
+
+export const getInstantDeposit = ( state ) => {
+	const instantDeposit = getDepositsState( state ).instant || {};
+	return instantDeposit;
+};
+
+export const getDepositsPage = ( state ) => {
+	const DepositsPage = getDepositsState( state ).page.data || false;
+	console.log( 'DepositsPage' );
+	console.log( DepositsPage );
+	return DepositsPage;
+};
