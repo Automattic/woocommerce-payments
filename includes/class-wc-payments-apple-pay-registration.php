@@ -31,18 +31,18 @@ class WC_Payments_Apple_Pay_Registration {
 	private $payments_api_client;
 
 	/**
-	 * Gateway settings.
-	 *
-	 * @var array
-	 */
-	private $gateway_settings;
-
-	/**
 	 * The WCPay gateway object.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
 	private $gateway;
+
+	/**
+	 * Gateway settings.
+	 *
+	 * @var array
+	 */
+	private $gateway_settings;
 
 	/**
 	 * Current domain name.
