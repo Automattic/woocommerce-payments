@@ -249,7 +249,7 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						/* translators: %s is a monetary amount */
 						__(
-							'A payment of %s was successfully authorized',
+							'A payment of %s was successfully authorized.',
 							'woocommerce-payments'
 						),
 						event.amount
@@ -269,7 +269,7 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						__(
 							/* translators: %s is a monetary amount */
-							'Authorization for %s was voided',
+							'Authorization for %s was voided.',
 							'woocommerce-payments'
 						),
 						event.amount
@@ -289,7 +289,7 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						__(
 							/* translators: %s is a monetary amount */
-							'Authorization for %s expired',
+							'Authorization for %s expired.',
 							'woocommerce-payments'
 						),
 						event.amount
@@ -312,7 +312,7 @@ const mapEventToTimelineItems = ( event ) => {
 					stringWithAmount(
 						__(
 							/* translators: %s is a monetary amount */
-							'A payment of %s was successfully charged',
+							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
 						event.amount
@@ -355,7 +355,7 @@ const mapEventToTimelineItems = ( event ) => {
 					sprintf(
 						__(
 							/* translators: %s is a monetary amount */
-							'A payment of %s was successfully refunded',
+							'A payment of %s was successfully refunded.',
 							'woocommerce-payments'
 						),
 						formattedAmount
@@ -375,7 +375,7 @@ const mapEventToTimelineItems = ( event ) => {
 					event,
 					stringWithAmount(
 						/* translators: %s is a monetary amount */
-						__( 'A payment of %s failed', 'woocommerce-payments' ),
+						__( 'A payment of %s failed.', 'woocommerce-payments' ),
 						event.amount
 					),
 					'cross',
@@ -407,7 +407,7 @@ const mapEventToTimelineItems = ( event ) => {
 					date: new Date( event.datetime * 1000 ),
 					icon: getIcon( 'info-outline' ),
 					headline: __(
-						'No funds have been withdrawn yet',
+						'No funds have been withdrawn yet.',
 						'woocommerce-payments'
 					),
 					body: [
@@ -477,7 +477,7 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					__(
-						'Challenge evidence submitted',
+						'Challenge evidence submitted.',
 						'woocommerce-payments'
 					),
 					'checkmark',
@@ -509,7 +509,7 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					__(
-						'Dispute won! The bank ruled in your favor',
+						'Dispute won! The bank ruled in your favor.',
 						'woocommerce-payments'
 					),
 					'notice-outline',
@@ -525,7 +525,7 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					__(
-						'Dispute lost. The bank ruled favor of your customer',
+						'Dispute lost. The bank ruled in favor of your customer.',
 						'woocommerce-payments'
 					),
 					'cross',
