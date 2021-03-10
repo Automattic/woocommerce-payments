@@ -12,6 +12,7 @@ const webpackConfig = {
 		settings: './client/settings.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
+		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
 	},

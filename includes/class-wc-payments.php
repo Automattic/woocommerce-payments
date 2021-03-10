@@ -80,6 +80,13 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Payment_Request_Button_Handler
+	 */
+	private static $payment_request_button_handler;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -118,6 +125,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
+		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -149,6 +157,8 @@ class WC_Payments {
 		}
 
 		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
