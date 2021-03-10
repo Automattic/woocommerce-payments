@@ -5,7 +5,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
-    "headline": "Payment status changed to Authorization Expired",
+    "headline": "Payment status changed to Authorization Expired.",
     "icon": <t
       className=""
       icon="sync"
@@ -30,7 +30,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
-    "headline": "Payment status changed to Authorization Voided",
+    "headline": "Payment status changed to Authorization Voided.",
     "icon": <t
       className=""
       icon="sync"
@@ -55,7 +55,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-03-30T17:33:16.000Z,
-    "headline": "Payment status changed to Authorized",
+    "headline": "Payment status changed to Authorized.",
     "icon": <t
       className=""
       icon="sync"
@@ -80,7 +80,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T03:35:13.000Z,
-    "headline": "Payment status changed to Failed",
+    "headline": "Payment status changed to Failed.",
     "icon": <t
       className=""
       icon="sync"
@@ -120,7 +120,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
-    "headline": "Payment status changed to Disputed: In Review",
+    "headline": "Payment status changed to Disputed: In Review.",
     "icon": <t
       className=""
       icon="sync"
@@ -145,7 +145,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response",
+    "headline": "Payment status changed to Disputed: Needs Response.",
     "icon": <t
       className=""
       icon="sync"
@@ -173,7 +173,7 @@ Array [
       </a>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent",
+    "headline": "Payment disputed as Fraudulent.",
     "icon": <t
       className="is-error"
       icon="cross"
@@ -203,7 +203,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid",
+    "headline": "Payment status changed to Paid.",
     "icon": <t
       className=""
       icon="sync"
@@ -214,12 +214,13 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 was added to your 
+      $20.97 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -249,7 +250,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid",
+    "headline": "Payment status changed to Paid.",
     "icon": <t
       className=""
       icon="sync"
@@ -260,12 +261,13 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 was added to your 
+      $20.97 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -295,7 +297,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response",
+    "headline": "Payment status changed to Disputed: Needs Response.",
     "icon": <t
       className=""
       icon="sync"
@@ -309,7 +311,7 @@ Array [
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$36.60 will be deducted from a future deposit",
+    "headline": "$36.60 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -325,7 +327,7 @@ Array [
       </a>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent",
+    "headline": "Payment disputed as Fraudulent.",
     "icon": <t
       className="is-error"
       icon="cross"
@@ -340,7 +342,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
-    "headline": "Payment status changed to Disputed: Won",
+    "headline": "Payment status changed to Disputed: Won.",
     "icon": <t
       className=""
       icon="sync"
@@ -354,12 +356,13 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $44.99 was added to your 
+      $44.99 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
         Apr 5, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -385,7 +388,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "Payment status changed to Refunded",
+    "headline": "Payment status changed to Refunded.",
     "icon": <t
       className=""
       icon="sync"
@@ -395,7 +398,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$21.64 will be deducted from a future deposit",
+    "headline": "$21.64 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -422,7 +425,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund",
+    "headline": "Payment status changed to Partial Refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -432,7 +435,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$6.00 will be deducted from a future deposit",
+    "headline": "$6.00 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -459,7 +462,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid",
+    "headline": "Payment status changed to Paid.",
     "icon": <t
       className=""
       icon="sync"
@@ -470,12 +473,13 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 was added to your 
+      $59.50 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -505,7 +509,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid",
+    "headline": "Payment status changed to Paid.",
     "icon": <t
       className=""
       icon="sync"
@@ -516,12 +520,13 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 was added to your 
+      $59.50 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -551,7 +556,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-05T02:56:10.000Z,
-    "headline": "Payment status changed to Disputed: Lost",
+    "headline": "Payment status changed to Disputed: Lost.",
     "icon": <t
       className=""
       icon="sync"
@@ -576,7 +581,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment status changed to Disputed: Needs Response",
+    "headline": "Payment status changed to Disputed: Needs Response.",
     "icon": <t
       className=""
       icon="sync"
@@ -590,7 +595,7 @@ Array [
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$110.00 will be deducted from a future deposit",
+    "headline": "$110.00 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -606,7 +611,7 @@ Array [
       </a>,
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "Payment disputed as Fraudulent",
+    "headline": "Payment disputed as Fraudulent.",
     "icon": <t
       className="is-error"
       icon="cross"
@@ -621,7 +626,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
-    "headline": "Payment status changed to Disputed: Won",
+    "headline": "Payment status changed to Disputed: Won.",
     "icon": <t
       className=""
       icon="sync"
@@ -635,12 +640,13 @@ Array [
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $115.00 was added to your 
+      $115.00 was added to your
       <a
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
         Apr 5, 2020 deposit
       </a>
+      .
     </React.Fragment>,
     "icon": <t
       className=""
@@ -666,7 +672,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "Payment status changed to Refunded",
+    "headline": "Payment status changed to Refunded.",
     "icon": <t
       className=""
       icon="sync"
@@ -676,7 +682,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$100.00 will be deducted from a future deposit",
+    "headline": "$100.00 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -703,7 +709,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "Payment status changed to Partial Refund",
+    "headline": "Payment status changed to Partial Refund.",
     "icon": <t
       className=""
       icon="sync"
@@ -713,7 +719,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$50.00 will be deducted from a future deposit",
+    "headline": "$50.00 will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"

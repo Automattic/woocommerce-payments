@@ -43,7 +43,7 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 		icon: getIcon( 'sync' ),
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
-			__( 'Payment status changed to %s', 'woocommerce-payments' ),
+			__( 'Payment status changed to %s.', 'woocommerce-payments' ),
 			status
 		),
 		body: [],
@@ -72,12 +72,12 @@ const getDepositTimelineItem = (
 			isPositive
 				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
 				  __(
-						'%1$s was added to your <a>%2$s deposit</a>',
+						'%1$s was added to your <a>%2$s deposit</a>.',
 						'woocommerce-payments'
 				  )
 				: // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
 				  __(
-						'%1$s was deducted from your <a>%2$s deposit</a>',
+						'%1$s was deducted from your <a>%2$s deposit</a>.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
@@ -102,12 +102,12 @@ const getDepositTimelineItem = (
 			isPositive
 				? // translators: %s - formatted amount
 				  __(
-						'%s will be added to a future deposit',
+						'%s will be added to a future deposit.',
 						'woocommerce-payments'
 				  )
 				: // translators: %s - formatted amount
 				  __(
-						'%s will be deducted from a future deposit',
+						'%s will be deducted from a future deposit.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount
@@ -390,7 +390,7 @@ const mapEventToTimelineItems = ( event ) => {
 			if ( disputeReasons[ event.reason ] ) {
 				reasonHeadline = sprintf(
 					/* translators: %s is a monetary amount */
-					__( 'Payment disputed as %s', 'woocommerce-payments' ),
+					__( 'Payment disputed as %s.', 'woocommerce-payments' ),
 					disputeReasons[ event.reason ].display
 				);
 			}
