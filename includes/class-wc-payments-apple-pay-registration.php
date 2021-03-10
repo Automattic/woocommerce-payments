@@ -241,7 +241,7 @@ class WC_Payments_Apple_Pay_Registration {
 
 		Logger::log( 'Error registering domain with Apple: ' . $error );
 		Tracker::track_admin(
-			'wcpay_apple_pay_domain_registration_failed',
+			'wcpay_apple_pay_domain_registration_failure',
 			[
 				'domain' => $this->domain_name,
 				'reason' => $error,
