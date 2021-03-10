@@ -344,8 +344,8 @@ class WC_Payments_Apple_Pay_Registration {
 		?>
 		<div class="notice notice-warning apple-pay-message">
 			<p>
-				<strong><?php echo esc_html_e( 'Payment Request Button:', 'woocommerce-payments' ); ?></strong>
-				<?php echo esc_html_e( 'To verify your domain with Apple Pay, you need a live Stripe account.', 'woocommerce-payments' ); ?>
+				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
+				<?php echo esc_html_e( 'Payment Request Buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>
 		<?php
