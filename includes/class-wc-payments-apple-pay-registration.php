@@ -38,6 +38,13 @@ class WC_Payments_Apple_Pay_Registration {
 	private $gateway_settings;
 
 	/**
+	 * The WCPay gateway object.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Current domain name.
 	 *
 	 * @var bool
@@ -54,9 +61,10 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payment gateway.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payment_Gateway_WCPay $gateway ) {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ] );
 		add_action( 'admin_init', [ $this, 'verify_domain_on_domain_name_change' ] );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
@@ -72,6 +80,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
+		$this->gateway                 = $gateway;
 	}
 
 	/**
@@ -204,6 +213,23 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
+	 * Returns the string representation of the current mode. One of:
+	 *   - 'dev'
+	 *   - 'test'
+	 *   - 'live'
+	 *
+	 * @return string A string representation of the current mode.
+	 */
+	private function get_gateway_mode_string() {
+		if ( $this->gateway->is_in_dev_mode() ) {
+			return 'dev';
+		} elseif ( $this->gateway->is_in_test_mode() ) {
+			return 'test';
+		}
+		return 'live';
+	}
+
+	/**
 	 * Processes the Apple Pay domain verification.
 	 */
 	public function register_domain_with_apple() {
@@ -221,6 +247,7 @@ class WC_Payments_Apple_Pay_Registration {
 					'wcpay_apple_pay_domain_registration_success',
 					[
 						'domain' => $this->domain_name,
+						'mode'   => $this->get_gateway_mode_string(),
 					]
 				);
 
@@ -245,6 +272,7 @@ class WC_Payments_Apple_Pay_Registration {
 			[
 				'domain' => $this->domain_name,
 				'reason' => $error,
+				'mode'   => $this->get_gateway_mode_string(),
 			]
 		);
 	}
