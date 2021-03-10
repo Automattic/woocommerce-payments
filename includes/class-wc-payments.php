@@ -87,6 +87,13 @@ class WC_Payments {
 	private static $payment_request_button_handler;
 
 	/**
+	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
+	 *
+	 * @var WC_Payments_Apple_Pay_Registration
+	 */
+	private static $apple_pay_registration;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -107,6 +114,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'install_actions' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -126,6 +134,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -159,6 +168,7 @@ class WC_Payments {
 		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$gateway, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -519,6 +529,23 @@ class WC_Payments {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+	}
+
+	/**
+	 * Handles upgrade routines.
+	 */
+	public static function install_actions() {
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			do_action( 'woocommerce_woocommerce_payments_updated' );
+			self::update_plugin_version();
+		}
+	}
+
+	/**
+	 * Updates the plugin version in db.
+	 */
+	public static function update_plugin_version() {
+		update_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER );
 	}
 
 	/**
