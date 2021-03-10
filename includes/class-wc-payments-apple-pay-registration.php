@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Tracker;
 
 /**
  * WC_Payments_Apple_Pay_Registration class.
@@ -216,6 +217,12 @@ class WC_Payments_Apple_Pay_Registration {
 				update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
 				Logger::log( __( 'Your domain has been verified with Apple Pay!', 'woocommerce-payments' ) );
+				Tracker::track_admin(
+					'wcpay_apple_pay_domain_registration_success',
+					[
+						'domain' => $this->domain_name,
+					]
+				);
 
 				return;
 			} elseif ( isset( $registration_response['error']['message'] ) ) {
@@ -233,6 +240,13 @@ class WC_Payments_Apple_Pay_Registration {
 		update_option( 'woocommerce_woocommerce_payments_settings', $this->gateway_settings );
 
 		Logger::log( 'Error registering domain with Apple: ' . $error );
+		Tracker::track_admin(
+			'wcpay_apple_pay_domain_registration_failed',
+			[
+				'domain' => $this->domain_name,
+				'reason' => $error,
+			]
+		);
 	}
 
 	/**
