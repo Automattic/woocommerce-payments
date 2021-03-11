@@ -80,6 +80,7 @@ class WC_Payments_Apple_Pay_Registration {
 
 		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
 		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
+		add_action( 'woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 
@@ -333,22 +334,10 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Checks wether this is a WooCommerce page or not.
-	 */
-	public function is_wc_page() {
-		$current_screen = get_current_screen();
-		return property_exists( $current_screen, 'parent_base' ) && 'woocommerce' === $current_screen->parent_base;
-	}
-
-	/**
 	 * Display warning notice explaining that the domain can't be registered without a live account.
 	 */
 	public function display_live_account_notice() {
-		if (
-			! $this->is_wc_page() ||
-			! $this->is_enabled() ||
-			$this->account->get_is_live()
-		) {
+		if ( ! $this->is_enabled() || $this->account->get_is_live() ) {
 			return;
 		}
 
@@ -366,11 +355,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Display Apple Pay registration errors.
 	 */
 	public function display_error_notice() {
-		if (
-			! $this->is_wc_page() ||
-			! $this->is_enabled() ||
-			! current_user_can( 'manage_woocommerce' )
-		) {
+		if ( ! $this->is_enabled() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 
