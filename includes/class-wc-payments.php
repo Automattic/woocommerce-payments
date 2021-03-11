@@ -536,7 +536,7 @@ class WC_Payments {
 	 */
 	public static function install_actions() {
 		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
-			do_action( 'woocommerce_payments_updated' );
+			do_action( 'woocommerce_woocommerce_payments_updated' );
 			self::update_plugin_version();
 		}
 	}

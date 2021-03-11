@@ -78,9 +78,9 @@ class WC_Payments_Apple_Pay_Registration {
 		add_filter( 'query_vars', [ $this, 'whitelist_domain_association_query_param' ], 10, 1 );
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
 
-		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
-		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
-		add_action( 'woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 
