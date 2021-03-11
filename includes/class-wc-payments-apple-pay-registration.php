@@ -75,12 +75,11 @@ class WC_Payments_Apple_Pay_Registration {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ] );
 		add_action( 'admin_init', [ $this, 'verify_domain_on_domain_name_change' ] );
-		add_action( 'admin_notices', [ $this, 'display_error_notice' ] );
-		add_action( 'admin_notices', [ $this, 'display_live_account_notice' ] );
 		add_filter( 'query_vars', [ $this, 'whitelist_domain_association_query_param' ], 10, 1 );
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
 
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
+		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
+		add_action( 'woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 
