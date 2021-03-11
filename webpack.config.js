@@ -105,7 +105,6 @@ const webpackConfig = {
 			},
 		} ),
 	],
-	devtool: 'source-map',
 };
 
 module.exports = webpackConfig;
