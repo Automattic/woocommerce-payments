@@ -599,26 +599,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Returns the Stripe's account default currency.
-	 *
-	 * @return string Default currency code.
-	 */
-	public function get_default_store_currency(): string {
-		$account = $this->get_cached_account_data();
-		return $account['store_currencies']['default'] ?? 'usd';
-	}
-
-	/**
-	 * Returns the Stripe's account supported currencies.
-	 *
-	 * @return string[] Supported store currencies.
-	 */
-	public function get_supported_store_currencies(): array {
-		$account = $this->get_cached_account_data();
-		return $account['store_currencies']['supported'] ?? [];
-	}
-
-	/**
 	 * Checks if the cached account can be used in the current plugin state.
 	 *
 	 * @param bool|string|array $account cached account data.
