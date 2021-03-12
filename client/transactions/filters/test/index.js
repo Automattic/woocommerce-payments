@@ -29,7 +29,7 @@ describe( 'Transactions filters', () => {
 
 		// select advanced filter view
 		user.click(
-			screen.getAllByRole( 'button', { name: /All transactions/i } )[ 1 ]
+			screen.getByRole( 'button', { name: /All transactions/i } )
 		);
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
