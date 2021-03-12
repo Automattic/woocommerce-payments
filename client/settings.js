@@ -84,85 +84,88 @@ const paymentRequestButtonType = document.getElementById(
 	'woocommerce_woocommerce_payments_payment_request_button_type'
 );
 
-// Payment Request button event listeners.
-paymentRequest.addEventListener( 'change', () => {
-	const inputIds = [
-		'woocommerce_woocommerce_payments_payment_request_button_theme',
-		'woocommerce_woocommerce_payments_payment_request_button_type',
-		'woocommerce_woocommerce_payments_payment_request_button_height',
-	];
+// TODO: Remove this if after WCPay 2.2.0 gets released
+if ( paymentRequest ) {
+	// Payment Request button event listeners.
+	paymentRequest.addEventListener( 'change', () => {
+		const inputIds = [
+			'woocommerce_woocommerce_payments_payment_request_button_theme',
+			'woocommerce_woocommerce_payments_payment_request_button_type',
+			'woocommerce_woocommerce_payments_payment_request_button_height',
+		];
 
-	if ( paymentRequest.checked ) {
-		inputIds.forEach( ( id ) => {
+		if ( paymentRequest.checked ) {
+			inputIds.forEach( ( id ) => {
+				toggleDisplay(
+					findParent( document.getElementById( id ), 'tr' ),
+					true
+				);
+			} );
+		} else {
+			inputIds.forEach( ( id ) => {
+				toggleDisplay(
+					findParent( document.getElementById( id ), 'tr' ),
+					false
+				);
+			} );
+		}
+
+		paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
+	} );
+
+	// Toggle Custom Payment Request configs.
+	paymentRequestButtonType.addEventListener( 'change', () => {
+		if (
+			'custom' === paymentRequestButtonType.value &&
+			paymentRequest.checked
+		) {
 			toggleDisplay(
-				findParent( document.getElementById( id ), 'tr' ),
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_label'
+					),
+					'tr'
+				),
 				true
 			);
-		} );
-	} else {
-		inputIds.forEach( ( id ) => {
+		} else {
 			toggleDisplay(
-				findParent( document.getElementById( id ), 'tr' ),
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_label'
+					),
+					'tr'
+				),
 				false
 			);
-		} );
-	}
+		}
 
+		if (
+			'branded' === paymentRequestButtonType.value &&
+			paymentRequest.checked
+		) {
+			toggleDisplay(
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_branded_type'
+					),
+					'tr'
+				),
+				true
+			);
+		} else {
+			toggleDisplay(
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_branded_type'
+					),
+					'tr'
+				),
+				false
+			);
+		}
+	} );
+
+	paymentRequest.dispatchEvent( new Event( 'change' ) );
 	paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
-} );
-
-// Toggle Custom Payment Request configs.
-paymentRequestButtonType.addEventListener( 'change', () => {
-	if (
-		'custom' === paymentRequestButtonType.value &&
-		paymentRequest.checked
-	) {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_label'
-				),
-				'tr'
-			),
-			true
-		);
-	} else {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_label'
-				),
-				'tr'
-			),
-			false
-		);
-	}
-
-	if (
-		'branded' === paymentRequestButtonType.value &&
-		paymentRequest.checked
-	) {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_branded_type'
-				),
-				'tr'
-			),
-			true
-		);
-	} else {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_branded_type'
-				),
-				'tr'
-			),
-			false
-		);
-	}
-} );
-
-paymentRequest.dispatchEvent( new Event( 'change' ) );
-paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
+}
