@@ -86,7 +86,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public static function get_default_settings() {
 		return [
-			'payment_request'                     => 'yes',
+			'payment_request'                     => 'no',
 			'payment_request_button_type'         => 'buy',
 			'payment_request_button_theme'        => 'dark',
 			'payment_request_button_height'       => '44',
