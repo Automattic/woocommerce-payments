@@ -1,4 +1,4 @@
-FROM wordpress
+FROM wordpress:5.6.2
 
 RUN pecl install xdebug \
 	&& echo 'xdebug.remote_enable=1' >> $PHP_INI_DIR/php.ini \
