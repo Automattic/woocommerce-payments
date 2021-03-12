@@ -7,9 +7,21 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 
 export default {
 	heading: __( 'WooCommerce Payments', 'woocommerce-payments' ),
-	description: __(
-		'Accept credit card payments the easy way! No set up fees. No monthly fees. Just 2.9% + $0.30 per transaction on U.S.-issued cards.',
-		'woocommerce-payments'
+	description: createInterpolateElement(
+		__(
+			'Accept credit card payments the easy way! <a>No set up fees. No monthly fees.</a>',
+			'woocommerce-payments'
+		),
+		{
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://docs.woocommerce.com/document/payments/faq/fees/"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+		}
 	),
 	terms: createInterpolateElement(
 		__(
@@ -17,8 +29,14 @@ export default {
 			'woocommerce-payments'
 		),
 		{
-			// eslint-disable-next-line jsx-a11y/anchor-has-content
-			a: <a href="https://wordpress.com/tos" />,
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://wordpress.com/tos"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
 		}
 	),
 	onboardingDisabled: [

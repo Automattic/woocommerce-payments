@@ -95,6 +95,12 @@ class WC_Payments_Token_Service {
 			return $tokens;
 		}
 
+		if ( count( $tokens ) >= get_option( 'posts_per_page' ) ) {
+			// The tokens data store is not paginated and only the first "post_per_page" (defaults to 10) tokens are retrieved.
+			// Having 10 saved credit cards is considered an unsupported edge case, new ones that have been stored in Stripe won't be added.
+			return $tokens;
+		}
+
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
 		if ( null === $customer_id ) {
@@ -111,6 +117,8 @@ class WC_Payments_Token_Service {
 
 		$payment_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id );
 
+		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
+		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		foreach ( $payment_methods as $payment_method ) {
 			if ( isset( $payment_method['type'] ) && 'card' === $payment_method['type'] ) {
 				if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
@@ -121,6 +129,7 @@ class WC_Payments_Token_Service {
 				}
 			}
 		}
+		add_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 
 		// Remove the payment methods that no longer exist in Stripe's side.
 		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );

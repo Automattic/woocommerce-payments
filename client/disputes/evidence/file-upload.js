@@ -2,7 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { BaseControl, FormFileUpload, IconButton } from '@wordpress/components';
+import {
+	BaseControl,
+	DropZone,
+	DropZoneProvider,
+	FormFileUpload,
+	IconButton,
+} from '@wordpress/components';
 import Gridicon from 'gridicons';
 
 export const FileUploadControl = ( props ) => {
@@ -18,7 +24,7 @@ export const FileUploadControl = ( props ) => {
 		onFileRemove,
 		help,
 	} = props;
-	const hasError = error && error.length > 0;
+	const hasError = error && 0 < error.length;
 	const getIcon = () => {
 		return (
 			<Gridicon
@@ -34,6 +40,13 @@ export const FileUploadControl = ( props ) => {
 			label={ field.label }
 			help={ help }
 		>
+			<DropZoneProvider>
+				<DropZone
+					onFilesDrop={ ( files ) =>
+						onFileChange( field.key, files[ 0 ] )
+					}
+				/>
+			</DropZoneProvider>
 			<div className="file-upload">
 				<FormFileUpload
 					id={ `form-file-upload-${ field.key }` }

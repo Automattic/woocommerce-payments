@@ -55,10 +55,17 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
+		// Used to filter out unwanted metadata on new renewal orders.
+		add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
+
+		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
+		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
+
 		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
 		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
@@ -84,7 +91,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return Payment_Information An object, which describes the payment.
 	 */
 	protected function prepare_payment_information( $order ) {
-		if ( ! wcs_order_contains_subscription( $order->get_id() ) && ! $this->is_changing_payment_method_for_subscription() ) {
+		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
+		if ( ! $is_changing_payment && ! wcs_order_contains_subscription( $order->get_id() ) ) {
 			return parent::prepare_payment_information( $order );
 		}
 
@@ -94,6 +102,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
+		$payment_information->set_is_changing_payment_method_for_subscription( $is_changing_payment );
 
 		return $payment_information;
 	}
@@ -131,14 +140,32 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			return;
 		}
 
-		$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-
 		try {
+			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 			$this->process_payment_for_order( null, $payment_information );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
 			$renewal_order->update_status( 'failed' );
+
+			if ( ! empty( $payment_information ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
+					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$renewal_order->add_order_note( $note );
+			}
 		}
 	}
 
@@ -361,5 +388,178 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
 		}
 		echo '</select>';
+	}
+
+	/**
+	 * Add specific data like last 4 digit of wcpay payment gateway
+	 *
+	 * @param string          $old_payment_method_title Payment method title, eg: Credit card.
+	 * @param string          $old_payment_method Payment gateway id.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return string
+	 */
+	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
+		// make sure payment method is wcpay's.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $old_payment_method ) {
+			return $old_payment_method_title;
+		}
+
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$token_ids = $subscription->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $old_payment_method_title;
+			}
+
+			$last_order = wc_get_order( $last_order_id );
+			$token_ids  = $last_order->get_payment_tokens();
+			// since old payment must be the second to last saved payment...
+			if ( count( $token_ids ) < 2 ) {
+				return $old_payment_method_title;
+			}
+
+			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
+			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
+			}
+		}
+
+		return $old_payment_method_title;
+	}
+
+	/**
+	 * Add specific data like last 4 digit of wcpay payment gateway
+	 *
+	 * @param string          $new_payment_method_title Payment method title, eg: Credit card.
+	 * @param string          $new_payment_method Payment gateway id.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return string
+	 */
+	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
+		// make sure payment method is wcpay's.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+			return $new_payment_method_title;
+		}
+
+		if ( $this->is_changing_payment_method_for_subscription() ) {
+			$order = $subscription;
+		} else {
+			$last_order_id = $subscription->get_last_order();
+			if ( ! $last_order_id ) {
+				return $new_payment_method_title;
+			}
+			$order = wc_get_order( $last_order_id );
+		}
+
+		try {
+			$payment_information = $this->prepare_payment_information( $order );
+		} catch ( Exception $e ) {
+			return $new_payment_method_title;
+		}
+
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			$token = $payment_information->get_payment_token();
+			if ( $token && $token instanceof WC_Payment_Token_CC ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
+			}
+		} else {
+			try {
+				$payment_method_id = $payment_information->get_payment_method();
+				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				if ( ! empty( $payment_method['card']['last4'] ) ) {
+					// translators: 1: payment method likely credit card, 2: last 4 digit.
+					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+				}
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
+		}
+
+		return $new_payment_method_title;
+	}
+
+	/**
+	 * When an order is created/updated, we want to add an ActionScheduler job to send this data to
+	 * the payment server.
+	 *
+	 * @param int           $order_id  The ID of the order that has been created.
+	 * @param WC_Order|null $order     The order that has been created.
+	 */
+	public function schedule_order_tracking( $order_id, $order = null ) {
+		$save_meta_data = false;
+
+		if ( is_null( $order ) ) {
+			$order = wc_get_order( $order_id );
+		}
+
+		$payment_token = $this->get_payment_token( $order );
+
+		// If we can't get the payment token for this order, then we check if we already have a payment token
+		// set in the order metadata. If we don't, then we try and get the parent order's token from the metadata.
+		if ( is_null( $payment_token ) ) {
+			if ( empty( $order->get_meta( '_payment_method_id' ) ) ) {
+				$parent_order = wc_get_order( $order->get_parent_id() );
+
+				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
+				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_id' ) ) ) {
+					return;
+				}
+
+				$order->update_meta_data( '_payment_method_id', $parent_order->get_meta( '_payment_method_id' ) );
+				$save_meta_data = true;
+			}
+		} elseif ( $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
+			// If the payment token stored in the metadata already doesn't reflect the latest token, update it.
+			$order->update_meta_data( '_payment_method_id', $payment_token->get_token() );
+			$save_meta_data = true;
+		}
+
+		// If the stripe customer ID metadata isn't set for this order, try and get this data from the metadata of the parent order.
+		if ( empty( $order->get_meta( '_stripe_customer_id' ) ) ) {
+			$parent_order = wc_get_order( $order->get_parent_id() );
+			if ( ! empty( $parent_order ) && ! empty( $parent_order->get_meta( '_stripe_customer_id' ) ) ) {
+				$order->update_meta_data( '_stripe_customer_id', $parent_order->get_meta( '_stripe_customer_id' ) );
+				$save_meta_data = true;
+			}
+		}
+
+		// If we need to, save our changes to the metadata for this order.
+		if ( $save_meta_data ) {
+			$order->save_meta_data();
+		}
+
+		// Call the parent logic to schedule the order tracking.
+		parent::schedule_order_tracking( $order_id, $order );
+	}
+
+	/**
+	 * Action called when a renewal order is created, allowing us to strip metadata that we do not
+	 * want it to inherit from the parent order.
+	 *
+	 * @param string $order_meta_query The metadata query (a valid SQL query).
+	 * @param int    $to_order         The renewal order.
+	 * @param int    $from_order       The source (parent) order.
+	 *
+	 * @return string
+	 */
+	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
+		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+
+		return $order_meta_query;
 	}
 }

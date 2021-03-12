@@ -59,6 +59,27 @@ class WC_Payments {
 	private static $token_service;
 
 	/**
+	 * Instance of WC_Payments_Remote_Note_Service, created in init function.
+	 *
+	 * @var WC_Payments_Remote_Note_Service
+	 */
+	private static $remote_note_service;
+
+	/**
+	 * Instance of WC_Payments_Action_Scheduler_Service, created in init function
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private static $action_scheduler_service;
+
+	/**
+	 * Instance of WC_Payments_Fraud_Service, created in init function
+	 *
+	 * @var WC_Payments_Fraud_Service
+	 */
+	private static $fraud_service;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -78,10 +99,6 @@ class WC_Payments {
 			return;
 		}
 
-		if ( ! self::check_multi_currency_disabled() ) {
-			return;
-		}
-
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
@@ -90,8 +107,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
-		require_once __DIR__ . '/exceptions/class-base-exception.php';
-		require_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-base-exception.php';
+		include_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-connection-exception.php';
 
 		self::$api_client = self::create_api_client();
 
@@ -100,22 +118,28 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
-		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
+		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/class-payment-information.php';
+		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
+		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
+		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account          = new WC_Payments_Account( self::$api_client );
-		self::$customer_service = new WC_Payments_Customer_Service( self::$api_client );
-		self::$token_service    = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$account                  = new WC_Payments_Account( self::$api_client );
+		self::$customer_service         = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$token_service            = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
 		$gateway_class = 'WC_Payment_Gateway_WCPay';
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
@@ -124,7 +148,7 @@ class WC_Payments {
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
-		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service );
+		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -330,32 +354,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Checks whether Woo Multi-Currency is disabled and displays admin error message if enabled.
-	 * TODO: Once Multi-Currency support is implemented, remove this check.
-	 *
-	 * @return bool True if Woo Multi-Currency is not enabled, false otherwise.
-	 */
-	public static function check_multi_currency_disabled() {
-		if ( class_exists( 'WOOMC\MultiCurrency\App' ) ) {
-			$message = sprintf(
-				/* translators: %1: WooCommerce Payments version */
-				__( 'WooCommerce Payments %1$s does not support WooCommerce Multi-Currency and has not been loaded.', 'woocommerce-payments' ),
-				WCPAY_VERSION_NUMBER
-			);
-
-			add_filter(
-				'admin_notices',
-				function () use ( $message ) {
-					self::display_admin_error( $message );
-				}
-			);
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * Adds links to the plugin's row in the "Plugins" Wp-Admin page.
 	 *
 	 * @see https://codex.wordpress.org/Plugin_API/Filter_Reference/plugin_action_links_(plugin_file_name)
@@ -462,17 +460,21 @@ class WC_Payments {
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$gateway, self::$account );
+		$conn_tokens_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$webhook_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
-		$webhook_controller->register_routes();
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$tos_controller->register_routes();
 	}
 
 	/**
@@ -516,6 +518,9 @@ class WC_Payments {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 		}
 	}
 
@@ -523,9 +528,14 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
+		self::$remote_note_service->delete_notes();
+
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 		}
 	}
 }

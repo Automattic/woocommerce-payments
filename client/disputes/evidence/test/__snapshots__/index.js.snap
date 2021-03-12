@@ -73,6 +73,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
             Customer signature
           </label>
           <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
             class="file-upload"
           >
             <div
@@ -228,6 +235,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             Customer signature
           </label>
           <div
+            class="components-drop-zone__provider"
+          >
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
             class="file-upload"
           >
             <div
@@ -323,7 +337,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
             <span
               class="wcpay-dispute-info-value"
             >
-              $10.00 USD
+              $10.00
             </span>
           </div>
           <div

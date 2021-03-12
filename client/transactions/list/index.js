@@ -8,7 +8,6 @@ import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard, Search } from '@woocommerce/components';
 import {
 	onQueryChange,
@@ -26,11 +25,11 @@ import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
+import { formatCurrency } from 'utils/currency';
 import Deposit from './deposit';
+import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
-
-const currency = new Currency();
 
 const getColumns = ( includeDeposit, includeSubscription ) =>
 	[
@@ -164,19 +163,33 @@ export const TransactionsList = ( props ) => {
 		);
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const subscriptions =
-			txn.order &&
 			wcpaySettings.isSubscriptionsActive &&
+			txn.order &&
+			txn.order.subscriptions &&
 			txn.order.subscriptions.map( ( subscription, i, all ) => [
 				<OrderLink key={ i } order={ subscription } />,
 				i !== all.length - 1 && ', ',
 			] );
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
+
+		const customerName = txn.order ? (
+			<a href={ txn.order.customer_url }>{ txn.customer_name }</a>
+		) : (
+			txn.customer_name
+		);
+		const customerEmail = txn.order ? (
+			<a href={ txn.order.customer_url }>{ txn.customer_email }</a>
+		) : (
+			txn.customer_email
+		);
+
 		const deposit = (
 			<Deposit
 				depositId={ txn.deposit_id }
 				dateAvailable={ txn.date_available }
 			/>
 		);
+		const currency = txn.currency.toUpperCase();
 
 		// Map transaction into table row.
 		const data = {
@@ -184,7 +197,10 @@ export const TransactionsList = ( props ) => {
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n( 'M j, Y / g:iA', moment.utc( txn.date ).local() )
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( txn.date ).local().toISOString()
+					)
 				),
 			},
 			type: {
@@ -206,12 +222,12 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
-				display: clickable( txn.customer_name ),
+				display: customerName,
 			},
 			// eslint-disable-next-line camelcase
 			customer_email: {
 				value: txn.customer_email,
-				display: clickable( txn.customer_email ),
+				display: customerEmail,
 			},
 			// eslint-disable-next-line camelcase
 			customer_country: {
@@ -221,19 +237,22 @@ export const TransactionsList = ( props ) => {
 			amount: {
 				value: txn.amount / 100,
 				display: clickable(
-					currency.formatCurrency( txn.amount / 100 )
+					<ConvertedAmount
+						amount={ txn.amount }
+						currency={ currency }
+						fromAmount={ txn.customer_amount }
+						fromCurrency={ txn.customer_currency.toUpperCase() }
+					/>
 				),
 			},
 			// fees should display as negative. The format $-9.99 is determined by WC-Admin
 			fees: {
 				value: txn.fees / 100,
-				display: clickable(
-					currency.formatCurrency( ( txn.fees / 100 ) * -1 )
-				),
+				display: clickable( formatCurrency( txn.fees * -1, currency ) ),
 			},
 			net: {
 				value: txn.net / 100,
-				display: clickable( currency.formatCurrency( txn.net / 100 ) ),
+				display: clickable( formatCurrency( txn.net, currency ) ),
 			},
 			// eslint-disable-next-line camelcase
 			risk_level: {
@@ -252,20 +271,23 @@ export const TransactionsList = ( props ) => {
 		{ label: 'transactions', value: `${ transactionsSummary.count }` },
 		{
 			label: 'total',
-			value: `${ currency.formatCurrency(
-				transactionsSummary.total / 100
+			value: `${ formatCurrency(
+				transactionsSummary.total,
+				transactionsSummary.currency
 			) }`,
 		},
 		{
 			label: 'fees',
-			value: `${ currency.formatCurrency(
-				transactionsSummary.fees / 100
+			value: `${ formatCurrency(
+				transactionsSummary.fees,
+				transactionsSummary.currency
 			) }`,
 		},
 		{
 			label: 'net',
-			value: `${ currency.formatCurrency(
-				transactionsSummary.net / 100
+			value: `${ formatCurrency(
+				transactionsSummary.net,
+				transactionsSummary.currency
 			) }`,
 		},
 	];

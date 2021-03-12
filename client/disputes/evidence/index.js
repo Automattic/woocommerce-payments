@@ -29,6 +29,7 @@ import Info from '../info';
 import Page from 'components/page';
 import CardFooter from 'components/card-footer';
 import Loadable, { LoadableBlock } from 'components/loadable';
+import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
@@ -74,7 +75,7 @@ export const DisputeEvidenceForm = ( props ) => {
 		const error =
 			evidence.uploadingErrors &&
 			( evidence.uploadingErrors[ field.key ] || '' );
-		const isDone = ! isLoading && fileName.length > 0;
+		const isDone = ! isLoading && 0 < fileName.length;
 		const accept = '.pdf, image/png, image/jpeg';
 		return {
 			field,
@@ -194,10 +195,12 @@ export const DisputeEvidencePage = ( props ) => {
 		'needs_response' !== dispute.status &&
 		'warning_needs_response' !== dispute.status;
 	const disputeIsAvailable = ! isLoading && dispute.id;
+	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
+				{ testModeNotice }
 				<div>
 					{ __( 'Dispute not loaded', 'woocommerce-payments' ) }
 				</div>
@@ -207,6 +210,7 @@ export const DisputeEvidencePage = ( props ) => {
 
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
+			{ testModeNotice }
 			<Card
 				title={
 					<Loadable
@@ -292,7 +296,7 @@ export const DisputeEvidencePage = ( props ) => {
  * Retrieves product type from the dispute.
  *
  * @param {Object?} dispute Dispute object
- * @returns {string} dispute product type
+ * @return {string} dispute product type
  */
 const getDisputeProductType = ( dispute ) => {
 	if ( ! dispute ) {

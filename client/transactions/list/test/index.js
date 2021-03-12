@@ -43,6 +43,10 @@ const getMockTransactions = () => [
 		net: 950,
 		currency: 'usd',
 		// eslint-disable-next-line camelcase
+		customer_amount: 1000,
+		// eslint-disable-next-line camelcase
+		customer_currency: 'usd',
+		// eslint-disable-next-line camelcase
 		risk_level: 0,
 		// eslint-disable-next-line camelcase
 		deposit_id: null,
@@ -72,6 +76,10 @@ const getMockTransactions = () => [
 		net: 1450,
 		currency: 'usd',
 		// eslint-disable-next-line camelcase
+		customer_amount: 3000,
+		// eslint-disable-next-line camelcase
+		customer_currency: 'mok',
+		// eslint-disable-next-line camelcase
 		risk_level: 2,
 		// eslint-disable-next-line camelcase
 		deposit_id: 'po_mock',
@@ -90,13 +98,14 @@ describe( 'Transactions list', () => {
 				customSearch: true,
 			},
 			isSubscriptionsActive: false,
+			zeroDecimalCurrencies: [],
 		};
 	} );
 
 	test( 'renders correctly when filtered to deposit', () => {
 		useTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn ) => txn.deposit_id === 'po_mock'
+				( txn ) => 'po_mock' === txn.deposit_id
 			),
 			isLoading: false,
 		} );

@@ -40,7 +40,7 @@ class WC_Payments_Admin {
 		$this->account       = $account;
 
 		// Add menu items.
-		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 9 );
+		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 	}
 
@@ -51,13 +51,13 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$stripe_connected = $this->account->try_is_stripe_connected();
+			$should_render_full_menu = $this->account->try_is_stripe_connected();
 		} catch ( Exception $e ) {
-			// do not render the menu if the server is unreachable.
-			return;
+			// There is an issue with connection but render full menu anyways to provide access to settings.
+			$should_render_full_menu = true;
 		}
 
-		$top_level_link = $stripe_connected ? '/payments/deposits' : '/payments/connect';
+		$top_level_link = $should_render_full_menu ? '/payments/deposits' : '/payments/connect';
 
 		wc_admin_register_page(
 			[
@@ -66,34 +66,52 @@ class WC_Payments_Admin {
 				'capability' => 'manage_woocommerce',
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
+				'nav_args'   => [
+					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'is_category'  => $should_render_full_menu,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
 			]
 		);
 
-		if ( $stripe_connected ) {
+		if ( $should_render_full_menu ) {
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-deposits',
-					'title'  => __( 'Deposits', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/deposits',
+					'id'       => 'wc-payments-deposits',
+					'title'    => __( 'Deposits', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/deposits',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 10,
+					],
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-transactions',
-					'title'  => __( 'Transactions', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/transactions',
+					'id'       => 'wc-payments-transactions',
+					'title'    => __( 'Transactions', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/transactions',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 20,
+					],
 				]
 			);
 
 			wc_admin_register_page(
 				[
-					'id'     => 'wc-payments-disputes',
-					'title'  => __( 'Disputes', 'woocommerce-payments' ),
-					'parent' => 'wc-payments',
-					'path'   => '/payments/disputes',
+					'id'       => 'wc-payments-disputes',
+					'title'    => __( 'Disputes', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/disputes',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 30,
+					],
 				]
 			);
 
@@ -103,6 +121,12 @@ class WC_Payments_Admin {
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
 					'title'     => __( 'WooCommerce Payments', 'woocommerce-payments' ),
+					'nav_args'  => [
+						'parent' => 'wc-payments',
+						'title'  => __( 'Settings', 'woocommerce-payments' ),
+						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
+						'order'  => 40,
+					],
 				]
 			);
 			// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
@@ -190,6 +214,8 @@ class WC_Payments_Admin {
 				'errorMessage'          => $error_message,
 				'featureFlags'          => $this->get_frontend_feature_flags(),
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'fraudServices'         => $this->account->get_fraud_services_config(),
 			]
 		);
 
@@ -198,14 +224,6 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/index.css' )
-		);
-
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
 		);
 
 		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
@@ -227,17 +245,13 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.css' )
 		);
 
-		$settings_script_src_url      = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
-		$settings_script_asset_path   = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset        = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
-		$settings_script_dependencies = array_merge(
-			$settings_script_asset['dependencies'],
-			[ 'stripe' ]
-		);
+		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
+		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
+		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
-			$settings_script_dependencies,
+			$settings_script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/settings.js' ),
 			true
 		);
@@ -247,7 +261,17 @@ class WC_Payments_Admin {
 			'wcpayAdminSettings',
 			[
 				'accountStatus' => $this->account->get_account_status_data(),
+				'accountFees'   => $this->account->get_fees(),
+				'fraudServices' => $this->account->get_fraud_services_config(),
 			]
+		);
+
+		// wcpaySettings.zeroDecimalCurrencies must be included as part of the WCPAY_ADMIN_SETTINGS as
+		// it's used in the settings page by the AccountFees component.
+		wp_localize_script(
+			'WCPAY_ADMIN_SETTINGS',
+			'wcpaySettings',
+			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
 		);
 
 		wp_register_style(

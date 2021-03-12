@@ -9,9 +9,9 @@ import { getResourceId } from 'utils/data';
  * Retrieves the deposits state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
  *
- * @param {object} state Current wp.data state.
+ * @param {Object} state Current wp.data state.
  *
- * @returns {object} The deposits state.
+ * @return {Object} The deposits state.
  */
 const getDepositsState = ( state ) => {
 	if ( ! state ) {
@@ -40,10 +40,10 @@ export const getDepositsOverviewError = ( state ) => {
  * Retrieves the deposits corresponding to the provided query or a sane
  * default if they don't exist.
  *
- * @param {object} state Current wp.data state.
- * @param {object} query The deposits query.
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The deposits query.
  *
- * @returns {object} The list of deposits for the given query.
+ * @return {Object} The list of deposits for the given query.
  */
 const getDepositsForQuery = ( state, query ) => {
 	const index = getResourceId( query );

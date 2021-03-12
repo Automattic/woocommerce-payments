@@ -12,6 +12,7 @@ import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
 import request from './request.js';
+import enqueueFraudScripts from 'fraud-scripts';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -34,5 +35,12 @@ registerPaymentMethod(
 			paymentMethodId: PAYMENT_METHOD_NAME,
 			label: __( 'Credit Card', 'woocommerce-payments' ),
 			ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+			supports: {
+				features: getConfig( 'features' ),
+			},
 		} )
 );
+
+window.addEventListener( 'load', () => {
+	enqueueFraudScripts( getConfig( 'fraudServices' ) );
+} );

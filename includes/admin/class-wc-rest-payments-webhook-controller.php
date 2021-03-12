@@ -46,16 +46,30 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	private $account;
 
 	/**
+	 * WC Payments Remote Note Service.
+	 *
+	 * @var WC_Payments_Remote_Note_Service
+	 */
+	private $remote_note_service;
+
+	/**
 	 * WC_REST_Payments_Webhook_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payments_DB         $wcpay_db   WC_Payments_DB instance.
-	 * @param WC_Payments_Account    $account    WC_Payments_Account instance.
+	 * @param WC_Payments_API_Client          $api_client          WC_Payments_API_Client instance.
+	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
+	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
+	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_DB $wcpay_db, WC_Payments_Account $account ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payments_DB $wcpay_db,
+		WC_Payments_Account $account,
+		WC_Payments_Remote_Note_Service $remote_note_service
+	) {
 		parent::__construct( $api_client );
-		$this->wcpay_db = $wcpay_db;
-		$this->account  = $account;
+		$this->wcpay_db            = $wcpay_db;
+		$this->account             = $account;
+		$this->remote_note_service = $remote_note_service;
 	}
 
 	/**
@@ -93,6 +107,12 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				. var_export( WC_Payments_Utils::redact_array( $body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			);
 
+			try {
+				do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $body );
+			} catch ( Exception $e ) {
+				Logger::error( $e );
+			}
+
 			switch ( $event_type ) {
 				case 'charge.refund.updated':
 					$this->process_webhook_refund_updated( $body );
@@ -103,6 +123,16 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'account.updated':
 					$this->account->refresh_account_data();
 					break;
+				case 'wcpay.notification':
+					$note = $this->read_rest_property( $body, 'data' );
+					$this->remote_note_service->put_note( $note );
+					break;
+			}
+
+			try {
+				do_action( 'woocommerce_payments_after_webhook_delivery', $event_type, $body );
+			} catch ( Exception $e ) {
+				Logger::error( $e );
 			}
 		} catch ( Rest_Request_Exception $e ) {
 			Logger::error( $e );
@@ -137,6 +167,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 		$charge_id = $this->read_rest_property( $event_object, 'charge' );
 		$refund_id = $this->read_rest_property( $event_object, 'id' );
 		$amount    = $this->read_rest_property( $event_object, 'amount' );
+		$currency  = $this->read_rest_property( $event_object, 'currency' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -160,7 +191,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					'code'   => '<code>',
 				]
 			),
-			wc_price( $amount / 100 ),
+			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
 			$refund_id
 		);
 		$order->add_order_note( $note );
@@ -180,7 +211,6 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// Fetch the details of the expired auth so that we can find the associated order.
 		$charge_id = $this->read_rest_property( $event_object, 'id' );
-		$intent_id = $this->read_rest_property( $event_object, 'payment_intent' );
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );

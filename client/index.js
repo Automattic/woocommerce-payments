@@ -5,6 +5,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
+// Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
+// See discussion in WCPay PR #1263 in GitHub.
+import 'wp-mediaelement';
 
 /**
  * Internal dependencies
@@ -18,7 +21,6 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
-import { withTestNotice, topics } from 'components/test-mode-notice';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -26,23 +28,32 @@ addFilter(
 	( pages ) => {
 		const { menuID, rootLink } = getMenuSettings();
 
+		const isNavigationEnabled =
+			window.wcAdminFeatures && window.wcAdminFeatures.navigation;
+		const connectionPageTitle = isNavigationEnabled
+			? __( 'WooCommerce Payments', 'woocommerce-payments' )
+			: __( 'Connect', 'woocommerce-payments' );
+
 		pages.push( {
 			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Connect', 'woocommerce-payments' ) ],
+			breadcrumbs: [ rootLink, connectionPageTitle ],
+			navArgs: {
+				id: 'wc-payments',
+			},
 		} );
 		pages.push( {
-			container: withTestNotice( DepositsPage, topics.deposits ),
+			container: DepositsPage,
 			path: '/payments/deposits',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Deposits', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-deposits',
+			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DepositDetailsPage,
-				topics.depositDetails
-			),
+			container: DepositDetailsPage,
 			path: '/payments/deposits/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -55,19 +66,19 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice( TransactionsPage, topics.transactions ),
+			container: TransactionsPage,
 			path: '/payments/transactions',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
 				__( 'Transactions', 'woocommerce-payments' ),
 			],
+			navArgs: {
+				id: 'wc-payments-transactions',
+			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				PaymentDetailsPage,
-				topics.paymentDetails
-			),
+			container: PaymentDetailsPage,
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -80,16 +91,16 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice( DisputesPage, topics.disputes ),
+			container: DisputesPage,
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-disputes',
+			},
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DisputeDetailsPage,
-				topics.disputeDetails
-			),
+			container: DisputeDetailsPage,
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -102,10 +113,7 @@ addFilter(
 			],
 		} );
 		pages.push( {
-			container: withTestNotice(
-				DisputeEvidencePage,
-				topics.disputeDetails
-			),
+			container: DisputeEvidencePage,
 			path: '/payments/disputes/challenge',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -124,7 +132,7 @@ addFilter(
 /**
  * Get menu settings based on the top level link being connect or deposits
  *
- * @returns { { menuID, rootLink } }  Object containing menuID and rootLink
+ * @return { { menuID, rootLink } }  Object containing menuID and rootLink
  */
 function getMenuSettings() {
 	const connectPage = document.querySelector(

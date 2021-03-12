@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
@@ -19,10 +18,10 @@ import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
+import { TestModeNotice, topics } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-
-const currency = new Currency();
+import { formatCurrency } from 'utils/currency';
 
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
@@ -109,7 +108,10 @@ export const DisputesList = () => {
 			amount: {
 				value: dispute.amount / 100,
 				display: clickable(
-					currency.formatCurrency( dispute.amount / 100 )
+					formatCurrency(
+						dispute.amount || 0,
+						dispute.currency || 'USD'
+					)
 				),
 			},
 			status: {
@@ -133,7 +135,10 @@ export const DisputesList = () => {
 			created: {
 				value: dispute.created * 1000,
 				display: clickable(
-					dateI18n( 'M j, Y', moment( dispute.created * 1000 ) )
+					dateI18n(
+						'M j, Y',
+						moment( dispute.created * 1000 ).toISOString()
+					)
 				),
 			},
 			dueBy: {
@@ -141,7 +146,9 @@ export const DisputesList = () => {
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
-						moment( dispute.evidence_details.due_by * 1000 )
+						moment(
+							dispute.evidence_details.due_by * 1000
+						).toISOString()
 					)
 				),
 			},
@@ -166,6 +173,7 @@ export const DisputesList = () => {
 
 	return (
 		<Page>
+			<TestModeNotice topic={ topics.disputes } />
 			<TableCard
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }

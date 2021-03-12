@@ -7,8 +7,11 @@ import './style.scss';
 import { PAYMENT_METHOD_NAME } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
+import enqueueFraudScripts from 'fraud-scripts';
 
 jQuery( function ( $ ) {
+	enqueueFraudScripts( getConfig( 'fraudServices' ) );
+
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {
@@ -45,8 +48,12 @@ jQuery( function ( $ ) {
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
 	$( document.body ).on( 'updated_checkout', () => {
-		// Don't re-mount if already mounted in DOM.
-		if ( $( '#wcpay-card-element' ).children().length ) {
+		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
+		// We also don't re-mount if already mounted in DOM.
+		if (
+			! $( '#wcpay-card-element' ).length ||
+			$( '#wcpay-card-element' ).children().length
+		) {
 			return;
 		}
 
@@ -77,7 +84,7 @@ jQuery( function ( $ ) {
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
 	 *
-	 * @param {object} $form The jQuery object for the form.
+	 * @param {Object} $form The jQuery object for the form.
 	 */
 	const blockUI = ( $form ) => {
 		$form.addClass( 'processing' ).block( {
@@ -132,8 +139,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Creates and authorizes a setup intent, saves its ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form         The jQuery object for the form.
-	 * @param {object} paymentMethod Payment method object.
+	 * @param {Object} $form         The jQuery object for the form.
+	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleAddCard = ( $form, paymentMethod ) => {
 		api.setupIntent( paymentMethod.id )
@@ -168,8 +175,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Saves the payment method ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form         The jQuery object for the form.
-	 * @param {object} paymentMethod Payment method object.
+	 * @param {Object} $form         The jQuery object for the form.
+	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
 		// Populate form with the payment method.
@@ -182,8 +189,8 @@ jQuery( function ( $ ) {
 	/**
 	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
 	 *
-	 * @param {object} $form The jQuery object for the form.
-	 * @param {function} successHandler    Callback to be executed when payment method is generated.
+	 * @param {Object} $form The jQuery object for the form.
+	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @return {boolean} A flag for the event handler.
 	 */

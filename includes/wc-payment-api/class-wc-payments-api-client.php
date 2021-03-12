@@ -26,6 +26,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API        = 'accounts';
 	const CHARGES_API         = 'charges';
+	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
 	const INTENTIONS_API      = 'intentions';
 	const REFUNDS_API         = 'refunds';
@@ -37,6 +38,7 @@ class WC_Payments_API_Client {
 	const TIMELINE_API        = 'timeline';
 	const PAYMENT_METHODS_API = 'payment_methods';
 	const SETUP_INTENTS_API   = 'setup_intents';
+	const TRACKING_API        = 'tracking';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -97,6 +99,15 @@ class WC_Payments_API_Client {
 	 */
 	public function is_server_connected() {
 		return $this->http_client->is_connected();
+	}
+
+	/**
+	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
+	 *
+	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
+	 */
+	public function get_blog_id() {
+		return $this->is_server_connected() ? $this->http_client->get_blog_id() : null;
 	}
 
 	/**
@@ -594,6 +605,18 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create a connection token.
+	 *
+	 * @param string $request request object received.
+	 *
+	 * @return array
+	 * @throws API_Exception - If request throws.
+	 */
+	public function create_token( $request ) {
+		return $this->request( [], self::CONN_TOKENS_API, self::POST );
+	}
+
+	/**
 	 * Get timeline of events for an intention
 	 *
 	 * @param string $intention_id The payment intention ID.
@@ -639,18 +662,24 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the OAuth flow
 	 *
-	 * @param string $return_url    - URL to redirect to at the end of the flow.
-	 * @param array  $business_data - data to prefill the form.
+	 * @param string $return_url     - URL to redirect to at the end of the flow.
+	 * @param array  $business_data  - Data to prefill the form.
+	 * @param array  $site_data      - Data to track ToS agreement.
+	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
 	 *
 	 * @return array An array containing the url and state fields.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_oauth_data( $return_url, $business_data = [] ) {
+	public function get_oauth_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
 		$request_args = apply_filters(
 			'wc_payments_get_oauth_data_args',
 			[
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
+				'site_data'           => $site_data,
 				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+				'actioned_notes'      => $actioned_notes,
 			]
 		);
 
@@ -678,21 +707,15 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a customer.
 	 *
-	 * @param string|null $name        Customer's full name.
-	 * @param string|null $email       Customer's email address.
-	 * @param string|null $description Description of customer.
+	 * @param array $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer( $name = null, $email = null, $description = null ) {
+	public function create_customer( array $customer_data ): string {
 		$customer_array = $this->request(
-			[
-				'name'        => $name,
-				'email'       => $email,
-				'description' => $description,
-			],
+			$customer_data,
 			self::CUSTOMERS_API,
 			self::POST
 		);
@@ -804,22 +827,82 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $source     A string, which describes where the merchant agreed to the terms.
 	 * @param string $user_name  The user_login of the current user.
-	 * @param string $user_ip    IP address of the current user.
-	 * @param string $user_agent User agent string for the current user.
 	 *
 	 * @return array An array, containing a `success` flag.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function add_tos_agreement( $source, $user_name, $user_ip, $user_agent ) {
+	public function add_tos_agreement( $source, $user_name ) {
 		return $this->request(
 			[
-				'source'     => $source,
-				'user_name'  => $user_name,
-				'user_ip'    => $user_ip,
-				'user_agent' => $user_agent,
+				'source'    => $source,
+				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
+			self::POST
+		);
+	}
+
+	/**
+	 * Track a order creation/update event.
+	 *
+	 * @param array $order_data  The order data, as an array.
+	 * @param bool  $update      Is this an update event? (Defaults to false, which is a creation event).
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function track_order( $order_data, $update = false ) {
+		return $this->request(
+			[
+				'order_data' => $order_data,
+				'update'     => $update,
+			],
+			self::TRACKING_API . '/order',
+			self::POST
+		);
+	}
+
+	/**
+	 * Link the current customer with the browsing session, for tracking purposes.
+	 *
+	 * @param string $session_id  Session ID, specific to this site.
+	 * @param string $customer_id Stripe customer ID.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function link_session_to_customer( $session_id, $customer_id ) {
+		return $this->request(
+			[
+				'session'  => $session_id,
+				'customer' => $customer_id,
+			],
+			self::TRACKING_API . '/link-session',
+			self::POST
+		);
+	}
+
+	/**
+	 * Sends the contents of the "forterToken" cookie to the server.
+	 *
+	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function send_forter_token( $token ) {
+		return $this->request(
+			[
+				'token'      => $token,
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+				'ip'         => WC_Geolocation::get_ip_address(),
+			],
+			self::TRACKING_API . '/forter-token',
 			self::POST
 		);
 	}
@@ -882,10 +965,11 @@ class WC_Payments_API_Client {
 
 		$response = $this->http_client->remote_request(
 			[
-				'url'     => $url,
-				'method'  => $method,
-				'headers' => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout' => self::API_TIMEOUT_SECONDS,
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
 			$is_site_specific
@@ -1015,8 +1099,19 @@ class WC_Payments_API_Client {
 		$object['order'] = null;
 		if ( $order ) {
 			$object['order'] = [
-				'number' => $order->get_order_number(),
-				'url'    => $order->get_edit_order_url(),
+				'number'       => $order->get_order_number(),
+				'url'          => $order->get_edit_order_url(),
+				'customer_url' => admin_url(
+					add_query_arg(
+						[
+							'page'      => 'wc-admin',
+							'path'      => '/customers',
+							'filter'    => 'single_customer',
+							'customers' => $order->get_customer_id(),
+						],
+						'admin.php'
+					)
+				),
 			];
 
 			if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1079,6 +1174,7 @@ class WC_Payments_API_Client {
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
+			$intention_array['currency'],
 			$created,
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,

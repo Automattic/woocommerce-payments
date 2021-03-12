@@ -7,7 +7,11 @@ import config from 'config';
  * Internal dependencies
  */
 import { CustomerFlow } from '../utils';
-import { fillCardDetails, setupProductCheckout, confirmCardAuthentication } from '../utils/payments';
+import {
+	fillCardDetails,
+	setupProductCheckout,
+	confirmCardAuthentication,
+} from '../utils/payments';
 
 describe( 'Successful purchase', () => {
 	beforeAll( async () => {

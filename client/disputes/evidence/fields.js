@@ -378,6 +378,7 @@ const sections = [
 			},
 			{
 				key: 'uncategorized_file',
+				label: __( 'Additional document', 'woocommerce-payments' ),
 				type: 'file',
 			},
 		],
@@ -396,14 +397,14 @@ const sections = [
  * @param {string} reason      Dispute reason for which to present fields.
  * @param {string} productType Product type for which to present fields.
  *
- * @returns {array} Sections of fields.
+ * @return {Array} Sections of fields.
  */
 export default ( reason, productType ) => {
 	if ( ! reason || ! productType ) {
 		return [];
 	}
 
-	if ( productType === 'multiple' ) {
+	if ( 'multiple' === productType ) {
 		return sections
 			.map( ( section ) => {
 				if ( section.denormalized ) {

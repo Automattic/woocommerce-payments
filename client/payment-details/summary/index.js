@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card } from '@woocommerce/components';
-import Currency from '@woocommerce/currency';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -20,11 +19,13 @@ import HorizontalList from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
+import { formatCurrency } from 'utils/currency';
+import CustomerLink from 'components/customer-link';
 import './style.scss';
 
-const currency = new Currency();
-
 const placeholderValues = {
+	amount: 0,
+	currency: 'USD',
 	net: 0,
 	fee: 0,
 	refunded: null,
@@ -35,12 +36,15 @@ const composePaymentSummaryItems = ( { charge } ) =>
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n( 'M j, Y, g:ia', moment( charge.created * 1000 ) )
+				? dateI18n(
+						'M j, Y, g:ia',
+						moment( charge.created * 1000 ).toISOString()
+				  )
 				: '–',
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: get( charge, 'billing_details.name' ) || '–',
+			content: <CustomerLink customer={ charge.billing_details } />,
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),
@@ -75,9 +79,11 @@ const composePaymentSummaryItems = ( { charge } ) =>
 	].filter( Boolean );
 
 const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
-	const { net, fee, refunded } = charge.amount
+	const balance = charge.amount
 		? getChargeAmounts( charge )
 		: placeholderValues;
+	const renderStorePrice =
+		charge.currency && balance.currency !== charge.currency;
 
 	return (
 		<Card className="payment-details-summary-details">
@@ -88,11 +94,9 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							isLoading={ isLoading }
 							placeholder="Amount placeholder"
 						>
-							{ currency.formatCurrency(
-								( charge.amount || 0 ) / 100
-							) }
+							{ formatCurrency( charge.amount, charge.currency ) }
 							<span className="payment-details-summary__amount-currency">
-								{ charge.currency || 'cur' }
+								{ charge.currency || 'USD' }
 							</span>
 							<PaymentStatusChip
 								status={ getChargeStatus( charge ) }
@@ -100,13 +104,25 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 						</Loadable>
 					</p>
 					<div className="payment-details-summary__breakdown">
-						{ refunded ? (
+						{ renderStorePrice ? (
+							<p>
+								{ formatCurrency(
+									balance.amount,
+									balance.currency
+								) }{ ' ' }
+								{ balance.currency.toUpperCase() }
+							</p>
+						) : null }
+						{ balance.refunded ? (
 							<p>
 								{ `${ __(
 									'Refunded',
 									'woocommerce-payments'
 								) }: ` }
-								{ currency.formatCurrency( -refunded / 100 ) }
+								{ formatCurrency(
+									-balance.refunded,
+									balance.currency
+								) }
 							</p>
 						) : (
 							''
@@ -117,7 +133,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								placeholder="Fee amount"
 							>
 								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( -fee / 100 ) }
+								{ formatCurrency(
+									-balance.fee,
+									balance.currency
+								) }
 							</Loadable>
 						</p>
 						<p>
@@ -126,7 +145,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								placeholder="Net amount"
 							>
 								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-								{ currency.formatCurrency( net / 100 ) }
+								{ formatCurrency(
+									balance.net,
+									balance.currency
+								) }
 							</Loadable>
 						</p>
 					</div>

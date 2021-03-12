@@ -8,6 +8,9 @@ import mapTimelineEvents from '../map-events';
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+		};
 	} );
 
 	test( 'handles falsey values', () => {
@@ -67,118 +70,6 @@ describe( 'mapTimelineEvents', () => {
 		).toMatchSnapshot();
 	} );
 
-	test( 'formats captured events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount: 6300,
-					currency: 'USD',
-					datetime: 1585751874,
-					deposit: {
-						arrival_date: 1585838274,
-						id: 'dummy_po_5eaada696b281',
-					},
-					fee: 350,
-					type: 'captured',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats dispute_needs_response events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount: 9500,
-					currency: 'USD',
-					datetime: 1585793174,
-					deposit: null,
-					dispute_id: 'some_id',
-					evidence_due_by: 1585879574,
-					fee: 1500,
-					reason: 'fraudulent',
-					type: 'dispute_needs_response',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats dispute_in_review events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					datetime: 1585859207,
-					type: 'dispute_in_review',
-					user_id: 1,
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats partial_refund events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount_refunded: 5000,
-					currency: 'USD',
-					datetime: 1585940281,
-					deposit: null,
-					type: 'partial_refund',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats full_refund events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount_refunded: 10000,
-					currency: 'USD',
-					datetime: 1586008266,
-					deposit: null,
-					type: 'full_refund',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats dispute_won events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount: 10000,
-					currency: 'USD',
-					datetime: 1586017250,
-					deposit: {
-						arrival_date: 1586103650,
-						id: 'dummy_po_5eaada696b2d3',
-					},
-					fee: 1500,
-					type: 'dispute_won',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
-	test( 'formats dispute_lost events', () => {
-		expect(
-			mapTimelineEvents( [
-				{
-					amount: 10000,
-					currency: 'USD',
-					datetime: 1586055370,
-					deposit: {
-						arrival_date: 1586141770,
-						id: 'dummy_po_5eaada696b2ef',
-					},
-					fee: 1500,
-					type: 'dispute_lost',
-				},
-			] )
-		).toMatchSnapshot();
-	} );
-
 	test( 'formats dispute_needs_response events with no amount', () => {
 		expect(
 			mapTimelineEvents( [
@@ -217,5 +108,297 @@ describe( 'mapTimelineEvents', () => {
 				},
 			] )
 		).toMatchSnapshot();
+	} );
+
+	test( 'formats dispute_in_review events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'dispute_in_review',
+					user_id: 1,
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	describe( 'single currency events', () => {
+		test( 'formats captured events without fee details', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						type: 'captured',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with fee details', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+						},
+						type: 'captured',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_needs_response events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 9500,
+						currency: 'USD',
+						datetime: 1585793174,
+						deposit: null,
+						dispute_id: 'some_id',
+						evidence_due_by: 1585879574,
+						fee: 1500,
+						reason: 'fraudulent',
+						type: 'dispute_needs_response',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats partial_refund events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount_refunded: 5000,
+						currency: 'USD',
+						datetime: 1585940281,
+						deposit: null,
+						type: 'partial_refund',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats full_refund events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount_refunded: 10000,
+						currency: 'USD',
+						datetime: 1586008266,
+						deposit: null,
+						type: 'full_refund',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_won events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 10000,
+						currency: 'USD',
+						datetime: 1586017250,
+						deposit: {
+							arrival_date: 1586103650,
+							id: 'dummy_po_5eaada696b2d3',
+						},
+						fee: 1500,
+						type: 'dispute_won',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_lost events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 10000,
+						currency: 'USD',
+						datetime: 1586055370,
+						deposit: {
+							arrival_date: 1586141770,
+							id: 'dummy_po_5eaada696b2ef',
+						},
+						fee: 1500,
+						type: 'dispute_lost',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'multi currency events', () => {
+		test( 'formats captured events without fee details', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 1800,
+						currency: 'EUR',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 52,
+						type: 'captured',
+						transaction_details: {
+							customer_amount: 1800,
+							customer_currency: 'EUR',
+							customer_fee: 52,
+							store_amount: 2159,
+							store_currency: 'USD',
+							store_fee: 62,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with fee details', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 1800,
+						currency: 'EUR',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 52,
+						fee_rates: {
+							percentage: 0.029,
+							fixed: 30,
+							fixed_currency: 'USD',
+						},
+						type: 'captured',
+						transaction_details: {
+							customer_amount: 1800,
+							customer_currency: 'EUR',
+							customer_fee: 52,
+							store_amount: 2159,
+							store_currency: 'USD',
+							store_fee: 62,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_needs_response events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: -2160,
+						currency: 'USD',
+						datetime: 1585793174,
+						deposit: null,
+						dispute_id: 'some_id',
+						evidence_due_by: 1585879574,
+						fee: 1500,
+						reason: 'fraudulent',
+						type: 'dispute_needs_response',
+						transaction_details: {
+							customer_amount: 1800,
+							customer_currency: 'EUR',
+							customer_fee: null,
+							store_amount: -2160,
+							store_currency: 'USD',
+							store_fee: 1500,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats partial_refund events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount_refunded: 500,
+						currency: 'EUR',
+						datetime: 1585940281,
+						deposit: null,
+						type: 'partial_refund',
+						transaction_details: {
+							customer_amount: 500,
+							customer_currency: 'EUR',
+							customer_fee: 0,
+							store_amount: 600,
+							store_currency: 'USD',
+							store_fee: 0,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats full_refund events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount_refunded: 1800,
+						currency: 'EUR',
+						datetime: 1586008266,
+						deposit: null,
+						type: 'full_refund',
+						transaction_details: {
+							customer_amount: 1800,
+							customer_currency: 'EUR',
+							customer_fee: 0,
+							store_amount: 2164,
+							store_currency: 'USD',
+							store_fee: 0,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_won events', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 2999,
+						currency: 'USD',
+						datetime: 1586017250,
+						deposit: {
+							arrival_date: 1586103650,
+							id: 'dummy_po_5eaada696b2d3',
+						},
+						fee: -1500,
+						type: 'dispute_won',
+						transaction_details: {
+							customer_amount: 2500,
+							customer_currency: 'EUR',
+							customer_fee: null,
+							store_amount: 2999,
+							store_currency: 'USD',
+							store_fee: -1500,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 } );

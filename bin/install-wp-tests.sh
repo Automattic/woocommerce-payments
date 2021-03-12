@@ -38,6 +38,44 @@ wp() {
 	cd "$WORKING_DIR"
 }
 
+get_db_connection_flags() {
+	# parse DB_HOST for port or socket references
+	local DB_HOST_PARTS=(${DB_HOST//\:/ })
+	local DB_HOSTNAME=${DB_HOST_PARTS[0]};
+	local DB_SOCK_OR_PORT=${DB_HOST_PARTS[1]};
+	local EXTRA_FLAGS=""
+
+	if ! [ -z $DB_HOSTNAME ] ; then
+		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
+		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
+			EXTRA_FLAGS=" --socket=$DB_SOCK_OR_PORT"
+		elif ! [ -z $DB_HOSTNAME ] ; then
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
+		fi
+	fi
+	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
+}
+
+wait_db() {
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
+	local WAITS=0
+
+	set +e
+	mysqladmin status $MYSQLADMIN_FLAGS > /dev/null
+	while [[ $? -ne 0 ]]; do
+		((WAITS++))
+		if [ $WAITS -ge 6 ]; then
+			echo "Maximum database wait time exceeded"
+			exit 1
+		fi;
+		echo "Waiting until the database is available..."
+		sleep 5s
+		mysqladmin status $MYSQLADMIN_FLAGS > /dev/null
+	done
+	set -e
+}
+
 if [[ $WP_VERSION =~ ^[0-9]+\.[0-9]+\-(beta|RC)[0-9]+$ ]]; then
 	WP_BRANCH=${WP_VERSION%\-*}
 	WP_TESTS_TAG="branches/$WP_BRANCH"
@@ -80,6 +118,7 @@ install_wp() {
 
 configure_wp() {
 	WP_SITE_URL="http://local.wordpress.test"
+	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
@@ -113,38 +152,23 @@ install_test_suite() {
 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
 	fi
-
 }
 
 install_db() {
-
 	if [ ${SKIP_DB_CREATE} = "true" ]; then
 		return 0
 	fi
 
-	# parse DB_HOST for port or socket references
-	local PARTS=(${DB_HOST//\:/ })
-	local DB_HOSTNAME=${PARTS[0]};
-	local DB_SOCK_OR_PORT=${PARTS[1]};
-	local EXTRA=""
-
-	if ! [ -z $DB_HOSTNAME ] ; then
-		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
-			EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
-		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
-			EXTRA=" --socket=$DB_SOCK_OR_PORT"
-		elif ! [ -z $DB_HOSTNAME ] ; then
-			EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
-		fi
-	fi
+	wait_db
+	local MYSQLADMIN_FLAGS=$(get_db_connection_flags)
 
 	# drop database if exists
 	set +e
-	mysqladmin drop --force $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA &> /dev/null
+	mysqladmin drop --force $DB_NAME $MYSQLADMIN_FLAGS &> /dev/null
 	set -e
 
 	# create database
-	mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA
+	mysqladmin create $DB_NAME $MYSQLADMIN_FLAGS
 }
 
 install_woocommerce() {
@@ -153,7 +177,7 @@ install_woocommerce() {
 
 	if [[ $WC_VERSION == 'beta' ]]; then
 		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
-		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | keys[-2]' --sort-keys)
+		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
 	fi
 
 	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then
@@ -172,8 +196,21 @@ install_woocommerce() {
 	fi
 }
 
+install_gutenberg() {
+	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
+
+	if [[ -n $INSTALLED_GUTENBERG_VERSION ]]; then
+		# Gutenberg is already installed, we just must update it to the latest stable version
+		wp plugin update gutenberg
+		wp plugin activate gutenberg
+	else
+		wp plugin install gutenberg --activate
+	fi
+}
+
 install_wp
 install_db
 configure_wp
 install_test_suite
+install_gutenberg
 install_woocommerce

@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -16,10 +15,9 @@ import OrderLink from 'components/order-link';
 import { getDetailsURL } from 'components/details-link';
 import { reasons } from '../strings';
 import { formatStringValue } from 'utils';
+import { formatCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
-
-const currency = new Currency();
 
 const fields = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
@@ -36,7 +34,7 @@ const fields = [
 
 const composeTransactionIdLink = ( dispute ) => {
 	const chargeId =
-		typeof dispute.charge === 'object' ? dispute.charge.id : dispute.charge;
+		'object' === typeof dispute.charge ? dispute.charge.id : dispute.charge;
 	return (
 		<Link href={ getDetailsURL( chargeId, 'transactions' ) }>
 			{ chargeId }
@@ -63,20 +61,26 @@ const Info = ( { dispute, isLoading } ) => {
 				transactionId: 'Transaction link',
 		  }
 		: {
-				created: dateI18n( 'M j, Y', moment( dispute.created * 1000 ) ),
-				amount: `${ currency.formatCurrency(
-					dispute.amount / 100
-				) } ${ dispute.currency.toUpperCase() }`,
+				created: dateI18n(
+					'M j, Y',
+					moment( dispute.created * 1000 ).toISOString()
+				),
+				amount: formatCurrency(
+					dispute.amount || 0,
+					dispute.currency || 'USD'
+				),
 				dueBy: dateI18n(
 					'M j, Y - g:iA',
-					moment( dispute.evidence_details.due_by * 1000 )
+					moment(
+						dispute.evidence_details.due_by * 1000
+					).toISOString()
 				),
 				reason: composeDisputeReason( dispute ),
 				order: dispute.order ? (
 					<OrderLink order={ dispute.order } />
 				) : null,
 				customer:
-					typeof dispute.charge === 'object'
+					'object' === typeof dispute.charge
 						? dispute.charge.billing_details.name
 						: null,
 				transactionId: composeTransactionIdLink( dispute ),

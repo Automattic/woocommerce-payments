@@ -14,24 +14,24 @@ export const getChargeOutcomeType = ( charge = {} ) =>
 	charge.outcome ? charge.outcome.type : null;
 
 export const isChargeSuccessful = ( charge = {} ) =>
-	charge.status === 'succeeded' && charge.paid === true;
+	'succeeded' === charge.status && true === charge.paid;
 
 export const isChargeFailed = ( charge = {} ) =>
-	charge.status === 'failed' &&
+	'failed' === charge.status &&
 	failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
 export const isChargeBlocked = ( charge = {} ) =>
-	charge.status === 'failed' &&
+	'failed' === charge.status &&
 	blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
-export const isChargeCaptured = ( charge = {} ) => charge.captured === true;
+export const isChargeCaptured = ( charge = {} ) => true === charge.captured;
 
-export const isChargeDisputed = ( charge = {} ) => charge.disputed === true;
+export const isChargeDisputed = ( charge = {} ) => true === charge.disputed;
 
-export const isChargeRefunded = ( charge = {} ) => charge.amount_refunded > 0;
+export const isChargeRefunded = ( charge = {} ) => 0 < charge.amount_refunded;
 
 export const isChargeFullyRefunded = ( charge = {} ) =>
-	charge.refunded === true;
+	true === charge.refunded;
 
 export const isChargePartiallyRefunded = ( charge = {} ) =>
 	isChargeRefunded( charge ) && ! isChargeFullyRefunded( charge );
@@ -60,27 +60,46 @@ export const getChargeStatus = ( charge = {} ) => {
 };
 
 /**
- * Calculates display values for charge amounts.
+ * Calculates display values for charge amounts in settlement currency.
  *
- * @param {object} charge The full charge object.
- * @return {object} An object, containing the `net`, `fee`, and `refund` amounts in Stripe format (*100).
+ * @param {Object} charge The full charge object.
+ * @return {Object} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge ) => {
-	// The base fee is the application fee.
-	let fee      = charge.application_fee_amount;
-	let refunded = 0;
-
-	if ( isChargeDisputed( charge ) ) {
-		fee += sumBy( charge.dispute.balance_transactions, 'fee' );
-		refunded -= sumBy( charge.dispute.balance_transactions, 'amount' );
-	}
+	const balance = charge.balance_transaction
+		? {
+				currency: charge.balance_transaction.currency,
+				amount: charge.balance_transaction.amount,
+				fee: charge.balance_transaction.fee,
+				refunded: 0,
+				net: 0,
+		  }
+		: {
+				currency: charge.currency,
+				amount: charge.amount,
+				fee: charge.application_fee_amount,
+				refunded: 0,
+				net: 0,
+		  };
 
 	if ( isChargeRefunded( charge ) ) {
-		refunded += charge.amount_refunded;
+		// Refund balance_transactions have negative amount.
+		balance.refunded -= sumBy(
+			charge.refunds.data,
+			'balance_transaction.amount'
+		);
+	}
+
+	if ( isChargeDisputed( charge ) ) {
+		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
+		balance.refunded -= sumBy(
+			charge.dispute.balance_transactions,
+			'amount'
+		);
 	}
 
 	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
-	const net = charge.amount - fee - refunded;
+	balance.net = balance.amount - balance.fee - balance.refunded;
 
-	return { net, fee, refunded };
+	return balance;
 };

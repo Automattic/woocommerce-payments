@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProgressBar renders correctly if progress is low 1`] = `
+<div>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 10%;"
+      />
+      <span
+        class="progressbar__outer-progress-label"
+      >
+        10% completed
+      </span>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $1000000
+    </span>
+  </div>
+</div>
+`;
+
+exports[`ProgressBar renders correctly if progress is near completion 1`] = `
+<div>
+  <div
+    class="progressbar"
+  >
+    <div
+      class="progressbar__container"
+    >
+      <div
+        class="progressbar__inner"
+        style="width: 90%;"
+      >
+        <span
+          class="progressbar__inner-progress-label"
+        >
+          90% completed
+        </span>
+      </div>
+    </div>
+    <span
+      class="progressbar__total-label"
+    >
+      $1000000
+    </span>
+  </div>
+</div>
+`;

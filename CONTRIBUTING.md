@@ -1,6 +1,6 @@
 # Contributing to WooCommerce Payments
 
-We follow the [WooCommerce contribution guidelines](https://github.com/woocommerce/woocommerce/blob/master/.github/CONTRIBUTING.md#coding-guidelines).
+We follow the [WooCommerce contribution guidelines](https://github.com/woocommerce/woocommerce/blob/trunk/.github/CONTRIBUTING.md#coding-guidelines).
 
 ## Setting up linting
 

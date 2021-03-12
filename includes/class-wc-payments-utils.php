@@ -20,6 +20,11 @@ class WC_Payments_Utils {
 	const MAX_ARRAY_DEPTH = 10;
 
 	/**
+	 * Order meta data key that holds the currency of order's intent transaction.
+	 */
+	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -110,7 +115,58 @@ class WC_Payments_Utils {
 	 * @return int The amount in cents.
 	 */
 	public static function prepare_amount( $amount, $currency = 'USD' ) {
-		return round( (float) $amount * 100 );
+		$conversion_rate = 100;
+
+		if ( in_array( strtolower( $currency ), self::zero_decimal_currencies(), true ) ) {
+			$conversion_rate = 1;
+		}
+
+		return round( (float) $amount * $conversion_rate );
+	}
+
+	/**
+	 * Interprets amount from Stripe API.
+	 *
+	 * @param int    $amount   The amount returned by Stripe API.
+	 * @param string $currency The currency we get from Stripe API for the amount.
+	 *
+	 * @return float The interpreted amount.
+	 */
+	public static function interpret_stripe_amount( int $amount, string $currency = 'usd' ): float {
+		$conversion_rate = 100;
+
+		if ( in_array( $currency, self::zero_decimal_currencies(), true ) ) {
+			$conversion_rate = 1;
+		}
+
+		return (float) $amount / $conversion_rate;
+	}
+
+	/**
+	 * List of currencies supported by Stripe, the amounts for which are already in the smallest unit.
+	 * Sourced directly from https://stripe.com/docs/currencies#zero-decimal
+	 *
+	 * @return array $currencies
+	 */
+	public static function zero_decimal_currencies() {
+		return [
+			'bif', // Burundian Franc.
+			'clp', // Chilean Peso.
+			'djf', // Djiboutian Franc.
+			'gnf', // Guinean Franc.
+			'jpy', // Japanese Yen.
+			'kmf', // Comorian Franc.
+			'krw', // South Korean Won.
+			'mga', // Malagasy Ariary.
+			'pyg', // Paraguayan Guaraní.
+			'rwf', // Rwandan Franc.
+			'ugx', // Ugandan Shilling.
+			'vnd', // Vietnamese Đồng.
+			'vuv', // Vanuatu Vatu.
+			'xaf', // Central African Cfa Franc.
+			'xof', // West African Cfa Franc.
+			'xpf', // Cfp Franc.
+		];
 	}
 
 	/**
@@ -273,5 +329,30 @@ class WC_Payments_Utils {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Gets order intent currency from meta data or order currency.
+	 *
+	 * @param WC_Order $order The order whose intent currency we want to get.
+	 *
+	 * @return string The currency.
+	 */
+	public static function get_order_intent_currency( WC_Order $order ): string {
+		$intent_currency = $order->get_meta( self::ORDER_INTENT_CURRENCY_META_KEY );
+		if ( ! empty( $intent_currency ) ) {
+			return $intent_currency;
+		}
+		return $order->get_currency();
+	}
+
+	/**
+	 * Saves intent currency in order meta data.
+	 *
+	 * @param WC_Order $order The order whose intent currency we want to set.
+	 * @param string   $currency The intent currency.
+	 */
+	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
+		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
 	}
 }

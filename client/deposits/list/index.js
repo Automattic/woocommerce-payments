@@ -6,7 +6,6 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import Currency from '@woocommerce/currency';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
@@ -16,10 +15,9 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useDeposits } from 'data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
+import { formatCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-
-const currency = new Currency();
 
 // TODO make date, amount sortable - when date is sortable, the background of the info buttons should match
 const columns = [
@@ -67,7 +65,11 @@ export const DepositsList = () => {
 
 		const dateDisplay = (
 			<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-				{ dateI18n( 'M j, Y', moment.utc( deposit.date ) ) }
+				{ dateI18n(
+					'M j, Y',
+					moment.utc( deposit.date ).toISOString(),
+					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+				) }
 			</Link>
 		);
 
@@ -82,7 +84,7 @@ export const DepositsList = () => {
 			amount: {
 				value: deposit.amount / 100,
 				display: clickable(
-					currency.formatCurrency( deposit.amount / 100 )
+					formatCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
