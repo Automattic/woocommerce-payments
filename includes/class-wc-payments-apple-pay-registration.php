@@ -129,7 +129,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Vefifies if hosted domain association file is up to date
 	 * with the file from the plugin directory.
 	 *
-	 * @return bool Wether file is up to date or not.
+	 * @return bool Whether file is up to date or not.
 	 */
 	private function is_hosted_domain_association_file_up_to_date() {
 		// Contents of domain association file from plugin dir.

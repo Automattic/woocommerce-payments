@@ -95,7 +95,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks wether authentication is required for checkout.
+	 * Checks whether authentication is required for checkout.
 	 *
 	 * @return bool
 	 */
@@ -110,7 +110,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks wether account creation is possible during checkout.
+	 * Checks whether account creation is possible during checkout.
 	 *
 	 * @return bool
 	 */
@@ -391,12 +391,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 
 			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Order' ) && WC_Subscriptions_Cart::cart_contains_subscription() && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			if ( class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 
 			// Pre Orders compatbility where we don't support charge upon release.
-			if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 				return false;
 			}
 		}
@@ -603,13 +603,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Trial subscriptions with shipping are not supported.
-		if ( class_exists( 'WC_Subscriptions_Order' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
 			return false;
 		}
 
 		// Pre Orders charge upon release not supported.
-		if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			Logger::log( 'Pre Order charge upon release is not supported. ( Payment Request button disabled )' );
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
 			return false;
 		}
 
