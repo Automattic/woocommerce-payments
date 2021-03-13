@@ -169,8 +169,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Feature flag.
 		// TODO: Remove this check and inject contents of `$payment_request_fields` into `$this->form_fields`
-		// after `saved_cards` when WCPay 2.2.0 gets released.
-		if ( version_compare( get_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER ), '2.2.0', '>=' ) ) {
+		// after `saved_cards` when Apple Pay gets released.
+		if ( version_compare( get_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER ), '3.0.0', '>=' ) ) {
 			// Default values for Payment Request.
 			$payment_request_default_settings = WC_Payments_Payment_Request_Button_Handler::get_default_settings();
 			$payment_request_fields           = [
