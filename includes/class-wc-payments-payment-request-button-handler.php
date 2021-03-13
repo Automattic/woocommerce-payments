@@ -95,6 +95,36 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks wether authentication is required for checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_authentication_required() {
+		// If guest checkout is disabled, authentication might be required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) ) {
+			// If account creation is not possible, authentication is required.
+			return ! $this->is_account_creation_possible();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks wether account creation is possible during checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_account_creation_possible() {
+		// If automatically generate username/password are disabled, the Payment Request API
+		// can't include any of those fields, so account creation is not possible.
+		return (
+			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
+		);
+	}
+
+	/**
 	 * Gets total label.
 	 *
 	 * @return string
@@ -338,7 +368,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks the cart to see if all items are allowed to used.
+	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return  boolean
 	 */
@@ -347,6 +377,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
+				return false;
+			}
+
+			// Not supported when user isn't authenticated and authentication is required.
+			if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+				return false;
+			}
+
+			// Not supported for subscription products when user is not authenticated and account creation is not possible.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 				return false;
 			}
 
@@ -549,6 +589,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
+			return false;
+		}
+
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
+		// Not supported for subscription products when user is not authenticated and account creation is not possible.
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 			return false;
 		}
 
