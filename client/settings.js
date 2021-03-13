@@ -84,7 +84,7 @@ const paymentRequestButtonType = document.getElementById(
 	'woocommerce_woocommerce_payments_payment_request_button_type'
 );
 
-// TODO: Remove this if after WCPay 2.2.0 gets released
+// TODO: Remove this `if` after WCPay 2.2.0 gets released.
 if ( paymentRequest ) {
 	// Payment Request button event listeners.
 	paymentRequest.addEventListener( 'change', () => {

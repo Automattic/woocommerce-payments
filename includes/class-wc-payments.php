@@ -167,7 +167,7 @@ class WC_Payments {
 
 		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
-		// Feature flag
+		// Feature flag.
 		// TODO: Remove this check when WCPay 2.2.0 gets released.
 		if ( version_compare( get_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER ), '2.2.0', '>=' ) ) {
 			self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
