@@ -19,7 +19,6 @@ const webpackConfig = {
 	output: {
 		filename: '[name].js',
 		path: path.resolve( 'dist' ),
-		libraryTarget: 'this',
 	},
 	module: {
 		rules: [
