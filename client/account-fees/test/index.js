@@ -30,6 +30,18 @@ describe( 'AccountFees', () => {
 		expect( accountFees ).toMatchSnapshot();
 	} );
 
+	test( 'renders non-USD base fee', () => {
+		const { container: accountFees } = renderAccountFees( {
+			base: {
+				percentage_rate: 0.029,
+				fixed_rate: 25,
+				currency: 'eur',
+			},
+			discount: [],
+		} );
+		expect( accountFees ).toMatchSnapshot();
+	} );
+
 	test( 'renders discounted base fee', () => {
 		const { container: accountFees } = renderAccountFees( {
 			base: {
@@ -40,6 +52,25 @@ describe( 'AccountFees', () => {
 				{
 					percentage_rate: 0.02,
 					fixed_rate: 20,
+					volume_allowance: 100000000,
+					current_volume: 1234556,
+				},
+			],
+		} );
+		expect( accountFees ).toMatchSnapshot();
+	} );
+
+	test( 'renders discounted non-USD base fee', () => {
+		const { container: accountFees } = renderAccountFees( {
+			base: {
+				percentage_rate: 0.014,
+				fixed_rate: 20,
+				currency: 'gbp',
+			},
+			discount: [
+				{
+					percentage_rate: 0.007,
+					fixed_rate: 10,
 					volume_allowance: 100000000,
 					current_volume: 1234556,
 				},

@@ -102,14 +102,21 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 2.x.x - 2021-xx-xx =
-* Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 * Fix - Assign saved payment methods to Stripe customer.
+
+= 2.1.0 - 2021-xx-xx =
+* Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
+* Update - Define constant for the group to be used for scheduled actions.
+* Update - Enable multiple customer currencies support in live mode.
+* Add - Rate limit failed account connection checks.
+* Add - Support displaying non-USD base fees on settings page.
+* Add - Payment Request Button support (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
 * Update - Render transaction summary on details page for multi-currency transactions.
 * Update - Improvements to fraud prevention.
-* Fix - Added better notices for end users if there are connection errors when making payments. 
+* Fix - Added better notices for end users if there are connection errors when making payments.
 * Fix - If account is set to manual payouts display 'Temporarily suspended' under Payments > Settings.
 * Add - Add file dropzones to dispute evidence upload fields
 * Add - Currency conversion indicator to Transactions list.
@@ -130,8 +137,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
-* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 * Update - Test mode notice width is now consistent across all pages.
+* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 * Add - New notification to urge setting SSL for checkout pages if store doesn't use HTTPS
 * Fix - Fixed connection timeout configuration.
 * Fix - Specify error code when refund fails in admin to prevent blank alert.
