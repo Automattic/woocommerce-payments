@@ -120,7 +120,7 @@ cli wp core install \
 	--skip-email
 
 echo "Updating WordPress to the latest version..."
-cli wp core update --quiet
+cli wp core update --version=5.6.2 --quiet
 
 echo "Updating the WordPress database..."
 cli wp core update-db --quiet
