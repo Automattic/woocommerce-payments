@@ -57,35 +57,35 @@ window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpayAdminSettings.fraudServices );
 } );
 
-// Payment Request button settings migrated and adapted from Stripe gateway extension.
-const findParent = ( el, selector ) => {
-	while (
-		( el = el.parentElement ) &&
-		! ( el.matches || el.matchesSelector ).call( el, selector )
+// TODO: Remove this `if` ahead of Apple Pay release.
+if ( wcpayAdminSettings.paymentRequestEnabled ) {
+	// Payment Request button settings migrated and adapted from Stripe gateway extension.
+	const findParent = ( el, selector ) => {
+		while (
+			( el = el.parentElement ) &&
+			! ( el.matches || el.matchesSelector ).call( el, selector )
+		);
+
+		return el;
+	};
+
+	const toggleDisplay = ( el, display ) => {
+		if ( el instanceof Element || el instanceof HTMLElement ) {
+			if ( display ) {
+				el.style.display = '';
+			} else {
+				el.style.display = 'none';
+			}
+		}
+	};
+
+	const paymentRequest = document.getElementById(
+		'woocommerce_woocommerce_payments_payment_request'
+	);
+	const paymentRequestButtonType = document.getElementById(
+		'woocommerce_woocommerce_payments_payment_request_button_type'
 	);
 
-	return el;
-};
-
-const toggleDisplay = ( el, display ) => {
-	if ( el instanceof Element || el instanceof HTMLElement ) {
-		if ( display ) {
-			el.style.display = '';
-		} else {
-			el.style.display = 'none';
-		}
-	}
-};
-
-const paymentRequest = document.getElementById(
-	'woocommerce_woocommerce_payments_payment_request'
-);
-const paymentRequestButtonType = document.getElementById(
-	'woocommerce_woocommerce_payments_payment_request_button_type'
-);
-
-// TODO: Remove this `if` after Apple Pay gets released.
-if ( paymentRequest ) {
 	// Payment Request button event listeners.
 	paymentRequest.addEventListener( 'change', () => {
 		const inputIds = [
