@@ -260,9 +260,11 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
+				'accountStatus'         => $this->account->get_account_status_data(),
+				'accountFees'           => $this->account->get_fees(),
+				'fraudServices'         => $this->account->get_fraud_services_config(),
+				// TODO: Remove this line ahead of Apple Pay release.
+				'paymentRequestEnabled' => 'yes' === get_option( '_wcpay_feature_payment_request' ),
 			]
 		);
 
