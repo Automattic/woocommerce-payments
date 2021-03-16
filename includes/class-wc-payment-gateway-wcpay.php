@@ -1403,7 +1403,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array          The level 3 data to send to Stripe.
 	 */
 	public function get_level3_data_from_order( $order ) {
-		// non-US merchants no need to send level 3 data
+		// non-US merchants no need to send level 3 data.
 		if ( 'US' !== WC()->countries->get_base_country() ) {
 			return [];
 		}
