@@ -20,3 +20,12 @@ export const displayType = {
 	dispute: __( 'Dispute', 'woocommerce-payments' ),
 	dispute_reversal: __( 'Dispute reversal', 'woocommerce-payments' ),
 };
+
+export const currencyNames = {
+	usd: 'United States (US) dollar',
+	aud: 'Australian dollar',
+	cad: 'Canadian dollar',
+	eur: 'Euro',
+	gbp: 'Pound sterling',
+	nzd: 'New Zealand dollar',
+};

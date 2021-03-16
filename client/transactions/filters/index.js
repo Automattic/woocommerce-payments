@@ -8,6 +8,8 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
+import { currencyNames } from '../strings';
+import { __ } from '@wordpress/i18n';
 
 export const TransactionsFilters = ( props ) => {
 	const populateDepositCurrencies = ( filtersConfiguration ) => {
@@ -17,10 +19,16 @@ export const TransactionsFilters = ( props ) => {
 				// Generate select options: pick the first one (default) and add provided currencies
 				filter.filters = [
 					filter.filters[ 0 ],
-					...currencies.map( ( currencyCode ) => ( {
-						label: currencyCode.toUpperCase(),
-						value: currencyCode,
-					} ) ),
+					...currencies.map( ( currencyCode ) => {
+						const currencyName =
+							currencyNames[ currencyCode ] ||
+							currencyCode.toUpperCase();
+						return {
+							// eslint-disable-next-line @wordpress/i18n-no-variables
+							label: __( currencyName, 'woocommerce-payments' ),
+							value: currencyCode,
+						};
+					} ),
 				];
 				// Show the select when several currencies are available.
 				if ( 2 < filter.filters.length ) {
