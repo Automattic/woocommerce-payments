@@ -30,6 +30,8 @@ import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
+import TransactionsFilters from '../filters';
+import Page from '../../components/page';
 
 const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
 	[
@@ -294,74 +296,84 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
-	// Generate summary based on loading state and available currencies list
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	const isSingleCurrency = true; // TODO: detect if single currency
-	const summary = [];
-	if ( ! isSummaryLoading && ( isSingleCurrency || isCurrencyFiltered ) ) {
-		summary.push(
-			{
-				label: 'transactions',
-				value: `${ transactionsSummary.count }`,
-			},
-			{
-				label: 'total',
-				value: `${ formatCurrency(
-					transactionsSummary.total,
-					transactionsSummary.currency
-				) }`,
-			},
-			{
-				label: 'fees',
-				value: `${ formatCurrency(
-					transactionsSummary.fees,
-					transactionsSummary.currency
-				) }`,
-			},
-			{
-				label: 'net',
-				value: `${ formatCurrency(
-					transactionsSummary.net,
-					transactionsSummary.currency
-				) }`,
-			}
-		);
+	// Generate summary based on loading state and available currencies information
+	const summary = [
+		{
+			label: 'transactions',
+			value: `${ transactionsSummary.count }`,
+		},
+	];
+	if ( ! isSummaryLoading ) {
+		const isCurrencyFiltered =
+			'string' === typeof getQuery().store_currency_is;
+		const isSingleCurrency =
+			1 === ( transactionsSummary.store_currencies || [] ).length;
+		if ( isSingleCurrency || isCurrencyFiltered ) {
+			summary.push(
+				{
+					label: 'total',
+					value: `${ formatCurrency(
+						transactionsSummary.total,
+						transactionsSummary.currency
+					) }`,
+				},
+				{
+					label: 'fees',
+					value: `${ formatCurrency(
+						transactionsSummary.fees,
+						transactionsSummary.currency
+					) }`,
+				},
+				{
+					label: 'net',
+					value: `${ formatCurrency(
+						transactionsSummary.net,
+						transactionsSummary.currency
+					) }`,
+				}
+			);
+		}
 	}
 
 	return (
-		<TableCard
-			className="transactions-list woocommerce-report-table has-search"
-			title={
-				props.depositId
-					? __( 'Deposit transactions', 'woocommerce-payments' )
-					: __( 'Transactions', 'woocommerce-payments' )
-			}
-			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
-			totalRows={ transactionsSummary.count || 0 }
-			headers={ columnsToDisplay }
-			rows={ rows }
-			summary={ summary }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-			actions={ [
-				<Search
-					allowFreeTextSearch={ true }
-					inlineTags
-					key="search"
-					onChange={ onSearchChange }
-					placeholder={ searchPlaceholder }
-					selected={ searchedLabels }
-					showClearButton={ true }
-					type={
-						wcpaySettings.featureFlags.customSearch
-							? 'custom'
-							: 'customers'
-					}
-					autocompleter={ autocompleter }
-				/>,
-			] }
-		/>
+		<Page>
+			<TransactionsFilters
+				storeCurrencies={ transactionsSummary.store_currencies || [] }
+			/>
+			<TableCard
+				className="transactions-list woocommerce-report-table has-search"
+				title={
+					props.depositId
+						? __( 'Deposit transactions', 'woocommerce-payments' )
+						: __( 'Transactions', 'woocommerce-payments' )
+				}
+				isLoading={ isLoading }
+				rowsPerPage={ getQuery().per_page || 25 }
+				totalRows={ transactionsSummary.count || 0 }
+				headers={ columnsToDisplay }
+				rows={ rows }
+				summary={ summary }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+				actions={ [
+					<Search
+						allowFreeTextSearch={ true }
+						inlineTags
+						key="search"
+						onChange={ onSearchChange }
+						placeholder={ searchPlaceholder }
+						selected={ searchedLabels }
+						showClearButton={ true }
+						type={
+							wcpaySettings.featureFlags.customSearch
+								? 'custom'
+								: 'customers'
+						}
+						autocompleter={ autocompleter }
+					/>,
+				] }
+			/>
+		</Page>
 	);
 };
 

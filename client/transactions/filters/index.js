@@ -8,33 +8,29 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
-import { useMemo } from '@wordpress/element';
 
-const populateDepositCurrencies = ( filtersConfiguration ) => {
-	filtersConfiguration.forEach( ( filter ) => {
-		if ( 'store_currency_is' === filter.param ) {
-			const currencies = useMemo(
-				() => [
-					{
-						label: 'EUR',
-						value: 'eur',
-					},
-					{
-						label: 'USD',
-						value: 'usd',
-					},
-				],
-				[]
-			);
+export const TransactionsFilters = ( props ) => {
+	const populateDepositCurrencies = ( filtersConfiguration ) => {
+		filtersConfiguration.forEach( ( filter ) => {
+			if ( 'store_currency_is' === filter.param ) {
+				const currencies = props.storeCurrencies || [];
+				// Generate select options: pick the first one (default) and add provided currencies
+				filter.filters = [
+					filter.filters[ 0 ],
+					...currencies.map( ( currencyCode ) => ( {
+						label: currencyCode.toUpperCase(),
+						value: currencyCode,
+					} ) ),
+				];
+				// Show the select when several currencies are available.
+				if ( 2 < filter.filters.length ) {
+					filter.showFilters = () => true;
+				}
+			}
+		} );
+		return filtersConfiguration;
+	};
 
-			filter.filters.push( ...currencies );
-			filter.showFilters = () => true;
-		}
-	} );
-	return filtersConfiguration;
-};
-
-export const TransactionsFilters = () => {
 	return (
 		<ReportFilters
 			filters={ populateDepositCurrencies( filters ) }
