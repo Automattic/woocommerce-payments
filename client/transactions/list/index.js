@@ -321,7 +321,7 @@ export const TransactionsList = ( props ) => {
 
 	// Summary will be rendered if it's available and deposit currency filter has been applied.
 	const showSummary =
-		! isSummaryLoading && 'string' === typeof getQuery().currency_is;
+		! isSummaryLoading && 'string' === typeof getQuery().store_currency_is;
 
 	return (
 		<TableCard

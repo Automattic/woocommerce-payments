@@ -17,7 +17,7 @@ const transactionTypesOptions = Object.entries( displayType )
 export const filters = () => [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
-		param: 'currency_is',
+		param: 'store_currency_is',
 		staticParams: [
 			'paged',
 			'per_page',
@@ -35,16 +35,13 @@ export const filters = () => [
 				label: __( 'All currencies', 'woocommerce-payments' ),
 				value: 'all',
 			},
-			...wcpaySettings.currencies.supported.map( ( value ) => ( {
-				label: wcpaySettings.currencies.names[ value ],
-				value: value,
-			} ) ),
+			// TODO: get currencies list from store
 		],
 	},
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [ 'paged', 'per_page', 'search', 'currency_is' ],
+		staticParams: [ 'paged', 'per_page', 'search', 'store_currency_is' ],
 		showFilters: () => true,
 		filters: [
 			{
