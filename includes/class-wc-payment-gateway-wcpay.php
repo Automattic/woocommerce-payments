@@ -1403,6 +1403,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array          The level 3 data to send to Stripe.
 	 */
 	public function get_level3_data_from_order( $order ) {
+		// non-US merchants no need to send level 3 data
+		if ( 'US' !== WC()->countries->get_base_country() ) {
+			return [];
+		}
+
 		// Get the order items. Don't need their keys, only their values.
 		// Order item IDs are used as keys in the original order items array.
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
