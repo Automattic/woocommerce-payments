@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
-Tested up to: 5.6
+Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.1.0 - 2021-xx-xx =
+= 2.1.0 - 2021-03-16 =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 * Update - Define constant for the group to be used for scheduled actions.
 * Update - Enable multiple customer currencies support in live mode.
