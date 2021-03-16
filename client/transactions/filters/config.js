@@ -35,7 +35,7 @@ export const filters = [
 				label: __( 'All currencies', 'woocommerce-payments' ),
 				value: 'all',
 			},
-			// TODO: get currencies list from store
+			// Other values are getting injected later, taking values from store.
 		],
 	},
 	{
