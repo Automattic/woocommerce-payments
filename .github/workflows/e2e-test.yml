@@ -5,6 +5,7 @@ on:
     branches:
       - trunk
       - develop
+      - release/*
 
 env:
   CI_USER_TOKEN:                               ${{ secrets.CI_USER_TOKEN }}
