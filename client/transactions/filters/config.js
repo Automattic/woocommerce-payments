@@ -14,7 +14,7 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( ( [ type ] ) => ! type.startsWith( 'payment' ) )
 	.map( ( [ type, label ] ) => ( { label, value: type } ) );
 
-export const filters = () => [
+export const filters = [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'store_currency_is',
@@ -29,7 +29,7 @@ export const filters = () => [
 			'date_after',
 			'date_between',
 		],
-		showFilters: () => true,
+		showFilters: () => false,
 		filters: [
 			{
 				label: __( 'All currencies', 'woocommerce-payments' ),
@@ -57,7 +57,7 @@ export const filters = () => [
 ];
 
 /*eslint-disable max-len*/
-export const advancedFilters = () => ( {
+export const advancedFilters = {
 	/** translators: A sentence describing filters for Transactions. See screen shot for context: https://d.pr/i/NcGpwL */
 	title: __(
 		'Transactions match {{select /}} filters',
@@ -150,5 +150,5 @@ export const advancedFilters = () => ( {
 			},
 		},
 	},
-} );
+};
 /*eslint-enable max-len*/
