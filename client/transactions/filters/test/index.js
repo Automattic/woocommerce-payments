@@ -17,14 +17,6 @@ describe( 'Transactions filters', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		global.wcpaySettings = {
-			currencies: {
-				default: 'usd',
-				supported: [ 'usd' ],
-				names: { usd: 'United States (US) dollar' },
-			},
-		};
-
 		const { rerender } = render( <TransactionsFilters /> );
 
 		// select advanced filter view

@@ -91,18 +91,13 @@ describe( 'Transactions list', () => {
 
 		// the query string is preserved across tests, so we need to reset it
 		// eslint-disable-next-line camelcase
-		updateQueryString( { store_currency_is: 'usd' }, '/', {} );
+		updateQueryString( {}, '/', {} );
 
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
 			},
 			isSubscriptionsActive: false,
-			currencies: {
-				default: 'usd',
-				supported: [ 'usd' ],
-				names: { usd: 'United States (US) dollar' },
-			},
 			zeroDecimalCurrencies: [],
 		};
 	} );
