@@ -263,31 +263,6 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
-	const summary = [
-		{ label: 'transactions', value: `${ transactionsSummary.count }` },
-		{
-			label: 'total',
-			value: `${ formatCurrency(
-				transactionsSummary.total,
-				transactionsSummary.currency
-			) }`,
-		},
-		{
-			label: 'fees',
-			value: `${ formatCurrency(
-				transactionsSummary.fees,
-				transactionsSummary.currency
-			) }`,
-		},
-		{
-			label: 'net',
-			value: `${ formatCurrency(
-				transactionsSummary.net,
-				transactionsSummary.currency
-			) }`,
-		},
-	];
-
 	const searchedLabels =
 		getQuery().search &&
 		getQuery().search.map( ( v ) => ( {
@@ -319,10 +294,39 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
+	// Generate summary based on loading state and available currencies list
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	const isSingleCurrency = true; // TODO: single currency
-	const showSummary =
-		! isSummaryLoading && ( isSingleCurrency || isCurrencyFiltered );
+	const isSingleCurrency = true; // TODO: detect if single currency
+	const summary = [];
+	if ( ! isSummaryLoading && ( isSingleCurrency || isCurrencyFiltered ) ) {
+		summary.push(
+			{
+				label: 'transactions',
+				value: `${ transactionsSummary.count }`,
+			},
+			{
+				label: 'total',
+				value: `${ formatCurrency(
+					transactionsSummary.total,
+					transactionsSummary.currency
+				) }`,
+			},
+			{
+				label: 'fees',
+				value: `${ formatCurrency(
+					transactionsSummary.fees,
+					transactionsSummary.currency
+				) }`,
+			},
+			{
+				label: 'net',
+				value: `${ formatCurrency(
+					transactionsSummary.net,
+					transactionsSummary.currency
+				) }`,
+			}
+		);
+	}
 
 	return (
 		<TableCard
@@ -337,7 +341,7 @@ export const TransactionsList = ( props ) => {
 			totalRows={ transactionsSummary.count || 0 }
 			headers={ columnsToDisplay }
 			rows={ rows }
-			summary={ showSummary ? summary : null }
+			summary={ summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
 			actions={ [
