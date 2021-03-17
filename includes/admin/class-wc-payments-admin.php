@@ -78,6 +78,19 @@ class WC_Payments_Admin {
 		if ( $should_render_full_menu ) {
 			wc_admin_register_page(
 				[
+					'id'       => 'wc-payments-overview',
+					'title'    => __( 'Overview', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/overview',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 5,
+					],
+				]
+			);
+
+			wc_admin_register_page(
+				[
 					'id'       => 'wc-payments-deposits',
 					'title'    => __( 'Deposits', 'woocommerce-payments' ),
 					'parent'   => 'wc-payments',

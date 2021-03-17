@@ -21,6 +21,7 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
+import OverviewPage from 'overview';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -41,6 +42,15 @@ addFilter(
 			breadcrumbs: [ rootLink, connectionPageTitle ],
 			navArgs: {
 				id: 'wc-payments',
+			},
+		} );
+		pages.push( {
+			container: OverviewPage,
+			path: '/payments/overview',
+			wpOpenMenu: menuID,
+			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-overview',
 			},
 		} );
 		pages.push( {
