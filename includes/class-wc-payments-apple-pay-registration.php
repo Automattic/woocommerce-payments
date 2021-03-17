@@ -80,6 +80,10 @@ class WC_Payments_Apple_Pay_Registration {
 	 */
 	public function init() {
 		$this->gateway_settings = array_merge( WC_Payments_Payment_Request_Button_Handler::get_default_settings(), WC_Payments::get_gateway()->settings );
+		// If the feature is disabled, don't proceed with the hooks.
+		if ( ! $this->is_enabled() ) {
+			return;
+		}
 
 		$this->add_domain_association_rewrite_rule();
 
@@ -106,7 +110,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$settings = $settings ?? $this->gateway_settings;
 
 		$gateway_enabled         = 'yes' === ( $settings['enabled'] ?? 'no' );
-		$payment_request_enabled = 'yes' === ( $settings['payment_request'] ?? 'yes' );
+		$payment_request_enabled = 'yes' === ( $settings['payment_request'] ?? 'no' );
 
 		return $gateway_enabled && $payment_request_enabled;
 	}
