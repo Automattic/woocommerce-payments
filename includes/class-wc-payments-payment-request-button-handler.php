@@ -120,7 +120,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Get total label.
+	 * Gets total label.
 	 *
 	 * @return string
 	 */
@@ -145,30 +145,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Gets the button type.
-	 *
-	 * @return  string
-	 */
-	public function get_button_type() {
-		return isset( $this->gateway_settings['payment_request_button_type'] ) ? $this->gateway_settings['payment_request_button_type'] : 'default';
-	}
-
-	/**
-	 * Gets the button theme.
-	 *
-	 * @return  string
-	 */
-	public function get_button_theme() {
-		return isset( $this->gateway_settings['payment_request_button_theme'] ) ? $this->gateway_settings['payment_request_button_theme'] : 'dark';
-	}
-
-	/**
 	 * Gets the button height.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function get_button_height() {
-		return isset( $this->gateway_settings['payment_request_button_height'] ) ? str_replace( 'px', '', $this->gateway_settings['payment_request_button_height'] ) : '64';
+		return str_replace( 'px', '', $this->gateway_settings['payment_request_button_height'] );
 	}
 
 	/**
@@ -177,49 +159,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  boolean
 	 */
 	public function is_branded_button() {
-		return 'branded' === $this->get_button_type();
-	}
-
-	/**
-	 * Gets the branded button type.
-	 *
-	 * @return  string
-	 */
-	public function get_button_branded_type() {
-		return isset( $this->gateway_settings['payment_request_button_branded_type'] ) ? $this->gateway_settings['payment_request_button_branded_type'] : 'default';
+		return 'branded' === $this->gateway_settings['payment_request_button_type'];
 	}
 
 	/**
 	 * Checks if the button is custom.
 	 *
-	 * @return  boolean
+	 * @return boolean
 	 */
 	public function is_custom_button() {
-		return 'custom' === $this->get_button_type();
+		return 'custom' === $this->gateway_settings['payment_request_button_type'];
 	}
 
 	/**
 	 * Returns custom button css selector.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function custom_button_selector() {
 		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
 	}
 
 	/**
-	 * Gets the custom button label.
-	 *
-	 * @return  string
-	 */
-	public function get_button_label() {
-		return isset( $this->gateway_settings['payment_request_button_label'] ) ? $this->gateway_settings['payment_request_button_label'] : 'Buy now';
-	}
-
-	/**
 	 * Gets the product data for the currently viewed page
 	 *
-	 * @return  mixed Returns false if not on a product page, the product information otherwise.
+	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
 	public function get_product_data() {
 		if ( ! is_product() ) {
@@ -479,14 +443,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'          => [
-				'type'         => $this->get_button_type(),
-				'theme'        => $this->get_button_theme(),
+				'type'         => $this->gateway_settings['payment_request_button_type'],
+				'theme'        => $this->gateway_settings['payment_request_button_theme'],
 				'height'       => $this->get_button_height(),
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
 				'css_selector' => $this->custom_button_selector(),
-				'branded_type' => $this->get_button_branded_type(),
+				'branded_type' => $this->gateway_settings['payment_request_button_branded_type'],
 			],
 			'is_product_page' => is_product(),
 			'product'         => $this->get_product_data(),
@@ -537,8 +501,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			<div id="wcpay-payment-request-button">
 				<?php
 				if ( $this->is_custom_button() ) {
-					$label      = esc_html( $this->get_button_label() );
-					$class_name = esc_attr( 'button ' . $this->get_button_theme() );
+					$label      = esc_html( $this->gateway_settings['payment_request_button_label'] );
+					$class_name = esc_attr( 'button ' . $this->gateway_settings['payment_request_button_theme'] );
 					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
 					echo '<button id="wcpay-custom-button" class="' . esc_attr( $class_name ) . '" style="' . esc_attr( $style ) . '">' . esc_html( $label ) . '</button>';
 				}
