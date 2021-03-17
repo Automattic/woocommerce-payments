@@ -299,7 +299,7 @@ class WC_Payments_Apple_Pay_Registration {
 	public function verify_domain_if_configured() {
 		// If Payment Request Buttons are not enabled, or account is not live,
 		// do not attempt to register domain.
-		if ( ! $this->is_enabled() || ! $this->account->get_is_live() ) {
+		if ( ! $this->account->get_is_live() ) {
 			return;
 		}
 
@@ -343,7 +343,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Display warning notice explaining that the domain can't be registered without a live account.
 	 */
 	public function display_live_account_notice() {
-		if ( ! $this->is_enabled() || $this->account->get_is_live() ) {
+		if ( $this->account->get_is_live() ) {
 			return;
 		}
 
@@ -361,7 +361,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Display Apple Pay registration errors.
 	 */
 	public function display_error_notice() {
-		if ( ! $this->is_enabled() || ! $this->account->get_is_live() ) {
+		if ( ! $this->account->get_is_live() ) {
 			return;
 		}
 
