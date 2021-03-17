@@ -90,7 +90,6 @@ describe( 'Transactions list', () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
-		// eslint-disable-next-line camelcase
 		updateQueryString( {}, '/', {} );
 
 		global.wcpaySettings = {
@@ -239,6 +238,59 @@ describe( 'Transactions list', () => {
 
 		const { container } = render( <TransactionsList /> );
 
+		expect( container ).toMatchSnapshot();
+	} );
+
+	// Several settlement currencies are available -> render the currency filter.
+	test( 'renders correctly when can filter by several currencies', () => {
+		useTransactions.mockReturnValue( {
+			transactions: getMockTransactions(),
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'eur', 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <TransactionsList /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	// The currency filter has been applied, render the filter even for a single settlement currency case.
+	test( 'renders correctly when filtered by currency', () => {
+		// eslint-disable-next-line camelcase
+		updateQueryString( { store_currency_is: 'usd' }, '/', {} );
+
+		useTransactions.mockReturnValue( {
+			transactions: getMockTransactions().filter(
+				( txn ) => txn.currency === getQuery().store_currency_is
+			),
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <TransactionsList /> );
 		expect( container ).toMatchSnapshot();
 	} );
 } );
