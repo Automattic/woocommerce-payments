@@ -113,6 +113,9 @@ describe( 'Transactions list', () => {
 		useTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 3,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
 				fees: 30,
 				total: 300,
 				net: 270,
@@ -138,6 +141,9 @@ describe( 'Transactions list', () => {
 			useTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
 					count: 10,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					store_currencies: [ 'usd' ],
 					fees: 100,
 					total: 1000,
 					net: 900,
@@ -221,6 +227,9 @@ describe( 'Transactions list', () => {
 		useTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
 				fees: 100,
 				total: 1000,
 				net: 900,
