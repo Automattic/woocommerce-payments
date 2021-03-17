@@ -355,7 +355,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Display Apple Pay registration errors.
 	 */
 	public function display_error_notice() {
-		if ( ! $this->is_enabled() || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $this->is_enabled() || ! current_user_can( 'manage_woocommerce' ) || ! $this->account->get_is_live() ) {
 			return;
 		}
 
