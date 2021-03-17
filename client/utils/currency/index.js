@@ -1,11 +1,35 @@
 /**
  * External dependencies
  */
-import { sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import Currency, { getCurrencyData } from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
 
 const currencyData = getCurrencyData();
+
+const currencyNames = {
+	usd: 'United States (US) dollar',
+	aud: 'Australian dollar',
+	cad: 'Canadian dollar',
+	eur: 'Euro',
+	gbp: 'Pound sterling',
+	nzd: 'New Zealand dollar',
+};
+
+/**
+ * Formats and translates currency code name.
+ *
+ * @param {string} currencyCode Currency code
+ *
+ * @return {string} formatted and translated currency name
+ */
+export const formatCurrencyName = ( currencyCode ) => {
+	const currencyName =
+		currencyNames[ currencyCode.toLowerCase() ] ||
+		currencyCode.toUpperCase();
+	// eslint-disable-next-line @wordpress/i18n-no-variables
+	return __( currencyName, 'woocommerce-payments' );
+};
 
 /**
  * Gets wc-admin Currency for the given currency code
