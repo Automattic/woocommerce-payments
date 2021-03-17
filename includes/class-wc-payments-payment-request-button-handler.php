@@ -391,7 +391,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 
 			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 
@@ -609,6 +609,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			return false;
+		}
+
+		// Composite products are not supported on product page.
+		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
 			return false;
 		}
 
