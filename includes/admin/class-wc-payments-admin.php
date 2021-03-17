@@ -76,18 +76,20 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-overview',
-					'title'    => __( 'Overview', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/overview',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 5,
-					],
-				]
-			);
+			if ( self::is_account_overview_page_enabled() ) {
+				wc_admin_register_page(
+					[
+						'id'       => 'wc-payments-overview',
+						'title'    => __( 'Overview', 'woocommerce-payments' ),
+						'parent'   => 'wc-payments',
+						'path'     => '/payments/overview',
+						'nav_args' => [
+							'parent' => 'wc-payments',
+							'order'  => 5,
+						],
+					]
+				);
+			}
 
 			wc_admin_register_page(
 				[
@@ -368,6 +370,7 @@ class WC_Payments_Admin {
 		return [
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+			'accountOverview' => self::is_account_overview_page_enabled(),
 		];
 	}
 
@@ -413,5 +416,14 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
+	}
+
+	/**
+	 * Checks whether Account Overview page is enabled
+	 *
+	 * @return bool
+	 */
+	private function is_account_overview_page_enabled() {
+		return get_option( '_wcpay_feature_account_overview' );
 	}
 }

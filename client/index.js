@@ -44,15 +44,21 @@ addFilter(
 				id: 'wc-payments',
 			},
 		} );
-		pages.push( {
-			container: OverviewPage,
-			path: '/payments/overview',
-			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
-			navArgs: {
-				id: 'wc-payments-overview',
-			},
-		} );
+
+		if ( wcpaySettings.featureFlags.accountOverview ) {
+			pages.push( {
+				container: OverviewPage,
+				path: '/payments/overview',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					__( 'Overview', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-overview',
+				},
+			} );
+		}
 		pages.push( {
 			container: DepositsPage,
 			path: '/payments/deposits',
