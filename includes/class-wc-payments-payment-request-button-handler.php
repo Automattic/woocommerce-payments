@@ -20,6 +20,13 @@ use WCPay\Logger;
  */
 class WC_Payments_Payment_Request_Button_Handler {
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Gateway settings.
 	 *
 	 * @var array
@@ -31,21 +38,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @var bool
 	 */
-	public $testmode;
-
-	/**
-	 * This Instance.
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private static $instance;
-
-	/**
-	 * WC_Payments_Account instance to get information about the account
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
+	public $test_mode;
 
 	/**
 	 * Initialize class actions.
@@ -53,20 +46,27 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
-		self::$instance = $this;
+		$this->account = $account;
 
-		// Add default settings in case the payment request options are missing.
-		$this->gateway_settings = array_merge( self::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
-		$this->account          = $account;
-		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
+		add_action( 'init', [ $this, 'init' ] );
+	}
 
-		// Checks if Stripe Gateway is enabled.
-		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return  void
+	 */
+	public function init() {
+		$this->gateway_settings = array_merge( self::get_default_settings(), WC_Payments::get_gateway()->settings );
+		$this->test_mode        = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
+
+		// Checks if WCPay is enabled.
+		if ( ! isset( $this->gateway_settings['enabled'] ) || 'yes' !== $this->gateway_settings['enabled'] ) {
 			return;
 		}
 
 		// Checks if Payment Request is enabled.
-		if ( ! isset( $this->gateway_settings['payment_request'] ) || 'yes' !== $this->gateway_settings['payment_request'] ) {
+		if ( 'yes' !== $this->gateway_settings['payment_request'] ) {
 			return;
 		}
 
@@ -76,32 +76,47 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		$this->init();
+		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
+		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
+		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
+		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
+		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
+		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
+		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
+		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
+		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
+		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
+		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_clear_cart', [ $this, 'ajax_clear_cart' ] );
+		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
+
+		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
+		add_filter( 'woocommerce_validate_postcode', [ $this, 'postal_code_validation' ], 10, 3 );
+
+		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 	}
 
 	/**
-	 * Payment request default settings.
+	 * Gets default payment request settings from form_fields.
 	 *
 	 * @return array Default settings.
 	 */
 	public static function get_default_settings() {
+		$form_fields = WC_Payments::get_gateway()->get_form_fields();
 		return [
-			'payment_request'                     => 'no',
-			'payment_request_button_type'         => 'buy',
-			'payment_request_button_theme'        => 'dark',
-			'payment_request_button_height'       => '44',
-			'payment_request_button_label'        => __( 'Buy now', 'woocommerce-payments' ),
-			'payment_request_button_branded_type' => 'long',
+			'payment_request'                     => $form_fields['payment_request']['default'],
+			'payment_request_button_type'         => $form_fields['payment_request_button_type']['default'],
+			'payment_request_button_theme'        => $form_fields['payment_request_button_theme']['default'],
+			'payment_request_button_height'       => $form_fields['payment_request_button_height']['default'],
+			'payment_request_button_label'        => $form_fields['payment_request_button_label']['default'],
+			'payment_request_button_branded_type' => $form_fields['payment_request_button_branded_type']['default'],
 		];
-	}
-
-	/**
-	 * Get this instance.
-	 *
-	 * @return class
-	 */
-	public static function instance() {
-		return self::$instance;
 	}
 
 	/**
@@ -127,38 +142,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		WC()->session->set_customer_session_cookie( true );
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @return  void
-	 */
-	public function init() {
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
-
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
-
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
-
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
-		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_clear_cart', [ $this, 'ajax_clear_cart' ] );
-		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
-
-		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
-		add_filter( 'woocommerce_validate_postcode', [ $this, 'postal_code_validation' ], 10, 3 );
-
-		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 	}
 
 	/**
@@ -452,7 +435,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL bail.
-		if ( ! $this->testmode && ! is_ssl() ) {
+		if ( ! $this->test_mode && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return;
 		}
