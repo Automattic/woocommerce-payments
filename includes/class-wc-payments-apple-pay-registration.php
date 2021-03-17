@@ -31,13 +31,6 @@ class WC_Payments_Apple_Pay_Registration {
 	private $payments_api_client;
 
 	/**
-	 * The WCPay gateway object.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * The WCPay account object.
 	 *
 	 * @var WC_Payments_Account
@@ -68,12 +61,28 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
-	 * @param WC_Payments_Account      $account WooCommerce Payments account.
+	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_Account    $account WooCommerce Payments account.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
-		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ] );
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
+		$this->apple_pay_verify_notice = '';
+		$this->payments_api_client     = $payments_api_client;
+		$this->account                 = $account;
+
+		add_action( 'init', [ $this, 'init' ] );
+	}
+
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return  void
+	 */
+	public function init() {
+		$this->gateway_settings = array_merge( WC_Payments_Payment_Request_Button_Handler::get_default_settings(), WC_Payments::get_gateway()->settings );
+
+		$this->add_domain_association_rewrite_rule();
+
 		add_action( 'admin_init', [ $this, 'verify_domain_on_domain_name_change' ] );
 		add_filter( 'query_vars', [ $this, 'whitelist_domain_association_query_param' ], 10, 1 );
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
@@ -83,14 +92,6 @@ class WC_Payments_Apple_Pay_Registration {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
-
-		// Add default settings in case the payment request options are missing.
-		$this->gateway_settings        = array_merge( WC_Payments_Payment_Request_Button_Handler::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
-		$this->domain_name             = $_SERVER['HTTP_HOST'] ?? str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
-		$this->apple_pay_verify_notice = '';
-		$this->payments_api_client     = $payments_api_client;
-		$this->gateway                 = $gateway;
-		$this->account                 = $account;
 	}
 
 	/**
@@ -231,9 +232,10 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string A string representation of the current mode.
 	 */
 	private function get_gateway_mode_string() {
-		if ( $this->gateway->is_in_dev_mode() ) {
+		$gateway = WC_Payments::get_gateway();
+		if ( $gateway->is_in_dev_mode() ) {
 			return 'dev';
-		} elseif ( $this->gateway->is_in_test_mode() ) {
+		} elseif ( $gateway->is_in_test_mode() ) {
 			return 'test';
 		}
 		return 'live';

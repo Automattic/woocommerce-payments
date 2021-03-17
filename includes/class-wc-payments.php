@@ -171,7 +171,7 @@ class WC_Payments {
 		// TODO: Remove this check ahead of Apple Pay release.
 		if ( 'yes' === get_option( '_wcpay_feature_payment_request' ) ) {
 			self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
-			self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$gateway, self::$account );
+			self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );

@@ -25,13 +25,6 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
-	 * Mock WC_Payment_Gateway_WCPay.
-	 *
-	 * @var WC_Payment_Gateway_WCPay|PHPUnit_Framework_MockObject_MockObject
-	 */
-	private $mock_gateway;
-
-	/**
 	 * Mock WC_Payments_Account.
 	 *
 	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
@@ -62,15 +55,11 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
-			->disableOriginalConstructor()
-			->getMock();
-
 		$this->mock_account = $this->getMockBuilder( 'WC_Payments_Account' )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_gateway, $this->mock_account );
+		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account );
 
 		$this->file_name             = 'apple-developer-merchantid-domain-association';
 		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine
