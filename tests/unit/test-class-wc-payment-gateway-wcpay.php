@@ -450,6 +450,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		update_option( 'woocommerce_store_postcode', '94110' );
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$mock_order   = $this->mock_level_3_order( '98012' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
@@ -483,6 +488,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 
 		update_option( 'woocommerce_store_postcode', '94110' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 
 		$mock_order   = $this->mock_level_3_order( '98012', true );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
@@ -518,7 +528,26 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Use a non-US postcode.
 		update_option( 'woocommerce_store_postcode', '9000' );
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$mock_order   = $this->mock_level_3_order( '98012' );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+
+		$this->assertEquals( $expected_data, $level_3_data );
+	}
+
+	public function test_non_us_customer_level_3_data() {
+		$expected_data = [];
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'CA' );
+
+		$mock_order   = $this->mock_level_3_order( 'K0A' );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
