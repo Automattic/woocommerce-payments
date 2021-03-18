@@ -33,10 +33,11 @@ export const filters = [
 		filters: [
 			{
 				label: __( 'All currencies', 'woocommerce-payments' ),
-				value: 'all',
+				value: '---',
 			},
 			// Other values are getting injected later, taking values from store.
 		],
+		defaultValue: '---',
 	},
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
