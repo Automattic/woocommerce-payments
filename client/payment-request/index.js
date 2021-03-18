@@ -402,6 +402,12 @@ jQuery( ( $ ) => {
 				paymentDetails = cart.order_data;
 			}
 
+			// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
+			// Since it's considered a US state by Stripe, we need to do some special mapping.
+			if ( 'PR' === options.country ) {
+				options.country = 'US';
+			}
+
 			const paymentRequest = stripe.paymentRequest( options );
 
 			const elements = stripe.elements( {
