@@ -183,39 +183,24 @@ jQuery( ( $ ) => {
 
 			$( '.woocommerce-error' ).remove();
 
+			let $container = $( '.shop_table.cart' ).closest( 'form' ).first();
+
 			if ( wcpayPaymentRequestParams.is_product_page ) {
-				const element = $( '.product' ).first();
+				$container = $( '.product' ).first();
+			}
 
-				element.before( message );
+			if ( wcpayPaymentRequestParams.is_checkout_page ) {
+				$container = $( '.entry-content .woocommerce' ).first();
+			}
 
-				$( 'html, body' ).animate(
-					{
-						scrollTop: element.prev( '.woocommerce-error' ).offset()
-							.top,
-					},
-					600
-				);
-			} else if ( wcpayPaymentRequestParams.is_checkout_page ) {
-				const element = $( '.entry-content .woocommerce' ).first();
-
-				element.before( message );
+			if ( $container.length ) {
+				$container.before( message );
 
 				$( 'html, body' ).animate(
 					{
-						scrollTop: element.prev( '.woocommerce-error' ).offset()
-							.top,
-					},
-					600
-				);
-			} else {
-				const $form = $( '.shop_table.cart' ).closest( 'form' );
-
-				$form.before( message );
-
-				$( 'html, body' ).animate(
-					{
-						scrollTop: $form.prev( '.woocommerce-error' ).offset()
-							.top,
+						scrollTop: $container
+							.prev( '.woocommerce-error' )
+							.offset().top,
 					},
 					600
 				);
