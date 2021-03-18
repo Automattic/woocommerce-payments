@@ -184,7 +184,7 @@ jQuery( ( $ ) => {
 			$( '.woocommerce-error' ).remove();
 
 			if ( wcpayPaymentRequestParams.is_product_page ) {
-				const element = $( '.product' );
+				const element = $( '.product' ).first();
 
 				element.before( message );
 
