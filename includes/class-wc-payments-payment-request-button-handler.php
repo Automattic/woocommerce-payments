@@ -612,8 +612,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// Composite products are not supported on product page.
+		// Composite products are not supported on the product page.
 		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
+			return false;
+		}
+
+		// Mix and match products are not supported on the product page.
+		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
 			return false;
 		}
 
