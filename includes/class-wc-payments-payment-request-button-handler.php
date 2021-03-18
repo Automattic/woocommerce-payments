@@ -469,6 +469,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
 			'is_product_page' => is_product(),
+			'is_checkout_page' => is_checkout(),
 			'product'         => $this->get_product_data(),
 		];
 

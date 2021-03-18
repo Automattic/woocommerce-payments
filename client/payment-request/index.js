@@ -195,6 +195,18 @@ jQuery( ( $ ) => {
 					},
 					600
 				);
+			} else if ( wcpayPaymentRequestParams.is_checkout_page ) {
+				const element = $( '.entry-content .woocommerce' ).first();
+
+				element.before( message );
+
+				$( 'html, body' ).animate(
+					{
+						scrollTop: element.prev( '.woocommerce-error' ).offset()
+							.top,
+					},
+					600
+				);
 			} else {
 				const $form = $( '.shop_table.cart' ).closest( 'form' );
 
