@@ -76,7 +76,7 @@ export function* getDeposits( query ) {
 		const results = yield apiFetch( { path } ) || {};
 
 		yield updateDeposits( query, results.data );
-		yield updateDepositsCount( results.count );
+		yield updateDepositsCount( results.total_count );
 
 		// Update resolution state on getDeposit selector for each result.
 		for ( const i in results.data ) {

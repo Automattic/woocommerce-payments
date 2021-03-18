@@ -38,7 +38,7 @@ const payouts = {
 			bankAccount: 'STRIPE TEST BANK •••• 8599 (USD)',
 		},
 	],
-	count: 2,
+	total_count: 2,
 };
 
 const errorResponse = { code: 'error' };
@@ -144,7 +144,7 @@ describe( 'getDeposits resolver', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				updateDepositsCount( payouts.count )
+				updateDepositsCount( payouts.total_count )
 			);
 
 			payouts.data.forEach( ( payout ) => {
