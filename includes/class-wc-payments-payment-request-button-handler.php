@@ -373,15 +373,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  boolean
 	 */
 	public function allowed_items_in_cart() {
+		// Pre Orders compatbility where we don't support charge upon release.
+		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			return false;
+		}
+
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
 			if ( ! in_array( $_product->get_type(), $this->supported_product_types(), true ) ) {
-				return false;
-			}
-
-			// Not supported when user isn't authenticated and authentication is required.
-			if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
 				return false;
 			}
 
@@ -392,11 +392,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
-				return false;
-			}
-
-			// Pre Orders compatbility where we don't support charge upon release.
-			if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 				return false;
 			}
 		}
@@ -564,9 +559,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_cart() {
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
 		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
 			return false;
 		}
+
 		if ( ! $this->allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
 			return false;
