@@ -690,6 +690,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$token->get_last4()
 				);
 				$order->add_order_note( $note );
+			} elseif ( $payment_information->is_using_saved_payment_method() ) {
+				// We need to make sure the saved payment method is saved to the order so we can
+				// charge the payment method for a future payment.
+				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
 			}
 
 			return [
