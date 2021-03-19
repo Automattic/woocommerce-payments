@@ -20,27 +20,6 @@ use WCPay\Logger;
  */
 class WC_Payments_Payment_Request_Button_Handler {
 	/**
-	 * Gateway settings.
-	 *
-	 * @var array
-	 */
-	public $gateway_settings;
-
-	/**
-	 * Is test mode active?
-	 *
-	 * @var bool
-	 */
-	public $testmode;
-
-	/**
-	 * This Instance.
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private static $instance;
-
-	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
 	 * @var WC_Payments_Account
@@ -48,25 +27,38 @@ class WC_Payments_Payment_Request_Button_Handler {
 	private $account;
 
 	/**
+	 * WC_Payment_Gateway_WCPay instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
-		self::$instance = $this;
+		$this->account = $account;
 
-		// Add default settings in case the payment request options are missing.
-		$this->gateway_settings = array_merge( self::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
-		$this->account          = $account;
-		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
+		add_action( 'init', [ $this, 'init' ] );
+	}
 
-		// Checks if Stripe Gateway is enabled.
-		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return  void
+	 */
+	public function init() {
+		$this->gateway = WC_Payments::get_gateway();
+
+		// Checks if WCPay is enabled.
+		if ( ! $this->gateway->is_enabled() ) {
 			return;
 		}
 
 		// Checks if Payment Request is enabled.
-		if ( ! isset( $this->gateway_settings['payment_request'] ) || 'yes' !== $this->gateway_settings['payment_request'] ) {
+		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
 			return;
 		}
 
@@ -76,65 +68,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		$this->init();
-	}
-
-	/**
-	 * Payment request default settings.
-	 *
-	 * @return array Default settings.
-	 */
-	public static function get_default_settings() {
-		return [
-			'payment_request'                     => 'no',
-			'payment_request_button_type'         => 'buy',
-			'payment_request_button_theme'        => 'dark',
-			'payment_request_button_height'       => '44',
-			'payment_request_button_label'        => __( 'Buy now', 'woocommerce-payments' ),
-			'payment_request_button_branded_type' => 'long',
-		];
-	}
-
-	/**
-	 * Get this instance.
-	 *
-	 * @return class
-	 */
-	public static function instance() {
-		return self::$instance;
-	}
-
-	/**
-	 * Get total label.
-	 *
-	 * @return string
-	 */
-	public function get_total_label() {
-		// Get statement descriptor from API/cached account data.
-		$statement_descriptor = $this->account->get_statement_descriptor();
-		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
-	}
-
-	/**
-	 * Sets the WC customer session if one is not set.
-	 * This is needed so nonces can be verified by AJAX Request.
-	 *
-	 * @return void
-	 */
-	public function set_session() {
-		if ( ! is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
-			return;
-		}
-
-		WC()->session->set_customer_session_cookie( true );
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @return  void
-	 */
-	public function init() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
@@ -162,30 +95,37 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Gets the button type.
+	 * Gets total label.
 	 *
-	 * @return  string
+	 * @return string
 	 */
-	public function get_button_type() {
-		return isset( $this->gateway_settings['payment_request_button_type'] ) ? $this->gateway_settings['payment_request_button_type'] : 'default';
+	public function get_total_label() {
+		// Get statement descriptor from API/cached account data.
+		$statement_descriptor = $this->account->get_statement_descriptor();
+		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
 	}
 
 	/**
-	 * Gets the button theme.
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
 	 *
-	 * @return  string
+	 * @return void
 	 */
-	public function get_button_theme() {
-		return isset( $this->gateway_settings['payment_request_button_theme'] ) ? $this->gateway_settings['payment_request_button_theme'] : 'dark';
+	public function set_session() {
+		if ( ! is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
 	}
 
 	/**
 	 * Gets the button height.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function get_button_height() {
-		return isset( $this->gateway_settings['payment_request_button_height'] ) ? str_replace( 'px', '', $this->gateway_settings['payment_request_button_height'] ) : '64';
+		return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
 	}
 
 	/**
@@ -194,49 +134,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  boolean
 	 */
 	public function is_branded_button() {
-		return 'branded' === $this->get_button_type();
-	}
-
-	/**
-	 * Gets the branded button type.
-	 *
-	 * @return  string
-	 */
-	public function get_button_branded_type() {
-		return isset( $this->gateway_settings['payment_request_button_branded_type'] ) ? $this->gateway_settings['payment_request_button_branded_type'] : 'default';
+		return 'branded' === $this->gateway->get_option( 'payment_request_button_type' );
 	}
 
 	/**
 	 * Checks if the button is custom.
 	 *
-	 * @return  boolean
+	 * @return boolean
 	 */
 	public function is_custom_button() {
-		return 'custom' === $this->get_button_type();
+		return 'custom' === $this->gateway->get_option( 'payment_request_button_type' );
 	}
 
 	/**
 	 * Returns custom button css selector.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function custom_button_selector() {
 		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
 	}
 
 	/**
-	 * Gets the custom button label.
-	 *
-	 * @return  string
-	 */
-	public function get_button_label() {
-		return isset( $this->gateway_settings['payment_request_button_label'] ) ? $this->gateway_settings['payment_request_button_label'] : 'Buy now';
-	}
-
-	/**
 	 * Gets the product data for the currently viewed page
 	 *
-	 * @return  mixed Returns false if not on a product page, the product information otherwise.
+	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
 	public function get_product_data() {
 		if ( ! is_product() ) {
@@ -452,7 +374,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL bail.
-		if ( ! $this->testmode && ! is_ssl() ) {
+		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return;
 		}
@@ -468,7 +390,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$stripe_params = [
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => [
-				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::get_gateway()->is_in_test_mode() ),
+				'publishableKey'     => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'          => $this->account->get_stripe_account_id(),
 				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
@@ -496,14 +418,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'          => [
-				'type'         => $this->get_button_type(),
-				'theme'        => $this->get_button_theme(),
+				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
+				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 				'height'       => $this->get_button_height(),
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
 				'css_selector' => $this->custom_button_selector(),
-				'branded_type' => $this->get_button_branded_type(),
+				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
 			'is_product_page' => is_product(),
 			'product'         => $this->get_product_data(),
@@ -554,8 +476,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			<div id="wcpay-payment-request-button">
 				<?php
 				if ( $this->is_custom_button() ) {
-					$label      = esc_html( $this->get_button_label() );
-					$class_name = esc_attr( 'button ' . $this->get_button_theme() );
+					$label      = esc_html( $this->gateway->get_option( 'payment_request_button_label' ) );
+					$class_name = esc_attr( 'button ' . $this->gateway->get_option( 'payment_request_button_theme' ) );
 					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
 					echo '<button id="wcpay-custom-button" class="' . esc_attr( $class_name ) . '" style="' . esc_attr( $style ) . '">' . esc_html( $label ) . '</button>';
 				}
