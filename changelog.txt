@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 2.x.x - 2021-xx-xx =
+* Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
+
 = 2.1.1 - 2021-03-23 =
 * Fix - Fatal error when a subscription is processed with action scheduler hook.
 
