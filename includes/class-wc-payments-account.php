@@ -760,16 +760,10 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account country.
 	 *
-	 * @return string|null Country.
+	 * @return string Country.
 	 */
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
-
-		// When there is an account connected, if 'country' is missing, default to US.
-		if ( $account ) {
-			return $account['country'] ?? 'US';
-		}
-
-		return null;
+		return $account['country'] ?? 'US';
 	}
 }

@@ -450,13 +450,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		update_option( 'woocommerce_store_postcode', '94110' );
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$mock_order   = $this->mock_level_3_order( '98012' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -489,13 +484,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		update_option( 'woocommerce_store_postcode', '94110' );
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$mock_order   = $this->mock_level_3_order( '98012', true );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -503,7 +493,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_us_store_level_3_data() {
 		// Use a non-us customer postcode to ensure it's not included in the level3 data.
 		$mock_order   = $this->mock_level_3_order( '9000' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
 
 		$this->assertArrayNotHasKey( 'shipping_address_zip', $level_3_data );
 	}
@@ -528,13 +518,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		// Use a non-US postcode.
 		update_option( 'woocommerce_store_postcode', '9000' );
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$mock_order   = $this->mock_level_3_order( '98012' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'US', $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -542,13 +527,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_non_us_customer_level_3_data() {
 		$expected_data = [];
 
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_country' )
-			->willReturn( 'CA' );
-
 		$mock_order   = $this->mock_level_3_order( 'K0A' );
-		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( 'CA', $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
@@ -577,6 +557,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 
 		$this->wcpay_gateway->capture_charge( $order );
 
@@ -619,6 +604,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$this->wcpay_gateway->capture_charge( $order );
 
 		$notes             = wc_get_order_notes(
@@ -660,6 +650,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
@@ -699,6 +694,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 
 		$this->wcpay_gateway->capture_charge( $order );
 
@@ -742,6 +742,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 
 		$this->wcpay_gateway->capture_charge( $order );
 
@@ -788,6 +793,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			)
 		);
 
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
@@ -831,6 +841,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 				)
 			)
 		);
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
 
 		$this->wcpay_gateway->capture_charge( $order );
 
