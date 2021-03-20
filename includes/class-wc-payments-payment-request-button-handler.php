@@ -92,6 +92,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_filter( 'woocommerce_validate_postcode', [ $this, 'postal_code_validation' ], 10, 3 );
 
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
+
+		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
+		// This option does not get stored in the database at all, and this function
+		// will be used to calculate it whenever the option value is retrieved instead.
+		// It's used for displaying inbox notifications.
+		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 	}
 
 	/**
@@ -1151,5 +1157,28 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'pending' => false,
 			],
 		];
+	}
+
+	/**
+	 * Calculates whether Apple Pay is enabled for this store.
+	 * The option value is not stored in the database, and is calculated
+	 * using this function instead, and the values is returned by using the pre_option filter.
+	 *
+	 * The option value is retrieved for inbox notifications.
+	 *
+	 * @param mixed $value The value of the option.
+	 */
+	public function get_option_is_apple_pay_enabled( $value ) {
+		// Return a random value (1 or 2) if the account is live and payment request buttons are enabled.
+		if (
+			$this->gateway->is_enabled()
+			&& 'yes' === $this->gateway->get_option( 'payment_request' )
+			&& ! $this->gateway->is_in_dev_mode()
+			&& $this->account->get_is_live()
+		) {
+			$value = wp_rand( 1, 2 );
+		}
+
+		return $value;
 	}
 }
