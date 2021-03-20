@@ -101,6 +101,36 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks whether authentication is required for checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_authentication_required() {
+		// If guest checkout is disabled, authentication might be required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) ) {
+			// If account creation is not possible, authentication is required.
+			return ! $this->is_account_creation_possible();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether account creation is possible during checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_account_creation_possible() {
+		// If automatically generate username/password are disabled, the Payment Request API
+		// can't include any of those fields, so account creation is not possible.
+		return (
+			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
+		);
+	}
+
+	/**
 	 * Gets total label.
 	 *
 	 * @return string
@@ -344,11 +374,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks the cart to see if all items are allowed to used.
+	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return  boolean
 	 */
 	public function allowed_items_in_cart() {
+		// Pre Orders compatbility where we don't support charge upon release.
+		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			return false;
+		}
+
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
@@ -356,13 +391,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
-			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Order' ) && WC_Subscriptions_Cart::cart_contains_subscription() && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			// Not supported for subscription products when user is not authenticated and account creation is not possible.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 				return false;
 			}
 
-			// Pre Orders compatbility where we don't support charge upon release.
-			if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			// Trial subscriptions with shipping are not supported.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
@@ -530,9 +565,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_cart() {
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
 		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
 			return false;
 		}
+
 		if ( ! $this->allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
 			return false;
@@ -558,14 +599,33 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
+		// Not supported for subscription products when user is not authenticated and account creation is not possible.
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
+			return false;
+		}
+
 		// Trial subscriptions with shipping are not supported.
-		if ( class_exists( 'WC_Subscriptions_Order' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
 			return false;
 		}
 
 		// Pre Orders charge upon release not supported.
-		if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			Logger::log( 'Pre Order charge upon release is not supported. ( Payment Request button disabled )' );
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			return false;
+		}
+
+		// Composite products are not supported on the product page.
+		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
+			return false;
+		}
+
+		// Mix and match products are not supported on the product page.
+		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
 			return false;
 		}
 
