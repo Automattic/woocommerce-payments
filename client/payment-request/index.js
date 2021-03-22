@@ -183,19 +183,11 @@ jQuery( ( $ ) => {
 
 			$( '.woocommerce-error' ).remove();
 
-			let $container = $( '.shop_table.cart' ).closest( 'form' ).first();
+			const $container = $( '.woocommerce-notices-wrapper').first();
 
-			if ( wcpayPaymentRequestParams.is_product_page ) {
-				$container = $( '.product' ).first();
-			}
-
-			if ( wcpayPaymentRequestParams.is_checkout_page ) {
-				$container = $( '.entry-content .woocommerce' ).first();
-			}
+			$container.before( message );
 
 			if ( $container.length ) {
-				$container.before( message );
-
 				$( 'html, body' ).animate(
 					{
 						scrollTop: $container
