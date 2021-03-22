@@ -185,13 +185,13 @@ jQuery( ( $ ) => {
 
 			const $container = $( '.woocommerce-notices-wrapper' ).first();
 
-			$container.before( message );
-
 			if ( $container.length ) {
+				$container.append( message );
+
 				$( 'html, body' ).animate(
 					{
 						scrollTop: $container
-							.prev( '.woocommerce-error' )
+							.find( '.woocommerce-error' )
 							.offset().top,
 					},
 					600
