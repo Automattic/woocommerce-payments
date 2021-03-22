@@ -183,7 +183,7 @@ jQuery( ( $ ) => {
 
 			$( '.woocommerce-error' ).remove();
 
-			const $container = $( '.woocommerce-notices-wrapper').first();
+			const $container = $( '.woocommerce-notices-wrapper' ).first();
 
 			$container.before( message );
 
