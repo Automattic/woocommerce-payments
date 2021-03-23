@@ -110,7 +110,7 @@ class WC_Payments_Fraud_Service {
 		if ( $this->check_if_user_just_logged_in() ) {
 			$config['session_id'] = $this->get_cookie_session_id();
 		} else {
-			if ( is_a( WC()->session, 'WC_Session' ) && method_exists( WC()->session, 'get_customer_id' ) ) {
+			if ( is_a( WC()->session, 'WC_Session' ) ) {
 				$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
 			} else {
 				return null; // we do not have a valid session for the current process.
