@@ -79,6 +79,11 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return  void
 	 */
 	public function init() {
+		// TODO: Remove this ahead releasing Apple Pay for all merchants.
+		if ( 'US' !== WC()->countries->get_base_country() ) {
+			return;
+		}
+
 		$this->gateway = WC_Payments::get_gateway();
 		$this->add_domain_association_rewrite_rule();
 
