@@ -110,6 +110,9 @@ class WC_Payments_Fraud_Service {
 		if ( $this->check_if_user_just_logged_in() ) {
 			$config['session_id'] = $this->get_cookie_session_id();
 		} else {
+			if ( ! isset( WC()->session ) ) {
+				WC()->initialize_session();
+			}
 			$config['session_id'] = $wpcom_blog_id . '_' . WC()->session->get_customer_id();
 		}
 
