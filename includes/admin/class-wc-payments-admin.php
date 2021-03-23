@@ -76,21 +76,13 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
-			if ( self::is_account_overview_page_enabled() ) {
-				wc_admin_register_page(
-					[
-						'id'       => 'wc-payments-overview',
-						'title'    => __( 'Overview', 'woocommerce-payments' ),
-						'parent'   => 'wc-payments',
-						'path'     => '/payments/overview',
-						'nav_args' => [
-							'parent' => 'wc-payments',
-							'order'  => 5,
-						],
-					]
-				);
-			}
 
+			/**
+			 * Please note that if any other page is registered first and it's
+			 * path is different from the $top_level_link it will make
+			 * wc_admin_register_page to duplicate "Payments" menu item as a
+			 * first item in the sub-menu.
+			 */
 			wc_admin_register_page(
 				[
 					'id'       => 'wc-payments-deposits',
@@ -129,6 +121,26 @@ class WC_Payments_Admin {
 					],
 				]
 			);
+
+			if ( self::is_account_overview_page_enabled() ) {
+				/**
+				 * Once page is fully implemented it should become the main
+				 * entry page and implement a proper adjustment of
+				 * $top_level_link if needed to avoid menu item duplication.
+				 */
+				wc_admin_register_page(
+					[
+						'id'       => 'wc-payments-overview',
+						'title'    => __( 'Overview', 'woocommerce-payments' ),
+						'parent'   => 'wc-payments',
+						'path'     => '/payments/overview/',
+						'nav_args' => [
+							'parent' => 'wc-payments',
+							'order'  => 5,
+						],
+					]
+				);
+			}
 
 			wc_admin_connect_page(
 				[
@@ -423,7 +435,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool
 	 */
-	private function is_account_overview_page_enabled() {
+	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
 	}
 }
