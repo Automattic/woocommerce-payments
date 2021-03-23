@@ -58,7 +58,7 @@ window.addEventListener( 'load', () => {
 } );
 
 // TODO: Remove this `if` ahead of releasing Apple Pay for all merchants.
-if ( wcpayAdminSettings.paymentRequestEnabled ) {
+if ( wcpayAdminSettings.paymentRequestAvailable ) {
 	// Payment Request button settings migrated and adapted from Stripe gateway extension.
 	const findParent = ( el, selector ) => {
 		while (
