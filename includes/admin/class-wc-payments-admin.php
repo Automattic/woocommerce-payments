@@ -291,7 +291,7 @@ class WC_Payments_Admin {
 				'accountFees'           => $this->account->get_fees(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
-				'paymentRequestEnabled' => 'US' === WC()->countries->get_base_country(),
+				'paymentRequestEnabled' => WC_Payments::should_payment_request_be_available(),
 			]
 		);
 

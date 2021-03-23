@@ -80,7 +80,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 */
 	public function init() {
 		// TODO: Remove this ahead releasing Apple Pay for all merchants.
-		if ( 'US' !== WC()->countries->get_base_country() ) {
+		if ( ! WC_Payments::should_payment_request_be_available() ) {
 			return;
 		}
 

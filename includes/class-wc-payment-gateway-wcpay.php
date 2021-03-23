@@ -205,7 +205,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function add_payment_request_form_fields() {
 		// TODO: Remove this check and inject contents of `$payment_request_fields` into `$this->form_fields`
 		// after `saved_cards` ahead of releasing Apple Pay for all merchants.
-		if ( 'US' === WC()->countries->get_base_country() ) {
+		if ( WC_Payments::should_payment_request_be_available() ) {
 			$payment_request_fields = [
 				'payment_request'                     => [
 					'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
