@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.2.0 - 2021-xx-xx =
+* Fix - Failing subscriptions renewal due to fatal error.
+
 = 2.1.0 - 2021-03-16 =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 * Update - Define constant for the group to be used for scheduled actions.
