@@ -7,10 +7,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { OrderStatus } from '@woocommerce/components';
-import {
-	Card,
-	CardBody,
-} from '@wordpress/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -74,7 +71,10 @@ export const DepositOverview = ( { depositId } ) => {
 							placeholder="Amount"
 							display="inline"
 						>
-							{ formatCurrency( deposit.amount, deposit.currency ) }
+							{ formatCurrency(
+								deposit.amount,
+								deposit.currency
+							) }
 						</Loadable>
 					</div>
 				</div>

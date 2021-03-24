@@ -11,15 +11,13 @@ import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
-	TextControl,
-	TextareaControl,
-	SelectControl,
-} from '@wordpress/components';
-import {
 	Card,
 	CardBody,
 	CardFooter,
 	CardHeader,
+	TextControl,
+	TextareaControl,
+	SelectControl,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
 
@@ -125,9 +123,7 @@ export const DisputeEvidenceForm = ( props ) => {
 	const evidenceSections = fields.map( ( section ) => {
 		return (
 			<Card size="large">
-				<CardHeader>
-					{ section.title }
-				</CardHeader> 
+				<CardHeader>{ section.title }</CardHeader>
 				<CardBody>
 					{ section.description && <p>{ section.description }</p> }
 					{ section.fields.map( composeFieldControl ) }
@@ -225,13 +221,13 @@ export const DisputeEvidencePage = ( props ) => {
 			<Card size="large">
 				<CardHeader>
 					{
-					<Loadable
-						isLoading={ isLoading }
-						value={ __(
-							'Challenge dispute',
-							'woocommerce-payments'
-						) }
-					/>
+						<Loadable
+							isLoading={ isLoading }
+							value={ __(
+								'Challenge dispute',
+								'woocommerce-payments'
+							) }
+						/>
 					}
 				</CardHeader>
 				<CardBody>
@@ -240,59 +236,62 @@ export const DisputeEvidencePage = ( props ) => {
 			</Card>
 			<Card size="large">
 				<CardHeader>
-				{
-				<Loadable
-					isLoading={ isLoading }
-					value={ __( 'Product type', 'woocommerce-payments' ) }
-				/>
-				}
+					{
+						<Loadable
+							isLoading={ isLoading }
+							value={ __(
+								'Product type',
+								'woocommerce-payments'
+							) }
+						/>
+					}
 				</CardHeader>
 				<CardBody>
-				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
-					<SelectControl
-						value={ productType }
-						onChange={ onChangeProductType }
-						options={ [
-							{
-								label: __(
-									'Select one…',
-									'woocommerce-payments'
-								),
-								disabled: true,
-								value: '',
-							},
-							{
-								label: __(
-									'Physical product',
-									'woocommerce-payments'
-								),
-								value: 'physical_product',
-							},
-							{
-								label: __(
-									'Digital product or service',
-									'woocommerce-payments'
-								),
-								value: 'digital_product_or_service',
-							},
-							{
-								label: __(
-									'Offline service',
-									'woocommerce-payments'
-								),
-								value: 'offline_service',
-							},
-							{
-								label: __(
-									'Multiple product types',
-									'woocommerce-payments'
-								),
-								value: 'multiple',
-							},
-						] }
-						disabled={ readOnly }
-					/>
-				</LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
+						<SelectControl
+							value={ productType }
+							onChange={ onChangeProductType }
+							options={ [
+								{
+									label: __(
+										'Select one…',
+										'woocommerce-payments'
+									),
+									disabled: true,
+									value: '',
+								},
+								{
+									label: __(
+										'Physical product',
+										'woocommerce-payments'
+									),
+									value: 'physical_product',
+								},
+								{
+									label: __(
+										'Digital product or service',
+										'woocommerce-payments'
+									),
+									value: 'digital_product_or_service',
+								},
+								{
+									label: __(
+										'Offline service',
+										'woocommerce-payments'
+									),
+									value: 'offline_service',
+								},
+								{
+									label: __(
+										'Multiple product types',
+										'woocommerce-payments'
+									),
+									value: 'multiple',
+								},
+							] }
+							disabled={ readOnly }
+						/>
+					</LoadableBlock>
 				</CardBody>
 			</Card>
 			{

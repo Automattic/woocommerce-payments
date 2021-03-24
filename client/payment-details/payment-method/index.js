@@ -4,12 +4,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardFooter,
-	CardHeader,
-} from '@wordpress/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -147,7 +142,10 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 
 						<Detail
 							isLoading={ isLoading }
-							label={ __( 'Fingerprint', 'woocommerce-payments' ) }
+							label={ __(
+								'Fingerprint',
+								'woocommerce-payments'
+							) }
 						>
 							{ fingerprint }
 						</Detail>
@@ -184,7 +182,10 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 
 						<Detail
 							isLoading={ isLoading }
-							label={ __( 'Owner email', 'woocommerce-payments' ) }
+							label={ __(
+								'Owner email',
+								'woocommerce-payments'
+							) }
 						>
 							{ email }
 						</Detail>
@@ -216,7 +217,10 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 
 						<Detail
 							isLoading={ isLoading }
-							label={ __( 'Street check', 'woocommerce-payments' ) }
+							label={ __(
+								'Street check',
+								'woocommerce-payments'
+							) }
 						>
 							<Check checked={ line1Check } />
 						</Detail>

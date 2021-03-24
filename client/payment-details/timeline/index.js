@@ -5,11 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-} from '@wordpress/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -37,7 +33,10 @@ const PaymentDetailsTimeline = ( { chargeId } ) => {
 			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					{ timelineError instanceof Error ? (
-						__( 'Error while loading timeline', 'woocommerce-payments' )
+						__(
+							'Error while loading timeline',
+							'woocommerce-payments'
+						)
 					) : (
 						<Timeline items={ items } />
 					) }

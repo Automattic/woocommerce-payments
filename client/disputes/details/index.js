@@ -4,12 +4,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardFooter,
-	CardHeader,
-} from '@wordpress/components';
+import { Card, CardBody, CardFooter, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -65,25 +60,25 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 		<Page isNarrow className="wcpay-dispute-details">
 			{ testModeNotice }
 			<Card size="large">
-   				 <CardHeader>
-        			<Loadable
-            			isLoading={ isLoading }
-            			value={ __(
-                			'Dispute overview',
-                			'woocommerce-payments'
-           			 	) }
-        			/>
-    			</CardHeader>
-    			<CardBody>
-        			<Info dispute={ dispute } isLoading={ isLoading } />
-        			<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-            			<Paragraphs>{ mapping.overview }</Paragraphs>
-        			</LoadableBlock>
+				<CardHeader>
+					<Loadable
+						isLoading={ isLoading }
+						value={ __(
+							'Dispute overview',
+							'woocommerce-payments'
+						) }
+					/>
+				</CardHeader>
+				<CardBody>
+					<Info dispute={ dispute } isLoading={ isLoading } />
+					<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+						<Paragraphs>{ mapping.overview }</Paragraphs>
+					</LoadableBlock>
 				</CardBody>
 				<CardFooter>
-        			<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-            			{ actions }
-        			</LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ actions }
+					</LoadableBlock>
 				</CardFooter>
 			</Card>
 			<Card size="large">
@@ -125,16 +120,19 @@ const DisputeDetails = ( { query: { id: disputeId } } ) => {
 					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
 						{ mapping.respond && (
 							<h3>
-								{ __( 'How to respond', 'woocommerce-payments' ) }
+								{ __(
+									'How to respond',
+									'woocommerce-payments'
+								) }
 							</h3>
 						) }
 						<Paragraphs>{ mapping.respond }</Paragraphs>
-						</LoadableBlock>
+					</LoadableBlock>
 				</CardBody>
 				<CardFooter>
-        			<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
-            			{ actions }
-        			</LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 6 }>
+						{ actions }
+					</LoadableBlock>
 				</CardFooter>
 			</Card>
 		</Page>

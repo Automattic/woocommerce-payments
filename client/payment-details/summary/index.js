@@ -5,12 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import {
-	Card,
-	CardBody,
-	CardFooter,
-	CardHeader,
-} from '@wordpress/components';
+import { Card, CardBody, CardFooter } from '@wordpress/components';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -100,7 +95,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								isLoading={ isLoading }
 								placeholder="Amount placeholder"
 							>
-								{ formatCurrency( charge.amount, charge.currency ) }
+								{ formatCurrency(
+									charge.amount,
+									charge.currency
+								) }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
 								</span>
@@ -138,7 +136,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									isLoading={ isLoading }
 									placeholder="Fee amount"
 								>
-									{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
+									{ `${ __(
+										'Fee',
+										'woocommerce-payments'
+									) }: ` }
 									{ formatCurrency(
 										-balance.fee,
 										balance.currency
@@ -150,7 +151,10 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 									isLoading={ isLoading }
 									placeholder="Net amount"
 								>
-									{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
+									{ `${ __(
+										'Net',
+										'woocommerce-payments'
+									) }: ` }
 									{ formatCurrency(
 										balance.net,
 										balance.currency
