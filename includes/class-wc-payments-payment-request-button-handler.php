@@ -1033,9 +1033,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return string Normalized state or original state input value.
 	 */
 	public function get_normalized_state_from_pr_states( $state, $country ) {
-		// Include Payment Request API Address constants for compatibility with WC countries/states.
-		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-address.php';
-		$pr_states = \WCPay\Constants\Payment_Request_Address::STATES;
+		// Include Payment Request API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-button-states.php';
+		$pr_states = \WCPay\Constants\Payment_Request_Button_States::STATES;
 
 		if ( ! isset( $pr_states[ $country ] ) ) {
 			return $state;
@@ -1075,7 +1075,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		return $wc_state_abbr;
+		return $state;
 	}
 
 	/**
@@ -1109,6 +1109,40 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * The Payment Request API provides its own validation for the address form.
+	 * For some countries, it might not provide a state field, so we need to return a more descriptive
+	 * error message, indicating that the Payment Request button is not supported for that country.
+	 */
+	public function validate_state() {
+		$wc_checkout     = WC_Checkout::instance();
+		$posted_data     = $wc_checkout->get_posted_data();
+		$checkout_fields = $wc_checkout->get_checkout_fields();
+		$countries       = WC()->countries->get_countries();
+
+		$is_supported = true;
+		// Checks if billing state is missing and is required.
+		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
+			$is_supported = false;
+		}
+
+		// Checks if shipping state is missing and is required.
+		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
+			$is_supported = false;
+		}
+
+		if ( ! $is_supported ) {
+			wc_add_notice(
+				sprintf(
+					/* translators: %s: country. */
+					__( 'The Payment Request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
+				),
+				'error'
+			);
+		}
+	}
+
+	/**
 	 * Create order. Security is handled by WC.
 	 */
 	public function ajax_create_order() {
@@ -1119,6 +1153,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
+
+		// In case the state is required, but is missing, add a more descriptive error notice.
+		$this->validate_state();
 
 		$this->normalize_state();
 

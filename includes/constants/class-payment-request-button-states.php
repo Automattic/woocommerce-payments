@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Payment_Request_Address
+ * Class Payment_Request_Button_States
  *
  * @package WooCommerce\Payments
  */
@@ -12,60 +12,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * This class provides a list of states for the Payment Request API to match against WooCommerce states.
+ * The list is based on libaddressinput: https://github.com/google/libaddressinput,
+ * which is used by Chromium based browsers in the native Payment Request address dialog.
+ *
  * Known issues/inconsistencies:
- *    1. WC expects it, but there's no state field in the Payment Request API for the following countries:
+ *    1. WC provides a dropdown list of states, but there's no state field in Chrome for the following countries:
  *        AO (Angola), BD (Bangladesh), BG (Bulgaria), BJ (Benin), BO (Bolivia), DO (Dominican Republic),
  *        DZ (Algeria), GH (Ghana), GT (Guatemala), HU (Hungary), KE (Kenya), LA (Laos),
  *        LR (Liberia), MD (Moldova), NA (Namibia), NP (Nepal), PK (Pakistan),
  *        PY (Paraguay), RO (Romania), TZ (Tanzania), UG (Uganda), UM (United States Minor Outlying Islands),
  *        ZA (South Africa), ZM (Zambia).
- *    2. WC expects it, but there's no zip/postal code field in the Payment Request API for the following:
- *        ...
- *    3. WC expects it, but there's no city field in the Payment Request API for the following:
- *        ...
- *    4. WC doesn't support state field, but Payment Request supports it (doesn't cause errors - just inconsistent):
- *        KR, VN.
+ *    2. Chrome does not provide a dropdown list of states for 161 countries in total, out of the 249 countries WC supports,
+ *        so the countries in which the state field is required by WC, and not provided by the browser are not supported.
+ *    3. Chrome does not provide a zip/postal code field for 60 out of the 249 countries WC supports. Only for 5 countries
+ *        the zip code field is missing while the state field is present: BS (Bahamas), PA (Panama), SC (Seychelles),
+ *        SR (Suriname), TV (Tuvalu). Several other countries provide an optional zip code field.
+ *    4. WC expects it, but there's no city field in the Payment Request API for the following:
+ *        JP (Japan), MO (Macao), TN (Tunisia), KY (Cayman Islands), GI (Gibraltar).
  *    5. The following countries are not listed in WC:
  *        AC (Ascension Island), IC (Canary Islands), EA (Ceuta & Melilla), CP (Clipperton Island), DG (Diego Garcia),
  *        TA (Tristan da Cunha), XK (Kosovo).
  */
-
-/**
- * This class provides a list of constants for the Payment Request API
- * to match against WooCommerce values.
- *
- * This list is based on libaddressinput: https://github.com/google/libaddressinput,
- * which is used by Chromium based browsers in the native Payment Request address dialog.
- */
-class Payment_Request_Address {
-	// WC countries list - states - required = false.
-	const UNSUPPORTED_COUNTRIES = [
-		'AO',
-		'BD',
-		'BG',
-		'BJ',
-		'BO',
-		'DO',
-		'DZ',
-		'GH',
-		'GT',
-		'HU',
-		'KE',
-		'LA',
-		'LR',
-		'MD',
-		'NA',
-		'NP',
-		'PK',
-		'PY',
-		'RO',
-		'TZ',
-		'UG',
-		'UM',
-		'ZA',
-		'ZM',
-	];
-
+class Payment_Request_Button_States {
 	/**
 	 * A list of states which is compatible with Chromium based browsers for the Payment Request API.
 	 * If the input comes from Chrome, we will always match with `code`, but if the request comes from
@@ -74,6 +43,7 @@ class Payment_Request_Address {
 	 *    - [1] = name (string)
 	 *    - [2] = localName (string|null)
 	 */
+
 	// phpcs:disable
 	const STATES = [
 		// Afghanistan.
