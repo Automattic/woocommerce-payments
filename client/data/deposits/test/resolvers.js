@@ -19,7 +19,7 @@ import {
 } from '../actions';
 import { getDepositsOverview, getDeposit, getDeposits } from '../resolvers';
 
-const payouts = {
+const depositsResponse = {
 	data: [
 		{
 			id: 'test_po_1',
@@ -45,8 +45,8 @@ const errorResponse = { code: 'error' };
 
 describe( 'getDepositsOverview resolver', () => {
 	const successfulResponse = {
-		last_deposit: payouts.data[ 0 ],
-		next_deposit: payouts.data[ 1 ],
+		last_deposit: depositsResponse.data[ 0 ],
+		next_deposit: depositsResponse.data[ 1 ],
 		balance: { pending: { amount: 5500 }, available: { amount: 0 } },
 		deposits_schedule: { interval: 'daily' },
 	};
@@ -103,9 +103,9 @@ describe( 'getDeposit resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with deposit data', () => {
-			expect( generator.next( payouts.data[ 0 ] ).value ).toEqual(
-				updateDeposit( payouts.data[ 0 ] )
-			);
+			expect(
+				generator.next( depositsResponse.data[ 0 ] ).value
+			).toEqual( updateDeposit( depositsResponse.data[ 0 ] ) );
 		} );
 	} );
 
@@ -139,15 +139,15 @@ describe( 'getDeposits resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with deposits data', () => {
-			expect( generator.next( payouts ).value ).toEqual(
-				updateDeposits( query, payouts.data )
+			expect( generator.next( depositsResponse ).value ).toEqual(
+				updateDeposits( query, depositsResponse.data )
 			);
 
 			expect( generator.next().value ).toEqual(
-				updateDepositsCount( payouts.total_count )
+				updateDepositsCount( depositsResponse.total_count )
 			);
 
-			payouts.data.forEach( ( payout ) => {
+			depositsResponse.data.forEach( ( payout ) => {
 				expect( generator.next().value ).toEqual(
 					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [
 						payout.id,
