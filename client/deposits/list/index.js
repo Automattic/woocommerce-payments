@@ -30,6 +30,7 @@ const getColumns = ( sortByDate ) => [
 	{
 		key: 'date',
 		label: __( 'Date', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Date', 'woocommerce-payments' ),
 		required: true,
 		isLeftAligned: true,
 		defaultOrder: 'desc',
@@ -40,11 +41,13 @@ const getColumns = ( sortByDate ) => [
 	{
 		key: 'type',
 		label: __( 'Type', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 		required: true,
 	},
 	{
 		key: 'amount',
 		label: __( 'Amount', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Amount', 'woocommerce-payments' ),
 		isNumeric: true,
 		required: true,
 		isSortable: true,
@@ -52,12 +55,14 @@ const getColumns = ( sortByDate ) => [
 	{
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
 		required: true,
 	},
 	// TODO { key: 'transactions', label: __( 'Transactions', 'woocommerce-payments' ), isNumeric: true },
 	{
 		key: 'bankAccount',
 		label: __( 'Bank account', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
 	},
 ];
 
