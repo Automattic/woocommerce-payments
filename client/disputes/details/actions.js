@@ -8,11 +8,6 @@ import { addQueryArgs } from '@wordpress/url';
 import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 
-/**
- * Internal dependencies.
- */
-import CardFooter from 'components/card-footer';
-
 const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	if ( ! needsResponse && ! isSubmitted ) {
 		return null;

@@ -30,7 +30,6 @@ import evidenceFields from './fields';
 import { FileUploadControl } from './file-upload';
 import Info from '../info';
 import Page from 'components/page';
-import CardFooter from 'components/card-footer';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
