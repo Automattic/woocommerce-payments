@@ -121,7 +121,7 @@ export const DisputeEvidenceForm = ( props ) => {
 
 	const evidenceSections = fields.map( ( section ) => {
 		return (
-			<Card size="large">
+			<Card size="large" key={ section.key }>
 				<CardHeader>{ section.title }</CardHeader>
 				<CardBody>
 					{ section.description && <p>{ section.description }</p> }
