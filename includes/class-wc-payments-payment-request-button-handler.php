@@ -1069,7 +1069,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( is_array( $wc_states ) ) {
 			foreach ( $wc_states as $wc_state_abbr => $wc_state_value ) {
-				if ( preg_match( '/' . preg_quote( $state, '/' ) . '/i', $wc_state_value ) ) {
+				if ( preg_match( '/' . preg_quote( $wc_state_value, '/' ) . '/i', $state ) ) {
 					return $wc_state_abbr;
 				}
 			}
