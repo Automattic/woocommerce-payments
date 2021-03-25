@@ -6,23 +6,15 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -120,9 +112,11 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -131,7 +125,7 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -140,27 +134,20 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Bank cannot process
-          </h2>
-        </div>
+        Dispute: Bank cannot process
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -169,7 +156,7 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -187,23 +174,15 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -301,9 +280,11 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -312,7 +293,7 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -321,27 +302,20 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Check returned
-          </h2>
-        </div>
+        Dispute: Check returned
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -350,7 +324,7 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -368,23 +342,15 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -488,9 +454,11 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
         <p>
           If your customer was not refunded appropriately, you will need to accept the dispute, or resolve the issue with your customer. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -499,7 +467,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -508,23 +476,15 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Credit not processed
-          </h2>
-        </div>
+        Dispute: Credit not processed
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims that the purchased product was returned or the transaction was otherwise canceled, but you have not yet provided a refund or credit.
@@ -546,9 +506,11 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
         <p>
           If the cardholder agrees to withdraw the dispute, you should still submit evidence for the dispute using the forms on the next screen. In addition to the following evidence, your submission should include correspondence with the cardholder saying they would withdraw the dispute and a written statement from their card issuer confirming that the dispute has been withdrawn.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -557,7 +519,7 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -575,23 +537,15 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -689,9 +643,11 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -700,7 +656,7 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -709,27 +665,20 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Customer initiated
-          </h2>
-        </div>
+        Dispute: Customer initiated
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -738,7 +687,7 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -756,23 +705,15 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -870,9 +811,11 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -881,7 +824,7 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -890,27 +833,20 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Debit not authorized
-          </h2>
-        </div>
+        Dispute: Debit not authorized
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -919,7 +855,7 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -937,23 +873,15 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1057,9 +985,11 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
         <p>
           If there were duplicate payments, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1068,7 +998,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1077,23 +1007,15 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Duplicate
-          </h2>
-        </div>
+        Dispute: Duplicate
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims they were charged multiple times for the same product or service.
@@ -1121,9 +1043,11 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
         <p>
           Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1132,7 +1056,7 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1150,23 +1074,15 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1270,9 +1186,11 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
         <p>
           If you believe the payment was actually made using a stolen credit card, you will need to accept the dispute. The credit card networks place liability for accepting fraudulent payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1281,7 +1199,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1290,23 +1208,15 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Fraudulent
-          </h2>
-        </div>
+        Dispute: Fraudulent
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
@@ -1331,9 +1241,11 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
         <p>
           It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1342,7 +1254,7 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1360,23 +1272,15 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1477,9 +1381,11 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
         <p>
           If you believe the dispute is invalid, you can challenge it by submitting the appropriate evidence using the response forms on the next screen.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1488,7 +1394,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1497,30 +1403,24 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: General
-          </h2>
-        </div>
+        Dispute: General
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           This is an uncategorized dispute, so you should contact the customer for additional details to find out why the payment was disputed.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1529,7 +1429,7 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1547,23 +1447,15 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1661,9 +1553,11 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1672,7 +1566,7 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1681,27 +1575,20 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Incorrect account details
-          </h2>
-        </div>
+        Dispute: Incorrect account details
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1710,7 +1597,7 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1728,23 +1615,15 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1842,9 +1721,11 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             </span>
           </div>
         </div>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1853,7 +1734,7 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1862,27 +1743,20 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Insufficient funds
-          </h2>
-        </div>
+        Dispute: Insufficient funds
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      />
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
       >
-        <div
-          class="woocommerce-card__footer"
-        >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -1891,7 +1765,7 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -1909,23 +1783,15 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2029,9 +1895,11 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
         <p>
           If you can not prove the customer received their product or service, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2040,7 +1908,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2049,23 +1917,15 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Product not received
-          </h2>
-        </div>
+        Dispute: Product not received
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims they did not receive the products or services purchased.
@@ -2087,9 +1947,11 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
         <p>
           Even if your customer agrees to withdraw the dispute, you must still submit appropriate evidence using the forms on the next screen. Simply saying that your customer is going to withdraw the dispute is not sufficient evidence.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2098,7 +1960,7 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2116,23 +1978,15 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2236,9 +2090,11 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
         <p>
           If you can not prove the customer received their product or service as described, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2247,7 +2103,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2256,23 +2112,15 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Product unacceptable
-          </h2>
-        </div>
+        Dispute: Product unacceptable
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The product or service was received but was defective, damaged, or not as described.
@@ -2303,9 +2151,11 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
         <p>
           If the customer withdraws their dispute you should still submit evidence using the forms on the next screen. Be sure to provide a letter or email from the cardholder stating that they are no longer in dispute.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2314,7 +2164,7 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2332,23 +2182,15 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2452,9 +2294,11 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
         <p>
           If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2463,7 +2307,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2472,23 +2316,15 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Subscription canceled
-          </h2>
-        </div>
+        Dispute: Subscription canceled
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims that you continued to charge them after a subscription was canceled.
@@ -2513,9 +2349,11 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
         <p>
           Otherwise, use the forms on the next screen to submit evidence that the subscription was still active and that the customer was aware of, and did not follow, your cancellation procedure.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2524,7 +2362,7 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2542,23 +2380,15 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute overview
-          </h2>
-        </div>
+        Dispute overview
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2662,9 +2492,11 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
         <p>
           If you can not prove the customer’s subscription was canceled, and or they did not follow your cancelation policy, you should accept the dispute. You cannot issue a refund while a payment is being disputed. The credit card networks place liability for accepting disputed payments with you, the business.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2673,7 +2505,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
@@ -2682,23 +2514,15 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Dispute: Unrecognized
-          </h2>
-        </div>
+        Dispute: Unrecognized
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <p>
           The customer doesn’t recognize the payment appearing on their card statement.
@@ -2720,9 +2544,11 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
         <p>
           It may be more efficient—and provide a better customer experience—to accept an accidental dispute and charge the customer again, if appropriate. Even when a dispute is withdrawn, it usually takes approximately 75 days to be finalized. Remember, it doesn’t matter to the card networks whether you win or lose a dispute; what matters is how many disputes a business receives, regardless of how many disputes are won.
         </p>
-        <div
-          class="woocommerce-card__footer"
-        >
+      </div>
+      <div
+        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      >
+        <div>
           <a
             class="components-button is-button is-primary is-large"
             data-link-type="wc-admin"
@@ -2731,7 +2557,7 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default is-large"
+            class="components-button is-button is-default"
             type="button"
           >
             Accept dispute
