@@ -35,7 +35,12 @@ export const useDepositsOverview = () =>
 	} );
 
 // eslint-disable-next-line camelcase
-export const useDeposits = ( { paged, per_page: perPage, orderby, order } ) =>
+export const useDeposits = ( {
+	paged,
+	per_page: perPage,
+	orderby = 'date',
+	order = 'desc',
+} ) =>
 	useSelect(
 		( select ) => {
 			const {
@@ -50,8 +55,8 @@ export const useDeposits = ( { paged, per_page: perPage, orderby, order } ) =>
 				perPage: Number.isNaN( parseInt( perPage, 10 ) )
 					? '25'
 					: perPage,
-				orderby: orderby || 'date',
-				order: order || 'desc',
+				orderby,
+				order,
 			};
 			return {
 				deposits: getDeposits( query ),
