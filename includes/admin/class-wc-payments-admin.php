@@ -246,6 +246,8 @@ class WC_Payments_Admin {
 			]
 		);
 
+		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
+
 		wp_register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
@@ -264,6 +266,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.js' ),
 			true
 		);
+		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_TOS',
@@ -302,6 +305,7 @@ class WC_Payments_Admin {
 			'wcpaySettings',
 			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
 		);
+		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_ADMIN_SETTINGS',
