@@ -69,8 +69,3 @@ export interface WCPayCharge {
 	statement_descriptor_suffix?: string;
 	status: 'pending' | 'succeeded' | 'failed';
 }
-
-export interface ChargesStateEntry {
-	data?: WCPayCharge;
-	error?: Error;
-}
