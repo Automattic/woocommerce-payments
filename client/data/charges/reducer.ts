@@ -10,9 +10,9 @@ import { combineReducers } from '@wordpress/data';
  * Internal dependencies
  */
 import { ChargeAction } from './actions';
-import { Charge } from './types';
+import { WCPayCharge } from './types';
 
-export const data: Reducer< Record< string, Charge >, ChargeAction > = (
+export const data: Reducer< Record< string, WCPayCharge >, ChargeAction > = (
 	state = {},
 	action
 ) => {

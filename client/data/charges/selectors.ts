@@ -4,12 +4,12 @@
  * Internal dependencies
  */
 import { ChargeState } from './reducer';
-import { Charge } from './types';
+import { WCPayCharge } from './types';
 
 export const getCharge = (
 	state: { charges: ChargeState },
 	id: string
-): Charge | undefined => {
+): WCPayCharge | undefined => {
 	return state.charges?.data?.[ id ];
 };
 

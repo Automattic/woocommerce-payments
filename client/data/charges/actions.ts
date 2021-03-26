@@ -3,9 +3,9 @@
 /**
  * Internal Dependencies
  */
-import { Charge } from './types';
+import { WCPayCharge } from './types';
 
-export function updateCharge( id: string, data: Charge ) {
+export function updateCharge( id: string, data: WCPayCharge ) {
 	return {
 		type: 'SET_CHARGE' as const,
 		id,
