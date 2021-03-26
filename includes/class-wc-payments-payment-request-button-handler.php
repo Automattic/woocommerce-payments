@@ -50,6 +50,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
+		// TODO: Remove this ahead releasing Apple Pay for all merchants.
+		if ( ! WC_Payments::should_payment_request_be_available() ) {
+			return;
+		}
+
 		$this->gateway = WC_Payments::get_gateway();
 
 		// Checks if WCPay is enabled.

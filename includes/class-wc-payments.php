@@ -167,12 +167,9 @@ class WC_Payments {
 
 		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
-		// Feature flag.
-		// TODO: Remove this check ahead of Apple Pay release.
-		if ( 'yes' === get_option( '_wcpay_feature_payment_request' ) ) {
-			self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
-			self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
-		}
+		// Payment Request and Apple Pay.
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -188,6 +185,14 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+	}
+
+	/**
+	 * Checks whether Payment Request Button feature should be available.
+	 * TODO: Remove this ahead of releasing Apple Pay for all merchants.
+	 */
+	public static function should_payment_request_be_available() {
+		return 'US' === WC()->countries->get_base_country();
 	}
 
 	/**

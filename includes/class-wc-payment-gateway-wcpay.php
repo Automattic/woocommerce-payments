@@ -167,10 +167,45 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
-		// Feature flag.
+		// Load the settings.
+		$this->init_settings();
+
+		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
+		if ( $this->is_saved_cards_enabled() ) {
+			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+		}
+
+		// Add Payment Request form fields after WC initialization.
+		add_filter( 'init', [ $this, 'add_payment_request_form_fields' ] );
+
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
+		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+
+		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
+		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+
+		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
+		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
+		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+	}
+
+	/**
+	 * Add Payment Request form fields.
+	 */
+	public function add_payment_request_form_fields() {
 		// TODO: Remove this check and inject contents of `$payment_request_fields` into `$this->form_fields`
-		// after `saved_cards` ahead of Apple Pay release.
-		if ( 'yes' === get_option( '_wcpay_feature_payment_request' ) ) {
+		// after `saved_cards` ahead of releasing Apple Pay for all merchants.
+		if ( WC_Payments::should_payment_request_be_available() ) {
 			$payment_request_fields = [
 				'payment_request'                     => [
 					'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
@@ -250,34 +285,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_request_fields +
 				array_slice( $this->form_fields, $fields_index, count( $this->form_fields ) - 1 );
 		}
-
-		// Load the settings.
-		$this->init_settings();
-
-		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
-		if ( $this->is_saved_cards_enabled() ) {
-			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
-		}
-
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
-		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
-		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
-		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
-
-		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
-		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
-
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
-		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-
-		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
-
-		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
-		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 	}
 
 	/**
