@@ -5,6 +5,11 @@
  */
 import type { Address, PaymentMethod, Card } from '@stripe/stripe-js';
 
+/**
+ * Internal dependencies
+ */
+import type { WCPayBalanceTransaction } from '../balance-transactions/types';
+
 /* eslint-disable-next-line @typescript-eslint/no-empty-interface */
 export interface WCPayAddress extends Address {}
 
@@ -30,7 +35,7 @@ export interface WCPayCharge {
 	amount: number;
 	amount_captured: number;
 	amount_refunded: number;
-	balance_transaction: string;
+	balance_transaction: string | WCPayBalanceTransaction;
 	billing_details: WCPayBillingDetails;
 	calculated_statement_descriptor?: string;
 	captured: boolean;
