@@ -335,11 +335,14 @@ export const TransactionsList = ( props ) => {
 		}
 	}
 
+	const showFilters = ! props.depositId;
+	const storeCurrencies = transactionsSummary.store_currencies || [];
+
 	return (
 		<Page>
-			<TransactionsFilters
-				storeCurrencies={ transactionsSummary.store_currencies || [] }
-			/>
+			{ showFilters && (
+				<TransactionsFilters storeCurrencies={ storeCurrencies } />
+			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
 				title={
