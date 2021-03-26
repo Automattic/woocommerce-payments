@@ -101,6 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.x.x - 2021-xx-xx =
+* Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
+* Add - Payment Request Button support for US merchants (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
+
 = 2.1.1 - 2021-03-23 =
 * Fix - Fatal error when a subscription is processed with action scheduler hook.
 
