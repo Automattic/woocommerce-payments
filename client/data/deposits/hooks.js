@@ -19,23 +19,26 @@ export const useDeposit = ( id ) =>
 		[ id ]
 	);
 
-export const useDepositsOverview = () =>
-	useSelect( ( select ) => {
-		const {
-			getDepositsOverview,
-			getDepositsOverviewError,
-			isResolving,
-		} = select( STORE_NAME );
+export const useDepositsOverview = ( deposit ) =>
+	useSelect(
+		( select ) => {
+			const {
+				getDepositsOverview,
+				getDepositsOverviewError,
+				isResolving,
+			} = select( STORE_NAME );
 
-		return {
-			overview: getDepositsOverview(),
-			overviewError: getDepositsOverviewError(),
-			isLoading: isResolving( 'getDepositsOverview' ),
-		};
-	} );
+			return {
+				overview: getDepositsOverview( deposit ),
+				overviewError: getDepositsOverviewError(),
+				isLoading: isResolving( 'getDepositsOverview', [ deposit ] ),
+			};
+		},
+		[ deposit ]
+	);
 
 // eslint-disable-next-line camelcase
-export const useDeposits = ( { paged, per_page: perPage } ) =>
+export const useDeposits = ( { paged, per_page: perPage }, deposit ) =>
 	useSelect(
 		( select ) => {
 			const { getDeposits, getDepositQueryError, isResolving } = select(
@@ -49,28 +52,23 @@ export const useDeposits = ( { paged, per_page: perPage } ) =>
 					: perPage,
 			};
 			return {
-				deposits: getDeposits( query ),
+				deposits: getDeposits( query, deposit ),
 				depositsError: getDepositQueryError( query ),
-				isLoading: isResolving( 'getDeposits', [ query ] ),
+				isLoading: isResolving( 'getDeposits', [ query, deposit ] ),
 			};
 		},
-		[ paged, perPage ]
+		[ paged, perPage, deposit ]
 	);
 
 export const useInstantDeposit = ( transaction_ids ) => {
-	const { deposit, inProgress } = useSelect(
-		( select ) => {
-			const { getInstantDeposit, isResolving } = select( STORE_NAME );
+	const { deposit, inProgress } = useSelect( ( select ) => {
+		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
-			return {
-				deposit: getInstantDeposit( [ transaction_ids ] ),
-				inProgress: isResolving( 'getInstantDeposit', [
-					transaction_ids,
-				] ),
-			};
-		},
-		[ transaction_ids ]
-	);
+		return {
+			deposit: getInstantDeposit( [ transaction_ids ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ transaction_ids ] ),
+		};
+	} );
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
 	const submit = () => submitInstantDeposit( transaction_ids );
 

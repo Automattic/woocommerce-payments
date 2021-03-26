@@ -13,9 +13,6 @@ import { useState } from '@wordpress/element';
 import './style.scss';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'data';
-import Currency from "@woocommerce/currency";
-// TODO: Use the proper WCPay currency.
-const currency = new Currency();
 
 const InstantDepositButton = ( {
 	// eslint-disable-next-line camelcase

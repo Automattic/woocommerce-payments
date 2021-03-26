@@ -12,7 +12,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { useDeposits } from 'data';
+import { useDeposits, useInstantDeposit } from 'data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
 import { formatCurrency } from 'utils/currency';
@@ -51,7 +51,8 @@ const columns = [
 ];
 
 export const DepositsList = () => {
-	const { deposits, isLoading } = useDeposits( getQuery() );
+	const { deposit } = useInstantDeposit();
+	const { deposits, isLoading } = useDeposits( getQuery(), deposit );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (

@@ -74,6 +74,7 @@ export function* submitInstantDeposit( transaction_ids ) {
 		yield updateInstantDeposit( deposit );
 		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [ transaction_ids ] );
 
+		// TODO: This should have the formatted amounts in the success notice.
 		yield dispatch(
 			'core/notices',
 			'createSuccessNotice',

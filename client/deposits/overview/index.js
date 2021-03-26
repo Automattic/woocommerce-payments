@@ -16,7 +16,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  * Internal dependencies
  */
 import './style.scss';
-import { useDepositsOverview } from 'data';
+import {useDepositsOverview, useInstantDeposit} from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 import { formatCurrency } from 'utils/currency';
@@ -153,7 +153,9 @@ const getDepositScheduleDescriptor = ( {
 };
 
 const DepositsOverview = () => {
-	const { overview, isLoading } = useDepositsOverview();
+	const { deposit } = useInstantDeposit();
+	const { overview, isLoading } = useDepositsOverview( deposit );
+
 	return (
 		<div className="wcpay-deposits-overview">
 			<div className="wcpay-deposits-overview__header">
