@@ -16,7 +16,7 @@ const Chip = ( props: {
 	message: string;
 	type?: chipType;
 	isCompact?: boolean;
-} ): JSX.Element => {
+} ) => {
 	const { message, type = 'primary', isCompact } = props;
 
 	const classNames = [
