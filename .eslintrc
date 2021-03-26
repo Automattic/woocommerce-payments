@@ -3,7 +3,12 @@
 {
 	"root": true,
 	"parser": "babel-eslint",
-	"extends": [ "wpcalypso/react", "plugin:jsx-a11y/recommended", "prettier", "plugin:@woocommerce/eslint-plugin/recommended" ],
+	"extends": [
+		"wpcalypso/react",
+		"plugin:jsx-a11y/recommended",
+		"prettier",
+		"plugin:@woocommerce/eslint-plugin/recommended"
+	],
 	"plugins": [ "jsx-a11y", "jest", "jsdoc-alignment" ],
 	"env": {
 		"browser": true,
@@ -49,36 +54,31 @@
 		"jsdoc/check-tag-names": [
 			"error",
 			{
-				"definedTags": [
-					"format"
-				]
+				"definedTags": [ "format" ]
 			}
 		],
-		"yoda": [
-			"error",
-			"always"
-		],
+		"yoda": [ "error", "always" ],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
-		"jsdoc/no-undefined-types":                "off",
-		"jsdoc/require-param":                     "off",
-		"jsdoc/check-param-names":                 "off",
-		"jsdoc/require-property":                  "off",
+		"jsdoc/no-undefined-types": "off",
+		"jsdoc/require-param": "off",
+		"jsdoc/check-param-names": "off",
+		"jsdoc/require-property": "off",
 		"@wordpress/no-unused-vars-before-return": "off",
-		"@wordpress/i18n-translator-comments":     "off",
-		"@wordpress/valid-sprintf":                "off",
-		"@woocommerce/dependency-group":           "off",
-		"react-hooks/exhaustive-deps":             "off",
-		"react-hooks/rules-of-hooks":              "off",
-		"jest/no-conditional-expect":              "off",
-		"jest/valid-title":                        "off",
-		"jest/expect-expect":                      "off",
-		"jest/no-disabled-tests":                  "off",
-		"jest/no-standalone-expect":               "off",
-		"jest/no-identical-title":                 "off",
-		"jest/no-deprecated-functions":            "off",
-		"no-alert":                                "off",
-		"object-shorthand":                        "off",
-		"no-multi-str":                            "off"
+		"@wordpress/i18n-translator-comments": "off",
+		"@wordpress/valid-sprintf": "off",
+		"@woocommerce/dependency-group": "off",
+		"react-hooks/exhaustive-deps": "off",
+		"react-hooks/rules-of-hooks": "off",
+		"jest/no-conditional-expect": "off",
+		"jest/valid-title": "off",
+		"jest/expect-expect": "off",
+		"jest/no-disabled-tests": "off",
+		"jest/no-standalone-expect": "off",
+		"jest/no-identical-title": "off",
+		"jest/no-deprecated-functions": "off",
+		"no-alert": "off",
+		"object-shorthand": "off",
+		"no-multi-str": "off"
 	},
 	"overrides": [
 		{
@@ -97,7 +97,7 @@
 				"no-use-before-define": "off",
 				"@typescript-eslint/no-use-before-define": [ "error" ],
 				"react/react-in-jsx-scope": "error",
-				"@typescript-eslint/explicit-module-boundary-types": "error"
+				"@typescript-eslint/explicit-module-boundary-types": "off"
 			}
 		}
 	]
