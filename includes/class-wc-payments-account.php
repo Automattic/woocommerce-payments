@@ -756,4 +756,14 @@ class WC_Payments_Account {
 
 		return $wcpay_note_names;
 	}
+
+	/**
+	 * Gets the account country.
+	 *
+	 * @return string Country.
+	 */
+	public function get_account_country() {
+		$account = $this->get_cached_account_data();
+		return $account['country'] ?? 'US';
+	}
 }
