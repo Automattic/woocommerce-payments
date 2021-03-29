@@ -13,10 +13,9 @@ import { updateTimeline, updateErrorForTimeline } from './actions';
 import { Timeline } from './types';
 
 const isTimeline = ( responseData: any ): responseData is Timeline => {
-	return (
-		typeof responseData === 'object' &&
-		undefined !== ( responseData as Timeline ).length
-	);
+	// We just make sure that the Timeline is an array, and trust that the data in the array are
+	// timeline events.
+	return Array.isArray( responseData );
 };
 
 export function* getTimeline( intentionId: string ) {
