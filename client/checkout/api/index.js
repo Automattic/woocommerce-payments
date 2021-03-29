@@ -183,7 +183,7 @@ export default class WCPayAPI {
 
 		const confirmAction = isSetupIntent
 			? this.getStripe().confirmCardSetup( clientSecret )
-			: this.getStripe().confirmCardPayment( clientSecret );
+			: this.getStripe( true ).confirmCardPayment( clientSecret );
 
 		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
