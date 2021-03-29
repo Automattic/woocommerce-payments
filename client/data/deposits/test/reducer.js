@@ -41,6 +41,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock1: mockDeposits[ 0 ],
 			},
 			queries: {},
+			count: 0,
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -54,6 +55,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock2: mockDeposits[ 1 ],
 			},
 			queries: {},
+			count: 0,
 		} );
 	} );
 
@@ -77,6 +79,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1', 'po_mock2' ],
 				},
 			},
+			count: 0,
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -133,6 +136,7 @@ describe( 'Deposits reducer tests', () => {
 				data: mockOverview,
 			},
 			queries: {},
+			count: 0,
 		} );
 	} );
 
@@ -151,6 +155,43 @@ describe( 'Deposits reducer tests', () => {
 				error: { code: 'error' },
 			},
 			queries: {},
+			count: 0,
+		} );
+	} );
+
+	test( 'Deposits count is reduced correctly', () => {
+		const reduced = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_DEPOSITS_COUNT,
+				data: 10,
+			}
+		);
+
+		expect( reduced ).toStrictEqual( {
+			byId: {},
+			queries: {},
+			count: 10,
+		} );
+	} );
+
+	test( 'Deposits query error is reduced correctly', () => {
+		const reduced = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_ERROR_FOR_DEPOSIT_QUERY,
+				error: { code: 'error' },
+			}
+		);
+
+		expect( reduced ).toStrictEqual( {
+			byId: {},
+			queries: {
+				'{}': {
+					error: { code: 'error' },
+				},
+			},
+			count: 0,
 		} );
 	} );
 } );
