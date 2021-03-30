@@ -102,6 +102,7 @@
     "@wordpress/i18n": "3.5.0",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/scripts": "12.4.0",
+    "@wordpress/url": "2.22.0",
     "archiver": "5.2.0",
     "babel-loader": "8.2.2",
     "colors": "1.4.0",
