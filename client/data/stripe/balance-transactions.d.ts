@@ -1,11 +1,9 @@
 /**
  * Internal dependencies
  */
-import type { WCPayCharge } from '../charges/types';
+import type { Charge } from './charges';
 
-// Copied and reworked a bit for our purposes from
-// https://github.com/stripe/stripe-node/blob/e195e0723e721f65f822e802ae6e9b154fd2a0fe/types/2020-08-27/BalanceTransactions.d.ts#L131-L164
-export type WCPayBalanceTransactionType =
+export type BalanceTransactionType =
 	| 'adjustment'
 	| 'advance'
 	| 'advance_funding'
@@ -39,9 +37,7 @@ export type WCPayBalanceTransactionType =
 	| 'transfer_failure'
 	| 'transfer_refund';
 
-// Copied and reworked a bit for our purposes from
-// https://github.com/stripe/stripe-node/blob/e195e0723e721f65f822e802ae6e9b154fd2a0fe/types/2020-08-27/BalanceTransactions.d.ts#L104-L129
-export interface WCPayFeeDetail {
+export interface FeeDetail {
 	amount: number;
 	application?: string;
 	currency: string;
@@ -49,9 +45,7 @@ export interface WCPayFeeDetail {
 	type: string;
 }
 
-// Copied and reworked a bit for our purposes from
-// https://github.com/stripe/stripe-node/blob/e195e0723e721f65f822e802ae6e9b154fd2a0fe/types/2020-08-27/BalanceTransactions.d.ts#L8-L101
-export interface WCPayBalanceTransaction {
+export interface BalanceTransaction {
 	id: string;
 	object: 'balance_transaction';
 	amount: number;
@@ -64,11 +58,11 @@ export interface WCPayBalanceTransaction {
 	exchange_rate: number | null;
 	fee: number;
 	/* eslint-disable-next-line camelcase */
-	fee_details: WCPayFeeDetail[];
+	fee_details: FeeDetail[];
 	net: number;
 	/* eslint-disable-next-line camelcase */
 	reporting_category: string;
-	source?: string | WCPayCharge;
+	source?: string | Charge;
 	status: string;
-	type: WCPayBalanceTransactionType;
+	type: BalanceTransactionType;
 }
