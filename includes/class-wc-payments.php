@@ -132,6 +132,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
+		include_once __DIR__ . '/class-wc-payment-gateway-giropay.php';
+		include_once __DIR__ . '/class-wc-payment-gateway-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -405,6 +407,15 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$gateway;
+
+		if (
+			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) )
+			||
+			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && $_GET['page'] === 'wc-settings' && $_GET['tab'] === 'checkout' && ! empty( $_GET['section'] ) )
+		) {
+			$gateways[] = 'WC_Payment_Gateway_Giropay';
+			$gateways[] = 'WC_Payment_Gateway_Sepa';
+		}
 
 		return $gateways;
 	}
