@@ -170,7 +170,7 @@ const DepositsOverview = () => {
 				</span>{ ' ' }
 				<span className="wcpay-deposits-overview__schedule-value">
 					<Loadable
-						isLoading={ isLoading || ! overview }
+						isLoading={ isLoading }
 						display="inline"
 						placeholder="Deposit schedule placeholder"
 					>
