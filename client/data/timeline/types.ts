@@ -50,7 +50,7 @@ export interface Captured extends Event {
 	amount: number;
 	currency: string;
 	// Stripe API may return null if no application fee is associated with charge.
-	fee?: number;
+	fee?: number | null;
 	fee_rates: FeeRates;
 	transaction_id: string;
 	type: 'captured';
@@ -60,7 +60,7 @@ export interface Failed extends Event {
 	amount: number;
 	currency: string;
 	// Stripe API may return null if no corresponding failure code exists.
-	reason?: string;
+	reason?: string | null;
 	type: 'failed';
 }
 
@@ -105,7 +105,7 @@ export interface NeedsResponse extends Disputed {
 	dispute_id: string;
 	// Stripe API may send null instead of a due date to indicate bank/CC company
 	// doesn't allow a response.
-	evidence_due_by?: number;
+	evidence_due_by?: number | null;
 	fee?: number;
 	reason: DisputeReason;
 	transaction_id?: string;
