@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import './style.scss';
-import { PAYMENT_METHOD_NAME } from '../constants.js';
+import { PAYMENT_METHOD_NAME_SEPA } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
@@ -40,10 +40,8 @@ jQuery( function ( $ ) {
 	// Create a card element.
 	const cardElement = elements.create( 'iban', {
 		supportedCountries: ["SEPA"],
-		hidePostalCode: true,
 		classes: { base: 'wcpay-sepa-card-mounted' },
 	} );
-    console.log(cardElement);
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
@@ -182,7 +180,8 @@ jQuery( function ( $ ) {
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
 		// Populate form with the payment method.
-		$( '#wcpay-payment-method' ).val( id );
+		$( '#wcpay-payment-method-sepa' ).val( id );
+		console.log(id);
 
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
@@ -212,7 +211,8 @@ jQuery( function ( $ ) {
 
 		const request = api.generatePaymentMethodRequest(
 			{
-				card: cardElement,
+				type: 'sepa_debit',
+				sepa_debit: cardElement,
 			},
 			preparedCustomerData
 		);
@@ -271,7 +271,7 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const paymentMethodId = $( '#wcpay-payment-method' ).val();
+		const paymentMethodId = $( '#wcpay-payment-method-sepa' ).val();
 		const savePaymentMethod = $(
 			'#wc-woocommerce_payments_sepa-new-payment-method'
 		).is( ':checked' );
@@ -335,7 +335,7 @@ jQuery( function ( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on(
-		'checkout_place_order_' + PAYMENT_METHOD_NAME,
+		'checkout_place_order_' + PAYMENT_METHOD_NAME_SEPA,
 		function () {
 			if ( ! isUsingSavedPaymentMethod() ) {
 				return handlePaymentMethodCreation(

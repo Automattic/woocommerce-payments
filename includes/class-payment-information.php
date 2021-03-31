@@ -215,8 +215,13 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		return ! empty( $request['wcpay-payment-method'] ) ? wc_clean( $request['wcpay-payment-method'] ) : '';
+		if ( ! empty( $request['wcpay-payment-method'] ) ) {
+			return wc_clean( $request['wcpay-payment-method'] );
+		}
+		if ( ! empty( $request['wcpay-payment-method-sepa'] ) ) {
+			return wc_clean( $request['wcpay-payment-method-sepa'] );
+		}
+		return '';
 	}
 
 	/**

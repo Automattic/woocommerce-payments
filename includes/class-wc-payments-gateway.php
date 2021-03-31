@@ -1,13 +1,6 @@
 <?php
-/**
- * Class WC_Payment_Gateway_WCPay
- *
- * @package WooCommerce\Payments
- */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
-}
+namespace WCPay;
 
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
 use WCPay\Logger;
@@ -16,18 +9,16 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
+use WC_Payment_Gateway_CC;
 
-/**
- * Gateway class for WooCommerce Payments
- */
-class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
+class Payment_Gateway extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Internal ID of the payment gateway.
 	 *
 	 * @type string
 	 */
-	const GATEWAY_ID = 'woocommerce_payments_sepa';
+	const GATEWAY_ID = 'woocommerce_payments';
 
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
@@ -102,8 +93,8 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'SEPA Direct Debit', 'woocommerce-payments' );
-		$this->description        = __( 'Mandate Information.', 'woocommerce-payments' );
+		$this->title              = __( 'Credit card', 'woocommerce-payments' );
+		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = [
 			'products',
 			'refunds',
@@ -177,7 +168,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 				'payment_request'                     => [
 					'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
 					'label'       => sprintf(
-						/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
+					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
 						__( 'Enable Payment Request Button (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
 						'<br />',
 						'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
@@ -249,8 +240,8 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 			$fields_index = 7;
 			// Inject in the middle of `$this->form_fields`.
 			$this->form_fields = array_slice( $this->form_fields, 0, $fields_index ) +
-				$payment_request_fields +
-				array_slice( $this->form_fields, $fields_index, count( $this->form_fields ) - 1 );
+			                     $payment_request_fields +
+			                     array_slice( $this->form_fields, $fields_index, count( $this->form_fields ) - 1 );
 		}
 
 		// Load the settings.
@@ -442,10 +433,10 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		);
 
 		wp_register_script(
-			'wcpay-sepa-checkout',
-			plugins_url( 'dist/sepa_checkout.js', WCPAY_PLUGIN_FILE ),
+			'wcpay-checkout',
+			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe', 'wc-checkout' ],
-			WC_Payments::get_file_version( 'dist/sepa_checkout.js' ),
+			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
 	}
@@ -478,11 +469,11 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
-			wp_localize_script( 'wcpay-sepa-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'wcpay-sepa-checkout' );
+			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'wcpay-checkout' );
 
 			wp_enqueue_style(
-				'wcpay-sepa-checkout',
+				'wcpay-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )
@@ -493,24 +484,19 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 			<?php if ( ! empty( $this->get_description() ) ) : ?>
 				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 			<?php endif; ?>
-			<p>
-				<?php
-				// translators: %s: statement descriptor.
-				echo wp_kses_post( sprintf( __( 'By providing your IBAN and confirming this payment, you are authorizing %s and Stripe, our payment service provider, to send instructions to your bank to debit your account and your bank to debit your account in accordance with those instructions. You are entitled to a refund from your bank under the terms and conditions of your agreement with your bank. A refund must be claimed within 8 weeks starting from the date on which your account was debited.', 'woocommerce-payments' ), $this->get_account_statement_descriptor() ) );
-				?>
-			</p>
+
 			<?php if ( $this->is_in_test_mode() ) : ?>
 				<p class="testmode-info">
-				<?php
+					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: link to Stripe testing page */
-						__( '<strong>Test mode:</strong> use the test SEPA card DE89370400440532013000 with account number 000123456, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
+					/* translators: link to Stripe testing page */
+						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
-							'a'      => '<a href="https://stripe.com/docs/testing#sepa-direct-debit" target="_blank">',
+							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
-				?>
+					?>
 				</p>
 			<?php endif; ?>
 
@@ -522,16 +508,16 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 			?>
 
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
-				<div id="wcpay-sepa-card-element"></div>
+				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
-				<input id="wcpay-payment-method-sepa" type="hidden" name="wcpay-payment-method-sepa" />
+				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
 
-			<?php
-			if ( $this->is_saved_cards_enabled() ) {
-				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
-			}
-			?>
+				<?php
+				if ( $this->is_saved_cards_enabled() ) {
+					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+					$this->save_payment_method_checkbox( $force_save_payment );
+				}
+				?>
 
 			</fieldset>
 			<?php
@@ -574,7 +560,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 			if ( ! empty( $payment_information ) ) {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
+					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -688,7 +674,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the last 4 digit of the credit card */
+					/* translators: %1: the last 4 digit of the credit card */
 						__( 'Payment method is changed to: <strong>Credit Card ending in %1$s</strong>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
@@ -739,7 +725,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( 'succeeded' !== $status && 'requires_capture' !== $status && 'processing' !== $status  ) {
+			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
 				$intent_failed = true;
 			}
 
@@ -764,7 +750,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 						$transaction_url = $this->compose_transaction_url( $charge_id );
 						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -778,12 +764,11 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 					}
 					$order->payment_complete( $intent_id );
 					break;
-				case 'processing':
 				case 'requires_capture':
 					$transaction_url = $this->compose_transaction_url( $charge_id );
 					$note            = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 							[
 								'strong' => '<strong>',
@@ -934,7 +919,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: error message */
+			/* translators: %1: the successfully charged amount, %2: error message */
 				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
 				wc_price( $amount, [ 'currency' => $currency ] ),
 				$e->getMessage()
@@ -949,13 +934,13 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 
 		if ( empty( $reason ) ) {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount */
+			/* translators: %1: the successfully charged amount */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
 				wc_price( $amount, [ 'currency' => $currency ] )
 			);
 		} else {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: reason */
+			/* translators: %1: the successfully charged amount, %2: reason */
 				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
 				wc_price( $amount, [ 'currency' => $currency ] ),
 				$reason
@@ -1284,7 +1269,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		if ( 'succeeded' === $status ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the successfully charged amount */
+				/* translators: %1: the successfully charged amount */
 					__(
 						'A payment of %1$s was <strong>successfully captured</strong> using WooCommerce Payments.',
 						'woocommerce-payments'
@@ -1298,7 +1283,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount, %2: error message  */
+				/* translators: %1: the failed capture amount, %2: error message  */
 					__(
 						'A capture of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 						'woocommerce-payments'
@@ -1315,7 +1300,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the failed capture amount */
+				/* translators: %1: the failed capture amount */
 					__( 'A capture of %1$s <strong>failed</strong> to complete.', 'woocommerce-payments' ),
 					[ 'strong' => '<strong>' ]
 				),
@@ -1371,7 +1356,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: error message  */
+				/* translators: %1: error message  */
 					__(
 						'Canceling authorization <strong>failed</strong> to complete with the following message: <code>%1$s</code>.',
 						'woocommerce-payments'
@@ -1490,9 +1475,9 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 
 			$intent_id          = $order->get_meta( '_intent_id', true );
 			$intent_id_received = isset( $_POST['intent_id'] )
-			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
-			/* translators: This will be used to indicate an unknown value for an ID. */
-			: __( 'unknown', 'woocommerce-payments' );
+				? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
+				/* translators: This will be used to indicate an unknown value for an ID. */
+				: __( 'unknown', 'woocommerce-payments' );
 
 			if ( empty( $intent_id ) ) {
 				throw new Intent_Authentication_Exception(
@@ -1527,7 +1512,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1548,7 +1533,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1572,7 +1557,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 						$note            = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1651,7 +1636,7 @@ class WC_Payment_Gateway_Sepa extends WC_Payment_Gateway_CC {
 				case 'empty_intent_id': // The empty_intent_id case needs the same handling.
 					$note = sprintf(
 						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
+						/* translators: %1: transaction ID of the payment or a translated string indicating an unknown ID. */
 							__( 'A payment with ID <code>%1$s</code> was used in an attempt to pay for this order. This payment intent ID does not match any payments for this order, so it was ignored and the order was not updated.', 'woocommerce-payments' ),
 							[
 								'code' => '<code>',
