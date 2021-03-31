@@ -180,7 +180,7 @@ const DepositsOverview = () => {
 					</Loadable>
 				</span>
 			</p>
-			{ isLoading || ! overview ? (
+			{ isLoading ? (
 				<SummaryListPlaceholder numberOfItems={ 4 } />
 			) : (
 				<SummaryList
@@ -194,21 +194,21 @@ const DepositsOverview = () => {
 									'Last deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount(
-									overview.last_deposit,
-									overview.account.default_currency
-								) }
-								prevLabel={ getDepositDate(
-									overview.last_deposit
-								) }
-								href={
-									overview.last_deposit
+								{ ...( overview && {
+									value: getAmount(
+										overview.last_deposit,
+										overview.account.default_currency
+									),
+									prevLabel: getDepositDate(
+										overview.last_deposit
+									),
+									href: overview.last_deposit
 										? getDetailsURL(
 												overview.last_deposit.id,
 												'deposits'
 										  )
-										: ''
-								}
+										: '',
+								} ) }
 							/>,
 							<SummaryNumber
 								key="nextDeposit"
@@ -216,21 +216,21 @@ const DepositsOverview = () => {
 									'Next deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount(
-									overview.next_deposit,
-									overview.account.default_currency
-								) }
-								prevLabel={ getNextDepositLabelFormatted(
-									overview.next_deposit
-								) }
-								href={
-									overview.next_deposit
+								{ ...( overview && {
+									value: getAmount(
+										overview.next_deposit,
+										overview.account.default_currency
+									),
+									prevLabel: getNextDepositLabelFormatted(
+										overview.next_deposit
+									),
+									href: overview.next_deposit
 										? getDetailsURL(
 												overview.next_deposit.id,
 												'deposits'
 										  )
-										: ''
-								}
+										: '',
+								} ) }
 							/>,
 							<SummaryNumber
 								key="pendingBalance"
@@ -238,13 +238,15 @@ const DepositsOverview = () => {
 									'Pending balance',
 									'woocommerce-payments'
 								) }
-								value={ getAmount(
-									overview.balance.pending,
-									overview.account.default_currency
-								) }
-								prevLabel={ getBalanceDepositCount(
-									overview.balance.pending
-								) }
+								{ ...( overview && {
+									value: getAmount(
+										overview.balance.pending,
+										overview.account.default_currency
+									),
+									prevLabel: getBalanceDepositCount(
+										overview.balance.pending
+									),
+								} ) }
 							/>,
 							<SummaryNumber
 								key="availableBalance"
@@ -252,10 +254,13 @@ const DepositsOverview = () => {
 									'Available balance',
 									'woocommerce-payments'
 								) }
-								value={ getAmount(
-									overview.balance.available,
-									overview.account.default_currency
-								) }
+								value={
+									overview &&
+									getAmount(
+										overview.balance.available,
+										overview.account.default_currency
+									)
+								}
 								prevLabel=""
 							/>,
 						];
