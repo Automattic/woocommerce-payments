@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
-Tested up to: 5.6
+Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.0.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,18 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.1.0 - 2021-xx-xx =
+= 2.2.0 - 2021-03-31 =
+* Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
+* Add - Payment Request Button support for US merchants (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
+* Update - Not passing level3 data for non-US merchants.
+* Add - REST endpoint for fetching account data.
+* Add - Deposits list pagination and sorting.
+* Fix - Deposit overview now displays placeholder information instead of continuing to load when an error happens.
+
+= 2.1.1 - 2021-03-23 =
+* Fix - Fatal error when a subscription is processed with action scheduler hook.
+
+= 2.1.0 - 2021-03-16 =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.
 * Update - Define constant for the group to be used for scheduled actions.
 * Update - Enable multiple customer currencies support in live mode.
@@ -133,8 +144,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - New setting to manage whether to enable saving cards during checkout. (Defaults to being enabled).
 * Fix - Fixed issue where an empty alert would appear when trying to refund an authorization charge.
 * Update - Link customer name on transaction detail page to filtered transaction list page.
-* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 * Update - Test mode notice width is now consistent across all pages.
+* Fix - Fix error which could occur when a 100% off coupon was applied during checkout.
 * Add - New notification to urge setting SSL for checkout pages if store doesn't use HTTPS
 * Fix - Fixed connection timeout configuration.
 * Fix - Specify error code when refund fails in admin to prevent blank alert.

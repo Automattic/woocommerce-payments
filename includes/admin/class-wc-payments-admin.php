@@ -76,6 +76,13 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
+
+			/**
+			 * Please note that if any other page is registered first and it's
+			 * path is different from the $top_level_link it will make
+			 * wc_admin_register_page to duplicate "Payments" menu item as a
+			 * first item in the sub-menu.
+			 */
 			wc_admin_register_page(
 				[
 					'id'       => 'wc-payments-deposits',
@@ -114,6 +121,26 @@ class WC_Payments_Admin {
 					],
 				]
 			);
+
+			if ( self::is_account_overview_page_enabled() ) {
+				/**
+				 * Once page is fully implemented it should become the main
+				 * entry page and implement a proper adjustment of
+				 * $top_level_link if needed to avoid menu item duplication.
+				 */
+				wc_admin_register_page(
+					[
+						'id'       => 'wc-payments-overview',
+						'title'    => __( 'Overview', 'woocommerce-payments' ),
+						'parent'   => 'wc-payments',
+						'path'     => '/payments/overview/',
+						'nav_args' => [
+							'parent' => 'wc-payments',
+							'order'  => 5,
+						],
+					]
+				);
+			}
 
 			wc_admin_connect_page(
 				[
@@ -260,9 +287,11 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
+				'accountStatus'           => $this->account->get_account_status_data(),
+				'accountFees'             => $this->account->get_fees(),
+				'fraudServices'           => $this->account->get_fraud_services_config(),
+				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
+				'paymentRequestAvailable' => WC_Payments::should_payment_request_be_available(),
 			]
 		);
 
@@ -353,6 +382,7 @@ class WC_Payments_Admin {
 		return [
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+			'accountOverview' => self::is_account_overview_page_enabled(),
 		];
 	}
 
@@ -398,5 +428,14 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
+	}
+
+	/**
+	 * Checks whether Account Overview page is enabled
+	 *
+	 * @return bool
+	 */
+	private static function is_account_overview_page_enabled() {
+		return get_option( '_wcpay_feature_account_overview' );
 	}
 }
