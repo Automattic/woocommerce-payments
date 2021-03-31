@@ -183,27 +183,16 @@ jQuery( ( $ ) => {
 
 			$( '.woocommerce-error' ).remove();
 
-			if ( wcpayPaymentRequestParams.is_product_page ) {
-				const element = $( '.product' );
+			const $container = $( '.woocommerce-notices-wrapper' ).first();
 
-				element.before( message );
-
-				$( 'html, body' ).animate(
-					{
-						scrollTop: element.prev( '.woocommerce-error' ).offset()
-							.top,
-					},
-					600
-				);
-			} else {
-				const $form = $( '.shop_table.cart' ).closest( 'form' );
-
-				$form.before( message );
+			if ( $container.length ) {
+				$container.append( message );
 
 				$( 'html, body' ).animate(
 					{
-						scrollTop: $form.prev( '.woocommerce-error' ).offset()
-							.top,
+						scrollTop: $container
+							.find( '.woocommerce-error' )
+							.offset().top,
 					},
 					600
 				);
@@ -400,6 +389,12 @@ jQuery( ( $ ) => {
 				};
 
 				paymentDetails = cart.order_data;
+			}
+
+			// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
+			// Since it's considered a US state by Stripe, we need to do some special mapping.
+			if ( 'PR' === options.country ) {
+				options.country = 'US';
 			}
 
 			const paymentRequest = stripe.paymentRequest( options );

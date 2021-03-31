@@ -300,16 +300,20 @@ class WC_Payments_API_Client {
 	/**
 	 * List deposits
 	 *
-	 * @param int $page      The requested page.
-	 * @param int $page_size The size of the requested page.
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_deposits( $page = 0, $page_size = 25 ) {
+	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc' ) {
 		$query = [
-			'page'     => $page,
-			'pagesize' => $page_size,
+			'page'      => $page,
+			'pagesize'  => $page_size,
+			'sort'      => $sort,
+			'direction' => $direction,
 		];
 
 		return $this->request( $query, self::DEPOSITS_API, self::GET );

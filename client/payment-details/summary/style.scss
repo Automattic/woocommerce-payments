@@ -1,8 +1,15 @@
 /** @format */
 
+.components-card__header{
+	font-size:20px;
+}
+
+.components-card{
+	margin-bottom:24px;
+}
+
 .payment-details-summary {
 	display: flex;
-	margin-bottom: 1rem;
 	@include breakpoint( '<660px' ) {
 		flex-direction: column;
 	}
@@ -50,4 +57,8 @@
 			justify-content: flex-end;
 		}
 	}
+}
+
+.woocommerce-list--horizontal {
+	margin-top: 0 !important;
 }

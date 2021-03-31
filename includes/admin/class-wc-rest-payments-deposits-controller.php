@@ -60,9 +60,11 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposits( $request ) {
-		$page      = (int) $request->get_params()['page'];
-		$page_size = (int) $request->get_params()['pagesize'];
-		return $this->forward_request( 'list_deposits', [ $page, $page_size ] );
+		$page      = (int) $request->get_param( 'page' );
+		$page_size = (int) $request->get_param( 'pagesize' );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
+		return $this->forward_request( 'list_deposits', [ $page, $page_size, $sort, $direction ] );
 	}
 
 	/**

@@ -20,27 +20,6 @@ use WCPay\Logger;
  */
 class WC_Payments_Payment_Request_Button_Handler {
 	/**
-	 * Gateway settings.
-	 *
-	 * @var array
-	 */
-	public $gateway_settings;
-
-	/**
-	 * Is test mode active?
-	 *
-	 * @var bool
-	 */
-	public $testmode;
-
-	/**
-	 * This Instance.
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private static $instance;
-
-	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
 	 * @var WC_Payments_Account
@@ -48,25 +27,43 @@ class WC_Payments_Payment_Request_Button_Handler {
 	private $account;
 
 	/**
+	 * WC_Payment_Gateway_WCPay instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payments_Account $account Account information.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
-		self::$instance = $this;
+		$this->account = $account;
 
-		// Add default settings in case the payment request options are missing.
-		$this->gateway_settings = array_merge( self::get_default_settings(), get_option( 'woocommerce_woocommerce_payments_settings', [] ) );
-		$this->account          = $account;
-		$this->testmode         = ( ! empty( $this->gateway_settings['test_mode'] ) && 'yes' === $this->gateway_settings['test_mode'] ) ? true : false;
+		add_action( 'init', [ $this, 'init' ] );
+	}
 
-		// Checks if Stripe Gateway is enabled.
-		if ( empty( $this->gateway_settings ) || ( isset( $this->gateway_settings['enabled'] ) && 'yes' !== $this->gateway_settings['enabled'] ) ) {
+	/**
+	 * Initialize hooks.
+	 *
+	 * @return  void
+	 */
+	public function init() {
+		// TODO: Remove this ahead releasing Apple Pay for all merchants.
+		if ( ! WC_Payments::should_payment_request_be_available() ) {
+			return;
+		}
+
+		$this->gateway = WC_Payments::get_gateway();
+
+		// Checks if WCPay is enabled.
+		if ( ! $this->gateway->is_enabled() ) {
 			return;
 		}
 
 		// Checks if Payment Request is enabled.
-		if ( ! isset( $this->gateway_settings['payment_request'] ) || 'yes' !== $this->gateway_settings['payment_request'] ) {
+		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
 			return;
 		}
 
@@ -76,65 +73,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		$this->init();
-	}
-
-	/**
-	 * Payment request default settings.
-	 *
-	 * @return array Default settings.
-	 */
-	public static function get_default_settings() {
-		return [
-			'payment_request'                     => 'no',
-			'payment_request_button_type'         => 'buy',
-			'payment_request_button_theme'        => 'dark',
-			'payment_request_button_height'       => '44',
-			'payment_request_button_label'        => __( 'Buy now', 'woocommerce-payments' ),
-			'payment_request_button_branded_type' => 'long',
-		];
-	}
-
-	/**
-	 * Get this instance.
-	 *
-	 * @return class
-	 */
-	public static function instance() {
-		return self::$instance;
-	}
-
-	/**
-	 * Get total label.
-	 *
-	 * @return string
-	 */
-	public function get_total_label() {
-		// Get statement descriptor from API/cached account data.
-		$statement_descriptor = $this->account->get_statement_descriptor();
-		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
-	}
-
-	/**
-	 * Sets the WC customer session if one is not set.
-	 * This is needed so nonces can be verified by AJAX Request.
-	 *
-	 * @return void
-	 */
-	public function set_session() {
-		if ( ! is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
-			return;
-		}
-
-		WC()->session->set_customer_session_cookie( true );
-	}
-
-	/**
-	 * Initialize hooks.
-	 *
-	 * @return  void
-	 */
-	public function init() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
@@ -159,33 +97,76 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_filter( 'woocommerce_validate_postcode', [ $this, 'postal_code_validation' ], 10, 3 );
 
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
+
+		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
+		// This option does not get stored in the database at all, and this function
+		// will be used to calculate it whenever the option value is retrieved instead.
+		// It's used for displaying inbox notifications.
+		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 	}
 
 	/**
-	 * Gets the button type.
+	 * Checks whether authentication is required for checkout.
 	 *
-	 * @return  string
+	 * @return bool
 	 */
-	public function get_button_type() {
-		return isset( $this->gateway_settings['payment_request_button_type'] ) ? $this->gateway_settings['payment_request_button_type'] : 'default';
+	public function is_authentication_required() {
+		// If guest checkout is disabled, authentication might be required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) ) {
+			// If account creation is not possible, authentication is required.
+			return ! $this->is_account_creation_possible();
+		}
+
+		return false;
 	}
 
 	/**
-	 * Gets the button theme.
+	 * Checks whether account creation is possible during checkout.
 	 *
-	 * @return  string
+	 * @return bool
 	 */
-	public function get_button_theme() {
-		return isset( $this->gateway_settings['payment_request_button_theme'] ) ? $this->gateway_settings['payment_request_button_theme'] : 'dark';
+	public function is_account_creation_possible() {
+		// If automatically generate username/password are disabled, the Payment Request API
+		// can't include any of those fields, so account creation is not possible.
+		return (
+			'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
+		);
+	}
+
+	/**
+	 * Gets total label.
+	 *
+	 * @return string
+	 */
+	public function get_total_label() {
+		// Get statement descriptor from API/cached account data.
+		$statement_descriptor = $this->account->get_statement_descriptor();
+		return str_replace( "'", '', $statement_descriptor ) . apply_filters( 'wcpay_payment_request_total_label_suffix', ' (via WooCommerce)' );
+	}
+
+	/**
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
+	 *
+	 * @return void
+	 */
+	public function set_session() {
+		if ( ! is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
 	}
 
 	/**
 	 * Gets the button height.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function get_button_height() {
-		return isset( $this->gateway_settings['payment_request_button_height'] ) ? str_replace( 'px', '', $this->gateway_settings['payment_request_button_height'] ) : '64';
+		return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
 	}
 
 	/**
@@ -194,49 +175,31 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  boolean
 	 */
 	public function is_branded_button() {
-		return 'branded' === $this->get_button_type();
-	}
-
-	/**
-	 * Gets the branded button type.
-	 *
-	 * @return  string
-	 */
-	public function get_button_branded_type() {
-		return isset( $this->gateway_settings['payment_request_button_branded_type'] ) ? $this->gateway_settings['payment_request_button_branded_type'] : 'default';
+		return 'branded' === $this->gateway->get_option( 'payment_request_button_type' );
 	}
 
 	/**
 	 * Checks if the button is custom.
 	 *
-	 * @return  boolean
+	 * @return boolean
 	 */
 	public function is_custom_button() {
-		return 'custom' === $this->get_button_type();
+		return 'custom' === $this->gateway->get_option( 'payment_request_button_type' );
 	}
 
 	/**
 	 * Returns custom button css selector.
 	 *
-	 * @return  string
+	 * @return string
 	 */
 	public function custom_button_selector() {
 		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
 	}
 
 	/**
-	 * Gets the custom button label.
-	 *
-	 * @return  string
-	 */
-	public function get_button_label() {
-		return isset( $this->gateway_settings['payment_request_button_label'] ) ? $this->gateway_settings['payment_request_button_label'] : 'Buy now';
-	}
-
-	/**
 	 * Gets the product data for the currently viewed page
 	 *
-	 * @return  mixed Returns false if not on a product page, the product information otherwise.
+	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
 	public function get_product_data() {
 		if ( ! is_product() ) {
@@ -416,11 +379,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks the cart to see if all items are allowed to used.
+	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return  boolean
 	 */
 	public function allowed_items_in_cart() {
+		// Pre Orders compatbility where we don't support charge upon release.
+		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			return false;
+		}
+
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 
@@ -428,13 +396,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
-			// Trial subscriptions with shipping are not supported.
-			if ( class_exists( 'WC_Subscriptions_Order' ) && WC_Subscriptions_Cart::cart_contains_subscription() && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			// Not supported for subscription products when user is not authenticated and account creation is not possible.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 				return false;
 			}
 
-			// Pre Orders compatbility where we don't support charge upon release.
-			if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
+			// Trial subscriptions with shipping are not supported.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
@@ -452,7 +420,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL bail.
-		if ( ! $this->testmode && ! is_ssl() ) {
+		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return;
 		}
@@ -468,7 +436,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$stripe_params = [
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => [
-				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::get_gateway()->is_in_test_mode() ),
+				'publishableKey'     => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'          => $this->account->get_stripe_account_id(),
 				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
@@ -496,14 +464,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'          => [
-				'type'         => $this->get_button_type(),
-				'theme'        => $this->get_button_theme(),
+				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
+				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 				'height'       => $this->get_button_height(),
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
 				'css_selector' => $this->custom_button_selector(),
-				'branded_type' => $this->get_button_branded_type(),
+				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
 			'is_product_page' => is_product(),
 			'product'         => $this->get_product_data(),
@@ -554,8 +522,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			<div id="wcpay-payment-request-button">
 				<?php
 				if ( $this->is_custom_button() ) {
-					$label      = esc_html( $this->get_button_label() );
-					$class_name = esc_attr( 'button ' . $this->get_button_theme() );
+					$label      = esc_html( $this->gateway->get_option( 'payment_request_button_label' ) );
+					$class_name = esc_attr( 'button ' . $this->gateway->get_option( 'payment_request_button_theme' ) );
 					$style      = esc_attr( 'height:' . $this->get_button_height() . 'px;' );
 					echo '<button id="wcpay-custom-button" class="' . esc_attr( $class_name ) . '" style="' . esc_attr( $style ) . '">' . esc_html( $label ) . '</button>';
 				}
@@ -602,9 +570,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_cart() {
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
 		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
 			return false;
 		}
+
 		if ( ! $this->allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
 			return false;
@@ -630,14 +604,33 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Not supported when user isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
+		// Not supported for subscription products when user is not authenticated and account creation is not possible.
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
+			return false;
+		}
+
 		// Trial subscriptions with shipping are not supported.
-		if ( class_exists( 'WC_Subscriptions_Order' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+		if ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
 			return false;
 		}
 
 		// Pre Orders charge upon release not supported.
-		if ( class_exists( 'WC_Pre_Orders_Order' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
-			Logger::log( 'Pre Order charge upon release is not supported. ( Payment Request button disabled )' );
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			return false;
+		}
+
+		// Composite products are not supported on the product page.
+		if ( class_exists( 'WC_Composite_Products' ) && function_exists( 'is_composite_product' ) && is_composite_product() ) {
+			return false;
+		}
+
+		// Mix and match products are not supported on the product page.
+		if ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) {
 			return false;
 		}
 
@@ -990,10 +983,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Normalizes the state/county field because in some
-	 * cases, the state/county field is formatted differently from
-	 * what WC is expecting and throws an error. An example
-	 * for Ireland the county dropdown in Chrome shows "Co. Clare" format
+	 * Normalizes billing and shipping state fields.
 	 */
 	public function normalize_state() {
 		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
@@ -1004,29 +994,156 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
 
 		if ( $billing_state && $billing_country ) {
-			$valid_states = WC()->countries->get_states( $billing_country );
+			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
+		}
 
-			// Valid states found for country.
-			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
-				foreach ( $valid_states as $state_abbr => $state ) {
-					if ( preg_match( '/' . preg_quote( $state, '/' ) . '/i', $billing_state ) ) {
-						$_POST['billing_state'] = $state_abbr;
-					}
+		if ( $shipping_state && $shipping_country ) {
+			$_POST['shipping_state'] = $this->get_normalized_state( $shipping_state, $shipping_country );
+		}
+	}
+
+	/**
+	 * Checks if given state is normalized.
+	 *
+	 * @param string $state State.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return bool Whether state is normalized or not.
+	 */
+	public function is_normalized_state( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+		return (
+			is_array( $wc_states ) &&
+			in_array( $state, array_keys( $wc_states ), true )
+		);
+	}
+
+	/**
+	 * Sanitize string for comparison.
+	 *
+	 * @param string $string String to be sanitized.
+	 *
+	 * @return string The sanitized string.
+	 */
+	public function sanitize_string( $string ) {
+		return trim( wc_strtolower( remove_accents( $string ) ) );
+	}
+
+	/**
+	 * Get normalized state from Payment Request API dropdown list of states.
+	 *
+	 * @param string $state   Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	public function get_normalized_state_from_pr_states( $state, $country ) {
+		// Include Payment Request API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-button-states.php';
+		$pr_states = \WCPay\Constants\Payment_Request_Button_States::STATES;
+
+		if ( ! isset( $pr_states[ $country ] ) ) {
+			return $state;
+		}
+
+		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
+			$sanitized_state_string = $this->sanitize_string( $state );
+			// Checks if input state matches with Payment Request state code (0), name (1) or localName (2).
+			if (
+				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[0] ) ) ||
+				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[1] ) ) ||
+				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[2] ) )
+			) {
+				return $wc_state_abbr;
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Get normalized state from WooCommerce list of translated states.
+	 *
+	 * @param string $state   Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	public function get_normalized_state_from_wc_states( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+
+		if ( is_array( $wc_states ) ) {
+			foreach ( $wc_states as $wc_state_abbr => $wc_state_value ) {
+				if ( preg_match( '/' . preg_quote( $wc_state_value, '/' ) . '/i', $state ) ) {
+					return $wc_state_abbr;
 				}
 			}
 		}
 
-		if ( $shipping_state && $shipping_country ) {
-			$valid_states = WC()->countries->get_states( $shipping_country );
+		return $state;
+	}
 
-			// Valid states found for country.
-			if ( ! empty( $valid_states ) && is_array( $valid_states ) && count( $valid_states ) > 0 ) {
-				foreach ( $valid_states as $state_abbr => $state ) {
-					if ( preg_match( '/' . preg_quote( $state, '/' ) . '/i', $shipping_state ) ) {
-						$_POST['shipping_state'] = $state_abbr;
-					}
-				}
-			}
+	/**
+	 * Gets the normalized state/county field because in some
+	 * cases, the state/county field is formatted differently from
+	 * what WC is expecting and throws an error. An example
+	 * for Ireland, the county dropdown in Chrome shows "Co. Clare" format.
+	 *
+	 * @param string $state   Full state name or an already normalized abbreviation.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state abbreviation.
+	 */
+	public function get_normalized_state( $state, $country ) {
+		// If it's empty or already normalized, skip.
+		if ( ! $state || $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// Try to match state from the Payment Request API list of states.
+		$state = $this->get_normalized_state_from_pr_states( $state, $country );
+
+		// If it's normalized, return.
+		if ( $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// If the above doesn't work, fallback to matching against the list of translated
+		// states from WooCommerce.
+		return $this->get_normalized_state_from_wc_states( $state, $country );
+	}
+
+	/**
+	 * The Payment Request API provides its own validation for the address form.
+	 * For some countries, it might not provide a state field, so we need to return a more descriptive
+	 * error message, indicating that the Payment Request button is not supported for that country.
+	 */
+	public function validate_state() {
+		$wc_checkout     = WC_Checkout::instance();
+		$posted_data     = $wc_checkout->get_posted_data();
+		$checkout_fields = $wc_checkout->get_checkout_fields();
+		$countries       = WC()->countries->get_countries();
+
+		$is_supported = true;
+		// Checks if billing state is missing and is required.
+		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
+			$is_supported = false;
+		}
+
+		// Checks if shipping state is missing and is required.
+		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
+			$is_supported = false;
+		}
+
+		if ( ! $is_supported ) {
+			wc_add_notice(
+				sprintf(
+					/* translators: %s: country. */
+					__( 'The Payment Request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
+				),
+				'error'
+			);
 		}
 	}
 
@@ -1041,6 +1158,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
+
+		// In case the state is required, but is missing, add a more descriptive error notice.
+		$this->validate_state();
 
 		$this->normalize_state();
 
@@ -1061,15 +1181,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$city      = $address['city'];
 		$address_1 = $address['address'];
 		$address_2 = $address['address_2'];
-		$wc_states = WC()->countries->get_states( $country );
 
-		/**
-		 * In some versions of Chrome, state can be a full name. So we need
-		 * to convert that to abbreviation as WC is expecting that.
-		 */
-		if ( 2 < strlen( $state ) && ! empty( $wc_states ) && ! isset( $wc_states[ $state ] ) ) {
-			$state = array_search( ucwords( strtolower( $state ) ), $wc_states, true );
-		}
+		// Normalizes state to calculate shipping zones.
+		$state = $this->get_normalized_state( $state, $country );
 
 		WC()->shipping->reset_shipping();
 
@@ -1229,5 +1343,28 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'pending' => false,
 			],
 		];
+	}
+
+	/**
+	 * Calculates whether Apple Pay is enabled for this store.
+	 * The option value is not stored in the database, and is calculated
+	 * using this function instead, and the values is returned by using the pre_option filter.
+	 *
+	 * The option value is retrieved for inbox notifications.
+	 *
+	 * @param mixed $value The value of the option.
+	 */
+	public function get_option_is_apple_pay_enabled( $value ) {
+		// Return a random value (1 or 2) if the account is live and payment request buttons are enabled.
+		if (
+			$this->gateway->is_enabled()
+			&& 'yes' === $this->gateway->get_option( 'payment_request' )
+			&& ! $this->gateway->is_in_dev_mode()
+			&& $this->account->get_is_live()
+		) {
+			$value = wp_rand( 1, 2 );
+		}
+
+		return $value;
 	}
 }

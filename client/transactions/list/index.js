@@ -31,12 +31,14 @@ import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 
-const getColumns = ( includeDeposit, includeSubscription ) =>
+const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
 	[
 		{
 			key: 'details',
 			label: '',
 			required: true,
+			// Match background of details and date when sorting.
+			cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
 		},
 		{
 			key: 'date',
@@ -137,21 +139,15 @@ export const TransactionsList = ( props ) => {
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId );
 
-	const columnsToDisplay = useMemo( () => {
-		return getColumns(
-			! props.depositId,
-			wcpaySettings.isSubscriptionsActive
-		);
-	}, [ props.depositId, wcpaySettings.isSubscriptionsActive ] );
-
-	// match background of details and date when sorting
-	const detailsColumn =
-		columnsToDisplay.find( ( el ) => 'details' === el.key ) || {};
-	if ( ! getQuery().orderby || 'date' === getQuery().orderby ) {
-		detailsColumn.cellClassName = 'info-button is-sorted';
-	} else {
-		detailsColumn.cellClassName = 'info-button';
-	}
+	const columnsArgs = [
+		! props.depositId,
+		wcpaySettings.isSubscriptionsActive,
+		! getQuery().orderby || 'date' === getQuery().orderby,
+	];
+	const columnsToDisplay = useMemo(
+		() => getColumns( ...columnsArgs ),
+		columnsArgs
+	);
 
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL = getDetailsURL( txn.charge_id, 'transactions' );

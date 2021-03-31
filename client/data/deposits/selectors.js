@@ -56,6 +56,10 @@ export const getDeposits = ( state, query ) => {
 	return ids.map( getDeposit.bind( this, state ) );
 };
 
+export const getDepositsCount = ( state ) => {
+	return getDepositsState( state ).count;
+};
+
 export const getDepositQueryError = ( state, query ) => {
 	return getDepositsForQuery( state, query ).error || {};
 };
