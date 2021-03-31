@@ -5,7 +5,7 @@
 * Add - Payment Request Button support for US merchants (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
 * Update - Not passing level3 data for non-US merchants.
 * Add - REST endpoint for fetching account data.
-* Add - Deposits pagination and sorting
+* Add - Deposits list pagination and sorting.
 
 = 2.1.1 - 2021-03-23 =
 * Fix - Fatal error when a subscription is processed with action scheduler hook.
