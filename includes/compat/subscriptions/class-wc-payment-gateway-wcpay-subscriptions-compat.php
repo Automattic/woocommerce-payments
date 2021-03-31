@@ -134,6 +134,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
 		$token = $this->get_payment_token( $renewal_order );
+		if ( is_null( $token ) && ! apply_filters( 'wcpay_force_network_saved_cards', false ) ) {
+			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
+			$renewal_order->update_status( 'failed' );
+			return;
+		}
 
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
