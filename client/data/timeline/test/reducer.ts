@@ -3,45 +3,29 @@
 /**
  * Internal dependencies
  */
-import reducer from '../reducer';
-import TYPES from '../action-types';
+import reducer, { TimelineState } from '../reducer';
+import { Event } from '../mocks/types';
 
 describe( 'Timeline reducer tests', () => {
 	const mockIntentionId1 = 'pi_1';
-	const mockTimeline1 = [
-		{
-			id: '1',
-		},
-	];
+	const mockTimeline1 = [ new Event( '1', 0 ) ];
 	const mockIntentionId2 = 'pi_2';
-	const mockTimeline2 = [
-		{
-			id: '2a',
-		},
-		{
-			id: '2b',
-		},
-	];
-	const mockError = {
-		message: 'This is an error.',
-	};
+	const mockTimeline2 = [ new Event( '2a', 0 ), new Event( '2b', 1 ) ];
+	const mockError = new Error( 'This is an error.' );
 	const mockUnrelatedData = [
 		{
 			unrelatedData: 1,
 		},
 	];
 
-	const emptyState = {};
-	const filledStateSuccess = {
-		[ mockIntentionId1 ]: {
-			data: mockTimeline1,
-		},
+	const emptyState: TimelineState = { data: {}, errors: {} };
+	const filledStateSuccess: TimelineState = {
+		data: { [ mockIntentionId1 ]: mockTimeline1 },
+		errors: {},
 	};
-	const filledStateError = {
-		[ mockIntentionId1 ]: {
-			error: mockError,
-			data: mockTimeline1,
-		},
+	const filledStateError: TimelineState = {
+		data: { [ mockIntentionId1 ]: mockTimeline1 },
+		errors: { [ mockIntentionId1 ]: mockError },
 	};
 
 	test( 'Unrelated action is ignored', () => {
@@ -65,7 +49,7 @@ describe( 'Timeline reducer tests', () => {
 		expect(
 			reducer( emptyState, {
 				id: mockIntentionId1,
-				type: TYPES.SET_TIMELINE,
+				type: 'SET_TIMELINE',
 				data: mockTimeline1,
 			} )
 		).toStrictEqual( filledStateSuccess );
@@ -74,7 +58,7 @@ describe( 'Timeline reducer tests', () => {
 		expect(
 			reducer( filledStateError, {
 				id: mockIntentionId1,
-				type: TYPES.SET_TIMELINE,
+				type: 'SET_TIMELINE',
 				data: mockTimeline1,
 			} )
 		).toStrictEqual( filledStateSuccess );
@@ -84,13 +68,12 @@ describe( 'Timeline reducer tests', () => {
 		expect(
 			reducer( filledStateSuccess, {
 				id: mockIntentionId1,
-				type: TYPES.SET_TIMELINE,
+				type: 'SET_TIMELINE',
 				data: mockTimeline2,
 			} )
 		).toStrictEqual( {
-			[ mockIntentionId1 ]: {
-				data: mockTimeline2,
-			},
+			data: { [ mockIntentionId1 ]: mockTimeline2 },
+			errors: {},
 		} );
 	} );
 
@@ -98,16 +81,15 @@ describe( 'Timeline reducer tests', () => {
 		expect(
 			reducer( filledStateSuccess, {
 				id: mockIntentionId2,
-				type: TYPES.SET_TIMELINE,
+				type: 'SET_TIMELINE',
 				data: mockTimeline2,
 			} )
 		).toStrictEqual( {
-			[ mockIntentionId1 ]: {
-				data: mockTimeline1,
+			data: {
+				[ mockIntentionId1 ]: mockTimeline1,
+				[ mockIntentionId2 ]: mockTimeline2,
 			},
-			[ mockIntentionId2 ]: {
-				data: mockTimeline2,
-			},
+			errors: {},
 		} );
 	} );
 
@@ -115,14 +97,12 @@ describe( 'Timeline reducer tests', () => {
 		expect(
 			reducer( filledStateSuccess, {
 				id: mockIntentionId1,
-				type: TYPES.SET_ERROR_FOR_TIMELINE,
+				type: 'SET_ERROR_FOR_TIMELINE',
 				error: mockError,
 			} )
 		).toStrictEqual( {
-			[ mockIntentionId1 ]: {
-				...filledStateSuccess[ mockIntentionId1 ],
-				error: mockError,
-			},
+			...filledStateSuccess,
+			errors: { [ mockIntentionId1 ]: mockError },
 		} );
 	} );
 } );
