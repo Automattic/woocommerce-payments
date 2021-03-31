@@ -180,14 +180,15 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
+
 		if ( true ) {
 			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
 					'type'   => 'online',
 					'online' => [
-						'ip_address' => $_SERVER['REMOTE_ADDR'],
-						'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 					],
 				],
 			];
