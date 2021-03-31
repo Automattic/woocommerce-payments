@@ -6,6 +6,7 @@
 * Update - Not passing level3 data for non-US merchants.
 * Add - REST endpoint for fetching account data.
 * Add - Deposits list pagination and sorting.
+* Fix - Deposit overview now displays placeholder information instead of continuing to load when an error happens.
 
 = 2.1.1 - 2021-03-23 =
 * Fix - Fatal error when a subscription is processed with action scheduler hook.
