@@ -306,7 +306,7 @@ export const TransactionsList = ( props ) => {
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
 	if ( ! isSummaryLoading ) {
 		const isSingleCurrency =
-			1 === ( transactionsSummary.store_currencies || [] ).length;
+			2 > ( transactionsSummary.store_currencies || [] ).length;
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(
 				{
