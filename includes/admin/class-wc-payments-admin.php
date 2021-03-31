@@ -42,6 +42,39 @@ class WC_Payments_Admin {
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
+
+		// needs to have a higher priority than anything else, to ensure the event listeners are attached before the WC core ones
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payment_methods_script' ], 0 );
+		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+	}
+
+	public function enqueue_payment_methods_script() {
+		global $current_tab, $current_section;
+
+		$payment_methods_script_src_url    = plugins_url( 'dist/payment-methods.js', WCPAY_PLUGIN_FILE );
+		$payment_methods_script_asset_path = WCPAY_ABSPATH . 'dist/payment-methods.asset.php';
+		$payment_methods_script_asset      = file_exists( $payment_methods_script_asset_path ) ? require_once $payment_methods_script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			'WCPAY_PAYMENT_METHODS',
+			$payment_methods_script_src_url,
+			$payment_methods_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/payment-methods.js' ),
+			true
+		);
+
+		$is_payment_methods_page = (
+			$current_tab && ! $current_section
+			&& 'checkout' === $current_tab
+		);
+
+		if( $is_payment_methods_page ) {
+			wp_enqueue_script( 'WCPAY_PAYMENT_METHODS' );
+		}
+	}
+
+	public function payment_gateways_container() {
+		?><div id="wcpay-payment-gateways-container" /><?php
 	}
 
 	/**
@@ -318,6 +351,15 @@ class WC_Payments_Admin {
 		global $current_tab, $current_section;
 
 		$this->register_payments_scripts();
+
+		$is_payment_methods_page = (
+			$current_tab && ! $current_section
+			&& 'checkout' === $current_tab
+		);
+
+		if( $is_payment_methods_page ) {
+			wp_enqueue_script( 'WCPAY_PAYMENT_METHODS' );
+		}
 
 		$is_settings_page = (
 			$current_tab && $current_section

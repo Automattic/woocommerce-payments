@@ -15,6 +15,7 @@ const webpackConfig = {
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
+		'payment-methods': './client/payment-methods.js',
 	},
 	output: {
 		filename: '[name].js',
