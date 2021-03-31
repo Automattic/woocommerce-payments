@@ -8,12 +8,16 @@ import { find, trimEnd, endsWith } from 'lodash';
 const currencyData = getCurrencyData();
 
 const currencyNames = {
-	usd: 'United States (US) dollar',
 	aud: 'Australian dollar',
 	cad: 'Canadian dollar',
+	chf: 'Swiss franc',
+	dkk: 'Danish krone',
 	eur: 'Euro',
 	gbp: 'Pound sterling',
+	nok: 'Norwegian krone',
 	nzd: 'New Zealand dollar',
+	sek: 'Swedish krona',
+	usd: 'United States (US) dollar',
 };
 
 /**
