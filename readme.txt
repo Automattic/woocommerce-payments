@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.3.0 - 2021-xx-xx =
+* Add - Introduced deposit currency filter for transactions overview page.
+
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
 * Add - Payment Request Button support for US merchants (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
@@ -118,7 +121,6 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Enable multiple customer currencies support in live mode.
 * Add - Rate limit failed account connection checks.
 * Add - Support displaying non-USD base fees on settings page.
-* Add - Introduced deposit currency filter for transactions overview page.
 
 = 2.0.0 - 2021-02-22 =
 * Update - Render customer details in transactions list as text instead of link if order missing.
