@@ -1,5 +1,6 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
+$gap-smaller: 8px; // From wc-admin, read last comment.
 .transactions-list {
 	.date-time {
 		min-width: 195px;
@@ -13,6 +14,22 @@
 			margin-right: 6px;
 			height: 18px;
 			fill: $studio-gray-30;
+		}
+	}
+
+	.transactions-list__download-button {
+		svg {
+			margin-right: $gap-smaller;
+		}
+
+		@include breakpoint( '<660px' ) {
+			svg {
+				margin-right: 0;
+			}
+
+			span {
+				display: none;
+			}
 		}
 	}
 }
