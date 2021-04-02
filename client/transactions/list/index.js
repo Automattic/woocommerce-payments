@@ -302,11 +302,16 @@ export const TransactionsList = ( props ) => {
 		: __( 'Transactions', 'woocommerce-payments' );
 
 	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
 		downloadCSVFile(
-			generateCSVFileName( title, getQuery() ),
+			generateCSVFileName( title, params ),
 			generateCSVDataFromTable( columnsToDisplay, rows )
 		);
-		// TODO: Record event?
+
+		window.wcTracks.recordEvent( 'wcpay_transactions_download', {
+			rows: transactionsSummary.count,
+		} );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
