@@ -310,7 +310,10 @@ export const TransactionsList = ( props ) => {
 		);
 
 		window.wcTracks.recordEvent( 'wcpay_transactions_download', {
-			rows: transactionsSummary.count,
+			// eslint-disable-next-line camelcase
+			exported_transactions: rows.length,
+			// eslint-disable-next-line camelcase
+			total_transactions: transactionsSummary.count,
 		} );
 	};
 
