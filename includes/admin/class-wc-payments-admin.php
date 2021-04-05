@@ -207,6 +207,8 @@ class WC_Payments_Admin {
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
+
+		$this->add_menu_notification_badge();
 	}
 
 	/**
@@ -454,5 +456,23 @@ class WC_Payments_Admin {
 	 */
 	private static function is_grouped_settings_enabled() {
 		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
+	}
+
+	/**
+	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
+	 * to remind user that setup is required.
+	 */
+	public function add_menu_notification_badge() {
+		global $menu;
+		if ( $this->account->is_stripe_connected() || 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+			return;
+		}
+
+		foreach ( $menu as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
+				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
 	}
 }
