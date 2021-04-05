@@ -405,12 +405,12 @@ export const TransactionsList = ( props ) => {
 					/>,
 					<Button
 						key="download"
-						className="transactions-list__download-button"
+						className="woocommerce-table__download-button"
 						disabled={ isLoading }
 						onClick={ onDownload }
 					>
 						<Gridicon icon={ 'cloud-download' } />
-						<span>
+						<span className="woocommerce-table__download-button__label">
 							{ __( 'Download', 'woocommerce-payments' ) }
 						</span>
 					</Button>,
