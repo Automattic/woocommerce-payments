@@ -4,13 +4,17 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import Currency from '@woocommerce/currency';
 
 /**
  * Internal Dependencies
  */
 import TYPES from './action-types';
 import { STORE_NAME } from '../constants';
+
+// TODO: Use the proper WCPay currency.
+const currency = new Currency();
 
 export function updateDeposit( data ) {
 	return {
@@ -94,7 +98,13 @@ export function* submitInstantDeposit( transactionIds ) {
 		yield dispatch(
 			'core/notices',
 			'createSuccessNotice',
-			__( 'Instant deposit successful.', 'woocommerce-payments' )
+			sprintf(
+				__(
+					'Instant deposit for %s successful.',
+					'woocommerce-payments'
+				),
+				currency.formatCurrency( deposit.amount / 100 )
+			)
 		);
 	} catch ( e ) {
 		yield updateInstantDeposit( e );
