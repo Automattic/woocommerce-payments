@@ -15,7 +15,6 @@ import Page from 'components/page';
 import HeroImage from './hero-image';
 import strings from './strings';
 import wcpayTracks from 'tracks';
-import useReadMenuNotificationBadge from 'utils/use-read-menu-notification-badge';
 
 const ConnectPageError = () => {
 	if ( ! wcpaySettings.errorMessage ) {
@@ -69,8 +68,6 @@ const ConnectPageOnboarding = () => {
 };
 
 const ConnectAccountPage = () => {
-	useReadMenuNotificationBadge();
-
 	return (
 		<Page isNarrow className="connect-account">
 			<ConnectPageError />
