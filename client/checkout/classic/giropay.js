@@ -33,6 +33,41 @@ jQuery( function ( $ ) {
 		}
 	);
 
+	const url = new URL( window.location );
+	const clientSecret = url.searchParams.get( 'payment_intent_client_secret' );
+
+	if ( clientSecret ) {
+		api.getStripe()
+			.retrievePaymentIntent( clientSecret )
+			.then( ( response ) => {
+				if ( response.error ) {
+					// Handle error here
+					console.log( response.error );
+				} else if (response.paymentIntent && response.paymentIntent.status === 'succeeded') {
+					// Handle successful payment here
+					console.log( 'GIROPAY SUCCESS' );
+				}
+			} );
+	}
+
+	const giropayRedirect = ( clientSecret ) => {
+		const stripe = api.getStripe();
+		stripe
+			.confirmGiropayPayment( clientSecret, {
+				/* eslint-disable camelcase */
+				payment_method: {
+					billing_details: {
+						name: 'Test Test',
+					},
+				},
+				return_url: 'http://bb-wcpay.jurassic.tube/checkout/',
+				/* eslint-enable camelcase */
+			} )
+			.then( ( result ) => {
+				console.log(result);
+			} );
+	};
+
 	// In the future this object will be loaded with customer information through `wp_localize_script`.
 	const preparedCustomerData = {};
 
@@ -91,12 +126,42 @@ jQuery( function ( $ ) {
 	// Create payment method on submission.
 	let paymentMethodGenerated;
 
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	const createPaymentIntent = () => {
+		return api
+			.request( getConfig( 'ajaxUrl' ), {
+				action: 'create_payment_intent_giropay',
+				'wcpay-payment-method': 'giropay',
+				// eslint-disable-next-line camelcase
+				_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+			} )
+			.then( ( response ) => {
+				console.log(response);
+
+				if ( ! response.success ) {
+					throw response.data.error;
+				}
+
+				if ( ! response.data.client_secret ) {
+					throw new Error( 'Missing client secret.' );
+				}
+
+				return giropayRedirect( response.data.client_secret );
+			} );
+	};
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on(
 		'checkout_place_order_' + PAYMENT_METHOD_NAME_GIROPAY,
 		function () {
 			console.log("FORM CHECKOUT WITH GIROPAY");
 			$( '#wcpay-payment-method' ).val( 'giropay' );
+			createPaymentIntent();
 			return false;
 			// if ( ! isUsingSavedPaymentMethod() ) {
 			// 	return handlePaymentMethodCreation(

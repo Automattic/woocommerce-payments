@@ -110,6 +110,8 @@ class WC_Payment_Gateway_Giropay extends WC_Payment_Gateway {
 		];
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_ajax_create_payment_intent_giropay', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_payment_intent_giropay', [ $this, 'create_payment_intent_ajax' ] );
 	}
 
 	/**
@@ -164,6 +166,54 @@ class WC_Payment_Gateway_Giropay extends WC_Payment_Gateway {
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
 		];
+	}
+
+	/**
+	 * Handle AJAX request for creating a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_payment_intent_ajax() {
+		try {
+			// $is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
+			// if ( ! $is_nonce_valid ) {
+			// 	throw new Add_Payment_Method_Exception(
+			// 		__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+			// 		'invalid_referrer'
+			// 	);
+			// }
+
+			$new_intent = $this->create_payment_intent();
+			$intent_response = [
+				'id' => $new_intent->get_id(),
+				'client_secret' => $new_intent->get_client_secret(),
+			];
+
+			wp_send_json_success( $intent_response, 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Create a setup intent when adding cards using the my account page.
+	 *
+	 * @throws Exception - When an error occurs in setup intent creation.
+	 */
+	public function create_payment_intent() {
+
+		return $this->payments_api_client->create_payment_intention(
+			'100',
+			'eur',
+			[ 'giropay' ]
+		);
 	}
 
 	/**
