@@ -51,7 +51,6 @@ export default class WCPayAPI {
 		return new ( class {
 			constructor() {
 				this.args = {
-					type: 'card',
 					...elements,
 					// eslint-disable-next-line camelcase
 					billing_details: {
