@@ -41,6 +41,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock1: mockDeposits[ 0 ],
 			},
 			queries: {},
+			instant: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -54,6 +55,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock2: mockDeposits[ 1 ],
 			},
 			queries: {},
+			instant: {},
 		} );
 	} );
 
@@ -77,6 +79,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1', 'po_mock2' ],
 				},
 			},
+			instant: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -92,6 +95,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1' ],
 				},
 			},
+			instant: {},
 		};
 
 		const reduced = reducer( before, {
@@ -113,6 +117,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock2' ],
 				},
 			},
+			instant: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -133,6 +138,7 @@ describe( 'Deposits reducer tests', () => {
 				data: mockOverview,
 			},
 			queries: {},
+			instant: {},
 		} );
 	} );
 
@@ -151,6 +157,7 @@ describe( 'Deposits reducer tests', () => {
 				error: { code: 'error' },
 			},
 			queries: {},
+			instant: {},
 		} );
 	} );
 } );
