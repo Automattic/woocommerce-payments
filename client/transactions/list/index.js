@@ -301,6 +301,8 @@ export const TransactionsList = ( props ) => {
 		? __( 'Deposit transactions', 'woocommerce-payments' )
 		: __( 'Transactions', 'woocommerce-payments' );
 
+	const downloadable = !! rows.length;
+
 	const onDownload = () => {
 		const { page, path, ...params } = getQuery();
 
@@ -403,17 +405,19 @@ export const TransactionsList = ( props ) => {
 						}
 						autocompleter={ autocompleter }
 					/>,
-					<Button
-						key="download"
-						className="woocommerce-table__download-button"
-						disabled={ isLoading }
-						onClick={ onDownload }
-					>
-						<Gridicon icon={ 'cloud-download' } />
-						<span className="woocommerce-table__download-button__label">
-							{ __( 'Download', 'woocommerce-payments' ) }
-						</span>
-					</Button>,
+					downloadable && (
+						<Button
+							key="download"
+							className="woocommerce-table__download-button"
+							disabled={ isLoading }
+							onClick={ onDownload }
+						>
+							<Gridicon icon={ 'cloud-download' } />
+							<span className="woocommerce-table__download-button__label">
+								{ __( 'Download', 'woocommerce-payments' ) }
+							</span>
+						</Button>
+					),
 				] }
 			/>
 		</Page>
