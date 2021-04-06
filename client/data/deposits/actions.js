@@ -74,6 +74,18 @@ export function* submitInstantDeposit( transaction_ids ) {
 		yield updateInstantDeposit( deposit );
 		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [ transaction_ids ] );
 
+		// Need to invalidate the resolution so that the components will render again.
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getDeposits'
+		);
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getDepositsOverview'
+		);
+
 		// TODO: This should have the formatted amounts in the success notice.
 		yield dispatch(
 			'core/notices',

@@ -51,8 +51,7 @@ const columns = [
 ];
 
 export const DepositsList = () => {
-	const { deposit } = useInstantDeposit();
-	const { deposits, isLoading } = useDeposits( getQuery(), deposit );
+	const { deposits, isLoading } = useDeposits( getQuery() );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (

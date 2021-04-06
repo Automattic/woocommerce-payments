@@ -19,26 +19,23 @@ export const useDeposit = ( id ) =>
 		[ id ]
 	);
 
-export const useDepositsOverview = ( deposit ) =>
-	useSelect(
-		( select ) => {
-			const {
-				getDepositsOverview,
-				getDepositsOverviewError,
-				isResolving,
-			} = select( STORE_NAME );
+export const useDepositsOverview = () =>
+	useSelect( ( select ) => {
+		const {
+			getDepositsOverview,
+			getDepositsOverviewError,
+			isResolving,
+		} = select( STORE_NAME );
 
-			return {
-				overview: getDepositsOverview( deposit ),
-				overviewError: getDepositsOverviewError(),
-				isLoading: isResolving( 'getDepositsOverview', [ deposit ] ),
-			};
-		},
-		[ deposit ]
-	);
+		return {
+			overview: getDepositsOverview(),
+			overviewError: getDepositsOverviewError(),
+			isLoading: isResolving( 'getDepositsOverview' ),
+		};
+	} );
 
 // eslint-disable-next-line camelcase
-export const useDeposits = ( { paged, per_page: perPage }, deposit ) =>
+export const useDeposits = ( { paged, per_page: perPage } ) =>
 	useSelect(
 		( select ) => {
 			const { getDeposits, getDepositQueryError, isResolving } = select(
@@ -52,12 +49,12 @@ export const useDeposits = ( { paged, per_page: perPage }, deposit ) =>
 					: perPage,
 			};
 			return {
-				deposits: getDeposits( query, deposit ),
+				deposits: getDeposits( query ),
 				depositsError: getDepositQueryError( query ),
-				isLoading: isResolving( 'getDeposits', [ query, deposit ] ),
+				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, deposit ]
+		[ paged, perPage ]
 	);
 
 export const useInstantDeposit = ( transaction_ids ) => {
