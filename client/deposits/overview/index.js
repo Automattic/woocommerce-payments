@@ -16,7 +16,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  * Internal dependencies
  */
 import './style.scss';
-import {useDepositsOverview, useInstantDeposit} from 'data';
+import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 import { formatCurrency } from 'utils/currency';

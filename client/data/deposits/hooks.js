@@ -57,17 +57,17 @@ export const useDeposits = ( { paged, per_page: perPage } ) =>
 		[ paged, perPage ]
 	);
 
-export const useInstantDeposit = ( transaction_ids ) => {
+export const useInstantDeposit = ( transactionIds ) => {
 	const { deposit, inProgress } = useSelect( ( select ) => {
 		const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getInstantDeposit( [ transaction_ids ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ transaction_ids ] ),
+			deposit: getInstantDeposit( [ transactionIds ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
 		};
 	} );
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
-	const submit = () => submitInstantDeposit( transaction_ids );
+	const submit = () => submitInstantDeposit( transactionIds );
 
 	return { deposit, inProgress, submit };
 };

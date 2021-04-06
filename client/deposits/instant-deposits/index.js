@@ -15,11 +15,10 @@ import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'data';
 
 const InstantDepositButton = ( {
-	// eslint-disable-next-line camelcase
-	balance: { amount, fee, net, transaction_ids },
+	balance: { amount, fee, net, transaction_ids: transactionIds },
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
-	const { deposit, inProgress, submit } = useInstantDeposit( transaction_ids );
+	const { deposit, inProgress, submit } = useInstantDeposit( transactionIds );
 
 	const onClose = () => {
 		setModalOpen( false );

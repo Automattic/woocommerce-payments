@@ -12,7 +12,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { useDeposits, useInstantDeposit } from 'data';
+import { useDeposits } from 'data';
 import { displayType, displayStatus } from '../strings';
 import { formatStringValue } from 'util';
 import { formatCurrency } from 'utils/currency';

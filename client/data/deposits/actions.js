@@ -57,9 +57,11 @@ export function updateInstantDeposit( data ) {
 	};
 }
 
-export function* submitInstantDeposit( transaction_ids ) {
+export function* submitInstantDeposit( transactionIds ) {
 	try {
-		yield dispatch( STORE_NAME, 'startResolution', 'getInstantDeposit', [ transaction_ids ] );
+		yield dispatch( STORE_NAME, 'startResolution', 'getInstantDeposit', [
+			transactionIds,
+		] );
 
 		const deposit = yield apiFetch( {
 			path: '/wc/v3/payments/deposits',
@@ -67,12 +69,14 @@ export function* submitInstantDeposit( transaction_ids ) {
 			data: {
 				type: 'instant',
 				// eslint-disable-next-line camelcase
-				transaction_ids,
+				transaction_ids: transactionIds,
 			},
 		} );
 
 		yield updateInstantDeposit( deposit );
-		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [ transaction_ids ] );
+		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [
+			transactionIds,
+		] );
 
 		// Need to invalidate the resolution so that the components will render again.
 		yield dispatch(
