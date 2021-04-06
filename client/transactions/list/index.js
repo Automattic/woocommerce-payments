@@ -9,11 +9,18 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Search } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 import {
 	onQueryChange,
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -289,6 +296,29 @@ export const TransactionsList = ( props ) => {
 				'Search by order number, customer name, or billing email',
 				'woocommerce-payments'
 		  );
+
+	const title = props.depositId
+		? __( 'Deposit transactions', 'woocommerce-payments' )
+		: __( 'Transactions', 'woocommerce-payments' );
+
+	const downloadable = !! rows.length;
+
+	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( columnsToDisplay, rows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_transactions_download', {
+			// eslint-disable-next-line camelcase
+			exported_transactions: rows.length,
+			// eslint-disable-next-line camelcase
+			total_transactions: transactionsSummary.count,
+		} );
+	};
+
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
 		searchPlaceholder = __(
 			'Search by customer name',
@@ -375,6 +405,19 @@ export const TransactionsList = ( props ) => {
 						}
 						autocompleter={ autocompleter }
 					/>,
+					downloadable && (
+						<Button
+							key="download"
+							className="woocommerce-table__download-button"
+							disabled={ isLoading }
+							onClick={ onDownload }
+						>
+							<Gridicon icon={ 'cloud-download' } />
+							<span className="woocommerce-table__download-button__label">
+								{ __( 'Download', 'woocommerce-payments' ) }
+							</span>
+						</Button>
+					),
 				] }
 			/>
 		</Page>
