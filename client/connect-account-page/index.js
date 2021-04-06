@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -41,10 +42,16 @@ const ConnectPageOnboardingDisabled = () => (
 
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const isJetpackConnected = useSelect( ( select ) =>
+		select( 'wc/admin/plugins' ).isJetpackConnected()
+	);
 
 	const handleSetup = () => {
 		setSubmitted( true );
-		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED );
+		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
+			// eslint-disable-next-line camelcase
+			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
+		} );
 	};
 
 	return (
