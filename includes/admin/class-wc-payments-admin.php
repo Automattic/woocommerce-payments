@@ -300,7 +300,10 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpaySettings',
-			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
+			[
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'featureFlags'          => $this->get_frontend_feature_flags(),
+			]
 		);
 
 		wp_register_style(
@@ -383,6 +386,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
+			'groupedSettings' => self::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -437,5 +441,14 @@ class WC_Payments_Admin {
 	 */
 	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
+	}
+
+	/**
+	 * Checks whether the grouped settings feature is enabled
+	 *
+	 * @return bool
+	 */
+	private static function is_grouped_settings_enabled() {
+		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 }
