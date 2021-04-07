@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Gateway;
 
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
@@ -27,8 +28,10 @@ class Sepa extends \WC_Payment_Gateway_WCPay {
 	 */
 	const GATEWAY_ID = 'woocommerce_payments_sepa';
 
+	const METHOD_ENABLED_KEY = 'sepa_enabled';
+
 	/**
-	 * Sepa constructor.
+	 * Sepa Constrictor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
 	 * @param WC_Payments_Account                  $account                  - Account class instance.
