@@ -9,11 +9,18 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Search } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 import {
 	onQueryChange,
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -30,6 +37,8 @@ import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
 import './style.scss';
+import TransactionsFilters from '../filters';
+import Page from '../../components/page';
 
 const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
 	[
@@ -263,31 +272,6 @@ export const TransactionsList = ( props ) => {
 		);
 	} );
 
-	const summary = [
-		{ label: 'transactions', value: `${ transactionsSummary.count }` },
-		{
-			label: 'total',
-			value: `${ formatCurrency(
-				transactionsSummary.total,
-				transactionsSummary.currency
-			) }`,
-		},
-		{
-			label: 'fees',
-			value: `${ formatCurrency(
-				transactionsSummary.fees,
-				transactionsSummary.currency
-			) }`,
-		},
-		{
-			label: 'net',
-			value: `${ formatCurrency(
-				transactionsSummary.net,
-				transactionsSummary.currency
-			) }`,
-		},
-	];
-
 	const searchedLabels =
 		getQuery().search &&
 		getQuery().search.map( ( v ) => ( {
@@ -312,6 +296,29 @@ export const TransactionsList = ( props ) => {
 				'Search by order number, customer name, or billing email',
 				'woocommerce-payments'
 		  );
+
+	const title = props.depositId
+		? __( 'Deposit transactions', 'woocommerce-payments' )
+		: __( 'Transactions', 'woocommerce-payments' );
+
+	const downloadable = !! rows.length;
+
+	const onDownload = () => {
+		const { page, path, ...params } = getQuery();
+
+		downloadCSVFile(
+			generateCSVFileName( title, params ),
+			generateCSVDataFromTable( columnsToDisplay, rows )
+		);
+
+		window.wcTracks.recordEvent( 'wcpay_transactions_download', {
+			// eslint-disable-next-line camelcase
+			exported_transactions: rows.length,
+			// eslint-disable-next-line camelcase
+			total_transactions: transactionsSummary.count,
+		} );
+	};
+
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
 		searchPlaceholder = __(
 			'Search by customer name',
@@ -319,44 +326,101 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
-	// Summary will be rendered if it's available and deposit currency filter has been applied.
-	const showSummary =
-		! isSummaryLoading && 'string' === typeof getQuery().currency_is;
+	// Generate summary based on loading state and available currencies information
+	const summary = [
+		{
+			label: 'transactions',
+			value: `${ transactionsSummary.count }`,
+		},
+	];
+	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	if ( ! isSummaryLoading ) {
+		const isSingleCurrency =
+			2 > ( transactionsSummary.store_currencies || [] ).length;
+		if ( isSingleCurrency || isCurrencyFiltered ) {
+			summary.push(
+				{
+					label: 'total',
+					value: `${ formatCurrency(
+						transactionsSummary.total,
+						transactionsSummary.currency
+					) }`,
+				},
+				{
+					label: 'fees',
+					value: `${ formatCurrency(
+						transactionsSummary.fees,
+						transactionsSummary.currency
+					) }`,
+				},
+				{
+					label: 'net',
+					value: `${ formatCurrency(
+						transactionsSummary.net,
+						transactionsSummary.currency
+					) }`,
+				}
+			);
+		}
+	}
+
+	const showFilters = ! props.depositId;
+	const storeCurrencies =
+		transactionsSummary.store_currencies ||
+		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
 	return (
-		<TableCard
-			className="transactions-list woocommerce-report-table has-search"
-			title={
-				props.depositId
-					? __( 'Deposit transactions', 'woocommerce-payments' )
-					: __( 'Transactions', 'woocommerce-payments' )
-			}
-			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
-			totalRows={ transactionsSummary.count || 0 }
-			headers={ columnsToDisplay }
-			rows={ rows }
-			summary={ showSummary ? summary : null }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-			actions={ [
-				<Search
-					allowFreeTextSearch={ true }
-					inlineTags
-					key="search"
-					onChange={ onSearchChange }
-					placeholder={ searchPlaceholder }
-					selected={ searchedLabels }
-					showClearButton={ true }
-					type={
-						wcpaySettings.featureFlags.customSearch
-							? 'custom'
-							: 'customers'
-					}
-					autocompleter={ autocompleter }
-				/>,
-			] }
-		/>
+		<Page>
+			{ showFilters && (
+				<TransactionsFilters storeCurrencies={ storeCurrencies } />
+			) }
+			<TableCard
+				className="transactions-list woocommerce-report-table has-search"
+				title={
+					props.depositId
+						? __( 'Deposit transactions', 'woocommerce-payments' )
+						: __( 'Transactions', 'woocommerce-payments' )
+				}
+				isLoading={ isLoading }
+				rowsPerPage={ getQuery().per_page || 25 }
+				totalRows={ transactionsSummary.count || 0 }
+				headers={ columnsToDisplay }
+				rows={ rows }
+				summary={ summary }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+				actions={ [
+					<Search
+						allowFreeTextSearch={ true }
+						inlineTags
+						key="search"
+						onChange={ onSearchChange }
+						placeholder={ searchPlaceholder }
+						selected={ searchedLabels }
+						showClearButton={ true }
+						type={
+							wcpaySettings.featureFlags.customSearch
+								? 'custom'
+								: 'customers'
+						}
+						autocompleter={ autocompleter }
+					/>,
+					downloadable && (
+						<Button
+							key="download"
+							className="woocommerce-table__download-button"
+							disabled={ isLoading }
+							onClick={ onDownload }
+						>
+							<Gridicon icon={ 'cloud-download' } />
+							<span className="woocommerce-table__download-button__label">
+								{ __( 'Download', 'woocommerce-payments' ) }
+							</span>
+						</Button>
+					),
+				] }
+			/>
+		</Page>
 	);
 };
 

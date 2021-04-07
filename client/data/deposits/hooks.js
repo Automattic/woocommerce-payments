@@ -70,12 +70,16 @@ export const useDeposits = ( {
 		[ paged, perPage, orderby, order, storeCurrencyIs ]
 	);
 
-export const useDepositsSummary = ( { store_currency_is: storeCurrencyIs } ) =>
+export const useDepositsSummary = ( {
+	match,
+	store_currency_is: storeCurrencyIs,
+} ) =>
 	useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
 
 			const query = {
+				match,
 				storeCurrencyIs,
 			};
 

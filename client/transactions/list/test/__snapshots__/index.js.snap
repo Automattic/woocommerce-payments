@@ -1,5 +1,1337 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Transactions list renders correctly when can filter by several currencies 1`] = `
+<div>
+  <div
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Transactions
+        </h2>
+      </div>
+      <div
+        class="woocommerce-card__action woocommerce-card__header-item"
+      >
+        <div>
+          <div>
+            <div
+              class="woocommerce-select-control woocommerce-search is-searchable"
+            >
+              <div
+                class="components-base-control woocommerce-select-control__control empty"
+              >
+                <i
+                  class="material-icons-outlined"
+                >
+                  search
+                </i>
+                <div
+                  class="components-base-control__field"
+                >
+                  <label
+                    class="components-base-control__label"
+                    for="woocommerce-select-control-7__control-input"
+                  >
+                    Search by order number, customer name, or billing email
+                  </label>
+                  <input
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    autocomplete="off"
+                    class="woocommerce-select-control__control-input"
+                    id="woocommerce-select-control-7__control-input"
+                    placeholder=""
+                    role="combobox"
+                    type="text"
+                    value=""
+                  />
+                  <span
+                    class="screen-reader-text"
+                    id="search-inline-input-7"
+                  >
+                    Move backward for selected items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__menu woocommerce-card__header-item"
+      >
+        <div
+          class="woocommerce-ellipsis-menu"
+        >
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
+              title="Choose which values to display"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="dashicon dashicons-ellipsis"
+                focusable="false"
+                height="20"
+                role="img"
+                viewBox="0 0 20 20"
+                width="20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        aria-hidden="false"
+        aria-labelledby="caption-7"
+        class="woocommerce-table__table"
+        role="group"
+      >
+        <table>
+          <caption
+            class="woocommerce-table__caption screen-reader-text"
+            id="caption-7"
+          >
+            Transactions
+          </caption>
+          <tbody>
+            <tr>
+              <th
+                class="woocommerce-table__header info-button is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                />
+              </th>
+              <th
+                aria-sort="descending"
+                class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-7-1"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Date / Time
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Date and time
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-7-1"
+                >
+                  Sort by Date and time in ascending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Type
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Type
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-7-3"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Amount
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Amount
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-7-3"
+                >
+                  Sort by Amount in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-7-4"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Fees
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Fees
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-7-4"
+                >
+                  Sort by Fees in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-7-5"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Net
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Net
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-7-5"
+                >
+                  Sort by Net in descending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Order #
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Order number
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Source
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Source
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Customer
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Customer
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header deposit"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Deposit
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Deposit
+                </span>
+              </th>
+            </tr>
+            <tr>
+              <th
+                class="woocommerce-table__item info-button is-sorted"
+                scope="row"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                >
+                  <svg
+                    class="gridicon gridicons-info-outline needs-offset"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                      />
+                    </g>
+                  </svg>
+                </a>
+              </th>
+              <td
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Jan 2, 2020 / 12:46PM
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Refund
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $10.00
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $9.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/order/123"
+                >
+                  123
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a>
+                  Another customer
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item deposit"
+              >
+                Pending
+              </td>
+            </tr>
+            <tr>
+              <th
+                class="woocommerce-table__item info-button is-sorted"
+                scope="row"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                >
+                  <svg
+                    class="gridicon gridicons-info-outline needs-offset"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                      />
+                    </g>
+                  </svg>
+                </a>
+              </th>
+              <td
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Jan 4, 2020 / 11:22PM
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Charge
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <div
+                    class="converted-amount"
+                  >
+                    <span
+                      class="conversion-indicator"
+                      data-testid="conversion-indicator"
+                    >
+                      <svg
+                        class="gridicon gridicons-sync"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+                    $15.00
+                  </div>
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $14.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/order/125"
+                >
+                  125
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--mastercard"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a>
+                  My name
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item deposit"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+                >
+                  Jan 7, 2020
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Transactions list renders correctly when filtered by currency 1`] = `
+<div>
+  <div
+    class="woocommerce-card woocommerce-table woocommerce-analytics__card transactions-list woocommerce-report-table has-search has-menu has-action"
+  >
+    <div
+      class="woocommerce-card__header"
+    >
+      <div
+        class="woocommerce-card__title-wrapper"
+      >
+        <h2
+          class="woocommerce-card__title woocommerce-card__header-item"
+        >
+          Transactions
+        </h2>
+      </div>
+      <div
+        class="woocommerce-card__action woocommerce-card__header-item"
+      >
+        <div>
+          <div>
+            <div
+              class="woocommerce-select-control woocommerce-search is-searchable"
+            >
+              <div
+                class="components-base-control woocommerce-select-control__control empty"
+              >
+                <i
+                  class="material-icons-outlined"
+                >
+                  search
+                </i>
+                <div
+                  class="components-base-control__field"
+                >
+                  <label
+                    class="components-base-control__label"
+                    for="woocommerce-select-control-8__control-input"
+                  >
+                    Search by order number, customer name, or billing email
+                  </label>
+                  <input
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    autocomplete="off"
+                    class="woocommerce-select-control__control-input"
+                    id="woocommerce-select-control-8__control-input"
+                    placeholder=""
+                    role="combobox"
+                    type="text"
+                    value=""
+                  />
+                  <span
+                    class="screen-reader-text"
+                    id="search-inline-input-8"
+                  >
+                    Move backward for selected items
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__menu woocommerce-card__header-item"
+      >
+        <div
+          class="woocommerce-ellipsis-menu"
+        >
+          <div
+            class="components-dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
+              title="Choose which values to display"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="dashicon dashicons-ellipsis"
+                focusable="false"
+                height="20"
+                role="img"
+                viewBox="0 0 20 20"
+                width="20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                />
+              </svg>
+              <svg
+                aria-hidden="true"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="woocommerce-card__body"
+    >
+      <div
+        aria-hidden="false"
+        aria-labelledby="caption-8"
+        class="woocommerce-table__table"
+        role="group"
+      >
+        <table>
+          <caption
+            class="woocommerce-table__caption screen-reader-text"
+            id="caption-8"
+          >
+            Transactions
+          </caption>
+          <tbody>
+            <tr>
+              <th
+                class="woocommerce-table__header info-button is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="false"
+                />
+              </th>
+              <th
+                aria-sort="descending"
+                class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-8-1"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Date / Time
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Date and time
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-8-1"
+                >
+                  Sort by Date and time in ascending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Type
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Type
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-8-3"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Amount
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Amount
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-8-3"
+                >
+                  Sort by Amount in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-8-4"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Fees
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Fees
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-8-4"
+                >
+                  Sort by Fees in descending order
+                </span>
+              </th>
+              <th
+                aria-sort="none"
+                class="woocommerce-table__header is-sortable is-numeric"
+                role="columnheader"
+                scope="col"
+              >
+                <button
+                  aria-describedby="header-8-5"
+                  class="components-button"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                    />
+                  </svg>
+                  <span
+                    aria-hidden="true"
+                  >
+                    Net
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Net
+                  </span>
+                </button>
+                <span
+                  class="screen-reader-text"
+                  id="header-8-5"
+                >
+                  Sort by Net in descending order
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Order #
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Order number
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Source
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Source
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Customer
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Customer
+                </span>
+              </th>
+              <th
+                class="woocommerce-table__header deposit"
+                role="columnheader"
+                scope="col"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  Deposit
+                </span>
+                <span
+                  class="screen-reader-text"
+                >
+                  Deposit
+                </span>
+              </th>
+            </tr>
+            <tr>
+              <th
+                class="woocommerce-table__item info-button is-sorted"
+                scope="row"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                >
+                  <svg
+                    class="gridicon gridicons-info-outline needs-offset"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                      />
+                    </g>
+                  </svg>
+                </a>
+              </th>
+              <td
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Jan 2, 2020 / 12:46PM
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  Refund
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $10.00
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  $9.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/order/123"
+                >
+                  123
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda"
+                  tabindex="-1"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--visa"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a>
+                  Another customer
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item deposit"
+              >
+                Pending
+              </td>
+            </tr>
+            <tr>
+              <th
+                class="woocommerce-table__item info-button is-sorted"
+                scope="row"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                >
+                  <svg
+                    class="gridicon gridicons-info-outline needs-offset"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g>
+                      <path
+                        d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                      />
+                    </g>
+                  </svg>
+                </a>
+              </th>
+              <td
+                class="woocommerce-table__item date-time is-left-aligned is-sorted"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Jan 4, 2020 / 11:22PM
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  Charge
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <div
+                    class="converted-amount"
+                  >
+                    <span
+                      class="conversion-indicator"
+                      data-testid="conversion-indicator"
+                    >
+                      <svg
+                        class="gridicon gridicons-sync"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4c4.418 0 8 3.582 8 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12c0 4.418 3.582 8 8 8v-2c-3.308 0-6-2.692-6-6z"
+                          />
+                        </g>
+                      </svg>
+                    </span>
+                    $15.00
+                  </div>
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $-0.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item is-numeric"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  $14.50
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  data-link-type="external"
+                  href="https://example.com/order/125"
+                >
+                  125
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a
+                  class="woocommerce-table__clickable-cell"
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda"
+                  tabindex="-1"
+                >
+                  <span
+                    class="payment-method__brand payment-method__brand--mastercard"
+                  />
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item"
+              >
+                <a>
+                  My name
+                </a>
+              </td>
+              <td
+                class="woocommerce-table__item deposit"
+              >
+                <a
+                  data-link-type="wc-admin"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+                >
+                  Jan 7, 2020
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Transactions list renders correctly when filtered by deposit 1`] = `
 <div>
   <div

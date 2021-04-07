@@ -291,7 +291,6 @@ describe( 'Transactions list', () => {
 		} );
 
 		const { container } = render( <TransactionsList /> );
-
 		expect( container ).toMatchSnapshot();
 	} );
 } );
