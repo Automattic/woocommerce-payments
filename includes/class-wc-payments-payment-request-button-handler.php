@@ -328,6 +328,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Normalizes postal code in case of redacted data from Apple Pay.
+	 *
+	 * @param string $postcode Postal code.
+	 * @param string $country Country.
+	 */
+	public function get_normalized_postal_code( $postcode, $country ) {
+		/**
+		 * Currently Apple Pay truncates postal codes from UK and Canada to first 3-4 characters
+		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
+		 * the postal code and not calculate shipping zones correctly.
+		 */
+		if ( 'GB' === $country ) {
+			// Replaces a redacted string with something like LN10***.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '*' );
+		}
+		if ( 'CA' === $country ) {
+			// Replaces a redacted string with something like L4Y***.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '*' );
+		}
+
+		return $postcode;
+	}
+
+	/**
 	 * Add needed order meta
 	 *
 	 * @param integer $order_id    The order ID.
@@ -1184,6 +1208,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normalizes state to calculate shipping zones.
 		$state = $this->get_normalized_state( $state, $country );
+
+		// Normalizes postal code in case of redacted data from Apple Pay.
+		$postcode = $this->get_normalized_postal_code( $postcode, $country );
 
 		WC()->shipping->reset_shipping();
 
