@@ -40,7 +40,7 @@ export const useDeposits = ( {
 	per_page: perPage,
 	orderby = 'date',
 	order = 'desc',
-	currency_is: currencyIs,
+	store_currency_is: storeCurrencyIs,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -58,7 +58,7 @@ export const useDeposits = ( {
 					: perPage,
 				orderby,
 				order,
-				currencyIs,
+				storeCurrencyIs,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -67,16 +67,16 @@ export const useDeposits = ( {
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, orderby, order, currencyIs ]
+		[ paged, perPage, orderby, order, storeCurrencyIs ]
 	);
 
-export const useDepositsSummary = ( { currency_is: currencyIs } ) =>
+export const useDepositsSummary = ( { store_currency_is: storeCurrencyIs } ) =>
 	useSelect(
 		( select ) => {
 			const { getDepositsSummary, isResolving } = select( STORE_NAME );
 
 			const query = {
-				currencyIs,
+				storeCurrencyIs,
 			};
 
 			return {
@@ -84,5 +84,5 @@ export const useDepositsSummary = ( { currency_is: currencyIs } ) =>
 				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
 			};
 		},
-		[ currencyIs ]
+		[ storeCurrencyIs ]
 	);
