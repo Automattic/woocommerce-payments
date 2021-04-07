@@ -94,8 +94,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
-		add_filter( 'woocommerce_validate_postcode', [ $this, 'postal_code_validation' ], 10, 3 );
-
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
@@ -291,40 +289,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $title;
-	}
-
-	/**
-	 * Removes postal code validation from WC.
-	 *
-	 * @param bool   $valid Whether postal code is valid.
-	 * @param string $postcode Postal code.
-	 * @param string $country Country.
-	 * @return bool Whether postal code is valid.
-	 */
-	public function postal_code_validation( $valid, $postcode, $country ) {
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
-			return $valid;
-		}
-
-		$payment_request_type = isset( $_POST['payment_request_type'] ) ? wc_clean( wp_unslash( $_POST['payment_request_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-
-		if ( 'apple_pay' !== $payment_request_type ) {
-			return $valid;
-		}
-
-		/**
-		 * Currently Apple Pay truncates postal codes from UK and Canada to first 3 characters
-		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
-		 * the order and not let it go through. The remedy for now is just to remove this validation.
-		 * Note that this only works with shipping providers that don't validate full postal codes.
-		 */
-		if ( 'GB' === $country || 'CA' === $country ) {
-			return true;
-		}
-
-		return $valid;
 	}
 
 	/**
