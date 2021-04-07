@@ -66,6 +66,6 @@
 	background: no-repeat url( '../images/cards/unknown.svg' );
 }
 
-/*.wc_gateways tr[data-gateway_id^='woocommerce_payments_'] {*/
-/*	display: none;*/
-/*}*/
+.wc_gateways tr[data-gateway_id^='woocommerce_payments_'] {
+	display: none;
+}
