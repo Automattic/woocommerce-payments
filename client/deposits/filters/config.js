@@ -7,7 +7,7 @@ export const filters = [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'store_currency_is',
-		staticParams: [ 'paged', 'per_page' ],
+		staticParams: [ 'paged', 'per_page', 'orderby', 'order' ],
 		showFilters: () => false,
 		filters: [
 			{

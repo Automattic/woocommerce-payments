@@ -21,6 +21,8 @@ export const filters = [
 		staticParams: [
 			'paged',
 			'per_page',
+			'orderby',
+			'order',
 			'search',
 			'filter',
 			'type_is',
@@ -42,7 +44,14 @@ export const filters = [
 	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [ 'paged', 'per_page', 'search', 'store_currency_is' ],
+		staticParams: [
+			'paged',
+			'per_page',
+			'orderby',
+			'order',
+			'search',
+			'store_currency_is',
+		],
 		showFilters: () => true,
 		filters: [
 			{
