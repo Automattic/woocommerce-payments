@@ -68,6 +68,9 @@ const getColumns = ( sortByDate ) => [
 
 export const DepositsList = () => {
 	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
+	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
+		getQuery()
+	);
 
 	const columnsArgs = [
 		! getQuery().orderby || 'date' === getQuery().orderby,
