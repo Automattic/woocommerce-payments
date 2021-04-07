@@ -8,7 +8,7 @@ import config from 'config';
  */
 import { StoreOwnerFlow } from '../../utils';
 
-const WCPAY_DEPOSITS =
+const WCPAY_TRANSACTIONS =
 	config.get( 'url' ) +
 	'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 
@@ -17,8 +17,8 @@ describe( 'Admin transactions', () => {
 		await StoreOwnerFlow.login();
 	} );
 
-	it( 'loads transactions', async () => {
-		await page.goto( WCPAY_DEPOSITS, {
+	it( 'page should load without any errors', async () => {
+		await page.goto( WCPAY_TRANSACTIONS, {
 			waitUntil: 'networkidle0',
 		} );
 		await expect( page ).toMatchElement( 'h2', { text: 'Transactions' } );

@@ -17,7 +17,7 @@ describe( 'Admin deposits', () => {
 		await StoreOwnerFlow.login();
 	} );
 
-	it( 'loads deposits', async () => {
+	it( 'page should load without any errors', async () => {
 		await page.goto( WCPAY_DEPOSITS, {
 			waitUntil: 'networkidle0',
 		} );
