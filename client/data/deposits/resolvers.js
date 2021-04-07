@@ -64,7 +64,7 @@ export function* getDepositsOverview() {
 /*eslint-disable camelcase*/
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
-	currency_is: query.currencyIs,
+	store_currency_is: query.storeCurrencyIs,
 } );
 /*eslint-enable camelcase*/
 

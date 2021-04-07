@@ -29,7 +29,7 @@ const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
-	currency_is: query.currencyIs,
+	store_currency_is: query.storeCurrencyIs,
 	deposit_id: query.depositId,
 	search: query.search,
 } );
