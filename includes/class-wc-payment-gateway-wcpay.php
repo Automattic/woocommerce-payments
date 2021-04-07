@@ -746,7 +746,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( 'succeeded' !== $status && 'requires_capture' !== $status && 'processing' !== $status  ) {
+			if ( 'succeeded' !== $status && 'requires_capture' !== $status && 'processing' !== $status ) {
 				$intent_failed = true;
 			}
 
