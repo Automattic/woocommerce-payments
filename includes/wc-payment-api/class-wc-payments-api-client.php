@@ -300,8 +300,8 @@ class WC_Payments_API_Client {
 	/**
 	 * List deposits
 	 *
-	 * @param int   $page       The requested page.
-	 * @param int   $page_size  The size of the requested page.
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
 	 * @param string $sort      The column to be used for sorting.
 	 * @param string $direction The sorting direction.
 	 * @param array  $filters   The filters to be used in the query.
@@ -313,8 +313,8 @@ class WC_Payments_API_Client {
 		$query = array_merge(
 			$filters,
 			[
-				'page'     => $page,
-				'pagesize' => $page_size,
+				'page'      => $page,
+				'pagesize'  => $page_size,
 				'sort'      => $sort,
 				'direction' => $direction,
 			]

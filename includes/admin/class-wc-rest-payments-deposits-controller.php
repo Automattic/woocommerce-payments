@@ -71,7 +71,8 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		$page_size = (int) $request->get_param( 'pagesize' );
 		$sort      = $request->get_param( 'sort' );
 		$direction = $request->get_param( 'direction' );
-		return $this->forward_request( 'list_deposits', [ $page, $page_size, $sort, $direction ] );
+		$filters   = $this->get_deposits_filters( $request );
+		return $this->forward_request( 'list_deposits', [ $page, $page_size, $sort, $direction, $filters ] );
 	}
 
 	/**

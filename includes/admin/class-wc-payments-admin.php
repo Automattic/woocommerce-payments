@@ -231,15 +231,6 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
-		// Prepare currency-related information, which will be added to JS settings object.
-		$default_currency      = $this->account->get_default_store_currency();
-		$supported_currencies  = $this->account->get_supported_store_currencies();
-		$currency_code_options = get_woocommerce_currencies();
-		foreach ( $supported_currencies as $code ) {
-			$code_uppercase           = strtoupper( $code );
-			$localized_names[ $code ] = sprintf( '%s (%s)', $currency_code_options[ $code_uppercase ] ?? $code, $code_uppercase );
-		}
-
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
@@ -251,11 +242,6 @@ class WC_Payments_Admin {
 				'featureFlags'          => $this->get_frontend_feature_flags(),
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-				'currencies'            => [
-					'default'   => $default_currency,
-					'supported' => $supported_currencies,
-					'names'     => $localized_names ?? [],
-				],
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 			]
 		);
