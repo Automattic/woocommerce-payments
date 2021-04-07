@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-export const filters = () => [
+export const filters = [
 	{
 		label: __( 'Deposit currency', 'woocommerce-payments' ),
 		param: 'store_currency_is',

@@ -129,18 +129,22 @@ export const DepositsList = () => {
 
 	const summary = [
 		{ label: 'deposits', value: `${ depositsSummary.count }` },
-		{
-			label: 'total',
-			value: `${ formatCurrency(
-				depositsSummary.total,
-				depositsSummary.currency
-			) }`,
-		},
 	];
 
-	// Summary will be rendered if it's available and deposit currency filter has been applied.
-	const showSummary =
-		! isSummaryLoading && 'string' === typeof getQuery().currency_is;
+	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	if ( ! isSummaryLoading ) {
+		const isSingleCurrency =
+			2 > ( depositsSummary.store_currencies || [] ).length;
+		if ( isSingleCurrency || isCurrencyFiltered ) {
+			summary.push( {
+				label: 'total',
+				value: `${ formatCurrency(
+					depositsSummary.total,
+					depositsSummary.currency
+				) }`,
+			} );
+		}
+	}
 
 	return (
 		<TableCard
@@ -151,7 +155,7 @@ export const DepositsList = () => {
 			totalRows={ depositsCount }
 			headers={ columns }
 			rows={ rows }
-			summary={ showSummary ? summary : null }
+			summary={ summary }
 			query={ getQuery() }
 			onQueryChange={ onQueryChange }
 		/>
