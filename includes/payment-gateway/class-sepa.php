@@ -61,14 +61,6 @@ class Sepa extends \WC_Payment_Gateway_WCPay {
 			'3.0',
 			true
 		);
-
-		wp_register_script(
-			'wcpay-sepa-checkout',
-			plugins_url( 'dist/sepa_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
-			WC_Payments::get_file_version( 'dist/sepa_checkout.js' ),
-			true
-		);
 	}
 
 	/**
@@ -125,7 +117,7 @@ class Sepa extends \WC_Payment_Gateway_WCPay {
 
 			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
 				<div id="wcpay-sepa-card-element"></div>
-				<div id="wcpay-errors" role="alert"></div>
+				<div id="wcpay-sepa-errors" role="alert"></div>
 				<input id="wcpay-payment-method-sepa" type="hidden" name="wcpay-payment-method-sepa" />
 
 				<?php
