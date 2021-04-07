@@ -4,8 +4,13 @@
 import { __ } from '@wordpress/i18n';
 
 // Handled as an external dependency: see '/webpack.config.js:83'
-// eslint-disable-next-line import/no-unresolved
-import { registerPaymentMethod } from '@woocommerce/blocks-registry';
+import {
+	registerPaymentMethod,
+	registerExpressPaymentMethod,
+	// eslint-disable-next-line import/no-unresolved
+} from '@woocommerce/blocks-registry';
+
+import paymentRequestPaymentMethod from '../../payment-request/blocks';
 
 /**
  * Internal dependencies
@@ -43,6 +48,8 @@ registerPaymentMethod(
 			},
 		} )
 );
+
+registerExpressPaymentMethod( paymentRequestPaymentMethod );
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

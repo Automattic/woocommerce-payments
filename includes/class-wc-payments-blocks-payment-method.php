@@ -6,11 +6,21 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
+use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
  */
 class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
+
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		add_action( 'woocommerce_rest_checkout_process_payment_with_context', [ $this, 'add_payment_request_order_meta' ], 8, 2 );
+	}
+
 	/**
 	 * Initializes the class.
 	 */
@@ -67,5 +77,39 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			],
 			WC_Payments::get_gateway()->get_payment_fields_js_config()
 		);
+	}
+
+	/**
+	 * Add payment request data to the order meta as hooked on the
+	 * woocommerce_rest_checkout_process_payment_with_context action.
+	 *
+	 * @param PaymentContext $context Holds context for the payment.
+	 * @param PaymentResult  $result  Result object for the payment.
+	 */
+	public function add_payment_request_order_meta( PaymentContext $context, PaymentResult &$result ) {
+		$data = $context->payment_data;
+		if ( ! empty( $data['payment_request_type'] ) && 'woocommerce_payments' === $context->payment_method ) {
+			$this->add_order_meta( $context->order, $data['payment_request_type'] );
+		}
+
+		// - TODO: Add error handling.
+	}
+
+	/**
+	 * Handles adding information about the payment request type used to the order meta.
+	 *
+	 * @param \WC_Order $order The order being processed.
+	 * @param string    $payment_request_type The payment request type used for payment.
+	 */
+	private function add_order_meta( \WC_Order $order, $payment_request_type ) {
+		if ( 'apple_pay' === $payment_request_type ) {
+			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
+			$order->save();
+		}
+
+		if ( 'payment_request_api' === $payment_request_type ) {
+			$order->set_payment_method_title( 'Payment Request (WooCommerce Payments)' );
+			$order->save();
+		}
 	}
 }

@@ -3,7 +3,6 @@
  */
 import { useEffect, useState, useRef, useCallback } from '@wordpress/element';
 import { useStripe } from '@stripe/react-stripe-js';
-import { getSetting } from '@woocommerce/settings';
 import { __ } from '@wordpress/i18n';
 import isShallowEqual from '@wordpress/is-shallow-equal';
 
@@ -16,7 +15,6 @@ import {
 	canDoPaymentRequest,
 	normalizeShippingAddressForCheckout,
 	normalizeShippingOptionSelectionsForCheckout,
-	getStripeServerData,
 	pluckAddress,
 	normalizeShippingOptions,
 } from '../stripe-utils';
@@ -70,7 +68,7 @@ export const useInitialization = ( {
 		const pr = getPaymentRequest( {
 			total: billing.cartTotal,
 			currencyCode: billing.currency.code.toLowerCase(),
-			countryCode: getSetting( 'baseLocation', {} )?.country,
+			countryCode: 'US', // - TODO: get country code
 			shippingRequired: shippingData.needsShipping,
 			cartTotalItems: billing.cartTotalItems,
 			stripe,
@@ -186,7 +184,9 @@ export const useInitialization = ( {
 			const sourceHandler = ( paymentMethod ) => {
 				// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
 				// event `allowPrepaidCard` isn't present on the server data object.
-				const { allowPrepaidCard = false } = getStripeServerData();
+				// - TODO: Get prepaid card
+				// const { allowPrepaidCard = false } = getStripeServerData();
+				const allowPrepaidCard = true;
 				if (
 					// eslint-disable-next-line no-undef
 					! allowPrepaidCard &&

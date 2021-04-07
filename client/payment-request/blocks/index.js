@@ -1,15 +1,12 @@
 /**
- * External dependencies
- */
-import { getSetting } from '@woocommerce/settings';
-
-/**
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME } from './constants';
 import { PaymentRequestExpress } from './payment-request-express';
 import { applePayImage } from './apple-pay-preview';
-import { getStripeServerData, loadStripe } from '../stripe-utils';
+import { loadStripe } from '../stripe-utils';
+
+import { getConfig } from '../../utils/checkout';
 
 const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 
@@ -23,7 +20,7 @@ let isStripeInitialized = false,
 // in current environment (e.g. geo + shopper has payment settings configured).
 function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 	// Stripe only supports carts of greater value than 30 cents.
-	if ( totalPrice < 30 ) {
+	if ( 30 > totalPrice ) {
 		return false;
 	}
 
@@ -33,7 +30,7 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 	}
 
 	return canPayStripePromise.then( ( stripe ) => {
-		if ( stripe === null ) {
+		if ( null === stripe ) {
 			isStripeInitialized = true;
 			return canPay;
 		}
@@ -47,7 +44,7 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 				amount: totalPrice,
 				pending: true,
 			},
-			country: getSetting( 'baseLocation', {} )?.country,
+			country: 'US', // TODO: Get country
 			currency: currencyCode,
 		} );
 		return paymentRequest.canMakePayment().then( ( result ) => {
@@ -67,9 +64,9 @@ const paymentRequestPaymentMethod = {
 			currencyCode: cartData?.cartTotals?.currency_code?.toLowerCase(),
 			totalPrice: parseInt( cartData?.cartTotals?.total_price || 0, 10 ),
 		} ),
-	paymentMethodId: 'stripe',
+	paymentMethodId: 'woocommerce_payments',
 	supports: {
-		features: getStripeServerData()?.supports ?? [],
+		features: getConfig( 'features' ),
 	},
 };
 
