@@ -19,6 +19,8 @@ import { formatStringValue } from 'util';
 import { formatCurrency } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
+import Page from '../../components/page';
+import DepositsFilters from '../filters';
 
 const getColumns = ( sortByDate ) => [
 	{
@@ -146,19 +148,26 @@ export const DepositsList = () => {
 		}
 	}
 
+	const storeCurrencies =
+		depositsSummary.store_currencies ||
+		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
+
 	return (
-		<TableCard
-			className="deposits-list woocommerce-report-table"
-			title={ __( 'Deposit history', 'woocommerce-payments' ) }
-			isLoading={ isLoading }
-			rowsPerPage={ getQuery().per_page || 25 }
-			totalRows={ depositsCount }
-			headers={ columns }
-			rows={ rows }
-			summary={ summary }
-			query={ getQuery() }
-			onQueryChange={ onQueryChange }
-		/>
+		<Page>
+			<DepositsFilters storeCurrencies={ storeCurrencies } />
+			<TableCard
+				className="deposits-list woocommerce-report-table"
+				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				isLoading={ isLoading }
+				rowsPerPage={ getQuery().per_page || 25 }
+				totalRows={ depositsCount }
+				headers={ columns }
+				rows={ rows }
+				summary={ summary }
+				query={ getQuery() }
+				onQueryChange={ onQueryChange }
+			/>
+		</Page>
 	);
 };
 
