@@ -25,6 +25,11 @@ class WC_Payments {
 	 */
 	private static $gateway;
 
+	/**
+	 * Instance of Sepa gateway, created in init function.
+	 *
+	 * @var Sepa
+	 */
 	private static $sepa_gateway;
 
 	/**
@@ -408,16 +413,7 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$gateway;
-
-		// $gateways[] = self::$sepa_gateway;
-		if (
-			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) )
-			||
-			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && $_GET['page'] === 'wc-settings' && $_GET['tab'] === 'checkout' && ! empty( $_GET['section'] ) )
-		) {
-			// $gateways[] = 'WC_Payment_Gateway_Giropay';
-			$gateways[] = self::$sepa_gateway;
-		}
+		$gateways[] = self::$sepa_gateway;
 
 		return $gateways;
 	}
