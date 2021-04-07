@@ -85,7 +85,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_dispute( $request ) {
-		$dispute_id = $request->get_params()['dispute_id'];
+		$dispute_id = $request->get_param( 'dispute_id' );
 		return $this->forward_request( 'get_dispute', [ $dispute_id ] );
 	}
 
@@ -122,7 +122,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function close_dispute( $request ) {
-		$dispute_id = $request->get_params()['dispute_id'];
+		$dispute_id = $request->get_param( 'dispute_id' );
 		return $this->forward_request( 'close_dispute', [ $dispute_id ] );
 	}
 }

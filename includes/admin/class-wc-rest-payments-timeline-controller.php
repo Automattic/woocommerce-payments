@@ -39,7 +39,7 @@ class WC_REST_Payments_Timeline_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_timeline( $request ) {
-		$intention_id = $request->get_params()['intention_id'];
+		$intention_id = $request->get_param( 'intention_id' );
 		return $this->forward_request( 'get_timeline', [ $intention_id ] );
 	}
 
