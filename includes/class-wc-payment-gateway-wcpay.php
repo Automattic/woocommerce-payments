@@ -124,6 +124,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_status'               => [
 				'type' => 'account_status',
 			],
+			'payment_methods'              => [
+				'title'       => 'Payment methods',
+				'type'        => 'payment_methods_container',
+				'description' => '',
+			],
 			'account_fees'                 => [
 				'type' => 'account_fees',
 			],
@@ -197,6 +202,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+	}
+
+	/**
+	 * Renders the "Payment methods" card React component container HTML.
+	 *
+	 * @return string
+	 */
+	public function generate_payment_methods_container_html() {
+		$is_grouped_settings_enabled = get_option( '_wcpay_feature_grouped_settings', false );
+
+		if ( ! $is_grouped_settings_enabled ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row">
+				<?php echo esc_html( __( 'Payments accepted on checkout', 'woocommerce-payments' ) ); ?>
+			</th>
+			<td>
+				<div id="wcpay-payment-methods-container"></div>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

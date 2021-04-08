@@ -11,6 +11,24 @@ import { __ } from '@wordpress/i18n';
 import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
 import enqueueFraudScripts from 'fraud-scripts';
+import PaymentMethods from 'payment-methods';
+
+const onEnabledPaymentMethodsChange = ( enabledMethodIds ) => {
+	wcpayAdminSettings.enabledMethodIds = enabledMethodIds;
+};
+
+const paymentMethodsContainer = document.getElementById(
+	'wcpay-payment-methods-container'
+);
+if ( paymentMethodsContainer ) {
+	ReactDOM.render(
+		<PaymentMethods
+			enabledMethodIds={ wcpayAdminSettings.enabledMethodIds }
+			onEnabledMethodsChange={ onEnabledPaymentMethodsChange }
+		/>,
+		paymentMethodsContainer
+	);
+}
 
 const statusContainer = document.getElementById(
 	'wcpay-account-status-container'
