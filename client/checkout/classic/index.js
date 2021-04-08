@@ -395,29 +395,14 @@ jQuery( function ( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on(
-		'checkout_place_order_' + PAYMENT_METHOD_NAME,
+		'checkout_place_order_' + PAYMENT_METHOD_NAME + ' checkout_place_order_' + PAYMENT_METHOD_NAME_SEPA,
 		function () {
 			if ( ! isUsingSavedPaymentMethod() ) {
 				return handlePaymentMethodCreation(
 					$( this ),
 					handleOrderPayment,
 					true,
-					cardPayment,
-				);
-			}
-		}
-	);
-
-	// Handle the checkout form when WooCommerce SEPA Payments is chosen.
-	$( 'form.checkout' ).on(
-		'checkout_place_order_' + PAYMENT_METHOD_NAME_SEPA,
-		function () {
-			if ( ! isUsingSavedPaymentMethod() ) {
-				return handlePaymentMethodCreation(
-					$( this ),
-					handleOrderPayment,
-					true,
-					sepaPayment,
+					isWCPaySepaChosen() ? sepaPayment : cardPayment,
 				);
 			}
 		}
