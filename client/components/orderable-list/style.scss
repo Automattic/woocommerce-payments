@@ -1,0 +1,63 @@
+.orderable-list {
+	margin: 0;
+}
+
+.orderable-list__item {
+	display: flex;
+	margin: 0;
+	padding: 24px;
+	padding-right: 33px;
+	box-shadow: inset 0 -1px 0 #e8eaeb;
+}
+
+.orderable-list__drag-handle-container {
+	align-items: center;
+	display: flex;
+	flex: 0 1 28px;
+	justify-content: center;
+}
+
+.orderable-list__icon-container {
+	align-items: center;
+	display: flex;
+	flex: 0 1 58px;
+	justify-content: center;
+	margin-left: 16px;
+}
+
+.orderable-list__icon-container--has-icon {
+	border: 1px solid $studio-gray-5;
+	border-radius: 2px;
+}
+
+.orderable-list__text {
+	flex: 1 1 auto;
+	margin-left: 16px;
+}
+
+.orderable-list__label {
+	font-size: 14px;
+	line-height: 20px;
+}
+
+.orderable-list__description {
+	color: $studio-gray-50;
+	font-size: 13px;
+	line-height: 16px;
+	margin-top: 4px;
+}
+
+.orderable-list__actions {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	margin-left: 16px;
+}
+
+.orderable-list__actions .orderable-list__action:not( :first-child ) {
+	margin-left: 24px;
+}
+
+.orderable-list__action .dashicon {
+	fill: #a2aab2;
+}
