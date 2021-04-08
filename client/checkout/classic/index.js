@@ -46,37 +46,38 @@ jQuery( function ( $ ) {
 	const cardPayment = {
 		type: 'card',
 		card: cardElement,
-	}
+	};
 
 	// Create a SEPA element
 	const sepaElement = elements.create( 'iban', {
-		supportedCountries: ["SEPA"],
+		supportedCountries: [ 'SEPA' ],
 		classes: { base: 'wcpay-sepa-card-mounted' },
 	} );
 
 	const sepaPayment = {
-		type: 'sepa_debit',
+		type: 'sepa_debit' /* eslint-disable camelcase */,
 		sepa_debit: sepaElement,
-	}
+	};
 
 	/**
 	 * Check if SEPA Direct Debit is being used.
 	 *
-	 * @return {boolean}
+	 * @return {boolean} Boolean indicating whether or not SEPA Direct Debit is being used.
 	 */
-	const isWCPaySepaChosen= function() {
-		return $( '#payment_method_woocommerce_payments_sepa' ).is( ':checked' );
-	}
+	const isWCPaySepaChosen = function () {
+		return $( '#payment_method_woocommerce_payments_sepa' ).is(
+			':checked'
+		);
+	};
 
 	/**
 	 * Check if Card payment is being used.
 	 *
-	 * @return {boolean}
+	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
 	 */
-	const isWCPayCardChosen= function() {
+	const isWCPayCardChosen = function () {
 		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
-	}
-
+	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
@@ -97,7 +98,6 @@ jQuery( function ( $ ) {
 		if ( $( '#wcpay-sepa-card-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-card-element' );
 		}
-
 	} );
 
 	if (
@@ -234,7 +234,9 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
-		const paymentSelector = isWCPaySepaChosen() ? '#wcpay-payment-method-sepa' : '#wcpay-payment-method';
+		const paymentSelector = isWCPaySepaChosen()
+			? '#wcpay-payment-method-sepa'
+			: '#wcpay-payment-method';
 
 		// Populate form with the payment method.
 		$( paymentSelector ).val( id );
@@ -249,13 +251,14 @@ jQuery( function ( $ ) {
 	 * @param {Object} $form The jQuery object for the form.
 	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
 	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
+	 * @param {Object}  paymentMethodDetails { type: 'card' | 'sepa_debit', card? | sepa_debit? : Stripe element  }.
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handlePaymentMethodCreation = (
 		$form,
 		successHandler,
 		useBillingDetails,
-		paymentMethodDetails,
+		paymentMethodDetails
 	) => {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
 		// is firing we should let the form submission happen.
@@ -324,7 +327,9 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const paymentMethodId = isWCPaySepaChosen() ? $( '#wcpay-payment-method-sepa' ).val() : $( '#wcpay-payment-method' ).val();
+		const paymentMethodId = isWCPaySepaChosen()
+			? $( '#wcpay-payment-method-sepa' ).val()
+			: $( '#wcpay-payment-method' ).val();
 
 		const savePaymentMethod = $(
 			'#wc-woocommerce_payments-new-payment-method'
@@ -381,10 +386,12 @@ jQuery( function ( $ ) {
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
 	function isUsingSavedPaymentMethod() {
-		if ( isWCPaySepaChosen() ){
+		if ( isWCPaySepaChosen() ) {
 			return (
 				$( '#wc-woocommerce_payments-payment-sepa-token-new' ).length &&
-				! $( '#wc-woocommerce_payments-payment-sepa-token-new' ).is( ':checked' )
+				! $( '#wc-woocommerce_payments-payment-sepa-token-new' ).is(
+					':checked'
+				)
 			);
 		}
 		return (
@@ -395,14 +402,17 @@ jQuery( function ( $ ) {
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on(
-		'checkout_place_order_' + PAYMENT_METHOD_NAME + ' checkout_place_order_' + PAYMENT_METHOD_NAME_SEPA,
+		'checkout_place_order_' +
+			PAYMENT_METHOD_NAME +
+			' checkout_place_order_' +
+			PAYMENT_METHOD_NAME_SEPA,
 		function () {
 			if ( ! isUsingSavedPaymentMethod() ) {
 				return handlePaymentMethodCreation(
 					$( this ),
 					handleOrderPayment,
 					true,
-					isWCPaySepaChosen() ? sepaPayment : cardPayment,
+					isWCPaySepaChosen() ? sepaPayment : cardPayment
 				);
 			}
 		}
@@ -410,7 +420,10 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if ( isUsingSavedPaymentMethod() || ( ! isWCPayCardChosen() && ! isWCPaySepaChosen() ) ) {
+		if (
+			isUsingSavedPaymentMethod() ||
+			( ! isWCPayCardChosen() && ! isWCPaySepaChosen() )
+		) {
 			return;
 		}
 
