@@ -71,12 +71,12 @@ export const useTransactions = (
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
 			depositId,
-			search,
+			JSON.stringify( search ),
 		]
 	);
 
@@ -120,11 +120,11 @@ export const useTransactionsSummary = (
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
 			depositId,
-			search,
+			JSON.stringify( search ),
 		]
 	);
