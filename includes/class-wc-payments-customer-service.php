@@ -110,7 +110,7 @@ class WC_Payments_Customer_Service {
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
 		if ( $user->ID > 0 ) {
-			$global = apply_filters( 'wcpay_force_network_saved_cards', false );
+			$global = WC_Payments::is_network_saved_cards_enabled();
 			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id, $global );
 			if ( ! $result ) {
 				// Log the error, but continue since we have the customer ID we need.
@@ -186,7 +186,7 @@ class WC_Payments_Customer_Service {
 			return [];
 		}
 
-		$cache_payment_methods = ! apply_filters( 'wcpay_force_network_saved_cards', false );
+		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
 
 		if ( $cache_payment_methods ) {
 			$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
@@ -239,7 +239,7 @@ class WC_Payments_Customer_Service {
 	 * @param int $user_id WC user ID.
 	 */
 	public function clear_cached_payment_methods_for_user( $user_id ) {
-		if ( apply_filters( 'wcpay_force_network_saved_cards', false ) ) {
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
