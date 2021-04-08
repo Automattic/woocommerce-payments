@@ -234,8 +234,10 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
+		const paymentSelector = isWCPaySepaChosen() ? '#wcpay-payment-method-sepa' : '#wcpay-payment-method';
+
 		// Populate form with the payment method.
-		$( '#wcpay-payment-method' ).val( id );
+		$( paymentSelector ).val( id );
 
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
@@ -322,7 +324,8 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const paymentMethodId = $( '#wcpay-payment-method' ).val();
+		const paymentMethodId = isWCPaySepaChosen() ? $( '#wcpay-payment-method-sepa' ).val() : $( '#wcpay-payment-method' ).val();
+
 		const savePaymentMethod = $(
 			'#wc-woocommerce_payments-new-payment-method'
 		).is( ':checked' );
@@ -426,17 +429,11 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		let payment = cardPayment;
-
-		if ( isWCPaySepaChosen() ) {
-			payment = sepaPayment;
-		}
-
 		return handlePaymentMethodCreation(
 			$( '#order_review' ),
 			handleOrderPayment,
 			true,
-			payment
+			isWCPaySepaChosen() ? sepaPayment : cardPayment
 		);
 	} );
 
@@ -447,7 +444,7 @@ jQuery( function ( $ ) {
 				$( 'form#add_payment_method' ),
 				handleAddCard,
 				false,
-				cardPayment
+				isWCPaySepaChosen() ? sepaPayment : cardPayment
 			);
 		}
 	} );
