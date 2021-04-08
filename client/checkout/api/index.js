@@ -18,23 +18,35 @@ export default class WCPayAPI {
 	constructor( options, request ) {
 		this.options = options;
 		this.stripe = null;
+		this.stripePlatform = null;
 		this.request = request;
 	}
 
 	/**
 	 * Generates a new instance of Stripe.
 	 *
+	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
-	getStripe() {
-		if ( ! this.stripe ) {
-			const { publishableKey, accountId } = this.options;
+	getStripe( forceAccountRequest = false ) {
+		const {
+			publishableKey,
+			accountId,
+			forceNetworkSavedCards,
+		} = this.options;
 
+		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
+			if ( ! this.stripePlatform ) {
+				this.stripePlatform = new Stripe( publishableKey );
+			}
+			return this.stripePlatform;
+		}
+
+		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
 			} );
 		}
-
 		return this.stripe;
 	}
 
@@ -171,7 +183,7 @@ export default class WCPayAPI {
 
 		const confirmAction = isSetupIntent
 			? this.getStripe().confirmCardSetup( clientSecret )
-			: this.getStripe().confirmCardPayment( clientSecret );
+			: this.getStripe( true ).confirmCardPayment( clientSecret );
 
 		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
