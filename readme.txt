@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
+* Update - Change the default track `recordEvent` to use @woocommerce/tracks.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
