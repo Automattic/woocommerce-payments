@@ -39,7 +39,7 @@ class WC_Payments_Account {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
-		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 	}
@@ -231,29 +231,26 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Whether to do a full-page redirect to the WCPay onboarding page. It has several exceptions, to prevent
-	 * "hijacking" the multiple WC/WC-Admin onboarding flows.
-	 * This function assumes that the Stripe account hasn't been setup yet.
-	 *
-	 * @return bool True if the user should be redirected to the WCPay onboarding page, false otherwise.
-	 */
-	private function should_redirect_to_onboarding() {
-		// If the user is in the WCPay settings screen and hasn't onboarded yet, always redirect.
-		if ( WC_Payment_Gateway_WCPay::is_current_page_settings() ) {
-			return true;
-		}
-
-		return get_option( 'wcpay_should_redirect_to_onboarding', false );
-	}
-
-	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * @return bool True if the account is connected properly.
+	 * @return bool True if the redirection happened.
 	 */
-	public function check_stripe_account_status() {
+	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return;
+			return false;
+		}
+
+		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
+		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+
+		if (
+			// If not loading the settings page...
+			! $is_on_settings_page
+			// ...and we have redirected before.
+			&& ! $should_redirect_to_onboarding
+		) {
+			// Do not attempt to redirect again.
+			return false;
 		}
 
 		$account = $this->get_cached_account_data();
@@ -262,13 +259,19 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( empty( $account ) ) {
-			if ( $this->should_redirect_to_onboarding() ) {
-				update_option( 'wcpay_should_redirect_to_onboarding', false );
-				$this->redirect_to_onboarding_page();
-			}
+		if ( $should_redirect_to_onboarding ) {
+			// Update the option. If there's an account connected, we won't need to redirect in the future.
+			// If not, we will redirect once and will not want to redirect again.
+			update_option( 'wcpay_should_redirect_to_onboarding', false );
+		}
+
+		if ( ! empty( $account ) ) {
+			// Do not redirect if connected.
 			return false;
 		}
+
+		// Redirect if not connected.
+		$this->redirect_to_onboarding_page();
 		return true;
 	}
 
@@ -317,6 +320,9 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+
+			// Hide menu notification badge upon starting setup.
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_page(

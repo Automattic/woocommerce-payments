@@ -588,4 +588,16 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 		}
 	}
+
+	/**
+	 * Filter to check if WCPay should operate as usual (the customer can save payment methods at checkout and those payment methods
+	 * will only be used on this site), or if saved cards should be available for all the sites on the multisite network.
+	 *
+	 * NOTE: DON'T USE THIS FILTER. Everything will break. At this moment, it's only intended to be used internally by Automattic.
+	 *
+	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
+	 */
+	public static function is_network_saved_cards_enabled() {
+		return apply_filters( 'wcpay_force_network_saved_cards', false );
+	}
 }
