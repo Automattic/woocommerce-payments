@@ -15,7 +15,7 @@ function isEnabled() {
  */
 function recordEvent( eventName, eventProperties ) {
 	const recordFunction =
-		window.wc.tracks.recordEvent ?? window.wcTracks.recordEvent;
+		window.wc?.tracks?.recordEvent ?? window.wcTracks.recordEvent;
 	recordFunction( eventName, eventProperties );
 }
 
