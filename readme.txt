@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
 * Add - Notification badge next to payments menu.
+* Fix - Fixed broken search on transactions list page.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
