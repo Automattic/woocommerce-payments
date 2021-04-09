@@ -169,7 +169,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
-  	// SEPA option hidden behind feature flag.
+		// SEPA option hidden behind feature flag.
 		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
 			$this->form_fields['sepa_enabled'] = [
 				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
