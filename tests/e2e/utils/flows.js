@@ -43,6 +43,9 @@ const MY_ACCOUNT_ADDRESSES = baseUrl + 'my-account/edit-address';
 const MY_ACCOUNT_ACCOUNT_DETAILS = baseUrl + 'my-account/edit-account';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 
+const WP_ADMIN_SINGLE_CPT_VIEW = ( postId ) =>
+	baseUrl + `wp-admin/post.php?post=${ postId }&action=edit`;
+
 const getProductColumnExpression = ( productTitle ) =>
 	'td[@class="product-name" and ' +
 	`a[contains(text(), "${ productTitle }")]` +
@@ -449,6 +452,12 @@ const StoreOwnerFlow = {
 
 	runSetupWizard: async () => {
 		await page.goto( WP_ADMIN_SETUP_WIZARD, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	goToOrder: async ( orderId ) => {
+		await page.goto( WP_ADMIN_SINGLE_CPT_VIEW( orderId ), {
 			waitUntil: 'networkidle0',
 		} );
 	},
