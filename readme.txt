@@ -105,6 +105,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
+* Add - Notification badge next to payments menu.
+* Fix - Fixed broken search on transactions list page.
 * Update - Change the default track `recordEvent` to use @woocommerce/tracks.
 
 = 2.2.0 - 2021-03-31 =
