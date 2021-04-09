@@ -15,6 +15,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
+use WCPay\Payment_Gateway\Sepa;
 
 /**
  * Mostly a wrapper containing information on a single payment.
@@ -246,8 +247,18 @@ class Payment_Information {
 		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
+		// TODO: Is there a way to prevent using this if-then, rather let the payment info figure it out?
+		switch($request['payment_method']) {
+			case 'woocommerce_payments_sepa':
+				$request_gateway_id = Sepa::GATEWAY_ID;
+				break;
+			default:
+				$request_gateway_id = \WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		}
+
+
 		// If the token doesn't belong to this gateway or the current user it's invalid.
-		if ( ! $token || \WC_Payment_Gateway_WCPay::GATEWAY_ID !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+		if ( ! $token || $request_gateway_id !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
 			return null;
 		}
 

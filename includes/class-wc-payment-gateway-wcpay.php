@@ -560,6 +560,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<?php endif; ?>
 
 			<?php
+			print_r($this->get_tokens());
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
 				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -655,7 +656,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
 
 		// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
-		if ( ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment_information->must_save_payment_method();
 		}
 
