@@ -66,8 +66,9 @@
     "composer.json": "composer validate --strict --no-check-all"
   },
   "dependencies": {
-    "@stripe/stripe-js": "1.12.1",
+    "@dnd-kit/sortable": "^2.0.1",
     "@stripe/react-stripe-js": "^1.1.2",
+    "@stripe/stripe-js": "1.12.1",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",

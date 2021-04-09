@@ -2,115 +2,128 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import React, { useCallback, useState } from 'react';
+import { Icon } from '@wordpress/components';
+import classNames from 'classnames';
+import { CSS } from '@dnd-kit/utilities';
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from '@dnd-kit/core';
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
+	useSortable,
+} from '@dnd-kit/sortable';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 
-const ListItemIcon = ( { icon } ) => {
-	const classNames = [ 'orderable-list__icon-container' ];
+const ListItem = ( { id, children, isDraggable } ) => {
+	const {
+		attributes,
+		listeners,
+		transform,
+		transition,
+		setDraggableNodeRef,
+		setDroppableNodeRef,
+	} = useSortable( {
+		id,
+	} );
 
-	if ( icon ) {
-		classNames.push( 'orderable-list__icon-container--has-icon' );
-	}
-
-	return (
-		<div className={ classNames.join( ' ' ) }>{ icon ? icon : null }</div>
-	);
-};
-
-const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
-	return (
-		<div className="orderable-list__actions">
-			<Button
-				isLink
-				className="orderable-list__action"
-				onClick={ () => onManageClick( itemId ) }
-			>
-				{ __( 'Manage', 'woocommerce-payments' ) }
-			</Button>
-			<Button
-				isLink
-				className="orderable-list__action"
-				onClick={ () => onDeleteClick( itemId ) }
-			>
-				<Icon icon="trash" size={ 24 } />
-			</Button>
-		</div>
-	);
-};
-
-const ListItem = ( {
-	id,
-	label,
-	description,
-	icon,
-	onManageClick,
-	onDeleteClick,
-	showDragHandle,
-} ) => {
-	const domId = `orderable-list__item-${ id }`;
+	const style = {
+		transform: CSS.Translate.toString( transform ),
+		transition,
+	};
 
 	return (
-		<li id={ domId } className="orderable-list__item">
+		<li
+			className="orderable-list__item"
+			ref={ setDroppableNodeRef }
+			style={ style }
+		>
 			<div className="orderable-list__drag-handle-container">
-				{ showDragHandle ? (
-					<div className="orderable-list__drag-handle">
+				{ isDraggable && (
+					<div
+						className="orderable-list__drag-handle"
+						{ ...attributes }
+						{ ...listeners }
+						ref={ setDraggableNodeRef }
+					>
 						<Icon icon="move" size={ 24 } />
 					</div>
-				) : null }
+				) }
 			</div>
-			<ListItemIcon icon={ icon } />
-			<div className="orderable-list__text">
-				<Button
-					isLink
-					className="orderable-list__label"
-					onClick={ () => onManageClick( id ) }
-				>
-					<strong>{ label }</strong>
-				</Button>
-				<div className="orderable-list__description">
-					{ description }
-				</div>
-			</div>
-			<ListItemActions
-				itemId={ id }
-				onManageClick={ onManageClick }
-				onDeleteClick={ onDeleteClick }
-			/>
+			{ children }
 		</li>
 	);
 };
 
-const OrderableList = ( {
-	className,
-	items,
-	onManageClick = () => {},
-	onDeleteClick = () => {},
-} ) => {
-	const classNames = [ 'orderable-list' ];
+const OrderableList = ( { className, children } ) => {
+	const isDraggable = 1 < React.Children.count( children );
+	const childrenArray = React.Children.toArray( children );
 
-	if ( className ) {
-		classNames.push( className );
-	}
+	// TODO: remove
+	const [ childrenKeys, setChildrenKeys ] = useState(
+		childrenArray.map( ( child ) => child.key )
+	);
 
-	const showDragHandle = 1 < items.length;
+	const sensors = useSensors(
+		useSensor( PointerSensor ),
+		useSensor( KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		} )
+	);
+
+	const handleDragEnd = useCallback(
+		( event ) => {
+			const { active, over } = event;
+
+			if ( active.id !== over.id ) {
+				setChildrenKeys( ( oldItems ) => {
+					const oldIndex = oldItems.indexOf( active.id );
+					const newIndex = oldItems.indexOf( over.id );
+
+					return arrayMove( oldItems, oldIndex, newIndex );
+				} );
+			}
+		},
+		[ setChildrenKeys ]
+	);
 
 	return (
-		<ul className={ classNames.join( ' ' ) }>
-			{ items.map( ( item ) => (
-				<ListItem
-					key={ item.id }
-					onManageClick={ onManageClick }
-					onDeleteClick={ onDeleteClick }
-					showDragHandle={ showDragHandle }
-					{ ...item }
-				/>
-			) ) }
-		</ul>
+		<DndContext
+			sensors={ sensors }
+			collisionDetection={ closestCenter }
+			onDragEnd={ handleDragEnd }
+		>
+			<SortableContext
+				items={ childrenKeys }
+				strategy={ verticalListSortingStrategy }
+			>
+				<ul className={ classNames( 'orderable-list', className ) }>
+					{ childrenKeys.map( ( childKey ) => (
+						<ListItem
+							key={ childKey }
+							id={ childKey }
+							isDraggable={ isDraggable }
+						>
+							{ childrenArray.find(
+								( el ) => el.key === childKey
+							) }
+						</ListItem>
+					) ) }
+				</ul>
+			</SortableContext>
+		</DndContext>
 	);
 };
 

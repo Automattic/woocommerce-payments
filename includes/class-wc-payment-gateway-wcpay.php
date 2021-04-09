@@ -125,7 +125,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type' => 'account_status',
 			],
 			'payment_methods'              => [
-				'title'       => 'Payment methods',
+				'title'       => __( 'Payment methods', 'woocommerce-payments' ),
 				'type'        => 'payment_methods_container',
 				'description' => '',
 			],
