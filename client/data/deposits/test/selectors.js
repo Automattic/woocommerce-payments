@@ -11,6 +11,7 @@ import {
 	getDepositQueryError,
 	getDepositsOverview,
 	getDepositsOverviewError,
+	getInstantDeposit,
 } from '../selectors';
 
 // Sections in initial state are empty.
@@ -154,6 +155,34 @@ describe( 'Deposits overview selectors', () => {
 	test( 'Returns deposits overview error from state', () => {
 		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual(
 			filledErrorState.deposits.overview.error
+		);
+	} );
+} );
+
+describe( 'Instant Deposit selector', () => {
+	const mockDeposit = {
+		id: 'po_mock1',
+		object: 'payout',
+		amount: 2000,
+	};
+
+	const filledState = {
+		deposits: {
+			instant: {
+				data: mockDeposit,
+			},
+		},
+	};
+
+	test( 'Returns undefined when instant deposit is not present', () => {
+		expect( getInstantDeposit( emptyState ) ).toStrictEqual(
+			undefined
+		);
+	} );
+
+	test( 'Returns instant deposit when it is present', () => {
+		expect( getInstantDeposit( filledState ) ).toStrictEqual(
+			mockDeposit
 		);
 	} );
 } );

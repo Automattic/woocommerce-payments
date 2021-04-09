@@ -20,6 +20,11 @@ describe( 'Deposits reducer tests', () => {
 			amount: 3000,
 		},
 	];
+	const mockInstantDeposit = {
+		id: 'po_mock1',
+		object: 'payout',
+		amount: 2000,
+	};
 	const mockOverview = {
 		last_deposit: mockDeposits[ 0 ],
 		next_deposit: mockDeposits[ 1 ],
@@ -159,5 +164,25 @@ describe( 'Deposits reducer tests', () => {
 			queries: {},
 			instant: {},
 		} );
+	} );
+
+	test( 'New instant deposit reduced correctly', () => {
+		const reduced = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_INSTANT_DEPOSIT,
+				data: mockInstantDeposit,
+			}
+		);
+
+		const after = {
+			byId: {},
+			queries: {},
+			instant: {
+				data: mockInstantDeposit,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
 	} );
 } );
