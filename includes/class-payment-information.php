@@ -236,17 +236,6 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
-		$token_request_key = 'wc-' . \WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
-		if (
-			! isset( $request[ $token_request_key ] ) ||
-			'new' === $request[ $token_request_key ]
-		) {
-			return null;
-		}
-
-		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
-
 		// TODO: Is there a way to prevent using this if-then, rather let the payment info figure it out?
 		switch($request['payment_method']) {
 			case 'woocommerce_payments_sepa':
@@ -256,6 +245,16 @@ class Payment_Information {
 				$request_gateway_id = \WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		}
 
+		$token_request_key = 'wc-' . $request_gateway_id . '-payment-token';
+		if (
+			! isset( $request[ $token_request_key ] ) ||
+			'new' === $request[ $token_request_key ]
+		) {
+			return null;
+		}
+
+		//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
 		// If the token doesn't belong to this gateway or the current user it's invalid.
 		if ( ! $token || $request_gateway_id !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
