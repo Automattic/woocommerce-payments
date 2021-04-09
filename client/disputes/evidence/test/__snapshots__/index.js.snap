@@ -3,23 +3,15 @@
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card"
+    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
   >
     <div
-      class="woocommerce-card__header"
+      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
     >
-      <div
-        class="woocommerce-card__title-wrapper"
-      >
-        <h2
-          class="woocommerce-card__title woocommerce-card__header-item"
-        >
-          General evidence
-        </h2>
-      </div>
+      General evidence
     </div>
     <div
-      class="woocommerce-card__body"
+      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
     >
       <div
         class="components-base-control"
@@ -120,10 +112,10 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     </div>
   </div>
   <div
-    class="woocommerce-card"
+    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
   >
     <div
-      class="woocommerce-card__body"
+      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
     >
       <p>
         When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
@@ -139,22 +131,22 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           We will automatically submit any saved evidence at the due date.
         </strong>
       </p>
-      <div
-        class="woocommerce-card__footer"
+    </div>
+    <div
+      class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+    >
+      <button
+        class="components-button is-button is-primary is-large"
+        type="button"
       >
-        <button
-          class="components-button is-button is-primary is-large"
-          type="button"
-        >
-          Submit evidence
-        </button>
-        <button
-          class="components-button is-button is-default is-large"
-          type="button"
-        >
-          Save for later
-        </button>
-      </div>
+        Submit evidence
+      </button>
+      <button
+        class="components-button is-button is-default is-large"
+        type="button"
+      >
+        Save for later
+      </button>
     </div>
   </div>
 </div>
@@ -163,23 +155,15 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <div>
   <div
-    class="woocommerce-card"
+    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
   >
     <div
-      class="woocommerce-card__header"
+      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
     >
-      <div
-        class="woocommerce-card__title-wrapper"
-      >
-        <h2
-          class="woocommerce-card__title woocommerce-card__header-item"
-        >
-          General evidence
-        </h2>
-      </div>
+      General evidence
     </div>
     <div
-      class="woocommerce-card__body"
+      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
     >
       <div
         class="components-base-control"
@@ -291,23 +275,15 @@ exports[`Dispute evidence page renders correctly 1`] = `
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Challenge dispute
-          </h2>
-        </div>
+        Challenge dispute
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -389,23 +365,15 @@ exports[`Dispute evidence page renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card"
+      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
     >
       <div
-        class="woocommerce-card__header"
+        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
       >
-        <div
-          class="woocommerce-card__title-wrapper"
-        >
-          <h2
-            class="woocommerce-card__title woocommerce-card__header-item"
-          >
-            Product type
-          </h2>
-        </div>
+        Product type
       </div>
       <div
-        class="woocommerce-card__body"
+        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
       >
         <div
           class="components-base-control"

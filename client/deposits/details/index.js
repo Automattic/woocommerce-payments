@@ -6,7 +6,8 @@
 import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { Card, OrderStatus } from '@woocommerce/components';
+import { OrderStatus } from '@woocommerce/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -30,49 +31,54 @@ export const DepositOverview = ( { depositId } ) => {
 
 	return (
 		<Card className="wcpay-deposit-overview">
-			<div className="wcpay-deposit-detail">
-				<div className="wcpay-deposit-date">
-					<Loadable
-						isLoading={ isLoading }
-						placeholder="Date placeholder"
-					>
-						{ `${ __(
-							'Deposit date',
-							'woocommerce-payments'
-						) }: ` }
-						{ dateI18n(
-							'M j, Y',
-							moment.utc( deposit.date ).toISOString(),
-							true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-						) }
-					</Loadable>
+			<CardBody>
+				<div className="wcpay-deposit-detail">
+					<div className="wcpay-deposit-date">
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="Date placeholder"
+						>
+							{ `${ __(
+								'Deposit date',
+								'woocommerce-payments'
+							) }: ` }
+							{ dateI18n(
+								'M j, Y',
+								moment.utc( deposit.date ).toISOString(),
+								true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+							) }
+						</Loadable>
+					</div>
+					<div className="wcpay-deposit-status">
+						<Loadable isLoading={ isLoading } placeholder="Status">
+							<Status status={ deposit.status } />
+						</Loadable>
+					</div>
+					<div className="wcpay-deposit-bank-account">
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="Bank account placeholder"
+						>
+							{ deposit.bankAccount }
+						</Loadable>
+					</div>
 				</div>
-				<div className="wcpay-deposit-status">
-					<Loadable isLoading={ isLoading } placeholder="Status">
-						<Status status={ deposit.status } />
-					</Loadable>
-				</div>
-				<div className="wcpay-deposit-bank-account">
-					<Loadable
-						isLoading={ isLoading }
-						placeholder="Bank account placeholder"
-					>
-						{ deposit.bankAccount }
-					</Loadable>
-				</div>
-			</div>
 
-			<div className="wcpay-deposit-hero">
-				<div className="wcpay-deposit-amount">
-					<Loadable
-						isLoading={ isLoading }
-						placeholder="Amount"
-						display="inline"
-					>
-						{ formatCurrency( deposit.amount, deposit.currency ) }
-					</Loadable>
+				<div className="wcpay-deposit-hero">
+					<div className="wcpay-deposit-amount">
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="Amount"
+							display="inline"
+						>
+							{ formatCurrency(
+								deposit.amount,
+								deposit.currency
+							) }
+						</Loadable>
+					</div>
 				</div>
-			</div>
+			</CardBody>
 		</Card>
 	);
 };

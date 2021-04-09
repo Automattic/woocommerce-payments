@@ -110,7 +110,8 @@ class WC_Payments_Customer_Service {
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
 		if ( $user->ID > 0 ) {
-			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id );
+			$global = WC_Payments::is_network_saved_cards_enabled();
+			$result = update_user_option( $user->ID, $this->get_customer_id_option(), $customer_id, $global );
 			if ( ! $result ) {
 				// Log the error, but continue since we have the customer ID we need.
 				Logger::error( 'Failed to store new customer ID for user ' . $user->ID );
@@ -185,15 +186,20 @@ class WC_Payments_Customer_Service {
 			return [];
 		}
 
-		$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
 
-		if ( $payment_methods ) {
-			return $payment_methods;
+		if ( $cache_payment_methods ) {
+			$payment_methods = get_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
+			if ( $payment_methods ) {
+				return $payment_methods;
+			}
 		}
 
 		try {
 			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
-			set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+			if ( $cache_payment_methods ) {
+				set_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id, $payment_methods, DAY_IN_SECONDS );
+			}
 			return $payment_methods;
 
 		} catch ( API_Exception $e ) {
@@ -233,6 +239,9 @@ class WC_Payments_Customer_Service {
 	 * @param int $user_id WC user ID.
 	 */
 	public function clear_cached_payment_methods_for_user( $user_id ) {
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
+			return; // No need to do anything, payment methods will never be cached in this case.
+		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
 		delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id );
 	}

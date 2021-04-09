@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.3
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -100,6 +100,25 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 2.3.0 - 2021-xx-xx =
+* Add - Introduced deposit currency filter for transactions overview page.
+* Add - Download transactions report in CSV.
+* Update - Tweak the connection detection logic.
+* Add - Notification badge next to payments menu.
+* Fix - Fixed broken search on transactions list page.
+* Add - More helpful message on checkout errors.
+
+= 2.2.0 - 2021-03-31 =
+* Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
+* Add - Payment Request Button support for US merchants (Apple Pay, Google Pay, Microsoft Pay, and the browser standard Payment Request API).
+* Update - Not passing level3 data for non-US merchants.
+* Add - REST endpoint for fetching account data.
+* Add - Deposits list pagination and sorting.
+* Fix - Deposit overview now displays placeholder information instead of continuing to load when an error happens.
+
+= 2.1.1 - 2021-03-23 =
+* Fix - Fatal error when a subscription is processed with action scheduler hook.
 
 = 2.1.0 - 2021-03-16 =
 * Update - Show last 4 digit credit card number in order note when payment method is updated on failed renewal subscription order.

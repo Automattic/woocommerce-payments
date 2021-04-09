@@ -298,12 +298,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			->expects( $this->never() )
 			->method( 'create_and_confirm_setup_intent' );
 
+		// We're not saving a new payment method, so we don't need to add the payment method to
+		// a user account.
 		$this->mock_token_service
 			->expects( $this->never() )
 			->method( 'add_payment_method_to_user' );
 
+		// We do need to add the payment method to the order so we can charge it when it's time to
+		// renew the order or when the free trial is over.
 		$this->mock_wcpay_gateway
-			->expects( $this->never() )
+			->expects( $this->once() )
 			->method( 'add_token_to_order' );
 
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );

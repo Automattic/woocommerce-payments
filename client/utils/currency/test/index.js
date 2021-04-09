@@ -18,11 +18,15 @@ describe( 'Currency utilities', () => {
 
 	test( 'format supported currency', () => {
 		expect( utils.formatCurrency( 1000, 'USD' ) ).toEqual( '$10.00' );
+		expect( utils.formatCurrencyName( 'usd' ) ).toEqual(
+			'United States (US) dollar'
+		);
 	} );
 
 	test( 'format unsupported currency', () => {
 		expect( utils.formatCurrency( 1000, 'AUD' ) ).toEqual( 'AUD 10.00' );
 		expect( utils.formatCurrency( 1000, 'JPY' ) ).toEqual( 'JPY 1000' );
+		expect( utils.formatCurrencyName( 'jpy' ) ).toEqual( 'JPY' );
 	} );
 
 	test.each`

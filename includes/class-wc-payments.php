@@ -180,12 +180,9 @@ class WC_Payments {
 		self::$gateway      = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
-		// Feature flag.
-		// TODO: Remove this check ahead of Apple Pay release.
-		if ( 'yes' === get_option( '_wcpay_feature_payment_request' ) ) {
-			self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
-			self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$gateway, self::$account );
-		}
+		// Payment Request and Apple Pay.
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -201,6 +198,14 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+	}
+
+	/**
+	 * Checks whether Payment Request Button feature should be available.
+	 * TODO: Remove this ahead of releasing Apple Pay for all merchants.
+	 */
+	public static function should_payment_request_be_available() {
+		return 'US' === WC()->countries->get_base_country();
 	}
 
 	/**
@@ -482,6 +487,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
+		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
@@ -592,5 +601,17 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Filter to check if WCPay should operate as usual (the customer can save payment methods at checkout and those payment methods
+	 * will only be used on this site), or if saved cards should be available for all the sites on the multisite network.
+	 *
+	 * NOTE: DON'T USE THIS FILTER. Everything will break. At this moment, it's only intended to be used internally by Automattic.
+	 *
+	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
+	 */
+	public static function is_network_saved_cards_enabled() {
+		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 }

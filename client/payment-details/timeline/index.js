@@ -4,7 +4,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, Timeline } from '@woocommerce/components';
+import { Timeline } from '@woocommerce/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -22,25 +23,28 @@ const PaymentDetailsTimeline = ( { chargeId } ) => {
 	const items = mapTimelineEvents( timeline );
 
 	return (
-		<Card
-			title={
+		<Card size="large">
+			<CardHeader>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Timeline', 'woocommerce-payments' ) }
 				/>
-			}
-			className="payment-details__timeline"
-		>
-			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
-				{ timelineError instanceof Error ? (
-					__( 'Error while loading timeline', 'woocommerce-payments' )
-				) : (
-					<Timeline items={ items } />
-				) }
-			</LoadableBlock>
-			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
-			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
-			<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			</CardHeader>
+			<CardBody>
+				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
+					{ timelineError instanceof Error ? (
+						__(
+							'Error while loading timeline',
+							'woocommerce-payments'
+						)
+					) : (
+						<Timeline items={ items } />
+					) }
+				</LoadableBlock>
+				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />
+			</CardBody>
 		</Card>
 	);
 };

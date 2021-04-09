@@ -4,9 +4,7 @@ exports[`Dispute details actions renders correctly for closed dispute 1`] = `<di
 
 exports[`Dispute details actions renders correctly for dispute needing response, confirmation requested on submit 1`] = `
 <div>
-  <div
-    class="woocommerce-card__footer"
-  >
+  <div>
     <a
       class="components-button is-button is-primary is-large"
       data-link-type="wc-admin"
@@ -15,7 +13,7 @@ exports[`Dispute details actions renders correctly for dispute needing response,
       Challenge dispute
     </a>
     <button
-      class="components-button is-button is-default is-large"
+      class="components-button is-button is-default"
       type="button"
     >
       Accept dispute
@@ -26,9 +24,7 @@ exports[`Dispute details actions renders correctly for dispute needing response,
 
 exports[`Dispute details actions renders correctly for dispute with evidence submitted 1`] = `
 <div>
-  <div
-    class="woocommerce-card__footer"
-  >
+  <div>
     <a
       class="components-button is-button is-primary is-large"
       data-link-type="wc-admin"

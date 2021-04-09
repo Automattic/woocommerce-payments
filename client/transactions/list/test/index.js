@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
-import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -89,10 +88,10 @@ const getMockTransactions = () => [
 describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+
 		// the query string is preserved across tests, so we need to reset it
-		if ( ! isEmpty( getQuery() ) ) {
-			updateQueryString( {}, '/', {} );
-		}
+		updateQueryString( {}, '/', {} );
+
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
@@ -102,7 +101,7 @@ describe( 'Transactions list', () => {
 		};
 	} );
 
-	test( 'renders correctly when filtered to deposit', () => {
+	test( 'renders correctly when filtered by deposit', () => {
 		useTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn ) => 'po_mock' === txn.deposit_id
@@ -113,6 +112,9 @@ describe( 'Transactions list', () => {
 		useTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 3,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
 				fees: 30,
 				total: 300,
 				net: 270,
@@ -138,6 +140,9 @@ describe( 'Transactions list', () => {
 			useTransactionsSummary.mockReturnValue( {
 				transactionsSummary: {
 					count: 10,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					store_currencies: [ 'usd' ],
 					fees: 100,
 					total: 1000,
 					net: 900,
@@ -221,6 +226,9 @@ describe( 'Transactions list', () => {
 		useTransactionsSummary.mockReturnValue( {
 			transactionsSummary: {
 				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
 				fees: 100,
 				total: 1000,
 				net: 900,
@@ -230,6 +238,59 @@ describe( 'Transactions list', () => {
 
 		const { container } = render( <TransactionsList /> );
 
+		expect( container ).toMatchSnapshot();
+	} );
+
+	// Several settlement currencies are available -> render the currency filter.
+	test( 'renders correctly when can filter by several currencies', () => {
+		useTransactions.mockReturnValue( {
+			transactions: getMockTransactions(),
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'eur', 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <TransactionsList /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	// The currency filter has been applied, render the filter even for a single settlement currency case.
+	test( 'renders correctly when filtered by currency', () => {
+		// eslint-disable-next-line camelcase
+		updateQueryString( { store_currency_is: 'usd' }, '/', {} );
+
+		useTransactions.mockReturnValue( {
+			transactions: getMockTransactions().filter(
+				( txn ) => txn.currency === getQuery().store_currency_is
+			),
+			isLoading: false,
+		} );
+
+		useTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <TransactionsList /> );
 		expect( container ).toMatchSnapshot();
 	} );
 } );
