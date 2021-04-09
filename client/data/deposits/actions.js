@@ -94,7 +94,6 @@ export function* submitInstantDeposit( transactionIds ) {
 			'getDepositsOverview'
 		);
 
-		// TODO: This should have the formatted amounts in the success notice.
 		yield dispatch(
 			'core/notices',
 			'createSuccessNotice',

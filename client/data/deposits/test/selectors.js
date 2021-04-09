@@ -175,14 +175,10 @@ describe( 'Instant Deposit selector', () => {
 	};
 
 	test( 'Returns undefined when instant deposit is not present', () => {
-		expect( getInstantDeposit( emptyState ) ).toStrictEqual(
-			undefined
-		);
+		expect( getInstantDeposit( emptyState ) ).toStrictEqual( undefined );
 	} );
 
 	test( 'Returns instant deposit when it is present', () => {
-		expect( getInstantDeposit( filledState ) ).toStrictEqual(
-			mockDeposit
-		);
+		expect( getInstantDeposit( filledState ) ).toStrictEqual( mockDeposit );
 	} );
 } );

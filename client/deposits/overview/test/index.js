@@ -10,15 +10,12 @@ import momentLib from 'moment';
  * Internal dependencies
  */
 import DepositsOverview from '../';
-import { 
-	useDepositsOverview,
-	useInstantDeposit
- } from 'data';
+import { useDepositsOverview, useInstantDeposit } from 'data';
 
-jest.mock( 'data', () => ( { 
+jest.mock( 'data', () => ( {
 	useDepositsOverview: jest.fn(),
-	useInstantDeposit: jest.fn()
- } ) );
+	useInstantDeposit: jest.fn(),
+} ) );
 const mockUseDepositsOverview = ( overview, isLoading = false ) =>
 	useDepositsOverview.mockReturnValue( {
 		overview: overview,
@@ -67,7 +64,6 @@ useInstantDeposit.mockReturnValue( {
 	isLoading: false,
 	submit: () => {},
 } );
-
 
 describe( 'Deposits overview', () => {
 	beforeEach( () => {
@@ -157,21 +153,21 @@ describe( 'Deposits overview', () => {
 
 	test( 'renders instant deposit button', () => {
 		const mockInstantDeposit = {
+			// eslint-disable-next-line camelcase
 			instant_balance: {
 				amount: 12345,
 				fee: 123.45,
 				net: 12221.55,
 				// eslint-disable-next-line camelcase
-				transaction_ids: [
-					'txn_ABC123',
-					'txn_DEF456',
-				],
-			}
+				transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
+			},
 		};
 		const overview = getMockedOverview( mockInstantDeposit );
 		mockUseDepositsOverview( overview );
 		const { getByRole } = render( <DepositsOverview /> );
-		const instantButton = getByRole( 'button', { name: /instant deposit/i } );
+		const instantButton = getByRole( 'button', {
+			name: /instant deposit/i,
+		} );
 		const expected = 'Instant deposit';
 		expect( instantButton.textContent ).toEqual( expected );
 	} );
