@@ -189,7 +189,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Add Payment Request form fields after WC initialization.
-		add_filter( 'init', [ $this, 'adquest_form_fields' ] );
+		add_filter( 'init', [ $this, 'add_payment_request_form_fields' ] );
 
 		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
