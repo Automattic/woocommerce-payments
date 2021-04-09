@@ -2,3 +2,11 @@
 
 @import 'node_modules/@automattic/color-studio/dist/color-variables.scss';
 @import 'node_modules/@wordpress/base-styles/colors.scss';
+
+// This is temp placeholders for missing variables after styles upgrade
+// TODO: Update styles to get rid of those placeholders
+$light-gray-500: #000;
+$light-gray-200: #000;
+$light-gray-300: #000;
+$dark-gray-900: #000;
+$dark-gray-500: #000;
