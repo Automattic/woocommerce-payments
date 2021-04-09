@@ -31,14 +31,14 @@ class WC_Payments_Notes_Qualitative_Feedback {
 	public static function get_note() {
 		global $wpdb;
 
-		// Store must be at least 60 days old
-		if( !self::wc_admin_active_for(60 * DAY_IN_SECONDS)) {
+		// Store must be at least 60 days old.
+		if ( ! self::wc_admin_active_for( 60 * DAY_IN_SECONDS ) ) {
 			return;
 		}
 
-		// We should have at least one transaction
-		$token_count = $wpdb->get_var("select count(*) from {$wpdb->prefix}woocommerce_payment_tokens");
-		if ($token_count === 0) {
+		// We should have at least one transaction.
+		$token_count = $wpdb->get_var( "select count(*) from {$wpdb->prefix}woocommerce_payment_tokens" );
+		if ( 0 === $token_count ) {
 			return;
 		}
 
