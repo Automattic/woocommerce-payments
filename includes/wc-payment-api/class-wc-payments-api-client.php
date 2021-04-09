@@ -175,7 +175,7 @@ class WC_Payments_API_Client {
 		$request['amount']         = $amount;
 		$request['currency']       = $currency_code;
 		$request['confirm']        = 'true';
-		$request['payment_method'] = 'pm_12345'; //$payment_method_id;
+		$request['payment_method'] = $payment_method_id;
 		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
