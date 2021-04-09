@@ -5,7 +5,7 @@
  * @package WCPay\Payment_Gateway
  */
 
-namespace WCPay\Payment_Gateway;
+namespace WCPay\Payment_Method;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -20,7 +20,7 @@ use WC_Payments_Utils;
  * SEPA Payment method extended from cart payment method.
  * Just loads different js and fields.
  */
-class Sepa extends \WC_Payment_Gateway_WCPay {
+class Sepa extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Internal ID of the payment gateway.
 	 *
@@ -45,25 +45,6 @@ class Sepa extends \WC_Payment_Gateway_WCPay {
 		$this->method_description = __( 'Accept payments via SEPA Direct Debit.', 'woocommerce-payments' );
 		$this->title              = __( 'SEPA Direct Debit', 'woocommerce-payments' );
 		$this->description        = __( 'Mandate Information.', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Registers all scripts, necessary for the gateway.
-	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
 	}
 
 	/**

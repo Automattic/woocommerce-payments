@@ -5,7 +5,7 @@
  * @package WCPay\Payment_Gateway
  */
 
-namespace WCPay\Payment_Gateway;
+namespace WCPay\Payment_Method;
 
 use WC_Payment_Gateway_WCPay;
 
