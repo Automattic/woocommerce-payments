@@ -268,4 +268,20 @@ export default class WCPayAPI {
 			);
 		} );
 	}
+
+	/**
+	 * Submits shipping address to get available shipping options.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCalculateShippingOptions( shippingAddress ) {
+		// - TODO: Get Ajax endpoint and nonce from helper function.
+		return this.request( '/?wc-ajax=wcpay_get_shipping_options', {
+			security: wcpayPaymentRequestParams.nonce.shipping,
+			...shippingAddress,
+		} ).then( ( response ) => {
+			return JSON.parse( response );
+		} );
+	}
 }

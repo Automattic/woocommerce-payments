@@ -10,7 +10,6 @@ import { getConfig } from '../../utils/checkout';
 
 const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 
-const canPayStripePromise = loadStripe();
 const componentStripePromise = loadStripe();
 
 let isStripeInitialized = false,
@@ -29,7 +28,7 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 		return canPay;
 	}
 
-	return canPayStripePromise.then( ( stripe ) => {
+	return componentStripePromise.then( ( stripe ) => {
 		if ( null === stripe ) {
 			isStripeInitialized = true;
 			return canPay;
@@ -55,9 +54,11 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 	} );
 }
 
-const paymentRequestPaymentMethod = {
+const paymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME,
-	content: <PaymentRequestExpress stripe={ componentStripePromise } />,
+	content: (
+		<PaymentRequestExpress api={ api } stripe={ componentStripePromise } />
+	),
 	edit: <ApplePayPreview />,
 	canMakePayment: ( cartData ) =>
 		paymentRequestAvailable( {
@@ -68,6 +69,6 @@ const paymentRequestPaymentMethod = {
 	supports: {
 		features: getConfig( 'features' ),
 	},
-};
+} );
 
 export default paymentRequestPaymentMethod;

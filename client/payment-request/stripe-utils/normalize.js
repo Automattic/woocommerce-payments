@@ -64,6 +64,7 @@ const normalizeShippingOptions = ( shippingOptions ) => {
  */
 const normalizeShippingAddressForCheckout = ( shippingAddress ) => {
 	return {
+		/* eslint-disable camelcase */
 		first_name:
 			shippingAddress.recipient
 				?.split( ' ' )
@@ -73,12 +74,13 @@ const normalizeShippingAddressForCheckout = ( shippingAddress ) => {
 			shippingAddress.recipient?.split( ' ' )?.slice( 1 )?.join( ' ' ) ??
 			'',
 		company: '',
-		address_1: typeof shippingAddress.addressLine?.[ 0 ] ?? '',
-		address_2: typeof shippingAddress.addressLine?.[ 1 ] ?? '',
+		address_1: shippingAddress.addressLine?.[ 0 ] ?? '',
+		address_2: shippingAddress.addressLine?.[ 1 ] ?? '',
 		city: shippingAddress.city ?? '',
 		state: shippingAddress.region ?? '',
 		country: shippingAddress.country ?? '',
 		postcode: shippingAddress.postalCode?.replace( ' ', '' ) ?? '',
+		/* eslint-enable camelcase */
 	};
 };
 
@@ -138,7 +140,7 @@ const getBillingData = ( paymentResponse ) => {
  */
 const getPaymentMethodData = ( paymentResponse, paymentRequestType ) => {
 	return {
-		payment_method: 'stripe',
+		payment_method: 'woocommerce_payments',
 		stripe_source: paymentResponse.source?.id,
 		payment_request_type: paymentRequestType,
 	};

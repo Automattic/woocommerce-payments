@@ -25,12 +25,14 @@ import { useEventHandlers } from './use-event-handlers';
  */
 
 export const useInitialization = ( {
+	api,
 	billing,
 	shippingData,
 	setExpressPaymentError,
 	onClick,
 	onClose,
 	onSubmit,
+	emitResponse,
 } ) => {
 	const stripe = useStripe();
 	/**
@@ -128,7 +130,7 @@ export const useInitialization = ( {
 		const noop = { removeAllListeners: () => void null };
 		let shippingAddressChangeEvent = noop,
 			shippingOptionChangeEvent = noop,
-			sourceChangeEvent = noop,
+			paymentMethodChangeEvent = noop,
 			cancelChangeEvent = noop;
 
 		if ( paymentRequest ) {
@@ -139,7 +141,7 @@ export const useInitialization = ( {
 				onClose();
 			};
 
-			const shippingAddressChangeHandler = ( event ) => {
+			const shippingAddressChangeHandler = async ( event ) => {
 				const newShippingAddress = normalizeShippingAddressForCheckout(
 					event.shippingAddress
 				);
@@ -160,11 +162,17 @@ export const useInitialization = ( {
 					// the address is different so let's set the new address and
 					// register the handler to be picked up by the shipping rate
 					// change event.
-					currentShipping.current.setShippingAddress(
-						normalizeShippingAddressForCheckout(
-							event.shippingAddress
-						)
+					const response = await api.paymentRequestCalculateShippingOptions(
+						newShippingAddress
 					);
+
+					event.updateWith( {
+						status: response.result,
+						shippingOptions: response.shipping_options,
+						total: response.total,
+						displayItems: response.displayItems,
+					} );
+
 					setPaymentRequestEventHandler(
 						'shippingAddressChange',
 						event
@@ -181,7 +189,7 @@ export const useInitialization = ( {
 				setPaymentRequestEventHandler( 'shippingOptionChange', event );
 			};
 
-			const sourceHandler = ( paymentMethod ) => {
+			const paymentMethodHandler = async ( paymentMethod ) => {
 				// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
 				// event `allowPrepaidCard` isn't present on the server data object.
 				// - TODO: Get prepaid card
@@ -202,7 +210,12 @@ export const useInitialization = ( {
 				}
 				setPaymentRequestEventHandler( 'sourceEvent', paymentMethod );
 				// kick off checkout processing step.
-				onSubmit();
+
+
+				setPaymentRequestEventHandler(
+					'paymentMethodEvent',
+					paymentMethod
+				);
 			};
 
 			// @ts-ignore
@@ -216,7 +229,10 @@ export const useInitialization = ( {
 				shippingOptionChangeHandler
 			);
 			// @ts-ignore
-			sourceChangeEvent = paymentRequest.on( 'source', sourceHandler );
+			paymentMethodChangeEvent = paymentRequest.on(
+				'paymentmethod',
+				paymentMethodHandler
+			);
 			// @ts-ignore
 			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );
 		}
@@ -225,7 +241,7 @@ export const useInitialization = ( {
 			if ( paymentRequest ) {
 				shippingAddressChangeEvent.removeAllListeners();
 				shippingOptionChangeEvent.removeAllListeners();
-				sourceChangeEvent.removeAllListeners();
+				paymentMethodChangeEvent.removeAllListeners();
 				cancelChangeEvent.removeAllListeners();
 			}
 		};

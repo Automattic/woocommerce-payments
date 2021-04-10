@@ -10,8 +10,6 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 
-import paymentRequestPaymentMethod from '../../payment-request/blocks';
-
 /**
  * Internal dependencies
  */
@@ -21,6 +19,7 @@ import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
 import request from './request.js';
 import enqueueFraudScripts from 'fraud-scripts';
+import paymentRequestPaymentMethod from '../../payment-request/blocks';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -49,7 +48,8 @@ registerPaymentMethod(
 		} )
 );
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod );
+// - TODO: Only register payment method if it's enabled
+registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

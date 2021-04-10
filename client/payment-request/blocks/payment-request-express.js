@@ -6,7 +6,6 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
  */
-// import { getStripeServerData } from '../stripe-utils';
 import { useInitialization } from './use-initialization';
 import { useCheckoutSubscriptions } from './use-checkout-subscriptions';
 import { ThreeDSecurePaymentHandler } from '../three-d-secure';
@@ -31,8 +30,11 @@ import { ThreeDSecurePaymentHandler } from '../three-d-secure';
  * PaymentRequestExpressComponent
  *
  * @param {StripeRegisteredPaymentMethodProps} props Incoming props
+ *
+ * @return {ReactNode} Payment Request button component.
  */
 const PaymentRequestExpressComponent = ( {
+	api,
 	shippingData,
 	billing,
 	eventRegistration,
@@ -53,12 +55,14 @@ const PaymentRequestExpressComponent = ( {
 		completePayment,
 		paymentRequestType,
 	} = useInitialization( {
+		api,
 		billing,
 		shippingData,
 		setExpressPaymentError,
 		onClick,
 		onClose,
 		onSubmit,
+		emitResponse,
 	} );
 	useCheckoutSubscriptions( {
 		canMakePayment,
@@ -103,7 +107,9 @@ const PaymentRequestExpressComponent = ( {
 /**
  * PaymentRequestExpress with stripe provider
  *
- * @param {StripeRegisteredPaymentMethodProps} props
+ * @param {StripeRegisteredPaymentMethodProps} props PaymentMethodProps.
+ *
+ * @return {ReactNode} Stripe Elements component.
  */
 export const PaymentRequestExpress = ( props ) => {
 	// Make sure `locale` defaults to 'en_US' if it's not found in the server provided
