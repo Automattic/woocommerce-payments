@@ -481,7 +481,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		// If no SSL bail.
+		// If no SSL, bail.
 		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return;
@@ -489,6 +489,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// If page is not supported, bail.
 		if ( ! $this->is_block() && ! $this->is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		if ( $this->is_block() && ! $this->should_show_payment_button_on_cart() ) {
 			return;
 		}
 

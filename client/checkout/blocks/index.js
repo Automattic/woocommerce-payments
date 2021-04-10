@@ -48,8 +48,11 @@ registerPaymentMethod(
 		} )
 );
 
-// - TODO: Only register payment method if it's enabled
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+// - TODO: Put this into a helper
+// eslint-disable-next-line no-undef
+if ( 'undefined' !== typeof wcpayPaymentRequestParams ) {
+	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+}
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
