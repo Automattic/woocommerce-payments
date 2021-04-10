@@ -301,7 +301,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return $method_title;
 		}
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Chrome Payment Request (WooCommerce Payments)' === $method_title ) {
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Payment Request (WooCommerce Payments)' === $method_title ) {
 			return $method_title;
 		}
 
@@ -355,7 +355,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( 'payment_request_api' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Chrome Payment Request (WooCommerce Payments)' );
+			$order->set_payment_method_title( 'Payment Request (WooCommerce Payments)' );
 			$order->save();
 		}
 	}
@@ -769,7 +769,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'state'     => FILTER_SANITIZE_STRING,
 				'postcode'  => FILTER_SANITIZE_STRING,
 				'city'      => FILTER_SANITIZE_STRING,
-				'address'   => FILTER_SANITIZE_STRING,
+				'address_1' => FILTER_SANITIZE_STRING,
 				'address_2' => FILTER_SANITIZE_STRING,
 			]
 		);
@@ -1229,7 +1229,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$state     = $address['state'];
 		$postcode  = $address['postcode'];
 		$city      = $address['city'];
-		$address_1 = $address['address'];
+		$address_1 = $address['address_1'];
 		$address_2 = $address['address_2'];
 
 		// Normalizes state to calculate shipping zones.
