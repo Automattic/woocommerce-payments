@@ -85,6 +85,7 @@ jQuery( ( $ ) => {
 		 * @param {Object} evt Event.
 		 * @return {Object} Order data.
 		 */
+		// - TODO: Replace this normalization function with the same from blocks
 		getOrderData: ( evt ) => {
 			/* eslint-disable camelcase */
 			const paymentMethod = evt.paymentMethod;
@@ -232,6 +233,7 @@ jQuery( ( $ ) => {
 		 * @return {Object} AJAX request.
 		 */
 		updateShippingOptions: ( details, address ) => {
+			// - TODO: Update data below with normalization function from blocks
 			/* eslint-disable camelcase */
 			const data = {
 				security: wcpayPaymentRequestParams.nonce.shipping,
@@ -239,7 +241,7 @@ jQuery( ( $ ) => {
 				state: address.region,
 				postcode: address.postalCode,
 				city: address.city,
-				address:
+				address_1:
 					'undefined' === typeof address.addressLine[ 0 ]
 						? ''
 						: address.addressLine[ 0 ],

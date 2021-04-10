@@ -10,6 +10,8 @@ import { DEFAULT_STRIPE_EVENT_HANDLERS } from './constants';
 
 /**
  * A utility hook for maintaining an event handler cache.
+ *
+ * @return {Object} Event handlers.
  */
 export const useEventHandlers = () => {
 	const [ paymentRequestEventHandlers, setEventHandlers ] = useState(

@@ -84,6 +84,54 @@ const normalizeShippingAddressForCheckout = ( shippingAddress ) => {
 	};
 };
 
+const normalizeOrderDataForCheckout = ( paymentData ) => {
+	const name = paymentData.paymentMethod.billing_details.name;
+	const email = paymentData.paymentMethod.billing_details.email;
+	const phone = paymentData.paymentMethod.billing_details.phone;
+	const billing = paymentData.paymentMethod.billing_details.address;
+	const shipping = paymentData.shippingAddress ?? {};
+
+	return {
+		/* eslint-disable camelcase */
+		billing_first_name:
+			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
+		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
+		billing_company: billing.organization,
+		billing_email: email ?? paymentData.payerEmail,
+		billing_phone:
+			phone ?? paymentData.payerPhone.replace( '/[() -]/g', '' ),
+		billing_country: billing.country ?? '',
+		billing_address_1: billing.line1 ?? '',
+		billing_address_2: billing.line2 ?? '',
+		billing_city: billing.city ?? '',
+		billing_state: billing.state ?? '',
+		billing_postcode: billing.postal_code ?? '',
+		shipping_first_name:
+			shipping?.recipient?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
+		shipping_last_name:
+			shipping?.recipient?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
+		// shipping_company: shipping.organization ?? '',
+		shipping_country: shipping.country ?? '',
+		shipping_address_1: shipping.addressLine?.[ 0 ] ?? '',
+		shipping_address_2: shipping.addressLine?.[ 1 ] ?? '',
+		shipping_city: shipping.city ?? '',
+		shipping_state: shipping.region ?? '',
+		shipping_postcode: shipping.postalCode ?? '',
+		shipping_method: [
+			null === paymentData.shippingOption
+				? null
+				: paymentData.shippingOption.id,
+		],
+		order_comments: '',
+		payment_method: 'woocommerce_payments', // - TODO: Replace by constant
+		ship_to_different_address: 1,
+		terms: 1,
+		'wcpay-payment-method': paymentData.paymentMethod.id,
+		payment_request_type: 'payment_request_api', // - TODO: Fix payment_request_type
+		/* eslint-enable camelcase */
+	};
+};
+
 /**
  * Normalizes shipping option shape selection from Stripe's shipping option
  * object to the expected shape for cart shipping option selections.
@@ -113,6 +161,7 @@ const getBillingData = ( paymentResponse ) => {
 	const payerEmail = paymentResponse.payerEmail ?? '';
 	const payerPhone = paymentResponse.payerPhone ?? '';
 	return {
+		/* eslint-disable camelcase */
 		first_name: name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
 		last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
 		email: source?.owner?.email ?? payerEmail,
@@ -124,6 +173,7 @@ const getBillingData = ( paymentResponse ) => {
 		state: billing?.state ?? '',
 		postcode: billing?.postal_code ?? '',
 		company: '',
+		/* eslint-enable camelcase */
 	};
 };
 
@@ -140,9 +190,11 @@ const getBillingData = ( paymentResponse ) => {
  */
 const getPaymentMethodData = ( paymentResponse, paymentRequestType ) => {
 	return {
+		/* eslint-disable camelcase */
 		payment_method: 'woocommerce_payments',
 		stripe_source: paymentResponse.source?.id,
 		payment_request_type: paymentRequestType,
+		/* eslint-enable camelcase */
 	};
 };
 
@@ -161,6 +213,7 @@ export {
 	normalizeShippingOptions,
 	normalizeShippingAddressForCheckout,
 	normalizeShippingOptionSelectionsForCheckout,
+	normalizeOrderDataForCheckout,
 	getBillingData,
 	getPaymentMethodData,
 	getShippingData,

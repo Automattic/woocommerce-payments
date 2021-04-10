@@ -9,30 +9,11 @@ import { __ } from '@wordpress/i18n';
 import { normalizeLineItems } from './normalize';
 import { errorTypes, errorCodes } from './constants';
 
-import { getConfig } from '../../utils/checkout';
-
 /**
- * @typedef {import('./type-defs').StripeServerData} StripeServerData
  * @typedef {import('./type-defs').StripePaymentItem} StripePaymentItem
  * @typedef {import('./type-defs').StripePaymentRequest} StripePaymentRequest
  * @typedef {import('@woocommerce/type-defs/registered-payment-method-props').PreparedCartTotalItem} CartTotalItem
  */
-
-/**
- * Returns the public api key for the payment method
- *
- * @throws Error
- * @return {string} The public api key for the payment method.
- */
-const getApiKey = () => {
-	const apiKey = getConfig( 'publishableKey' );
-	if ( ! apiKey ) {
-		throw new Error(
-			'There is no api key available for stripe. Make sure it is available on the wc.stripe_data.stripe.key property.'
-		);
-	}
-	return apiKey;
-};
 
 /**
  * The total PaymentItem object used for the stripe PaymentRequest object.
@@ -155,63 +136,63 @@ const getErrorMessageForCode = ( code ) => {
 	const messages = {
 		[ errorCodes.INVALID_NUMBER ]: __(
 			'The card number is not a valid credit card number.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INVALID_EXPIRY_MONTH ]: __(
 			'The card expiration month is invalid.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INVALID_EXPIRY_YEAR ]: __(
 			'The card expiration year is invalid.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INVALID_CVC ]: __(
 			'The card security code is invalid.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCORRECT_NUMBER ]: __(
 			'The card number is incorrect.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCOMPLETE_NUMBER ]: __(
 			'The card number is incomplete.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCOMPLETE_CVC ]: __(
 			'The card security code is incomplete.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCOMPLETE_EXPIRY ]: __(
 			'The card expiration date is incomplete.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.EXPIRED_CARD ]: __(
 			'The card has expired.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCORRECT_CVC ]: __(
 			'The card security code is incorrect.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INCORRECT_ZIP ]: __(
 			'The card zip code failed validation.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.INVALID_EXPIRY_YEAR_PAST ]: __(
 			'The card expiration year is in the past',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.CARD_DECLINED ]: __(
 			'The card was declined.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.MISSING ]: __(
 			'There is no card on a customer that is being charged.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 		[ errorCodes.PROCESSING_ERROR ]: __(
 			'An error occurred while processing the card.',
-			'woocommerce-gateway-stripe'
+			'woocommerce-payments'
 		),
 	};
 	return messages[ code ] || null;
@@ -238,14 +219,22 @@ const getErrorMessageForTypeAndCode = ( type, code = '' ) => {
 };
 
 /**
+ * Get error messages from WooCommerce notice from server response.
+ *
+ * @param {string} notice Error notice.
+ * @return {string} Error messages.
+ */
+const getErrorMessageFromNotice = ( notice ) => {
+	const div = document.createElement( 'div' );
+	div.innerHTML = notice.trim();
+	return div.firstChild ? div.firstChild.textContent : '';
+};
+
+/**
  * pluckAddress takes a full address object and returns relevant fields for calculating
  * shipping, so we can track when one of them change to update rates.
  *
  * @param {Object} address          An object containing all address information
- * @param {string} address.country
- * @param {string} address.state
- * @param {string} address.city
- * @param {string} address.postcode
  *
  * @return {Object} pluckedAddress  An object containing shipping address that are needed to fetch an address.
  */
@@ -257,11 +246,11 @@ const pluckAddress = ( { country, state, city, postcode } ) => ( {
 } );
 
 export {
-	getApiKey,
 	getTotalPaymentItem,
 	getPaymentRequest,
 	updatePaymentRequest,
 	canDoPaymentRequest,
 	getErrorMessageForTypeAndCode,
+	getErrorMessageFromNotice,
 	pluckAddress,
 };

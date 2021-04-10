@@ -270,7 +270,8 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Submits shipping address to get available shipping options.
+	 * Submits shipping address to get available shipping options
+	 * from Payment Request button.
 	 *
 	 * @param {Object} shippingAddress Shipping details.
 	 * @return {Promise} Promise for the request to the server.
@@ -280,6 +281,22 @@ export default class WCPayAPI {
 		return this.request( '/?wc-ajax=wcpay_get_shipping_options', {
 			security: wcpayPaymentRequestParams.nonce.shipping,
 			...shippingAddress,
+		} ).then( ( response ) => {
+			return JSON.parse( response );
+		} );
+	}
+
+	/**
+	 * Creates order based on Payment Request payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCreateOrder( paymentData ) {
+		// - TODO: Get Ajax endpoint and nonce from helper function.
+		return this.request( '/?wc-ajax=wcpay_create_order', {
+			_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
+			...paymentData,
 		} ).then( ( response ) => {
 			return JSON.parse( response );
 		} );

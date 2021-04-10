@@ -15,8 +15,10 @@ import {
 	canDoPaymentRequest,
 	normalizeShippingAddressForCheckout,
 	normalizeShippingOptionSelectionsForCheckout,
-	pluckAddress,
 	normalizeShippingOptions,
+	normalizeOrderDataForCheckout,
+	getErrorMessageFromNotice,
+	pluckAddress,
 } from '../stripe-utils';
 import { useEventHandlers } from './use-event-handlers';
 
@@ -195,11 +197,7 @@ export const useInitialization = ( {
 				// - TODO: Get prepaid card
 				// const { allowPrepaidCard = false } = getStripeServerData();
 				const allowPrepaidCard = true;
-				if (
-					// eslint-disable-next-line no-undef
-					! allowPrepaidCard &&
-					paymentMethod.source.card.funding
-				) {
+				if ( ! allowPrepaidCard && paymentMethod.source.card.funding ) {
 					setExpressPaymentError(
 						__(
 							"Sorry, we're not accepting prepaid cards at this time.",
@@ -208,14 +206,26 @@ export const useInitialization = ( {
 					);
 					return;
 				}
-				setPaymentRequestEventHandler( 'sourceEvent', paymentMethod );
-				// kick off checkout processing step.
 
+				// Kick off checkout processing step.
+				const response = await api.paymentRequestCreateOrder(
+					normalizeOrderDataForCheckout( paymentMethod )
+				);
 
 				setPaymentRequestEventHandler(
 					'paymentMethodEvent',
 					paymentMethod
 				);
+
+				if ( 'success' === response.result ) {
+					paymentMethod.complete( 'success' );
+					window.location = response.redirect;
+				} else {
+					paymentMethod.complete( 'fail' );
+					setExpressPaymentError(
+						getErrorMessageFromNotice( response.messages )
+					);
+				}
 			};
 
 			// @ts-ignore
