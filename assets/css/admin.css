@@ -65,6 +65,12 @@
 .payment-method__brand--unknown {
 	background: no-repeat url( '../images/cards/unknown.svg' );
 }
+
+.payment-method__brand--sepa_debit {
+	background: no-repeat url( '../images/cards/sepa.svg' );
+	background-size: contain;
+}
+
 /* Hide all other woocommerce payments methods except the main gateway on core payments setting page */
 .wc_gateways tr[data-gateway_id^='woocommerce_payments_'] {
 	display: none;
