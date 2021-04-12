@@ -46,7 +46,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
-		add_filter( 'woocommerce_payment_methods_list_item', array( $this, 'get_account_saved_payment_methods_list_item_sepa' ), 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 	}
 
 	/**
@@ -60,13 +60,13 @@ class WC_Payments_Token_Service {
 		// Clear cached payment methods.
 		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
 
-		if ($payment_method['type'] === Payment_Method::SEPA) {
+		if ( Payment_Method::SEPA === $payment_method['type'] ) {
 			$token = new WC_Payment_Token_Sepa();
-			$token->set_gateway_id(Sepa::GATEWAY_ID);
-			$token->set_last4( $payment_method[Payment_Method::SEPA]['last4'] );
+			$token->set_gateway_id( Sepa::GATEWAY_ID );
+			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
-			$token->set_gateway_id(WC_Payment_Gateway_WCPay::GATEWAY_ID);
+			$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$token->set_expiry_month( $payment_method['card']['exp_month'] );
 			$token->set_expiry_year( $payment_method['card']['exp_year'] );
 			$token->set_card_type( strtolower( $payment_method['card']['brand'] ) );
@@ -189,8 +189,8 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for SEPA on the my account page.
 	 *
-	 * @param  array            $item         Individual list item from woocommerce_saved_payment_methods_list
-	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry
+	 * @param  array            $item         Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry.
 	 * @return array                           Filtered item
 	 */
 	public function get_account_saved_payment_methods_list_item_sepa( $item, $payment_token ) {

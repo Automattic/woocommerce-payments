@@ -18,6 +18,6 @@ use MyCLabs\Enum\Enum;
  * https://stripe.com/docs/api/payment_methods/object#payment_method_object-type
  */
 class Payment_Method extends Enum {
-	const CARD    = 'card';
+	const CARD = 'card';
 	const SEPA = 'sepa_debit';
 };

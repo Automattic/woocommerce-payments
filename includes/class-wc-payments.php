@@ -310,7 +310,7 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-					/* translators: %1: required WC version number, %2: currently installed WC version number */
+						/* translators: %1: required WC version number, %2: currently installed WC version number */
 						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
 						$wc_version,
 						WC_VERSION

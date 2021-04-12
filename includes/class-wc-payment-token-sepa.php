@@ -1,7 +1,12 @@
 <?php
+/**
+ * Class WC_Payment_Token_SEPA
+ *
+ * @package WooCommerce\Payments
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 /**
@@ -10,12 +15,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Representation of a payment token for SEPA.
  *
  * @class    WC_Payment_Token_SEPA
- * @version  4.0.0
- * @since    4.0.0
  */
 class WC_Payment_Token_SEPA extends WC_Payment_Token {
 
-	/** @protected string Token Type String. */
+	/**
+	 * The payment method type of this token.
+	 *
+	 * @var string
+	 */
 	protected $type = 'sepa';
 
 	/**
@@ -23,10 +30,16 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 	 *
 	 * @var array
 	 */
-	protected $extra_data = array(
+	protected $extra_data = [
 		'last4' => '',
-	);
+	];
 
+	/**
+	 * Get type to display to user.
+	 *
+	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @return string
+	 */
 	public function get_display_name( $deprecated = '' ) {
 		$display = sprintf(
 			/* translators: last 4 digits of IBAN account */
@@ -37,6 +50,9 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 		return $display;
 	}
 
+	/**
+	 * Hook prefix.
+	 */
 	protected function get_hook_prefix() {
 		return 'woocommerce_payments_token_sepa_get_';
 	}
@@ -47,8 +63,6 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 	 * These fields are required by all SEPA payment tokens:
 	 * last4  - string Last 4 digits of the iBAN
 	 *
-	 * @since 4.0.0
-	 * @version 4.0.0
 	 * @return boolean True if the passed data is valid
 	 */
 	public function validate() {
@@ -66,9 +80,7 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 	/**
 	 * Returns the last four digits.
 	 *
-	 * @since  4.0.0
-	 * @version 4.0.0
-	 * @param  string $context
+	 * @param  string $context What the value is for. Valid values are view and edit.
 	 * @return string Last 4 digits
 	 */
 	public function get_last4( $context = 'view' ) {
@@ -77,9 +89,8 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 
 	/**
 	 * Set the last four digits.
-	 * @since 4.0.0
-	 * @version 4.0.0
-	 * @param string $last4
+	 *
+	 * @param string $last4 SEPA Debit last four digits.
 	 */
 	public function set_last4( $last4 ) {
 		$this->set_prop( 'last4', $last4 );

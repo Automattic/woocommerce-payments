@@ -853,7 +853,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						// so the store owner has some information about what happened to create an order.
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
@@ -1268,7 +1268,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$stripe_connected = $this->account->try_is_stripe_connected();
 			if ( $stripe_connected ) {
 				$description = WC_Payments_Utils::esc_interpolated_html(
-				/* translators: 1) dashboard login URL */
+					/* translators: 1) dashboard login URL */
 					'<a>' . __( 'View and edit account details', 'woocommerce-payments' ) . '</a>',
 					[
 						'a' => '<a href="' . WC_Payments_Account::get_login_url() . '">',
@@ -1692,7 +1692,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					case 'requires_payment_method':
 						$note = sprintf(
 							WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
 								__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
 								[
 									'strong' => '<strong>',
