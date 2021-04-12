@@ -454,7 +454,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool
 	 */
-	private static function is_grouped_settings_enabled() {
+	public static function is_grouped_settings_enabled() {
 		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 

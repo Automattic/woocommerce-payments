@@ -404,7 +404,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
-		if ( isset( $_GET['old_settings'] ) ) {
+		if ( ! WC_Payments_Admin::is_grouped_settings_enabled() ) {
 			parent::admin_options();
 			return;
 		}
