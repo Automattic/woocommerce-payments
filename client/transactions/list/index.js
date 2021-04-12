@@ -223,7 +223,10 @@ export const TransactionsList = ( props ) => {
 					/>
 				),
 			},
-			order: { value: txn.order_id, display: orderUrl },
+			order: {
+				value: txn.order && txn.order.number,
+				display: orderUrl,
+			},
 			subscriptions: { value: txn.order_id, display: subscriptions },
 			// eslint-disable-next-line camelcase
 			customer_name: {
