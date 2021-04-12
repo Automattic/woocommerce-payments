@@ -15,7 +15,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Payment_Gateway\Sepa;
+use WCPay\Payment_Method\Sepa;
 
 /**
  * Mostly a wrapper containing information on a single payment.

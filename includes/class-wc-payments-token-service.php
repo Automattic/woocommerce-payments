@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Payment_Gateway\Sepa;
+use WCPay\Payment_Method\Sepa;
 use WCPay\Constants\Payment_Method;
 
 /**
