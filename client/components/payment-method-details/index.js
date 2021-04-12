@@ -8,17 +8,19 @@ import './style.scss';
 const PaymentMethodDetails = ( props ) => {
 	const { payment } = props;
 	const paymentMethod = payment ? payment[ payment.type ] : null;
-	return paymentMethod ? (
+
+	if ( ! paymentMethod ) {
+		return <span>&ndash;</span>;
+	}
+	const brand = paymentMethod.brand ? paymentMethod.brand : payment.type;
+	return (
 		<span className="payment-method-details">
-			{ /* TODO: deal with other payment methods. Currently this assumes payment type is card */ }
 			<span
-				className={ `payment-method__brand payment-method__brand--${ paymentMethod.brand }` }
-			></span>
+				className={ `payment-method__brand payment-method__brand--${ brand }` }
+			/>
 			&nbsp;••••&nbsp;
 			{ paymentMethod.last4 }
 		</span>
-	) : (
-		<span>&ndash;</span>
 	);
 };
 
