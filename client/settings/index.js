@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
 import enqueueFraudScripts from 'fraud-scripts';
+import SettingsManager from 'settings/settings-manager';
 
 const statusContainer = document.getElementById(
 	'wcpay-account-status-container'
@@ -56,6 +57,16 @@ authorization and order will be canceled. Are you sure you want to enable it?',
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpayAdminSettings.fraudServices );
 } );
+
+const settingsContainer = document.getElementById(
+	'wcpay-account-settings-container'
+);
+if ( settingsContainer ) {
+	ReactDOM.render(
+		<SettingsManager { ...wcpayAdminSettings } />,
+		settingsContainer
+	);
+}
 
 // TODO: Remove this `if` ahead of releasing Apple Pay for all merchants.
 if ( wcpayAdminSettings.paymentRequestAvailable ) {
