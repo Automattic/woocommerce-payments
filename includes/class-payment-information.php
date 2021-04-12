@@ -236,9 +236,8 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
-		// TODO: Is there a way to prevent using this if-then, rather let the payment info figure it out?
 		switch ( $request['payment_method'] ) {
-			case 'woocommerce_payments_sepa':
+			case Sepa::GATEWAY_ID:
 				$request_gateway_id = Sepa::GATEWAY_ID;
 				break;
 			default:
