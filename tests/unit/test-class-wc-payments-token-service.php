@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_Payments_Token_Service unit tests.
@@ -74,6 +75,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
+			'type' => Payment_Method::CARD,
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -97,6 +99,7 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 				'exp_month' => 6,
 				'exp_year'  => $expiry_year,
 			],
+			'type' => Payment_Method::CARD,
 		];
 
 		$this->mock_api_client
