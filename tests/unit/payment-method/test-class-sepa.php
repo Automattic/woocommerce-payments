@@ -140,7 +140,7 @@ class Sepa_Test extends WP_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
-			'payment_method' => 'woocommerce_payments_sepa'
+			'payment_method'       => 'woocommerce_payments_sepa',
 		];
 	}
 
