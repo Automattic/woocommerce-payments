@@ -143,7 +143,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-gateway/class-card.php';
 		include_once __DIR__ . '/payment-gateway/class-sepa.php';
-		include_once __DIR__ . '/class-wc-payments-token-sepa.php';
+		include_once __DIR__ . '/class-wc-payment-token-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
