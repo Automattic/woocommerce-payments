@@ -1,0 +1,13 @@
+.add-payment-methods-modal {
+	.checkbox-list__item {
+		.components-base-control__field {
+			display: flex;
+		}
+
+		.components-checkbox-control__label {
+			display: flex;
+			flex: 1 1 auto;
+			justify-content: space-between;
+		}
+	}
+}
