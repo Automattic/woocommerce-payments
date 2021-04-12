@@ -67,10 +67,10 @@ class WC_Payments_Token_Service {
 		} else {
 			$token = new WC_Payment_Token_CC();
 			$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-			$token->set_expiry_month( $payment_method[Payment_Method::CARD]['exp_month'] );
-			$token->set_expiry_year( $payment_method[Payment_Method::CARD]['exp_year'] );
-			$token->set_card_type( strtolower( $payment_method[Payment_Method::CARD]['brand'] ) );
-			$token->set_last4( $payment_method[Payment_Method::CARD]['last4'] );
+			$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
+			$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
+			$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
+			$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
 		}
 		$token->set_token( $payment_method['id'] );
 		$token->set_user_id( $user->ID );
