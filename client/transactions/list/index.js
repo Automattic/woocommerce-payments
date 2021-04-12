@@ -39,6 +39,7 @@ import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
+import wcpayTracks from 'tracks';
 
 const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
 	[
@@ -311,7 +312,7 @@ export const TransactionsList = ( props ) => {
 			generateCSVDataFromTable( columnsToDisplay, rows )
 		);
 
-		window.wcTracks.recordEvent( 'wcpay_transactions_download', {
+		wcpayTracks.recordEvent( 'wcpay_transactions_download', {
 			// eslint-disable-next-line camelcase
 			exported_transactions: rows.length,
 			// eslint-disable-next-line camelcase
