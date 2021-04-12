@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Gateway\Sepa;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Handles and process WC payment tokens API.
@@ -59,12 +60,10 @@ class WC_Payments_Token_Service {
 		// Clear cached payment methods.
 		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
 
-		//TODO: Add an enum for https://stripe.com/docs/api/payment_methods/object#payment_method_object-type
-
-		if ($payment_method['type'] === 'sepa_debit') {
+		if ($payment_method['type'] === Payment_Method::SEPA) {
 			$token = new WC_Payment_Token_Sepa();
 			$token->set_gateway_id(Sepa::GATEWAY_ID);
-			$token->set_last4( $payment_method['sepa_debit']['last4'] );
+			$token->set_last4( $payment_method[Payment_Method::SEPA]['last4'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
 			$token->set_gateway_id(WC_Payment_Gateway_WCPay::GATEWAY_ID);
