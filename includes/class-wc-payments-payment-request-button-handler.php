@@ -299,7 +299,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_normalized_postal_code( $postcode, $country ) {
 		/**
-		 * Currently Apple Pay truncates postal codes from UK and Canada to first 3-4 characters
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
