@@ -12,14 +12,6 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const ListItemIcon = ( { icon } ) => {
-	const className = classNames( 'orderable-list__icon-container', {
-		'orderable-list__icon-container--has-icon': icon,
-	} );
-
-	return <div className={ className }>{ icon ? icon : null }</div>;
-};
-
 const ListItemActions = ( { onManageClick, onDeleteClick } ) => {
 	return (
 		<div className="orderable-list__actions">
@@ -46,16 +38,13 @@ const ListItem = ( {
 	id,
 	label,
 	description,
-	icon,
 	onManageClick,
 	onDeleteClick,
 } ) => {
-	const domId = `orderable-list__item-${ id }`;
-
 	return (
-		<li id={ domId } className="orderable-list__item">
+		<li className={ classNames( 'orderable-list__item', id ) }>
 			<div className="orderable-list__drag-handle" />
-			<ListItemIcon icon={ icon } />
+			<div className="orderable-list__icon" />
 			<div className="orderable-list__text">
 				<Button
 					isLink
