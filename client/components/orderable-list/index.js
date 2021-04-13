@@ -20,21 +20,21 @@ const ListItemIcon = ( { icon } ) => {
 	return <div className={ className }>{ icon ? icon : null }</div>;
 };
 
-const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
+const ListItemActions = ( { onManageClick, onDeleteClick } ) => {
 	return (
 		<div className="orderable-list__actions">
 			<Button
 				isLink
-				className="orderable-list__action"
-				onClick={ () => onManageClick( itemId ) }
+				className="orderable-list__action manage"
+				onClick={ onManageClick }
 			>
 				{ __( 'Manage', 'woocommerce-payments' ) }
 			</Button>
 			<Button
 				isLink
 				aria-label="Delete"
-				className="orderable-list__action"
-				onClick={ () => onDeleteClick( itemId ) }
+				className="orderable-list__action delete"
+				onClick={ onDeleteClick }
 			>
 				<Icon icon={ trash } size={ 24 } />
 			</Button>
@@ -60,7 +60,7 @@ const ListItem = ( {
 				<Button
 					isLink
 					className="orderable-list__label"
-					onClick={ () => onManageClick( id ) }
+					onClick={ onManageClick }
 				>
 					<strong>{ label }</strong>
 				</Button>
@@ -69,7 +69,6 @@ const ListItem = ( {
 				</div>
 			</div>
 			<ListItemActions
-				itemId={ id }
 				onManageClick={ onManageClick }
 				onDeleteClick={ onDeleteClick }
 			/>
@@ -85,6 +84,16 @@ const OrderableList = ( {
 } ) => {
 	const showDragHandles = 1 < items.length;
 
+	const handleManageClick = ( e, itemId ) => {
+		e.preventDefault();
+		onManageClick( itemId );
+	};
+
+	const handleDeleteClick = ( e, itemId ) => {
+		e.preventDefault();
+		onDeleteClick( itemId );
+	};
+
 	return (
 		<ul
 			className={ classNames(
@@ -96,8 +105,8 @@ const OrderableList = ( {
 			{ items.map( ( item ) => (
 				<ListItem
 					key={ item.id }
-					onManageClick={ onManageClick }
-					onDeleteClick={ onDeleteClick }
+					onManageClick={ ( e ) => handleManageClick( e, item.id ) }
+					onDeleteClick={ ( e ) => handleDeleteClick( e, item.id ) }
 					{ ...item }
 				/>
 			) ) }
