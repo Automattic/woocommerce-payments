@@ -4,7 +4,10 @@
  * Internal dependencies
  */
 import './style.scss';
-import { PAYMENT_METHOD_NAME, PAYMENT_METHOD_NAME_SEPA } from '../constants.js';
+import {
+	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_SEPA,
+} from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
@@ -51,8 +54,9 @@ jQuery( function ( $ ) {
 
 	// Create a SEPA element
 	const sepaElement = elements.create( 'iban', {
+		// 'SEPA' Indicates all countries in the Single Euro Payments Area (SEPA).
 		supportedCountries: [ 'SEPA' ],
-		classes: { base: 'wcpay-sepa-card-mounted' },
+		classes: { base: 'wcpay-sepa-mounted' },
 	} );
 
 	const sepaPayment = {
@@ -96,8 +100,8 @@ jQuery( function ( $ ) {
 		cardElement.unmount();
 		cardElement.mount( '#wcpay-card-element' );
 
-		if ( $( '#wcpay-sepa-card-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-card-element' );
+		if ( $( '#wcpay-sepa-element' ).length ) {
+			sepaElement.mount( '#wcpay-sepa-element' );
 		}
 	} );
 
@@ -107,8 +111,8 @@ jQuery( function ( $ ) {
 	) {
 		cardElement.mount( '#wcpay-card-element' );
 
-		if ( $( '#wcpay-sepa-card-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-card-element' );
+		if ( $( '#wcpay-sepa-element' ).length ) {
+			sepaElement.mount( '#wcpay-sepa-element' );
 		}
 	}
 
@@ -404,7 +408,7 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	$( 'form.checkout' ).on(
 		'checkout_place_order_' +
-			PAYMENT_METHOD_NAME +
+			PAYMENT_METHOD_NAME_CARD +
 			' checkout_place_order_' +
 			PAYMENT_METHOD_NAME_SEPA,
 		function () {
