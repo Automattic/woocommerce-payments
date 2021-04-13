@@ -9,6 +9,7 @@
 * Add - More helpful message on checkout errors.
 * Update - Change the default track `recordEvent` to use @woocommerce/tracks.
 * Add - WPCOM connection status event prop to 'wcpay_connect_account_clicked' track.
+* Add - Allow users to clear the account cache.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
