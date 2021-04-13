@@ -42,6 +42,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
@@ -49,6 +50,21 @@ class WC_Payments_Account {
 	 */
 	public function clear_cache() {
 		delete_transient( self::ACCOUNT_TRANSIENT );
+	}
+
+	/**
+	 * Add clear account cache tool to WooCommerce debug tools.
+	 *
+	 * @param array $tools List of current available tools.
+	 */
+	public function debug_tool( $tools ) {
+		$tools['clear_wcpay_account_cache'] = [
+			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
+			'button'   => __( 'Clear', 'woocommerce-payments' ),
+			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
+			'callback' => [ $this, 'refresh_account_data' ],
+		];
+		return $tools;
 	}
 
 	/**

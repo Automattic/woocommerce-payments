@@ -33,6 +33,7 @@ import Page from 'components/page';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
+import wcpayTracks from 'tracks';
 
 const PRODUCT_TYPE_META_KEY = '__product_type';
 
@@ -400,7 +401,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
+		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
 			type: key,
 		} );
 
@@ -431,11 +432,11 @@ export default ( { query } ) => {
 			} );
 			updateEvidence( key, uploadedFile.id );
 
-			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
+			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_success', {
 				type: key,
 			} );
 		} catch ( err ) {
-			window.wcTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
+			wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_failed', {
 				message: err.message,
 			} );
 
@@ -459,7 +460,7 @@ export default ( { query } ) => {
 			path: '/payments/disputes',
 		} );
 
-		window.wcTracks.recordEvent(
+		wcpayTracks.recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
 				: 'wcpay_dispute_save_evidence_success'
@@ -474,7 +475,7 @@ export default ( { query } ) => {
 	};
 
 	const handleSaveError = ( err, submit ) => {
-		window.wcTracks.recordEvent(
+		wcpayTracks.recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
 				: 'wcpay_dispute_save_evidence_failed'
@@ -501,7 +502,7 @@ export default ( { query } ) => {
 		setLoading( true );
 
 		try {
-			window.wcTracks.recordEvent(
+			wcpayTracks.recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
 					: 'wcpay_dispute_save_evidence_clicked'
@@ -534,10 +535,7 @@ export default ( { query } ) => {
 		const properties = {
 			selection: newProductType,
 		};
-		window.wcTracks.recordEvent(
-			'wcpay_dispute_product_selected',
-			properties
-		);
+		wcpayTracks.recordEvent( 'wcpay_dispute_product_selected', properties );
 		updateDispute( {
 			metadata: { [ PRODUCT_TYPE_META_KEY ]: newProductType },
 		} );

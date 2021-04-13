@@ -8,6 +8,11 @@ import { addQueryArgs } from '@wordpress/url';
 import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 
+/**
+ * Internal dependencies
+ */
+import wcpayTracks from 'tracks';
+
 const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	if ( ! needsResponse && ! isSubmitted ) {
 		return null;
@@ -30,7 +35,7 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 				href={ challengeUrl }
 				className="components-button is-button is-primary is-large"
 				onClick={ () =>
-					window.wcTracks.recordEvent(
+					wcpayTracks.recordEvent(
 						needsResponse
 							? 'wcpay_dispute_challenge_clicked'
 							: 'wcpay_view_submitted_evidence_clicked'
