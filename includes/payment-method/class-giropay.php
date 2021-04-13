@@ -131,9 +131,56 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
-		return [
-			'result'   => 'fail',
-			'redirect' => '',
-		];
+		$order = wc_get_order( $order_id );
+
+		try {
+			$payment_information   = $this->prepare_payment_information( $order );
+			$intent_api_parameters = [
+				'payment_method_types' => [ 'giropay' ],
+				'payment_method_data'  => [
+					'type'            => 'giropay',
+					'billing_details' => [
+						'name' => sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() ),
+					],
+				],
+				'return_url'           => wp_sanitize_redirect( esc_url_raw( add_query_arg( [ 'order_id' => $order_id ], $this->get_return_url( $order ) ) ) ),
+			];
+
+			return $this->process_payment_for_order( WC()->cart, $payment_information, $intent_api_parameters );
+		} catch ( Exception $e ) {
+			// TODO: Create more exceptions to handle merchant specific errors.
+			$error_message = $e->getMessage();
+			if ( is_a( $e, Connection_Exception::class ) ) {
+				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			}
+
+			wc_add_notice( $error_message, 'error' );
+
+			$order->update_status( 'failed' );
+
+			if ( ! empty( $payment_information ) ) {
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the failed payment amount, %2: error message  */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+							'code'   => '<code>',
+						]
+					),
+					wc_price( $order->get_total() ),
+					esc_html( rtrim( $e->getMessage(), '.' ) )
+				);
+				$order->add_order_note( $note );
+			}
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
+		}
 	}
 }
