@@ -61,7 +61,7 @@ class WC_Payments_Account {
 		$tools['clear_wcpay_account_cache'] = [
 			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
 			'button'   => __( 'Clear', 'woocommerce-payments' ),
-			'desc'     => __( 'This tool will empty the WooCommerce Payments account cache.', 'woocommerce-payments' ),
+			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
 			'callback' => [ $this, 'refresh_account_data' ],
 		];
 		return $tools;
