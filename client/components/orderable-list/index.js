@@ -3,7 +3,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
+import { Icon, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -37,7 +38,7 @@ const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
 				className="orderable-list__action"
 				onClick={ () => onDeleteClick( itemId ) }
 			>
-				<Icon icon="trash" size={ 24 } />
+				<Icon icon={ trash } size={ 24 } />
 			</Button>
 		</div>
 	);
@@ -50,19 +51,12 @@ const ListItem = ( {
 	icon,
 	onManageClick,
 	onDeleteClick,
-	showDragHandle,
 } ) => {
 	const domId = `orderable-list__item-${ id }`;
 
 	return (
 		<li id={ domId } className="orderable-list__item">
-			<div className="orderable-list__drag-handle-container">
-				{ showDragHandle ? (
-					<div className="orderable-list__drag-handle">
-						<Icon icon="move" size={ 24 } />
-					</div>
-				) : null }
-			</div>
+			<div className="orderable-list__drag-handle" />
 			<ListItemIcon icon={ icon } />
 			<div className="orderable-list__text">
 				<Button
@@ -92,12 +86,15 @@ const OrderableList = ( {
 	onDeleteClick = () => {},
 } ) => {
 	const classNames = [ 'orderable-list' ];
+	const showDragHandles = 1 < items.length;
 
 	if ( className ) {
 		classNames.push( className );
 	}
 
-	const showDragHandle = 1 < items.length;
+	if ( showDragHandles ) {
+		classNames.push( 'show-drag-handles' );
+	}
 
 	return (
 		<ul className={ classNames.join( ' ' ) }>
@@ -106,7 +103,6 @@ const OrderableList = ( {
 					key={ item.id }
 					onManageClick={ onManageClick }
 					onDeleteClick={ onDeleteClick }
-					showDragHandle={ showDragHandle }
 					{ ...item }
 				/>
 			) ) }
