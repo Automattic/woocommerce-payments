@@ -6,6 +6,7 @@
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { __, sprintf } from '@wordpress/i18n';
 import Currency from '@woocommerce/currency';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal Dependencies
@@ -99,11 +100,23 @@ export function* submitInstantDeposit( transactionIds ) {
 			'createSuccessNotice',
 			sprintf(
 				__(
-					'Instant deposit for %s successful.',
+					'Instant deposit for %s in transit.',
 					'woocommerce-payments'
 				),
 				currency.formatCurrency( deposit.amount / 100 )
-			)
+			),
+			{
+				actions: [
+					{
+						label: __( 'View details', 'woocommerce-payments' ),
+						url: addQueryArgs( 'admin.php', {
+							page: 'wc-admin',
+							path: '/payments/deposits/details',
+							id: deposit.id,
+						} ),
+					},
+				],
+			}
 		);
 	} catch ( e ) {
 		yield updateInstantDeposit( e );
