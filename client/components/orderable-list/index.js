@@ -35,6 +35,7 @@ const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
 			</Button>
 			<Button
 				isLink
+				aria-label="Delete"
 				className="orderable-list__action"
 				onClick={ () => onDeleteClick( itemId ) }
 			>
