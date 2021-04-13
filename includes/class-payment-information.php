@@ -236,7 +236,7 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
-		if ( ! empty( $request['payment_method'] ) && $request['payment_method'] === Sepa::GATEWAY_ID ) {
+		if ( ! empty( $request['payment_method'] ) && Sepa::GATEWAY_ID === $request['payment_method'] ) {
 			$request_gateway_id = Sepa::GATEWAY_ID;
 		} else {
 			$request_gateway_id = \WC_Payment_Gateway_WCPay::GATEWAY_ID;
