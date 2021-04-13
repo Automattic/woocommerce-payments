@@ -38,7 +38,7 @@ class WC_Payments_Notes_Qualitative_Feedback {
 
 		// We should have at least one transaction.
 		$token_count = $wpdb->get_var( "select count(*) from {$wpdb->prefix}woocommerce_payment_tokens" );
-		if ( 0 === $token_count ) {
+		if ( 0 === (int) $token_count ) {
 			return;
 		}
 
