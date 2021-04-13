@@ -23,7 +23,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $gateway;
+	private static $card_gateway;
 
 	/**
 	 * Instance of Sepa gateway, created in init function.
@@ -177,7 +177,7 @@ class WC_Payments {
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
-		self::$gateway      = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 
 		// Payment Request and Apple Pay.
@@ -191,7 +191,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$gateway, self::$account );
+			new WC_Payments_Admin( self::$card_gateway, self::$account );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -417,7 +417,7 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::$gateway;
+		$gateways[] = self::$card_gateway;
 		$gateways[] = self::$sepa_gateway;
 
 		return $gateways;
@@ -433,7 +433,7 @@ class WC_Payments {
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
-		$id       = self::$gateway->id;
+		$id       = self::$card_gateway->id;
 		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
 		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
 			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
@@ -508,7 +508,7 @@ class WC_Payments {
 		$charges_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
-		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$gateway, self::$account );
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -520,7 +520,7 @@ class WC_Payments {
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
 	}
 
@@ -544,7 +544,7 @@ class WC_Payments {
 	 * @return WC_Payment_Gateway_WCPay gateway instance
 	 */
 	public static function get_gateway() {
-		return self::$gateway;
+		return self::$card_gateway;
 	}
 
 	/**
