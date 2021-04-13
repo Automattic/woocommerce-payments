@@ -5,6 +5,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { Icon, trash } from '@wordpress/icons';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -12,15 +13,11 @@ import { Icon, trash } from '@wordpress/icons';
 import './style.scss';
 
 const ListItemIcon = ( { icon } ) => {
-	const classNames = [ 'orderable-list__icon-container' ];
+	const className = classNames( 'orderable-list__icon-container', {
+		'orderable-list__icon-container--has-icon': icon,
+	} );
 
-	if ( icon ) {
-		classNames.push( 'orderable-list__icon-container--has-icon' );
-	}
-
-	return (
-		<div className={ classNames.join( ' ' ) }>{ icon ? icon : null }</div>
-	);
+	return <div className={ className }>{ icon ? icon : null }</div>;
 };
 
 const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
@@ -86,19 +83,16 @@ const OrderableList = ( {
 	onManageClick = () => {},
 	onDeleteClick = () => {},
 } ) => {
-	const classNames = [ 'orderable-list' ];
 	const showDragHandles = 1 < items.length;
 
-	if ( className ) {
-		classNames.push( className );
-	}
-
-	if ( showDragHandles ) {
-		classNames.push( 'show-drag-handles' );
-	}
-
 	return (
-		<ul className={ classNames.join( ' ' ) }>
+		<ul
+			className={ classNames(
+				'orderable-list',
+				{ 'show-drag-handles': showDragHandles },
+				className
+			) }
+		>
 			{ items.map( ( item ) => (
 				<ListItem
 					key={ item.id }
