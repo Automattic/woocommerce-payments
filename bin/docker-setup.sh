@@ -18,11 +18,7 @@ redirect_output() {
 # https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
 cli()
 {
-	INTERACTIVE=''
-	if [ -t 1 ] ; then
-		INTERACTIVE='-it'
-	fi
-	redirect_output docker run $INTERACTIVE --env-file default.env --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
+	redirect_output docker run -it --env-file default.env --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
 }
 
 set +e
