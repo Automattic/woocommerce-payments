@@ -215,11 +215,10 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		if ( ! empty( $request['wcpay-payment-method'] ) ) {
-			return wc_clean( $request['wcpay-payment-method'] );
-		}
-		if ( ! empty( $request['wcpay-payment-method-sepa'] ) ) {
-			return wc_clean( $request['wcpay-payment-method-sepa'] );
+		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+			if ( ! empty( $request[ $key ] ) ) {
+				return wc_clean( $request[ $key ] );
+			}
 		}
 		return '';
 	}

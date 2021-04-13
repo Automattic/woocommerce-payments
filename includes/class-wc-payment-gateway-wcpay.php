@@ -32,6 +32,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const METHOD_ENABLED_KEY = 'enabled';
 
 	/**
+	 * Stripe intents that are treated as successfully created.
+	 *
+	 * @type array
+	 */
+	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
+
+	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
 	 * @var string[]
@@ -758,7 +765,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( 'succeeded' !== $status && 'requires_capture' !== $status && 'processing' !== $status ) {
+			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
 			}
 
@@ -1682,7 +1689,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 
-			if ( 'succeeded' === $status || 'requires_capture' === $status || 'processing' === $status ) {
+			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
