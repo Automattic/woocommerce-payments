@@ -5,12 +5,12 @@
 import React, { useCallback, useState } from 'react';
 import { Icon } from '@wordpress/components';
 import classNames from 'classnames';
-import { CSS } from '@dnd-kit/utilities';
 import {
 	DndContext,
 	closestCenter,
 	KeyboardSensor,
-	PointerSensor,
+	TouchSensor,
+	MouseSensor,
 	useSensor,
 	useSensors,
 } from '@dnd-kit/core';
@@ -21,6 +21,11 @@ import {
 	verticalListSortingStrategy,
 	useSortable,
 } from '@dnd-kit/sortable';
+import {
+	restrictToWindowEdges,
+	restrictToVerticalAxis,
+} from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
 
 /**
  * Internal dependencies
@@ -35,23 +40,34 @@ const ListItem = ( { id, children, isDraggable } ) => {
 		transition,
 		setDraggableNodeRef,
 		setDroppableNodeRef,
+		isDragging,
 	} = useSortable( {
 		id,
 	} );
 
 	const style = {
-		transform: CSS.Translate.toString( transform ),
+		transform: transform
+			? `translate3d(0, ${
+					transform.y ? Math.round( transform.y ) : 0
+			  }px, ${ isDragging ? '100' : '-100' }px) ${
+					isDragging ? 'scale(1.02)' : ''
+			  }`
+			: undefined,
+		// transform: CSS.Translate.toString( transform ),
 		transition,
 	};
 
 	return (
 		<li
-			className="orderable-list__item"
+			className={ classNames( 'orderable-list__item', {
+				'is-dragged': isDragging,
+			} ) }
 			ref={ setDroppableNodeRef }
 			style={ style }
 		>
 			<div className="orderable-list__drag-handle-container">
 				{ isDraggable && (
+					// TODO: possibly make this a button element for accessibility
 					<div
 						className="orderable-list__drag-handle"
 						{ ...attributes }
@@ -67,6 +83,8 @@ const ListItem = ( { id, children, isDraggable } ) => {
 	);
 };
 
+const modifiers = [ restrictToWindowEdges, restrictToVerticalAxis ];
+
 const OrderableList = ( { className, children } ) => {
 	const isDraggable = 1 < React.Children.count( children );
 	const childrenArray = React.Children.toArray( children );
@@ -77,7 +95,8 @@ const OrderableList = ( { className, children } ) => {
 	);
 
 	const sensors = useSensors(
-		useSensor( PointerSensor ),
+		useSensor( MouseSensor ),
+		useSensor( TouchSensor ),
 		useSensor( KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
 		} )
@@ -104,6 +123,7 @@ const OrderableList = ( { className, children } ) => {
 			sensors={ sensors }
 			collisionDetection={ closestCenter }
 			onDragEnd={ handleDragEnd }
+			modifiers={ modifiers }
 		>
 			<SortableContext
 				items={ childrenKeys }

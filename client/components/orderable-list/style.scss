@@ -5,7 +5,21 @@
 		display: flex;
 		margin: 0;
 		padding: 24px 33px 24px 24px;
-		box-shadow: inset 0 -1px 0 #e8eaeb;
+		//box-shadow: inset 0 -1px 0 #e8eaeb;
+		background: white;
+		border-bottom: 1px solid #e2e4e7;
+
+		&.is-dragged {
+			box-shadow: none;
+			border-bottom: none;
+			// ensures that when dragging, sibling DOM elements do not appear below others
+			// e.g.: it ensures that when dragging the first element of the list, the element doesn't appear below the other ones
+			z-index: 999;
+		}
+
+		&:last-child {
+			border-bottom: none;
+		}
 	}
 
 	&__drag-handle-container {
