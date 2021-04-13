@@ -106,6 +106,9 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
 * Add - Notification badge next to payments menu.
+* Fix - Fixed broken search on transactions list page.
+* Add - More helpful message on checkout errors.
+* Update - Change the default track `recordEvent` to use @woocommerce/tracks.
 * Add - WPCOM connection status event prop to 'wcpay_connect_account_clicked' track.
 
 = 2.2.0 - 2021-03-31 =

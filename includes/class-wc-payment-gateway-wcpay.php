@@ -425,6 +425,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
+			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
 		];
 	}
 
@@ -563,8 +564,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			// TODO: Create more exceptions to handle merchant specific errors.
 			$error_message = $e->getMessage();
-			if ( is_a( $e, Connection_Exception::class ) ) {
+			if ( $e instanceof Connection_Exception ) {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
 			}
 
 			wc_add_notice( $error_message, 'error' );
@@ -1735,7 +1738,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			return [
 				'result'   => 'success',
-				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
