@@ -308,7 +308,7 @@ class WC_Payments_Admin {
 				'fraudServices'           => $this->account->get_fraud_services_config(),
 				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
 				'paymentRequestAvailable' => WC_Payments::should_payment_request_be_available(),
-				'enabledMethodIds'        => [ 'cc', 'giropay' ],
+				'enabledPaymentMethodIds' => [ 'cc', 'giropay' ],
 			]
 		);
 

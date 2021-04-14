@@ -10,7 +10,7 @@ import { useState } from 'react';
 import PaymentMethods from '../../payment-methods';
 
 const SettingsManager = ( {
-	enabledMethodIds: initialEnabledPaymentMethodIds,
+	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
 } ) => {
 	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
 		initialEnabledPaymentMethodIds
@@ -20,7 +20,7 @@ const SettingsManager = ( {
 		<div>
 			<PaymentMethods
 				enabledMethodIds={ enabledPaymentMethodIds }
-				onEnabledMethodsChange={ setEnabledPaymentMethodIds }
+				onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
 			/>
 		</div>
 	);

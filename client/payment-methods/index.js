@@ -54,7 +54,7 @@ const availableMethods = [
 	},
 ];
 
-const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
+const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 	const enabledMethods = availableMethods.filter( ( method ) =>
 		enabledMethodIds.includes( method.id )
 	);
@@ -68,7 +68,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 	};
 
 	const handleDeleteClick = ( itemId ) => {
-		onEnabledMethodsChange(
+		onEnabledMethodIdsChange(
 			enabledMethodIds.filter( ( id ) => id !== itemId )
 		);
 	};
