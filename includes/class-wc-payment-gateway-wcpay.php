@@ -435,7 +435,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
-		parent::admin_options();
+		if ( ! WC_Payments_Admin::is_grouped_settings_enabled() ) {
+			parent::admin_options();
+			return;
+		}
+
+		$this->output_payments_settings_screen();
+	}
+
+	/**
+	 * Generates markup for the settings screen.
+	 */
+	public function output_payments_settings_screen() {
+		// hiding the save button because the react container has its own.
+		global $hide_save_button;
+		$hide_save_button = true;
+
+		?>
+		<ul class="subsubsub">
+			<li><a href="<?php echo esc_html( self::get_settings_url() ); ?>" class="current"><?php echo esc_html( $this->get_method_title() ); ?></a></li>
+			<li>|</li>
+			<li><a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ); ?>"><?php echo esc_html( __( 'All payment methods', 'woocommerce-payments' ) ); ?></a></li>
+		</ul>
+
+		<div id="wcpay-account-settings-container"></div>
+		<?php
 	}
 
 	/**
@@ -595,8 +619,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			// TODO: Create more exceptions to handle merchant specific errors.
 			$error_message = $e->getMessage();
-			if ( is_a( $e, Connection_Exception::class ) ) {
+			if ( $e instanceof Connection_Exception ) {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
 			}
 
 			wc_add_notice( $error_message, 'error' );
@@ -1767,7 +1793,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			return [
 				'result'   => 'success',
-				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );

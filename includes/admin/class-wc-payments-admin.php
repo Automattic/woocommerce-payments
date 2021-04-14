@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $payments_api_client;
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -29,15 +36,18 @@ class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account      $account Account instance.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account             Account instance.
 	 */
 	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account
 	) {
-		$this->wcpay_gateway = $gateway;
-		$this->account       = $account;
+		$this->payments_api_client = $payments_api_client;
+		$this->wcpay_gateway       = $gateway;
+		$this->account             = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -245,6 +255,7 @@ class WC_Payments_Admin {
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
+				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
 			]
 		);
 
@@ -455,7 +466,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool
 	 */
-	private static function is_grouped_settings_enabled() {
+	public static function is_grouped_settings_enabled() {
 		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 
