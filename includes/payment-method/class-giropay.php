@@ -46,6 +46,8 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 		$this->method_description = __( 'Accept payments via Giropay.', 'woocommerce-payments' );
 		$this->title              = __( 'Giropay', 'woocommerce-payments' );
 		$this->description        = __( 'You will be redirected to Giropay.', 'woocommerce-payments' );
+
+		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
 	}
 
 	/**
@@ -73,6 +75,102 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 			WC_Payments::get_file_version( 'dist/giropay_checkout.js' ),
 			true
 		);
+	}
+
+	/**
+	 * Processes redirect payments.
+	 * This method is currently specific to the Giropay redirect payment method.
+	 *
+	 * @param int $order_id The order ID being processed.
+	 */
+	public function process_redirect_payment( $order_id ) {
+		try {
+			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
+
+			if ( empty( $intent_id ) ) {
+				return;
+			}
+
+			if ( empty( $order_id ) ) {
+				return;
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( ! is_object( $order ) ) {
+				return;
+			}
+
+			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+				return;
+			}
+
+			// Result from Stripe API request.
+			$response = null;
+
+			Logger::log( "Begin processing redirect payment for order $order_id for the amount of {$order->get_total()}" );
+
+			/**
+			 * Get payment intent to confirm status
+			 */
+			$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+			$status = $intent->get_status();
+			$amount = $order->get_total();
+
+			if ( 'succeeded' === $status ) {
+				$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
+				$note            = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+						]
+					),
+					wc_price( $amount ),
+					$intent_id
+				);
+				$order->add_order_note( $note );
+				$order->payment_complete( $intent_id );
+				return;
+			} else {
+				$error = $intent->get_last_payment_error();
+				if ( ! empty( $error ) ) {
+					$error_message = isset( $error['message'] ) ? $error['message'] : 'unknown';
+					$error_code    = isset( $error['code'] ) ? $error['code'] : 'unknown';
+					Logger::log( sprintf( 'Giropay failed: %s (%s)', $error_message, $error_code ) );
+					/* translators: localized exception message */
+					$order->update_status( 'failed', sprintf( __( 'Giropay payment failed: %s', 'woocommerce-payments' ), $error_message ) );
+				}
+
+				wc_add_notice( __( 'Giropay payment has failed. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' ), 'error' );
+				wp_safe_redirect( wc_get_checkout_url() );
+				exit;
+			}
+		} catch ( Exception $e ) {
+			Logger::log( 'Error: ' . $e->getMessage() );
+
+			/* translators: localized exception message */
+			$order->update_status( 'failed', sprintf( __( 'Giropay payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
+
+			wc_add_notice( $e->getLocalizedMessage(), 'error' );
+			wp_safe_redirect( wc_get_checkout_url() );
+			exit;
+		}
+	}
+
+	/**
+	 * Check for a redirect payment method on order received page.
+	 */
+	public function maybe_process_redirect_order() {
+		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) ) {
+			return;
+		}
+
+		$order_id = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : '';
+
+		$this->process_redirect_payment( $order_id );
 	}
 
 	/**
