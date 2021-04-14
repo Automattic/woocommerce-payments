@@ -9,6 +9,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { useInitialization } from './use-initialization';
 import { useCheckoutSubscriptions } from './use-checkout-subscriptions';
 import { ThreeDSecurePaymentHandler } from '../three-d-secure';
+import { CustomButton } from './custom-button';
 
 /**
  * @typedef {import('../stripe-utils/type-defs').Stripe} Stripe
@@ -82,7 +83,7 @@ const PaymentRequestExpressComponent = ( {
 	// Make sure `theme` defaults to 'dark' if it's not found in the server provided configuration.
 	// - TODO: Get button theme
 	const theme = 'dark';
-
+	// - TODO: Add internal shared dependency here.
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
 			type: 'default',
@@ -91,7 +92,19 @@ const PaymentRequestExpressComponent = ( {
 		},
 	};
 
-	return canMakePayment && paymentRequest ? (
+	// Use pre-blocks settings until we merge the two distinct settings objects.
+	/* global wcpayPaymentRequestParams */
+	const isCustom = wcpayPaymentRequestParams.button.is_custom;
+
+	if ( ! canMakePayment || ! paymentRequest ) {
+		return null;
+	}
+
+	if ( isCustom ) {
+		return <CustomButton onButtonClicked={ onButtonClick } />;
+	}
+
+	return (
 		<PaymentRequestButtonElement
 			onClick={ onButtonClick }
 			options={ {
@@ -101,7 +114,7 @@ const PaymentRequestExpressComponent = ( {
 				paymentRequest,
 			} }
 		/>
-	) : null;
+	);
 };
 
 /**

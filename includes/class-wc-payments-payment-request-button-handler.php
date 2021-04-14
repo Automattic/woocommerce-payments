@@ -530,6 +530,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
 				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 				'height'       => $this->get_button_height(),
+				'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
