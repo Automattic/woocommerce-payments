@@ -424,7 +424,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
-		if ( ! WC_Payments_Admin::is_grouped_settings_enabled() ) {
+		if ( ! WC_Payments_Features::is_grouped_settings_enabled() ) {
 			parent::admin_options();
 			return;
 		}
@@ -441,12 +441,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$hide_save_button = true;
 
 		?>
-		<ul class="subsubsub">
-			<li><a href="<?php echo esc_html( self::get_settings_url() ); ?>" class="current"><?php echo esc_html( $this->get_method_title() ); ?></a></li>
-			<li>|</li>
-			<li><a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ); ?>"><?php echo esc_html( __( 'All payment methods', 'woocommerce-payments' ) ); ?></a></li>
-		</ul>
-
 		<div id="wcpay-account-settings-container"></div>
 		<?php
 	}

@@ -115,6 +115,7 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		include_once __DIR__ . '/class-wc-payments-features.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
@@ -195,6 +196,11 @@ class WC_Payments {
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
+
+			if( WC_Payments_Features::is_grouped_settings_enabled() ) {
+				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
+				new WC_Payments_Admin_Sections_Overwrite();
+			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
