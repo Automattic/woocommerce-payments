@@ -115,6 +115,7 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		include_once __DIR__ . '/class-wc-payments-features.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
@@ -418,7 +419,20 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-		$gateways[] = self::$sepa_gateway;
+
+		if ( false === WC_Payments_Features::is_grouped_settings_enabled() ) {
+			return $gateways;
+		}
+
+		// adding the sepa/giropay/etc gateways after the feature flag, to ensure that there are no side effects.
+		// these lines ensure that the payment method is added to the array only when we're _not_ on the WC settings page.
+		if (
+			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) )
+			||
+			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && 'wc-settings' === $_GET['page'] && 'checkout' === $_GET['tab'] && ! empty( $_GET['section'] ) )
+		) {
+			$gateways[] = self::$sepa_gateway;
+		}
 
 		return $gateways;
 	}
