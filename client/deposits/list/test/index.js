@@ -43,6 +43,7 @@ describe( 'Deposits list', () => {
 	test( 'renders correctly', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
+			depositsCount: 2,
 			isLoading: false,
 		} );
 

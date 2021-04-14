@@ -56,16 +56,24 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	public function test_check_stripe_account_status_stripe_disconnected() {
+	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_stripe_disconnected_and_on_boarding_disabled() {
+	public function test_maybe_redirect_to_onboarding_stripe_disconnected_and_on_boarding_disabled_redirects() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException(
 				new API_Exception(
@@ -76,21 +84,31 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_account_error() {
+	public function test_maybe_redirect_to_onboarding_account_error() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new Exception() )
 		);
 
 		$this->expectException( Exception::class );
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// Should not update the option.
+		$this->assertTrue( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_returns_true() {
+	public function test_maybe_redirect_to_onboarding_account_connected() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
 				[
@@ -104,10 +122,15 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_caches_the_account() {
+	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
 				[
@@ -121,12 +144,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_returns_true_and_on_boarding_re_enabled() {
+	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {
 		// We will call get_account_data twice. The first call will tell us no account is connected and that on-boarding
 		// is disabled. The second call will just tell us that no account is connected (i.e. on-boarding was
 		// re-enabled). willReturnCallback is being used because PHPUnit doesn't have any helper methods for returning a
@@ -155,15 +180,21 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 				}
 			);
 
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		// First call, on-boarding is disabled.
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->wcpay_account->maybe_redirect_to_onboarding();
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 
 		// Simulate the account details cache timing out.
 		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		// Second call, on-boarding re-enabled.
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->wcpay_account->maybe_redirect_to_onboarding();
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 	}
 

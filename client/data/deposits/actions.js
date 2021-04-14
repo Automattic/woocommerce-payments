@@ -34,6 +34,13 @@ export function updateDeposits( query, data ) {
 	};
 }
 
+export function updateDepositsCount( data ) {
+	return {
+		type: TYPES.SET_DEPOSITS_COUNT,
+		data,
+	};
+}
+
 export function updateErrorForDepositQuery( query, data, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_DEPOSIT_QUERY,

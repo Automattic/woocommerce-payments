@@ -19,6 +19,7 @@ const api = new WCPayAPI(
 	{
 		publishableKey: getConfig( 'publishableKey' ),
 		accountId: getConfig( 'accountId' ),
+		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 	},
 	request
 );

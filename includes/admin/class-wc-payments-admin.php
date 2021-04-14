@@ -207,6 +207,8 @@ class WC_Payments_Admin {
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
+
+		$this->add_menu_notification_badge();
 	}
 
 	/**
@@ -246,6 +248,8 @@ class WC_Payments_Admin {
 			]
 		);
 
+		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
+
 		wp_register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
@@ -264,6 +268,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.js' ),
 			true
 		);
+		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_TOS',
@@ -287,11 +292,11 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus'         => $this->account->get_account_status_data(),
-				'accountFees'           => $this->account->get_fees(),
-				'fraudServices'         => $this->account->get_fraud_services_config(),
-				// TODO: Remove this line ahead of Apple Pay release.
-				'paymentRequestEnabled' => 'yes' === get_option( '_wcpay_feature_payment_request' ),
+				'accountStatus'           => $this->account->get_account_status_data(),
+				'accountFees'             => $this->account->get_fees(),
+				'fraudServices'           => $this->account->get_fraud_services_config(),
+				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
+				'paymentRequestAvailable' => WC_Payments::should_payment_request_be_available(),
 			]
 		);
 
@@ -300,8 +305,12 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpaySettings',
-			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
+			[
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'featureFlags'          => $this->get_frontend_feature_flags(),
+			]
 		);
+		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_ADMIN_SETTINGS',
@@ -383,6 +392,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
+			'groupedSettings' => self::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -437,5 +447,32 @@ class WC_Payments_Admin {
 	 */
 	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
+	}
+
+	/**
+	 * Checks whether the grouped settings feature is enabled
+	 *
+	 * @return bool
+	 */
+	private static function is_grouped_settings_enabled() {
+		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
+	}
+
+	/**
+	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
+	 * to remind user that setup is required.
+	 */
+	public function add_menu_notification_badge() {
+		global $menu;
+		if ( $this->account->is_stripe_connected() || 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+			return;
+		}
+
+		foreach ( $menu as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
+				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
 	}
 }

@@ -29,6 +29,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const GATEWAY_ID = 'woocommerce_payments';
 
+	const METHOD_ENABLED_KEY = 'enabled';
+
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
@@ -97,7 +99,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->token_service            = $token_service;
 		$this->action_scheduler_service = $action_scheduler_service;
 
-		$this->id                 = self::GATEWAY_ID;
+		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
@@ -167,10 +169,56 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
-		// Feature flag.
+		// SEPA option hidden behind feature flag.
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$this->form_fields['sepa_enabled'] = [
+				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce SEPA Direct Debit', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			];
+		}
+
+		// Load the settings.
+		$this->init_settings();
+
+		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
+		if ( $this->is_saved_cards_enabled() ) {
+			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
+		}
+
+		// Add Payment Request form fields after WC initialization.
+		add_filter( 'init', [ $this, 'add_payment_request_form_fields' ] );
+
+		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
+		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
+		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
+
+		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
+		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
+
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+
+		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+
+		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
+		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+	}
+
+	/**
+	 * Add Payment Request form fields.
+	 */
+	public function add_payment_request_form_fields() {
 		// TODO: Remove this check and inject contents of `$payment_request_fields` into `$this->form_fields`
-		// after `saved_cards` ahead of Apple Pay release.
-		if ( 'yes' === get_option( '_wcpay_feature_payment_request' ) ) {
+		// after `saved_cards` ahead of releasing Apple Pay for all merchants.
+		if ( WC_Payments::should_payment_request_be_available() ) {
 			$payment_request_fields = [
 				'payment_request'                     => [
 					'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
@@ -250,34 +298,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_request_fields +
 				array_slice( $this->form_fields, $fields_index, count( $this->form_fields ) - 1 );
 		}
-
-		// Load the settings.
-		$this->init_settings();
-
-		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
-		if ( $this->is_saved_cards_enabled() ) {
-			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
-		}
-
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
-		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
-		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
-		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
-
-		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
-		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
-
-		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
-		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-
-		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
-
-		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
-		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 	}
 
 	/**
@@ -418,6 +438,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
+			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
 		];
 	}
 
@@ -556,8 +577,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			// TODO: Create more exceptions to handle merchant specific errors.
 			$error_message = $e->getMessage();
-			if ( is_a( $e, Connection_Exception::class ) ) {
+			if ( $e instanceof Connection_Exception ) {
 				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
+			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
+				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
 			}
 
 			wc_add_notice( $error_message, 'error' );
@@ -675,10 +698,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! $payment_needed && ! $save_payment_method ) {
 			$order->payment_complete();
 
-			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
-				$token = $payment_information->get_payment_token();
-				$this->add_token_to_order( $order, $token );
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				// We need to make sure the saved payment method is saved to the order so we can
+				// charge the payment method for a future payment.
+				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
+			}
 
+			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the last 4 digit of the credit card */
@@ -687,7 +713,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'strong' => '<strong>',
 						]
 					),
-					$token->get_last4()
+					$payment_information->get_payment_token()->get_last4()
 				);
 				$order->add_order_note( $note );
 			}
@@ -708,7 +734,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_information->is_using_manual_capture(),
 				$save_payment_method,
 				$metadata,
-				$this->get_level3_data_from_order( $order ),
+				$this->get_level3_data_from_order( $this->account->get_account_country(), $order ),
 				$payment_information->is_merchant_initiated()
 			);
 
@@ -732,7 +758,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
+			if ( 'succeeded' !== $status && 'requires_capture' !== $status && 'processing' !== $status ) {
 				$intent_failed = true;
 			}
 
@@ -771,6 +797,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 					$order->payment_complete( $intent_id );
 					break;
+				case 'processing':
 				case 'requires_capture':
 					$transaction_url = $this->compose_transaction_url( $charge_id );
 					$note            = sprintf(
@@ -1062,11 +1089,46 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
+			case 'enabled':
+				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
+	}
+
+	/**
+	 * Return the name of the option in the WP DB.
+	 * Overrides parent method so the option key is the same as the parent class.
+	 */
+	public function get_option_key() {
+		// Intentionally using self instead of static so options are loaded from main gateway settings.
+		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+	}
+
+
+	/**
+	 * Update a single option.
+	 * Overrides parent method to use different key for `enabled`.
+	 *
+	 * @param string $key Option key.
+	 * @param mixed  $value Value to set.
+	 * @return bool was anything saved?
+	 */
+	public function update_option( $key, $value = '' ) {
+		if ( 'enabled' === $key ) {
+			$key = static::METHOD_ENABLED_KEY;
+		}
+		return parent::update_option( $key, $value );
+	}
+
+	/**
+	 * Init settings for gateways.
+	 */
+	public function init_settings() {
+		parent::init_settings();
+		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 
 	/**
@@ -1102,7 +1164,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	private function get_account_statement_descriptor( $empty_value = null ) {
+	protected function get_account_statement_descriptor( $empty_value = null ) {
 		try {
 			if ( ! $this->is_connected() ) {
 				return $empty_value;
@@ -1184,7 +1246,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$description .= wp_kses_post( '<p class="description">' . __( 'You will automatically be <em>signed in to Stripe</em> with your WooCommerce Payments account.', 'woocommerce-payments' ) . '</p>' );
 			} else {
 				// This should never happen, if the account is not connected the merchant should have been redirected to the onboarding screen.
-				// @see WC_Payments_Account::check_stripe_account_status.
+				// @see WC_Payments_Account::maybe_redirect_to_onboarding.
 				$description = esc_html__( 'Error determining the connection status.', 'woocommerce-payments' );
 			}
 		} catch ( Exception $e ) {
@@ -1246,7 +1308,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->capture_intention(
 				$order->get_transaction_id(),
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				$this->get_level3_data_from_order( $order )
+				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
 			);
 
 			$status   = $intent->get_status();
@@ -1389,10 +1451,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create the level 3 data array to send to Stripe when making a purchase.
 	 *
+	 * @param string   $merchant_country The merchant country.
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The level 3 data to send to Stripe.
 	 */
-	public function get_level3_data_from_order( $order ) {
+	public function get_level3_data_from_order( string $merchant_country, WC_Order $order ): array {
+		// We do not need to send level3 data if merchant account country is non-US.
+		if ( 'US' !== $merchant_country ) {
+			return [];
+		}
+
 		// Get the order items. Don't need their keys, only their values.
 		// Order item IDs are used as keys in the original order items array.
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
@@ -1536,6 +1604,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 						$order->payment_complete( $intent_id );
 						break;
+					case 'processing':
 					case 'requires_capture':
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 						$note            = sprintf(
@@ -1613,7 +1682,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 
-			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
+			if ( 'succeeded' === $status || 'requires_capture' === $status || 'processing' === $status ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
@@ -1719,7 +1788,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			return [
 				'result'   => 'success',
-				'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+				'redirect' => apply_filters( 'wcpay_get_add_payment_method_redirect_url', wc_get_endpoint_url( 'payment-methods' ) ),
 			];
 		} catch ( Exception $e ) {
 			wc_add_notice( $e->getMessage(), 'error', [ 'icon' => 'error' ] );
