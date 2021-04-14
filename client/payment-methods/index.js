@@ -10,6 +10,7 @@ import {
 	CardDivider,
 	CardHeader,
 } from '@wordpress/components';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -26,7 +27,6 @@ const availableMethods = [
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		icon: 'c',
 	},
 	{
 		id: 'giropay',
@@ -35,7 +35,6 @@ const availableMethods = [
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		icon: 'g',
 	},
 	{
 		id: 'sofort',
@@ -44,7 +43,6 @@ const availableMethods = [
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
 			'woocommerce-payments'
 		),
-		icon: 's',
 	},
 	{
 		id: 'direct-debit',
@@ -53,7 +51,6 @@ const availableMethods = [
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		icon: 'd',
 	},
 ];
 
@@ -67,7 +64,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 	);
 
 	const handleManageClick = ( itemId ) => {
-		console.log( `Manage item ${ itemId } clicked (not implemented)` );
+		console.debug( `Manage item ${ itemId } clicked (not implemented)` );
 	};
 
 	const handleDeleteClick = ( itemId ) => {
@@ -92,10 +89,12 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 					) }
 				</p>
 			</CardHeader>
-			<CardBody>
+			<CardBody className="payment-methods__available-methods-container">
 				<Button
+					isDefault
+					className="payment-methods__add-payment-method"
 					onClick={ () =>
-						console.log(
+						console.debug(
 							'Add payment method clicked (not implemented)'
 						)
 					}
@@ -104,7 +103,14 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 				</Button>
 				<ul className="payment-methods__available-methods">
 					{ disabledMethods.map( ( { id, label } ) => (
-						<li key={ id }>{ label }</li>
+						<li
+							key={ id }
+							className={ classNames(
+								'payment-methods__available-method',
+								id
+							) }
+							aria-label={ label }
+						/>
 					) ) }
 				</ul>
 			</CardBody>
@@ -114,7 +120,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 					{ enabledMethods.map( ( { id, label, description } ) => (
 						<PaymentMethod
 							key={ id }
-							className={ `payment-method payment-method--${ id }` }
+							className={ classNames( 'payment-method', id ) }
 							onManageClick={ () => handleManageClick( id ) }
 							onDeleteClick={ () => handleDeleteClick( id ) }
 							label={ label }

@@ -26,7 +26,7 @@ const PaymentMethod = ( {
 					className="payment-method__label"
 					onClick={ onManageClick }
 				>
-					<strong>{ label }</strong>
+					{ label }
 				</Button>
 				<div className="payment-method__description">
 					{ description }
@@ -42,7 +42,7 @@ const PaymentMethod = ( {
 				</Button>
 				<Button
 					isLink
-					aria-label="Delete"
+					aria-label={ __( 'Delete', 'woocommerce-payments' ) }
 					className="payment-method__action delete"
 					onClick={ onDeleteClick }
 				>

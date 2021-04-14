@@ -5,7 +5,15 @@
 
 	&__label {
 		font-size: 14px;
+		font-weight: 600;
 		line-height: 20px;
+
+		&#{&} {
+			&#{&} {
+				color: var( --wp-admin-theme-color );
+				text-decoration: none;
+			}
+		}
 	}
 
 	&__description {
@@ -28,6 +36,13 @@
 			}
 		}
 
+		&.manage {
+			&#{&} {
+				color: var( --wp-admin-theme-color );
+				text-decoration: none;
+			}
+		}
+
 		&.delete {
 			svg {
 				fill: #a2aab2;
@@ -36,6 +51,9 @@
 	}
 
 	&__icon {
+		background: url( '../../../assets/images/cards/unknown.svg' ) no-repeat
+			center center;
+		background-size: contain;
 		display: flex;
 		flex: 0 1 58px;
 		margin-right: 16px;

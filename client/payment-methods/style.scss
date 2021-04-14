@@ -1,4 +1,27 @@
 .payment-methods {
+	&__available-methods-container {
+		align-items: center;
+		display: flex;
+	}
+
+	&__available-methods {
+		display: flex;
+		margin: 0 0 0 16px;
+	}
+
+	&__available-method {
+		background: url( '../../assets/images/cards/unknown.svg' ) no-repeat
+			center center;
+		background-size: contain;
+		height: 24px;
+		margin: 0;
+		width: 34px;
+
+		& + & {
+			margin-left: 4px;
+		}
+	}
+
 	&__enabled-methods-container {
 		&#{&} {
 			&#{&} {
