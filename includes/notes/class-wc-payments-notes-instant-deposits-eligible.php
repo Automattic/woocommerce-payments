@@ -31,10 +31,9 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	public static function get_note() {
 		$note_class   = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note         = new $note_class();
-		$note_content = __( 'You are now eligible for Instant Deposits! Skip the wait and get paid instantly.', 'woocommerce-payments' );
 
 		$note->set_title( __( 'Instant deposits available', 'woocommerce-payments' ) );
-		$note->set_content( $note_content );
+		$note->set_content( __( 'You are now eligible for Instant Deposits! Skip the wait and get paid instantly.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
