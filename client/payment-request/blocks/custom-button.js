@@ -3,7 +3,7 @@
  */
 // - TODO: Add shared dependency
 
-export const CustomButton = ( { onButtonClicked } ) => {
+export const CustomButton = ( { onClick } ) => {
 	// - TODO: Replace global with helper function from shared dependency.
 	/* global wcpayPaymentRequestParams */
 	const { theme, height, label } = wcpayPaymentRequestParams.button;
@@ -15,7 +15,7 @@ export const CustomButton = ( { onButtonClicked } ) => {
 			style={ {
 				height: height + 'px',
 			} }
-			onClick={ onButtonClicked }
+			onClick={ onClick }
 		>
 			{ label }
 		</button>

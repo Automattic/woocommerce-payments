@@ -9,6 +9,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { useInitialization } from './use-initialization';
 import { useCheckoutSubscriptions } from './use-checkout-subscriptions';
 import { ThreeDSecurePaymentHandler } from '../three-d-secure';
+import { GooglePayButton, shouldUseGooglePayBrand } from './branded-buttons';
 import { CustomButton } from './custom-button';
 
 /**
@@ -79,6 +80,12 @@ const PaymentRequestExpressComponent = ( {
 		abortPayment,
 	} );
 
+	// Use pre-blocks settings until we merge the two distinct settings objects.
+	/* global wcpayPaymentRequestParams */
+	const isBranded = wcpayPaymentRequestParams.button.is_branded;
+	const brandedType = wcpayPaymentRequestParams.button.branded_type;
+	const isCustom = wcpayPaymentRequestParams.button.is_custom;
+
 	// locale is not a valid value for the paymentRequestButton style.
 	// Make sure `theme` defaults to 'dark' if it's not found in the server provided configuration.
 	// - TODO: Get button theme
@@ -86,22 +93,25 @@ const PaymentRequestExpressComponent = ( {
 	// - TODO: Add internal shared dependency here.
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
-			type: 'default',
+			// Not implemented branded buttons default to Stripe's button.
+			// Apple Pay buttons can also fall back to Stripe's button, as it's already branded.
+			// Set button type to default or buy, depending on branded type, to avoid issues with Stripe.
+			type: isBranded && 'long' === brandedType ? 'buy' : 'default',
 			theme,
 			height: '48px',
 		},
 	};
 
-	// Use pre-blocks settings until we merge the two distinct settings objects.
-	/* global wcpayPaymentRequestParams */
-	const isCustom = wcpayPaymentRequestParams.button.is_custom;
-
 	if ( ! canMakePayment || ! paymentRequest ) {
 		return null;
 	}
 
+	if ( isBranded && shouldUseGooglePayBrand() ) {
+		return <GooglePayButton onClick={ onButtonClick } />;
+	}
+
 	if ( isCustom ) {
-		return <CustomButton onButtonClicked={ onButtonClick } />;
+		return <CustomButton onClick={ onButtonClick } />;
 	}
 
 	return (
