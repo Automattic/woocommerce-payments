@@ -159,76 +159,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'yes',
 				'desc_tip'    => true,
 			],
-			'payment_request'                     => [
-				'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
-				'label'       => sprintf(
-					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
-					__( 'Enable Payment Request Button (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
-					'<br />',
-					'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
-					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
-				),
-				'type'        => 'checkbox',
-				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
-				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
-				'desc_tip'    => true,
-			],
-			'payment_request_button_type'         => [
-				'title'       => __( 'Payment Request Button Type', 'woocommerce-payments' ),
-				'label'       => __( 'Button Type', 'woocommerce-payments' ),
-				'type'        => 'select',
-				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-				'default'     => 'buy',
-				'desc_tip'    => true,
-				'options'     => [
-					'default' => __( 'Default', 'woocommerce-payments' ),
-					'buy'     => __( 'Buy', 'woocommerce-payments' ),
-					'donate'  => __( 'Donate', 'woocommerce-payments' ),
-					'branded' => __( 'Branded', 'woocommerce-payments' ),
-					'custom'  => __( 'Custom', 'woocommerce-payments' ),
-				],
-			],
-			'payment_request_button_theme'        => [
-				'title'       => __( 'Payment Request Button Theme', 'woocommerce-payments' ),
-				'label'       => __( 'Button Theme', 'woocommerce-payments' ),
-				'type'        => 'select',
-				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
-				'default'     => 'dark',
-				'desc_tip'    => true,
-				'options'     => [
-					'dark'          => __( 'Dark', 'woocommerce-payments' ),
-					'light'         => __( 'Light', 'woocommerce-payments' ),
-					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
-				],
-			],
-			'payment_request_button_height'       => [
-				'title'       => __( 'Payment Request Button Height', 'woocommerce-payments' ),
-				'label'       => __( 'Button Height', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
-				'default'     => '44',
-				'desc_tip'    => true,
-			],
-			'payment_request_button_label'        => [
-				'title'       => __( 'Payment Request Button Label', 'woocommerce-payments' ),
-				'label'       => __( 'Button Label', 'woocommerce-payments' ),
-				'type'        => 'text',
-				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
-				'default'     => __( 'Buy now', 'woocommerce-payments' ),
-				'desc_tip'    => true,
-			],
-			'payment_request_button_branded_type' => [
-				'title'       => __( 'Payment Request Branded Button Label Format', 'woocommerce-payments' ),
-				'label'       => __( 'Branded Button Label Format', 'woocommerce-payments' ),
-				'type'        => 'select',
-				'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
-				'default'     => 'long',
-				'desc_tip'    => true,
-				'options'     => [
-					'short' => __( 'Logo only', 'woocommerce-payments' ),
-					'long'  => __( 'Text and logo', 'woocommerce-payments' ),
-				],
-			],
 			'test_mode'                           => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
@@ -243,6 +173,95 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
+			],
+			'payment_request_details'             => [
+				'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
+				'type'        => 'title',
+				'description' => '',
+			],
+			'payment_request'                     => [
+				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
+				'label'       => sprintf(
+					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
+					__( 'Enable payment request buttons (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
+					'<br />',
+					'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
+					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
+				),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
+				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
+				'desc_tip'    => true,
+			],
+			'payment_request_button_type'         => [
+				'title'       => __( 'Button type', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'buy',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'buy'     => __( 'Buy', 'woocommerce-payments' ),
+					'donate'  => __( 'Donate', 'woocommerce-payments' ),
+					'branded' => __( 'Branded', 'woocommerce-payments' ),
+					'custom'  => __( 'Custom', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_theme'        => [
+				'title'       => __( 'Button theme', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'dark',
+				'desc_tip'    => true,
+				'options'     => [
+					'dark'          => __( 'Dark', 'woocommerce-payments' ),
+					'light'         => __( 'Light', 'woocommerce-payments' ),
+					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_height'       => [
+				'title'       => __( 'Button height', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
+				'default'     => '44',
+				'desc_tip'    => true,
+			],
+			'payment_request_button_label'        => [
+				'title'       => __( 'Custom button label', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
+				'default'     => __( 'Buy now', 'woocommerce-payments' ),
+				'desc_tip'    => true,
+			],
+			'payment_request_button_branded_type' => [
+				'title'       => __( 'Branded button format', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
+				'default'     => 'long',
+				'desc_tip'    => true,
+				'options'     => [
+					'short' => __( 'Logo only', 'woocommerce-payments' ),
+					'long'  => __( 'Text and logo', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_locations'    => [
+				'title'             => __( 'Button locations', 'woocommerce-payments' ),
+				'type'              => 'multiselect',
+				'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
+				'default'           => [
+					'product',
+					'cart',
+				],
+				'class'             => 'wc-enhanced-select',
+				'desc_tip'          => true,
+				'options'           => [
+					'product'  => __( 'Product', 'woocommerce-payments' ),
+					'cart'     => __( 'Cart', 'woocommerce-payments' ),
+					'checkout' => __( 'Checkout', 'woocommerce-payments' ),
+				],
+				'custom_attributes' => [
+					'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
+				],
 			],
 		];
 
