@@ -117,7 +117,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Make Payment Request Button available for all merchants.
 * Add - Configurable Payment Request Button locations.
 * Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
-* Fix - Error when using SCA credit card in checkout block.
+* Fix - Error when using SCA / 3DS credit card in checkout block.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.

@@ -17,7 +17,7 @@
 * Add - Configurable Payment Request Button locations.
 * Update - Improve the Connect Account page.
 * Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
-* Fix - Error when using SCA credit card in checkout block.
+* Fix - Error when using SCA / 3DS credit card in checkout block.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
