@@ -210,6 +210,7 @@ jQuery( function ( $ ) {
 
 		const request = api.generatePaymentMethodRequest(
 			{
+				type: 'card',
 				card: cardElement,
 			},
 			preparedCustomerData
