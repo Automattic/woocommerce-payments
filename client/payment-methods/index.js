@@ -16,6 +16,7 @@ import {
  */
 import './style.scss';
 import OrderableList from 'components/orderable-list';
+import PaymentMethod from 'components/orderable-list/payment-method';
 
 const availableMethods = [
 	{
@@ -109,12 +110,18 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 			</CardBody>
 			<CardDivider />
 			<CardBody className="payment-methods__enabled-methods-container">
-				<OrderableList
-					className="payment-methods__enabled-methods"
-					items={ enabledMethods }
-					onManageClick={ handleManageClick }
-					onDeleteClick={ handleDeleteClick }
-				/>
+				<OrderableList className="payment-methods__enabled-methods">
+					{ enabledMethods.map( ( { id, label, description } ) => (
+						<PaymentMethod
+							key={ id }
+							className={ `payment-method payment-method--${ id }` }
+							onManageClick={ () => handleManageClick( id ) }
+							onDeleteClick={ () => handleDeleteClick( id ) }
+							label={ label }
+							description={ description }
+						/>
+					) ) }
+				</OrderableList>
 			</CardBody>
 		</Card>
 	);

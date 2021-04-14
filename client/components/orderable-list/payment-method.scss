@@ -1,0 +1,43 @@
+.payment-method {
+	&__text {
+		flex: 1 1 auto;
+	}
+
+	&__label {
+		font-size: 14px;
+		line-height: 20px;
+	}
+
+	&__description {
+		color: $studio-gray-50;
+		font-size: 13px;
+		line-height: 16px;
+		margin-top: 4px;
+	}
+
+	&__actions {
+		align-items: center;
+		display: flex;
+		justify-content: center;
+	}
+
+	&__action {
+		&#{&} {
+			&#{&} {
+				margin-left: 25px;
+			}
+		}
+
+		&.delete {
+			svg {
+				fill: #a2aab2;
+			}
+		}
+	}
+
+	&__icon {
+		display: flex;
+		flex: 0 1 58px;
+		margin-right: 16px;
+	}
+}

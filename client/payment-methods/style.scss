@@ -1,5 +1,9 @@
 .payment-methods {
-	.payment-methods__enabled-methods-container.components-card__body {
-		padding: 0;
+	&__enabled-methods-container {
+		&#{&} {
+			&#{&} {
+				padding: 0;
+			}
+		}
 	}
 }
