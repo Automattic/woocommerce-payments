@@ -29,8 +29,8 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class   = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note         = new $note_class();
+		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note       = new $note_class();
 
 		$note->set_title( __( 'Instant deposits available', 'woocommerce-payments' ) );
 		$note->set_content( __( 'You are now eligible for Instant Deposits! Skip the wait and get paid instantly.', 'woocommerce-payments' ) );
