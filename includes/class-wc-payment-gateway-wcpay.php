@@ -29,6 +29,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const GATEWAY_ID = 'woocommerce_payments';
 
+	const METHOD_ENABLED_KEY = 'enabled';
+
+	/**
+	 * Stripe intents that are treated as successfully created.
+	 *
+	 * @type array
+	 */
+	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
+
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
@@ -97,7 +106,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->token_service            = $token_service;
 		$this->action_scheduler_service = $action_scheduler_service;
 
-		$this->id                 = self::GATEWAY_ID;
+		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
@@ -166,6 +175,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			],
 		];
+
+		// SEPA option hidden behind feature flag.
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$this->form_fields['sepa_enabled'] = [
+				'title'       => __( 'Enable/disable SEPA', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce SEPA Direct Debit', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			];
+		}
 
 		// Load the settings.
 		$this->init_settings();
@@ -769,7 +789,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( ! empty( $intent ) ) {
-			if ( 'succeeded' !== $status && 'requires_capture' !== $status ) {
+			if ( ! in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				$intent_failed = true;
 			}
 
@@ -808,6 +828,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 					$order->payment_complete( $intent_id );
 					break;
+				case 'processing':
 				case 'requires_capture':
 					$transaction_url = $this->compose_transaction_url( $charge_id );
 					$note            = sprintf(
@@ -1099,11 +1120,46 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
+			case 'enabled':
+				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
+	}
+
+	/**
+	 * Return the name of the option in the WP DB.
+	 * Overrides parent method so the option key is the same as the parent class.
+	 */
+	public function get_option_key() {
+		// Intentionally using self instead of static so options are loaded from main gateway settings.
+		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+	}
+
+
+	/**
+	 * Update a single option.
+	 * Overrides parent method to use different key for `enabled`.
+	 *
+	 * @param string $key Option key.
+	 * @param mixed  $value Value to set.
+	 * @return bool was anything saved?
+	 */
+	public function update_option( $key, $value = '' ) {
+		if ( 'enabled' === $key ) {
+			$key = static::METHOD_ENABLED_KEY;
+		}
+		return parent::update_option( $key, $value );
+	}
+
+	/**
+	 * Init settings for gateways.
+	 */
+	public function init_settings() {
+		parent::init_settings();
+		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 
 	/**
@@ -1139,7 +1195,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	private function get_account_statement_descriptor( $empty_value = null ) {
+	protected function get_account_statement_descriptor( $empty_value = null ) {
 		try {
 			if ( ! $this->is_connected() ) {
 				return $empty_value;
@@ -1579,6 +1635,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 						$order->payment_complete( $intent_id );
 						break;
+					case 'processing':
 					case 'requires_capture':
 						$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 						$note            = sprintf(
@@ -1656,7 +1713,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order->update_meta_data( '_intention_status', $status );
 			$order->save();
 
-			if ( 'succeeded' === $status || 'requires_capture' === $status ) {
+			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
