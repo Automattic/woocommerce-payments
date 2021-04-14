@@ -120,23 +120,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Define setting fields.
 		$this->form_fields = [
-			'enabled'                      => [
+			'enabled'                             => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
 			],
-			'account_details'              => [
+			'account_details'                     => [
 				'type' => 'account_actions',
 			],
-			'account_status'               => [
+			'account_status'                      => [
 				'type' => 'account_status',
 			],
-			'account_fees'                 => [
+			'account_fees'                        => [
 				'type' => 'account_fees',
 			],
-			'account_statement_descriptor' => [
+			'account_statement_descriptor'        => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 				'description' => WC_Payments_Utils::esc_interpolated_html(
@@ -144,14 +144,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					[ 'a' => '<a href="https://docs.woocommerce.com/document/payments/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 				),
 			],
-			'manual_capture'               => [
+			'manual_capture'                      => [
 				'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 				'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 				'default'     => 'no',
 			],
-			'saved_cards'                  => [
+			'saved_cards'                         => [
 				'title'       => __( 'Saved Cards', 'woocommerce-payments' ),
 				'label'       => __( 'Enable Payment via Saved Cards', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -159,7 +159,77 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'yes',
 				'desc_tip'    => true,
 			],
-			'test_mode'                    => [
+			'payment_request'                     => [
+				'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
+				'label'       => sprintf(
+					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
+					__( 'Enable Payment Request Button (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
+					'<br />',
+					'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
+					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
+				),
+				'type'        => 'checkbox',
+				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
+				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
+				'desc_tip'    => true,
+			],
+			'payment_request_button_type'         => [
+				'title'       => __( 'Payment Request Button Type', 'woocommerce-payments' ),
+				'label'       => __( 'Button Type', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'buy',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'buy'     => __( 'Buy', 'woocommerce-payments' ),
+					'donate'  => __( 'Donate', 'woocommerce-payments' ),
+					'branded' => __( 'Branded', 'woocommerce-payments' ),
+					'custom'  => __( 'Custom', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_theme'        => [
+				'title'       => __( 'Payment Request Button Theme', 'woocommerce-payments' ),
+				'label'       => __( 'Button Theme', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
+				'default'     => 'dark',
+				'desc_tip'    => true,
+				'options'     => [
+					'dark'          => __( 'Dark', 'woocommerce-payments' ),
+					'light'         => __( 'Light', 'woocommerce-payments' ),
+					'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
+				],
+			],
+			'payment_request_button_height'       => [
+				'title'       => __( 'Payment Request Button Height', 'woocommerce-payments' ),
+				'label'       => __( 'Button Height', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
+				'default'     => '44',
+				'desc_tip'    => true,
+			],
+			'payment_request_button_label'        => [
+				'title'       => __( 'Payment Request Button Label', 'woocommerce-payments' ),
+				'label'       => __( 'Button Label', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
+				'default'     => __( 'Buy now', 'woocommerce-payments' ),
+				'desc_tip'    => true,
+			],
+			'payment_request_button_branded_type' => [
+				'title'       => __( 'Payment Request Branded Button Label Format', 'woocommerce-payments' ),
+				'label'       => __( 'Branded Button Label Format', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
+				'default'     => 'long',
+				'desc_tip'    => true,
+				'options'     => [
+					'short' => __( 'Logo only', 'woocommerce-payments' ),
+					'long'  => __( 'Text and logo', 'woocommerce-payments' ),
+				],
+			],
+			'test_mode'                           => [
 				'title'       => __( 'Test mode', 'woocommerce-payments' ),
 				'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -167,7 +237,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 				'desc_tip'    => true,
 			],
-			'enable_logging'               => [
+			'enable_logging'                      => [
 				'title'       => __( 'Debug log', 'woocommerce-payments' ),
 				'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
@@ -195,9 +265,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->supports = array_merge( $this->supports, [ 'tokenization', 'add_payment_method' ] );
 		}
 
-		// Add Payment Request form fields after WC initialization.
-		add_filter( 'init', [ $this, 'add_payment_request_form_fields' ] );
-
 		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, [ $this, 'sanitize_plugin_settings' ] );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
@@ -217,94 +284,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
-	}
-
-	/**
-	 * Add Payment Request form fields.
-	 */
-	public function add_payment_request_form_fields() {
-		// TODO: Remove this check and inject contents of `$payment_request_fields` into `$this->form_fields`
-		// after `saved_cards` ahead of releasing Apple Pay for all merchants.
-		if ( WC_Payments::should_payment_request_be_available() ) {
-			$payment_request_fields = [
-				'payment_request'                     => [
-					'title'       => __( 'Payment Request Button', 'woocommerce-payments' ),
-					'label'       => sprintf(
-						/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
-						__( 'Enable Payment Request Button (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s terms of service.', 'woocommerce-payments' ),
-						'<br />',
-						'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
-						'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
-					),
-					'type'        => 'checkbox',
-					'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
-					'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
-					'desc_tip'    => true,
-				],
-				'payment_request_button_type'         => [
-					'title'       => __( 'Payment Request Button Type', 'woocommerce-payments' ),
-					'label'       => __( 'Button Type', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'buy',
-					'desc_tip'    => true,
-					'options'     => [
-						'default' => __( 'Default', 'woocommerce-payments' ),
-						'buy'     => __( 'Buy', 'woocommerce-payments' ),
-						'donate'  => __( 'Donate', 'woocommerce-payments' ),
-						'branded' => __( 'Branded', 'woocommerce-payments' ),
-						'custom'  => __( 'Custom', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_theme'        => [
-					'title'       => __( 'Payment Request Button Theme', 'woocommerce-payments' ),
-					'label'       => __( 'Button Theme', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
-					'default'     => 'dark',
-					'desc_tip'    => true,
-					'options'     => [
-						'dark'          => __( 'Dark', 'woocommerce-payments' ),
-						'light'         => __( 'Light', 'woocommerce-payments' ),
-						'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
-					],
-				],
-				'payment_request_button_height'       => [
-					'title'       => __( 'Payment Request Button Height', 'woocommerce-payments' ),
-					'label'       => __( 'Button Height', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
-					'default'     => '44',
-					'desc_tip'    => true,
-				],
-				'payment_request_button_label'        => [
-					'title'       => __( 'Payment Request Button Label', 'woocommerce-payments' ),
-					'label'       => __( 'Button Label', 'woocommerce-payments' ),
-					'type'        => 'text',
-					'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
-					'default'     => __( 'Buy now', 'woocommerce-payments' ),
-					'desc_tip'    => true,
-				],
-				'payment_request_button_branded_type' => [
-					'title'       => __( 'Payment Request Branded Button Label Format', 'woocommerce-payments' ),
-					'label'       => __( 'Branded Button Label Format', 'woocommerce-payments' ),
-					'type'        => 'select',
-					'description' => __( 'Select the branded button label format.', 'woocommerce-payments' ),
-					'default'     => 'long',
-					'desc_tip'    => true,
-					'options'     => [
-						'short' => __( 'Logo only', 'woocommerce-payments' ),
-						'long'  => __( 'Text and logo', 'woocommerce-payments' ),
-					],
-				],
-			];
-			// Where to inject fields.
-			$fields_index = 7;
-			// Inject in the middle of `$this->form_fields`.
-			$this->form_fields = array_slice( $this->form_fields, 0, $fields_index ) +
-				$payment_request_fields +
-				array_slice( $this->form_fields, $fields_index, count( $this->form_fields ) - 1 );
-		}
 	}
 
 	/**
