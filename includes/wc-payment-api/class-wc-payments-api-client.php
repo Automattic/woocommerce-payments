@@ -296,6 +296,18 @@ class WC_Payments_API_Client {
 			'payment_method_types' => [ 'card', 'sepa_debit' ],
 		];
 
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$request['mandate_data'] = [
+				'customer_acceptance' => [
+					'type'   => 'online',
+					'online' => [
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					],
+				],
+			];
+		}
+
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
 

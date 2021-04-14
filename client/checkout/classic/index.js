@@ -38,8 +38,10 @@ jQuery( function ( $ ) {
 	);
 	const elements = api.getStripe().elements();
 
-	// In the future this object will be loaded with customer information through `wp_localize_script`.
-	const preparedCustomerData = {};
+	// Customer information for Pay for Oder and Save Payment method.
+	/* global wcpayCustomerData */
+	const preparedCustomerData =
+		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
 
 	// Create a card element.
 	const cardElement = elements.create( 'card', {
@@ -255,14 +257,12 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {Object} $form The jQuery object for the form.
 	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
-	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @param {Object}  paymentMethodDetails { type: 'card' | 'sepa_debit', card? | sepa_debit? : Stripe element  }.
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handlePaymentMethodCreation = (
 		$form,
 		successHandler,
-		useBillingDetails,
 		paymentMethodDetails
 	) => {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
@@ -278,37 +278,27 @@ jQuery( function ( $ ) {
 			preparedCustomerData
 		);
 
-		// Populate the necessary billing details.
-		if ( useBillingDetails ) {
-			request.setBillingDetail(
-				'name',
-				(
+		// Populate payment method owner details.
+		const billingName = $( '#billing_first_name' ).length
+			? (
 					$( '#billing_first_name' ).val() +
 					' ' +
 					$( '#billing_last_name' ).val()
-				).trim()
-			);
-			request.setBillingDetail( 'email', $( '#billing_email' ).val() );
-			request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
-			request.setAddressDetail( 'city', $( '#billing_city' ).val() );
-			request.setAddressDetail(
-				'country',
-				$( '#billing_country' ).val()
-			);
-			request.setAddressDetail(
-				'line1',
-				$( '#billing_address_1' ).val()
-			);
-			request.setAddressDetail(
-				'line2',
-				$( '#billing_address_2' ).val()
-			);
-			request.setAddressDetail(
-				'postal_code',
-				$( '#billing_postcode' ).val()
-			);
-			request.setAddressDetail( 'state', $( '#billing_state' ).val() );
-		}
+			  ).trim()
+			: undefined;
+
+		request.setBillingDetail( 'name', billingName );
+		request.setBillingDetail( 'email', $( '#billing_email' ).val() );
+		request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
+		request.setAddressDetail( 'city', $( '#billing_city' ).val() );
+		request.setAddressDetail( 'country', $( '#billing_country' ).val() );
+		request.setAddressDetail( 'line1', $( '#billing_address_1' ).val() );
+		request.setAddressDetail( 'line2', $( '#billing_address_2' ).val() );
+		request.setAddressDetail(
+			'postal_code',
+			$( '#billing_postcode' ).val()
+		);
+		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
 
 		request
 			.send()
@@ -446,7 +436,6 @@ jQuery( function ( $ ) {
 			return handlePaymentMethodCreation(
 				$( 'form#add_payment_method' ),
 				handleAddCard,
-				false,
 				isWCPaySepaChosen() ? sepaPayment : cardPayment
 			);
 		}
