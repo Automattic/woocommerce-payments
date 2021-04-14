@@ -427,9 +427,9 @@ class WC_Payments {
 		// adding the sepa/giropay/etc gateways after the feature flag, to ensure that there are no side effects.
 		// these lines ensure that the payment method is added to the array only when we're _not_ on the WC settings page.
 		if (
-			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) )
+			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) ) // phpcs:ignore
 			||
-			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && 'wc-settings' === $_GET['page'] && 'checkout' === $_GET['tab'] && ! empty( $_GET['section'] ) )
+			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && 'wc-settings' === $_GET['page'] && 'checkout' === $_GET['tab'] && ! empty( $_GET['section'] ) ) // phpcs:ignore
 		) {
 			$gateways[] = self::$sepa_gateway;
 		}
