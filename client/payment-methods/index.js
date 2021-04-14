@@ -65,7 +65,9 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 		( method ) => ! enabledMethodIds.includes( method.id )
 	);
 
-	const handleManageClick = () => {};
+	const handleManageClick = ( itemId ) => {
+		console.log( `Manage item ${ itemId } clicked (not implemented)` );
+	};
 
 	const handleDeleteClick = ( itemId ) => {
 		onEnabledMethodsChange(
@@ -90,7 +92,13 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 				</p>
 			</CardHeader>
 			<CardBody>
-				<Button>
+				<Button
+					onClick={ () =>
+						console.log(
+							'Add payment method clicked (not implemented)'
+						)
+					}
+				>
 					{ __( 'Add payment method', 'woocommerce-payments' ) }
 				</Button>
 				<ul className="payment-methods__available-methods">
