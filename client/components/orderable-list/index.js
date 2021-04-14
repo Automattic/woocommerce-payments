@@ -3,41 +3,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
+import { Icon, trash } from '@wordpress/icons';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 
-const ListItemIcon = ( { icon } ) => {
-	const classNames = [ 'orderable-list__icon-container' ];
-
-	if ( icon ) {
-		classNames.push( 'orderable-list__icon-container--has-icon' );
-	}
-
-	return (
-		<div className={ classNames.join( ' ' ) }>{ icon ? icon : null }</div>
-	);
-};
-
-const ListItemActions = ( { itemId, onManageClick, onDeleteClick } ) => {
+const ListItemActions = ( { onManageClick, onDeleteClick } ) => {
 	return (
 		<div className="orderable-list__actions">
 			<Button
 				isLink
-				className="orderable-list__action"
-				onClick={ () => onManageClick( itemId ) }
+				className="orderable-list__action manage"
+				onClick={ onManageClick }
 			>
 				{ __( 'Manage', 'woocommerce-payments' ) }
 			</Button>
 			<Button
 				isLink
-				className="orderable-list__action"
-				onClick={ () => onDeleteClick( itemId ) }
+				aria-label="Delete"
+				className="orderable-list__action delete"
+				onClick={ onDeleteClick }
 			>
-				<Icon icon="trash" size={ 24 } />
+				<Icon icon={ trash } size={ 24 } />
 			</Button>
 		</div>
 	);
@@ -47,28 +38,18 @@ const ListItem = ( {
 	id,
 	label,
 	description,
-	icon,
 	onManageClick,
 	onDeleteClick,
-	showDragHandle,
 } ) => {
-	const domId = `orderable-list__item-${ id }`;
-
 	return (
-		<li id={ domId } className="orderable-list__item">
-			<div className="orderable-list__drag-handle-container">
-				{ showDragHandle ? (
-					<div className="orderable-list__drag-handle">
-						<Icon icon="move" size={ 24 } />
-					</div>
-				) : null }
-			</div>
-			<ListItemIcon icon={ icon } />
+		<li className={ classNames( 'orderable-list__item', id ) }>
+			<div className="orderable-list__drag-handle" />
+			<div className="orderable-list__icon" />
 			<div className="orderable-list__text">
 				<Button
 					isLink
 					className="orderable-list__label"
-					onClick={ () => onManageClick( id ) }
+					onClick={ onManageClick }
 				>
 					<strong>{ label }</strong>
 				</Button>
@@ -77,7 +58,6 @@ const ListItem = ( {
 				</div>
 			</div>
 			<ListItemActions
-				itemId={ id }
 				onManageClick={ onManageClick }
 				onDeleteClick={ onDeleteClick }
 			/>
@@ -91,22 +71,31 @@ const OrderableList = ( {
 	onManageClick = () => {},
 	onDeleteClick = () => {},
 } ) => {
-	const classNames = [ 'orderable-list' ];
+	const showDragHandles = 1 < items.length;
 
-	if ( className ) {
-		classNames.push( className );
-	}
+	const handleManageClick = ( e, itemId ) => {
+		e.preventDefault();
+		onManageClick( itemId );
+	};
 
-	const showDragHandle = 1 < items.length;
+	const handleDeleteClick = ( e, itemId ) => {
+		e.preventDefault();
+		onDeleteClick( itemId );
+	};
 
 	return (
-		<ul className={ classNames.join( ' ' ) }>
+		<ul
+			className={ classNames(
+				'orderable-list',
+				{ 'show-drag-handles': showDragHandles },
+				className
+			) }
+		>
 			{ items.map( ( item ) => (
 				<ListItem
 					key={ item.id }
-					onManageClick={ onManageClick }
-					onDeleteClick={ onDeleteClick }
-					showDragHandle={ showDragHandle }
+					onManageClick={ ( e ) => handleManageClick( e, item.id ) }
+					onDeleteClick={ ( e ) => handleDeleteClick( e, item.id ) }
 					{ ...item }
 				/>
 			) ) }
