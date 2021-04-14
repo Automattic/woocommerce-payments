@@ -101,6 +101,7 @@ paymentRequest.addEventListener( 'change', () => {
 		'woocommerce_woocommerce_payments_payment_request_button_theme',
 		'woocommerce_woocommerce_payments_payment_request_button_type',
 		'woocommerce_woocommerce_payments_payment_request_button_height',
+		'woocommerce_woocommerce_payments_payment_request_button_locations',
 	];
 
 	if ( paymentRequest.checked ) {
