@@ -1,3 +1,5 @@
-#wcpay-payment-methods-container .payment-methods__enabled-methods-container {
-	padding: 0;
+.payment-methods {
+	.payment-methods__enabled-methods-container.components-card__body {
+		padding: 0;
+	}
 }

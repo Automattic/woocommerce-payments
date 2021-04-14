@@ -2,7 +2,6 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -57,18 +56,11 @@ const availableMethods = [
 	},
 ];
 
-const PaymentMethods = ( {
-	enabledMethodIds: initialEnabledMethodIds,
-	onEnabledMethodsChange,
-} ) => {
-	const [ enabledMethodIds, setState ] = useState( initialEnabledMethodIds );
-	useEffect( () => {
-		onEnabledMethodsChange( enabledMethodIds );
-	} );
-
+const PaymentMethods = ( { enabledMethodIds, onEnabledMethodsChange } ) => {
 	const enabledMethods = availableMethods.filter( ( method ) =>
 		enabledMethodIds.includes( method.id )
 	);
+
 	const disabledMethods = availableMethods.filter(
 		( method ) => ! enabledMethodIds.includes( method.id )
 	);
@@ -76,7 +68,9 @@ const PaymentMethods = ( {
 	const handleManageClick = () => {};
 
 	const handleDeleteClick = ( itemId ) => {
-		setState( enabledMethodIds.filter( ( id ) => id !== itemId ) );
+		onEnabledMethodsChange(
+			enabledMethodIds.filter( ( id ) => id !== itemId )
+		);
 	};
 
 	return (
