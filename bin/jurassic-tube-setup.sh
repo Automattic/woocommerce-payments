@@ -9,7 +9,7 @@ if [ -d "${PWD}/docker/bin/jt" ]; then
     echo "${PWD}/docker/bin/jt already exists."
 else
     echo "Creating ${PWD}/docker/bin/jt directory..."
-    mkdir "${PWD}/docker/bin/jt"
+    mkdir -p "${PWD}/docker/bin/jt"
 fi
 
 echo "Downloading the latest version of the installer script..."
