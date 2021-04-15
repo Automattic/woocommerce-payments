@@ -172,14 +172,10 @@ export const DisputeEvidenceForm = ( props ) => {
 						</p>
 					</CardBody>
 					<CardFooter>
-						<Button isPrimary isLarge onClick={ handleSubmit }>
+						<Button isPrimary onClick={ handleSubmit }>
 							{ __( 'Submit evidence', 'woocommerce-payments' ) }
 						</Button>
-						<Button
-							isDefault
-							isLarge
-							onClick={ () => onSave( false ) }
-						>
+						<Button isSecondary onClick={ () => onSave( false ) }>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
 						</Button>
 					</CardFooter>
