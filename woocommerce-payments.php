@@ -59,6 +59,9 @@ if ( ! $is_autoloading_ready ) {
 	return;
 }
 
+// Subscribe to automated translations.
+add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__return_true' );
+
 /**
  * Initialize the Jetpack connection functionality.
  */
