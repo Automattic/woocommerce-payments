@@ -5,7 +5,7 @@
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { __, sprintf } from '@wordpress/i18n';
-import Currency from '@woocommerce/currency';
+import { formatCurrency } from 'utils/currency';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -13,9 +13,6 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import TYPES from './action-types';
 import { STORE_NAME } from '../constants';
-
-// TODO: Use the proper WCPay currency.
-const currency = new Currency();
 
 export function updateDeposit( data ) {
 	return {
@@ -103,7 +100,7 @@ export function* submitInstantDeposit( transactionIds ) {
 					'Instant deposit for %s in transit.',
 					'woocommerce-payments'
 				),
-				currency.formatCurrency( deposit.amount / 100 )
+				formatCurrency( deposit.amount )
 			),
 			{
 				actions: [

@@ -29,8 +29,9 @@ const instantDepositBalance = {
 };
 
 describe( 'Instant deposit button and modal', () => {
-	afterEach( () => {
+	beforeEach( () => {
 		jest.clearAllMocks();
+		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
 	test( 'button renders correctly', () => {
