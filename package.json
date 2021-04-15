@@ -62,7 +62,7 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "npm run format:provided",
-      "npm run lint:js"
+      "npx eslint"
     ],
     "*.{scss,css}": [
       "npm run format:provided",
@@ -99,13 +99,13 @@
     "@wordpress/babel-preset-default": "4.3.0",
     "@wordpress/base-styles": "^3.4.1",
     "@wordpress/browserslist-config": "3.0.1",
-    "@wordpress/components": "13.0.1",
+    "@wordpress/components": "11.1.5",
     "@wordpress/data": "4.22.1",
     "@wordpress/data-controls": "1.6.0",
     "@wordpress/date": "3.9.0",
     "@wordpress/dependency-extraction-webpack-plugin": "3.0.1",
     "@wordpress/e2e-test-utils": "4.11.0",
-    "@wordpress/element": "2.11.0",
+    "@wordpress/element": "2.20.2",
     "@wordpress/i18n": "3.5.0",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/scripts": "12.4.0",
