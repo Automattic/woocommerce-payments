@@ -85,7 +85,7 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 	 */
 	public function process_redirect_payment( $order_id ) {
 		try {
-			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
+			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( empty( $intent_id ) ) {
 				return;
@@ -164,11 +164,11 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 	 * Check for a redirect payment method on order received page.
 	 */
 	public function maybe_process_redirect_order() {
-		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) ) {
+		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
-		$order_id = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : '';
+		$order_id = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$this->process_redirect_payment( $order_id );
 	}

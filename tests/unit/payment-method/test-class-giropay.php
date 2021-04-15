@@ -148,12 +148,12 @@ class Giropay_Test extends WP_UnitTestCase {
 	 */
 	public function test_intent_status_requires_action_logged_out_user() {
 		// Arrange: Reusable data.
-		$intent_id = 'pi_123';
-		$charge_id = 'ch_123';
-		$status    = 'requires_action';
-		$secret    = 'client_secret_123';
-		$order_id  = 123;
-		$total     = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$status      = 'requires_action';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
 		$next_action = [
 			'type'            => 'redirect_to_url',
 			'redirect_to_url' => [
