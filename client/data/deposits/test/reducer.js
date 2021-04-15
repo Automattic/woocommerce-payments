@@ -20,6 +20,11 @@ describe( 'Deposits reducer tests', () => {
 			amount: 3000,
 		},
 	];
+	const mockInstantDeposit = {
+		id: 'po_mock1',
+		object: 'payout',
+		amount: 2000,
+	};
 	const mockOverview = {
 		last_deposit: mockDeposits[ 0 ],
 		next_deposit: mockDeposits[ 1 ],
@@ -41,6 +46,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock1: mockDeposits[ 0 ],
 			},
 			queries: {},
+			instant: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -54,6 +60,7 @@ describe( 'Deposits reducer tests', () => {
 				po_mock2: mockDeposits[ 1 ],
 			},
 			queries: {},
+			instant: {},
 		} );
 	} );
 
@@ -77,6 +84,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1', 'po_mock2' ],
 				},
 			},
+			instant: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -92,6 +100,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1' ],
 				},
 			},
+			instant: {},
 		};
 
 		const reduced = reducer( before, {
@@ -113,6 +122,7 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock2' ],
 				},
 			},
+			instant: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -133,6 +143,7 @@ describe( 'Deposits reducer tests', () => {
 				data: mockOverview,
 			},
 			queries: {},
+			instant: {},
 		} );
 	} );
 
@@ -151,6 +162,27 @@ describe( 'Deposits reducer tests', () => {
 				error: { code: 'error' },
 			},
 			queries: {},
+			instant: {},
 		} );
+	} );
+
+	test( 'New instant deposit reduced correctly', () => {
+		const reduced = reducer(
+			undefined, // Default state.
+			{
+				type: types.SET_INSTANT_DEPOSIT,
+				data: mockInstantDeposit,
+			}
+		);
+
+		const after = {
+			byId: {},
+			queries: {},
+			instant: {
+				data: mockInstantDeposit,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
 	} );
 } );

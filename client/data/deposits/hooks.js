@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useDeposit = ( id ) =>
@@ -56,3 +56,18 @@ export const useDeposits = ( { paged, per_page: perPage } ) =>
 		},
 		[ paged, perPage ]
 	);
+
+export const useInstantDeposit = ( transactionIds ) => {
+	const { deposit, inProgress } = useSelect( ( select ) => {
+		const { getInstantDeposit, isResolving } = select( STORE_NAME );
+
+		return {
+			deposit: getInstantDeposit( [ transactionIds ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
+		};
+	} );
+	const { submitInstantDeposit } = useDispatch( STORE_NAME );
+	const submit = () => submitInstantDeposit( transactionIds );
+
+	return { deposit, inProgress, submit };
+};

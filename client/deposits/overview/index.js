@@ -154,6 +154,7 @@ const getDepositScheduleDescriptor = ( {
 
 const DepositsOverview = () => {
 	const { overview, isLoading } = useDepositsOverview();
+
 	return (
 		<div className="wcpay-deposits-overview">
 			<div className="wcpay-deposits-overview__header">

@@ -1,9 +1,18 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { __, sprintf } from '@wordpress/i18n';
+import { formatCurrency } from 'utils/currency';
+import { addQueryArgs } from '@wordpress/url';
+
+/**
  * Internal Dependencies
  */
 import TYPES from './action-types';
+import { STORE_NAME } from '../constants';
 
 export function updateDeposit( data ) {
 	return {
@@ -41,4 +50,77 @@ export function updateErrorForDepositQuery( query, data, error ) {
 		data,
 		error,
 	};
+}
+
+export function updateInstantDeposit( data ) {
+	return {
+		type: TYPES.SET_INSTANT_DEPOSIT,
+		data,
+	};
+}
+
+export function* submitInstantDeposit( transactionIds ) {
+	try {
+		yield dispatch( STORE_NAME, 'startResolution', 'getInstantDeposit', [
+			transactionIds,
+		] );
+
+		const deposit = yield apiFetch( {
+			path: '/wc/v3/payments/deposits',
+			method: 'POST',
+			data: {
+				type: 'instant',
+				// eslint-disable-next-line camelcase
+				transaction_ids: transactionIds,
+			},
+		} );
+
+		yield updateInstantDeposit( deposit );
+		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [
+			transactionIds,
+		] );
+
+		// Need to invalidate the resolution so that the components will render again.
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getDeposits'
+		);
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getDepositsOverview'
+		);
+
+		yield dispatch(
+			'core/notices',
+			'createSuccessNotice',
+			sprintf(
+				__(
+					'Instant deposit for %s in transit.',
+					'woocommerce-payments'
+				),
+				formatCurrency( deposit.amount )
+			),
+			{
+				actions: [
+					{
+						label: __( 'View details', 'woocommerce-payments' ),
+						url: addQueryArgs( 'admin.php', {
+							page: 'wc-admin',
+							path: '/payments/deposits/details',
+							id: deposit.id,
+						} ),
+					},
+				],
+			}
+		);
+	} catch ( e ) {
+		yield updateInstantDeposit( e );
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error creating instant deposit.', 'woocommerce-payments' )
+		);
+	}
 }
