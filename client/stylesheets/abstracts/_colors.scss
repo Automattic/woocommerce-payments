@@ -4,9 +4,10 @@
 @import 'node_modules/@wordpress/base-styles/colors.scss';
 
 // This is temp placeholders for missing variables after styles upgrade
-// TODO: Update styles to get rid of those placeholders
-$light-gray-500: #000;
-$light-gray-200: #000;
-$light-gray-300: #000;
-$dark-gray-900: #000;
-$dark-gray-500: #000;
+// Values taken from: https://github.com/WordPress/gutenberg/blob/%40wordpress/base-styles%401.0.0/packages/base-styles/_colors.scss
+// TODO: Replace variables with new color palette
+$light-gray-500: #e2e4e7;
+$light-gray-200: #f3f4f5;
+$light-gray-300: #edeff0;
+$dark-gray-900: #191e23;
+$dark-gray-500: #555d66;
