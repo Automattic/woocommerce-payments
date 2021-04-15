@@ -54,11 +54,11 @@
 		background: no-repeat center center;
 		background-size: contain;
 		border-radius: 2px;
-		box-shadow: inset 0 0 0 1px #ddd;
+		box-shadow: 0 0 0 1px #ddd;
 		display: flex;
 		flex: 0 1 63.69px;
 		height: 40px;
-		margin-right: 16px;
+		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
 	}
 
 	&.cc &__icon {
