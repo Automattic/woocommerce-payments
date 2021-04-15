@@ -491,10 +491,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
-			return;
-		}
-
 		if ( is_product() && ! $this->should_show_payment_button_on_product_page() ) {
 			return;
 		} elseif ( ! $this->should_show_payment_button_on_cart() ) {
@@ -521,8 +517,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
-		global $post;
-
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
@@ -530,10 +524,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
 			return;
 		}
 
@@ -558,7 +548,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
+		if ( is_checkout() && ! in_array( 'checkout', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
+			return false;
+		}
+
+		if ( is_cart() && ! in_array( 'cart', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
 			return false;
 		}
 
@@ -579,7 +573,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$product = wc_get_product( $post->ID );
 
-		if ( apply_filters( 'wcpay_hide_payment_request_on_product_page', false, $post ) ) {
+		if ( ! in_array( 'product', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
 			return false;
 		}
 
