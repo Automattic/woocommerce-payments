@@ -410,6 +410,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks if payment request is available at a given location.
+	 *
+	 * @param string $location Location.
+	 * @return boolean
+	 */
+	public function is_available_at( $location ) {
+		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
+		if ( is_array( $available_locations ) && count( $available_locations ) ) {
+			return in_array( $location, $available_locations, true );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get product from product page or product_page shortcode.
 	 *
 	 * @return WC_Product Product object.
@@ -450,12 +465,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// If page is not supported, bail.
 		if ( ! $this->is_block() && ! $this->is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart() ) {
 			return;
 		}
 
@@ -532,6 +541,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
+
+		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
+			return;
+		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
+			return;
+		}
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
@@ -562,6 +577,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
+
+		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
+			return;
+		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
+			return;
+		}
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
@@ -572,17 +593,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @return boolean
 	 */
-	private function should_show_payment_button_on_cart() {
+	private function should_show_payment_button_on_cart_or_checkout() {
 		// Not supported when user isn't authenticated and authentication is required.
 		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
 			return false;
 		}
 
-		if ( is_checkout() && ! in_array( 'checkout', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
+		if ( is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
 			return false;
 		}
 
-		if ( is_cart() && ! in_array( 'cart', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
+		if ( is_cart() && ! $this->is_available_at( 'cart' ) ) {
 			return false;
 		}
 
@@ -599,7 +620,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_product_page() {
-		if ( ! in_array( 'product', $this->gateway->get_option( 'payment_request_button_locations' ), true ) ) {
+		if ( ! $this->is_available_at( 'product' ) ) {
 			return false;
 		}
 
