@@ -5,15 +5,15 @@ exports[`PaymentDetailsTimeline does not render when the feature flag is disable
 exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline component) 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       Timeline
     </div>
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       <div>
         Mock timeline
@@ -26,15 +26,15 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
 exports[`PaymentDetailsTimeline renders error 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       Timeline
     </div>
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       Error while loading timeline
     </div>
@@ -45,10 +45,10 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
 exports[`PaymentDetailsTimeline renders loading 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       <span
         aria-busy="true"
@@ -58,7 +58,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
       </span>
     </div>
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       <span
         aria-busy="true"

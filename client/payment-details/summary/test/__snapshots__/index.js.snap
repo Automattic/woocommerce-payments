@@ -3,10 +3,10 @@
 exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -56,7 +56,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -199,10 +199,10 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -252,7 +252,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -422,10 +422,10 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -478,7 +478,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -621,10 +621,10 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 exports[`PaymentDetailsSummary renders loading state 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -681,7 +681,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <span
         aria-busy="true"
@@ -701,10 +701,10 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -757,7 +757,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -900,10 +900,10 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="payment-details-summary"
@@ -956,7 +956,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
       </div>
     </div>
     <div
-      class="components-card__footer is-size-medium css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"

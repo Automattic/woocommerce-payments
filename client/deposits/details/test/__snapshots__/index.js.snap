@@ -3,10 +3,10 @@
 exports[`Deposit overview renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-medium wcpay-deposit-overview css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-medium wcpay-deposit-overview css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-medium css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
         class="wcpay-deposit-detail"
