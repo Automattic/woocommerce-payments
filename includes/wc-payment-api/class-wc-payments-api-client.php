@@ -314,21 +314,25 @@ class WC_Payments_API_Client {
 	/**
 	 * List deposits
 	 *
-	 * @param int    $page       The requested page.
-	 * @param int    $page_size  The size of the requested page.
-	 * @param string $sort       The column to be used for sorting.
-	 * @param string $direction  The sorting direction.
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc' ) {
-		$query = [
-			'page'      => $page,
-			'pagesize'  => $page_size,
-			'sort'      => $sort,
-			'direction' => $direction,
-		];
+	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', array $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
 
 		return $this->request( $query, self::DEPOSITS_API, self::GET );
 	}
@@ -341,6 +345,18 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposits_overview() {
 		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
+	}
+
+	/**
+	 * Get summary of deposits.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_summary( array $filters = [] ) {
+		return $this->request( $filters, self::DEPOSITS_API . '/summary', self::GET );
 	}
 
 	/**

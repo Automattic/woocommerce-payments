@@ -4,15 +4,17 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import { updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits } from 'data';
+import { useDeposits, useDepositsSummary } from 'data';
 
 jest.mock( 'data', () => ( {
 	useDeposits: jest.fn(),
+	useDepositsSummary: jest.fn(),
 } ) );
 
 const mockDeposits = [
@@ -37,13 +39,48 @@ const mockDeposits = [
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+
+		// the query string is preserved across tests, so we need to reset it
+		updateQueryString( {}, '/', {} );
+
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'renders correctly', () => {
+	test( 'renders correctly with single currency', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
 			depositsCount: 2,
+			isLoading: false,
+		} );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {
+				count: 2,
+				total: 5000,
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd' ],
+			},
+			isLoading: false,
+		} );
+
+		const { container } = render( <DepositsList /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders correctly with multiple currencies', () => {
+		useDeposits.mockReturnValue( {
+			deposits: mockDeposits,
+			depositsCount: 2,
+			isLoading: false,
+		} );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {
+				count: 2,
+				total: 5000,
+				// eslint-disable-next-line camelcase
+				store_currencies: [ 'usd', 'eur' ],
+			},
 			isLoading: false,
 		} );
 

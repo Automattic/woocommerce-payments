@@ -68,6 +68,26 @@ const receiveDeposits = (
 					},
 				},
 			};
+		case TYPES.SET_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
+				},
+			};
+		case TYPES.SET_ERROR_FOR_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					[ index ]: {
+						error: error,
+					},
+				},
+			};
 	}
 
 	return state;
