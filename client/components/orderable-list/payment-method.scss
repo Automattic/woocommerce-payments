@@ -51,11 +51,30 @@
 	}
 
 	&__icon {
-		background: url( '../../../assets/images/cards/unknown.svg' ) no-repeat
-			center center;
+		background: no-repeat center center;
 		background-size: contain;
+		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px #ddd;
 		display: flex;
-		flex: 0 1 58px;
+		flex: 0 1 63.69px;
+		height: 40px;
 		margin-right: 16px;
+	}
+
+	&.cc &__icon {
+		background-image: url( '../../../assets/images/payment-methods/cc.svg' );
+		box-shadow: none;
+	}
+
+	&.giropay &__icon {
+		background-image: url( '../../../assets/images/payment-methods/giropay.svg' );
+	}
+
+	&.sepa &__icon {
+		background-image: url( '../../../assets/images/payment-methods/sepa.svg' );
+	}
+
+	&.sofort &__icon {
+		background-image: url( '../../../assets/images/payment-methods/sofort.svg' );
 	}
 }

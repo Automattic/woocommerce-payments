@@ -45,7 +45,7 @@ const availableMethods = [
 		),
 	},
 	{
-		id: 'direct-debit',
+		id: 'sepa',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
@@ -75,13 +75,11 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 
 	return (
 		<Card className="payment-methods">
-			<CardHeader>
-				<p>
-					<strong>
-						{ __( 'Payment methods', 'woocommerce-payments' ) }
-					</strong>
-				</p>
-				<p>
+			<CardHeader className="payment-methods__header">
+				<div className="payment-methods__title">
+					{ __( 'Payment methods', 'woocommerce-payments' ) }
+				</div>
+				<p className="payment-methods__description">
 					{ __(
 						'Increase your store’s conversion by offering your customers preferred and convenient payment methods. ' +
 							'Drag and drop to reorder on checkout.',
