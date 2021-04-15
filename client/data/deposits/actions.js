@@ -49,3 +49,20 @@ export function updateErrorForDepositQuery( query, data, error ) {
 		error,
 	};
 }
+
+export function updateDepositsSummary( query, data ) {
+	return {
+		type: TYPES.SET_DEPOSITS_SUMMARY,
+		query,
+		data,
+	};
+}
+
+export function updateErrorForDepositsSummary( query, data, error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_DEPOSITS_SUMMARY,
+		query,
+		data,
+		error,
+	};
+}

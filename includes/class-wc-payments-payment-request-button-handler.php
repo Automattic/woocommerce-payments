@@ -50,11 +50,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		// TODO: Remove this ahead releasing Apple Pay for all merchants.
-		if ( ! WC_Payments::should_payment_request_be_available() ) {
-			return;
-		}
-
 		$this->gateway = WC_Payments::get_gateway();
 
 		// Checks if WCPay is enabled.
@@ -151,7 +146,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		if ( ! is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+		if ( ! $this->is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
 			return;
 		}
 
@@ -200,13 +195,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
 	public function get_product_data() {
-		if ( ! is_product() ) {
+		if ( ! $this->is_product() ) {
 			return false;
 		}
 
-		global $post;
-
-		$product = wc_get_product( $post->ID );
+		$product = $this->get_product();
 
 		if ( 'variable' === $product->get_type() ) {
 			$attributes = wc_clean( wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -399,6 +392,63 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks if this page contains a cart or checkout block.
+	 *
+	 * @return boolean
+	 */
+	public function is_block() {
+		return has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
+	}
+
+	/**
+	 * Checks if this is a product page or content contains a product_page shortcode.
+	 *
+	 * @return boolean
+	 */
+	public function is_product() {
+		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+	}
+
+	/**
+	 * Checks if payment request is available at a given location.
+	 *
+	 * @param string $location Location.
+	 * @return boolean
+	 */
+	public function is_available_at( $location ) {
+		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
+		if ( is_array( $available_locations ) && count( $available_locations ) ) {
+			return in_array( $location, $available_locations, true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get product from product page or product_page shortcode.
+	 *
+	 * @return WC_Product Product object.
+	 */
+	public function get_product() {
+		global $post;
+
+		if ( is_product() ) {
+			return wc_get_product( $post->ID );
+		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+			// Get id from product_page shortcode.
+			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
+
+			if ( ! isset( $shortcode_match['id'] ) ) {
+				return false;
+			}
+
+			return wc_get_product( $shortcode_match['id'] );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
@@ -413,11 +463,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if ( ! is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( is_product() && ! $this->should_show_payment_button_on_product_page() ) {
+		// If page is not supported, bail.
+		if ( ! $this->is_block() && ! $this->is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -461,7 +508,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'css_selector' => $this->custom_button_selector(),
 				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
-			'is_product_page' => is_product(),
+			'is_product_page' => $this->is_product(),
 			'product'         => $this->get_product_data(),
 		];
 
@@ -485,24 +532,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_payment_request_button_html() {
-		global $post;
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return;
 		}
 
-		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
-		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
+		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
 			return;
-		}
-
-		if ( is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart() ) {
+		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
 			return;
 		}
 		?>
@@ -526,25 +568,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
-		global $post;
-
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
 			return;
 		}
 
-		if ( ! is_cart() && ! is_checkout() && ! is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
-		if ( is_checkout() && ! apply_filters( 'wcpay_show_payment_request_on_checkout', false, $post ) ) {
+		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
 			return;
-		}
-
-		if ( is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart() ) {
+		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
 			return;
 		}
 		?>
@@ -557,13 +593,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @return boolean
 	 */
-	private function should_show_payment_button_on_cart() {
+	private function should_show_payment_button_on_cart_or_checkout() {
 		// Not supported when user isn't authenticated and authentication is required.
 		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
 			return false;
 		}
 
-		if ( ! apply_filters( 'wcpay_show_payment_request_on_cart', true ) ) {
+		if ( is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
+			return false;
+		}
+
+		if ( is_cart() && ! $this->is_available_at( 'cart' ) ) {
 			return false;
 		}
 
@@ -580,13 +620,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return boolean
 	 */
 	private function should_show_payment_button_on_product_page() {
-		global $post;
-
-		$product = wc_get_product( $post->ID );
-
-		if ( apply_filters( 'wcpay_hide_payment_request_on_product_page', false, $post ) ) {
+		if ( ! $this->is_available_at( 'product' ) ) {
 			return false;
 		}
+
+		$product = $this->get_product();
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
 			return false;

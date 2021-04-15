@@ -203,14 +203,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Checks whether Payment Request Button feature should be available.
-	 * TODO: Remove this ahead of releasing Apple Pay for all merchants.
-	 */
-	public static function should_payment_request_be_available() {
-		return 'US' === WC()->countries->get_base_country();
-	}
-
-	/**
 	 * Prints the given message in an "admin notice" wrapper with "error" class.
 	 *
 	 * @param string $message Message to print. Can contain HTML.
@@ -583,6 +575,8 @@ class WC_Payments {
 	public static function add_woo_admin_notes() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
@@ -598,6 +592,8 @@ class WC_Payments {
 
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
