@@ -128,7 +128,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 			}
 		);
 	}
-  
+
 	/**
 	 * Trigger a manual deposit.
 	 *

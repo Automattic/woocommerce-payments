@@ -31,6 +31,12 @@ describe( 'Deposits reducer tests', () => {
 		balance: { object: 'balance' },
 		deposits_schedule: { interval: 'daily' },
 	};
+	const mockEmptyState = {
+		byId: {},
+		queries: {},
+		count: 0,
+		instant: {},
+	};
 
 	test( 'New individual deposits reduced correctly', () => {
 		const stateAfterOne = reducer(
@@ -42,12 +48,10 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		expect( stateAfterOne ).toStrictEqual( {
+			...mockEmptyState,
 			byId: {
 				po_mock1: mockDeposits[ 0 ],
 			},
-			queries: {},
-			instant: {},
-			count: 0,
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -56,13 +60,11 @@ describe( 'Deposits reducer tests', () => {
 		} );
 
 		expect( stateAfterTwo ).toStrictEqual( {
+			...mockEmptyState,
 			byId: {
 				po_mock1: mockDeposits[ 0 ],
 				po_mock2: mockDeposits[ 1 ],
 			},
-			queries: {},
-			instant: {},
-			count: 0,
 		} );
 	} );
 
@@ -77,6 +79,7 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		const after = {
+			...mockEmptyState,
 			byId: {
 				po_mock1: mockDeposits[ 0 ],
 				po_mock2: mockDeposits[ 1 ],
@@ -86,8 +89,6 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1', 'po_mock2' ],
 				},
 			},
-			instant: {},
-			count: 0,
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -95,6 +96,7 @@ describe( 'Deposits reducer tests', () => {
 
 	test( 'Deposits updated correctly on updated info', () => {
 		const before = {
+			...mockEmptyState,
 			byId: {
 				po_mock1: mockDeposits[ 0 ],
 			},
@@ -103,7 +105,6 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock1' ],
 				},
 			},
-			instant: {},
 		};
 
 		const reduced = reducer( before, {
@@ -113,6 +114,7 @@ describe( 'Deposits reducer tests', () => {
 		} );
 
 		const after = {
+			...mockEmptyState,
 			byId: {
 				po_mock1: mockDeposits[ 0 ],
 				po_mock2: mockDeposits[ 1 ],
@@ -125,7 +127,6 @@ describe( 'Deposits reducer tests', () => {
 					data: [ 'po_mock2' ],
 				},
 			},
-			instant: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -141,13 +142,10 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			byId: {},
+			...mockEmptyState,
 			overview: {
 				data: mockOverview,
 			},
-			queries: {},
-			instant: {},
-			count: 0,
 		} );
 	} );
 
@@ -161,13 +159,10 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			byId: {},
+			...mockEmptyState,
 			overview: {
 				error: { code: 'error' },
 			},
-			queries: {},
-			instant: {},
-			count: 0,
 		} );
 	} );
 
@@ -181,8 +176,7 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			byId: {},
-			queries: {},
+			...mockEmptyState,
 			count: 10,
 		} );
 	} );
@@ -197,13 +191,12 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
-			byId: {},
+			...mockEmptyState,
 			queries: {
 				'{}': {
 					error: { code: 'error' },
 				},
 			},
-			count: 0,
 		} );
 	} );
 
@@ -217,8 +210,7 @@ describe( 'Deposits reducer tests', () => {
 		);
 
 		const after = {
-			byId: {},
-			queries: {},
+			...mockEmptyState,
 			instant: {
 				data: mockInstantDeposit,
 			},

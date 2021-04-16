@@ -119,6 +119,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param int    $timestamp - When the job will run.
 	 * @param string $hook      - The hook to trigger.
 	 * @param array  $args      - An array containing the arguments to be passed to the hook.
+	 * @param string $group     - The AS group the action will be created under.
 	 *
 	 * @return void
 	 */
