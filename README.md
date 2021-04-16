@@ -29,16 +29,6 @@ You will need a externally accessible URL to set up the plugin. You can use ngro
 
 ```ngrok http 8082```
 
-Alternatively you can use [Jurassic-tube](https://fieldguide.automattic.com/jurassic-tube/) developed internally for a permanent url. (works with only docker setup)
-
-```npm run setup:jurassic-tube```
-
-```npm run start:jurassic-tube```
-
-To stop
-
-```npm run stop:jurassic-tube```
-
 See: https://github.com/Automattic/woocommerce-payments/blob/trunk/CONTRIBUTING.md (possibly move contents here for visibility sake)
 
 ## Debugging
