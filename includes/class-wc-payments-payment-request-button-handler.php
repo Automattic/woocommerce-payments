@@ -112,20 +112,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$prev_payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
 		$payment_request_enabled      = 'yes' === ( $settings['payment_request'] ?? 'no' );
 
-		if ( ! $prev_payment_request_enabled && $payment_request_enabled ) {
-			// Payment Request Button was enabled.
+		if ( $prev_payment_request_enabled !== $payment_request_enabled ) {
 			Tracker::track_admin(
 				'wcpay_payment_request_settings_change',
 				[
-					'enabled' => true,
-				]
-			);
-		} elseif ( $prev_payment_request_enabled && ! $payment_request_enabled ) {
-			// Payment Request Button was disabled.
-			Tracker::track_admin(
-				'wcpay_payment_request_settings_change',
-				[
-					'enabled' => false,
+					'enabled' => $payment_request_enabled,
 				]
 			);
 		}
