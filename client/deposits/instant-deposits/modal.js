@@ -66,7 +66,12 @@ const InstantDepositModal = ( {
 				</li>
 			</ul>
 
-			<Button isPrimary onClick={ onSubmit } isBusy={ inProgress }>
+			<Button
+				isPrimary
+				onClick={ onSubmit }
+				isBusy={ inProgress }
+				disabled={ inProgress }
+			>
 				{ sprintf(
 					/* translators: %s: Monetary amount to deposit */
 					__( 'Deposit %s now', 'woocommerce-payments' ),
