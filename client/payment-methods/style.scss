@@ -2,7 +2,7 @@
 	&__header {
 		&#{&} {
 			&#{&} {
-				padding: 24px 32px;
+				padding: 24px;
 			}
 		}
 	}
@@ -25,13 +25,13 @@
 
 		&#{&} {
 			&#{&} {
-				padding: 24px 32px;
+				padding: 24px;
 			}
 		}
 	}
 
 	&__available-methods {
-		display: flex;
+		display: none;
 		margin: 0 0 0 16px;
 	}
 
@@ -71,6 +71,30 @@
 			&#{&} {
 				padding: 0;
 			}
+		}
+	}
+}
+
+@include breakpoint( '>660px' ) {
+	.payment-methods {
+		&__header {
+			&#{&} {
+				&#{&} {
+					padding: 24px 32px;
+				}
+			}
+		}
+
+		&__available-methods-container {
+			&#{&} {
+				&#{&} {
+					padding: 24px 32px;
+				}
+			}
+		}
+
+		&__available-methods {
+			display: flex;
 		}
 	}
 }

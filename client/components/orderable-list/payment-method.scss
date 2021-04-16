@@ -1,6 +1,10 @@
 .payment-method {
+	flex-wrap: wrap;
+	justify-content: space-between;
+
 	&__text {
-		flex: 1 1 auto;
+		flex: 1 1 100%;
+		order: 1;
 	}
 
 	&__label {
@@ -27,6 +31,8 @@
 		align-items: center;
 		display: flex;
 		justify-content: center;
+		margin-top: 14px;
+		order: 3;
 	}
 
 	&__action {
@@ -55,8 +61,8 @@
 		background-size: contain;
 		border-radius: 2px;
 		box-shadow: 0 0 0 1px #ddd;
-		display: flex;
-		flex: 0 1 63.69px;
+		display: none;
+		flex: 0 0 63.69px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
 	}
@@ -76,5 +82,38 @@
 
 	&.sofort &__icon {
 		background-image: url( '../../../assets/images/payment-methods/sofort.svg' );
+	}
+
+	.orderable-list__drag-handle {
+		margin-left: -10px;
+		margin-top: 14px;
+		order: 2;
+	}
+}
+
+@include breakpoint( '>660px' ) {
+	.payment-method {
+		flex-wrap: nowrap;
+
+		.orderable-list__drag-handle {
+			margin-left: 0;
+			margin-top: 0;
+			order: 1;
+		}
+
+		&__icon {
+			display: flex;
+			order: 2;
+		}
+
+		&__text {
+			flex: 1 1 auto;
+			order: 3;
+		}
+
+		&__actions {
+			margin-top: 0;
+			order: 4;
+		}
 	}
 }
