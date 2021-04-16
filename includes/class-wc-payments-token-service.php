@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Payment_Method\Sepa;
+use WCPay\Payment_Method\Card;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -52,9 +53,9 @@ class WC_Payments_Token_Service {
 	/**
 	 * Creates and add a token to an user, based on the payment_method object
 	 *
-	 * @param array   $payment_method Payment method to be added.
-	 * @param WP_User $user           User to attach payment method to.
-	 * @return WC_Payment_Token_CC|WC_Payment_Token_Sepa    The WC object for the payment token.
+	 * @param   array   $payment_method                             Payment method to be added.
+	 * @param   WP_User $user                                       User to attach payment method to.
+	 * @return  WC_Payment_Token_CC|WC_Payment_Token_Sepa           The WC object for the payment token.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
@@ -66,7 +67,7 @@ class WC_Payments_Token_Service {
 			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
-			$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			$token->set_gateway_id( Card::GATEWAY_ID );
 			$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 			$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
 			$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
@@ -189,9 +190,9 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for SEPA on the my account page.
 	 *
-	 * @param  array            $item         Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  array            $item Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry.
-	 * @return array                           Filtered item
+	 * @return array            Filtered item
 	 */
 	public function get_account_saved_payment_methods_list_item_sepa( $item, $payment_token ) {
 		if ( 'sepa' === strtolower( $payment_token->get_type() ) ) {

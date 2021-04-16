@@ -27,11 +27,11 @@ class WC_Payment_Token_SEPA_Test extends WP_UnitTestCase {
 
 		$actual = WC_Payment_Tokens::get( $token->get_id() );
 		$this->assertInstanceOf( WC_Payment_Token_Sepa::class, $actual );
-		$this->assertEquals( 'SEPA IBAN ending in 3000', $actual->get_display_name() );
+		$this->assertSame( 'SEPA IBAN ending in 3000', $actual->get_display_name() );
 		$this->assertTrue( $actual->validate() );
-		$this->assertEquals( '3000', $actual->get_last4() );
-		$this->assertEquals( 'sepa', $actual->get_type() );
-		$this->assertEquals( 'woocommerce_payments_sepa', $actual->get_gateway_id() );
-		$this->assertEquals( 'pm_1If1If1If1If1If1If', $actual->get_token() );
+		$this->assertSame( '3000', $actual->get_last4() );
+		$this->assertSame( 'sepa', $actual->get_type() );
+		$this->assertSame( 'woocommerce_payments_sepa', $actual->get_gateway_id() );
+		$this->assertSame( 'pm_1If1If1If1If1If1If', $actual->get_token() );
 	}
 }

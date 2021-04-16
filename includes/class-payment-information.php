@@ -16,6 +16,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Payment_Method\Sepa;
+use WCPay\Payment_Method\Card;
 
 /**
  * Mostly a wrapper containing information on a single payment.
@@ -236,10 +237,11 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
-		if ( ! empty( $request['payment_method'] ) && Sepa::GATEWAY_ID === $request['payment_method'] ) {
+		$payment_method = $request['payment_method'] ?? null;
+		if ( Sepa::GATEWAY_ID === $payment_method ) {
 			$request_gateway_id = Sepa::GATEWAY_ID;
 		} else {
-			$request_gateway_id = \WC_Payment_Gateway_WCPay::GATEWAY_ID;
+			$request_gateway_id = Card::GATEWAY_ID;
 		}
 
 		$token_request_key = 'wc-' . $request_gateway_id . '-payment-token';
