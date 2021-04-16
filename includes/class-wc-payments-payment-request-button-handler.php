@@ -361,6 +361,63 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks whether Payment Request Button should be available on this page.
+	 *
+	 * @return bool
+	 */
+	public function should_show_payment_request_button() {
+		// If account is not connected, then bail.
+		if ( ! $this->account->is_stripe_connected( false ) ) {
+			return false;
+		}
+
+		// If no SSL, bail.
+		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
+			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			return false;
+		}
+
+		// User isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
+		// Page not supported.
+		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		// Product page, but not available in settings.
+		if ( $this->is_product() && ! $this->is_available_at( 'product' ) ) {
+			return false;
+		}
+
+		// Checkout page, but not available in settings.
+		if ( $this->is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
+			return false;
+		}
+
+		// Cart page, but not available in settings.
+		if ( $this->is_cart() && ! $this->is_available_at( 'cart' ) ) {
+			return false;
+		}
+
+		// Product page, but has unsupported product type.
+		if ( $this->is_product() && ! $this->is_product_supported() ) {
+			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+			return false;
+		}
+
+		// Cart has unsupported product type.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
+			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Checks to make sure product type is supported.
 	 *
 	 * @return  array
@@ -386,9 +443,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
-	 * @return  boolean
+	 * @return boolean
 	 */
-	public function allowed_items_in_cart() {
+	public function has_allowed_items_in_cart() {
 		// Pre Orders compatbility where we don't support charge upon release.
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
@@ -416,21 +473,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks if this page contains a cart or checkout block.
-	 *
-	 * @return boolean
-	 */
-	public function is_block() {
-		return has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
-	}
-
-	/**
 	 * Checks if this is a product page or content contains a product_page shortcode.
 	 *
 	 * @return boolean
 	 */
 	public function is_product() {
 		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+	}
+
+	/**
+	 * Checks if this is the cart page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_cart() {
+		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Checks if this is the checkout page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_checkout() {
+		return is_checkout() || has_block( 'woocommerce/checkout' );
 	}
 
 	/**
@@ -476,23 +542,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
-		// If account is not connected then bail.
-		if ( ! $this->account->is_stripe_connected( false ) ) {
-			return;
-		}
-
-		// If no SSL, bail.
-		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
-			return;
-		}
-
-		// If page is not supported, bail.
-		if ( ! $this->is_block() && ! $this->is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_block() && ! $this->should_show_payment_button_on_cart() ) {
+		// Don't load scripts if page is not supported.
+		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
 
@@ -561,21 +612,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_payment_request_button_html() {
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
-			return;
-		}
-
-		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
-			return;
-		}
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
@@ -597,70 +633,20 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
-			return;
-		}
-
-		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
-			return;
-		}
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
 	/**
-	 * Whether payment button html should be rendered on the Cart
+	 * Whether product page has a supported product.
 	 *
 	 * @return boolean
 	 */
-	private function should_show_payment_button_on_cart_or_checkout() {
-		// Not supported when user isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
-			return false;
-		}
-
-		if ( is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
-			return false;
-		}
-
-		if ( is_cart() && ! $this->is_available_at( 'cart' ) ) {
-			return false;
-		}
-
-		if ( ! $this->allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Whether payment button html should be rendered
-	 *
-	 * @return boolean
-	 */
-	private function should_show_payment_button_on_product_page() {
-		if ( ! $this->is_available_at( 'product' ) ) {
-			return false;
-		}
-
+	private function is_product_supported() {
 		$product = $this->get_product();
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
-		}
-
-		// Not supported when user isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
 			return false;
 		}
 
