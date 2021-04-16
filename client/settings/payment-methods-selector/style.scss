@@ -1,0 +1,14 @@
+.woocommerce-payments__modal-footer-separator {
+	margin: 24px -24px;
+}
+
+.woocommerce-payments__modal-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	:last-child {
+		margin: 0 24px;
+		margin-right: auto;
+	}
+}
