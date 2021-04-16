@@ -589,6 +589,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
 			'is_product_page' => $this->is_product(),
+			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
 		];
 

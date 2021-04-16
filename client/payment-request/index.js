@@ -6,6 +6,11 @@
 import './style.scss';
 
 jQuery( ( $ ) => {
+	// Don't load if blocks checkout is being loaded.
+	if ( wcpayPaymentRequestParams.has_block ) {
+		return;
+	}
+
 	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
 		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
 	} );
