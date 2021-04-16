@@ -106,7 +106,6 @@ export const useInitialization = ( {
 			cartTotalItems: billing.cartTotalItems,
 		} );
 		onClick();
-		paymentRequest.show();
 	}, [
 		onClick,
 		paymentRequest,
