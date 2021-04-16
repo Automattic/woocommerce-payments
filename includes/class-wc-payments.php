@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Payment_Method\Card;
-use WCPay\Payment_Method\Sepa;
-use WCPay\Payment_Method\Giropay;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -22,21 +22,21 @@ class WC_Payments {
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var CC_Payment_Gateway
 	 */
 	private static $card_gateway;
 
 	/**
 	 * Instance of Sepa gateway, created in init function.
 	 *
-	 * @var Sepa
+	 * @var Sepa_Payment_Gateway
 	 */
 	private static $sepa_gateway;
 
 	/**
 	 * Instance of Giropay gateway, created in init function.
 	 *
-	 * @var Giropay
+	 * @var Giropay_Payment_Gateway
 	 */
 	private static $giropay_gateway;
 
@@ -149,9 +149,9 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
-		include_once __DIR__ . '/payment-method/class-card.php';
-		include_once __DIR__ . '/payment-method/class-sepa.php';
-		include_once __DIR__ . '/payment-method/class-giropay.php';
+		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -178,9 +178,9 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = Card::class;
-		$sepa_class    = Sepa::class;
-		$giropay_class = Giropay::class;
+		$gateway_class = CC_Payment_Gateway::class;
+		$sepa_class    = Sepa_Payment_Gateway::class;
+		$giropay_class = Giropay_Payment_Gateway::class;
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';

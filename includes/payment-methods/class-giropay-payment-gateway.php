@@ -1,11 +1,11 @@
 <?php
 /**
- * Class Giropay
+ * Class Giropay_Payment_Gateway
  *
- * @package WCPay\Payment_Gateway
+ * @package WCPay\Payment_Methods
  */
 
-namespace WCPay\Payment_Method;
+namespace WCPay\Payment_Methods;
 
 use WCPay\Logger;
 use WC_Payment_Gateway_WCPay;
@@ -21,7 +21,7 @@ use WC_Payments_Utils;
  * Giropay Payment method extended from card payment method.
  * Loads different JS files and fields and handles a redirect payment method.
  */
-class Giropay extends WC_Payment_Gateway_WCPay {
+class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Internal ID of the payment gateway.
 	 *
