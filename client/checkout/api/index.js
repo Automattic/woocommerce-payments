@@ -279,7 +279,10 @@ export default class WCPayAPI {
 	paymentRequestCalculateShippingOptions( shippingAddress ) {
 		// - TODO: Get Ajax endpoint and nonce from helper function.
 		return this.request( '/?wc-ajax=wcpay_get_shipping_options', {
+			/* global wcpayPaymentRequestParams */
 			security: wcpayPaymentRequestParams.nonce.shipping,
+			// eslint-disable-next-line camelcase
+			is_product_page: wcpayPaymentRequestParams.is_product_page ?? '',
 			...shippingAddress,
 		} ).then( ( response ) => {
 			return JSON.parse( response );
