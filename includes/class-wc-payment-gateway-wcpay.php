@@ -176,6 +176,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
+		// Giropay option hidden behind feature flag.
+		if ( '1' === get_option( '_wcpay_feature_giropay' ) ) {
+			$this->form_fields['giropay_enabled'] = [
+				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			];
+		}
+
 		// SEPA option hidden behind feature flag.
 		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
 			$this->form_fields['sepa_enabled'] = [
@@ -187,11 +198,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		// Giropay option hidden behind feature flag.
-		if ( '1' === get_option( '_wcpay_feature_giropay' ) ) {
-			$this->form_fields['giropay_enabled'] = [
-				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
+		// Sofort option hidden behind feature flag.
+		if ( '1' === get_option( '_wcpay_feature_sofort' ) ) {
+			$this->form_fields['sofort_enabled'] = [
+				'title'       => __( 'Enable/disable Sofort', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Sofort', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
