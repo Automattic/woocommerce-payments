@@ -16,6 +16,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
+use Exception;
 
 /**
  * Giropay Payment method extended from card payment method.
@@ -48,33 +49,6 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->description        = __( 'You will be redirected to Giropay.', 'woocommerce-payments' );
 
 		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
-	}
-
-	/**
-	 * Registers all scripts, necessary for the gateway.
-	 */
-	public function register_scripts() {
-		// Register Stripe's JavaScript using the same ID as the Stripe Gateway plugin. This prevents this JS being
-		// loaded twice in the event a site has both plugins enabled. We still run the risk of different plugins
-		// loading different versions however. If Stripe release a v4 of their JavaScript, we could consider
-		// changing the ID to stripe_v4. This would allow older plugins to keep using v3 while we used any new
-		// feature in v4. Stripe have allowed loading of 2 different versions of stripe.js in the past (
-		// https://stripe.com/docs/stripe-js/elements/migrating).
-		wp_register_script(
-			'stripe',
-			'https://js.stripe.com/v3/',
-			[],
-			'3.0',
-			true
-		);
-
-		wp_register_script(
-			'wcpay-giropay-checkout',
-			plugins_url( 'dist/giropay_checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe', 'wc-checkout' ],
-			WC_Payments::get_file_version( 'dist/giropay_checkout.js' ),
-			true
-		);
 	}
 
 	/**
@@ -184,7 +158,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_enqueue_script( 'wcpay-giropay-checkout' );
 
 			wp_enqueue_style(
-				'wcpay-giropay-checkout',
+				'wcpay-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )

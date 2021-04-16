@@ -12,7 +12,6 @@ const webpackConfig = {
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
-		giropay_checkout: './client/checkout/classic/giropay.js',
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',

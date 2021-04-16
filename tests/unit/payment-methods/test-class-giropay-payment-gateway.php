@@ -24,7 +24,7 @@ use WP_UnitTestCase;
 use WP_User;
 
 /**
- * WCPay\Payment_Gateway\Sepa Unit tests
+ * WCPay\Payment_Gateway\Giropay Unit tests
  */
 class Giropay_Payment_Gateway_Test extends WP_UnitTestCase {
 	/**
