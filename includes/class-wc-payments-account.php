@@ -40,7 +40,7 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
-    add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
@@ -793,8 +793,8 @@ class WC_Payments_Account {
 		$account = $this->get_cached_account_data();
 		return $account['country'] ?? 'US';
 	}
-  
-  /**
+
+	/**
 	 * Checks to see if the account is eligible for Instant Deposits.
 	 *
 	 * @return bool
@@ -807,7 +807,7 @@ class WC_Payments_Account {
 
 		return true;
 	}
-  
+
 	/**
 	 * Handles adding a note if the merchant is eligible for Instant Deposits.
 	 *
