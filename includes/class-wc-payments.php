@@ -422,11 +422,6 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-
-		if ( false === WC_Payments_Features::is_grouped_settings_enabled() ) {
-			return $gateways;
-		}
-
 		$gateways[] = self::$sepa_gateway;
 
 		return $gateways;
