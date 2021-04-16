@@ -37,7 +37,7 @@ function _manually_load_plugin() {
 	define( 'WCPAY_TEST_ENV', true );
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
-	require_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
+	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 

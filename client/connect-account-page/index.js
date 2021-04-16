@@ -5,7 +5,6 @@
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -107,13 +106,9 @@ const ConnectPageOnboarding = () => {
 
 	const handleSetup = () => {
 		setSubmitted( true );
-		const isConnected = useSelect( ( select ) => {
-			return select( wc.data.PLUGINS_STORE_NAME ).isJetpackConnected() // eslint-disable-line no-undef
-				? 'Yes'
-				: 'No';
-		} );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
-			wpcom_connection: isConnected, // eslint-disable-line camelcase
+			// eslint-disable-next-line camelcase
+			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
 		} );
 	};
 

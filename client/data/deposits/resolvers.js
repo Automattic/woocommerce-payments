@@ -18,6 +18,8 @@ import {
 	updateErrorForDepositQuery,
 	updateDepositsOverview,
 	updateErrorForDepositsOverview,
+	updateDepositsSummary,
+	updateErrorForDepositsSummary,
 } from './actions';
 
 /**
@@ -59,6 +61,13 @@ export function* getDepositsOverview() {
 	}
 }
 
+/*eslint-disable camelcase*/
+const formatQueryFilters = ( query ) => ( {
+	match: query.match,
+	store_currency_is: query.storeCurrencyIs,
+} );
+/*eslint-enable camelcase*/
+
 /**
  * Retrieves a series of deposits from the deposits list API.
  *
@@ -70,6 +79,7 @@ export function* getDeposits( query ) {
 		pagesize: query.perPage,
 		sort: query.orderby,
 		direction: query.order,
+		...formatQueryFilters( query ),
 	} );
 
 	try {
@@ -91,5 +101,24 @@ export function* getDeposits( query ) {
 			__( 'Error retrieving deposits.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositQuery( query, null, e );
+	}
+}
+
+/**
+ * Retrieves the deposits summary from the summary API.
+ *
+ * @param {string} query Data on which to parameterize the selection.
+ */
+export function* getDepositsSummary( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/deposits/summary`,
+		formatQueryFilters( query )
+	);
+
+	try {
+		const summary = yield apiFetch( { path } );
+		yield updateDepositsSummary( query, summary );
+	} catch ( e ) {
+		yield updateErrorForDepositsSummary( query, null, e );
 	}
 }
