@@ -46,9 +46,9 @@
     "format:js": "npm run format:provided '**/*.js' '**/*.ts' '**/*.tsx'",
     "format:css": "npm run format:provided '**/*.scss' '**/*.css'",
     "format:provided": "prettier --write",
-    "setup:jurassic-tube": "./bin/jurassic-tube-setup.sh",
-    "start:jurassic-tube": "./docker/bin/jt/tunnel.sh",
-    "stop:jurassic-tube": "./docker/bin/jt/tunnel.sh break"
+    "tube:setup": "./bin/jurassic-tube-setup.sh",
+    "tube:start": "./docker/bin/jt/tunnel.sh",
+    "tube:stop": "./docker/bin/jt/tunnel.sh break"
   },
   "husky": {
     "hooks": {
