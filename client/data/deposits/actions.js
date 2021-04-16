@@ -76,9 +76,6 @@ export function* submitInstantDeposit( transactionIds ) {
 		} );
 
 		yield updateInstantDeposit( deposit );
-		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [
-			transactionIds,
-		] );
 
 		// Need to invalidate the resolution so that the components will render again.
 		yield dispatch(
@@ -115,12 +112,15 @@ export function* submitInstantDeposit( transactionIds ) {
 				],
 			}
 		);
-	} catch ( e ) {
-		yield updateInstantDeposit( e );
+	} catch {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error creating instant deposit.', 'woocommerce-payments' )
 		);
+	} finally {
+		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [
+			transactionIds,
+		] );
 	}
 }
