@@ -189,6 +189,9 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 
+		// Priority 5 so we can manipulate the registered gateways before they are shown.
+		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
+
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -424,17 +427,21 @@ class WC_Payments {
 			return $gateways;
 		}
 
-		// adding the sepa/giropay/etc gateways after the feature flag, to ensure that there are no side effects.
-		// these lines ensure that the payment method is added to the array only when we're _not_ on the WC settings page.
-		if (
-			( empty( $_GET['page'] ) && empty( $_GET['tab'] ) ) // phpcs:ignore
-			||
-			( ! empty( $_GET['page'] ) && ! empty( $_GET['tab'] ) && 'wc-settings' === $_GET['page'] && 'checkout' === $_GET['tab'] && ! empty( $_GET['section'] ) ) // phpcs:ignore
-		) {
-			$gateways[] = self::$sepa_gateway;
-		}
+		$gateways[] = self::$sepa_gateway;
 
 		return $gateways;
+	}
+
+	/**
+	 * Called on Payments setting page.
+	 * Remove all WCPay gateways except CC one.
+	 */
+	public static function hide_gateways_on_settings_page() {
+		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof Card ) {
+				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+			}
+		}
 	}
 
 	/**
