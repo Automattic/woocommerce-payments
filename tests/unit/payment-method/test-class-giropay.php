@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Sepa_Test
+ * Class Giropay_Test
  * @package WCPay\Payment_Gateway\Tests
  */
 
@@ -24,7 +24,7 @@ use WP_UnitTestCase;
 use WP_User;
 
 /**
- * WCPay\Payment_Gateway\Sepa Unit tests
+ * WCPay\Payment_Gateway\Giropay Unit tests
  */
 class Giropay_Test extends WP_UnitTestCase {
 	/**

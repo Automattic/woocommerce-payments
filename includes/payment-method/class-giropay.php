@@ -16,6 +16,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
+use Exception;
 
 /**
  * Giropay Payment method extended from card payment method.
@@ -184,7 +185,7 @@ class Giropay extends WC_Payment_Gateway_WCPay {
 			wp_enqueue_script( 'wcpay-giropay-checkout' );
 
 			wp_enqueue_style(
-				'wcpay-giropay-checkout',
+				'wcpay-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )

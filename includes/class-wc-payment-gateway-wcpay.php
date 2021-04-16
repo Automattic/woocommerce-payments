@@ -1965,7 +1965,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param  string $charge_id Charge id.
 	 * @return string            Transaction details page url.
 	 */
-	public function compose_transaction_url( $charge_id ) {
+	protected function compose_transaction_url( $charge_id ) {
 		if ( empty( $charge_id ) ) {
 			return '';
 		}
