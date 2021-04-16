@@ -18,10 +18,13 @@ const InstantDepositButton = ( {
 	balance: { amount, fee, net, transaction_ids: transactionIds },
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
-	const { deposit, inProgress, submit } = useInstantDeposit( transactionIds );
-
+	const { inProgress, submit } = useInstantDeposit( transactionIds );
 	const onClose = () => {
 		setModalOpen( false );
+	};
+	const onSubmit = () => {
+		setModalOpen( false );
+		submit();
 	};
 	// TODO: Need to update isDefault to isSecondary once @wordpress/components is updated
 	// https://github.com/Automattic/woocommerce-payments/pull/1536
@@ -30,13 +33,13 @@ const InstantDepositButton = ( {
 			<Button isDefault onClick={ () => setModalOpen( true ) }>
 				{ __( 'Instant deposit', 'woocommerce-payments' ) }
 			</Button>
-			{ isModalOpen && ! deposit && (
+			{ ( isModalOpen || inProgress ) && (
 				<InstantDepositModal
 					amount={ amount }
 					fee={ fee }
 					net={ net }
 					inProgress={ inProgress }
-					onSubmit={ submit }
+					onSubmit={ onSubmit }
 					onClose={ onClose }
 				/>
 			) }
