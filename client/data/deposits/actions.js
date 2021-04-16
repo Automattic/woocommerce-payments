@@ -100,17 +100,17 @@ export function* submitInstantDeposit( transactionIds ) {
 			},
 		} );
 
-		updateInstantDeposit( deposit );
+		yield updateInstantDeposit( deposit );
 
 		// Need to invalidate the resolution so that the components will render again.
-		dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
-		dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDepositsOverview'
 		);
 
-		dispatch( 'core/notices' ).createSuccessNotice(
+		yield dispatch( 'core/notices' ).createSuccessNotice(
 			sprintf(
 				__(
 					'Instant deposit for %s in transit.',
