@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { formatCurrency } from 'utils/currency';
 import { addQueryArgs } from '@wordpress/url';
@@ -85,7 +86,7 @@ export function updateInstantDeposit( data ) {
 
 export function* submitInstantDeposit( transactionIds ) {
 	try {
-		yield dispatch( STORE_NAME, 'startResolution', 'getInstantDeposit', [
+		yield dispatch( STORE_NAME ).startResolution( 'getInstantDeposit', [
 			transactionIds,
 		] );
 
@@ -99,23 +100,17 @@ export function* submitInstantDeposit( transactionIds ) {
 			},
 		} );
 
-		yield updateInstantDeposit( deposit );
+		updateInstantDeposit( deposit );
 
 		// Need to invalidate the resolution so that the components will render again.
-		yield dispatch(
-			STORE_NAME,
-			'invalidateResolutionForStoreSelector',
+		dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
-		yield dispatch(
-			STORE_NAME,
-			'invalidateResolutionForStoreSelector',
+		dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDepositsOverview'
 		);
 
-		yield dispatch(
-			'core/notices',
-			'createSuccessNotice',
+		dispatch( 'core/notices' ).createSuccessNotice(
 			sprintf(
 				__(
 					'Instant deposit for %s in transit.',
@@ -137,13 +132,11 @@ export function* submitInstantDeposit( transactionIds ) {
 			}
 		);
 	} catch {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error creating instant deposit.', 'woocommerce-payments' )
 		);
 	} finally {
-		yield dispatch( STORE_NAME, 'finishResolution', 'getInstantDeposit', [
+		yield dispatch( STORE_NAME ).finishResolution( 'getInstantDeposit', [
 			transactionIds,
 		] );
 	}
