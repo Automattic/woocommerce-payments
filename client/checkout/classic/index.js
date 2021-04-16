@@ -406,7 +406,6 @@ jQuery( function ( $ ) {
 				return handlePaymentMethodCreation(
 					$( this ),
 					handleOrderPayment,
-					true,
 					isWCPaySepaChosen() ? sepaPayment : cardPayment
 				);
 			}
@@ -425,7 +424,6 @@ jQuery( function ( $ ) {
 		return handlePaymentMethodCreation(
 			$( '#order_review' ),
 			handleOrderPayment,
-			true,
 			isWCPaySepaChosen() ? sepaPayment : cardPayment
 		);
 	} );
