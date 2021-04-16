@@ -28,7 +28,12 @@ const formatDate = ( format, date ) =>
 		moment.utc( date ).toISOString(),
 		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 	);
-const getAmount = ( obj ) => formatCurrency( obj ? obj.amount : 0 );
+const getAmount = ( obj, defaultCurrency ) => {
+	return formatCurrency(
+		obj ? obj.amount : 0,
+		obj && obj.currency ? obj.currency : defaultCurrency
+	);
+};
 const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
 const getBalanceDepositCount = ( balance ) =>
@@ -168,7 +173,7 @@ const DepositsOverview = () => {
 					</span>{ ' ' }
 					<span className="wcpay-deposits-overview__schedule-value">
 						<Loadable
-							isLoading={ isLoading || ! overview }
+							isLoading={ isLoading }
 							display="inline"
 							placeholder="Deposit schedule placeholder"
 						>
@@ -184,7 +189,7 @@ const DepositsOverview = () => {
 					/>
 				) }
 			</div>
-			{ isLoading || ! overview ? (
+			{ isLoading ? (
 				<SummaryListPlaceholder numberOfItems={ 4 } />
 			) : (
 				<SummaryList
@@ -198,18 +203,21 @@ const DepositsOverview = () => {
 									'Last deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.last_deposit ) }
-								prevLabel={ getDepositDate(
-									overview.last_deposit
-								) }
-								href={
-									overview.last_deposit
+								{ ...( overview && {
+									value: getAmount(
+										overview.last_deposit,
+										overview.account.default_currency
+									),
+									prevLabel: getDepositDate(
+										overview.last_deposit
+									),
+									href: overview.last_deposit
 										? getDetailsURL(
 												overview.last_deposit.id,
 												'deposits'
 										  )
-										: ''
-								}
+										: '',
+								} ) }
 							/>,
 							<SummaryNumber
 								key="nextDeposit"
@@ -217,18 +225,21 @@ const DepositsOverview = () => {
 									'Next deposit',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.next_deposit ) }
-								prevLabel={ getNextDepositLabelFormatted(
-									overview.next_deposit
-								) }
-								href={
-									overview.next_deposit
+								{ ...( overview && {
+									value: getAmount(
+										overview.next_deposit,
+										overview.account.default_currency
+									),
+									prevLabel: getNextDepositLabelFormatted(
+										overview.next_deposit
+									),
+									href: overview.next_deposit
 										? getDetailsURL(
 												overview.next_deposit.id,
 												'deposits'
 										  )
-										: ''
-								}
+										: '',
+								} ) }
 							/>,
 							<SummaryNumber
 								key="pendingBalance"
@@ -236,10 +247,15 @@ const DepositsOverview = () => {
 									'Pending balance',
 									'woocommerce-payments'
 								) }
-								value={ getAmount( overview.balance.pending ) }
-								prevLabel={ getBalanceDepositCount(
-									overview.balance.pending
-								) }
+								{ ...( overview && {
+									value: getAmount(
+										overview.balance.pending,
+										overview.account.default_currency
+									),
+									prevLabel: getBalanceDepositCount(
+										overview.balance.pending
+									),
+								} ) }
 							/>,
 							<SummaryNumber
 								key="availableBalance"
@@ -247,9 +263,13 @@ const DepositsOverview = () => {
 									'Available balance',
 									'woocommerce-payments'
 								) }
-								value={ getAmount(
-									overview.balance.available
-								) }
+								value={
+									overview &&
+									getAmount(
+										overview.balance.available,
+										overview.account.default_currency
+									)
+								}
 								prevLabel=""
 							/>,
 						];

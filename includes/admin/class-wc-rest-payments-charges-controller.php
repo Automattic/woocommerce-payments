@@ -42,7 +42,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_charge( $request ) {
-		$charge_id = $request->get_params()['charge_id'];
+		$charge_id = $request->get_param( 'charge_id' );
 
 		try {
 			$charge = $this->api_client->get_charge( $charge_id );

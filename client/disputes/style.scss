@@ -3,49 +3,17 @@
 .wcpay-dispute-evidence {
 	$horizontal-card-padding: 24px;
 
-	.woocommerce-card__header,
-	.woocommerce-card__body {
-		padding: 16px $horizontal-card-padding;
+	.components-card__header{
+		font-size:20px;
 	}
 
-	.woocommerce-card__header {
-		border-bottom: 1px solid $studio-gray-5;
-	}
-	.woocommerce-card__title {
-		padding: 3px 0;
-		font-size: 20px;
-		font-size: 1.2rem;
-		font-weight: 300;
+	.components-card{
+		margin-bottom:24px;
 	}
 
-	.woocommerce-card__body {
-		font-weight: 300;
-		letter-spacing: 0.012rem;
-		line-height: 1.5;
-		&,
-		p,
-		h3 {
-			font-size: 1rem;
-		}
-
-		.woocommerce-card__footer {
-			margin-left: -$horizontal-card-padding;
-			margin-right: -$horizontal-card-padding;
-			padding-left: $horizontal-card-padding;
-			padding-right: $horizontal-card-padding;
-		}
-	}
-
-	.is-button.is-large {
-		height: 40px;
-		line-height: 38px;
-		font-size: 14px;
-		font-weight: 500;
-		padding: 0 15px 2px;
-	}
 	.components-form-file-upload .is-button.is-large {
-		padding-left: 14px;
-		padding-bottom: 0;
+		padding: 6px 12px;
+		margin-top: 4px;
 
 		svg {
 			margin-right: 6px;
@@ -56,29 +24,34 @@
 	}
 
 	// Evidence form
+
+	.components-textarea-control__input{
+		display: block;
+		margin-top: 4px;
+		width: 100%;
+	}
+
+	.components-text-control__input{
+		margin-top:4px;
+	}
+
 	.components-base-control {
 		position: relative;
 	}
 	.components-base-control .components-base-control__label {
-		font-size: 12px;
-		color: $dark-gray-500;
+		margin-bottom: 4px;
 	}
 	.components-base-control + .components-base-control {
 		margin: 16px 0 0;
 	}
-	.components-base-control:first-child {
-		margin-top: 4px;
-	}
-	.components-base-control:last-child > p {
-		margin-bottom: 8px;
-	}
+
 	.components-base-control > .components-base-control__help {
 		font-style: normal;
-		font-weight: 300;
+		font-weight: 400;
 		font-size: 12px;
 		line-height: 16px;
 		color: $studio-gray-40;
-		margin-top: 0;
+		margin-top: 8px;
 	}
 
 	// Fix broken wc-admin style for file upload buttons specifically.
@@ -89,11 +62,6 @@
 
 		// Selector here is super specific to ensure styles are overwritten.
 		.components-icon-button.is-primary:not( :disabled ):not( [aria-disabled='true'] ) {
-			// Fix primary button hover.
-			&:hover {
-				background-color: $studio-pink-60;
-				border-color: $studio-pink-60;
-			}
 
 			&.is-success {
 				background-color: $studio-green;

@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $payments_api_client;
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -29,15 +36,18 @@ class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account      $account Account instance.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account             Account instance.
 	 */
 	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account
 	) {
-		$this->wcpay_gateway = $gateway;
-		$this->account       = $account;
+		$this->payments_api_client = $payments_api_client;
+		$this->wcpay_gateway       = $gateway;
+		$this->account             = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -76,6 +86,13 @@ class WC_Payments_Admin {
 		);
 
 		if ( $should_render_full_menu ) {
+
+			/**
+			 * Please note that if any other page is registered first and it's
+			 * path is different from the $top_level_link it will make
+			 * wc_admin_register_page to duplicate "Payments" menu item as a
+			 * first item in the sub-menu.
+			 */
 			wc_admin_register_page(
 				[
 					'id'       => 'wc-payments-deposits',
@@ -114,6 +131,26 @@ class WC_Payments_Admin {
 					],
 				]
 			);
+
+			if ( self::is_account_overview_page_enabled() ) {
+				/**
+				 * Once page is fully implemented it should become the main
+				 * entry page and implement a proper adjustment of
+				 * $top_level_link if needed to avoid menu item duplication.
+				 */
+				wc_admin_register_page(
+					[
+						'id'       => 'wc-payments-overview',
+						'title'    => __( 'Overview', 'woocommerce-payments' ),
+						'parent'   => 'wc-payments',
+						'path'     => '/payments/overview/',
+						'nav_args' => [
+							'parent' => 'wc-payments',
+							'order'  => 5,
+						],
+					]
+				);
+			}
 
 			wc_admin_connect_page(
 				[
@@ -180,6 +217,8 @@ class WC_Payments_Admin {
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' )
 		);
+
+		$this->add_menu_notification_badge();
 	}
 
 	/**
@@ -216,8 +255,11 @@ class WC_Payments_Admin {
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
+				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
 			]
 		);
+
+		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_DASH_APP',
@@ -237,6 +279,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.js' ),
 			true
 		);
+		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_TOS',
@@ -271,8 +314,12 @@ class WC_Payments_Admin {
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpaySettings',
-			[ 'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies() ]
+			[
+				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+				'featureFlags'          => $this->get_frontend_feature_flags(),
+			]
 		);
+		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
 		wp_register_style(
 			'WCPAY_ADMIN_SETTINGS',
@@ -353,6 +400,8 @@ class WC_Payments_Admin {
 		return [
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+			'accountOverview' => self::is_account_overview_page_enabled(),
+			'groupedSettings' => self::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -398,5 +447,41 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
+	}
+
+	/**
+	 * Checks whether Account Overview page is enabled
+	 *
+	 * @return bool
+	 */
+	private static function is_account_overview_page_enabled() {
+		return get_option( '_wcpay_feature_account_overview' );
+	}
+
+	/**
+	 * Checks whether the grouped settings feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_grouped_settings_enabled() {
+		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
+	}
+
+	/**
+	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
+	 * to remind user that setup is required.
+	 */
+	public function add_menu_notification_badge() {
+		global $menu;
+		if ( $this->account->is_stripe_connected() || 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+			return;
+		}
+
+		foreach ( $menu as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) {
+				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
 	}
 }

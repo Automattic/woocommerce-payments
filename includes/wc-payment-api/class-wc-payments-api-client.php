@@ -25,6 +25,7 @@ class WC_Payments_API_Client {
 	const API_TIMEOUT_SECONDS = 70;
 
 	const ACCOUNTS_API        = 'accounts';
+	const APPLE_PAY_API       = 'apple_pay';
 	const CHARGES_API         = 'charges';
 	const CONN_TOKENS_API     = 'terminal/connection_tokens';
 	const CUSTOMERS_API       = 'customers';
@@ -180,6 +181,19 @@ class WC_Payments_API_Client {
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
 
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+			$request['mandate_data']         = [
+				'customer_acceptance' => [
+					'type'   => 'online',
+					'online' => [
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					],
+				],
+			];
+		}
+
 		if ( $off_session ) {
 			$request['off_session'] = true;
 		}
@@ -276,9 +290,10 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method' => $payment_method_id,
-			'customer'       => $customer_id,
-			'confirm'        => 'true',
+			'payment_method'       => $payment_method_id,
+			'customer'             => $customer_id,
+			'confirm'              => 'true',
+			'payment_method_types' => [ 'card', 'sepa_debit' ],
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -299,17 +314,25 @@ class WC_Payments_API_Client {
 	/**
 	 * List deposits
 	 *
-	 * @param int $page      The requested page.
-	 * @param int $page_size The size of the requested page.
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_deposits( $page = 0, $page_size = 25 ) {
-		$query = [
-			'page'     => $page,
-			'pagesize' => $page_size,
-		];
+	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', array $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
 
 		return $this->request( $query, self::DEPOSITS_API, self::GET );
 	}
@@ -322,6 +345,18 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposits_overview() {
 		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
+	}
+
+	/**
+	 * Get summary of deposits.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_summary( array $filters = [] ) {
+		return $this->request( $filters, self::DEPOSITS_API . '/summary', self::GET );
 	}
 
 	/**
@@ -900,6 +935,48 @@ class WC_Payments_API_Client {
 				'customer' => $customer_id,
 			],
 			self::TRACKING_API . '/link-session',
+			self::POST
+		);
+	}
+
+	/**
+	 * Sends the contents of the "forterToken" cookie to the server.
+	 *
+	 * @param string $token Contents of the "forterToken" cookie, used to identify the current browsing session.
+	 *
+	 * @return array An array, containing a `success` flag.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function send_forter_token( $token ) {
+		return $this->request(
+			[
+				'token'      => $token,
+				//phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+				'ip'         => WC_Geolocation::get_ip_address(),
+			],
+			self::TRACKING_API . '/forter-token',
+			self::POST
+		);
+	}
+
+	/**
+	 * Registers a new domain with Apple Pay.
+	 *
+	 * @param string $domain_name Domain name which to register for Apple Pay.
+	 *
+	 * @return array An array containing an id in case it has succeeded, or an error message in case it has failed.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function register_domain_with_apple( $domain_name ) {
+		return $this->request(
+			[
+				'test_mode'   => false, // Force live mode - Domain registration doesn't work in test mode.
+				'domain_name' => $domain_name,
+			],
+			self::APPLE_PAY_API . '/domains',
 			self::POST
 		);
 	}

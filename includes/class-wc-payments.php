@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Payment_Method\Card;
+use WCPay\Payment_Method\Sepa;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -21,7 +23,14 @@ class WC_Payments {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $gateway;
+	private static $card_gateway;
+
+	/**
+	 * Instance of Sepa gateway, created in init function.
+	 *
+	 * @var Sepa
+	 */
+	private static $sepa_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -80,6 +89,20 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Payment_Request_Button_Handler
+	 */
+	private static $payment_request_button_handler;
+
+	/**
+	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
+	 *
+	 * @var WC_Payments_Apple_Pay_Registration
+	 */
+	private static $apple_pay_registration;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -100,6 +123,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'install_actions' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -117,7 +141,11 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
+		include_once __DIR__ . '/payment-method/class-card.php';
+		include_once __DIR__ . '/payment-method/class-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
+		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
@@ -141,14 +169,20 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = 'WC_Payment_Gateway_WCPay';
+		$gateway_class = Card::class;
+		$sepa_class    = Sepa::class;
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
-		self::$gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+
+		// Payment Request and Apple Pay.
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -157,7 +191,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$gateway, self::$account );
+			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -375,7 +409,8 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::$gateway;
+		$gateways[] = self::$card_gateway;
+		$gateways[] = self::$sepa_gateway;
 
 		return $gateways;
 	}
@@ -390,7 +425,7 @@ class WC_Payments {
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
-		$id       = self::$gateway->id;
+		$id       = self::$card_gateway->id;
 		// Only tweak the ordering if the list hasn't been reordered with WooCommerce Payments in it already.
 		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
 			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
@@ -444,6 +479,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
+		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
+		$accounts_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-deposits-controller.php';
 		$deposits_controller = new WC_REST_Payments_Deposits_Controller( self::$api_client );
 		$deposits_controller->register_routes();
@@ -461,7 +500,7 @@ class WC_Payments {
 		$charges_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
-		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$gateway, self::$account );
+		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
@@ -473,7 +512,7 @@ class WC_Payments {
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
-		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$gateway, self::$account );
+		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
 	}
 
@@ -497,7 +536,7 @@ class WC_Payments {
 	 * @return WC_Payment_Gateway_WCPay gateway instance
 	 */
 	public static function get_gateway() {
-		return self::$gateway;
+		return self::$card_gateway;
 	}
 
 	/**
@@ -512,11 +551,30 @@ class WC_Payments {
 	}
 
 	/**
+	 * Handles upgrade routines.
+	 */
+	public static function install_actions() {
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '>' ) ) {
+			do_action( 'woocommerce_woocommerce_payments_updated' );
+			self::update_plugin_version();
+		}
+	}
+
+	/**
+	 * Updates the plugin version in db.
+	 */
+	public static function update_plugin_version() {
+		update_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER );
+	}
+
+	/**
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_add_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
@@ -532,6 +590,8 @@ class WC_Payments {
 
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
 			WC_Payments_Notes_Set_Up_Refund_Policy::possibly_delete_note();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
@@ -540,5 +600,17 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Filter to check if WCPay should operate as usual (the customer can save payment methods at checkout and those payment methods
+	 * will only be used on this site), or if saved cards should be available for all the sites on the multisite network.
+	 *
+	 * NOTE: DON'T USE THIS FILTER. Everything will break. At this moment, it's only intended to be used internally by Automattic.
+	 *
+	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
+	 */
+	public static function is_network_saved_cards_enabled() {
+		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 }

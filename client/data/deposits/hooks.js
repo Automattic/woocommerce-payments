@@ -35,26 +35,60 @@ export const useDepositsOverview = () =>
 	} );
 
 // eslint-disable-next-line camelcase
-export const useDeposits = ( { paged, per_page: perPage } ) =>
+export const useDeposits = ( {
+	paged,
+	per_page: perPage,
+	orderby = 'date',
+	order = 'desc',
+	store_currency_is: storeCurrencyIs,
+} ) =>
 	useSelect(
 		( select ) => {
-			const { getDeposits, getDepositQueryError, isResolving } = select(
-				STORE_NAME
-			);
+			const {
+				getDeposits,
+				getDepositsCount,
+				getDepositQueryError,
+				isResolving,
+			} = select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged, 10 ) ) ? '1' : paged,
 				perPage: Number.isNaN( parseInt( perPage, 10 ) )
 					? '25'
 					: perPage,
+				orderby,
+				order,
+				storeCurrencyIs,
 			};
 			return {
 				deposits: getDeposits( query ),
+				depositsCount: getDepositsCount(),
 				depositsError: getDepositQueryError( query ),
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage ]
+		[ paged, perPage, orderby, order, storeCurrencyIs ]
+	);
+
+export const useDepositsSummary = ( {
+	match,
+	store_currency_is: storeCurrencyIs,
+} ) =>
+	useSelect(
+		( select ) => {
+			const { getDepositsSummary, isResolving } = select( STORE_NAME );
+
+			const query = {
+				match,
+				storeCurrencyIs,
+			};
+
+			return {
+				depositsSummary: getDepositsSummary( query ),
+				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
+			};
+		},
+		[ storeCurrencyIs ]
 	);
 
 export const useInstantDeposit = ( transactionIds ) => {

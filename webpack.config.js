@@ -6,19 +6,19 @@ const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extr
 
 const webpackConfig = {
 	mode: NODE_ENV,
-	devtool: process.env.SOURCEMAP || 'source-map',
+	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
 	entry: {
 		index: './client/index.js',
-		settings: './client/settings.js',
+		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
+		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
 	},
 	output: {
 		filename: '[name].js',
 		path: path.resolve( 'dist' ),
-		libraryTarget: 'this',
 	},
 	module: {
 		rules: [
@@ -104,7 +104,6 @@ const webpackConfig = {
 			},
 		} ),
 	],
-	devtool: 'source-map',
 };
 
 module.exports = webpackConfig;

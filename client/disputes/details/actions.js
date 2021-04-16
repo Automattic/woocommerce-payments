@@ -9,9 +9,9 @@ import { Button } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 
 /**
- * Internal dependencies.
+ * Internal dependencies
  */
-import CardFooter from 'components/card-footer';
+import wcpayTracks from 'tracks';
 
 const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	if ( ! needsResponse && ! isSubmitted ) {
@@ -30,12 +30,12 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 	);
 
 	return (
-		<CardFooter>
+		<div>
 			<Link
 				href={ challengeUrl }
 				className="components-button is-button is-primary is-large"
 				onClick={ () =>
-					window.wcTracks.recordEvent(
+					wcpayTracks.recordEvent(
 						needsResponse
 							? 'wcpay_dispute_challenge_clicked'
 							: 'wcpay_view_submitted_evidence_clicked'
@@ -49,7 +49,6 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 			{ needsResponse && (
 				<Button
 					isDefault
-					isLarge
 					onClick={ () =>
 						window.confirm( acceptMessage ) && onAccept()
 					}
@@ -57,7 +56,7 @@ const Actions = ( { id, needsResponse, isSubmitted, onAccept } ) => {
 					{ __( 'Accept dispute', 'woocommerce-payments' ) }
 				</Button>
 			) }
-		</CardFooter>
+		</div>
 	);
 };
 

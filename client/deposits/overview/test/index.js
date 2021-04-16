@@ -79,6 +79,12 @@ describe( 'Deposits overview', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders on error correctly', () => {
+		mockUseDepositsOverview();
+		const { container } = render( <DepositsOverview /> );
+		expect( container ).toMatchSnapshot();
+	} );
+
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule(
 			{ interval: 'daily' },

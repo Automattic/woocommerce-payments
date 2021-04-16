@@ -16,9 +16,42 @@ const transactionTypesOptions = Object.entries( displayType )
 
 export const filters = [
 	{
+		label: __( 'Deposit currency', 'woocommerce-payments' ),
+		param: 'store_currency_is',
+		staticParams: [
+			'paged',
+			'per_page',
+			'orderby',
+			'order',
+			'search',
+			'filter',
+			'type_is',
+			'type_is_not',
+			'date_before',
+			'date_after',
+			'date_between',
+		],
+		showFilters: () => false,
+		filters: [
+			{
+				label: __( 'All currencies', 'woocommerce-payments' ),
+				value: '---',
+			},
+			// Other values are getting injected later, taking values from store.
+		],
+		defaultValue: '---',
+	},
+	{
 		label: __( 'Show', 'woocommerce-payments' ),
 		param: 'filter',
-		staticParams: [ 'paged', 'per_page', 'search' ],
+		staticParams: [
+			'paged',
+			'per_page',
+			'orderby',
+			'order',
+			'search',
+			'store_currency_is',
+		],
 		showFilters: () => true,
 		filters: [
 			{
@@ -33,7 +66,7 @@ export const filters = [
 	},
 ];
 
-/*eslint-disable max-len, camelcase*/
+/*eslint-disable max-len*/
 export const advancedFilters = {
 	/** translators: A sentence describing filters for Transactions. See screen shot for context: https://d.pr/i/NcGpwL */
 	title: __(
@@ -128,4 +161,4 @@ export const advancedFilters = {
 		},
 	},
 };
-/*eslint-enable max-len, camelcase*/
+/*eslint-enable max-len*/

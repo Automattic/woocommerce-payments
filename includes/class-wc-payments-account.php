@@ -19,6 +19,7 @@ use WCPay\Logger;
 class WC_Payments_Account {
 
 	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
 
@@ -38,11 +39,12 @@ class WC_Payments_Account {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
-		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
+    add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
 		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
@@ -50,6 +52,21 @@ class WC_Payments_Account {
 	 */
 	public function clear_cache() {
 		delete_transient( self::ACCOUNT_TRANSIENT );
+	}
+
+	/**
+	 * Add clear account cache tool to WooCommerce debug tools.
+	 *
+	 * @param array $tools List of current available tools.
+	 */
+	public function debug_tool( $tools ) {
+		$tools['clear_wcpay_account_cache'] = [
+			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
+			'button'   => __( 'Clear', 'woocommerce-payments' ),
+			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
+			'callback' => [ $this, 'refresh_account_data' ],
+		];
+		return $tools;
 	}
 
 	/**
@@ -232,29 +249,26 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Whether to do a full-page redirect to the WCPay onboarding page. It has several exceptions, to prevent
-	 * "hijacking" the multiple WC/WC-Admin onboarding flows.
-	 * This function assumes that the Stripe account hasn't been setup yet.
-	 *
-	 * @return bool True if the user should be redirected to the WCPay onboarding page, false otherwise.
-	 */
-	private function should_redirect_to_onboarding() {
-		// If the user is in the WCPay settings screen and hasn't onboarded yet, always redirect.
-		if ( WC_Payment_Gateway_WCPay::is_current_page_settings() ) {
-			return true;
-		}
-
-		return get_option( 'wcpay_should_redirect_to_onboarding', false );
-	}
-
-	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * @return bool True if the account is connected properly.
+	 * @return bool True if the redirection happened.
 	 */
-	public function check_stripe_account_status() {
+	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return;
+			return false;
+		}
+
+		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
+		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+
+		if (
+			// If not loading the settings page...
+			! $is_on_settings_page
+			// ...and we have redirected before.
+			&& ! $should_redirect_to_onboarding
+		) {
+			// Do not attempt to redirect again.
+			return false;
 		}
 
 		$account = $this->get_cached_account_data();
@@ -263,13 +277,19 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( empty( $account ) ) {
-			if ( $this->should_redirect_to_onboarding() ) {
-				update_option( 'wcpay_should_redirect_to_onboarding', false );
-				$this->redirect_to_onboarding_page();
-			}
+		if ( $should_redirect_to_onboarding ) {
+			// Update the option. If there's an account connected, we won't need to redirect in the future.
+			// If not, we will redirect once and will not want to redirect again.
+			update_option( 'wcpay_should_redirect_to_onboarding', false );
+		}
+
+		if ( ! empty( $account ) ) {
+			// Do not redirect if connected.
 			return false;
 		}
+
+		// Redirect if not connected.
+		$this->redirect_to_onboarding_page();
 		return true;
 	}
 
@@ -318,6 +338,9 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+
+			// Hide menu notification badge upon starting setup.
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_page(
@@ -544,6 +567,12 @@ class WC_Payments_Account {
 			return $account;
 		}
 
+		// If the transient contains the error value and has not expired, return false early and do not attempt another
+		// API call.
+		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+			return false;
+		}
+
 		try {
 			// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
 			// below re-create it if the server tells us on-boarding is still disabled.
@@ -562,7 +591,9 @@ class WC_Payments_Account {
 				set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 			} else {
 				// Failed to retrieve account data. Exception is logged in http client.
-				// Return immediately to signal account retrieval error.
+				// Rate limit the account retrieval failures - set a transient for a short time.
+				set_transient( self::ACCOUNT_TRANSIENT, self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+				// Return false to signal account retrieval error.
 				return false;
 			}
 		}
@@ -597,7 +628,7 @@ class WC_Payments_Account {
 	/**
 	 * Checks if the cached account can be used in the current plugin state.
 	 *
-	 * @param bool|array $account cached account data.
+	 * @param bool|string|array $account cached account data.
 	 *
 	 * @return bool True if the cached account is valid.
 	 */
@@ -607,8 +638,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// the rate limiting mechanism has detected an error - not a valid account.
+		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+			return false;
+		}
+
 		// empty array - special value to indicate that there's no account connected.
-		if ( empty( $account ) ) {
+		if ( is_array( $account ) && empty( $account ) ) {
 			return true;
 		}
 
@@ -749,6 +785,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Gets the account country.
+	 *
+	 * @return string Country.
+	 */
+	public function get_account_country() {
+		$account = $this->get_cached_account_data();
+		return $account['country'] ?? 'US';
+	}
+  
+  /**
 	 * Checks to see if the account is eligible for Instant Deposits.
 	 *
 	 * @return bool
@@ -761,6 +807,7 @@ class WC_Payments_Account {
 
 		return true;
 	}
+  
 	/**
 	 * Handles adding a note if the merchant is eligible for Instant Deposits.
 	 *

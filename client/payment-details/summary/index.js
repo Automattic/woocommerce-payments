@@ -5,7 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card } from '@woocommerce/components';
+import { Card, CardBody, CardFooter } from '@wordpress/components';
 import moment from 'moment';
 import { get } from 'lodash';
 
@@ -86,94 +86,106 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 		charge.currency && balance.currency !== charge.currency;
 
 	return (
-		<Card className="payment-details-summary-details">
-			<div className="payment-details-summary">
-				<div className="payment-details-summary__section">
-					<p className="payment-details-summary__amount">
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Amount placeholder"
-						>
-							{ formatCurrency( charge.amount, charge.currency ) }
-							<span className="payment-details-summary__amount-currency">
-								{ charge.currency || 'USD' }
-							</span>
-							<PaymentStatusChip
-								status={ getChargeStatus( charge ) }
-							/>
-						</Loadable>
-					</p>
-					<div className="payment-details-summary__breakdown">
-						{ renderStorePrice ? (
-							<p>
+		<Card>
+			<CardBody>
+				<div className="payment-details-summary">
+					<div className="payment-details-summary__section">
+						<p className="payment-details-summary__amount">
+							<Loadable
+								isLoading={ isLoading }
+								placeholder="Amount placeholder"
+							>
 								{ formatCurrency(
-									balance.amount,
-									balance.currency
-								) }{ ' ' }
-								{ balance.currency.toUpperCase() }
-							</p>
-						) : null }
-						{ balance.refunded ? (
+									charge.amount,
+									charge.currency
+								) }
+								<span className="payment-details-summary__amount-currency">
+									{ charge.currency || 'USD' }
+								</span>
+								<PaymentStatusChip
+									status={ getChargeStatus( charge ) }
+								/>
+							</Loadable>
+						</p>
+						<div className="payment-details-summary__breakdown">
+							{ renderStorePrice ? (
+								<p>
+									{ formatCurrency(
+										balance.amount,
+										balance.currency
+									) }{ ' ' }
+									{ balance.currency.toUpperCase() }
+								</p>
+							) : null }
+							{ balance.refunded ? (
+								<p>
+									{ `${ __(
+										'Refunded',
+										'woocommerce-payments'
+									) }: ` }
+									{ formatCurrency(
+										-balance.refunded,
+										balance.currency
+									) }
+								</p>
+							) : (
+								''
+							) }
 							<p>
+								<Loadable
+									isLoading={ isLoading }
+									placeholder="Fee amount"
+								>
+									{ `${ __(
+										'Fee',
+										'woocommerce-payments'
+									) }: ` }
+									{ formatCurrency(
+										-balance.fee,
+										balance.currency
+									) }
+								</Loadable>
+							</p>
+							<p>
+								<Loadable
+									isLoading={ isLoading }
+									placeholder="Net amount"
+								>
+									{ `${ __(
+										'Net',
+										'woocommerce-payments'
+									) }: ` }
+									{ formatCurrency(
+										balance.net,
+										balance.currency
+									) }
+								</Loadable>
+							</p>
+						</div>
+					</div>
+					<div className="payment-details-summary__section">
+						<div className="payment-details-summary__id">
+							<Loadable
+								isLoading={ isLoading }
+								placeholder="Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx"
+							>
 								{ `${ __(
-									'Refunded',
+									'Payment ID',
 									'woocommerce-payments'
 								) }: ` }
-								{ formatCurrency(
-									-balance.refunded,
-									balance.currency
-								) }
-							</p>
-						) : (
-							''
-						) }
-						<p>
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Fee amount"
-							>
-								{ `${ __( 'Fee', 'woocommerce-payments' ) }: ` }
-								{ formatCurrency(
-									-balance.fee,
-									balance.currency
-								) }
+								{ charge.id }
 							</Loadable>
-						</p>
-						<p>
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Net amount"
-							>
-								{ `${ __( 'Net', 'woocommerce-payments' ) }: ` }
-								{ formatCurrency(
-									balance.net,
-									balance.currency
-								) }
-							</Loadable>
-						</p>
+						</div>
 					</div>
 				</div>
-				<div className="payment-details-summary__section">
-					<div className="payment-details-summary__id">
-						<Loadable
-							isLoading={ isLoading }
-							placeholder="Payment ID: ch_xxxxxxxxxxxxxxxxxxxxxxxx"
-						>
-							{ `${ __(
-								'Payment ID',
-								'woocommerce-payments'
-							) }: ` }
-							{ charge.id }
-						</Loadable>
-					</div>
-				</div>
-			</div>
-			<hr className="full-width" />
-			<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-				<HorizontalList
-					items={ composePaymentSummaryItems( { charge } ) }
-				/>
-			</LoadableBlock>
+			</CardBody>
+			<CardFooter>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+					<HorizontalList
+						items={ composePaymentSummaryItems( { charge } ) }
+					/>
+				</LoadableBlock>
+			</CardFooter>
 		</Card>
 	);
 };

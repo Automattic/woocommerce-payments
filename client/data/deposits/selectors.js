@@ -56,8 +56,34 @@ export const getDeposits = ( state, query ) => {
 	return ids.map( getDeposit.bind( this, state ) );
 };
 
+export const getDepositsCount = ( state ) => {
+	return getDepositsState( state ).count;
+};
+
 export const getDepositQueryError = ( state, query ) => {
 	return getDepositsForQuery( state, query ).error || {};
+};
+
+/**
+ * Retrieves the deposits summary corresponding to the provided query.
+ *
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The deposits summary query.
+ *
+ * @return {Object} The deposits summary for the given query.
+ */
+const getDepositsSummaryForQuery = ( state, query ) => {
+	const index = getResourceId( query );
+	const summary = getDepositsState( state ).summary || {};
+	return summary[ index ] || {};
+};
+
+export const getDepositsSummary = ( state, query ) => {
+	return getDepositsSummaryForQuery( state, query ).data || {};
+};
+
+export const getDepositsSummaryError = ( state, query ) => {
+	return getDepositsSummaryForQuery( state, query ).error || {};
 };
 
 export const getInstantDeposit = ( state ) => {

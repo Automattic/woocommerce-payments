@@ -11,7 +11,7 @@ import { map, keyBy } from 'lodash';
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 
-const defaultState = { byId: {}, queries: {}, instant: {} };
+const defaultState = { byId: {}, queries: {}, count: 0, instant: {} };
 
 const receiveDeposits = (
 	state = defaultState,
@@ -52,11 +52,37 @@ const receiveDeposits = (
 					},
 				},
 			};
+		// Note: count is currently independent of query, so no need to map from the query index as above.
+		case TYPES.SET_DEPOSITS_COUNT:
+			return {
+				...state,
+				count: data,
+			};
 		case TYPES.SET_ERROR_FOR_DEPOSIT_QUERY:
 			return {
 				...state,
 				queries: {
 					...state.queries,
+					[ index ]: {
+						error: error,
+					},
+				},
+			};
+		case TYPES.SET_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
+				},
+			};
+		case TYPES.SET_ERROR_FOR_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
 					[ index ]: {
 						error: error,
 					},
