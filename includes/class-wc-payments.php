@@ -178,7 +178,9 @@ class WC_Payments {
 		}
 
 		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
@@ -410,7 +412,9 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-		$gateways[] = self::$sepa_gateway;
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$gateways[] = self::$sepa_gateway;
+		}
 
 		return $gateways;
 	}
