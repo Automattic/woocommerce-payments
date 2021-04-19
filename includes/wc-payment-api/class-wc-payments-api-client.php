@@ -182,7 +182,7 @@ class WC_Payments_API_Client {
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
 
-		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
