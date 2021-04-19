@@ -119,14 +119,34 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @param int    $timestamp - When the job will run.
 	 * @param string $hook      - The hook to trigger.
 	 * @param array  $args      - An array containing the arguments to be passed to the hook.
+	 * @param string $group     - The AS group the action will be created under.
 	 *
 	 * @return void
 	 */
-	public function schedule_job( $timestamp, $hook, $args = [] ) {
+	public function schedule_job( $timestamp, $hook, $args = [], $group = self::GROUP_ID ) {
 		// Unschedule any previously scheduled instances of this particular job.
 		as_unschedule_action( $hook, $args, self::GROUP_ID );
 
 		// Schedule the job.
 		as_schedule_single_action( $timestamp, $hook, $args, self::GROUP_ID );
+	}
+
+	/**
+	 * Checks to see if there is a Pending action with the same hook already.
+	 *
+	 * @param string $hook Hook name.
+	 *
+	 * @return bool
+	 */
+	public function pending_action_exists( $hook ): bool {
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => $hook,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => self::GROUP_ID,
+			]
+		);
+
+		return count( $actions ) > 0;
 	}
 }

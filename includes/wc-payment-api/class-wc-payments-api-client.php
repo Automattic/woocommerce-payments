@@ -370,6 +370,25 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param string $type Type of deposit. Only "instant" is supported for now.
+	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @return array The new deposit object.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request(
+			[
+				'type'            => $type,
+				'transaction_ids' => $transaction_ids,
+			],
+			self::DEPOSITS_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Return summary for transactions.
 	 *
 	 * @param array  $filters    The filters to be used in the query.
