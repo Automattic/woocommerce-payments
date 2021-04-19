@@ -201,11 +201,11 @@ class WC_Payments {
 		}
 
 		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		if ( WC_Payments_Features::is_giropay_enabled() ) {
+			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		}
-		if ( '1' === get_option( '_wcpay_feature_giropay' ) ) {
-			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
@@ -444,11 +444,11 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
+		if ( WC_Payments_Features::is_giropay_enabled() ) {
+			$gateways[] = self::$giropay_gateway;
+		}
 		if ( WC_Payments_Features::is_sepa_enabled() ) {
 			$gateways[] = self::$sepa_gateway;
-		}
-		if ( '1' === get_option( '_wcpay_feature_giropay' ) ) {
-			$gateways[] = self::$giropay_gateway;
 		}
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			$gateways[] = self::$sofort_gateway;
