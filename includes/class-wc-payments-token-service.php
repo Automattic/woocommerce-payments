@@ -190,7 +190,7 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for SEPA on the my account page.
 	 *
-	 * @param  array            $item Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  array            $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry.
 	 * @return array            Filtered item
 	 */
