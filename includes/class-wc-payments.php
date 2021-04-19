@@ -447,7 +447,7 @@ class WC_Payments {
 	 */
 	public static function hide_gateways_on_settings_page() {
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
-			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof Card ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof CC_Payment_Gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
 			}
 		}
