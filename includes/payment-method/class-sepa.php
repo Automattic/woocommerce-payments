@@ -59,6 +59,11 @@ class Sepa extends WC_Payment_Gateway_WCPay {
 			wp_localize_script( 'wcpay-sepa-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-sepa-checkout' );
 
+			$prepared_customer_data = $this->get_prepared_customer_data();
+			if ( ! empty( $prepared_customer_data ) ) {
+				wp_localize_script( 'wcpay-sepa-checkout', 'wcpayCustomerData', $prepared_customer_data );
+			}
+
 			wp_enqueue_style(
 				'wcpay-sepa-checkout',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),

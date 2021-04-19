@@ -38,7 +38,7 @@ jQuery( function ( $ ) {
 	);
 	const elements = api.getStripe().elements();
 
-	// Customer information for Pay for Oder and Save Payment method.
+	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
 		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};

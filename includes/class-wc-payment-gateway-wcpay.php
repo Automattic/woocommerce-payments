@@ -518,13 +518,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Adds customer data to 'wcpay-checkout' when on 'Pay for Order' or 'Add Payment Method' pages.
+	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
 	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'
+	 * Customer data is retrieved from customer when on 'Add Payment Method'.
+	 *
+	 * @return array|null An array with customer data or nothing.
 	 */
-	public function maybe_localize_customer_data() {
+	public function get_prepared_customer_data() {
 		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) {
-			return;
+			return null;
 		}
 
 		global $wp;
@@ -533,7 +535,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$lastname   = '';
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) {
-			$order_id = wc_clean( $wp->query_vars['order-pay'] );
+			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
@@ -555,12 +557,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 		$prepared_customer_data = [
-			'firstname' => $firstname,
-			'lastname'  => $lastname,
-			'name'      => $firstname . ' ' . $lastname,
-			'email'     => $user_email,
+			'name'  => $firstname . ' ' . $lastname,
+			'email' => $user_email,
 		];
-		wp_localize_script( 'wcpay-checkout', 'wcpayCustomerData', $prepared_customer_data );
+
+		return $prepared_customer_data;
 	}
 	/**
 	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
@@ -574,7 +575,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-checkout' );
 
-			$this->maybe_localize_customer_data();
+			$prepared_customer_data = $this->get_prepared_customer_data();
+			if ( ! empty( $prepared_customer_data ) ) {
+				wp_localize_script( 'wcpay-checkout', 'wcpayCustomerData', $prepared_customer_data );
+			}
 
 			wp_enqueue_style(
 				'wcpay-checkout',
