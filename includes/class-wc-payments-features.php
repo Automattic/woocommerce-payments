@@ -19,6 +19,15 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_grouped_settings_enabled() {
-		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
+		return '1' === get_option( '_wcpay_feature_grouped_settings', '0' );
+	}
+
+	/**
+	 * Checks whether the Sepa gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_sepa_enabled() {
+		return '1' === get_option( '_wcpay_feature_sepa', '0' );
 	}
 }

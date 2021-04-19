@@ -1,11 +1,11 @@
 <?php
 /**
- * Class Sepa
+ * Class CC_Payment_Gateway
  *
- * @package WCPay\Payment_Gateway
+ * @package WCPay\Payment_Methods
  */
 
-namespace WCPay\Payment_Method;
+namespace WCPay\Payment_Methods;
 
 use WC_Payment_Gateway_WCPay;
 
@@ -13,6 +13,6 @@ use WC_Payment_Gateway_WCPay;
  * Credit Card Payment method.
  * Right now behaves exactly like WC_Payment_Gateway_WCPay for max compatibility.
  */
-class Card extends WC_Payment_Gateway_WCPay {
+class CC_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 }

@@ -7,6 +7,7 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_SEPA,
+	PAYMENT_METHOD_NAME_GIROPAY,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
@@ -64,6 +65,11 @@ jQuery( function ( $ ) {
 		sepa_debit: sepaElement,
 	};
 
+	// Giropay payment method details
+	const giropayPayment = {
+		type: 'giropay' /* eslint-disable camelcase */,
+	};
+
 	/**
 	 * Check if SEPA Direct Debit is being used.
 	 *
@@ -82,6 +88,17 @@ jQuery( function ( $ ) {
 	 */
 	const isWCPayCardChosen = function () {
 		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
+	};
+
+	/**
+	 * Check if Giropay payment is being used.
+	 *
+	 * @return {boolean} Boolean indicating whether or not Giropay payment is being used.
+	 */
+	const isWCPayGiropayChosen = function () {
+		return $( '#payment_method_woocommerce_payments_giropay' ).is(
+			':checked'
+		);
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -393,11 +410,15 @@ jQuery( function ( $ ) {
 	function isUsingSavedPaymentMethod() {
 		if ( isWCPaySepaChosen() ) {
 			return (
-				$( '#wc-woocommerce_payments-payment-sepa-token-new' ).length &&
-				! $( '#wc-woocommerce_payments-payment-sepa-token-new' ).is(
+				$( '#wc-woocommerce_payments_sepa-payment-token-new' ).length &&
+				! $( '#wc-woocommerce_payments_sepa-payment-token-new' ).is(
 					':checked'
 				)
 			);
+		}
+		if ( isWCPayGiropayChosen() ) {
+			// Giropay does not use saved payment methods at this time
+			return false;
 		}
 		return (
 			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
@@ -410,14 +431,22 @@ jQuery( function ( $ ) {
 		'checkout_place_order_' +
 			PAYMENT_METHOD_NAME_CARD +
 			' checkout_place_order_' +
-			PAYMENT_METHOD_NAME_SEPA,
+			PAYMENT_METHOD_NAME_SEPA +
+			' checkout_place_order_' +
+			PAYMENT_METHOD_NAME_GIROPAY,
 		function () {
 			if ( ! isUsingSavedPaymentMethod() ) {
+				let paymentMethodDetails = cardPayment;
+				if ( isWCPaySepaChosen() ) {
+					paymentMethodDetails = sepaPayment;
+				} else if ( isWCPayGiropayChosen() ) {
+					paymentMethodDetails = giropayPayment;
+				}
 				return handlePaymentMethodCreation(
 					$( this ),
 					handleOrderPayment,
 					true,
-					isWCPaySepaChosen() ? sepaPayment : cardPayment
+					paymentMethodDetails
 				);
 			}
 		}
@@ -443,11 +472,17 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
+			let paymentMethodDetails = cardPayment;
+			if ( isWCPaySepaChosen() ) {
+				paymentMethodDetails = sepaPayment;
+			} else if ( isWCPayGiropayChosen() ) {
+				paymentMethodDetails = giropayPayment;
+			}
 			return handlePaymentMethodCreation(
 				$( 'form#add_payment_method' ),
 				handleAddCard,
 				false,
-				isWCPaySepaChosen() ? sepaPayment : cardPayment
+				paymentMethodDetails
 			);
 		}
 	} );

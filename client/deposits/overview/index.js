@@ -20,6 +20,7 @@ import { useDepositsOverview } from 'data';
 import Loadable from 'components/loadable';
 import { getDetailsURL } from 'components/details-link';
 import { formatCurrency } from 'utils/currency';
+import InstantDepositButton from '../instant-deposits';
 
 const formatDate = ( format, date ) =>
 	dateI18n(
@@ -158,28 +159,36 @@ const getDepositScheduleDescriptor = ( {
 
 const DepositsOverview = () => {
 	const { overview, isLoading } = useDepositsOverview();
+
 	return (
 		<div className="wcpay-deposits-overview">
-			<p className="wcpay-deposits-overview__schedule">
-				<Gridicon
-					icon="calendar"
-					className="wcpay-deposits-overview__schedule-icon"
-				/>
-				<span className="wcpay-deposits-overview__schedule-label">
-					{ __( 'Deposit schedule:', 'woocommerce-payments' ) }
-				</span>{ ' ' }
-				<span className="wcpay-deposits-overview__schedule-value">
-					<Loadable
-						isLoading={ isLoading }
-						display="inline"
-						placeholder="Deposit schedule placeholder"
-					>
-						{ overview
-							? getDepositScheduleDescriptor( overview )
-							: '' }
-					</Loadable>
-				</span>
-			</p>
+			<div className="wcpay-deposits-overview__header">
+				<p className="wcpay-deposits-overview__schedule">
+					<Gridicon
+						icon="calendar"
+						className="wcpay-deposits-overview__schedule-icon"
+					/>
+					<span className="wcpay-deposits-overview__schedule-label">
+						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }
+					</span>{ ' ' }
+					<span className="wcpay-deposits-overview__schedule-value">
+						<Loadable
+							isLoading={ isLoading }
+							display="inline"
+							placeholder="Deposit schedule placeholder"
+						>
+							{ overview
+								? getDepositScheduleDescriptor( overview )
+								: '' }
+						</Loadable>
+					</span>
+				</p>
+				{ overview && overview.instant_balance && (
+					<InstantDepositButton
+						balance={ overview.instant_balance }
+					/>
+				) }
+			</div>
 			{ isLoading ? (
 				<SummaryListPlaceholder numberOfItems={ 4 } />
 			) : (

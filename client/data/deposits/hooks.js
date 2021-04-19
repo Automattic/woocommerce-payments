@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 export const useDeposit = ( id ) =>
@@ -40,6 +40,7 @@ export const useDeposits = ( {
 	per_page: perPage,
 	orderby = 'date',
 	order = 'desc',
+	store_currency_is: storeCurrencyIs,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -57,6 +58,7 @@ export const useDeposits = ( {
 					: perPage,
 				orderby,
 				order,
+				storeCurrencyIs,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -65,5 +67,41 @@ export const useDeposits = ( {
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, orderby, order ]
+		[ paged, perPage, orderby, order, storeCurrencyIs ]
 	);
+
+export const useDepositsSummary = ( {
+	match,
+	store_currency_is: storeCurrencyIs,
+} ) =>
+	useSelect(
+		( select ) => {
+			const { getDepositsSummary, isResolving } = select( STORE_NAME );
+
+			const query = {
+				match,
+				storeCurrencyIs,
+			};
+
+			return {
+				depositsSummary: getDepositsSummary( query ),
+				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
+			};
+		},
+		[ storeCurrencyIs ]
+	);
+
+export const useInstantDeposit = ( transactionIds ) => {
+	const { deposit, inProgress } = useSelect( ( select ) => {
+		const { getInstantDeposit, isResolving } = select( STORE_NAME );
+
+		return {
+			deposit: getInstantDeposit( [ transactionIds ] ),
+			inProgress: isResolving( 'getInstantDeposit', [ transactionIds ] ),
+		};
+	} );
+	const { submitInstantDeposit } = useDispatch( STORE_NAME );
+	const submit = () => submitInstantDeposit( transactionIds );
+
+	return { deposit, inProgress, submit };
+};
