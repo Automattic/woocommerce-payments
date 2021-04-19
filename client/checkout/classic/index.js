@@ -472,6 +472,9 @@ jQuery( function ( $ ) {
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
+				sofortPayment.sofort = {
+					country: $( '#billing_country' ).val(),
+				};
 				paymentMethodDetails = sofortPayment;
 			}
 			return handlePaymentMethodCreation(

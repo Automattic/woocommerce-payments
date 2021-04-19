@@ -138,7 +138,12 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Check for a redirect payment method on order received page.
 	 */
 	public function maybe_process_redirect_order() {
-		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] || empty( $_GET['wc_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( self::GATEWAY_ID !== $payment_method ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -215,7 +220,17 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						'name' => sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() ),
 					],
 				],
-				'return_url'           => wp_sanitize_redirect( esc_url_raw( add_query_arg( [ 'order_id' => $order_id ], $this->get_return_url( $order ) ) ) ),
+				'return_url'           => wp_sanitize_redirect(
+					esc_url_raw(
+						add_query_arg(
+							[
+								'order_id'          => $order_id,
+								'wc_payment_method' => self::GATEWAY_ID,
+							],
+							$this->get_return_url( $order )
+						)
+					)
+				),
 			];
 
 			return $this->process_payment_for_order( WC()->cart, $payment_information, $intent_api_parameters );
