@@ -427,6 +427,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<li><a href="<?php echo esc_html( admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ); ?>"><?php echo esc_html( __( 'All payment methods', 'woocommerce-payments' ) ); ?></a></li>
 		</ul>
 
+		<br class="clear">
+
 		<div id="wcpay-account-settings-container"></div>
 		<?php
 	}

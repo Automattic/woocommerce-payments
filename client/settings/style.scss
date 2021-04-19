@@ -1,3 +1,56 @@
 #wcpay-account-settings-container {
-	clear: both;
+	margin-top: 24px;
+}
+
+.settings-manager {
+	display: flex;
+	flex-flow: column;
+
+	&__section {
+		display: flex;
+		flex-flow: column;
+	}
+
+	&__section-details {
+		flex: 0 1 auto;
+
+		h2 {
+			font-size: 16px;
+			line-height: 24px;
+		}
+
+		p {
+			font-size: 13px;
+			line-height: 17.89px;
+			margin: 12px 0;
+		}
+	}
+
+	&__controls {
+		flex: 1 1 auto;
+		margin-top: 12px;
+	}
+}
+
+@include breakpoint( '>800px' ) {
+	.settings-manager {
+		&__section {
+			flex-flow: row;
+		}
+
+		&__section-details {
+			flex: 0 1 328px;
+		}
+
+		&__controls {
+			margin-left: 32px;
+			margin-top: 0;
+		}
+	}
+}
+
+@include breakpoint( '>960px' ) {
+	.settings-manager {
+		padding: 0 56px;
+	}
 }
