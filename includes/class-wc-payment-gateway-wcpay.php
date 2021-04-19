@@ -277,7 +277,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Giropay option hidden behind feature flag.
-		if ( '1' === get_option( '_wcpay_feature_giropay' ) ) {
+		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			$this->form_fields['giropay_enabled'] = [
 				'title'       => __( 'Enable/disable Giropay', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Giropay', 'woocommerce-payments' ),
