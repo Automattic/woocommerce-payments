@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Payment_Method\Sepa;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 
 /**
  * WC_Payment_Token_SEPA unit tests.
@@ -20,7 +20,7 @@ class WC_Payment_Token_SEPA_Test extends WP_UnitTestCase {
 	public function test_create_token() {
 		$token = new WC_Payment_Token_Sepa();
 		$token->set_token( 'pm_1If1If1If1If1If1If' );
-		$token->set_gateway_id( Sepa::GATEWAY_ID );
+		$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
 		$token->set_user_id( get_current_user_id() );
 		$token->set_last4( '3000' );
 		$token->save();

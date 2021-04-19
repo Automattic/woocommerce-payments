@@ -10,8 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Payment_Method\Sepa;
-use WCPay\Payment_Method\Card;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -63,11 +63,11 @@ class WC_Payments_Token_Service {
 
 		if ( Payment_Method::SEPA === $payment_method['type'] ) {
 			$token = new WC_Payment_Token_Sepa();
-			$token->set_gateway_id( Sepa::GATEWAY_ID );
+			$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
 			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
-			$token->set_gateway_id( Card::GATEWAY_ID );
+			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
 			$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 			$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
 			$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
