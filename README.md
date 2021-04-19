@@ -21,10 +21,13 @@ https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md
 
 Install the following plugins:
 - WooCommerce
+## Test account setup
 
 For setting up a test account follow [these instructions](https://docs.woocommerce.com/document/payments/testing/dev-mode/).
 
 You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
+
+```ngrok http 8082```
 
 See: https://github.com/Automattic/woocommerce-payments/blob/trunk/CONTRIBUTING.md (possibly move contents here for visibility sake)
 

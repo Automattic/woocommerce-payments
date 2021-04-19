@@ -393,8 +393,8 @@ jQuery( function ( $ ) {
 	function isUsingSavedPaymentMethod() {
 		if ( isWCPaySepaChosen() ) {
 			return (
-				$( '#wc-woocommerce_payments-payment-sepa-token-new' ).length &&
-				! $( '#wc-woocommerce_payments-payment-sepa-token-new' ).is(
+				$( '#wc-woocommerce_payments_sepa-payment-token-new' ).length &&
+				! $( '#wc-woocommerce_payments_sepa-payment-token-new' ).is(
 					':checked'
 				)
 			);

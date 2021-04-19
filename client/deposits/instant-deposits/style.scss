@@ -1,0 +1,41 @@
+div.wcpay-instant-deposits-modal {
+	max-width: 500px;
+
+	p {
+		color: $studio-gray-40;
+	}
+
+	ul {
+		border: 1px solid $studio-gray-5;
+		border-radius: 5px;
+		font-weight: bold;
+
+		li {
+			padding: 1rem;
+			clear: both;
+			margin: 0;
+
+			span {
+				float: right;
+			}
+		}
+
+		.wcpay-instant-deposits-modal__balance {
+			padding-bottom: 0;
+		}
+
+		.wcpay-instant-deposits-modal__fee {
+			span {
+				color: $studio-red-50;
+			}
+		}
+
+		.wcpay-instant-deposits-modal__net {
+			border-top: 1px solid $studio-gray-5;
+
+			span {
+				color: $studio-green-30;
+			}
+		}
+	}
+}
