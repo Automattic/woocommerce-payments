@@ -30,4 +30,13 @@ class WC_Payments_Features {
 	public static function is_sepa_enabled() {
 		return '1' === get_option( '_wcpay_feature_sepa', '0' );
 	}
+
+	/**
+	 * Checks whether the Giropay gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_giropay_enabled() {
+		return '1' === get_option( '_wcpay_feature_giropay', '0' );
+	}
 }
