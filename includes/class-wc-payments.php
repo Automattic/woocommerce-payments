@@ -115,6 +115,7 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		include_once __DIR__ . '/class-wc-payments-features.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
@@ -191,6 +192,9 @@ class WC_Payments {
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
+
+		// Priority 5 so we can manipulate the registered gateways before they are shown.
+		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -419,6 +423,18 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Called on Payments setting page.
+	 * Remove all WCPay gateways except CC one.
+	 */
+	public static function hide_gateways_on_settings_page() {
+		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof Card ) {
+				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+			}
+		}
 	}
 
 	/**
