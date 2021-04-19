@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
@@ -25,9 +26,7 @@ export function* getDispute( id ) {
 		const result = yield apiFetch( { path } );
 		yield updateDispute( result );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving dispute.', 'woocommerce-payments' )
 		);
 	}
@@ -50,14 +49,12 @@ export function* getDisputes( query ) {
 
 		// Update resolution state on getDispute selector for each result.
 		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [
+			yield dispatch( STORE_NAME ).finishResolution( 'getDispute', [
 				results.data[ i ].id,
 			] );
 		}
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving disputes.', 'woocommerce-payments' )
 		);
 	}

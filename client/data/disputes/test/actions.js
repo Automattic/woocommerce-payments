@@ -4,7 +4,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -27,7 +28,7 @@ describe( 'acceptDispute action', () => {
 		const generator = acceptDispute( 'dp_mock1' );
 
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'startResolution', 'getDispute', [
+			dispatch( 'wc/payments' ).startResolution( 'getDispute', [
 				'dp_mock1',
 			] )
 		);
@@ -41,7 +42,7 @@ describe( 'acceptDispute action', () => {
 			updateDispute( mockDispute )
 		);
 		expect( generator.next().value ).toEqual(
-			dispatch( 'wc/payments', 'finishResolution', 'getDispute', [
+			dispatch( 'wc/payments' ).finishResolution( 'getDispute', [
 				'dp_mock1',
 			] )
 		);
@@ -49,9 +50,7 @@ describe( 'acceptDispute action', () => {
 		const noticeAction = generator.next().value;
 		expect( getHistory.mock.calls.length ).toEqual( 1 );
 		expect( noticeAction ).toEqual(
-			dispatch(
-				'core/notices',
-				'createSuccessNotice',
+			dispatch( 'core/notices' ).createSuccessNotice(
 				expect.any( String )
 			)
 		);
@@ -63,11 +62,7 @@ describe( 'acceptDispute action', () => {
 
 		generator.next();
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
-			dispatch(
-				'core/notices',
-				'createErrorNotice',
-				expect.any( String )
-			)
+			dispatch( 'core/notices' ).createErrorNotice( expect.any( String ) )
 		);
 	} );
 } );

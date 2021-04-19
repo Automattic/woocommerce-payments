@@ -4,7 +4,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -74,9 +75,7 @@ describe( 'getDepositsOverview resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
-					'core/notices',
-					'createErrorNotice',
+				dispatch( 'core/notices' ).createErrorNotice(
 					expect.any( String )
 				)
 			);
@@ -112,9 +111,7 @@ describe( 'getDeposit resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
-					'core/notices',
-					'createErrorNotice',
+				dispatch( 'core/notices' ).createErrorNotice(
 					expect.any( String )
 				)
 			);
@@ -149,7 +146,7 @@ describe( 'getDeposits resolver', () => {
 
 			depositsResponse.data.forEach( ( payout ) => {
 				expect( generator.next().value ).toEqual(
-					dispatch( 'wc/payments', 'finishResolution', 'getDeposit', [
+					dispatch( 'wc/payments' ).finishResolution( 'getDeposit', [
 						payout.id,
 					] )
 				);
@@ -160,9 +157,7 @@ describe( 'getDeposits resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error on error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
-				dispatch(
-					'core/notices',
-					'createErrorNotice',
+				dispatch( 'core/notices' ).createErrorNotice(
 					expect.any( String )
 				)
 			);

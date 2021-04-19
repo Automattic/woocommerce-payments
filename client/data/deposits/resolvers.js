@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
@@ -34,9 +35,7 @@ export function* getDeposit( id ) {
 		const result = yield apiFetch( { path } );
 		yield updateDeposit( result );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving deposit.', 'woocommerce-payments' )
 		);
 	}
@@ -52,9 +51,7 @@ export function* getDepositsOverview() {
 		const result = yield apiFetch( { path } );
 		yield updateDepositsOverview( result );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving deposits overview.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositsOverview( e );
@@ -90,14 +87,12 @@ export function* getDeposits( query ) {
 
 		// Update resolution state on getDeposit selector for each result.
 		for ( const i in results.data ) {
-			yield dispatch( STORE_NAME, 'finishResolution', 'getDeposit', [
+			yield dispatch( STORE_NAME ).finishResolution( 'getDeposit', [
 				results.data[ i ].id,
 			] );
 		}
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving deposits.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositQuery( query, null, e );
