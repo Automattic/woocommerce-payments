@@ -152,6 +152,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
+		include_once __DIR__ . '/class-wc-payment-token-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -163,6 +164,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
+		include_once __DIR__ . '/constants/class-payment-method.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -187,9 +189,16 @@ class WC_Payments {
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
 		}
 
+<<<<<<< HEAD
 		self::$card_gateway    = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		self::$sepa_gateway    = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+=======
+		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
+>>>>>>> develop
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
@@ -209,14 +218,6 @@ class WC_Payments {
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
-	}
-
-	/**
-	 * Checks whether Payment Request Button feature should be available.
-	 * TODO: Remove this ahead of releasing Apple Pay for all merchants.
-	 */
-	public static function should_payment_request_be_available() {
-		return 'US' === WC()->countries->get_base_country();
 	}
 
 	/**
@@ -319,7 +320,7 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-					/* translators: %1: required WC version number, %2: currently installed WC version number */
+						/* translators: %1: required WC version number, %2: currently installed WC version number */
 						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
 						$wc_version,
 						WC_VERSION
@@ -429,8 +430,14 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
+<<<<<<< HEAD
 		$gateways[] = self::$sepa_gateway;
 		$gateways[] = self::$giropay_gateway;
+=======
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$gateways[] = self::$sepa_gateway;
+		}
+>>>>>>> develop
 
 		return $gateways;
 	}
@@ -616,6 +623,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
 		}
 	}
 

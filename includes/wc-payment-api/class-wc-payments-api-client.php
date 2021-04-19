@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -184,7 +185,7 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 
 		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
-			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
 					'type'   => 'online',
@@ -297,7 +298,7 @@ class WC_Payments_API_Client {
 			'payment_method'       => $payment_method_id,
 			'customer'             => $customer_id,
 			'confirm'              => 'true',
-			'payment_method_types' => [ 'card', 'sepa_debit' ],
+			'payment_method_types' => [ Payment_Method::CARD, Payment_Method::SEPA ],
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -371,6 +372,25 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposit( $deposit_id ) {
 		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param string $type Type of deposit. Only "instant" is supported for now.
+	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @return array The new deposit object.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request(
+			[
+				'type'            => $type,
+				'transaction_ids' => $transaction_ids,
+			],
+			self::DEPOSITS_API,
+			self::POST
+		);
 	}
 
 	/**
