@@ -292,13 +292,16 @@ export default class WCPayAPI {
 	/**
 	 * Creates order based on Payment Request payment method.
 	 *
+	 * @param {string} paymentRequestType Payment Request type: 'apple_pay'|'google_pay'|'payment_request_api'
 	 * @param {Object} paymentData Order data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestCreateOrder( paymentData ) {
+	paymentRequestCreateOrder( paymentRequestType, paymentData ) {
 		// - TODO: Get Ajax endpoint and nonce from helper function.
 		return this.request( '/?wc-ajax=wcpay_create_order', {
 			_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
+			// eslint-disable-next-line camelcase
+			payment_request_type: paymentRequestType,
 			...paymentData,
 		} ).then( ( response ) => {
 			return JSON.parse( response );

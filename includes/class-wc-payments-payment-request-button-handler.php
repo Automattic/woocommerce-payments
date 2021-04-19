@@ -352,9 +352,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( 'apple_pay' === $payment_request_type ) {
 			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
 			$order->save();
-		}
-
-		if ( 'payment_request_api' === $payment_request_type ) {
+		} elseif ( 'google_pay' === $payment_request_type ) {
+			$order->set_payment_method_title( 'Google Pay (WooCommerce Payments)' );
+			$order->save();
+		} else {
 			$order->set_payment_method_title( 'Payment Request (WooCommerce Payments)' );
 			$order->save();
 		}

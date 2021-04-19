@@ -127,7 +127,6 @@ const normalizeOrderDataForCheckout = ( paymentData ) => {
 		ship_to_different_address: 1,
 		terms: 1,
 		'wcpay-payment-method': paymentData.paymentMethod.id,
-		payment_request_type: 'payment_request_api', // - TODO: Fix payment_request_type
 		/* eslint-enable camelcase */
 	};
 };
@@ -193,7 +192,6 @@ const getPaymentMethodData = ( paymentResponse, paymentRequestType ) => {
 		/* eslint-disable camelcase */
 		payment_method: 'woocommerce_payments',
 		stripe_source: paymentResponse.source?.id,
-		payment_request_type: paymentRequestType,
 		/* eslint-enable camelcase */
 	};
 };

@@ -102,19 +102,26 @@ const updatePaymentRequest = ( {
 };
 
 /**
- * Returns whether or not the current session can do apple pay.
+ * Returns whether or not the current session can make payments and what type of request it uses.
  *
  * @param {StripePaymentRequest} paymentRequest A Stripe PaymentRequest instance.
  *
- * @return {Promise<Object>}  True means apple pay can be done.
+ * @return {Promise<Object>} Object containing canPay and the requestType, which can be either
+ * - payment_request_api
+ * - apple_pay
+ * - google_pay
  */
 const canDoPaymentRequest = ( paymentRequest ) => {
 	return new Promise( ( resolve ) => {
 		paymentRequest.canMakePayment().then( ( result ) => {
 			if ( result ) {
-				const paymentRequestType = result.applePay
-					? 'apple_pay'
-					: 'payment_request_api';
+				let paymentRequestType = 'payment_request_api';
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				}
+
 				resolve( { canPay: true, requestType: paymentRequestType } );
 				return;
 			}

@@ -209,6 +209,7 @@ export const useInitialization = ( {
 
 				// Kick off checkout processing step.
 				const response = await api.paymentRequestCreateOrder(
+					paymentRequestType,
 					normalizeOrderDataForCheckout( paymentMethod )
 				);
 
