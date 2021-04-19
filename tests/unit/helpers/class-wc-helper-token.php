@@ -5,7 +5,7 @@
  * @package WooCommerce/Tests
  */
 
-use WCPay\Payment_Method\Sepa;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 
 /**
  * Class WC_Helper_Token.
@@ -44,7 +44,7 @@ class WC_Helper_Token {
 	public static function create_sepa_token( $payment_method, $user_id = null ) {
 		$token = new WC_Payment_Token_Sepa();
 		$token->set_token( $payment_method );
-		$token->set_gateway_id( Sepa::GATEWAY_ID );
+		$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
 		$token->set_user_id( $user_id ?? get_current_user_id() );
 		$token->set_last4( '3000' );
 		$token->save();

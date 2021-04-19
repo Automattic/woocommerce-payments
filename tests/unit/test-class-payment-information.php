@@ -9,8 +9,8 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Payment_Method\Sepa;
-use WCPay\Payment_Method\Card;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Payment_Information unit tests.
@@ -18,8 +18,8 @@ use WCPay\Payment_Method\Card;
 class Payment_Information_Test extends WP_UnitTestCase {
 	const PAYMENT_METHOD_REQUEST_KEY = 'wcpay-payment-method';
 	const PAYMENT_METHOD             = 'pm_mock';
-	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . Card::GATEWAY_ID . '-payment-token';
-	const SEPA_TOKEN_REQUEST_KEY     = 'wc-' . Sepa::GATEWAY_ID . '-payment-token';
+	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';
+	const SEPA_TOKEN_REQUEST_KEY     = 'wc-' . Sepa_Payment_Gateway::GATEWAY_ID . '-payment-token';
 	const TOKEN                      = 'pm_mock_token';
 
 	/**
@@ -161,7 +161,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	public function test_get_token_from_request_sepa_gateway() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => Sepa::GATEWAY_ID,
+				'payment_method'             => Sepa_Payment_Gateway::GATEWAY_ID,
 				self::SEPA_TOKEN_REQUEST_KEY => $this->sepa_token->get_id(),
 			]
 		);
