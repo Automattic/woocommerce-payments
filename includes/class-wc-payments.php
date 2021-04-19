@@ -223,14 +223,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Checks whether Payment Request Button feature should be available.
-	 * TODO: Remove this ahead of releasing Apple Pay for all merchants.
-	 */
-	public static function should_payment_request_be_available() {
-		return 'US' === WC()->countries->get_base_country();
-	}
-
-	/**
 	 * Prints the given message in an "admin notice" wrapper with "error" class.
 	 *
 	 * @param string $message Message to print. Can contain HTML.

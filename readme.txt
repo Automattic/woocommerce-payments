@@ -114,6 +114,8 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Bump minimum supported version of WordPress from 5.3 to 5.4.
 * Add - Add a new admin note to collect qualitative feedback.
 * Add - Introduced deposit currency filter for deposits overview page.
+* Update - Make Payment Request Button available for all merchants.
+* Add - Configurable Payment Request Button locations.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
