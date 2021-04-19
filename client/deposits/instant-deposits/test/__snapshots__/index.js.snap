@@ -3,7 +3,7 @@
 exports[`Instant deposit button and modal button renders correctly 1`] = `
 <div>
   <button
-    class="components-button is-button is-default"
+    class="components-button is-secondary is-button is-default"
     type="button"
   >
     Instant deposit
