@@ -30,7 +30,11 @@ const InstantDepositButton = ( {
 	// https://github.com/Automattic/woocommerce-payments/pull/1536
 	return (
 		<>
-			<Button isDefault className="is-secondary" onClick={ () => setModalOpen( true ) }>
+			<Button
+				isDefault
+				className="is-secondary"
+				onClick={ () => setModalOpen( true ) }
+			>
 				{ __( 'Instant deposit', 'woocommerce-payments' ) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
