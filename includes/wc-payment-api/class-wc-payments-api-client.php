@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -182,7 +183,7 @@ class WC_Payments_API_Client {
 		$request['level3']         = $level3;
 
 		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
-			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
 					'type'   => 'online',
@@ -293,7 +294,7 @@ class WC_Payments_API_Client {
 			'payment_method'       => $payment_method_id,
 			'customer'             => $customer_id,
 			'confirm'              => 'true',
-			'payment_method_types' => [ 'card', 'sepa_debit' ],
+			'payment_method_types' => [ Payment_Method::CARD, Payment_Method::SEPA ],
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );

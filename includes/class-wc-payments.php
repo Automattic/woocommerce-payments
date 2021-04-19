@@ -143,6 +143,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-method/class-card.php';
 		include_once __DIR__ . '/payment-method/class-sepa.php';
+		include_once __DIR__ . '/class-wc-payment-token-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -154,6 +155,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
+		include_once __DIR__ . '/constants/class-payment-method.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -302,7 +304,7 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-					/* translators: %1: required WC version number, %2: currently installed WC version number */
+						/* translators: %1: required WC version number, %2: currently installed WC version number */
 						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
 						$wc_version,
 						WC_VERSION
