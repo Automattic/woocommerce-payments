@@ -252,8 +252,8 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
 					/* translators: %1: charge ID */
-					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
-					$charge_id
+					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
+					$intent_id
 				),
 				'order_not_found'
 			);
