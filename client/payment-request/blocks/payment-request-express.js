@@ -7,7 +7,6 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import { useInitialization } from './use-initialization';
-import { useCheckoutSubscriptions } from './use-checkout-subscriptions';
 import { ThreeDSecurePaymentHandler } from '../three-d-secure';
 import { GooglePayButton, shouldUseGooglePayBrand } from './branded-buttons';
 import { CustomButton } from './custom-button';
@@ -39,7 +38,7 @@ const PaymentRequestExpressComponent = ( {
 	api,
 	shippingData,
 	billing,
-	eventRegistration,
+	// eventRegistration,
 	onSubmit,
 	setExpressPaymentError,
 	emitResponse,
@@ -48,14 +47,14 @@ const PaymentRequestExpressComponent = ( {
 } ) => {
 	const {
 		paymentRequest,
-		paymentRequestEventHandlers,
-		clearPaymentRequestEventHandler,
-		isProcessing,
+		// paymentRequestEventHandlers,
+		// clearPaymentRequestEventHandler,
+		// isProcessing,
 		canMakePayment,
 		onButtonClick,
-		abortPayment,
-		completePayment,
-		paymentRequestType,
+		// abortPayment,
+		// completePayment,
+		// paymentRequestType,
 	} = useInitialization( {
 		api,
 		billing,
@@ -65,19 +64,6 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 		onSubmit,
 		emitResponse,
-	} );
-	useCheckoutSubscriptions( {
-		canMakePayment,
-		isProcessing,
-		eventRegistration,
-		paymentRequestEventHandlers,
-		clearPaymentRequestEventHandler,
-		billing,
-		shippingData,
-		emitResponse,
-		paymentRequestType,
-		completePayment,
-		abortPayment,
 	} );
 
 	// Use pre-blocks settings until we merge the two distinct settings objects.
