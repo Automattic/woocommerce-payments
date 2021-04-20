@@ -15,6 +15,7 @@
 * Add - Introduced deposit currency filter for deposits overview page.
 * Update - Make Payment Request Button available for all merchants.
 * Add - Configurable Payment Request Button locations.
+* Update - Improve the Connect Account page.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.
