@@ -8,7 +8,10 @@ import { useState } from 'react';
 /**
  * Internal dependencies
  */
+import { useSettings } from 'data';
 import PaymentMethods from '../../payment-methods';
+import General from './general';
+import { Button, CardFooter } from '@wordpress/components';
 
 const SettingsSection = ( { title, description, children } ) => (
 	<div className="settings-manager__section">
@@ -26,6 +29,11 @@ const SettingsManager = ( {
 	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
 		initialEnabledPaymentMethodIds
 	);
+	const { settings = {}, isLoading, updateSettings } = useSettings();
+
+	const handleSubmit = () => {
+		updateSettings();
+	};
 
 	return (
 		<div className="settings-manager">
@@ -44,6 +52,18 @@ const SettingsManager = ( {
 					onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
 				/>
 			</SettingsSection>
+			<SettingsSection
+				title={ __( 'General Settings', 'woocommerce-payments' ) }
+				description={ __(
+					'Change WooCommerce Payments settings and update your store’s configuration to ensure smooth transactions.',
+					'woocommerce-payments'
+				) }
+			>
+				<General settings={ settings } />
+			</SettingsSection>
+			<Button isPrimary isLarge onClick={ handleSubmit }>
+				{ __( 'Save changes', 'woocommerce-payments' ) }
+			</Button>
 		</div>
 	);
 };

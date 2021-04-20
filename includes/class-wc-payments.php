@@ -573,6 +573,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$gateway );
+		$settings_controller->register_routes();
 	}
 
 	/**
