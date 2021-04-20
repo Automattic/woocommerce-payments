@@ -438,16 +438,6 @@ jQuery( function ( $ ) {
 				)
 			);
 		}
-
-		if ( isWCPaySofortChosen() ) {
-			return (
-				$( '#wc-woocommerce_payments-payment-sofort-token-new' )
-					.length &&
-				! $( '#wc-woocommerce_payments-payment-sofort-token-new' ).is(
-					':checked'
-				)
-			);
-		}
 		return (
 			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
 			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
