@@ -40,8 +40,11 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
@@ -49,6 +52,21 @@ class WC_Payments_Account {
 	 */
 	public function clear_cache() {
 		delete_transient( self::ACCOUNT_TRANSIENT );
+	}
+
+	/**
+	 * Add clear account cache tool to WooCommerce debug tools.
+	 *
+	 * @param array $tools List of current available tools.
+	 */
+	public function debug_tool( $tools ) {
+		$tools['clear_wcpay_account_cache'] = [
+			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
+			'button'   => __( 'Clear', 'woocommerce-payments' ),
+			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
+			'callback' => [ $this, 'refresh_account_data' ],
+		];
+		return $tools;
 	}
 
 	/**
@@ -582,6 +600,9 @@ class WC_Payments_Account {
 
 		// Cache the account details so we don't call the server every time.
 		$this->cache_account( $account );
+
+		// Allow us to tie in functionality to an account refresh.
+		do_action( 'woocommerce_payments_account_refreshed', $account );
 		return $account;
 	}
 
@@ -771,5 +792,63 @@ class WC_Payments_Account {
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
 		return $account['country'] ?? 'US';
+	}
+
+	/**
+	 * Checks to see if the account is eligible for Instant Deposits.
+	 *
+	 * @return bool
+	 */
+	public function is_instant_deposits_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handles adding a note if the merchant is eligible for Instant Deposits.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_note() {
+		if ( ! $this->is_instant_deposits_eligible() ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles removing note about merchant Instant Deposits eligibility.
+	 * Hands off to handle_instant_deposits_inbox_note to add the new note.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_reminder() {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+		$this->handle_instant_deposits_inbox_note();
+	}
+
+	/**
+	 * Handles adding scheduled action for the Instant Deposit note reminder.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_instant_deposit_note_reminder() {
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+
+		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+			return;
+		}
+
+		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
+		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 }

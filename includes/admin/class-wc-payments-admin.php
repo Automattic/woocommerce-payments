@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Admin {
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $payments_api_client;
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -29,15 +36,18 @@ class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account      $account Account instance.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account             Account instance.
 	 */
 	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account
 	) {
-		$this->wcpay_gateway = $gateway;
-		$this->account       = $account;
+		$this->payments_api_client = $payments_api_client;
+		$this->wcpay_gateway       = $gateway;
+		$this->account             = $account;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -245,6 +255,7 @@ class WC_Payments_Admin {
 				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
+				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
 			]
 		);
 
@@ -292,11 +303,9 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus'           => $this->account->get_account_status_data(),
-				'accountFees'             => $this->account->get_fees(),
-				'fraudServices'           => $this->account->get_fraud_services_config(),
-				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
-				'paymentRequestAvailable' => WC_Payments::should_payment_request_be_available(),
+				'accountStatus' => $this->account->get_account_status_data(),
+				'accountFees'   => $this->account->get_fees(),
+				'fraudServices' => $this->account->get_fraud_services_config(),
 			]
 		);
 
@@ -392,7 +401,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
-			'groupedSettings' => self::is_grouped_settings_enabled(),
+			'groupedSettings' => WC_Payments_Features::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -447,15 +456,6 @@ class WC_Payments_Admin {
 	 */
 	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
-	}
-
-	/**
-	 * Checks whether the grouped settings feature is enabled
-	 *
-	 * @return bool
-	 */
-	private static function is_grouped_settings_enabled() {
-		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 
 	/**

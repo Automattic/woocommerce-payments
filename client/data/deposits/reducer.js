@@ -11,7 +11,7 @@ import { map, keyBy } from 'lodash';
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 
-const defaultState = { byId: {}, queries: {}, count: 0 };
+const defaultState = { byId: {}, queries: {}, count: 0, instant: {} };
 
 const receiveDeposits = (
 	state = defaultState,
@@ -66,6 +66,34 @@ const receiveDeposits = (
 					[ index ]: {
 						error: error,
 					},
+				},
+			};
+		case TYPES.SET_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
+				},
+			};
+		case TYPES.SET_ERROR_FOR_DEPOSITS_SUMMARY:
+			return {
+				...state,
+				summary: {
+					...state.summary,
+					[ index ]: {
+						error: error,
+					},
+				},
+			};
+		case TYPES.SET_INSTANT_DEPOSIT:
+			return {
+				...state,
+				instant: {
+					...state.instant,
+					data,
 				},
 			};
 	}

@@ -32,7 +32,15 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/summary',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_deposits_summary' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/overview',
@@ -42,13 +50,22 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<deposit_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_deposit' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'manual_deposit' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -64,7 +81,18 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		$page_size = (int) $request->get_param( 'pagesize' );
 		$sort      = $request->get_param( 'sort' );
 		$direction = $request->get_param( 'direction' );
-		return $this->forward_request( 'list_deposits', [ $page, $page_size, $sort, $direction ] );
+		$filters   = $this->get_deposits_filters( $request );
+		return $this->forward_request( 'list_deposits', [ $page, $page_size, $sort, $direction, $filters ] );
+	}
+
+	/**
+	 * Retrieve deposits summary to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_deposits_summary( $request ) {
+		$filters = $this->get_deposits_filters( $request );
+		return $this->forward_request( 'get_deposits_summary', [ $filters ] );
 	}
 
 	/**
@@ -80,7 +108,34 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposit( $request ) {
-		$deposit_id = $request->get_params()['deposit_id'];
+		$deposit_id = $request->get_param( 'deposit_id' );
 		return $this->forward_request( 'get_deposit', [ $deposit_id ] );
+	}
+
+	/**
+	 * Extract deposits filters from request
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	private function get_deposits_filters( $request ) {
+		return array_filter(
+			[
+				'match'             => $request->get_param( 'match' ),
+				'store_currency_is' => $request->get_param( 'store_currency_is' ),
+			],
+			static function ( $filter ) {
+				return null !== $filter;
+			}
+		);
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function manual_deposit( $request ) {
+		$params = $request->get_params();
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['transaction_ids'] ] );
 	}
 }

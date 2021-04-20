@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME } from '../constants.js';
+import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 
 /**
  * Handles the payment method generation action.
@@ -36,7 +36,7 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			type: 'success',
 			meta: {
 				paymentMethodData: {
-					paymentMethod: PAYMENT_METHOD_NAME,
+					paymentMethod: PAYMENT_METHOD_NAME_CARD,
 					// eslint-disable-next-line camelcase
 					'wcpay-payment-method': id,
 				},
