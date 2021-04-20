@@ -11,16 +11,16 @@ export default {
 
 	learnMore: __( 'Learn more', 'woocommerce-payments' ),
 
-	onboarding: [
-		__(
+	onboarding: {
+		heading: __(
 			'Finish setup to enable credit card payments',
 			'woocommerce-payments'
 		),
-		__(
+		description: __(
 			'With WooCommerce Payments, you can securely accept major cards, Apple Pay, and payments in over 100 currencies. Track cash flow and manage recurring revenue directly from your store’s dashboard - with no setup costs or monthly fees.',
 			'woocommerce-payments'
 		),
-	],
+	},
 
 	paymentMethodsHeading: __(
 		'Accepted payment methods',
@@ -34,28 +34,34 @@ export default {
 		'wpoocommerce-payments'
 	),
 
-	step1: [
-		__( 'Create and connect your account', 'wpoocommerce-payments' ),
-		__(
+	step1: {
+		heading: __(
+			'Create and connect your account',
+			'wpoocommerce-payments'
+		),
+		description: __(
 			'To ensure safe and secure transactions, a WordPress.com account is required.',
 			'wpoocommerce-payments'
 		),
-	],
+	},
 
-	step2: [
-		__( 'Provide a few business details', 'wpoocommerce-payments' ),
-		__(
+	step2: {
+		heading: __(
+			'Provide a few business details',
+			'wpoocommerce-payments'
+		),
+		description: __(
 			'Next we’ll ask you to verify your business and payment details to enable deposits.',
 			'wpoocommerce-payments'
 		),
-	],
+	},
 
-	step3: [
-		__( 'Setup complete!', 'wpoocommerce-payments' ),
-		__(
+	step3: {
+		heading: __( 'Setup complete!', 'wpoocommerce-payments' ),
+		description: __(
 			'You’re ready to start using the features and benefits of WooCommerce Payments.'
 		),
-	],
+	},
 
 	onboardingDisabled: [
 		__(

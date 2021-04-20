@@ -114,9 +114,9 @@ const ConnectPageOnboarding = () => {
 
 	return (
 		<>
-			<h2>{ strings.onboarding[ 0 ] }</h2>
+			<h2>{ strings.onboarding.heading }</h2>
 			<p>
-				{ strings.onboarding[ 1 ] }
+				{ strings.onboarding.description }
 				<br />
 				<LearnMore />
 			</p>
@@ -150,18 +150,18 @@ const ConnectPageOnboardingSteps = () => {
 			<div className="connect-page-onboarding-steps">
 				<div className="connect-page-onboarding-steps-item">
 					<StepNumber>1</StepNumber>
-					<h3>{ strings.step1[ 0 ] }</h3>
-					<p>{ strings.step1[ 1 ] }</p>
+					<h3>{ strings.step1.heading }</h3>
+					<p>{ strings.step1.description }</p>
 				</div>
 				<div className="connect-page-onboarding-steps-item">
 					<StepNumber>2</StepNumber>
-					<h3>{ strings.step2[ 0 ] }</h3>
-					<p>{ strings.step2[ 1 ] }</p>
+					<h3>{ strings.step2.heading }</h3>
+					<p>{ strings.step2.description }</p>
 				</div>
 				<div className="connect-page-onboarding-steps-item">
 					<StepNumber>3</StepNumber>
-					<h3>{ strings.step3[ 0 ] }</h3>
-					<p>{ strings.step3[ 1 ] }</p>
+					<h3>{ strings.step3.heading }</h3>
+					<p>{ strings.step3.description }</p>
 				</div>
 			</div>
 		</>
