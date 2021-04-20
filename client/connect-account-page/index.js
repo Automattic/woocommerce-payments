@@ -51,7 +51,12 @@ const LearnMore = () => {
 		);
 	};
 	return (
-		<a onClick={ handleClick } href="https://woocommerce.com/payments/">
+		<a
+			onClick={ handleClick }
+			href="https://woocommerce.com/payments/"
+			target="_blank"
+			rel="noreferrer"
+		>
 			{ strings.learnMore }
 		</a>
 	);
