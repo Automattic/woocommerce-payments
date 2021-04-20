@@ -1,4 +1,26 @@
 /**
+ * Normalizes incoming cart total items for use as a displayItems with the Stripe api.
+ *
+ * @param {Array}   cartTotalItems CartTotalItems to normalize.
+ * @param {boolean} pending        Whether to mark items as pending or not.
+ *
+ * @return {Array} An array of PaymentItems
+ */
+const normalizeLineItems = ( cartTotalItems, pending = false ) => {
+	return cartTotalItems
+		.map( ( cartTotalItem ) => {
+			return cartTotalItem.value
+				? {
+						amount: cartTotalItem.value,
+						label: cartTotalItem.label,
+						pending,
+				  }
+				: false;
+		} )
+		.filter( Boolean );
+};
+
+/**
  * Normalize order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} paymentData Stripe's order object.
@@ -90,4 +112,4 @@ const normalizeShippingAddress = ( shippingAddress ) => {
 	};
 };
 
-export { normalizeShippingAddress, normalizeOrderData };
+export { normalizeLineItems, normalizeShippingAddress, normalizeOrderData };
