@@ -20,9 +20,9 @@ function recordEvent( eventName, eventProperties ) {
 }
 
 const events = {
-	CONNECT_ACCOUNT_CLICKED: 'wcadmin_wcpay_welcome_finish_setup',
-	CONNECT_ACCOUNT_VIEW: 'wcadmin_page_view',
-	CONNECT_ACCOUNT_LEARN_MORE: 'wcadmin_wcpay_welcome_learn_more',
+	CONNECT_ACCOUNT_CLICKED: 'wcpay_welcome_finish_setup',
+	CONNECT_ACCOUNT_VIEW: 'page_view',
+	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 };
 
 export default {
