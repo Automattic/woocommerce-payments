@@ -1,10 +1,10 @@
 /**
  * External dependencies
  */
-import { useEffect, useState, useRef, useCallback } from '@wordpress/element';
+import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useStripe } from '@stripe/react-stripe-js';
 import { __ } from '@wordpress/i18n';
-import isShallowEqual from '@wordpress/is-shallow-equal';
+// import isShallowEqual from '@wordpress/is-shallow-equal';
 
 /**
  * Internal dependencies
@@ -13,14 +13,16 @@ import {
 	getPaymentRequest,
 	updatePaymentRequest,
 	canDoPaymentRequest,
-	normalizeShippingAddressForCheckout,
-	normalizeShippingOptionSelectionsForCheckout,
-	normalizeShippingOptions,
-	normalizeOrderDataForCheckout,
 	getErrorMessageFromNotice,
-	pluckAddress,
 } from '../stripe-utils';
-import { useEventHandlers } from './use-event-handlers';
+
+import {
+	shippingAddressChangeHandler,
+	shippingOptionChangeHandler,
+	paymentMethodHandler,
+} from '../event-handlers.js';
+
+// import { useEventHandlers } from './use-event-handlers';
 
 /**
  * @typedef {import('../stripe-utils/type-defs').StripePaymentRequest} StripePaymentRequest
@@ -46,17 +48,6 @@ export const useInitialization = ( {
 	const [ isProcessing, setIsProcessing ] = useState( false );
 	const [ canMakePayment, setCanMakePayment ] = useState( false );
 	const [ paymentRequestType, setPaymentRequestType ] = useState( '' );
-	const currentShipping = useRef( shippingData );
-	const {
-		paymentRequestEventHandlers,
-		clearPaymentRequestEventHandler,
-		setPaymentRequestEventHandler,
-	} = useEventHandlers();
-
-	// Update refs when any change.
-	useEffect( () => {
-		currentShipping.current = shippingData;
-	}, [ shippingData ] );
 
 	// Create the initial paymentRequest object. Note, we can't do anything if stripe isn't available yet or we have zero total.
 	useEffect( () => {
@@ -143,106 +134,58 @@ export const useInitialization = ( {
 				onClose();
 			};
 
-			const shippingAddressChangeHandler = async ( event ) => {
-				const newShippingAddress = normalizeShippingAddressForCheckout(
-					event.shippingAddress
-				);
-				if (
-					isShallowEqual(
-						pluckAddress( newShippingAddress ),
-						pluckAddress( currentShipping.current.shippingAddress )
-					)
-				) {
-					// the address is the same so no change needed.
-					event.updateWith( {
-						status: 'success',
-						shippingOptions: normalizeShippingOptions(
-							currentShipping.current.shippingRates
-						),
-					} );
-				} else {
-					// the address is different so let's set the new address and
-					// register the handler to be picked up by the shipping rate
-					// change event.
-					const response = await api.paymentRequestCalculateShippingOptions(
-						newShippingAddress
-					);
+			// const paymentMethodHandler = async ( paymentMethod ) => {
+			// 	// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
+			// 	// event `allowPrepaidCard` isn't present on the server data object.
+			// 	// - TODO: Get prepaid card
+			// 	// const { allowPrepaidCard = false } = getStripeServerData();
+			// 	const allowPrepaidCard = true;
+			// 	if ( ! allowPrepaidCard && paymentMethod.source.card.funding ) {
+			// 		setExpressPaymentError(
+			// 			__(
+			// 				"Sorry, we're not accepting prepaid cards at this time.",
+			// 				'woocommerce-gateway-stripe'
+			// 			)
+			// 		);
+			// 		return;
+			// 	}
 
-					event.updateWith( {
-						status: response.result,
-						shippingOptions: response.shipping_options,
-						total: response.total,
-						displayItems: response.displayItems,
-					} );
+			// 	// Kick off checkout processing step.
+			// 	const response = await api.paymentRequestCreateOrder(
+			// 		paymentRequestType,
+			// 		normalizeOrderDataForCheckout( paymentMethod )
+			// 	);
 
-					setPaymentRequestEventHandler(
-						'shippingAddressChange',
-						event
-					);
-				}
-			};
+			// 	// setPaymentRequestEventHandler(
+			// 	// 	'paymentMethodEvent',
+			// 	// 	paymentMethod
+			// 	// );
 
-			const shippingOptionChangeHandler = ( event ) => {
-				currentShipping.current.setSelectedRates(
-					normalizeShippingOptionSelectionsForCheckout(
-						event.shippingOption
-					)
-				);
-				setPaymentRequestEventHandler( 'shippingOptionChange', event );
-			};
-
-			const paymentMethodHandler = async ( paymentMethod ) => {
-				// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
-				// event `allowPrepaidCard` isn't present on the server data object.
-				// - TODO: Get prepaid card
-				// const { allowPrepaidCard = false } = getStripeServerData();
-				const allowPrepaidCard = true;
-				if ( ! allowPrepaidCard && paymentMethod.source.card.funding ) {
-					setExpressPaymentError(
-						__(
-							"Sorry, we're not accepting prepaid cards at this time.",
-							'woocommerce-gateway-stripe'
-						)
-					);
-					return;
-				}
-
-				// Kick off checkout processing step.
-				const response = await api.paymentRequestCreateOrder(
-					paymentRequestType,
-					normalizeOrderDataForCheckout( paymentMethod )
-				);
-
-				setPaymentRequestEventHandler(
-					'paymentMethodEvent',
-					paymentMethod
-				);
-
-				if ( 'success' === response.result ) {
-					paymentMethod.complete( 'success' );
-					window.location = response.redirect;
-				} else {
-					paymentMethod.complete( 'fail' );
-					setExpressPaymentError(
-						getErrorMessageFromNotice( response.messages )
-					);
-				}
-			};
+			// 	if ( 'success' === response.result ) {
+			// 		paymentMethod.complete( 'success' );
+			// 		window.location = response.redirect;
+			// 	} else {
+			// 		paymentMethod.complete( 'fail' );
+			// 		setExpressPaymentError(
+			// 			getErrorMessageFromNotice( response.messages )
+			// 		);
+			// 	}
+			// };
 
 			// @ts-ignore
 			shippingAddressChangeEvent = paymentRequest.on(
 				'shippingaddresschange',
-				shippingAddressChangeHandler
+				( event ) => shippingAddressChangeHandler( api, event )
 			);
 			// @ts-ignore
 			shippingOptionChangeEvent = paymentRequest.on(
 				'shippingoptionchange',
-				shippingOptionChangeHandler
+				( event ) => shippingOptionChangeHandler( api, event )
 			);
 			// @ts-ignore
 			paymentMethodChangeEvent = paymentRequest.on(
 				'paymentmethod',
-				paymentMethodHandler
+				( event ) => paymentMethodHandler( api, event )
 			);
 			// @ts-ignore
 			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );
@@ -260,7 +203,7 @@ export const useInitialization = ( {
 		paymentRequest,
 		canMakePayment,
 		isProcessing,
-		setPaymentRequestEventHandler,
+		// setPaymentRequestEventHandler,
 		setExpressPaymentError,
 		onSubmit,
 		onClose,
@@ -268,8 +211,8 @@ export const useInitialization = ( {
 
 	return {
 		paymentRequest,
-		paymentRequestEventHandlers,
-		clearPaymentRequestEventHandler,
+		// paymentRequestEventHandlers,
+		// clearPaymentRequestEventHandler,
 		isProcessing,
 		canMakePayment,
 		onButtonClick,

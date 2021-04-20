@@ -4,6 +4,28 @@
  * Internal dependencies
  */
 import './style.scss';
+import WCPayAPI from '../checkout/api';
+import request from '../checkout/blocks/request.js';
+import { getAjaxURL } from './utils';
+
+import {
+	shippingAddressChangeHandler,
+	shippingOptionChangeHandler,
+	paymentMethodHandler,
+} from './event-handlers.js';
+
+// - TODO: Endpoints
+// - getCartDetails (to be removed)
+// - addToCart
+// - clearCart
+
+const api = new WCPayAPI(
+	{
+		publishableKey: wcpayPaymentRequestParams.stripe.publishableKey,
+		accountId: wcpayPaymentRequestParams.stripe.accountId,
+	},
+	request
+);
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -14,23 +36,13 @@ jQuery( ( $ ) => {
 	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
 		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
 	} );
+
 	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayPaymentRequest = {
-		/**
-		 * Get WC AJAX endpoint URL.
-		 *
-		 * @param  {string} endpoint Endpoint.
-		 * @return {string} URL with interpolated endpoint.
-		 */
-		getAjaxURL: ( endpoint ) =>
-			wcpayPaymentRequestParams.ajax_url
-				.toString()
-				.replace( '%%endpoint%%', 'wcpay_' + endpoint ),
-
 		getCartDetails: () => {
 			const data = {
 				security: wcpayPaymentRequestParams.nonce.payment,
@@ -39,7 +51,7 @@ jQuery( ( $ ) => {
 			$.ajax( {
 				type: 'POST',
 				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'get_cart_details' ),
+				url: getAjaxURL( 'get_cart_details' ),
 				success: ( response ) => {
 					wcpayPaymentRequest.startPaymentRequest( response );
 				},
@@ -71,102 +83,6 @@ jQuery( ( $ ) => {
 				chosenCount: chosen,
 				data: data,
 			};
-		},
-
-		processPaymentMethod: ( paymentMethod ) => {
-			const data = wcpayPaymentRequest.getOrderData( paymentMethod );
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				url: wcpayPaymentRequest.getAjaxURL( 'create_order' ),
-			} );
-		},
-
-		/**
-		 * Get order data.
-		 *
-		 * @param {Object} evt Event.
-		 * @return {Object} Order data.
-		 */
-		// - TODO: Replace this normalization function with the same from blocks
-		getOrderData: ( evt ) => {
-			/* eslint-disable camelcase */
-			const paymentMethod = evt.paymentMethod;
-			const email = paymentMethod.billing_details.email;
-			const phone = paymentMethod.billing_details.phone;
-			const billing = paymentMethod.billing_details.address;
-			const name = paymentMethod.billing_details.name;
-			const shipping = evt.shippingAddress;
-			const data = {
-				_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
-				billing_first_name:
-					null !== name
-						? name.split( ' ' ).slice( 0, 1 ).join( ' ' )
-						: '',
-				billing_last_name:
-					null !== name
-						? name.split( ' ' ).slice( 1 ).join( ' ' )
-						: '',
-				billing_company: '',
-				billing_email: null !== email ? email : evt.payerEmail,
-				billing_phone:
-					null !== phone
-						? phone
-						: evt.payerPhone.replace( '/[() -]/g', '' ),
-				billing_country: null !== billing ? billing.country : '',
-				billing_address_1: null !== billing ? billing.line1 : '',
-				billing_address_2: null !== billing ? billing.line2 : '',
-				billing_city: null !== billing ? billing.city : '',
-				billing_state: null !== billing ? billing.state : '',
-				billing_postcode: null !== billing ? billing.postal_code : '',
-				shipping_first_name: '',
-				shipping_last_name: '',
-				shipping_company: '',
-				shipping_country: '',
-				shipping_address_1: '',
-				shipping_address_2: '',
-				shipping_city: '',
-				shipping_state: '',
-				shipping_postcode: '',
-				shipping_method: [
-					null === evt.shippingOption ? null : evt.shippingOption.id,
-				],
-				order_comments: '',
-				payment_method: 'woocommerce_payments',
-				ship_to_different_address: 1,
-				terms: 1,
-				'wcpay-payment-method': paymentMethod.id,
-				payment_request_type: paymentRequestType,
-			};
-
-			if ( shipping ) {
-				data.shipping_first_name = shipping.recipient
-					.split( ' ' )
-					.slice( 0, 1 )
-					.join( ' ' );
-				data.shipping_last_name = shipping.recipient
-					.split( ' ' )
-					.slice( 1 )
-					.join( ' ' );
-				data.shipping_company = shipping.organization;
-				data.shipping_country = shipping.country;
-				data.shipping_address_1 =
-					'undefined' === typeof shipping.addressLine[ 0 ]
-						? ''
-						: shipping.addressLine[ 0 ];
-				data.shipping_address_2 =
-					'undefined' === typeof shipping.addressLine[ 1 ]
-						? ''
-						: shipping.addressLine[ 1 ];
-				data.shipping_city = shipping.city;
-				data.shipping_state = shipping.region;
-				data.shipping_postcode = shipping.postalCode;
-			}
-
-			return data;
-			/* eslint-enable camelcase */
 		},
 
 		/**
@@ -231,66 +147,6 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Update shipping options.
-		 *
-		 * @param {Object}         details Payment details.
-		 * @param {PaymentAddress} address Shipping address.
-		 * @return {Object} AJAX request.
-		 */
-		updateShippingOptions: ( details, address ) => {
-			// - TODO: Update data below with normalization function from blocks
-			/* eslint-disable camelcase */
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.shipping,
-				country: address.country,
-				state: address.region,
-				postcode: address.postalCode,
-				city: address.city,
-				address_1:
-					'undefined' === typeof address.addressLine[ 0 ]
-						? ''
-						: address.addressLine[ 0 ],
-				address_2:
-					'undefined' === typeof address.addressLine[ 1 ]
-						? ''
-						: address.addressLine[ 1 ],
-				payment_request_type: paymentRequestType,
-				is_product_page: wcpayPaymentRequestParams.is_product_page,
-			};
-			/* eslint-enable camelcase */
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'get_shipping_options' ),
-			} );
-		},
-
-		/**
-		 * Updates the shipping price and the total based on the shipping option.
-		 *
-		 * @param {Object}   details        The line items and shipping options.
-		 * @param {string}   shippingOption User's preferred shipping option to use for shipping price calculations.
-		 * @return {Object} AJAX request.
-		 */
-		updateShippingDetails: ( details, shippingOption ) => {
-			/* eslint-disable camelcase */
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.update_shipping,
-				shipping_method: [ shippingOption.id ],
-				payment_request_type: paymentRequestType,
-				is_product_page: wcpayPaymentRequestParams.is_product_page,
-			};
-			/* eslint-enable camelcase */
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'update_shipping_method' ),
-			} );
-		},
-
-		/**
 		 * Adds the item to the cart and return cart details.
 		 *
 		 * @return {Object} AJAX request.
@@ -338,7 +194,7 @@ jQuery( ( $ ) => {
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'add_to_cart' ),
+				url: getAjaxURL( 'add_to_cart' ),
 			} );
 		},
 
@@ -350,7 +206,7 @@ jQuery( ( $ ) => {
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url: wcpayPaymentRequest.getAjaxURL( 'clear_cart' ),
+				url: getAjaxURL( 'clear_cart' ),
 				success: () => {},
 			} );
 		},
@@ -429,75 +285,52 @@ jQuery( ( $ ) => {
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
 			} );
 
-			// Possible statuses success, fail, invalid_payer_name, invalid_payer_email, invalid_payer_phone, invalid_shipping_address.
-			paymentRequest.on( 'shippingaddresschange', ( evt ) => {
-				$.when(
-					wcpayPaymentRequest.updateShippingOptions(
-						paymentDetails,
-						evt.shippingAddress
-					)
-				).then( ( response ) => {
-					evt.updateWith( {
-						status: response.result,
-						shippingOptions: response.shipping_options,
-						total: response.total,
-						displayItems: response.displayItems,
-					} );
-				} );
-			} );
+			paymentRequest.on( 'shippingaddresschange', ( event ) =>
+				shippingAddressChangeHandler( api, event )
+			);
 
-			paymentRequest.on( 'shippingoptionchange', ( evt ) => {
-				$.when(
-					wcpayPaymentRequest.updateShippingDetails(
-						paymentDetails,
-						evt.shippingOption
-					)
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						evt.updateWith( {
-							status: 'success',
-							total: response.total,
-							displayItems: response.displayItems,
-						} );
-					}
+			paymentRequest.on( 'shippingoptionchange', ( event ) =>
+				shippingOptionChangeHandler( api, event )
+			);
 
-					if ( 'fail' === response.result ) {
-						evt.updateWith( { status: 'fail' } );
-					}
-				} );
-			} );
+			paymentRequest.on( 'paymentmethod', ( event ) =>
+				paymentMethodHandler( api, event )
+			);
 
-			paymentRequest.on( 'paymentmethod', ( evt ) => {
-				// Check if we allow prepaid cards.
-				if (
-					'no' ===
-						wcpayPaymentRequestParams.stripe.allow_prepaid_card &&
-					'prepaid' === evt.source.card.funding
-				) {
-					wcpayPaymentRequest.abortPayment(
-						evt,
-						wcpayPaymentRequest.getErrorMessageHTML(
-							wcpayPaymentRequestParams.i18n.no_prepaid_card
-						)
-					);
-				} else {
-					$.when(
-						wcpayPaymentRequest.processPaymentMethod( evt )
-					).then( ( response ) => {
-						if ( 'success' === response.result ) {
-							wcpayPaymentRequest.completePayment(
-								evt,
-								response.redirect
-							);
-						} else {
-							wcpayPaymentRequest.abortPayment(
-								evt,
-								response.messages
-							);
-						}
-					} );
-				}
-			} );
+			// paymentRequest.on( 'paymentmethod', ( evt ) => {
+			// 	// Check if we allow prepaid cards.
+			// 	if (
+			// 		'no' ===
+			// 			wcpayPaymentRequestParams.stripe.allow_prepaid_card &&
+			// 		'prepaid' === evt.source.card.funding
+			// 	) {
+			// 		wcpayPaymentRequest.abortPayment(
+			// 			evt,
+			// 			wcpayPaymentRequest.getErrorMessageHTML(
+			// 				wcpayPaymentRequestParams.i18n.no_prepaid_card
+			// 			)
+			// 		);
+			// 	} else {
+			// 		$.when(
+			// 			api.paymentRequestCreateOrder(
+			// 				paymentRequestType,
+			// 				normalizeOrderDataForCheckout( evt )
+			// 			)
+			// 		).then( ( response ) => {
+			// 			if ( 'success' === response.result ) {
+			// 				wcpayPaymentRequest.completePayment(
+			// 					evt,
+			// 					response.redirect
+			// 				);
+			// 			} else {
+			// 				wcpayPaymentRequest.abortPayment(
+			// 					evt,
+			// 					response.messages
+			// 				);
+			// 			}
+			// 		} );
+			// 	}
+			// } );
 		},
 
 		getSelectedProductData: () => {
@@ -533,9 +366,7 @@ jQuery( ( $ ) => {
 			return $.ajax( {
 				type: 'POST',
 				data: data,
-				url: wcpayPaymentRequest.getAjaxURL(
-					'get_selected_product_data'
-				),
+				url: getAjaxURL( 'get_selected_product_data' ),
 			} );
 		},
 

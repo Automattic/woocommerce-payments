@@ -290,18 +290,34 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Updates cart with selected shipping option.
+	 *
+	 * @param {integer} shippingOption Shipping option id.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestUpdateShippingDetails( shippingOption ) {
+		return this.request( '/?wc-ajax=wcpay_update_shipping_method', {
+			security: wcpayPaymentRequestParams.nonce.update_shipping,
+			/* eslint-disable camelcase */
+			shipping_method: [ shippingOption.id ],
+			is_product_page: wcpayPaymentRequestParams.is_product_page,
+			/* eslint-enable camelcase */
+		} ).then( ( response ) => {
+			return JSON.parse( response );
+		} );
+	}
+
+	/**
 	 * Creates order based on Payment Request payment method.
 	 *
-	 * @param {string} paymentRequestType Payment Request type: 'apple_pay'|'google_pay'|'payment_request_api'
 	 * @param {Object} paymentData Order data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestCreateOrder( paymentRequestType, paymentData ) {
+	paymentRequestCreateOrder( paymentData ) {
 		// - TODO: Get Ajax endpoint and nonce from helper function.
 		return this.request( '/?wc-ajax=wcpay_create_order', {
 			_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
 			// eslint-disable-next-line camelcase
-			payment_request_type: paymentRequestType,
 			...paymentData,
 		} ).then( ( response ) => {
 			return JSON.parse( response );
