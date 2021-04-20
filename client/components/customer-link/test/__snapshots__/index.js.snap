@@ -16,7 +16,7 @@ exports[`CustomerLink renders a link to a customer with name and email 1`] = `
 <div>
   <a
     data-link-type="wc-admin"
-    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Some%20Name%20%28some%40email.com%29"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Some%20Name%20(some%40email.com)"
   >
     Some Name
   </a>

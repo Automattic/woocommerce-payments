@@ -84,6 +84,8 @@ const webpackConfig = {
 						return [ 'wc', 'wcBlocksRegistry' ];
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
+					case '@wordpress/url':
+						return [ 'wp', 'url' ];
 				}
 			},
 			requestToHandle( request ) {
@@ -100,6 +102,8 @@ const webpackConfig = {
 						return 'wc-blocks-registry';
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
+					case '@wordpress/url':
+						return 'wp-url';
 				}
 			},
 		} ),
