@@ -85,3 +85,8 @@ export const getDepositsSummary = ( state, query ) => {
 export const getDepositsSummaryError = ( state, query ) => {
 	return getDepositsSummaryForQuery( state, query ).error || {};
 };
+
+export const getInstantDeposit = ( state ) => {
+	const instantDeposit = getDepositsState( state ).instant || {};
+	return instantDeposit.data;
+};

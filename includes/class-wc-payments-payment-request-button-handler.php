@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Tracker;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
@@ -51,6 +52,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function init() {
 		$this->gateway = WC_Payments::get_gateway();
+
+		// Add Track event on settings change.
+		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
 
 		// Checks if WCPay is enabled.
 		if ( ! $this->gateway->is_enabled() ) {
@@ -96,6 +100,26 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// will be used to calculate it whenever the option value is retrieved instead.
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
+	}
+
+	/**
+	 * Track Payment Request settings activation/deactivation.
+	 *
+	 * @param array $prev_settings Settings before update.
+	 * @param array $settings      Settings after update.
+	 */
+	public function track_payment_request_settings_change( $prev_settings, $settings ) {
+		$prev_payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
+		$payment_request_enabled      = 'yes' === ( $settings['payment_request'] ?? 'no' );
+
+		if ( $prev_payment_request_enabled !== $payment_request_enabled ) {
+			Tracker::track_admin(
+				'wcpay_payment_request_settings_change',
+				[
+					'enabled' => $payment_request_enabled,
+				]
+			);
+		}
 	}
 
 	/**
