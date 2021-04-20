@@ -171,6 +171,8 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             <br />
             <a
               href="https://woocommerce.com/payments/"
+              rel="noreferrer"
+              target="_blank"
             >
               Learn more
             </a>
