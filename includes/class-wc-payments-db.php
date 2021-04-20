@@ -14,7 +14,6 @@ class WC_Payments_DB {
 	const META_KEY_INTENT_ID = '_intent_id';
 	const META_KEY_CHARGE_ID = '_charge_id';
 
-
 	/**
 	 * Retrieve an order from the DB using a corresponding Stripe charge ID.
 	 *
@@ -50,8 +49,8 @@ class WC_Payments_DB {
 	/**
 	 * Retrieve an order ID from the DB using a meta key value pair.
 	 *
-	 * @param string $meta_key Either '_intent_id' or '_charge_id'.
-	 * @param string $meta_value meta value Value for the meta key.
+	 * @param string $meta_key   Either '_intent_id' or '_charge_id'.
+	 * @param string $meta_value Value for the meta key.
 	 *
 	 * @return null|string
 	 */
