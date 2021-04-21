@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import classNames from 'classnames';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,7 +14,7 @@ import './style.scss';
 const ListItem = ( { children, className } ) => {
 	return (
 		<li className={ classNames( 'orderable-list__item', className ) }>
-			<div className="orderable-list__drag-handle" />
+			<Button className="orderable-list__drag-handle" />
 			{ children }
 		</li>
 	);

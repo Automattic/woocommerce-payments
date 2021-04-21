@@ -13,11 +13,14 @@
 	}
 
 	&__drag-handle {
-		background: no-repeat url( '../../../assets/images/drag-handle.svg' );
-		background-position: center center;
-		background-size: 10px 6px;
-		flex: 0 0 28px;
-		margin-right: 16px;
+		&#{&} {
+			background: no-repeat
+				url( '../../../assets/images/drag-handle.svg' );
+			background-position: center center;
+			background-size: 10px 6px;
+			flex: 0 0 28px;
+			margin-right: 16px;
+		}
 	}
 }
 
