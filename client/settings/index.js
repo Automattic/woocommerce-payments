@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import './style.scss';
 import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
 import enqueueFraudScripts from 'fraud-scripts';
