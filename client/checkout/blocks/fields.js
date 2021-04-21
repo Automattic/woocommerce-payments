@@ -13,7 +13,7 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import generatePaymentMethod from './generate-payment-method.js';
 import confirmCardPayment from './confirm-card-payment.js';
-import { PAYMENT_METHOD_NAME } from '../constants.js';
+import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 
 const WCPayFields = ( {
 	api,
@@ -33,7 +33,7 @@ const WCPayFields = ( {
 	useEffect(
 		() =>
 			onPaymentProcessing( () => {
-				if ( PAYMENT_METHOD_NAME !== activePaymentMethod ) {
+				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
 					return;
 				}
 
@@ -46,6 +46,7 @@ const WCPayFields = ( {
 
 				const cardElement = elements.getElement( CardElement );
 				const paymentElements = {
+					type: 'card',
 					card: cardElement,
 				};
 

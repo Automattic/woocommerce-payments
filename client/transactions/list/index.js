@@ -168,14 +168,20 @@ export const TransactionsList = ( props ) => {
 			<DetailsLink id={ txn.charge_id } parentSegment="transactions" />
 		);
 		const orderUrl = <OrderLink order={ txn.order } />;
+		const orderSubscriptions = txn.order && txn.order.subscriptions;
+		const subscriptionsValue =
+			wcpaySettings.isSubscriptionsActive && orderSubscriptions
+				? orderSubscriptions
+						.map( ( subscription ) => subscription.number )
+						.join( ', ' )
+				: '';
 		const subscriptions =
-			wcpaySettings.isSubscriptionsActive &&
-			txn.order &&
-			txn.order.subscriptions &&
-			txn.order.subscriptions.map( ( subscription, i, all ) => [
-				<OrderLink key={ i } order={ subscription } />,
-				i !== all.length - 1 && ', ',
-			] );
+			wcpaySettings.isSubscriptionsActive && orderSubscriptions
+				? orderSubscriptions.map( ( subscription, i, all ) => [
+						<OrderLink key={ i } order={ subscription } />,
+						i !== all.length - 1 && ', ',
+				  ] )
+				: [];
 		const riskLevel = <RiskLevel risk={ txn.risk_level } />;
 
 		const customerName = txn.order ? (
@@ -223,8 +229,14 @@ export const TransactionsList = ( props ) => {
 					/>
 				),
 			},
-			order: { value: txn.order_id, display: orderUrl },
-			subscriptions: { value: txn.order_id, display: subscriptions },
+			order: {
+				value: txn.order && txn.order.number,
+				display: orderUrl,
+			},
+			subscriptions: {
+				value: subscriptionsValue,
+				display: subscriptions,
+			},
 			// eslint-disable-next-line camelcase
 			customer_name: {
 				value: txn.customer_name,
