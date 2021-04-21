@@ -63,7 +63,9 @@ const ListItem = ( { id, children, className } ) => {
 			ref={ setDroppableNodeRef }
 			style={ style }
 		>
-			<Button className="orderable-list__drag-handle" { ...attributes } { ...listeners } ref={ setDraggableNodeRef } />
+			<div className="orderable-list__drag-handle-wrapper">
+				<Button className="orderable-list__drag-handle" { ...attributes } { ...listeners } ref={ setDraggableNodeRef } />
+			</div>
 			{ children }
 		</li>
 	);
