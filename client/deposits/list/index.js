@@ -70,9 +70,11 @@ const getColumns = ( sortByDate ) => [
 
 export const DepositsList = () => {
 	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
-	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
-		getQuery()
-	);
+	const {
+		depositsSummary,
+		depositsSummary: { count: countOfDeposits = 0 },
+		isLoading: isSummaryLoading,
+	} = useDepositsSummary( getQuery() );
 
 	const columnsArgs = [
 		! getQuery().orderby || 'date' === getQuery().orderby,
@@ -129,9 +131,7 @@ export const DepositsList = () => {
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	const summary = [
-		{ label: 'deposits', value: `${ depositsSummary.count }` },
-	];
+	const summary = [ { label: 'deposits', value: `${ countOfDeposits }` } ];
 
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
 	if ( ! isSummaryLoading ) {

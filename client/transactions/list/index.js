@@ -146,6 +146,7 @@ export const TransactionsList = ( props ) => {
 	);
 	const {
 		transactionsSummary,
+		transactionsSummary: { count: transactionsCount = 0 },
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId );
 
@@ -328,7 +329,7 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			exported_transactions: rows.length,
 			// eslint-disable-next-line camelcase
-			total_transactions: transactionsSummary.count,
+			total_transactions: transactionsCount,
 		} );
 	};
 
@@ -343,7 +344,7 @@ export const TransactionsList = ( props ) => {
 	const summary = [
 		{
 			label: 'transactions',
-			value: `${ transactionsSummary.count }`,
+			value: `${ transactionsCount }`,
 		},
 	];
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
@@ -396,7 +397,7 @@ export const TransactionsList = ( props ) => {
 				}
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
-				totalRows={ transactionsSummary.count || 0 }
+				totalRows={ transactionsCount || 0 }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
