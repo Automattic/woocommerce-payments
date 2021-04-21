@@ -12,6 +12,7 @@
 
 		@include breakpoint( '>660px' ) {
 			flex: 1 1 auto;
+			margin-right: 25px;
 			order: 3;
 		}
 	}
@@ -24,6 +25,7 @@
 		&#{&} {
 			&#{&} {
 				color: var( --wp-admin-theme-color );
+				margin-bottom: 4px;
 				text-decoration: none;
 			}
 		}
@@ -33,18 +35,20 @@
 		color: $studio-gray-50;
 		font-size: 13px;
 		line-height: 16px;
-		margin-top: 4px;
+		margin-bottom: 14px;
+
+		@include breakpoint( '>660px' ) {
+			margin-bottom: 0;
+		}
 	}
 
 	&__actions {
 		align-items: center;
 		display: flex;
 		justify-content: center;
-		margin-top: 14px;
 		order: 3;
 
 		@include breakpoint( '>660px' ) {
-			margin-top: 0;
 			order: 4;
 		}
 	}
@@ -52,7 +56,11 @@
 	&__action {
 		&#{&} {
 			&#{&} {
-				margin-left: 25px;
+				margin-right: 25px;
+
+				& + & {
+					margin-right: 0;
+				}
 			}
 		}
 
@@ -105,12 +113,10 @@
 
 	.orderable-list__drag-handle {
 		margin-left: -10px;
-		margin-top: 14px;
 		order: 2;
 
 		@include breakpoint( '>660px' ) {
 			margin-left: 0;
-			margin-top: 0;
 			order: 1;
 		}
 	}

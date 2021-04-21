@@ -15,12 +15,13 @@
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__description {
 		font-size: 13px;
 		line-height: 16px;
-		margin: 8px 0 0 0;
+		margin: 0;
 	}
 
 	&__available-methods-container {
@@ -38,9 +39,15 @@
 		}
 	}
 
+	&__add-payment-method {
+		&#{&} {
+			margin-right: 16px;
+		}
+	}
+
 	&__available-methods {
 		display: none;
-		margin: 0 0 0 16px;
+		margin: 0;
 
 		@include breakpoint( '>660px' ) {
 			display: flex;
@@ -53,11 +60,11 @@
 		border-radius: 2px;
 		box-shadow: 0 0 0 1px #ddd;
 		height: 24px;
-		margin: 1px; // 1px to accommodate for box-shadow
+		margin: 1px 5px 1px 1px; // 1px to accommodate for box-shadow
 		width: 38.22px;
 
-		& + & {
-			margin-left: 5px;
+		&:last-child {
+			margin-right: 1px; // 1px to accommodate for box-shadow
 		}
 	}
 
