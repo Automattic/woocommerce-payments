@@ -60,6 +60,11 @@ const webpackConfig = {
 				exclude: /node_modules/,
 				loader: 'source-map-loader',
 			},
+			{
+				test: /\.svg$/,
+				type: 'asset/inline',
+				exclude: /node_modules/,
+			},
 		],
 	},
 	resolve: {
