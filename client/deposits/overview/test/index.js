@@ -10,9 +10,12 @@ import momentLib from 'moment';
  * Internal dependencies
  */
 import DepositsOverview from '../';
-import { useDepositsOverview } from 'data';
+import { useDepositsOverview, useInstantDeposit } from 'data';
 
-jest.mock( 'data', () => ( { useDepositsOverview: jest.fn() } ) );
+jest.mock( 'data', () => ( {
+	useDepositsOverview: jest.fn(),
+	useInstantDeposit: jest.fn(),
+} ) );
 const mockUseDepositsOverview = ( overview, isLoading = false ) =>
 	useDepositsOverview.mockReturnValue( {
 		overview: overview,
@@ -55,6 +58,12 @@ const getMockedOverview = ( additionalData ) =>
 		},
 		additionalData
 	);
+
+useInstantDeposit.mockReturnValue( {
+	deposit: undefined,
+	isLoading: false,
+	submit: () => {},
+} );
 
 describe( 'Deposits overview', () => {
 	beforeEach( () => {
@@ -146,6 +155,27 @@ describe( 'Deposits overview', () => {
 		const expected =
 			'Deposit schedule: Automatic, every business day – your first deposit is held for seven days (learn more)';
 		expect( depositSchedule.parentElement.textContent ).toEqual( expected );
+	} );
+
+	test( 'renders instant deposit button', () => {
+		const mockInstantDeposit = {
+			// eslint-disable-next-line camelcase
+			instant_balance: {
+				amount: 12345,
+				fee: 123.45,
+				net: 12221.55,
+				// eslint-disable-next-line camelcase
+				transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
+			},
+		};
+		const overview = getMockedOverview( mockInstantDeposit );
+		mockUseDepositsOverview( overview );
+		const { getByRole } = render( <DepositsOverview /> );
+		const instantButton = getByRole( 'button', {
+			name: /instant deposit/i,
+		} );
+		const expected = 'Instant deposit';
+		expect( instantButton.textContent ).toEqual( expected );
 	} );
 
 	// TODO: Enable/rewrite the following 3 test cases when https://github.com/Automattic/woocommerce-payments/issues/962 is fixed.

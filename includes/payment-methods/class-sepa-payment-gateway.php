@@ -1,11 +1,11 @@
 <?php
 /**
- * Class Sepa
+ * Class Sepa_Payment_Gateway
  *
- * @package WCPay\Payment_Gateway
+ * @package WCPay\Payment_Methods
  */
 
-namespace WCPay\Payment_Method;
+namespace WCPay\Payment_Methods;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -20,7 +20,7 @@ use WC_Payments_Utils;
  * SEPA Payment method extended from cart payment method.
  * Just loads different js and fields.
  */
-class Sepa extends WC_Payment_Gateway_WCPay {
+class Sepa_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Internal ID of the payment gateway.
 	 *

@@ -303,11 +303,9 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus'           => $this->account->get_account_status_data(),
-				'accountFees'             => $this->account->get_fees(),
-				'fraudServices'           => $this->account->get_fraud_services_config(),
-				// TODO: Remove this line ahead of releasing Apple Pay for all merchants.
-				'paymentRequestAvailable' => WC_Payments::should_payment_request_be_available(),
+				'accountStatus' => $this->account->get_account_status_data(),
+				'accountFees'   => $this->account->get_fees(),
+				'fraudServices' => $this->account->get_fraud_services_config(),
 			]
 		);
 
@@ -403,7 +401,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
-			'groupedSettings' => self::is_grouped_settings_enabled(),
+			'groupedSettings' => WC_Payments_Features::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -458,15 +456,6 @@ class WC_Payments_Admin {
 	 */
 	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
-	}
-
-	/**
-	 * Checks whether the grouped settings feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_grouped_settings_enabled() {
-		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 
 	/**

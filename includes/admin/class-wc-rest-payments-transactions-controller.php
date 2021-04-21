@@ -124,7 +124,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'store_currency_is' => $request->get_param( 'store_currency_is' ),
 				'search'            => $request->get_param( 'search' ),
 			],
-			function ( $filter ) {
+			static function ( $filter ) {
 				return null !== $filter;
 			}
 		);
