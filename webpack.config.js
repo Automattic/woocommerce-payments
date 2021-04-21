@@ -24,7 +24,7 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.(t|j)sx?$/,
-				loader: 'ts-loader',
+				use: [ 'ts-loader', 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
@@ -59,6 +59,11 @@ const webpackConfig = {
 				test: /\.js$/,
 				exclude: /node_modules/,
 				loader: 'source-map-loader',
+			},
+			{
+				test: /\.svg$/,
+				type: 'asset/inline',
+				exclude: /node_modules/,
 			},
 		],
 	},

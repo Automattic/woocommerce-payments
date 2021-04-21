@@ -6,8 +6,9 @@
 import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_GIROPAY,
+	PAYMENT_METHOD_NAME_SEPA,
+	PAYMENT_METHOD_NAME_SOFORT,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
@@ -39,8 +40,10 @@ jQuery( function ( $ ) {
 	);
 	const elements = api.getStripe().elements();
 
-	// In the future this object will be loaded with customer information through `wp_localize_script`.
-	const preparedCustomerData = {};
+	// Customer information for Pay for Order and Save Payment method.
+	/* global wcpayCustomerData */
+	const preparedCustomerData =
+		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
 
 	// Create a card element.
 	const cardElement = elements.create( 'card', {
@@ -51,6 +54,11 @@ jQuery( function ( $ ) {
 	const cardPayment = {
 		type: 'card',
 		card: cardElement,
+	};
+
+	// Giropay payment method details
+	const giropayPayment = {
+		type: 'giropay' /* eslint-disable camelcase */,
 	};
 
 	// Create a SEPA element
@@ -65,20 +73,9 @@ jQuery( function ( $ ) {
 		sepa_debit: sepaElement,
 	};
 
-	// Giropay payment method details
-	const giropayPayment = {
-		type: 'giropay' /* eslint-disable camelcase */,
-	};
-
-	/**
-	 * Check if SEPA Direct Debit is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not SEPA Direct Debit is being used.
-	 */
-	const isWCPaySepaChosen = function () {
-		return $( '#payment_method_woocommerce_payments_sepa' ).is(
-			':checked'
-		);
+	// Sofort payment method details
+	const sofortPayment = {
+		type: 'sofort' /* eslint-disable camelcase */,
 	};
 
 	/**
@@ -97,6 +94,28 @@ jQuery( function ( $ ) {
 	 */
 	const isWCPayGiropayChosen = function () {
 		return $( '#payment_method_woocommerce_payments_giropay' ).is(
+			':checked'
+		);
+	};
+
+	/**
+	 * Check if SEPA Direct Debit is being used.
+	 *
+	 * @return {boolean} Boolean indicating whether or not SEPA Direct Debit is being used.
+	 */
+	const isWCPaySepaChosen = function () {
+		return $( '#payment_method_woocommerce_payments_sepa' ).is(
+			':checked'
+		);
+	};
+
+	/**
+	 * Check if Sofort payment method is being used.
+	 *
+	 * @return {boolean} Boolean indicating whether or not Sofort payment method is being used.
+	 */
+	const isWCPaySofortChosen = function () {
+		return $( '#payment_method_woocommerce_payments_sofort' ).is(
 			':checked'
 		);
 	};
@@ -272,14 +291,12 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {Object} $form The jQuery object for the form.
 	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
-	 * @param {boolean}  useBillingDetails Flag to control whether to use from billing details or not.
 	 * @param {Object}  paymentMethodDetails { type: 'card' | 'sepa_debit', card? | sepa_debit? : Stripe element  }.
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handlePaymentMethodCreation = (
 		$form,
 		successHandler,
-		useBillingDetails,
 		paymentMethodDetails
 	) => {
 		// We'll resubmit the form after populating our payment method, so if this is the second time this event
@@ -295,37 +312,27 @@ jQuery( function ( $ ) {
 			preparedCustomerData
 		);
 
-		// Populate the necessary billing details.
-		if ( useBillingDetails ) {
-			request.setBillingDetail(
-				'name',
-				(
+		// Populate payment method owner details.
+		const billingName = $( '#billing_first_name' ).length
+			? (
 					$( '#billing_first_name' ).val() +
 					' ' +
 					$( '#billing_last_name' ).val()
-				).trim()
-			);
-			request.setBillingDetail( 'email', $( '#billing_email' ).val() );
-			request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
-			request.setAddressDetail( 'city', $( '#billing_city' ).val() );
-			request.setAddressDetail(
-				'country',
-				$( '#billing_country' ).val()
-			);
-			request.setAddressDetail(
-				'line1',
-				$( '#billing_address_1' ).val()
-			);
-			request.setAddressDetail(
-				'line2',
-				$( '#billing_address_2' ).val()
-			);
-			request.setAddressDetail(
-				'postal_code',
-				$( '#billing_postcode' ).val()
-			);
-			request.setAddressDetail( 'state', $( '#billing_state' ).val() );
-		}
+			  ).trim()
+			: undefined;
+
+		request.setBillingDetail( 'name', billingName );
+		request.setBillingDetail( 'email', $( '#billing_email' ).val() );
+		request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
+		request.setAddressDetail( 'city', $( '#billing_city' ).val() );
+		request.setAddressDetail( 'country', $( '#billing_country' ).val() );
+		request.setAddressDetail( 'line1', $( '#billing_address_1' ).val() );
+		request.setAddressDetail( 'line2', $( '#billing_address_2' ).val() );
+		request.setAddressDetail(
+			'postal_code',
+			$( '#billing_postcode' ).val()
+		);
+		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
 
 		request
 			.send()
@@ -408,6 +415,11 @@ jQuery( function ( $ ) {
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
 	function isUsingSavedPaymentMethod() {
+		if ( isWCPayGiropayChosen() ) {
+			// Giropay does not use saved payment methods at this time
+			return false;
+		}
+
 		if ( isWCPaySepaChosen() ) {
 			return (
 				$( '#wc-woocommerce_payments_sepa-payment-token-new' ).length &&
@@ -416,10 +428,6 @@ jQuery( function ( $ ) {
 				)
 			);
 		}
-		if ( isWCPayGiropayChosen() ) {
-			// Giropay does not use saved payment methods at this time
-			return false;
-		}
 		return (
 			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
 			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
@@ -427,30 +435,35 @@ jQuery( function ( $ ) {
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
-	$( 'form.checkout' ).on(
-		'checkout_place_order_' +
-			PAYMENT_METHOD_NAME_CARD +
-			' checkout_place_order_' +
-			PAYMENT_METHOD_NAME_SEPA +
-			' checkout_place_order_' +
-			PAYMENT_METHOD_NAME_GIROPAY,
-		function () {
-			if ( ! isUsingSavedPaymentMethod() ) {
-				let paymentMethodDetails = cardPayment;
-				if ( isWCPaySepaChosen() ) {
-					paymentMethodDetails = sepaPayment;
-				} else if ( isWCPayGiropayChosen() ) {
-					paymentMethodDetails = giropayPayment;
-				}
-				return handlePaymentMethodCreation(
-					$( this ),
-					handleOrderPayment,
-					true,
-					paymentMethodDetails
-				);
+	const wcpayPaymentMethods = [
+		PAYMENT_METHOD_NAME_CARD,
+		PAYMENT_METHOD_NAME_GIROPAY,
+		PAYMENT_METHOD_NAME_SEPA,
+		PAYMENT_METHOD_NAME_SOFORT,
+	];
+	const checkoutEvents = wcpayPaymentMethods
+		.map( ( method ) => `checkout_place_order_${ method }` )
+		.join( ' ' );
+	$( 'form.checkout' ).on( checkoutEvents, function () {
+		if ( ! isUsingSavedPaymentMethod() ) {
+			let paymentMethodDetails = cardPayment;
+			if ( isWCPaySepaChosen() ) {
+				paymentMethodDetails = sepaPayment;
+			} else if ( isWCPayGiropayChosen() ) {
+				paymentMethodDetails = giropayPayment;
+			} else if ( isWCPaySofortChosen() ) {
+				sofortPayment.sofort = {
+					country: $( '#billing_country' ).val(),
+				};
+				paymentMethodDetails = sofortPayment;
 			}
+			return handlePaymentMethodCreation(
+				$( this ),
+				handleOrderPayment,
+				paymentMethodDetails
+			);
 		}
-	);
+	} );
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
@@ -464,7 +477,6 @@ jQuery( function ( $ ) {
 		return handlePaymentMethodCreation(
 			$( '#order_review' ),
 			handleOrderPayment,
-			true,
 			isWCPaySepaChosen() ? sepaPayment : cardPayment
 		);
 	} );
@@ -477,11 +489,12 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = sepaPayment;
 			} else if ( isWCPayGiropayChosen() ) {
 				paymentMethodDetails = giropayPayment;
+			} else if ( isWCPaySofortChosen() ) {
+				paymentMethodDetails = sofortPayment;
 			}
 			return handlePaymentMethodCreation(
 				$( 'form#add_payment_method' ),
 				handleAddCard,
-				false,
 				paymentMethodDetails
 			);
 		}
