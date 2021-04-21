@@ -47,10 +47,10 @@ const ListItem = ( { id, children, className } ) => {
 	const style = {
 		transform: transform
 			? `translate3d(0, ${
-				transform.y ? Math.round( transform.y ) : 0
-			}px, ${ isDragging ? '100' : '-100' }px) ${
-				isDragging ? 'scale(1.02)' : ''
-			}`
+					transform.y ? Math.round( transform.y ) : 0
+			  }px, ${ isDragging ? '100' : '-100' }px) ${
+					isDragging ? 'scale(1.02)' : ''
+			  }`
 			: undefined,
 		transition,
 	};
@@ -64,7 +64,12 @@ const ListItem = ( { id, children, className } ) => {
 			style={ style }
 		>
 			<div className="orderable-list__drag-handle-wrapper">
-				<Button className="orderable-list__drag-handle" { ...attributes } { ...listeners } ref={ setDraggableNodeRef } />
+				<Button
+					className="orderable-list__drag-handle"
+					{ ...attributes }
+					{ ...listeners }
+					ref={ setDraggableNodeRef }
+				/>
 			</div>
 			{ children }
 		</li>
@@ -117,24 +122,30 @@ const OrderableList = ( { className, children } ) => {
 				items={ childrenKeys }
 				strategy={ verticalListSortingStrategy }
 			>
-				<ul className={ classNames( 'orderable-list', className, { 'has-drag-handles': hasDragHandles }, ) }>
+				<ul
+					className={ classNames( 'orderable-list', className, {
+						'has-drag-handles': hasDragHandles,
+					} ) }
+				>
 					{ childrenKeys.map( ( childKey ) => {
 						const child = childrenArray.find(
-							(el) => el.key === childKey
+							( el ) => el.key === childKey
 						);
 
-						if(!child) return null;
+						if ( ! child ) {
+							return null;
+						}
 
 						return (
 							<ListItem
-								key={childKey}
-								id={childKey}
-								className={child.props.className}
+								key={ childKey }
+								id={ childKey }
+								className={ child.props.className }
 							>
-								{child}
+								{ child }
 							</ListItem>
-						)
-					}) }
+						);
+					} ) }
 				</ul>
 			</SortableContext>
 		</DndContext>
