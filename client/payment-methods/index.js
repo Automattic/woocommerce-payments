@@ -2,7 +2,6 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -11,13 +10,14 @@ import {
 	CardDivider,
 	CardHeader,
 } from '@wordpress/components';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import OrderableList from 'components/orderable-list';
-import PaymentMethodItem from 'components/orderable-list/payment-method-item';
+import PaymentMethod from 'components/orderable-list/payment-method';
 
 const availableMethods = [
 	{
@@ -27,7 +27,6 @@ const availableMethods = [
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		icon: 'c',
 	},
 	{
 		id: 'giropay',
@@ -36,7 +35,6 @@ const availableMethods = [
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		icon: 'g',
 	},
 	{
 		id: 'sofort',
@@ -45,50 +43,43 @@ const availableMethods = [
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
 			'woocommerce-payments'
 		),
-		icon: 's',
 	},
 	{
-		id: 'direct-debit',
+		id: 'sepa',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		icon: 'd',
 	},
 ];
 
-const PaymentMethods = ( {
-	enabledMethodIds: initialEnabledMethodIds,
-	onEnabledMethodsChange,
-} ) => {
-	const [ enabledMethodIds, setState ] = useState( initialEnabledMethodIds );
-	useEffect( () => {
-		onEnabledMethodsChange( enabledMethodIds );
-	} );
-
+const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 	const enabledMethods = availableMethods.filter( ( method ) =>
 		enabledMethodIds.includes( method.id )
 	);
+
 	const disabledMethods = availableMethods.filter(
 		( method ) => ! enabledMethodIds.includes( method.id )
 	);
 
-	const handleManageClick = () => {};
+	const handleManageClick = ( itemId ) => {
+		console.debug( `Manage item ${ itemId } clicked (not implemented)` );
+	};
 
 	const handleDeleteClick = ( itemId ) => {
-		setState( enabledMethodIds.filter( ( id ) => id !== itemId ) );
+		onEnabledMethodIdsChange(
+			enabledMethodIds.filter( ( id ) => id !== itemId )
+		);
 	};
 
 	return (
 		<Card className="payment-methods">
-			<CardHeader>
-				<p>
-					<strong>
-						{ __( 'Payment methods', 'woocommerce-payments' ) }
-					</strong>
-				</p>
-				<p>
+			<CardHeader className="payment-methods__header">
+				<div className="payment-methods__title">
+					{ __( 'Payment methods', 'woocommerce-payments' ) }
+				</div>
+				<p className="payment-methods__description">
 					{ __(
 						'Increase your store’s conversion by offering your customers preferred and convenient payment methods. ' +
 							'Drag and drop to reorder on checkout.',
@@ -96,28 +87,42 @@ const PaymentMethods = ( {
 					) }
 				</p>
 			</CardHeader>
-			<CardBody>
-				<Button>
+			<CardBody className="payment-methods__available-methods-container">
+				<Button
+					isDefault
+					className="payment-methods__add-payment-method"
+					onClick={ () =>
+						console.debug(
+							'Add payment method clicked (not implemented)'
+						)
+					}
+				>
 					{ __( 'Add payment method', 'woocommerce-payments' ) }
 				</Button>
 				<ul className="payment-methods__available-methods">
 					{ disabledMethods.map( ( { id, label } ) => (
-						<li key={ id }>{ label }</li>
+						<li
+							key={ id }
+							className={ classNames(
+								'payment-methods__available-method',
+								id
+							) }
+							aria-label={ label }
+						/>
 					) ) }
 				</ul>
 			</CardBody>
 			<CardDivider />
 			<CardBody className="payment-methods__enabled-methods-container">
 				<OrderableList className="payment-methods__enabled-methods">
-					{ enabledMethods.map( ( method ) => (
-						<PaymentMethodItem
-							key={ method.id }
-							id={ method.id }
-							onManageClick={ handleManageClick }
-							onDeleteClick={ handleDeleteClick }
-							label={ method.label }
-							description={ method.description }
-							icon={ method.icon }
+					{ enabledMethods.map( ( { id, label, description } ) => (
+						<PaymentMethod
+							key={ id }
+							className={ classNames( 'payment-method', id ) }
+							onManageClick={ () => handleManageClick( id ) }
+							onDeleteClick={ () => handleDeleteClick( id ) }
+							label={ label }
+							description={ description }
 						/>
 					) ) }
 				</OrderableList>

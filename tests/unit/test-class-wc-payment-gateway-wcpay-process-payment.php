@@ -523,6 +523,46 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$this->assertEquals( '', $result['redirect'] );
 	}
 
+	public function test_bad_request_exception_thrown() {
+		$error_message = 'Test error.';
+		$error_notice  = 'We\'re not able to process this payment. Please refresh the page and try again.';
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will(
+				$this->throwException(
+					new API_Exception(
+						$error_message,
+						'wcpay_bad_request',
+						400
+					)
+				)
+			);
+
+		// Act: process payment.
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// Assert: Order status was updated.
+		$this->assertEquals( 'failed', $result_order->get_status() );
+
+		// Assert: No order note was added, besides the status change and failed transaction details.
+		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
+		$this->assertCount( 2, $notes );
+		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
+		$this->assertContains( "A payment of &pound;50.00 failed to complete with the following message: $error_message", strip_tags( $notes[0]->content, '' ) );
+
+		// Assert: A WooCommerce notice was added.
+		$this->assertTrue( wc_has_notice( $error_notice, 'error' ) );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'fail', $result['result'] );
+		$this->assertEquals( '', $result['redirect'] );
+	}
+
 
 	/**
 	 * Test processing payment with the status "requires_action".

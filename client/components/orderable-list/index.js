@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useCallback, useState } from 'react';
-import { Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import classNames from 'classnames';
 import {
 	DndContext,
@@ -25,14 +25,13 @@ import {
 	restrictToWindowEdges,
 	restrictToVerticalAxis,
 } from '@dnd-kit/modifiers';
-import { CSS } from '@dnd-kit/utilities';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 
-const ListItem = ( { id, children, isDraggable } ) => {
+const ListItem = ( { id, children, className } ) => {
 	const {
 		attributes,
 		listeners,
@@ -48,36 +47,23 @@ const ListItem = ( { id, children, isDraggable } ) => {
 	const style = {
 		transform: transform
 			? `translate3d(0, ${
-					transform.y ? Math.round( transform.y ) : 0
-			  }px, ${ isDragging ? '100' : '-100' }px) ${
-					isDragging ? 'scale(1.02)' : ''
-			  }`
+				transform.y ? Math.round( transform.y ) : 0
+			}px, ${ isDragging ? '100' : '-100' }px) ${
+				isDragging ? 'scale(1.02)' : ''
+			}`
 			: undefined,
-		// transform: CSS.Translate.toString( transform ),
 		transition,
 	};
 
 	return (
 		<li
-			className={ classNames( 'orderable-list__item', {
+			className={ classNames( 'orderable-list__item', className, {
 				'is-dragged': isDragging,
 			} ) }
 			ref={ setDroppableNodeRef }
 			style={ style }
 		>
-			<div className="orderable-list__drag-handle-container">
-				{ isDraggable && (
-					// TODO: possibly make this a button element for accessibility
-					<div
-						className="orderable-list__drag-handle"
-						{ ...attributes }
-						{ ...listeners }
-						ref={ setDraggableNodeRef }
-					>
-						<Icon icon="move" size={ 24 } />
-					</div>
-				) }
-			</div>
+			<Button className="orderable-list__drag-handle" { ...attributes } { ...listeners } ref={ setDraggableNodeRef } />
 			{ children }
 		</li>
 	);
@@ -86,7 +72,7 @@ const ListItem = ( { id, children, isDraggable } ) => {
 const modifiers = [ restrictToWindowEdges, restrictToVerticalAxis ];
 
 const OrderableList = ( { className, children } ) => {
-	const isDraggable = 1 < React.Children.count( children );
+	const hasDragHandles = 1 < React.Children.count( children );
 	const childrenArray = React.Children.toArray( children );
 
 	// TODO: remove
@@ -129,18 +115,24 @@ const OrderableList = ( { className, children } ) => {
 				items={ childrenKeys }
 				strategy={ verticalListSortingStrategy }
 			>
-				<ul className={ classNames( 'orderable-list', className ) }>
-					{ childrenKeys.map( ( childKey ) => (
-						<ListItem
-							key={ childKey }
-							id={ childKey }
-							isDraggable={ isDraggable }
-						>
-							{ childrenArray.find(
-								( el ) => el.key === childKey
-							) }
-						</ListItem>
-					) ) }
+				<ul className={ classNames( 'orderable-list', className, { 'has-drag-handles': hasDragHandles }, ) }>
+					{ childrenKeys.map( ( childKey ) => {
+						const child = childrenArray.find(
+							(el) => el.key === childKey
+						);
+
+						if(!child) return null;
+
+						return (
+							<ListItem
+								key={childKey}
+								id={childKey}
+								className={child.props.className}
+							>
+								{child}
+							</ListItem>
+						)
+					}) }
 				</ul>
 			</SortableContext>
 		</DndContext>

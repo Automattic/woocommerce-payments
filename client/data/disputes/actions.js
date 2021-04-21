@@ -13,6 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
 import TYPES from './action-types';
+import wcpayTracks from 'tracks';
 
 export function updateDispute( data ) {
 	return {
@@ -49,7 +50,7 @@ export function* acceptDispute( id ) {
 			} )
 		);
 
-		window.wcTracks.recordEvent( 'wcpay_dispute_accept_success' );
+		wcpayTracks.recordEvent( 'wcpay_dispute_accept_success' );
 		const message = dispute.order
 			? sprintf(
 					/* translators: #%s is an order number, e.g. 15 */
@@ -66,7 +67,7 @@ export function* acceptDispute( id ) {
 			'There has been an error accepting the dispute. Please try again later.',
 			'woocommerce-payments'
 		);
-		window.wcTracks.recordEvent( 'wcpay_dispute_accept_failed' );
+		wcpayTracks.recordEvent( 'wcpay_dispute_accept_failed' );
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	}
 }
