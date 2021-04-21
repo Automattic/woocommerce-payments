@@ -16,14 +16,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @class    WC_Payment_Token_SEPA
  */
-class WC_Payment_Token_SEPA extends WC_Payment_Token {
+class WC_Payment_Token_WCPay_SEPA extends WC_Payment_Token {
 
 	/**
 	 * The payment method type of this token.
 	 *
 	 * @var string
 	 */
-	protected $type = 'sepa';
+	protected $type = 'wcpay_sepa';
 
 	/**
 	 * Stores SEPA payment token data.
