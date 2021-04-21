@@ -2,9 +2,18 @@
 	flex-wrap: wrap;
 	justify-content: space-between;
 
+	@include breakpoint( '>660px' ) {
+		flex-wrap: nowrap;
+	}
+
 	&__text {
 		flex: 1 1 100%;
 		order: 1;
+
+		@include breakpoint( '>660px' ) {
+			flex: 1 1 auto;
+			order: 3;
+		}
 	}
 
 	&__label {
@@ -33,6 +42,11 @@
 		justify-content: center;
 		margin-top: 14px;
 		order: 3;
+
+		@include breakpoint( '>660px' ) {
+			margin-top: 0;
+			order: 4;
+		}
 	}
 
 	&__action {
@@ -65,6 +79,11 @@
 		flex: 0 0 63.69px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
+
+		@include breakpoint( '>660px' ) {
+			display: flex;
+			order: 2;
+		}
 	}
 
 	&.cc &__icon {
@@ -88,32 +107,11 @@
 		margin-left: -10px;
 		margin-top: 14px;
 		order: 2;
-	}
-}
 
-@include breakpoint( '>660px' ) {
-	.payment-method {
-		flex-wrap: nowrap;
-
-		.orderable-list__drag-handle {
+		@include breakpoint( '>660px' ) {
 			margin-left: 0;
 			margin-top: 0;
 			order: 1;
-		}
-
-		&__icon {
-			display: flex;
-			order: 2;
-		}
-
-		&__text {
-			flex: 1 1 auto;
-			order: 3;
-		}
-
-		&__actions {
-			margin-top: 0;
-			order: 4;
 		}
 	}
 }

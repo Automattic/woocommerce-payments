@@ -6,13 +6,25 @@
 	display: flex;
 	flex-flow: column;
 
+	@include breakpoint( '>960px' ) {
+		padding: 0 56px;
+	}
+
 	&__section {
 		display: flex;
 		flex-flow: column;
+
+		@include breakpoint( '>800px' ) {
+			flex-flow: row;
+		}
 	}
 
 	&__section-details {
 		flex: 0 1 auto;
+
+		@include breakpoint( '>800px' ) {
+			flex: 0 1 328px;
+		}
 
 		h2 {
 			font-size: 16px;
@@ -29,28 +41,10 @@
 	&__controls {
 		flex: 1 1 auto;
 		margin-top: 12px;
-	}
-}
 
-@include breakpoint( '>800px' ) {
-	.settings-manager {
-		&__section {
-			flex-flow: row;
-		}
-
-		&__section-details {
-			flex: 0 1 328px;
-		}
-
-		&__controls {
+		@include breakpoint( '>800px' ) {
 			margin-left: 32px;
 			margin-top: 0;
 		}
-	}
-}
-
-@include breakpoint( '>960px' ) {
-	.settings-manager {
-		padding: 0 56px;
 	}
 }
