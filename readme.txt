@@ -101,7 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.3.0 - 2021-xx-xx =
+= 2.4.0 - 2021-xx-xx =
+
+= 2.3.0 – 2021-04-21 =
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
