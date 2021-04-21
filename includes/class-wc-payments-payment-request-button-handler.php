@@ -226,6 +226,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( 'variable' === $product->get_type() ) {
 			$attributes = wc_clean( wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
+			if ( empty( $attributes ) ) {
+				$get_default_attributes = $product->get_default_attributes();
+				$attributes             = [];
+				foreach ( $get_default_attributes as $key => $value ) {
+					$attributes[ 'attribute_' . $key ] = $value;
+				}
+			}
+
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
 
