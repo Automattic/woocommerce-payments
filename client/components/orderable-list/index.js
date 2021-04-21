@@ -22,13 +22,13 @@ const ListItem = ( { children, className } ) => {
 
 const OrderableList = ( { className, children } ) => {
 	const childrenArray = React.Children.toArray( children );
-	const showDragHandles = 1 < childrenArray.length;
+	const hasDragHandles = 1 < childrenArray.length;
 
 	return (
 		<ul
 			className={ classNames(
 				'orderable-list',
-				{ 'show-drag-handles': showDragHandles },
+				{ 'has-drag-handles': hasDragHandles },
 				className
 			) }
 		>

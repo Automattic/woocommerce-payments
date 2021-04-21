@@ -56,7 +56,7 @@ describe( 'OrderableList', () => {
 		);
 
 		const list = screen.getByRole( 'list' );
-		expect( list.className ).toContain( 'show-drag-handles' );
+		expect( list.className ).toContain( 'has-drag-handles' );
 	} );
 
 	test( 'does not render drag handles if there is a single item', () => {
@@ -67,6 +67,6 @@ describe( 'OrderableList', () => {
 		);
 
 		const list = screen.getByRole( 'list' );
-		expect( list.className ).not.toContain( 'show-drag-handles' );
+		expect( list.className ).not.toContain( 'has-drag-handles' );
 	} );
 } );

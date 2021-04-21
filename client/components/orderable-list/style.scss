@@ -1,7 +1,7 @@
 .orderable-list {
 	margin: 0;
 
-	&:not( .show-drag-handles ) &__drag-handle {
+	&:not( .has-drag-handles ) &__drag-handle {
 		background-image: none;
 	}
 
