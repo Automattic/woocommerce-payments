@@ -24,7 +24,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 *
 	 * @return bool
 	 */
-	private function is_current_page_payment_methods() {
+	private function is_default_payments_settings_section_request() {
 		global $current_tab, $plugin_page;
 
 		if ( 'wc-settings' !== $plugin_page ) {
@@ -51,7 +51,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 		global $current_section;
 
 		// no need to make any changes to the global variables if we're not in the correct WC page.
-		if ( ! $this->is_current_page_payment_methods() ) {
+		if ( ! $this->is_default_payments_settings_section_request() ) {
 			return;
 		}
 
