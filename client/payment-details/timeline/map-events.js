@@ -414,7 +414,7 @@ const mapEventToTimelineItems = ( event ) => {
 						__(
 							// eslint-disable-next-line max-len
 							"The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
-							'woocommerce-services'
+							'woocommerce-payments'
 						),
 					],
 				};
