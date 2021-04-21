@@ -56,16 +56,24 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	public function test_check_stripe_account_status_stripe_disconnected() {
+	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_stripe_disconnected_and_on_boarding_disabled() {
+	public function test_maybe_redirect_to_onboarding_stripe_disconnected_and_on_boarding_disabled_redirects() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException(
 				new API_Exception(
@@ -76,21 +84,31 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_account_error() {
+	public function test_maybe_redirect_to_onboarding_account_error() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new Exception() )
 		);
 
 		$this->expectException( Exception::class );
 
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// Should not update the option.
+		$this->assertTrue( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_returns_true() {
+	public function test_maybe_redirect_to_onboarding_account_connected() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
 				[
@@ -104,10 +122,15 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_caches_the_account() {
+	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
 				[
@@ -121,12 +144,14 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_check_stripe_account_status_returns_true_and_on_boarding_re_enabled() {
+	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {
 		// We will call get_account_data twice. The first call will tell us no account is connected and that on-boarding
 		// is disabled. The second call will just tell us that no account is connected (i.e. on-boarding was
 		// re-enabled). willReturnCallback is being used because PHPUnit doesn't have any helper methods for returning a
@@ -151,19 +176,26 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 						'test_publishable_key'     => 'pk_live_',
 						'has_pending_requirements' => true,
 						'current_deadline'         => 12345,
+						'is_live'                  => true,
 					];
 				}
 			);
 
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		// First call, on-boarding is disabled.
-		$this->assertFalse( $this->wcpay_account->check_stripe_account_status() );
+		$this->wcpay_account->maybe_redirect_to_onboarding();
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 
 		// Simulate the account details cache timing out.
 		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
 
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
 		// Second call, on-boarding re-enabled.
-		$this->assertTrue( $this->wcpay_account->check_stripe_account_status() );
+		$this->wcpay_account->maybe_redirect_to_onboarding();
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 	}
 
@@ -499,5 +531,68 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		);
 		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+	}
+
+	public function test_handle_instant_deposits_inbox_note() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => true,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->wcpay_account->handle_instant_deposits_inbox_note();
+
+		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test to see if scheduled action was created.
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
+	}
+
+	public function test_handle_instant_deposits_inbox_note_not_eligible() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => false,
+		];
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
+		$this->wcpay_account->handle_instant_deposits_inbox_note();
+
+		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_instant_deposits_inbox_reminder() {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		// This will create and log the first note, like what we would see in the wild.
+		$this->test_handle_instant_deposits_inbox_note();
+		$note_id    = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
+		$first_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
+
+		// This will delete the first note and create a new note since it calls test_handle_instant_deposits_inbox_note again.
+		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
+		$second_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
+
+		// So we make sure the two are different.
+		$this->assertNotSame( $first_note, $second_note );
 	}
 }

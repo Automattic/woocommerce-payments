@@ -49,6 +49,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			'1.0.1',
 			true
 		);
+		wp_set_script_translations( 'wc-payment-method-wcpay', 'woocommerce-payments' );
 
 		return [ 'wc-payment-method-wcpay' ];
 	}

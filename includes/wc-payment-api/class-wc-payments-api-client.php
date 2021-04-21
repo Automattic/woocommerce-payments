@@ -181,6 +181,19 @@ class WC_Payments_API_Client {
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
 
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+			$request['mandate_data']         = [
+				'customer_acceptance' => [
+					'type'   => 'online',
+					'online' => [
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					],
+				],
+			];
+		}
+
 		if ( $off_session ) {
 			$request['off_session'] = true;
 		}
@@ -277,9 +290,10 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method' => $payment_method_id,
-			'customer'       => $customer_id,
-			'confirm'        => 'true',
+			'payment_method'       => $payment_method_id,
+			'customer'             => $customer_id,
+			'confirm'              => 'true',
+			'payment_method_types' => [ 'card', 'sepa_debit' ],
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -300,21 +314,25 @@ class WC_Payments_API_Client {
 	/**
 	 * List deposits
 	 *
-	 * @param int    $page       The requested page.
-	 * @param int    $page_size  The size of the requested page.
-	 * @param string $sort       The column to be used for sorting.
-	 * @param string $direction  The sorting direction.
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc' ) {
-		$query = [
-			'page'      => $page,
-			'pagesize'  => $page_size,
-			'sort'      => $sort,
-			'direction' => $direction,
-		];
+	public function list_deposits( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', array $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
 
 		return $this->request( $query, self::DEPOSITS_API, self::GET );
 	}
@@ -330,6 +348,18 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get summary of deposits.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_summary( array $filters = [] ) {
+		return $this->request( $filters, self::DEPOSITS_API . '/summary', self::GET );
+	}
+
+	/**
 	 * Fetch a single deposit with provided id.
 	 *
 	 * @param string $deposit_id id of requested deposit.
@@ -337,6 +367,25 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposit( $deposit_id ) {
 		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param string $type Type of deposit. Only "instant" is supported for now.
+	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @return array The new deposit object.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request(
+			[
+				'type'            => $type,
+				'transaction_ids' => $transaction_ids,
+			],
+			self::DEPOSITS_API,
+			self::POST
+		);
 	}
 
 	/**

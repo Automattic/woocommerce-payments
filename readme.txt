@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.3
+Requires at least: 5.4
 Tested up to: 5.7
 Requires PHP: 7.0
 Stable tag: 2.2.0
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * United States-based business.
-* WordPress 5.3 or newer.
+* WordPress 5.4 or newer.
 * WooCommerce 4.0 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
@@ -100,6 +100,23 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 2.3.0 - 2021-xx-xx =
+* Add - Introduced deposit currency filter for transactions overview page.
+* Add - Download transactions report in CSV.
+* Update - Tweak the connection detection logic.
+* Add - Notification badge next to payments menu.
+* Fix - Fixed broken search on transactions list page.
+* Add - More helpful message on checkout errors.
+* Update - Change the default track `recordEvent` to use @woocommerce/tracks.
+* Add - WPCOM connection status event prop to 'wcpay_connect_account_clicked' track.
+* Add - Allow users to clear the account cache.
+* Update - Bump minimum supported version of WordPress from 5.3 to 5.4.
+* Add - Add a new admin note to collect qualitative feedback.
+* Add - Introduced deposit currency filter for deposits overview page.
+* Update - Make Payment Request Button available for all merchants.
+* Add - Configurable Payment Request Button locations.
+* Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.

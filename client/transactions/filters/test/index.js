@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
-import { isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -16,9 +15,7 @@ import { TransactionsFilters } from '../';
 describe( 'Transactions filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
-		if ( ! isEmpty( getQuery() ) ) {
-			updateQueryString( {}, '/', {} );
-		}
+		updateQueryString( {}, '/', {} );
 
 		const { rerender } = render( <TransactionsFilters /> );
 
@@ -36,7 +33,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector;
 
 		beforeEach( () => {
-			addFilter( 'Date' );
+			addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction date filter/i,
 			} );
@@ -87,7 +84,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector;
 
 		beforeEach( () => {
-			addFilter( 'Type' );
+			addAdvancedFilter( 'Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction type filter/i,
 			} );
@@ -140,7 +137,7 @@ describe( 'Transactions filters', () => {
 		} );
 	} );
 
-	function addFilter( filter ) {
+	function addAdvancedFilter( filter ) {
 		user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
 		user.click( screen.getByRole( 'button', { name: filter } ) );
 	}

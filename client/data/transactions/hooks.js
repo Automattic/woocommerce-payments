@@ -22,6 +22,7 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		store_currency_is: storeCurrencyIs,
 		search,
 	},
 	depositId
@@ -51,6 +52,7 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				storeCurrencyIs,
 				depositId,
 				search,
 			};
@@ -69,11 +71,12 @@ export const useTransactions = (
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			storeCurrencyIs,
 			depositId,
-			search,
+			JSON.stringify( search ),
 		]
 	);
 
@@ -85,6 +88,7 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		store_currency_is: storeCurrencyIs,
 		search,
 	},
 	depositId
@@ -102,6 +106,7 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				storeCurrencyIs,
 				depositId,
 				search,
 			};
@@ -115,10 +120,11 @@ export const useTransactionsSummary = (
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			storeCurrencyIs,
 			depositId,
-			search,
+			JSON.stringify( search ),
 		]
 	);

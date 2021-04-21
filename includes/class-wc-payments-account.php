@@ -39,9 +39,12 @@ class WC_Payments_Account {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
-		add_action( 'admin_init', [ $this, 'check_stripe_account_status' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
@@ -49,6 +52,21 @@ class WC_Payments_Account {
 	 */
 	public function clear_cache() {
 		delete_transient( self::ACCOUNT_TRANSIENT );
+	}
+
+	/**
+	 * Add clear account cache tool to WooCommerce debug tools.
+	 *
+	 * @param array $tools List of current available tools.
+	 */
+	public function debug_tool( $tools ) {
+		$tools['clear_wcpay_account_cache'] = [
+			'name'     => __( 'Clear WooCommerce Payments account cache', 'woocommerce-payments' ),
+			'button'   => __( 'Clear', 'woocommerce-payments' ),
+			'desc'     => __( 'This tool will clear the account cached values used in WooCommerce Payments.', 'woocommerce-payments' ),
+			'callback' => [ $this, 'refresh_account_data' ],
+		];
+		return $tools;
 	}
 
 	/**
@@ -231,29 +249,26 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Whether to do a full-page redirect to the WCPay onboarding page. It has several exceptions, to prevent
-	 * "hijacking" the multiple WC/WC-Admin onboarding flows.
-	 * This function assumes that the Stripe account hasn't been setup yet.
-	 *
-	 * @return bool True if the user should be redirected to the WCPay onboarding page, false otherwise.
-	 */
-	private function should_redirect_to_onboarding() {
-		// If the user is in the WCPay settings screen and hasn't onboarded yet, always redirect.
-		if ( WC_Payment_Gateway_WCPay::is_current_page_settings() ) {
-			return true;
-		}
-
-		return get_option( 'wcpay_should_redirect_to_onboarding', false );
-	}
-
-	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
-	 * @return bool True if the account is connected properly.
+	 * @return bool True if the redirection happened.
 	 */
-	public function check_stripe_account_status() {
+	public function maybe_redirect_to_onboarding() {
 		if ( wp_doing_ajax() ) {
-			return;
+			return false;
+		}
+
+		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
+		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+
+		if (
+			// If not loading the settings page...
+			! $is_on_settings_page
+			// ...and we have redirected before.
+			&& ! $should_redirect_to_onboarding
+		) {
+			// Do not attempt to redirect again.
+			return false;
 		}
 
 		$account = $this->get_cached_account_data();
@@ -262,13 +277,19 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		if ( empty( $account ) ) {
-			if ( $this->should_redirect_to_onboarding() ) {
-				update_option( 'wcpay_should_redirect_to_onboarding', false );
-				$this->redirect_to_onboarding_page();
-			}
+		if ( $should_redirect_to_onboarding ) {
+			// Update the option. If there's an account connected, we won't need to redirect in the future.
+			// If not, we will redirect once and will not want to redirect again.
+			update_option( 'wcpay_should_redirect_to_onboarding', false );
+		}
+
+		if ( ! empty( $account ) ) {
+			// Do not redirect if connected.
 			return false;
 		}
+
+		// Redirect if not connected.
+		$this->redirect_to_onboarding_page();
 		return true;
 	}
 
@@ -317,6 +338,9 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+
+			// Hide menu notification badge upon starting setup.
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
 				$this->redirect_to_onboarding_page(
@@ -576,6 +600,9 @@ class WC_Payments_Account {
 
 		// Cache the account details so we don't call the server every time.
 		$this->cache_account( $account );
+
+		// Allow us to tie in functionality to an account refresh.
+		do_action( 'woocommerce_payments_account_refreshed', $account );
 		return $account;
 	}
 
@@ -765,5 +792,63 @@ class WC_Payments_Account {
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
 		return $account['country'] ?? 'US';
+	}
+
+	/**
+	 * Checks to see if the account is eligible for Instant Deposits.
+	 *
+	 * @return bool
+	 */
+	public function is_instant_deposits_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handles adding a note if the merchant is eligible for Instant Deposits.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_note() {
+		if ( ! $this->is_instant_deposits_eligible() ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles removing note about merchant Instant Deposits eligibility.
+	 * Hands off to handle_instant_deposits_inbox_note to add the new note.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_reminder() {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+		$this->handle_instant_deposits_inbox_note();
+	}
+
+	/**
+	 * Handles adding scheduled action for the Instant Deposit note reminder.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_instant_deposit_note_reminder() {
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+
+		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+			return;
+		}
+
+		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
+		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 }

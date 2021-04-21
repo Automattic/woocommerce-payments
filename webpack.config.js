@@ -9,7 +9,7 @@ const webpackConfig = {
 	devtool: process.env.SOURCEMAP === 'none' ? undefined : 'source-map',
 	entry: {
 		index: './client/index.js',
-		settings: './client/settings.js',
+		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		checkout: './client/checkout/classic/index.js',
 		'payment-request': './client/payment-request/index.js',
@@ -24,7 +24,7 @@ const webpackConfig = {
 		rules: [
 			{
 				test: /\.(t|j)sx?$/,
-				loader: 'ts-loader',
+				use: [ 'ts-loader', 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{

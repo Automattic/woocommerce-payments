@@ -134,6 +134,7 @@ class WC_Payments_Token_Service {
 		// Remove the payment methods that no longer exist in Stripe's side.
 		remove_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		foreach ( $stored_tokens as $token ) {
+			unset( $tokens[ $token->get_id() ] );
 			$token->delete();
 		}
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
