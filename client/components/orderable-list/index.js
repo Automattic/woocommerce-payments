@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { Button } from '@wordpress/components';
 import classNames from 'classnames';
 import {
@@ -15,7 +15,6 @@ import {
 	useSensors,
 } from '@dnd-kit/core';
 import {
-	arrayMove,
 	SortableContext,
 	sortableKeyboardCoordinates,
 	verticalListSortingStrategy,
@@ -78,14 +77,10 @@ const ListItem = ( { id, children, className } ) => {
 
 const modifiers = [ restrictToWindowEdges, restrictToVerticalAxis ];
 
-const OrderableList = ( { className, children } ) => {
+const OrderableList = ( { className, children, onDragEnd } ) => {
 	const hasDragHandles = 1 < React.Children.count( children );
-	const childrenArray = React.Children.toArray( children );
 
-	// TODO: remove
-	const [ childrenKeys, setChildrenKeys ] = useState(
-		childrenArray.map( ( child ) => child.key )
-	);
+	const childrenKeys = React.Children.map( children, ( child ) => child.key );
 
 	const sensors = useSensors(
 		useSensor( MouseSensor ),
@@ -95,27 +90,11 @@ const OrderableList = ( { className, children } ) => {
 		} )
 	);
 
-	const handleDragEnd = useCallback(
-		( event ) => {
-			const { active, over } = event;
-
-			if ( active.id !== over.id ) {
-				setChildrenKeys( ( oldItems ) => {
-					const oldIndex = oldItems.indexOf( active.id );
-					const newIndex = oldItems.indexOf( over.id );
-
-					return arrayMove( oldItems, oldIndex, newIndex );
-				} );
-			}
-		},
-		[ setChildrenKeys ]
-	);
-
 	return (
 		<DndContext
 			sensors={ sensors }
 			collisionDetection={ closestCenter }
-			onDragEnd={ handleDragEnd }
+			onDragEnd={ onDragEnd }
 			modifiers={ modifiers }
 		>
 			<SortableContext
@@ -127,19 +106,11 @@ const OrderableList = ( { className, children } ) => {
 						'has-drag-handles': hasDragHandles,
 					} ) }
 				>
-					{ childrenKeys.map( ( childKey ) => {
-						const child = childrenArray.find(
-							( el ) => el.key === childKey
-						);
-
-						if ( ! child ) {
-							return null;
-						}
-
+					{ React.Children.map( children, ( child ) => {
 						return (
 							<ListItem
-								key={ childKey }
-								id={ childKey }
+								key={ child.key }
+								id={ child.key }
 								className={ child.props.className }
 							>
 								{ child }
