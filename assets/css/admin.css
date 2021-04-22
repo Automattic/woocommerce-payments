@@ -77,6 +77,6 @@
 }
 
 .payment-method__brand--sofort {
-	background: no-repeat url( '../images/cards/sofort.svg' );
+	background: no-repeat url( '../images/payment-methods/sofort.svg' );
 	background-size: contain;
 }
