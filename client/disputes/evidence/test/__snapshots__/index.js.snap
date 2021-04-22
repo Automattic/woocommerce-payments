@@ -135,18 +135,20 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     <div
       class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
-      <button
-        class="components-button is-primary"
-        type="button"
-      >
-        Submit evidence
-      </button>
-      <button
-        class="components-button is-secondary"
-        type="button"
-      >
-        Save for later
-      </button>
+      <div>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Submit evidence
+        </button>
+        <button
+          class="components-button is-secondary"
+          type="button"
+        >
+          Save for later
+        </button>
+      </div>
     </div>
   </div>
 </div>

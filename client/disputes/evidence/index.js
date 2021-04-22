@@ -172,12 +172,24 @@ export const DisputeEvidenceForm = ( props ) => {
 						</p>
 					</CardBody>
 					<CardFooter>
-						<Button isPrimary onClick={ handleSubmit }>
-							{ __( 'Submit evidence', 'woocommerce-payments' ) }
-						</Button>
-						<Button isSecondary onClick={ () => onSave( false ) }>
-							{ __( 'Save for later', 'woocommerce-payments' ) }
-						</Button>
+						{ /* Use wrapping div to keep buttons grouped together. */ }
+						<div>
+							<Button isPrimary onClick={ handleSubmit }>
+								{ __(
+									'Submit evidence',
+									'woocommerce-payments'
+								) }
+							</Button>
+							<Button
+								isSecondary
+								onClick={ () => onSave( false ) }
+							>
+								{ __(
+									'Save for later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</div>
 					</CardFooter>
 				</Card>
 			) }
