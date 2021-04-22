@@ -114,6 +114,7 @@ describe( 'Order > Full refund', () => {
 			page.goto( paymentDetailsLink, {
 				waitUntil: 'networkidle0',
 			} ),
+			uiLoaded(),
 		] );
 
 		await uiLoaded();
