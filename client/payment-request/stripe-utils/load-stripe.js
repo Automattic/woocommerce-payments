@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { loadStripe } from '@stripe/stripe-js';
+import { getPaymentRequestData } from '../utils';
 
 /**
  * Internal dependencies
@@ -14,6 +15,7 @@ const stripePromise = () =>
 			resolve(
 				loadStripe( getConfig( 'publishableKey' ), {
 					stripeAccount: getConfig( 'accountId' ),
+					locale: getPaymentRequestData( 'button' )?.locale,
 				} )
 			);
 		} catch ( error ) {

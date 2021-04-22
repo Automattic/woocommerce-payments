@@ -1,12 +1,13 @@
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME } from './constants';
+import { PAYMENT_METHOD_NAME_PAYMENT_REQUEST } from '../../checkout/constants';
 import { PaymentRequestExpress } from './payment-request-express';
 import { applePayImage } from './apple-pay-preview';
 import { loadStripe } from '../stripe-utils';
 
 import { getConfig } from '../../utils/checkout';
+import { getPaymentRequestData } from '../utils';
 
 const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 
@@ -43,7 +44,7 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 				amount: totalPrice,
 				pending: true,
 			},
-			country: 'US', // TODO: Get country
+			country: getPaymentRequestData( 'checkout' )?.country_code,
 			currency: currencyCode,
 		} );
 		return paymentRequest.canMakePayment().then( ( result ) => {
@@ -55,7 +56,7 @@ function paymentRequestAvailable( { currencyCode, totalPrice } ) {
 }
 
 const paymentRequestPaymentMethod = ( api ) => ( {
-	name: PAYMENT_METHOD_NAME,
+	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	content: (
 		<PaymentRequestExpress api={ api } stripe={ componentStripePromise } />
 	),
@@ -65,7 +66,7 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 			currencyCode: cartData?.cartTotals?.currency_code?.toLowerCase(),
 			totalPrice: parseInt( cartData?.cartTotals?.total_price || 0, 10 ),
 		} ),
-	paymentMethodId: 'woocommerce_payments',
+	paymentMethodId: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	supports: {
 		features: getConfig( 'features' ),
 	},

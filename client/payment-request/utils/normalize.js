@@ -73,7 +73,7 @@ const normalizeOrderData = ( paymentData ) => {
 				: paymentData.shippingOption.id,
 		],
 		order_comments: '',
-		payment_method: 'woocommerce_payments', // - TODO: Replace by constant
+		payment_method: 'woocommerce_payments',
 		ship_to_different_address: 1,
 		terms: 1,
 		'wcpay-payment-method': paymentData.paymentMethod.id,

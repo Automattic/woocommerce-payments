@@ -3,15 +3,15 @@
 /**
  * Retrieves payment request data from global variable.
  *
- * @param {string} name The name of the config parameter.
- * @return {*}          The value of the parameter or null.
+ * @param {string} key The object property key.
+ * @return {*}         The value of the parameter key or null.
  */
-export const getPaymentRequestData = ( name ) => {
+export const getPaymentRequestData = ( key ) => {
 	if (
 		'object' === typeof wcpayPaymentRequestParams &&
-		wcpayPaymentRequestParams.hasOwnProperty( name )
+		wcpayPaymentRequestParams.hasOwnProperty( key )
 	) {
-		return wcpayPaymentRequestParams[ name ];
+		return wcpayPaymentRequestParams[ key ];
 	}
 	return null;
 };

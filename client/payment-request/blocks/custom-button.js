@@ -1,12 +1,10 @@
 /**
  * Internal dependencies
  */
-// - TODO: Add shared dependency
+import { getPaymentRequestData } from '../utils';
 
 export const CustomButton = ( { onClick } ) => {
-	// - TODO: Replace global with helper function from shared dependency.
-	/* global wcpayPaymentRequestParams */
-	const { theme, height, label } = wcpayPaymentRequestParams.button;
+	const { theme, height, label } = getPaymentRequestData( 'button' );
 	return (
 		<button
 			type="button"

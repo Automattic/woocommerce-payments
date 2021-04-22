@@ -6,7 +6,7 @@ import { useState, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-// - TODO: Add shared dependency
+import { getPaymentRequestData } from '../utils';
 
 export const shouldUseGooglePayBrand = () => {
 	const ua = window.navigator.userAgent.toLowerCase();
@@ -32,15 +32,13 @@ const useImageOrDefault = ( url, defaultUrl ) => {
 };
 
 export const GooglePayButton = ( { onClick } ) => {
-	// - TODO: Replace global with helper function from shared dependency.
-	/* global wcpayPaymentRequestParams */
 	const {
 		theme,
 		height,
 		locale,
 		// eslint-disable-next-line camelcase
 		branded_type,
-	} = wcpayPaymentRequestParams.button;
+	} = getPaymentRequestData( 'button' );
 
 	// If we're using the short button type (i.e. logo only) make sure we get the logo only SVG.
 	const googlePlaySvg =

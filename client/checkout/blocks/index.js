@@ -48,7 +48,6 @@ registerPaymentMethod(
 		} )
 );
 
-// - TODO: Put this into a helper
 // eslint-disable-next-line no-undef
 if ( 'undefined' !== typeof wcpayPaymentRequestParams ) {
 	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
