@@ -17,17 +17,3 @@ export const getConfig = ( name ) => {
 
 	return config[ name ] || null;
 };
-
-export const setConfig = ( name, value ) => {
-	// eslint-disable-next-line camelcase
-	if ( 'undefined' !== typeof wcpay_config ) {
-		// Classic checkout
-		// eslint-disable-next-line camelcase
-		wcpay_config[ name ] = value;
-	} else {
-		// Blocks
-		const config = wc.wcSettings.getSetting( 'woocommerce_payments_data' );
-		config[ name ] = value;
-		wc.wcSettings.setSetting( 'woocommerce_payments_data', config );
-	}
-};
