@@ -62,7 +62,7 @@ class WC_Payments_Token_Service {
 		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
 
 		if ( Payment_Method::SEPA === $payment_method['type'] ) {
-			$token = new WC_Payment_Token_Sepa();
+			$token = new WC_Payment_Token_WCPay_SEPA();
 			$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
 			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 		} else {
@@ -195,7 +195,7 @@ class WC_Payments_Token_Service {
 	 * @return array            Filtered item
 	 */
 	public function get_account_saved_payment_methods_list_item_sepa( $item, $payment_token ) {
-		if ( 'sepa' === strtolower( $payment_token->get_type() ) ) {
+		if ( WC_Payment_Token_WCPay_SEPA::TYPE === strtolower( $payment_token->get_type() ) ) {
 			$item['method']['last4'] = $payment_token->get_last4();
 			$item['method']['brand'] = esc_html__( 'SEPA IBAN', 'woocommerce-payments' );
 		}
