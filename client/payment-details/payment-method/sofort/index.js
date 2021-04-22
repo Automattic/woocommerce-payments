@@ -98,7 +98,7 @@ const SofortDetails = ( { charge = {}, isLoading } ) => {
 					isLoading={ isLoading }
 					label={ __( 'Bank code', 'woocommerce-payments' ) }
 				>
-					&bull;&bull;&bull;&bull;&nbsp;{ bankCode }
+					{ bankCode }
 				</Detail>
 
 				<Detail
@@ -106,13 +106,6 @@ const SofortDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'Bank name', 'woocommerce-payments' ) }
 				>
 					{ bankName }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Bank Code', 'woocommerce-payments' ) }
-				>
-					{ bankCode }
 				</Detail>
 
 				<Detail
