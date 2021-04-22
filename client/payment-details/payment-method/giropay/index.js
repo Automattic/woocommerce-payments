@@ -49,12 +49,10 @@ const paymentMethodPlaceholders = {
 };
 
 const GiropayDetails = ( { charge = {}, isLoading } ) => {
-	const details =
-		charge && charge.payment_method_details
-			? formatPaymentMethodDetails( charge )
-			: paymentMethodPlaceholders;
+	const details = charge.payment_method_details
+		? formatPaymentMethodDetails( charge )
+		: paymentMethodPlaceholders;
 
-	// eslint-disable-next-line camelcase
 	const { id, bankName, bic, name, email, formattedAddress } = details;
 
 	// Shorthand for more readable code.

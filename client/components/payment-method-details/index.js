@@ -13,19 +13,20 @@ const PaymentMethodDetails = ( props ) => {
 	if ( ! paymentMethod ) {
 		return <span>&ndash;</span>;
 	}
-	const paymentMethodAbbr = paymentMethod.last4
-		? paymentMethod.last4
-		: paymentMethod.bank_code;
+
 	const brand = paymentMethod.brand ? paymentMethod.brand : payment.type;
 	return (
 		<span className="payment-method-details">
 			<span
 				className={ `payment-method__brand payment-method__brand--${ brand }` }
 			/>
-			{ paymentMethod.last4 && (
-				<Fragment>&nbsp;&bull;&bull;&bull;&bull;&nbsp;</Fragment>
+			{ paymentMethod.last4 ? (
+				<Fragment>
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp; { paymentMethod.last4 }
+				</Fragment>
+			) : (
+				paymentMethod.bank_code
 			) }
-			{ paymentMethodAbbr }
 		</span>
 	);
 };
