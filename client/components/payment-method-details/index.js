@@ -22,7 +22,7 @@ const PaymentMethodDetails = ( props ) => {
 			/>
 			{ paymentMethod.last4 ? (
 				<Fragment>
-					&nbsp;&bull;&bull;&bull;&bull;&nbsp; { paymentMethod.last4 }
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
 				</Fragment>
 			) : (
 				paymentMethod.bank_code
