@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Giropay_Payment_Gateway
+ * Class Sofort_Payment_Gateway
  *
  * @package WCPay\Payment_Methods
  */
@@ -19,21 +19,21 @@ use WC_Payments_Utils;
 use Exception;
 
 /**
- * Giropay Payment method extended from card payment method.
+ * Sofort Payment method extended from card payment method.
  * Loads different JS files and fields and handles a redirect payment method.
  */
-class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
+class Sofort_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Internal ID of the payment gateway.
 	 *
 	 * @type string
 	 */
-	const GATEWAY_ID = 'woocommerce_payments_giropay';
+	const GATEWAY_ID = 'woocommerce_payments_sofort';
 
-	const METHOD_ENABLED_KEY = 'giropay_enabled';
+	const METHOD_ENABLED_KEY = 'sofort_enabled';
 
 	/**
-	 * Giropay Constrictor same parameters as WC_Payment_Gateway_WCPay constructor.
+	 * Sofort Constrictor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
 	 * @param WC_Payments_Account                  $account                  - Account class instance.
@@ -43,17 +43,16 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
-		$this->method_title       = __( 'WooCommerce Payments - Giropay', 'woocommerce-payments' );
-		$this->method_description = __( 'Accept payments via Giropay.', 'woocommerce-payments' );
-		$this->title              = __( 'Giropay', 'woocommerce-payments' );
-		$this->description        = __( 'You will be redirected to Giropay.', 'woocommerce-payments' );
+		$this->method_title       = __( 'WooCommerce Payments - Sofort', 'woocommerce-payments' );
+		$this->method_description = __( 'Accept payments via Sofort.', 'woocommerce-payments' );
+		$this->title              = __( 'Sofort', 'woocommerce-payments' );
+		$this->description        = __( 'You will be redirected to Sofort.', 'woocommerce-payments' );
 
 		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
 	}
 
 	/**
 	 * Processes redirect payments.
-	 * This method is currently specific to the Giropay redirect payment method.
 	 *
 	 * @param int $order_id The order ID being processed.
 	 */
@@ -61,11 +60,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
-			if ( empty( $intent_id ) ) {
-				return;
-			}
-
-			if ( empty( $order_id ) ) {
+			if ( empty( $intent_id ) || empty( $order_id ) ) {
 				return;
 			}
 
@@ -91,12 +86,12 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$status = $intent->get_status();
 			$amount = $order->get_total();
 
-			if ( 'succeeded' === $status ) {
+			if ( 'processing' === $status ) {
 				$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
 				$note            = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+						__( 'A payment of %1$s is <strong>in processing</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
 							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -113,12 +108,12 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				if ( ! empty( $error ) ) {
 					$error_message = isset( $error['message'] ) ? $error['message'] : 'unknown';
 					$error_code    = isset( $error['code'] ) ? $error['code'] : 'unknown';
-					Logger::log( sprintf( 'Giropay failed: %s (%s)', $error_message, $error_code ) );
+					Logger::log( sprintf( 'Sofort failed: %s (%s)', $error_message, $error_code ) );
 					/* translators: localized exception message */
-					$order->update_status( 'failed', sprintf( __( 'Giropay payment failed: %s', 'woocommerce-payments' ), $error_message ) );
+					$order->update_status( 'failed', sprintf( __( 'Sofort payment failed: %s', 'woocommerce-payments' ), $error_message ) );
 				}
 
-				wc_add_notice( __( 'Giropay payment has failed. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' ), 'error' );
+				wc_add_notice( __( 'Sofort payment has failed. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' ), 'error' );
 				wp_safe_redirect( wc_get_checkout_url() );
 				exit;
 			}
@@ -126,7 +121,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			/* translators: localized exception message */
-			$order->update_status( 'failed', sprintf( __( 'Giropay payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
+			$order->update_status( 'failed', sprintf( __( 'Sofort payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
 
 			wc_add_notice( $e->getLocalizedMessage(), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
@@ -143,7 +138,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		if ( self::GATEWAY_ID !== $payment_method ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( self::GATEWAY_ID !== $payment_method ) {
 			return;
 		}
 
@@ -153,14 +148,14 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Renders the Credit Card input fields needed to get the user's payment information on the checkout page.
+	 * Renders the Sofort input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
 		try {
-			wp_localize_script( 'wcpay-giropay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'wcpay-giropay-checkout' );
+			wp_localize_script( 'wcpay-sofort-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'wcpay-sofort-checkout' );
 
 			wp_enqueue_style(
 				'wcpay-checkout',
@@ -213,11 +208,11 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$payment_information   = $this->prepare_payment_information( $order );
 			$intent_api_parameters = [
-				'payment_method_types' => [ 'giropay' ],
+				'payment_method_types' => [ 'sofort' ],
 				'payment_method_data'  => [
-					'type'            => 'giropay',
-					'billing_details' => [
-						'name' => sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() ),
+					'type'   => 'sofort',
+					'sofort' => [
+						'country' => sanitize_text_field( $order->get_billing_country() ),
 					],
 				],
 				'return_url'           => wp_sanitize_redirect(

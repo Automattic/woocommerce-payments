@@ -23,6 +23,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Giropay gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_giropay_enabled() {
+		return '1' === get_option( '_wcpay_feature_giropay', '0' );
+	}
+
+	/**
 	 * Checks whether the Sepa gateway feature is enabled
 	 *
 	 * @return bool
@@ -32,11 +41,11 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Giropay gateway feature is enabled
+	 * Checks whether the Sofort gateway feature is enabled
 	 *
 	 * @return bool
 	 */
-	public static function is_giropay_enabled() {
-		return '1' === get_option( '_wcpay_feature_giropay', '0' );
+	public static function is_sofort_enabled() {
+		return '1' === get_option( '_wcpay_feature_sofort', '0' );
 	}
 }

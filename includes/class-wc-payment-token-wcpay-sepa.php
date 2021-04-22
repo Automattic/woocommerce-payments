@@ -16,14 +16,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @class    WC_Payment_Token_SEPA
  */
-class WC_Payment_Token_SEPA extends WC_Payment_Token {
+class WC_Payment_Token_WCPay_SEPA extends WC_Payment_Token {
+
+	/**
+	 * Class Constant so other code can be unambiguous.
+	 *
+	 * @type string
+	 */
+	const TYPE = 'wcpay_sepa';
 
 	/**
 	 * The payment method type of this token.
 	 *
 	 * @var string
 	 */
-	protected $type = 'sepa';
+	protected $type = self::TYPE;
 
 	/**
 	 * Stores SEPA payment token data.
@@ -54,7 +61,7 @@ class WC_Payment_Token_SEPA extends WC_Payment_Token {
 	 * Hook prefix.
 	 */
 	protected function get_hook_prefix() {
-		return 'woocommerce_payments_token_sepa_get_';
+		return 'woocommerce_payments_token_wcpay_sepa_get_';
 	}
 
 	/**
