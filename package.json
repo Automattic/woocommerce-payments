@@ -72,7 +72,7 @@
     "composer.json": "composer validate --strict --no-check-all"
   },
   "dependencies": {
-    "@dnd-kit/modifiers": "^2.0.0",
+    "@dnd-kit/modifiers": "^1.0.5",
     "@dnd-kit/sortable": "^2.0.1",
     "@stripe/react-stripe-js": "1.1.2",
     "@stripe/stripe-js": "1.12.1",
