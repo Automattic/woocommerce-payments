@@ -4,7 +4,6 @@
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useStripe } from '@stripe/react-stripe-js';
 import { __ } from '@wordpress/i18n';
-// import isShallowEqual from '@wordpress/is-shallow-equal';
 
 /**
  * Internal dependencies
@@ -21,8 +20,6 @@ import {
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
 } from '../event-handlers.js';
-
-// import { useEventHandlers } from './use-event-handlers';
 
 /**
  * @typedef {import('../stripe-utils/type-defs').StripePaymentRequest} StripePaymentRequest
@@ -175,17 +172,17 @@ export const useInitialization = ( {
 			// @ts-ignore
 			shippingAddressChangeEvent = paymentRequest.on(
 				'shippingaddresschange',
-				( event ) => shippingAddressChangeHandler( api, event )
+				( event ) => shippingAddressChangeHandler( event )
 			);
 			// @ts-ignore
 			shippingOptionChangeEvent = paymentRequest.on(
 				'shippingoptionchange',
-				( event ) => shippingOptionChangeHandler( api, event )
+				( event ) => shippingOptionChangeHandler( event )
 			);
 			// @ts-ignore
 			paymentMethodChangeEvent = paymentRequest.on(
 				'paymentmethod',
-				( event ) => paymentMethodHandler( api, event )
+				( event ) => paymentMethodHandler( event )
 			);
 			// @ts-ignore
 			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );
@@ -203,7 +200,6 @@ export const useInitialization = ( {
 		paymentRequest,
 		canMakePayment,
 		isProcessing,
-		// setPaymentRequestEventHandler,
 		setExpressPaymentError,
 		onSubmit,
 		onClose,
@@ -211,8 +207,6 @@ export const useInitialization = ( {
 
 	return {
 		paymentRequest,
-		// paymentRequestEventHandlers,
-		// clearPaymentRequestEventHandler,
 		isProcessing,
 		canMakePayment,
 		onButtonClick,

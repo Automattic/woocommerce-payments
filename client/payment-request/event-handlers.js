@@ -1,10 +1,19 @@
 /**
  * Internal dependencies
  */
-import { normalizeShippingAddress, normalizeOrderData } from './utils';
+import {
+	paymentRequestCalculateShippingOptions,
+	paymentRequestUpdateShippingDetails,
+	paymentRequestCreateOrder,
+} from './api';
+import {
+	getPaymentRequestData,
+	normalizeShippingAddress,
+	normalizeOrderData,
+} from './utils';
 
-const shippingAddressChangeHandler = async ( api, event ) => {
-	const response = await api.paymentRequestCalculateShippingOptions(
+const shippingAddressChangeHandler = async ( event ) => {
+	const response = await paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
 
@@ -17,8 +26,8 @@ const shippingAddressChangeHandler = async ( api, event ) => {
 	} );
 };
 
-const shippingOptionChangeHandler = async ( api, event ) => {
-	const response = await api.paymentRequestUpdateShippingDetails( event );
+const shippingOptionChangeHandler = async ( event ) => {
+	const response = await paymentRequestUpdateShippingDetails( event );
 
 	if ( 'success' === response.result ) {
 		event.updateWith( {
@@ -33,12 +42,9 @@ const shippingOptionChangeHandler = async ( api, event ) => {
 	}
 };
 
-const paymentMethodHandler = async ( api, event ) => {
-	// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
-	// event `allowPrepaidCard` isn't present on the server data object.
-	// - TODO: Get prepaid card
-	// const { allowPrepaidCard = false } = getStripeServerData();
-	const allowPrepaidCard = true;
+const paymentMethodHandler = async ( event ) => {
+	const allowPrepaidCard = getPaymentRequestData( 'stripe' )
+		?.allow_prepaid_card;
 	if ( ! allowPrepaidCard && 'prepaid' === event.source.card.funding ) {
 		event.complete( 'fail' );
 		// - TODO: Fix error message
@@ -52,7 +58,7 @@ const paymentMethodHandler = async ( api, event ) => {
 	}
 
 	// Kick off checkout processing step.
-	const response = await api.paymentRequestCreateOrder(
+	const response = await paymentRequestCreateOrder(
 		normalizeOrderData( event )
 	);
 

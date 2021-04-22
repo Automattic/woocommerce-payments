@@ -50,6 +50,7 @@ export default class WCPayAPI {
 		return this.stripe;
 	}
 
+
 	/**
 	 * Generates a Stripe payment method.
 	 *
@@ -269,58 +270,4 @@ export default class WCPayAPI {
 		} );
 	}
 
-	/**
-	 * Submits shipping address to get available shipping options
-	 * from Payment Request button.
-	 *
-	 * @param {Object} shippingAddress Shipping details.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestCalculateShippingOptions( shippingAddress ) {
-		// - TODO: Get Ajax endpoint and nonce from helper function.
-		return this.request( '/?wc-ajax=wcpay_get_shipping_options', {
-			/* global wcpayPaymentRequestParams */
-			security: wcpayPaymentRequestParams.nonce.shipping,
-			// eslint-disable-next-line camelcase
-			is_product_page: wcpayPaymentRequestParams.is_product_page ?? '',
-			...shippingAddress,
-		} ).then( ( response ) => {
-			return JSON.parse( response );
-		} );
-	}
-
-	/**
-	 * Updates cart with selected shipping option.
-	 *
-	 * @param {integer} shippingOption Shipping option id.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestUpdateShippingDetails( shippingOption ) {
-		return this.request( '/?wc-ajax=wcpay_update_shipping_method', {
-			security: wcpayPaymentRequestParams.nonce.update_shipping,
-			/* eslint-disable camelcase */
-			shipping_method: [ shippingOption.id ],
-			is_product_page: wcpayPaymentRequestParams.is_product_page,
-			/* eslint-enable camelcase */
-		} ).then( ( response ) => {
-			return JSON.parse( response );
-		} );
-	}
-
-	/**
-	 * Creates order based on Payment Request payment method.
-	 *
-	 * @param {Object} paymentData Order data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestCreateOrder( paymentData ) {
-		// - TODO: Get Ajax endpoint and nonce from helper function.
-		return this.request( '/?wc-ajax=wcpay_create_order', {
-			_wpnonce: wcpayPaymentRequestParams.nonce.checkout,
-			// eslint-disable-next-line camelcase
-			...paymentData,
-		} ).then( ( response ) => {
-			return JSON.parse( response );
-		} );
-	}
 }

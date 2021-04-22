@@ -4,8 +4,8 @@
  * Internal dependencies
  */
 import './style.scss';
-import WCPayAPI from '../checkout/api';
-import request from '../checkout/blocks/request.js';
+// import WCPayAPI from '../checkout/api';
+// import request from '../checkout/blocks/request.js';
 import { getAjaxURL } from './utils';
 
 import {
@@ -19,13 +19,13 @@ import {
 // - addToCart
 // - clearCart
 
-const api = new WCPayAPI(
-	{
-		publishableKey: wcpayPaymentRequestParams.stripe.publishableKey,
-		accountId: wcpayPaymentRequestParams.stripe.accountId,
-	},
-	request
-);
+// const api = new WCPayAPI(
+// 	{
+// 		publishableKey: wcpayPaymentRequestParams.stripe.publishableKey,
+// 		accountId: wcpayPaymentRequestParams.stripe.accountId,
+// 	},
+// 	request
+// );
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -36,8 +36,6 @@ jQuery( ( $ ) => {
 	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
 		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
 	} );
-
-	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -275,9 +273,7 @@ jQuery( ( $ ) => {
 				if ( ! result ) {
 					return;
 				}
-				paymentRequestType = result.applePay
-					? 'apple_pay'
-					: 'payment_request_api';
+
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
 					paymentRequest
@@ -286,15 +282,15 @@ jQuery( ( $ ) => {
 			} );
 
 			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				shippingAddressChangeHandler( api, event )
+				shippingAddressChangeHandler( event )
 			);
 
 			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				shippingOptionChangeHandler( api, event )
+				shippingOptionChangeHandler( event )
 			);
 
 			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler( api, event )
+				paymentMethodHandler( event )
 			);
 
 			// paymentRequest.on( 'paymentmethod', ( evt ) => {
