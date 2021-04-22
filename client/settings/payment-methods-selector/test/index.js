@@ -3,6 +3,7 @@
  * External dependencies
  */
 import { fireEvent, render, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -65,17 +66,24 @@ describe( 'PaymentMethodsSelector', () => {
 	test( 'allows to add selected payment methods', () => {
 		const handleClose = jest.fn();
 
-		const { getByText } = render(
+		const { getAllByRole, getByText } = render(
 			<PaymentMethodsSelector onClose={ handleClose } />
 		);
 
-		fireEvent.click( getByText( 'GiroPay' ) );
-		fireEvent.click( getByText( 'Sofort' ) );
+		const paymentMethods = getAllByRole( 'listitem' );
+		const giroPay = within( paymentMethods[ 0 ] );
+		const sofort = within( paymentMethods[ 1 ] );
+
+		userEvent.click( giroPay.getByRole( 'checkbox' ) );
+		userEvent.click( sofort.getByRole( 'checkbox' ) );
 
 		fireEvent.click( getByText( 'Add selected' ) );
 
 		expect( addSelectedPaymentMethods ).toHaveBeenCalledTimes( 1 );
-		// expect( addSelectedPaymentMethods ).toHaveBeenCalledWith( [ 'giropay', 'sofort' ] );
+		expect( addSelectedPaymentMethods ).toHaveBeenCalledWith( [
+			'giropay',
+			'sofort',
+		] );
 
 		expect( handleClose ).toHaveBeenCalledTimes( 1 );
 	} );
