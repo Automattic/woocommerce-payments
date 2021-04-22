@@ -6,7 +6,9 @@ import config from 'config';
 /**
  * Internal dependencies
  */
-import { CustomerFlow, uiUnblocked } from './index';
+import { CustomerFlow } from './index';
+
+const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(

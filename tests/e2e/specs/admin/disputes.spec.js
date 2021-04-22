@@ -6,7 +6,7 @@ import config from 'config';
 /**
  * Internal dependencies
  */
-import { StoreOwnerFlow } from '../../utils';
+const { merchant } = require( '@woocommerce/e2e-utils' );
 
 const WCPAY_DISPUTES =
 	config.get( 'url' ) +
@@ -14,7 +14,7 @@ const WCPAY_DISPUTES =
 
 describe( 'Admin disputes', () => {
 	beforeAll( async () => {
-		await StoreOwnerFlow.login();
+		await merchant.login();
 	} );
 
 	it( 'page should load without any errors', async () => {

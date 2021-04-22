@@ -7,29 +7,8 @@
  */
 import { pressKeyWithModifier } from '@wordpress/e2e-test-utils';
 
-/**
- * Internal dependencies
- */
-import { clearAndFillInput } from './helpers';
-
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
-
-const WP_ADMIN_LOGIN = baseUrl + 'wp-login.php';
-const WP_ADMIN_DASHBOARD = baseUrl + 'wp-admin';
-const WP_ADMIN_PLUGINS = baseUrl + 'wp-admin/plugins.php';
-const WP_ADMIN_SETUP_WIZARD = baseUrl + 'wp-admin/admin.php?page=wc-setup';
-const WP_ADMIN_ALL_ORDERS_VIEW =
-	baseUrl + 'wp-admin/edit.php?post_type=shop_order';
-const WP_ADMIN_NEW_COUPON =
-	baseUrl + 'wp-admin/post-new.php?post_type=shop_coupon';
-const WP_ADMIN_NEW_ORDER =
-	baseUrl + 'wp-admin/post-new.php?post_type=shop_order';
-const WP_ADMIN_NEW_PRODUCT =
-	baseUrl + 'wp-admin/post-new.php?post_type=product';
-const WP_ADMIN_WC_SETTINGS =
-	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=';
-const WP_ADMIN_PERMALINK_SETTINGS = baseUrl + 'wp-admin/options-permalink.php';
 
 const SHOP_PAGE = baseUrl + 'shop';
 const SHOP_PRODUCT_PAGE = baseUrl + '?p=';
@@ -361,97 +340,4 @@ const CustomerFlow = {
 	...PaymentsCustomerFlow,
 };
 
-const StoreOwnerFlow = {
-	login: async () => {
-		await page.goto( WP_ADMIN_LOGIN, {
-			waitUntil: 'networkidle0',
-		} );
-
-		await expect( page.title() ).resolves.toMatch( 'Log In' );
-
-		await clearAndFillInput( '#user_login', ' ' );
-
-		await page.type( '#user_login', config.get( 'users.admin.username' ) );
-		await page.type( '#user_pass', config.get( 'users.admin.password' ) );
-
-		await Promise.all( [
-			page.click( 'input[type=submit]' ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-		] );
-	},
-
-	logout: async () => {
-		await page.goto( baseUrl + 'wp-login.php?action=logout', {
-			waitUntil: 'networkidle0',
-		} );
-
-		await expect( page ).toMatch( 'You are attempting to log out' );
-
-		await Promise.all( [
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			page.click( 'a' ),
-		] );
-	},
-
-	openAllOrdersView: async () => {
-		await page.goto( WP_ADMIN_ALL_ORDERS_VIEW, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openDashboard: async () => {
-		await page.goto( WP_ADMIN_DASHBOARD, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openNewCoupon: async () => {
-		await page.goto( WP_ADMIN_NEW_COUPON, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openNewOrder: async () => {
-		await page.goto( WP_ADMIN_NEW_ORDER, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openNewProduct: async () => {
-		await page.goto( WP_ADMIN_NEW_PRODUCT, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openPermalinkSettings: async () => {
-		await page.goto( WP_ADMIN_PERMALINK_SETTINGS, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openPlugins: async () => {
-		await page.goto( WP_ADMIN_PLUGINS, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	openSettings: async ( tab, section = null ) => {
-		let settingsUrl = WP_ADMIN_WC_SETTINGS + tab;
-
-		if ( section ) {
-			settingsUrl += `&section=${ section }`;
-		}
-
-		await page.goto( settingsUrl, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	runSetupWizard: async () => {
-		await page.goto( WP_ADMIN_SETUP_WIZARD, {
-			waitUntil: 'networkidle0',
-		} );
-	},
-};
-
-export { CustomerFlow, StoreOwnerFlow };
+export { CustomerFlow };
