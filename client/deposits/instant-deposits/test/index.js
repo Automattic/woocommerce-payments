@@ -18,15 +18,17 @@ useInstantDeposit.mockReturnValue( {
 	submit: () => {},
 } );
 
-const instantDepositBalance = {
-	balance: {
+const mockDepositOverview = {
+	// eslint-disable-next-line camelcase
+	instant_balance: {
 		amount: 12345,
 		fee: 123.45,
 		net: 12221.55,
-		// eslint-disable-next-line camelcase
-		transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
+		transactionIds: [ 'txn_ABC123', 'txn_DEF456' ],
 	},
 };
+
+const mockNullDepositOverview = null;
 
 describe( 'Instant deposit button and modal', () => {
 	beforeEach( () => {
@@ -34,15 +36,22 @@ describe( 'Instant deposit button and modal', () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'button renders correctly', () => {
+	test( 'button renders correctly with balance', () => {
 		const { container } = render(
-			<InstantDepositButton { ...instantDepositBalance } />
+			<InstantDepositButton overview={ mockDepositOverview } />
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'button renders correctly with no balance', () => {
+		const { container } = render(
+			<InstantDepositButton overview={ mockNullDepositOverview } />
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'modal renders correctly', () => {
-		render( <InstantDepositButton { ...instantDepositBalance } /> );
+		render( <InstantDepositButton overview={ mockDepositOverview } /> );
 		expect(
 			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
 		).not.toBeInTheDocument();

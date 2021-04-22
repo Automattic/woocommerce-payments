@@ -183,11 +183,10 @@ const DepositsOverview = () => {
 						</Loadable>
 					</span>
 				</p>
-				{ overview && overview.instant_balance && (
-					<InstantDepositButton
-						balance={ overview.instant_balance }
-					/>
-				) }
+				<InstantDepositButton
+					overview={ overview }
+					//balance={ overview.instant_balance }
+				/>
 			</div>
 			{ isLoading ? (
 				<SummaryListPlaceholder numberOfItems={ 4 } />

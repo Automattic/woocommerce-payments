@@ -14,10 +14,32 @@ import './style.scss';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'data';
 
-const InstantDepositButton = ( {
-	balance: { amount, fee, net, transaction_ids: transactionIds },
-} ) => {
+const getModalVars = ( overview ) => {
+	if ( overview && overview.instant_balance ) {
+		const instant = overview.instant_balance;
+		return {
+			amount: instant.amount,
+			fee: instant.fee,
+			net: instant.net,
+			transactionIds: instant.transaction_ids,
+			buttonDisabled: false,
+		};
+	}
+
+	return {
+		amount: 0,
+		fee: 0,
+		net: 0,
+		transactionIds: [],
+		buttonDisabled: true,
+	};
+};
+
+const InstantDepositButton = ( { overview } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
+	const { amount, fee, net, transactionIds, buttonDisabled } = getModalVars(
+		overview
+	);
 	const { inProgress, submit } = useInstantDeposit( transactionIds );
 	const onClose = () => {
 		setModalOpen( false );
@@ -26,12 +48,14 @@ const InstantDepositButton = ( {
 		setModalOpen( false );
 		submit();
 	};
+
 	// TODO: Need to update isDefault to isSecondary once @wordpress/components is updated
 	// https://github.com/Automattic/woocommerce-payments/pull/1536
 	return (
 		<>
 			<Button
 				isDefault
+				disabled={ buttonDisabled }
 				className="is-secondary"
 				onClick={ () => setModalOpen( true ) }
 			>

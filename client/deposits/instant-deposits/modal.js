@@ -25,7 +25,7 @@ const InstantDepositModal = ( {
 	const description = createInterpolateElement(
 		/* translators: <a> - instant payout doc URL */
 		__(
-			'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1% service fee. <a>Learn more</a>',
+			'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1.5% service fee. <a>Learn more</a>',
 			'woocommerce-payments'
 		),
 		{
@@ -57,7 +57,7 @@ const InstantDepositModal = ( {
 					<span>{ formatCurrency( amount ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__fee">
-					{ __( '1% service fee: ', 'woocommerce-payments' ) }
+					{ __( '1.5% service fee: ', 'woocommerce-payments' ) }
 					<span>-{ formatCurrency( fee ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__net">
@@ -77,9 +77,6 @@ const InstantDepositModal = ( {
 					__( 'Deposit %s now', 'woocommerce-payments' ),
 					formatCurrency( net )
 				) }
-			</Button>
-			<Button isDefault onClick={ onClose }>
-				{ __( 'Close', 'woocommerce-payments' ) }
 			</Button>
 		</Modal>
 	);
