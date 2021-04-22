@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig, setConfig } from 'utils/checkout';
+import { getConfig } from 'utils/checkout';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -155,10 +155,7 @@ export default class WCPayAPI {
 		const isSetupIntent = 'si' === partials[ 1 ];
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
-		// Update the current order status nonce with the new one to ensure that the update
-		// order status call works when a guest user creates an account during checkout.
-		// eslint-disable-next-line camelcase
-		setConfig( 'updateOrderStatusNonce', partials[ 4 ] );
+		const nonce = partials[ 4 ];
 
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = -1 < orderPayIndex;
@@ -200,8 +197,10 @@ export default class WCPayAPI {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
+					// Update the current order status nonce with the new one to ensure that the update
+					// order status call works when a guest user creates an account during checkout.
 					// eslint-disable-next-line camelcase
-					_ajax_nonce: getConfig( 'updateOrderStatusNonce' ),
+					_ajax_nonce: nonce,
 					// eslint-disable-next-line camelcase
 					intent_id: intentId,
 					// eslint-disable-next-line camelcase
