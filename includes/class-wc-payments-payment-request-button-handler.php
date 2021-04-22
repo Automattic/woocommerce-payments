@@ -83,13 +83,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_clear_cart', [ $this, 'ajax_clear_cart' ] );
 		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
@@ -214,7 +212,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Gets the product data for the currently viewed page
+	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
@@ -279,6 +277,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Get cart data.
+	 *
+	 * @return mixed Returns false if on a product page, the product information otherwise.
+	 */
+	public function get_cart_data() {
+		if ( $this->is_product() ) {
+			return false;
+		}
+
+		return $this->build_display_items();
 	}
 
 	/**
@@ -556,14 +567,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
 			],
 			'nonce'           => [
-				'payment'                   => wp_create_nonce( 'wcpay-payment-request' ),
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'log_errors'                => wp_create_nonce( 'wcpay-log-errors' ),
-				'clear_cart'                => wp_create_nonce( 'wcpay-clear-cart' ),
 			],
 			'i18n'            => [
 				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-payments' ),
@@ -574,7 +583,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'url'               => wc_get_checkout_url(),
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'    => WC()->cart->needs_shipping() ? 'yes' : 'no',
+				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
@@ -592,6 +601,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_product_page' => $this->is_product(),
 			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
+			'cart'            => $this->get_cart_data(),
 		];
 
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
@@ -705,44 +715,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		Logger::log( $errors );
 
 		exit;
-	}
-
-	/**
-	 * Clears cart.
-	 */
-	public function ajax_clear_cart() {
-		check_ajax_referer( 'wcpay-clear-cart', 'security' );
-
-		WC()->cart->empty_cart();
-		exit;
-	}
-
-	/**
-	 * Get cart details.
-	 */
-	public function ajax_get_cart_details() {
-		check_ajax_referer( 'wcpay-payment-request', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		WC()->cart->calculate_totals();
-
-		$currency = get_woocommerce_currency();
-
-		// Set mandatory payment details.
-		$data = [
-			'shipping_required' => WC()->cart->needs_shipping(),
-			'order_data'        => [
-				'currency'     => strtolower( $currency ),
-				'country_code' => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-			],
-		];
-
-		$data['order_data'] += $this->build_display_items();
-
-		wp_send_json( $data );
 	}
 
 	/**

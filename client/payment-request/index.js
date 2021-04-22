@@ -15,9 +15,7 @@ import {
 } from './event-handlers.js';
 
 // - TODO: Endpoints
-// - getCartDetails (to be removed)
 // - addToCart
-// - clearCart
 
 // const api = new WCPayAPI(
 // 	{
@@ -41,20 +39,6 @@ jQuery( ( $ ) => {
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayPaymentRequest = {
-		getCartDetails: () => {
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.payment,
-			};
-
-			$.ajax( {
-				type: 'POST',
-				data: data,
-				url: getAjaxURL( 'get_cart_details' ),
-				success: ( response ) => {
-					wcpayPaymentRequest.startPaymentRequest( response );
-				},
-			} );
-		},
 
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
@@ -230,26 +214,23 @@ jQuery( ( $ ) => {
 		 * @param {Object} cart Cart data.
 		 */
 		startPaymentRequest: ( cart ) => {
-			let paymentDetails, options;
+			let options;
 
 			if ( wcpayPaymentRequestParams.is_product_page ) {
 				options = wcpayPaymentRequest.getRequestOptionsFromLocal();
-
-				paymentDetails = options;
 			} else {
 				options = {
-					total: cart.order_data.total,
-					currency: cart.order_data.currency,
-					country: cart.order_data.country_code,
+					total: cart.total,
+					currency: wcpayPaymentRequestParams.checkout.currency_code,
+					country: wcpayPaymentRequestParams.checkout.country_code,
 					requestPayerName: true,
 					requestPayerEmail: true,
 					requestPayerPhone:
 						wcpayPaymentRequestParams.checkout.needs_payer_phone,
-					requestShipping: cart.shipping_required ? true : false,
-					displayItems: cart.order_data.displayItems,
+					requestShipping:
+						wcpayPaymentRequestParams.checkout.needs_shipping,
+					displayItems: cart.displayItems,
 				};
-
-				paymentDetails = cart.order_data;
 			}
 
 			// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
@@ -704,9 +685,11 @@ jQuery( ( $ ) => {
 		 */
 		init: () => {
 			if ( wcpayPaymentRequestParams.is_product_page ) {
-				wcpayPaymentRequest.startPaymentRequest( '' );
+				wcpayPaymentRequest.startPaymentRequest();
 			} else {
-				wcpayPaymentRequest.getCartDetails();
+				wcpayPaymentRequest.startPaymentRequest(
+					wcpayPaymentRequestParams.cart
+				);
 			}
 		},
 	};

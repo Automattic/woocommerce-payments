@@ -12,7 +12,7 @@ import {
 	normalizeOrderData,
 } from './utils';
 
-export async function shippingAddressChangeHandler( event ) {
+export const shippingAddressChangeHandler = async ( event ) => {
 	const response = await paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
@@ -26,7 +26,7 @@ export async function shippingAddressChangeHandler( event ) {
 	} );
 };
 
-export async function shippingOptionChangeHandler( event ) {
+export const shippingOptionChangeHandler = async ( event ) => {
 	const response = await paymentRequestUpdateShippingDetails( event );
 
 	if ( 'success' === response.result ) {
@@ -42,7 +42,7 @@ export async function shippingOptionChangeHandler( event ) {
 	}
 };
 
-export async function paymentMethodHandler( event ) {
+export const paymentMethodHandler = async ( event ) => {
 	const allowPrepaidCard = getPaymentRequestData( 'stripe' )
 		?.allow_prepaid_card;
 	if ( ! allowPrepaidCard && 'prepaid' === event.source.card.funding ) {
