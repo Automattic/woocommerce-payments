@@ -66,6 +66,11 @@
 	background: no-repeat url( '../images/cards/unknown.svg' );
 }
 
+.payment-method__brand--giropay {
+	background: no-repeat url( '../images/payment-methods/giropay.svg' );
+	background-size: contain;
+}
+
 .payment-method__brand--sepa_debit {
 	background: no-repeat url( '../images/cards/sepa.svg' );
 	background-size: contain;
