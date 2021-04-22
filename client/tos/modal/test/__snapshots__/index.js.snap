@@ -46,7 +46,7 @@ exports[`ToS modal should render ToS modal 1`] = `
         class="woocommerce-payments__tos-footer"
       >
         <button
-          class="components-button is-tertiary"
+          class="components-button is-secondary"
           type="button"
         >
           Decline
