@@ -556,7 +556,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	private function get_cached_account_data() {
+	public function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
