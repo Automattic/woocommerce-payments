@@ -1,6 +1,7 @@
 .payment-method {
 	flex-wrap: wrap;
 	justify-content: space-between;
+	align-items: center;
 
 	@include breakpoint( '>660px' ) {
 		flex-wrap: nowrap;
