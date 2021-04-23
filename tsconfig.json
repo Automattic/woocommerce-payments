@@ -9,6 +9,8 @@
     "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
     "moduleResolution": "node",
     "baseUrl": "./client",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
   },
   "include": [
     "./client/"

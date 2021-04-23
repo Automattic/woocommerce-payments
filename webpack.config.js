@@ -65,6 +65,17 @@ const webpackConfig = {
 				type: 'asset/inline',
 				exclude: /node_modules/,
 			},
+			{
+				test: /\.svg$/,
+				use: [
+					{
+						loader: 'file-loader',
+						options: {
+							name: 'images/[hash]-[name].[ext]',
+						},
+					},
+				],
+			},
 		],
 	},
 	resolve: {
