@@ -556,7 +556,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	private function get_cached_account_data() {
+	public function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -795,26 +795,18 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks to see if the account is eligible for Instant Deposits.
-	 *
-	 * @return bool
-	 */
-	public function is_instant_deposits_eligible(): bool {
-		$account = $this->get_cached_account_data();
-		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * Handles adding a note if the merchant is eligible for Instant Deposits.
+	 *
+	 * @param array $account The account data.
 	 *
 	 * @return void
 	 */
-	public function handle_instant_deposits_inbox_note() {
-		if ( ! $this->is_instant_deposits_eligible() ) {
+	public function handle_instant_deposits_inbox_note( $account ) {
+		if ( empty( $account ) ) {
+			return;
+		}
+
+		if ( ! $this->is_instant_deposits_eligible( $account ) ) {
 			return;
 		}
 
@@ -832,7 +824,7 @@ class WC_Payments_Account {
 	public function handle_instant_deposits_inbox_reminder() {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
-		$this->handle_instant_deposits_inbox_note();
+		$this->handle_instant_deposits_inbox_note( $this->get_cached_account_data() );
 	}
 
 	/**
@@ -850,5 +842,20 @@ class WC_Payments_Account {
 
 		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
 		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
+	}
+
+	/**
+	 * Checks to see if the account is eligible for Instant Deposits.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return bool
+	 */
+	private function is_instant_deposits_eligible( array $account ): bool {
+		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+			return false;
+		}
+
+		return true;
 	}
 }

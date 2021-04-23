@@ -101,6 +101,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.4.0 - 2021-xx-xx =
+* Fix - Error when using SCA / 3DS credit card in checkout block.
+* Update - Improve the Connect Account page.
+
+= 2.3.1 - 2021-xx-xx =
+* Fix - Various account connection cache tweaks
+
 = 2.3.0 - 2021-04-21 =
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.

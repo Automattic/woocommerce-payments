@@ -473,7 +473,12 @@ class WC_Payments_Admin {
 	 */
 	public function add_menu_notification_badge() {
 		global $menu;
-		if ( $this->account->is_stripe_connected() || 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+		if ( 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+			return;
+		}
+
+		if ( $this->account->is_stripe_connected() ) {
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
 		}
 

@@ -544,9 +544,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                   => true,
 			'instant_deposits_eligible' => true,
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
 
-		$this->wcpay_account->handle_instant_deposits_inbox_note();
+		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -568,9 +567,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                   => true,
 			'instant_deposits_eligible' => false,
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
 
-		$this->wcpay_account->handle_instant_deposits_inbox_note();
+		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
@@ -583,8 +581,15 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			return;
 		}
 
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => true,
+		];
+		// Handle_instant_deposits_inbox_reminder will retrieve the account from cache, so set it there.
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+
 		// This will create and log the first note, like what we would see in the wild.
-		$this->test_handle_instant_deposits_inbox_note();
+		$this->test_handle_instant_deposits_inbox_note( $account );
 		$note_id    = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$first_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
 
