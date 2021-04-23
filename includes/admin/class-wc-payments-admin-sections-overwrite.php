@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WC_Payments_Admin Class.
+ * WC_Payments_Admin_Sections_Overwrite Class.
  */
 class WC_Payments_Admin_Sections_Overwrite {
 	/**
