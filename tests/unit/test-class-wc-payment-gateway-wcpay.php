@@ -104,7 +104,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 */
 	public function tearDown() {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
-		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );

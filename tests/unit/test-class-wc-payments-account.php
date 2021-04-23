@@ -50,7 +50,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function tearDown() {
-		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
 		parent::tearDown();
@@ -189,7 +189,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 
 		// Simulate the account details cache timing out.
-		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
@@ -340,8 +340,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		add_filter( 'wcpay_dev_mode', '__return_true' );
 
 		// cache a dev account.
-		set_transient(
-			WC_Payments_Account::ACCOUNT_TRANSIENT,
+		$this->cache_account_details(
 			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
@@ -365,8 +364,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		add_filter( 'wcpay_dev_mode', '__return_false' );
 
 		// cache a dev account.
-		set_transient(
-			WC_Payments_Account::ACCOUNT_TRANSIENT,
+		$this->cache_account_details(
 			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
@@ -392,8 +390,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		add_filter( 'wcpay_dev_mode', '__return_true' );
 
 		// cache a live account.
-		set_transient(
-			WC_Payments_Account::ACCOUNT_TRANSIENT,
+		$this->cache_account_details(
 			[
 				'account_id'               => 'acc_test',
 				'live_publishable_key'     => 'pk_test_',
@@ -423,13 +420,13 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		];
 
 		// Make sure cache is clear.
-		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will( $this->returnValue( $expected_account ) );
 		$this->wcpay_account->refresh_account_data();
 
-		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
-		$this->assertEquals( $expected_account, $cached_account, 'Account is not cached' );
+		$cached_account = get_option( WC_Payments_Account::ACCOUNT_OPTION );
+		$this->assertEquals( $expected_account, $cached_account['account'], 'Account is not cached' );
 	}
 
 	public function test_refresh_account_data_with_existing_cache() {
@@ -444,13 +441,13 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$existing_cache                     = $expected_account;
 		$existing_cache['current_deadline'] = 11111;
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $existing_cache );
+		$this->cache_account_details( $existing_cache );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will( $this->returnValue( $expected_account ) );
 		$this->wcpay_account->refresh_account_data();
 
-		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
-		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+		$cached_account = get_option( WC_Payments_Account::ACCOUNT_OPTION );
+		$this->assertEquals( $expected_account, $cached_account['account'], 'Cached account is not updated' );
 	}
 
 	public function test_refresh_account_data_clears_cache_on_failure() {
@@ -462,15 +459,15 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'current_deadline'         => 12345,
 			'is_live'                  => true,
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+		$this->cache_account_details( $account );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
 		);
 		$this->wcpay_account->refresh_account_data();
 
-		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
-		$this->assertEquals( [], $cached_account, 'Cached account is not cleared' );
+		$cached_account = get_option( WC_Payments_Account::ACCOUNT_OPTION );
+		$this->assertEquals( [], $cached_account['account'], 'Cached account is not cleared' );
 	}
 
 	public function test_update_stripe_account() {
@@ -483,7 +480,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                  => true,
 			'statement_descriptor'     => 'WCPAY',
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+		$this->cache_account_details( $account );
 
 		$new_descriptor   = 'WCPAY_DEV';
 		$expected_account = array_merge(
@@ -494,12 +491,12 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will( $this->returnValue( $expected_account ) );
 		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => $new_descriptor ] );
 
-		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
-		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+		$cached_account = get_option( WC_Payments_Account::ACCOUNT_OPTION );
+		$this->assertEquals( $expected_account, $cached_account['account'], 'Cached account is not updated' );
 	}
 
 	public function test_update_stripe_account_when_cached_account_invalid() {
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, 'ERROR' );
+		$this->cache_account_details( 'ERROR' );
 
 		$new_descriptor   = 'WCPAY_DEV';
 		$expected_account = [
@@ -519,8 +516,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => $new_descriptor ] );
 
-		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
-		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+		$cached_account = get_option( WC_Payments_Account::ACCOUNT_OPTION );
+		$this->assertEquals( $expected_account, $cached_account['account'], 'Cached account is not updated' );
 	}
 
 	public function test_update_stripe_account_skipped() {
@@ -533,7 +530,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                  => true,
 			'statement_descriptor'     => 'WCPAY',
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+		$this->cache_account_details( $account );
 
 		$this->mock_api_client->expects( $this->never() )->method( 'update_account' );
 		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY' ] );
@@ -549,7 +546,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                  => true,
 			'statement_descriptor'     => 'WCPAY',
 		];
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+		$this->cache_account_details( $account );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'update_account' )->will(
 			$this->throwException( new API_Exception( 'test', 'bad_request', 400 ) )
@@ -563,7 +560,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	 */
 	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
 		// Setup the cache with expired account information.
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, [] );
+		$this->cache_account_details( [] );
 
 		// Wire up the API client mock to return updated account data.
 		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
@@ -577,12 +574,114 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 	public function test_get_cached_account_data_handle_previous_account_retrieval_error() {
 		// Setup the cache as if there had been a connection error.
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, 'ERROR' );
+		$this->cache_account_details( 'ERROR' );
 
 		// Fetch the account.
 		$account = $this->wcpay_account->get_cached_account_data();
 
 		$this->assertFalse( $account );
+	}
+
+	public function test_get_cached_account_data_refetches_when_cache_has_expired() {
+		// Setup the cache with expired account information.
+		$cached_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'account' => $cached_account,
+				'expires' => time() - HOUR_IN_SECONDS,
+			]
+		);
+
+		// Wire up the API client mock to return updated account data.
+		$updated_account                         = $cached_account;
+		$updated_account['statement_descriptor'] = 'NEW_DESCRIPTOR';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->will( $this->returnValue( $updated_account ) );
+
+		// Fetch the account.
+		$account = $this->wcpay_account->get_cached_account_data();
+
+		// Assert that we see the new account information instead of the cached information.
+		$this->assertSame( $updated_account, $account );
+	}
+
+	public function test_get_cached_account_data_handles_missing_account_key() {
+		// Setup the cache with a value missing the account key.
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'expires' => time() + 2 * HOUR_IN_SECONDS,
+			]
+		);
+
+		// Wire up the API client mock to return account data.
+		$updated_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->will( $this->returnValue( $updated_account ) );
+
+		// Fetch the account.
+		$account = $this->wcpay_account->get_cached_account_data();
+
+		// Assert that we see the new account information instead of the cached information.
+		$this->assertSame( $updated_account, $account );
+	}
+
+	public function test_get_cached_account_data_handles_missing_expires_key() {
+		// Setup the cache with a value missing the account key.
+		$cached_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY',
+		];
+
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'account' => $cached_account,
+			]
+		);
+
+		// Wire up the API client mock to return updated account data.
+		$updated_account                         = $cached_account;
+		$updated_account['statement_descriptor'] = 'NEW_DESCRIPTOR';
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->will( $this->returnValue( $updated_account ) );
+
+		// Fetch the account.
+		$account = $this->wcpay_account->get_cached_account_data();
+
+		// Assert that we see the new account information instead of the cached information.
+		$this->assertSame( $updated_account, $account );
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
@@ -638,7 +737,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'instant_deposits_eligible' => true,
 		];
 		// Handle_instant_deposits_inbox_reminder will retrieve the account from cache, so set it there.
-		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, $account );
+		$this->cache_account_details( $account );
 
 		// This will create and log the first note, like what we would see in the wild.
 		$this->test_handle_instant_deposits_inbox_note( $account );
@@ -651,5 +750,20 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// So we make sure the two are different.
 		$this->assertNotSame( $first_note, $second_note );
+	}
+
+	/**
+	 * Cache account details.
+	 *
+	 * @param $account
+	 */
+	private function cache_account_details( $account ) {
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'account' => $account,
+				'expires' => time() + 2 * HOUR_IN_SECONDS,
+			]
+		);
 	}
 }
