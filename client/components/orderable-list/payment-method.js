@@ -10,36 +10,29 @@ import { Icon, trash } from '@wordpress/icons';
  * Internal dependencies
  */
 import './payment-method.scss';
+import { getPaymentMethodSettingsUrl } from '../../utils';
 
-const PaymentMethod = ( {
-	label,
-	description,
-	onManageClick,
-	onDeleteClick,
-} ) => {
+const PaymentMethod = ( { id, label, description, onDeleteClick } ) => {
+	const settingsUrl = getPaymentMethodSettingsUrl( id );
+
 	return (
 		<>
 			<div className="payment-method__icon" />
 			<div className="payment-method__text">
-				<Button
-					isLink
-					className="payment-method__label"
-					onClick={ onManageClick }
-				>
+				<a href={ settingsUrl } className="payment-method__label">
 					{ label }
-				</Button>
+				</a>
 				<div className="payment-method__description">
 					{ description }
 				</div>
 			</div>
 			<div className="payment-method__actions">
-				<Button
-					isLink
+				<a
+					href={ settingsUrl }
 					className="payment-method__action manage"
-					onClick={ onManageClick }
 				>
 					{ __( 'Manage', 'woocommerce-payments' ) }
-				</Button>
+				</a>
 				<Button
 					isLink
 					aria-label={ __( 'Delete', 'woocommerce-payments' ) }

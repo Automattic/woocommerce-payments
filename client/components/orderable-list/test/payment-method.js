@@ -10,6 +10,7 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
+import { getPaymentMethodSettingsUrl } from '../../../utils';
 
 describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
@@ -19,10 +20,10 @@ describe( 'PaymentMethod', () => {
 		expect( screen.getByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders Manage and Delete buttons', () => {
+	test( 'renders "Manage" and "Delete"', () => {
 		render( <PaymentMethod label="Foo" /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.getByRole( 'link', {
 			name: 'Manage',
 		} );
 
@@ -30,22 +31,22 @@ describe( 'PaymentMethod', () => {
 			name: 'Delete',
 		} );
 
-		expect( manageButton ).toBeInTheDocument( manageButton );
-		expect( deleteButton ).toBeInTheDocument( deleteButton );
+		expect( manageLink ).toBeInTheDocument();
+		expect( deleteButton ).toBeInTheDocument();
 	} );
 
-	test( 'clicking Manage button calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( '"Manage" is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.getByRole( 'link', {
 			name: 'Manage',
 		} );
-		user.click( manageButton );
-		expect( onManageClick ).toHaveBeenCalled();
+		expect( manageLink.getAttribute( 'href' ) ).toEqual(
+			getPaymentMethodSettingsUrl( 'foo' )
+		);
 	} );
 
-	test( 'clicking Delete button calls onDeleteClick()', () => {
+	test( 'clicking "Delete" button calls onDeleteClick()', () => {
 		const onDeleteClick = jest.fn();
 		render( <PaymentMethod label="Foo" onDeleteClick={ onDeleteClick } /> );
 
@@ -56,14 +57,14 @@ describe( 'PaymentMethod', () => {
 		expect( onDeleteClick ).toHaveBeenCalled();
 	} );
 
-	test( 'clicking label calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( 'label is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
 
-		const paymentMethodLabel = screen.getByRole( 'button', {
-			name: 'Foo',
+		const paymentMethodLabel = screen.getByRole( 'link', {
+			name: 'Bar',
 		} );
-		user.click( paymentMethodLabel );
-		expect( onManageClick ).toHaveBeenCalled();
+		expect( paymentMethodLabel.getAttribute( 'href' ) ).toEqual(
+			getPaymentMethodSettingsUrl( 'foo' )
+		);
 	} );
 } );

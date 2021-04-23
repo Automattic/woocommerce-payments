@@ -68,7 +68,7 @@ describe( 'PaymentMethods', () => {
 		const listItem = cc.closest( 'li' );
 
 		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'button', { name: 'Manage' } )
+			within( listItem ).getByRole( 'link', { name: 'Manage' } )
 		);
 		expect( listItem ).toContainElement(
 			within( listItem ).getByRole( 'button', { name: 'Delete' } )
