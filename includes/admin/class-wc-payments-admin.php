@@ -341,7 +341,7 @@ class WC_Payments_Admin {
 		$is_settings_page = (
 			$current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section
+			&& 0 === strpos( $current_section, 'woocommerce_payments' )
 		);
 
 		if ( $is_settings_page ) {
