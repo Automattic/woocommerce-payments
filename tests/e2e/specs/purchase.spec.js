@@ -3,10 +3,13 @@
  */
 import config from 'config';
 
+const { shopper } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
-import { CustomerFlow } from '../utils';
+import { paymentsShopper } from '../utils';
+
 import {
 	fillCardDetails,
 	setupProductCheckout,
@@ -24,7 +27,7 @@ describe( 'Successful purchase', () => {
 		);
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
-		await CustomerFlow.placeOrder();
+		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 	} );
 
@@ -33,7 +36,7 @@ describe( 'Successful purchase', () => {
 			...config.get( 'addresses.customer.billing' ),
 			...config.get( 'users.guest' ),
 		} );
-		await CustomerFlow.toggleCreateAccount();
+		await paymentsShopper.toggleCreateAccount();
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( '#place_order' );

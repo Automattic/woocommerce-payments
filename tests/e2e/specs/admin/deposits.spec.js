@@ -3,9 +3,6 @@
  */
 import config from 'config';
 
-/**
- * Internal dependencies
- */
 const { merchant } = require( '@woocommerce/e2e-utils' );
 
 const WCPAY_DEPOSITS =
