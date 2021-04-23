@@ -111,14 +111,17 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 			<CardDivider />
 			<CardBody className="payment-methods__enabled-methods-container">
 				<OrderableList className="payment-methods__enabled-methods">
-					{ enabledMethods.map( ( { id, label, description } ) => (
+					{ enabledMethods.map( ( method ) => (
 						<PaymentMethod
-							key={ id }
-							className={ classNames( 'payment-method', id ) }
-							onDeleteClick={ () => handleDeleteClick( id ) }
-							id={ id }
-							label={ label }
-							description={ description }
+							key={ method.id }
+							className={ classNames(
+								'payment-method',
+								method.id
+							) }
+							onDeleteClick={ () =>
+								handleDeleteClick( method.id )
+							}
+							{ ...method }
 						/>
 					) ) }
 				</OrderableList>
