@@ -193,6 +193,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	public function test_from_payment_request_with_token() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
+				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
 				self::CARD_TOKEN_REQUEST_KEY     => $this->card_token->get_id(),
 			],
