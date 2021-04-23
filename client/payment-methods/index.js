@@ -50,8 +50,8 @@ const availableMethods = [
 ];
 
 const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
-	const enabledMethods = availableMethods.filter( ( method ) =>
-		enabledMethodIds.includes( method.id )
+	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
+		availableMethods.find( ( method ) => method.id === methodId )
 	);
 
 	const disabledMethods = availableMethods.filter(
@@ -68,10 +68,33 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 		);
 	};
 
+	const handleDragEnd = ( event ) => {
+		const { active, over } = event;
+
+		if ( active.id !== over.id ) {
+			const oldIndex = enabledMethodIds.indexOf( active.id );
+			const newIndex = enabledMethodIds.indexOf( over.id );
+
+			const enabledMethodIdsCopy = [ ...enabledMethodIds ];
+			enabledMethodIdsCopy.splice(
+				0 > newIndex
+					? enabledMethodIdsCopy.length + newIndex
+					: newIndex,
+				0,
+				enabledMethodIdsCopy.splice( oldIndex, 1 )[ 0 ]
+			);
+
+			onEnabledMethodIdsChange( enabledMethodIdsCopy );
+		}
+	};
+
 	return (
 		<Card className="payment-methods">
 			<CardBody className="payment-methods__enabled-methods-container">
-				<OrderableList className="payment-methods__enabled-methods">
+				<OrderableList
+					onDragEnd={ handleDragEnd }
+					className="payment-methods__enabled-methods"
+				>
 					{ enabledMethods.map( ( { id, label, description } ) => (
 						<PaymentMethod
 							key={ id }
