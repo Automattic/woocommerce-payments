@@ -3,8 +3,3 @@
 @import 'node_modules/@automattic/color-studio/dist/color-variables.scss';
 @import 'node_modules/@wordpress/base-styles/colors.scss';
 @import 'node_modules/@wordpress/base-styles/colors.native.scss';
-
-// This is temp placeholders for missing variables after styles upgrade
-// Values taken from: https://github.com/WordPress/gutenberg/blob/%40wordpress/base-styles%401.0.0/packages/base-styles/_colors.scss
-// TODO: Replace variables with new color palette
-$dark-gray-500: #555d66;
