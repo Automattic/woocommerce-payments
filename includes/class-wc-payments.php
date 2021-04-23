@@ -599,6 +599,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Account instance
+	 *
+	 * @return WC_Payments_Account account service instance
+	 */
+	public static function get_account_service() {
+		return self::$account;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
