@@ -36,7 +36,7 @@ module.exports = {
 	],
 	transform: {
 		...tsjPreset.transform,
-		'^.+\\.svg$': '<rootDir>/tests/js/fileMock.js',
+		'^.+\\.(jpg|svg|png|gif)$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
 	verbose: true,
