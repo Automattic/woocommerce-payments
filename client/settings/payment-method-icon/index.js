@@ -41,7 +41,11 @@ const PaymentMethodIcon = ( props ) => {
 	return (
 		<span className="woocommerce-payments__payment-method-icon">
 			<img alt={ label } src={ logo } />
-			{ showName && label }
+			{ showName && (
+				<span className="woocommerce-payments__payment-method-icon__label">
+					{ label }
+				</span>
+			) }
 		</span>
 	);
 };

@@ -26,16 +26,16 @@ const PaymentMethodsSelector = ( props ) => {
 		)
 	);
 
-	const onChangePaymentMethod = ( paymentMethod ) => {
+	const makeHandlePaymentMethodChange = ( paymentMethod ) => {
 		return ( enabled ) => {
-			setPaymentMethods( {
-				...paymentMethods,
+			setPaymentMethods( ( oldPaymentMethods ) => ( {
+				...oldPaymentMethods,
 				[ paymentMethod ]: enabled,
-			} );
+			} ) );
 		};
 	};
 
-	const onAddSelected = () => {
+	const handleAddSelected = () => {
 		const selectedPaymentMethods = Object.entries( paymentMethods )
 			.filter( ( [ , enabled ] ) => enabled )
 			.map( ( [ method ] ) => method );
@@ -58,49 +58,49 @@ const PaymentMethodsSelector = ( props ) => {
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
 						checked={ paymentMethods.giropay }
-						onChange={ onChangePaymentMethod( 'giropay' ) }
+						onChange={ makeHandlePaymentMethodChange( 'giropay' ) }
 						label={ <PaymentMethodIcon name="giropay" showName /> }
 					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item-fees">
+					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
 					</span>
 					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item-info"
+						className="woocommerce-payments__payment-method-selector__list-item__info"
 						icon="info-outline"
 					/>
 				</li>
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
 						checked={ paymentMethods.sofort }
-						onChange={ onChangePaymentMethod( 'sofort' ) }
+						onChange={ makeHandlePaymentMethodChange( 'sofort' ) }
 						label={ <PaymentMethodIcon name="sofort" showName /> }
 					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item-fees">
+					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
 					</span>
 					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item-info"
+						className="woocommerce-payments__payment-method-selector__list-item__info"
 						icon="info-outline"
 					/>
 				</li>
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
 						checked={ paymentMethods.sepa }
-						onChange={ onChangePaymentMethod( 'sepa' ) }
+						onChange={ makeHandlePaymentMethodChange( 'sepa' ) }
 						label={ <PaymentMethodIcon name="sepa" showName /> }
 					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item-fees">
+					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
 					</span>
 					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item-info"
+						className="woocommerce-payments__payment-method-selector__list-item__info"
 						icon="info-outline"
 					/>
 				</li>
 			</ul>
 			<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
 			<div className="woocommerce-payments__payment-method-selector__footer">
-				<Button isPrimary onClick={ onAddSelected }>
+				<Button isPrimary onClick={ handleAddSelected }>
 					{ __( 'Add selected', 'woocommerce-payments' ) }
 				</Button>
 				<Button isTertiary onClick={ onClose }>
