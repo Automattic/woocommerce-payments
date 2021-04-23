@@ -498,6 +498,31 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
 	}
 
+	public function test_update_stripe_account_when_cached_account_invalid() {
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, 'ERROR' );
+
+		$new_descriptor   = 'WCPAY_DEV';
+		$expected_account = [
+			'account_id'               => 'acc_test',
+			'live_publishable_key'     => 'pk_test_',
+			'test_publishable_key'     => 'pk_live_',
+			'has_pending_requirements' => true,
+			'current_deadline'         => 12345,
+			'is_live'                  => true,
+			'statement_descriptor'     => 'WCPAY_DEV',
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_account' )
+			->will( $this->returnValue( $expected_account ) );
+
+		$this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => $new_descriptor ] );
+
+		$cached_account = get_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		$this->assertEquals( $expected_account, $cached_account, 'Cached account is not updated' );
+	}
+
 	public function test_update_stripe_account_skipped() {
 		$account = [
 			'account_id'               => 'acc_test',
@@ -531,6 +556,33 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		);
 		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
 		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+	}
+
+	/**
+	 * Test get_cached_account_data when we have already cached the "no account connected" response.
+	 */
+	public function test_get_cached_account_data_when_no_account_connected_and_result_cached() {
+		// Setup the cache with expired account information.
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, [] );
+
+		// Wire up the API client mock to return updated account data.
+		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+
+		// Fetch the account.
+		$account = $this->wcpay_account->get_cached_account_data();
+
+		// Assert that the "no account connected" special case is returned as expected.
+		$this->assertSame( [], $account );
+	}
+
+	public function test_get_cached_account_data_handle_previous_account_retrieval_error() {
+		// Setup the cache as if there had been a connection error.
+		set_transient( WC_Payments_Account::ACCOUNT_TRANSIENT, 'ERROR' );
+
+		// Fetch the account.
+		$account = $this->wcpay_account->get_cached_account_data();
+
+		$this->assertFalse( $account );
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
