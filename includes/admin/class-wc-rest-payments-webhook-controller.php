@@ -259,7 +259,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		$order->payment_complete();
+		if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+			$order->payment_complete();
+		}
 	}
 
 	/**
