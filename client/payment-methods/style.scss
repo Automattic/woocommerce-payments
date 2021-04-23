@@ -1,29 +1,4 @@
 .payment-methods {
-	&__header {
-		&#{&} {
-			&#{&} {
-				padding: 24px;
-
-				@include breakpoint( '>660px' ) {
-					padding: 24px 32px;
-				}
-			}
-		}
-	}
-
-	&__title {
-		font-size: 14px;
-		font-weight: 600;
-		line-height: 16px;
-		margin-bottom: 8px;
-	}
-
-	&__description {
-		font-size: 13px;
-		line-height: 16px;
-		margin: 0;
-	}
-
 	&__available-methods-container {
 		align-items: center;
 		display: flex;
