@@ -34,7 +34,10 @@ module.exports = {
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
 	],
-	transform: { ...tsjPreset.transform },
+	transform: {
+		...tsjPreset.transform,
+		'^.+\\.(jpg|svg|png|gif)$': '<rootDir>/tests/js/fileMock.js',
+	},
 	transformIgnorePatterns: [ 'node_modules/(?!(@woocommerce/.+)/)' ],
 	verbose: true,
 };
