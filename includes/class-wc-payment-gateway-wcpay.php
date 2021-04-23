@@ -459,13 +459,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
 		$hide_save_button                  = true;
-		$is_payment_method_settings_screen = self::GATEWAY_ID !== static::GATEWAY_ID;
+		$is_payment_method_settings_screen = self::GATEWAY_ID !== $this->id;
 
 		if ( $is_payment_method_settings_screen ) :
 			?>
 			<div
 				id="wcpay-payment-method-settings-container"
-				data-method-id="<?php echo esc_attr( static::GATEWAY_ID ); ?>"
+				data-method-id="<?php echo esc_attr( $this->id ); ?>"
 			></div>
 		<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
