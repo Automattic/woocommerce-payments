@@ -62,8 +62,8 @@ const webpackConfig = {
 			},
 			{
 				test: /\.svg$/,
-				type: 'asset/inline',
 				exclude: /node_modules/,
+				loader: 'url-loader',
 			},
 		],
 	},
