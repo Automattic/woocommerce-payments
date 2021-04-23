@@ -1,0 +1,14 @@
+.woocommerce-payments__payment-method-icon {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+	max-width: 160px;
+
+	@include breakpoint( '>660px' ) {
+		max-width: inherit;
+	}
+
+	&__label {
+		margin-left: 4px;
+	}
+}
