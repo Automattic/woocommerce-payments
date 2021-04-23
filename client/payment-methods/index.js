@@ -2,14 +2,9 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	CardDivider,
-	CardHeader,
-} from '@wordpress/components';
+import { Button, Card, CardBody } from '@wordpress/components';
 import classNames from 'classnames';
 
 /**
@@ -95,18 +90,23 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 
 	return (
 		<Card className="payment-methods">
-			<CardHeader className="payment-methods__header">
-				<div className="payment-methods__title">
-					{ __( 'Payment methods', 'woocommerce-payments' ) }
-				</div>
-				<p className="payment-methods__description">
-					{ __(
-						'Increase your store’s conversion by offering your customers preferred and convenient payment methods. ' +
-							'Drag and drop to reorder on checkout.',
-						'woocommerce-payments'
-					) }
-				</p>
-			</CardHeader>
+			<CardBody className="payment-methods__enabled-methods-container">
+				<OrderableList
+					onDragEnd={ handleDragEnd }
+					className="payment-methods__enabled-methods"
+				>
+					{ enabledMethods.map( ( { id, label, description } ) => (
+						<PaymentMethod
+							key={ id }
+							className={ classNames( 'payment-method', id ) }
+							onManageClick={ () => handleManageClick( id ) }
+							onDeleteClick={ () => handleDeleteClick( id ) }
+							label={ label }
+							description={ description }
+						/>
+					) ) }
+				</OrderableList>
+			</CardBody>
 			<CardBody className="payment-methods__available-methods-container">
 				<Button
 					isDefault
@@ -131,24 +131,6 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 						/>
 					) ) }
 				</ul>
-			</CardBody>
-			<CardDivider />
-			<CardBody className="payment-methods__enabled-methods-container">
-				<OrderableList
-					onDragEnd={ handleDragEnd }
-					className="payment-methods__enabled-methods"
-				>
-					{ enabledMethods.map( ( { id, label, description } ) => (
-						<PaymentMethod
-							key={ id }
-							className={ classNames( 'payment-method', id ) }
-							onManageClick={ () => handleManageClick( id ) }
-							onDeleteClick={ () => handleDeleteClick( id ) }
-							label={ label }
-							description={ description }
-						/>
-					) ) }
-				</OrderableList>
 			</CardBody>
 		</Card>
 	);
