@@ -107,6 +107,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.3.1 - 2021-xx-xx =
 * Fix - Various account connection cache tweaks
+* Update - Use option instead of transient for caching account data
 
 = 2.3.0 - 2021-04-21 =
 * Add - Introduced deposit currency filter for transactions overview page.
