@@ -45,11 +45,28 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
+				// - TODO: Add locale
 			} );
 		}
 		return this.stripe;
 	}
 
+	/**
+	 * Load Stripe for payment request button.
+	 *
+	 * @return {Promise} Promise with the Stripe object or an error.
+	 */
+	loadStripe() {
+		return new Promise( ( resolve ) => {
+			try {
+				resolve( this.getStripe() );
+			} catch ( error ) {
+				// In order to avoid showing console error publicly to users,
+				// we resolve instead of rejecting when there is an error.
+				resolve( { error } );
+			}
+		} );
+	}
 
 	/**
 	 * Generates a Stripe payment method.
