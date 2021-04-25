@@ -4,8 +4,8 @@
  * Internal dependencies
  */
 import './style.scss';
-// import WCPayAPI from '../checkout/api';
-// import request from '../checkout/blocks/request.js';
+import WCPayAPI from '../checkout/api';
+import { getConfig } from 'utils/checkout';
 import { getAjaxURL } from './utils';
 
 import {
@@ -17,23 +17,33 @@ import {
 // - TODO: Endpoints
 // - addToCart
 
-// const api = new WCPayAPI(
-// 	{
-// 		publishableKey: wcpayPaymentRequestParams.stripe.publishableKey,
-// 		accountId: wcpayPaymentRequestParams.stripe.accountId,
-// 	},
-// 	request
-// );
-
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if ( wcpayPaymentRequestParams.has_block ) {
 		return;
 	}
 
-	const stripe = Stripe( wcpayPaymentRequestParams.stripe.publishableKey, {
-		stripeAccount: wcpayPaymentRequestParams.stripe.accountId,
-	} );
+	const publishableKey = getConfig( 'publishableKey' );
+
+	if ( ! publishableKey ) {
+		// If no configuration is present, probably this is not the checkout page.
+		return;
+	}
+
+	const api = new WCPayAPI(
+		{
+			publishableKey,
+			accountId: getConfig( 'accountId' ),
+		},
+		// A promise-based interface to jQuery.post.
+		( url, args ) => {
+			return new Promise( ( resolve, reject ) => {
+				jQuery.post( url, args ).then( resolve ).fail( reject );
+			} );
+		}
+	);
+
+	const stripe = api.getStripe();
 
 	/**
 	 * Object to handle Stripe payment forms.

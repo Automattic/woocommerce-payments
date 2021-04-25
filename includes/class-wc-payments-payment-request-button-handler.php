@@ -561,11 +561,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$stripe_params = [
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'stripe'          => [
-				'publishableKey'     => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
-				'accountId'          => $this->account->get_stripe_account_id(),
-				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
-			],
 			'nonce'           => [
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
@@ -607,7 +602,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
 		wp_enqueue_style( 'payment_request_styles' );
 
-		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', [], '3.0', true );
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $stripe_params );
