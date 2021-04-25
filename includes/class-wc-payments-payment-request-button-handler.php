@@ -570,7 +570,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'log_errors'                => wp_create_nonce( 'wcpay-log-errors' ),
 			],
 			'i18n'            => [
-				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-payments' ),
 				/* translators: Do not translate the [option] placeholder */
 				'unknown_shipping' => __( 'Unknown shipping option "[option]".', 'woocommerce-payments' ),
 			],

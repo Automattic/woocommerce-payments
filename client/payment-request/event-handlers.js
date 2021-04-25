@@ -6,11 +6,7 @@ import {
 	paymentRequestUpdateShippingDetails,
 	paymentRequestCreateOrder,
 } from './api';
-import {
-	getPaymentRequestData,
-	normalizeShippingAddress,
-	normalizeOrderData,
-} from './utils';
+import { normalizeShippingAddress, normalizeOrderData } from './utils';
 
 export const shippingAddressChangeHandler = async ( event ) => {
 	const response = await paymentRequestCalculateShippingOptions(
@@ -43,20 +39,6 @@ export const shippingOptionChangeHandler = async ( event ) => {
 };
 
 export const paymentMethodHandler = async ( event ) => {
-	const allowPrepaidCard = getPaymentRequestData( 'stripe' )
-		?.allow_prepaid_card;
-	if ( ! allowPrepaidCard && 'prepaid' === event.source.card.funding ) {
-		event.complete( 'fail' );
-		// - TODO: Fix error message
-		// setExpressPaymentError(
-		// 	__(
-		// 		"Sorry, we're not accepting prepaid cards at this time.",
-		// 		'woocommerce-gateway-stripe'
-		// 	)
-		// );
-		return;
-	}
-
 	// Kick off checkout processing step.
 	const response = await paymentRequestCreateOrder(
 		normalizeOrderData( event )
