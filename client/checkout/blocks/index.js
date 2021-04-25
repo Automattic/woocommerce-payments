@@ -48,10 +48,7 @@ registerPaymentMethod(
 		} )
 );
 
-// eslint-disable-next-line no-undef
-if ( 'undefined' !== typeof wcpayPaymentRequestParams ) {
-	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
-}
+registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );

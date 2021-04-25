@@ -13,7 +13,16 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	content: <PaymentRequestExpress api={ api } stripe={ api.loadStripe() } />,
 	edit: <ApplePayPreview />,
-	canMakePayment: !! api.getStripe(),
+	canMakePayment: () => {
+		if ( getConfig( 'is_admin' ) ) {
+			return true;
+		}
+
+		return (
+			!! api.getStripe() &&
+			'undefined' !== typeof wcpayPaymentRequestParams
+		);
+	},
 	paymentMethodId: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	supports: {
 		features: getConfig( 'features' ),

@@ -67,6 +67,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			[
 				'title'       => isset( $this->settings['title'] ) ? $this->settings['title'] : '',
 				'description' => isset( $this->settings['description'] ) ? $this->settings['description'] : '',
+				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
 			WC_Payments::get_gateway()->get_payment_fields_js_config()
 		);
