@@ -103,6 +103,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.4.0 - 2021-xx-xx =
 * Update - Improve the Connect Account page.
+* Update - Base UI components and their styling.
 
 = 2.3.1 - 2021-04-26 =
 * Fix - Various account connection cache tweaks
