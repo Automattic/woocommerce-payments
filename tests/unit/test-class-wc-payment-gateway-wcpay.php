@@ -563,7 +563,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$notes             = wc_get_order_notes(
 			[
@@ -573,6 +573,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$latest_wcpay_note = $notes[1]; // The latest note is the "status changed" message, we want the previous one.
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'succeeded',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $latest_wcpay_note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'succeeded' );
@@ -609,7 +617,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$notes             = wc_get_order_notes(
 			[
@@ -619,6 +627,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		);
 		$latest_wcpay_note = $notes[1]; // The latest note is the "status changed" message, we want the previous one.
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'succeeded',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'successfully captured', $latest_wcpay_note->content );
 		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'succeeded' );
@@ -655,7 +671,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
 			[
@@ -664,6 +680,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'requires_capture',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'failed', $note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
@@ -700,7 +724,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
 			[
@@ -709,6 +733,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'requires_capture',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'failed', $note->content );
 		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'requires_capture' );
@@ -748,7 +780,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
 			[
@@ -757,6 +789,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'failed',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'failed', $note->content );
 		$this->assertContains( 'test exception', $note->content );
 		$this->assertContains( wc_price( $order->get_total() ), $note->content );
@@ -798,7 +838,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
 			[
@@ -807,6 +847,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'failed',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'failed', $note->content );
 		$this->assertContains( 'test exception', $note->content );
 		$this->assertContains( wc_price( $order->get_total(), [ 'currency' => 'EUR' ] ), $note->content );
@@ -847,7 +895,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_account_country' )
 			->willReturn( 'US' );
 
-		$this->wcpay_gateway->capture_charge( $order );
+		$result = $this->wcpay_gateway->capture_charge( $order );
 
 		$note = wc_get_order_notes(
 			[
@@ -856,6 +904,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			]
 		)[0];
 
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status' => 'failed',
+				'id'     => $intent_id,
+			],
+			$result
+		);
 		$this->assertContains( 'expired', $note->content );
 		$this->assertEquals( $order->get_meta( '_intention_status', true ), 'canceled' );
 		$this->assertEquals( $order->get_status(), 'cancelled' );

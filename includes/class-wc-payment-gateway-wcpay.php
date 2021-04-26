@@ -1413,6 +1413,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function capture_charge( $order ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
+		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
@@ -1494,6 +1495,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_authorization_expired ) {
 			WC_Payments_Utils::mark_payment_expired( $order );
 		}
+
+		return [
+			'status' => $status ?? 'failed',
+			'id'     => ! empty( $intent ) ? $intent->get_id() : null,
+		];
 	}
 
 	/**
