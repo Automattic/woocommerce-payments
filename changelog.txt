@@ -20,7 +20,6 @@
 * Add - Introduced deposit currency filter for deposits overview page.
 * Update - Make Payment Request Button available for all merchants.
 * Add - Configurable Payment Request Button locations.
-* Update - Improve the Connect Account page.
 * Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
 
 = 2.2.0 - 2021-03-31 =
