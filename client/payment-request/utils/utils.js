@@ -17,6 +17,67 @@ export const getPaymentRequestData = ( key ) => {
 };
 
 /**
+ * Gets Stripe Payment request options object.
+ *
+ * @return {Object} Payment Request options object
+ */
+export const getPaymentRequestOptions = () => {
+	// Get total and displayItems for product page or cart/checkout page.
+	const data = getPaymentRequestData( 'is_product_page' )
+		? getPaymentRequestData( 'product' )
+		: getPaymentRequestData( 'cart' );
+
+	let country = getPaymentRequestData( 'checkout' )?.country_code;
+
+	// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
+	// Since it's considered a US state by Stripe, we need to do some special mapping.
+	if ( 'PR' === country ) {
+		country = 'US';
+	}
+
+	return {
+		total: data.total,
+		currency: getPaymentRequestData( 'checkout' )?.currency_code,
+		country: country,
+		requestPayerName: true,
+		requestPayerEmail: true,
+		requestPayerPhone: getPaymentRequestData( 'checkout' )
+			?.needs_payer_phone,
+		requestShipping: getPaymentRequestData( 'checkout' )?.needs_shipping,
+		displayItems: data.displayItems,
+	};
+};
+
+/**
+ * Returns whether or not the current session can make payments and what type of request it uses.
+ *
+ * @param {Object} paymentRequest A Stripe PaymentRequest instance.
+ *
+ * @return {Promise<Object>} Object containing canPay and the requestType, which can be either
+ * - payment_request_api
+ * - apple_pay
+ * - google_pay
+ */
+export const canDoPaymentRequest = ( paymentRequest ) => {
+	return new Promise( ( resolve ) => {
+		paymentRequest.canMakePayment().then( ( result ) => {
+			if ( result ) {
+				let paymentRequestType = 'payment_request_api';
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				}
+
+				resolve( { canPay: true, requestType: paymentRequestType } );
+			} else {
+				resolve( { canPay: false } );
+			}
+		} );
+	} );
+};
+
+/**
  * Get WC AJAX endpoint URL.
  *
  * @param  {string} endpoint Endpoint.

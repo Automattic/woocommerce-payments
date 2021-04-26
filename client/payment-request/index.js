@@ -12,6 +12,8 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
+import { getPaymentRequestOptions, canDoPaymentRequest } from './utils';
+
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if ( wcpayPaymentRequestParams.has_block ) {
@@ -37,8 +39,6 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
-
-	const stripe = api.getStripe();
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -165,65 +165,28 @@ jQuery( ( $ ) => {
 			api.paymentRequestAddToCart( data );
 		},
 
-		getRequestOptionsFromLocal: () => {
-			return {
-				total: wcpayPaymentRequestParams.product.total,
-				currency: wcpayPaymentRequestParams.checkout.currency_code,
-				country: wcpayPaymentRequestParams.checkout.country_code,
-				requestPayerName: true,
-				requestPayerEmail: true,
-				requestPayerPhone:
-					wcpayPaymentRequestParams.checkout.needs_payer_phone,
-				requestShipping:
-					wcpayPaymentRequestParams.product.requestShipping,
-				displayItems: wcpayPaymentRequestParams.product.displayItems,
-			};
-		},
-
 		/**
 		 * Starts the payment request
-		 *
-		 * @param {Object} cart Cart data.
 		 */
-		startPaymentRequest: ( cart ) => {
-			let options;
+		startPaymentRequest: () => {
+			const paymentRequest = api
+				.getStripe()
+				.paymentRequest( getPaymentRequestOptions() );
 
-			if ( wcpayPaymentRequestParams.is_product_page ) {
-				options = wcpayPaymentRequest.getRequestOptionsFromLocal();
-			} else {
-				options = {
-					total: cart.total,
-					currency: wcpayPaymentRequestParams.checkout.currency_code,
-					country: wcpayPaymentRequestParams.checkout.country_code,
-					requestPayerName: true,
-					requestPayerEmail: true,
-					requestPayerPhone:
-						wcpayPaymentRequestParams.checkout.needs_payer_phone,
-					requestShipping:
-						wcpayPaymentRequestParams.checkout.needs_shipping,
-					displayItems: cart.displayItems,
-				};
-			}
-
-			// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
-			// Since it's considered a US state by Stripe, we need to do some special mapping.
-			if ( 'PR' === options.country ) {
-				options.country = 'US';
-			}
-
-			const paymentRequest = stripe.paymentRequest( options );
-
-			const elements = stripe.elements();
+			const elements = api.getStripe().elements();
 			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
 				elements,
 				paymentRequest
 			);
 
 			// Check the availability of the Payment Request API first.
-			paymentRequest.canMakePayment().then( ( result ) => {
-				if ( ! result ) {
+			canDoPaymentRequest( paymentRequest ).then( ( result ) => {
+				if ( ! result || ! result.canPay ) {
 					return;
 				}
+
+				// TODO: Don't display custom button when result.requestType
+				// is `apple_pay` or `google_pay`.
 
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
@@ -618,13 +581,7 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayPaymentRequestParams.is_product_page ) {
-				wcpayPaymentRequest.startPaymentRequest();
-			} else {
-				wcpayPaymentRequest.startPaymentRequest(
-					wcpayPaymentRequestParams.cart
-				);
-			}
+			wcpayPaymentRequest.startPaymentRequest();
 		},
 	};
 

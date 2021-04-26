@@ -272,9 +272,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'pending' => true,
 		];
 
-		$data['requestShipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-		$data['currency']        = strtolower( get_woocommerce_currency() );
-		$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+		$data['currency']       = strtolower( get_woocommerce_currency() );
+		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -943,9 +943,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'pending' => true,
 			];
 
-			$data['requestShipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-			$data['currency']        = strtolower( get_woocommerce_currency() );
-			$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+			$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+			$data['currency']       = strtolower( get_woocommerce_currency() );
+			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {

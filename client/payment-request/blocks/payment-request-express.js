@@ -20,29 +20,24 @@ import { CustomButton } from './custom-button';
  */
 const PaymentRequestExpressComponent = ( {
 	api,
-	shippingData,
-	billing,
-	onSubmit,
 	setExpressPaymentError,
-	emitResponse,
 	onClick,
 	onClose,
 } ) => {
+	// TODO: Don't display custom button when result.requestType
+	// is `apple_pay` or `google_pay`.
+	// TODO: Add loading indicator when isProcessing.
 	const {
 		paymentRequest,
-		// TODO: Add loading indicator when isProcessing.
+		// paymentRequestType,
 		// isProcessing,
 		canMakePayment,
 		onButtonClick,
 	} = useInitialization( {
 		api,
-		billing,
-		shippingData,
 		setExpressPaymentError,
 		onClick,
 		onClose,
-		onSubmit,
-		emitResponse,
 	} );
 
 	// Use pre-blocks settings until we merge the two distinct settings objects.
@@ -96,9 +91,7 @@ const PaymentRequestExpressComponent = ( {
 		<PaymentRequestButtonElement
 			onClick={ onButtonClick }
 			options={ {
-				// @ts-ignore
 				style: paymentRequestButtonStyle,
-				// @ts-ignore
 				paymentRequest,
 			} }
 		/>
