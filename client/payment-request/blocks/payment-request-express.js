@@ -6,15 +6,15 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
  */
-import { getPaymentRequestData, shouldUseGooglePayBrand } from '../utils';
 import { useInitialization } from './use-initialization';
 import { GooglePayButton } from './branded-buttons';
 import { CustomButton } from './custom-button';
+import { getPaymentRequestData, shouldUseGooglePayBrand } from '../utils';
 
 /**
  * PaymentRequestExpressComponent
  *
- * @param {StripeRegisteredPaymentMethodProps} props Incoming props
+ * @param {Object} props Incoming props.
  *
  * @return {ReactNode} Payment Request button component.
  */
@@ -40,7 +40,6 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
-	// Use pre-blocks settings until we merge the two distinct settings objects.
 	const isBranded = getPaymentRequestData( 'button' )?.is_branded;
 	const brandedType = getPaymentRequestData( 'button' )?.branded_type;
 	const isCustom = getPaymentRequestData( 'button' )?.is_custom;
@@ -99,9 +98,9 @@ const PaymentRequestExpressComponent = ( {
 };
 
 /**
- * PaymentRequestExpress with stripe provider
+ * PaymentRequestExpress express payment method component.
  *
- * @param {StripeRegisteredPaymentMethodProps} props PaymentMethodProps.
+ * @param {Object} props PaymentMethodProps.
  *
  * @return {ReactNode} Stripe Elements component.
  */

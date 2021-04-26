@@ -13,8 +13,7 @@ const useImageOrDefault = ( url, defaultUrl ) => {
 	useEffect( () => {
 		// eslint-disable-next-line no-unused-vars
 		const _img = (
-			// eslint-disable-next-line jsx-a11y/alt-text
-			<img src={ url } onError={ () => setState( defaultUrl ) } />
+			<img src={ url } onError={ () => setState( defaultUrl ) } alt="" />
 		);
 	}, [ url, defaultUrl ] );
 	return [ state ];

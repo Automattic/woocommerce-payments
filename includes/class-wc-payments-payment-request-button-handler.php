@@ -88,7 +88,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
@@ -572,14 +571,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'log_errors'                => wp_create_nonce( 'wcpay-log-errors' ),
-			],
-			'i18n'            => [
-				/* translators: Do not translate the [option] placeholder */
-				'unknown_shipping' => __( 'Unknown shipping option "[option]".', 'woocommerce-payments' ),
 			],
 			'checkout'        => [
-				'url'               => wc_get_checkout_url(),
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'    => WC()->cart->needs_shipping(),
@@ -696,23 +689,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Log errors coming from Payment Request
-	 */
-	public function ajax_log_errors() {
-		check_ajax_referer( 'wcpay-log-errors', 'security' );
-
-		if ( empty( $_POST['errors'] ) ) {
-			exit;
-		}
-
-		$errors = wc_clean( wp_unslash( $_POST['errors'] ) );
-
-		Logger::log( $errors );
-
-		exit;
 	}
 
 	/**

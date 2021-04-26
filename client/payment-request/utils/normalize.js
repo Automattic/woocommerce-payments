@@ -1,12 +1,12 @@
 /**
  * Normalizes incoming cart total items for use as a displayItems with the Stripe api.
  *
- * @param {Array}   cartTotalItems CartTotalItems to normalize.
- * @param {boolean} pending        Whether to mark items as pending or not.
+ * @param {Array} cartTotalItems CartTotalItems to normalize.
+ * @param {boolean} pending Whether to mark items as pending or not.
  *
  * @return {Array} An array of PaymentItems
  */
-const normalizeLineItems = ( cartTotalItems, pending = false ) => {
+export const normalizeLineItems = ( cartTotalItems, pending = false ) => {
 	return cartTotalItems
 		.map( ( cartTotalItem ) => {
 			return cartTotalItem.value
@@ -27,7 +27,7 @@ const normalizeLineItems = ( cartTotalItems, pending = false ) => {
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
-const normalizeOrderData = ( paymentData ) => {
+export const normalizeOrderData = ( paymentData ) => {
 	const name = paymentData.paymentMethod.billing_details.name;
 	const email = paymentData.paymentMethod.billing_details.email;
 	const phone = paymentData.paymentMethod.billing_details.phone;
@@ -60,7 +60,7 @@ const normalizeOrderData = ( paymentData ) => {
 			shipping?.recipient?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
 		shipping_last_name:
 			shipping?.recipient?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
-		// shipping_company: shipping.organization ?? '',
+		shipping_company: shipping.organization ?? '',
 		shipping_country: shipping.country ?? '',
 		shipping_address_1: shipping.addressLine?.[ 0 ] ?? '',
 		shipping_address_2: shipping.addressLine?.[ 1 ] ?? '',
@@ -90,7 +90,7 @@ const normalizeOrderData = ( paymentData ) => {
  *
  * @return {Object} The shipping address in the shape expected by the cart.
  */
-const normalizeShippingAddress = ( shippingAddress ) => {
+export const normalizeShippingAddress = ( shippingAddress ) => {
 	return {
 		/* eslint-disable camelcase */
 		first_name:
@@ -111,5 +111,3 @@ const normalizeShippingAddress = ( shippingAddress ) => {
 		/* eslint-enable camelcase */
 	};
 };
-
-export { normalizeLineItems, normalizeShippingAddress, normalizeOrderData };

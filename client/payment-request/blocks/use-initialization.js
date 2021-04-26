@@ -41,7 +41,7 @@ export const useInitialization = ( {
 			setPaymentRequestType( result.requestType || '' );
 			setCanMakePayment( result.canPay );
 		} );
-	}, [ stripe ] );
+	}, [ stripe, paymentRequest ] );
 
 	// When the payment button is clicked, update the request and show it.
 	const onButtonClick = useCallback( () => {

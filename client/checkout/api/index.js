@@ -321,7 +321,7 @@ export default class WCPayAPI {
 	/**
 	 * Updates cart with selected shipping option.
 	 *
-	 * @param {integer} shippingOption Shipping option id.
+	 * @param {Object} shippingOption Shipping option.
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	paymentRequestUpdateShippingDetails( shippingOption ) {

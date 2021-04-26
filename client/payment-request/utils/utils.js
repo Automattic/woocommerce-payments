@@ -4,7 +4,7 @@
  * Retrieves payment request data from global variable.
  *
  * @param {string} key The object property key.
- * @return {*}         The value of the parameter key or null.
+ * @return {mixed} Value of the object prop or null.
  */
 export const getPaymentRequestData = ( key ) => {
 	if (
@@ -53,7 +53,7 @@ export const getPaymentRequestOptions = () => {
  *
  * @param {Object} paymentRequest A Stripe PaymentRequest instance.
  *
- * @return {Promise<Object>} Object containing canPay and the requestType, which can be either
+ * @return {Promise} Object containing canPay and the requestType, which can be either
  * - payment_request_api
  * - apple_pay
  * - google_pay
@@ -80,7 +80,7 @@ export const canDoPaymentRequest = ( paymentRequest ) => {
 /**
  * Get WC AJAX endpoint URL.
  *
- * @param  {string} endpoint Endpoint.
+ * @param {string} endpoint Endpoint.
  * @return {string} URL with interpolated endpoint.
  */
 export const getPaymentRequestAjaxURL = ( endpoint ) =>
