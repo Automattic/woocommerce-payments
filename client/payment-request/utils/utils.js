@@ -26,3 +26,15 @@ export const getPaymentRequestAjaxURL = ( endpoint ) =>
 	getPaymentRequestData( 'wc_ajax_url' )
 		.toString()
 		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
+
+/**
+ * Get error messages from WooCommerce notice from server response.
+ *
+ * @param {string} notice Error notice.
+ * @return {string} Error messages.
+ */
+export const getErrorMessageFromNotice = ( notice ) => {
+	const div = document.createElement( 'div' );
+	div.innerHTML = notice.trim();
+	return div.firstChild ? div.firstChild.textContent : '';
+};

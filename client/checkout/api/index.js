@@ -315,9 +315,7 @@ export default class WCPayAPI {
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
 				...shippingAddress,
 			}
-		).then( ( response ) => {
-			return response;
-		} );
+		);
 	}
 
 	/**
@@ -336,9 +334,7 @@ export default class WCPayAPI {
 				is_product_page: getPaymentRequestData( 'is_product_page' ),
 				/* eslint-enable camelcase */
 			}
-		).then( ( response ) => {
-			return response;
-		} );
+		);
 	}
 
 	/**
@@ -351,8 +347,6 @@ export default class WCPayAPI {
 		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
 			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
-		} ).then( ( response ) => {
-			return response;
 		} );
 	}
 
@@ -363,13 +357,14 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	paymentRequestGetSelectedProductData( productData ) {
-		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
-			security: getPaymentRequestData( 'nonce' )
-				?.get_selected_product_data,
-			...productData,
-		} ).then( ( response ) => {
-			return response;
-		} );
+		return this.request(
+			getPaymentRequestAjaxURL( 'get_selected_product_data' ),
+			{
+				security: getPaymentRequestData( 'nonce' )
+					?.get_selected_product_data,
+				...productData,
+			}
+		);
 	}
 
 	/**
@@ -382,8 +377,6 @@ export default class WCPayAPI {
 		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
 			...paymentData,
-		} ).then( ( response ) => {
-			return response;
 		} );
 	}
 }

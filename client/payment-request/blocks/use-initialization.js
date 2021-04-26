@@ -3,7 +3,6 @@
  */
 import { useEffect, useState, useCallback } from '@wordpress/element';
 import { useStripe } from '@stripe/react-stripe-js';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -12,7 +11,6 @@ import {
 	getPaymentRequest,
 	updatePaymentRequest,
 	canDoPaymentRequest,
-	getErrorMessageFromNotice,
 } from '../stripe-utils';
 
 import {
@@ -33,7 +31,6 @@ export const useInitialization = ( {
 	onClick,
 	onClose,
 	onSubmit,
-	emitResponse,
 } ) => {
 	const stripe = useStripe();
 	/**
@@ -103,16 +100,17 @@ export const useInitialization = ( {
 		billing.cartTotalItems,
 	] );
 
-	const abortPayment = useCallback( ( paymentMethod ) => {
+	const abortPayment = useCallback( ( paymentMethod, message ) => {
 		paymentMethod.complete( 'fail' );
-		setIsProcessing( false );
 		setIsFinished( true );
+		setIsProcessing( false );
+		setExpressPaymentError( message );
 	}, [] );
 
-	const completePayment = useCallback( ( paymentMethod ) => {
-		paymentMethod.complete( 'success' );
+	const completePayment = useCallback( ( redirectUrl ) => {
 		setIsFinished( true );
 		setIsProcessing( false );
+		window.location = redirectUrl;
 	}, [] );
 
 	// Whenever paymentRequest changes, hook in event listeners.
@@ -131,44 +129,6 @@ export const useInitialization = ( {
 				onClose();
 			};
 
-			// const paymentMethodHandler = async ( paymentMethod ) => {
-			// 	// We retrieve `allowPrepaidCard` like this to ensure we default to false in the
-			// 	// event `allowPrepaidCard` isn't present on the server data object.
-			// 	// - TODO: Get prepaid card
-			// 	// const { allowPrepaidCard = false } = getStripeServerData();
-			// 	const allowPrepaidCard = true;
-			// 	if ( ! allowPrepaidCard && paymentMethod.source.card.funding ) {
-			// 		setExpressPaymentError(
-			// 			__(
-			// 				"Sorry, we're not accepting prepaid cards at this time.",
-			// 				'woocommerce-gateway-stripe'
-			// 			)
-			// 		);
-			// 		return;
-			// 	}
-
-			// 	// Kick off checkout processing step.
-			// 	const response = await api.paymentRequestCreateOrder(
-			// 		paymentRequestType,
-			// 		normalizeOrderDataForCheckout( paymentMethod )
-			// 	);
-
-			// 	// setPaymentRequestEventHandler(
-			// 	// 	'paymentMethodEvent',
-			// 	// 	paymentMethod
-			// 	// );
-
-			// 	if ( 'success' === response.result ) {
-			// 		paymentMethod.complete( 'success' );
-			// 		window.location = response.redirect;
-			// 	} else {
-			// 		paymentMethod.complete( 'fail' );
-			// 		setExpressPaymentError(
-			// 			getErrorMessageFromNotice( response.messages )
-			// 		);
-			// 	}
-			// };
-
 			// @ts-ignore
 			shippingAddressChangeEvent = paymentRequest.on(
 				'shippingaddresschange',
@@ -182,7 +142,13 @@ export const useInitialization = ( {
 			// @ts-ignore
 			paymentMethodChangeEvent = paymentRequest.on(
 				'paymentmethod',
-				( event ) => paymentMethodHandler( api, event )
+				( event ) =>
+					paymentMethodHandler(
+						api,
+						completePayment,
+						abortPayment,
+						event
+					)
 			);
 			// @ts-ignore
 			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );

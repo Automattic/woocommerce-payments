@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { normalizeShippingAddress, normalizeOrderData } from './utils';
+import {
+	normalizeShippingAddress,
+	normalizeOrderData,
+	getErrorMessageFromNotice,
+} from './utils';
 
 export const shippingAddressChangeHandler = async ( api, event ) => {
 	const response = await api.paymentRequestCalculateShippingOptions(
@@ -33,36 +37,36 @@ export const shippingOptionChangeHandler = async ( api, event ) => {
 	}
 };
 
-export const paymentMethodHandler = async ( api, event ) => {
+export const paymentMethodHandler = async (
+	api,
+	completePayment,
+	abortPayment,
+	event
+) => {
 	// Kick off checkout processing step.
 	const response = await api.paymentRequestCreateOrder(
 		normalizeOrderData( event )
 	);
 
 	if ( 'success' === response.result ) {
-		event.complete( 'success' );
-
 		try {
 			const confirmation = api.confirmIntent( response.redirect );
+			// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
+			event.complete( 'success' );
 
 			// `true` means there is no intent to confirm.
 			if ( true === confirmation ) {
-				window.location = response.redirect;
+				completePayment( response.redirect );
+			} else {
+				const { request } = confirmation;
+				const redirectUrl = await request;
+
+				completePayment( redirectUrl );
 			}
-
-			const { request } = confirmation;
-			const redirectUrl = await request;
-
-			window.location = redirectUrl;
 		} catch ( error ) {
-			// - TODO: Display error message
+			abortPayment( event, error );
 		}
-
 	} else {
-		event.complete( 'fail' );
-		// - TODO: Fix error message
-		// setExpressPaymentError(
-		// 	getErrorMessageFromNotice( response.messages )
-		// );
+		abortPayment( event, getErrorMessageFromNotice( response.messages ) );
 	}
 };

@@ -72,15 +72,6 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Generate error message HTML.
-		 *
-		 * @param  {string} message Error message.
-		 * @return {Object} Error message HTML.
-		 */
-		getErrorMessageHTML: ( message ) =>
-			$( '<div class="woocommerce-error" />' ).text( message ),
-
-		/**
 		 * Abort payment and display error messages.
 		 *
 		 * @param {PaymentResponse} payment Payment response instance.
@@ -94,7 +85,9 @@ jQuery( ( $ ) => {
 			const $container = $( '.woocommerce-notices-wrapper' ).first();
 
 			if ( $container.length ) {
-				$container.append( message );
+				$container.append(
+					$( '<div class="woocommerce-error" />' ).text( message )
+				);
 
 				$( 'html, body' ).animate(
 					{
@@ -110,15 +103,10 @@ jQuery( ( $ ) => {
 		/**
 		 * Complete payment.
 		 *
-		 * @param {PaymentResponse} payment Payment response instance.
-		 * @param {string}          url     Order thank you page URL.
+		 * @param {string} url Order thank you page URL.
 		 */
-		completePayment: ( payment, url ) => {
+		completePayment: ( url ) => {
 			wcpayPaymentRequest.block();
-
-			payment.complete( 'success' );
-
-			// Success, then redirect to the Thank You page.
 			window.location = url;
 		},
 
@@ -253,29 +241,13 @@ jQuery( ( $ ) => {
 			);
 
 			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler( api, event )
+				paymentMethodHandler(
+					api,
+					wcpayPaymentRequest.completePayment,
+					wcpayPaymentRequest.abortPayment,
+					event
+				)
 			);
-
-			// paymentRequest.on( 'paymentmethod', ( evt ) => {
-			// 	$.when(
-			// 		api.paymentRequestCreateOrder(
-			// 			paymentRequestType,
-			// 			normalizeOrderDataForCheckout( evt )
-			// 		)
-			// 	).then( ( response ) => {
-			// 		if ( 'success' === response.result ) {
-			// 			wcpayPaymentRequest.completePayment(
-			// 				evt,
-			// 				response.redirect
-			// 			);
-			// 		} else {
-			// 			wcpayPaymentRequest.abortPayment(
-			// 				evt,
-			// 				response.messages
-			// 			);
-			// 		}
-			// 	} );
-			// } );
 		},
 
 		getSelectedProductData: () => {
@@ -306,7 +278,7 @@ jQuery( ( $ ) => {
 				addon_value: addonValue,
 			};
 
-			api.paymentRequestGetSelectedProductData( data );
+			return api.paymentRequestGetSelectedProductData( data );
 		},
 
 		/**
