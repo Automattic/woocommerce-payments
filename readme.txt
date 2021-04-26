@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
+* Add - REST endpoint to capture payments by order ID
 
 = 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.
