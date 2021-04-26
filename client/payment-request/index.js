@@ -1,12 +1,10 @@
-/* global wcpayPaymentRequestParams, Stripe, jQuery, wc_add_to_cart_variation_params */
+/* global jQuery, wcpayPaymentRequestParams, wc_add_to_cart_variation_params */
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import WCPayAPI from '../checkout/api';
-import { getConfig } from 'utils/checkout';
-import { getAjaxURL } from './utils';
 
 import {
 	shippingAddressChangeHandler,
@@ -14,16 +12,13 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-// - TODO: Endpoints
-// - addToCart
-
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if ( wcpayPaymentRequestParams.has_block ) {
 		return;
 	}
 
-	const publishableKey = getConfig( 'publishableKey' );
+	const publishableKey = wcpayPaymentRequestParams.stripe.publishableKey;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -33,7 +28,7 @@ jQuery( ( $ ) => {
 	const api = new WCPayAPI(
 		{
 			publishableKey,
-			accountId: getConfig( 'accountId' ),
+			accountId: wcpayPaymentRequestParams.stripe.accountId,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -140,8 +135,6 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Adds the item to the cart and return cart details.
-		 *
-		 * @return {Object} AJAX request.
 		 */
 		addToCart: () => {
 			let productId = $( '.single_add_to_cart_button' ).val();
@@ -154,7 +147,6 @@ jQuery( ( $ ) => {
 			}
 
 			const data = {
-				security: wcpayPaymentRequestParams.nonce.add_to_cart,
 				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -163,7 +155,7 @@ jQuery( ( $ ) => {
 					: [],
 			};
 
-			// add addons data to the POST body
+			// Add addons data to the POST body
 			const formData = $( 'form.cart' ).serializeArray();
 			$.each( formData, ( i, field ) => {
 				if ( /^addon-/.test( field.name ) ) {
@@ -183,24 +175,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: getAjaxURL( 'add_to_cart' ),
-			} );
-		},
-
-		clearCart: () => {
-			const data = {
-				security: wcpayPaymentRequestParams.nonce.clear_cart,
-			};
-
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: getAjaxURL( 'clear_cart' ),
-				success: () => {},
-			} );
+			api.paymentRequestAddToCart( data );
 		},
 
 		getRequestOptionsFromLocal: () => {
@@ -283,38 +258,24 @@ jQuery( ( $ ) => {
 			);
 
 			// paymentRequest.on( 'paymentmethod', ( evt ) => {
-			// 	// Check if we allow prepaid cards.
-			// 	if (
-			// 		'no' ===
-			// 			wcpayPaymentRequestParams.stripe.allow_prepaid_card &&
-			// 		'prepaid' === evt.source.card.funding
-			// 	) {
-			// 		wcpayPaymentRequest.abortPayment(
-			// 			evt,
-			// 			wcpayPaymentRequest.getErrorMessageHTML(
-			// 				wcpayPaymentRequestParams.i18n.no_prepaid_card
-			// 			)
-			// 		);
-			// 	} else {
-			// 		$.when(
-			// 			api.paymentRequestCreateOrder(
-			// 				paymentRequestType,
-			// 				normalizeOrderDataForCheckout( evt )
-			// 			)
-			// 		).then( ( response ) => {
-			// 			if ( 'success' === response.result ) {
-			// 				wcpayPaymentRequest.completePayment(
-			// 					evt,
-			// 					response.redirect
-			// 				);
-			// 			} else {
-			// 				wcpayPaymentRequest.abortPayment(
-			// 					evt,
-			// 					response.messages
-			// 				);
-			// 			}
-			// 		} );
-			// 	}
+			// 	$.when(
+			// 		api.paymentRequestCreateOrder(
+			// 			paymentRequestType,
+			// 			normalizeOrderDataForCheckout( evt )
+			// 		)
+			// 	).then( ( response ) => {
+			// 		if ( 'success' === response.result ) {
+			// 			wcpayPaymentRequest.completePayment(
+			// 				evt,
+			// 				response.redirect
+			// 			);
+			// 		} else {
+			// 			wcpayPaymentRequest.abortPayment(
+			// 				evt,
+			// 				response.messages
+			// 			);
+			// 		}
+			// 	} );
 			// } );
 		},
 
@@ -336,8 +297,6 @@ jQuery( ( $ ) => {
 			);
 
 			const data = {
-				security:
-					wcpayPaymentRequestParams.nonce.get_selected_product_data,
 				// eslint-disable-next-line camelcase
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
@@ -348,11 +307,7 @@ jQuery( ( $ ) => {
 				addon_value: addonValue,
 			};
 
-			return $.ajax( {
-				type: 'POST',
-				data: data,
-				url: getAjaxURL( 'get_selected_product_data' ),
-			} );
+			api.paymentRequestGetSelectedProductData( data );
 		},
 
 		/**
