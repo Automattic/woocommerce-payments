@@ -40,17 +40,14 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
+	const { type, theme, height } = getPaymentRequestData( 'button' );
 	const isBranded = getPaymentRequestData( 'button' )?.is_branded;
 	const brandedType = getPaymentRequestData( 'button' )?.branded_type;
 	const isCustom = getPaymentRequestData( 'button' )?.is_custom;
-	const { theme, height } = getPaymentRequestData( 'button' );
 
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
-			// Not implemented branded buttons default to Stripe's button.
-			// Apple Pay buttons can also fall back to Stripe's button, as it's already branded.
-			// Set button type to default or buy, depending on branded type, to avoid issues with Stripe.
-			type: isBranded && 'long' === brandedType ? 'buy' : 'default',
+			type,
 			theme,
 			height: height + 'px',
 		},
@@ -58,6 +55,19 @@ const PaymentRequestExpressComponent = ( {
 
 	if ( ! canMakePayment || ! paymentRequest ) {
 		return null;
+	}
+
+	if ( isCustom ) {
+		return (
+			<CustomButton
+				onClick={ () => {
+					onButtonClick();
+					// Since we're using a custom button we must manually call
+					// `paymentRequest.show()`.
+					paymentRequest.show();
+				} }
+			/>
+		);
 	}
 
 	if ( isBranded && shouldUseGooglePayBrand() ) {
@@ -73,17 +83,12 @@ const PaymentRequestExpressComponent = ( {
 		);
 	}
 
-	if ( isCustom ) {
-		return (
-			<CustomButton
-				onClick={ () => {
-					onButtonClick();
-					// Since we're using a custom button we must manually call
-					// `paymentRequest.show()`.
-					paymentRequest.show();
-				} }
-			/>
-		);
+	if ( isBranded ) {
+		// Not implemented branded buttons default to Stripe's button.
+		// Apple Pay buttons can also fall back to Stripe's button, as it's already branded.
+		// Set button type to default or buy, depending on branded type, to avoid issues with Stripe.
+		paymentRequestButtonStyle.paymentRequestButton.type =
+			'long' === brandedType ? 'buy' : 'default';
 	}
 
 	return (
