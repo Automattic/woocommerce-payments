@@ -6,15 +6,15 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -114,18 +114,17 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -134,29 +133,28 @@ exports[`Dispute details screen renders correctly for bank_cannot_process disput
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Bank cannot process
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -174,15 +172,15 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -282,18 +280,17 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -302,29 +299,28 @@ exports[`Dispute details screen renders correctly for check_returned dispute 1`]
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Check returned
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -342,15 +338,15 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -456,18 +452,17 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -476,15 +471,15 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Credit not processed
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims that the purchased product was returned or the transaction was otherwise canceled, but you have not yet provided a refund or credit.
@@ -508,18 +503,17 @@ exports[`Dispute details screen renders correctly for credit_not_processed dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -537,15 +531,15 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -645,18 +639,17 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -665,29 +658,28 @@ exports[`Dispute details screen renders correctly for customer_initiated dispute
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Customer initiated
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -705,15 +697,15 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -813,18 +805,17 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -833,29 +824,28 @@ exports[`Dispute details screen renders correctly for debit_not_authorized dispu
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Debit not authorized
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -873,15 +863,15 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -987,18 +977,17 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1007,15 +996,15 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Duplicate
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims they were charged multiple times for the same product or service.
@@ -1045,18 +1034,17 @@ exports[`Dispute details screen renders correctly for duplicate dispute 1`] = `
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1074,15 +1062,15 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1188,18 +1176,17 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1208,15 +1195,15 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Fraudulent
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           This is the most common reason for a dispute, and happens when a cardholder claims that they didn’t authorize the payment. This can happen if the card was lost or stolen and used to make a fraudulent purchase. It can also happen if the cardholder doesn’t recognize the payment as it appears on the billing statement from their card issuer.
@@ -1243,18 +1230,17 @@ exports[`Dispute details screen renders correctly for fraudulent dispute 1`] = `
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1272,15 +1258,15 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1383,18 +1369,17 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1403,33 +1388,32 @@ exports[`Dispute details screen renders correctly for general dispute 1`] = `
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: General
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           This is an uncategorized dispute, so you should contact the customer for additional details to find out why the payment was disputed.
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1447,15 +1431,15 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1555,18 +1539,17 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1575,29 +1558,28 @@ exports[`Dispute details screen renders correctly for incorrect_account_details 
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Incorrect account details
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1615,15 +1597,15 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1723,18 +1705,17 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
         </div>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1743,29 +1724,28 @@ exports[`Dispute details screen renders correctly for insufficient_funds dispute
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Insufficient funds
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       />
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1783,15 +1763,15 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -1897,18 +1877,17 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1917,15 +1896,15 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Product not received
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims they did not receive the products or services purchased.
@@ -1949,18 +1928,17 @@ exports[`Dispute details screen renders correctly for product_not_received dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -1978,15 +1956,15 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2092,18 +2070,17 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2112,15 +2089,15 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Product unacceptable
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The product or service was received but was defective, damaged, or not as described.
@@ -2153,18 +2130,17 @@ exports[`Dispute details screen renders correctly for product_unacceptable dispu
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2182,15 +2158,15 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2296,18 +2272,17 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2316,15 +2291,15 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Subscription canceled
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The customer claims that you continued to charge them after a subscription was canceled.
@@ -2351,18 +2326,17 @@ exports[`Dispute details screen renders correctly for subscription_canceled disp
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2380,15 +2354,15 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
     class="wcpay-dispute-details woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute overview
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -2494,18 +2468,17 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
@@ -2514,15 +2487,15 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Dispute: Unrecognized
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <p>
           The customer doesn’t recognize the payment appearing on their card statement.
@@ -2546,18 +2519,17 @@ exports[`Dispute details screen renders correctly for unrecognized dispute 1`] =
         </p>
       </div>
       <div
-        class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+        class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
       >
         <div>
           <a
-            class="components-button is-button is-primary is-large"
-            data-link-type="wc-admin"
+            class="components-button is-primary"
             href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_asdfghjkl"
           >
             Challenge dispute
           </a>
           <button
-            class="components-button is-button is-default"
+            class="components-button is-secondary"
             type="button"
           >
             Accept dispute
