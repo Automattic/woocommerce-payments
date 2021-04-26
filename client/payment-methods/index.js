@@ -5,6 +5,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -13,6 +14,7 @@ import classNames from 'classnames';
 import './style.scss';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
+import PaymentMethodsSelector from 'settings/payment-methods-selector';
 
 const availableMethods = [
 	{
@@ -50,6 +52,10 @@ const availableMethods = [
 ];
 
 const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
+	const [
+		showPaymentMethodsSelector,
+		setShowPaymentMethodsSelector,
+	] = useState( false );
 	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
 		availableMethods.find( ( method ) => method.id === methodId )
 	);
@@ -88,51 +94,72 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 		}
 	};
 
+	const handleAddPaymentMethod = () => {
+		setShowPaymentMethodsSelector( true );
+	};
+
+	const renderPaymentMethodSelector = () => {
+		return (
+			<PaymentMethodsSelector
+				enabledPaymentMethods={ enabledMethodIds }
+				onClose={ () => setShowPaymentMethodsSelector( false ) }
+			/>
+		);
+	};
+
 	return (
-		<Card className="payment-methods">
-			<CardBody className="payment-methods__enabled-methods-container">
-				<OrderableList
-					onDragEnd={ handleDragEnd }
-					className="payment-methods__enabled-methods"
-				>
-					{ enabledMethods.map( ( { id, label, description } ) => (
-						<PaymentMethod
-							key={ id }
-							className={ classNames( 'payment-method', id ) }
-							onManageClick={ () => handleManageClick( id ) }
-							onDeleteClick={ () => handleDeleteClick( id ) }
-							label={ label }
-							description={ description }
-						/>
-					) ) }
-				</OrderableList>
-			</CardBody>
-			<CardBody className="payment-methods__available-methods-container">
-				<Button
-					isDefault
-					className="payment-methods__add-payment-method"
-					onClick={ () =>
-						console.debug(
-							'Add payment method clicked (not implemented)'
-						)
-					}
-				>
-					{ __( 'Add payment method', 'woocommerce-payments' ) }
-				</Button>
-				<ul className="payment-methods__available-methods">
-					{ disabledMethods.map( ( { id, label } ) => (
-						<li
-							key={ id }
-							className={ classNames(
-								'payment-methods__available-method',
-								id
-							) }
-							aria-label={ label }
-						/>
-					) ) }
-				</ul>
-			</CardBody>
-		</Card>
+		<>
+			{ showPaymentMethodsSelector && renderPaymentMethodSelector() }
+			<Card className="payment-methods">
+				<CardBody className="payment-methods__enabled-methods-container">
+					<OrderableList
+						onDragEnd={ handleDragEnd }
+						className="payment-methods__enabled-methods"
+					>
+						{ enabledMethods.map(
+							( { id, label, description } ) => (
+								<PaymentMethod
+									key={ id }
+									className={ classNames(
+										'payment-method',
+										id
+									) }
+									onManageClick={ () =>
+										handleManageClick( id )
+									}
+									onDeleteClick={ () =>
+										handleDeleteClick( id )
+									}
+									label={ label }
+									description={ description }
+								/>
+							)
+						) }
+					</OrderableList>
+				</CardBody>
+				<CardBody className="payment-methods__available-methods-container">
+					<Button
+						isDefault
+						className="payment-methods__add-payment-method"
+						onClick={ handleAddPaymentMethod }
+					>
+						{ __( 'Add payment method', 'woocommerce-payments' ) }
+					</Button>
+					<ul className="payment-methods__available-methods">
+						{ disabledMethods.map( ( { id, label } ) => (
+							<li
+								key={ id }
+								className={ classNames(
+									'payment-methods__available-method',
+									id
+								) }
+								aria-label={ label }
+							/>
+						) ) }
+					</ul>
+				</CardBody>
+			</Card>
+		</>
 	);
 };
 
