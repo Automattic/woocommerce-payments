@@ -65,7 +65,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				[
 					'status' => 'succeeded',
 					'id'     => $this->mock_intent_id,
-				],
+				]
 			);
 
 		$request = new WP_REST_Request( 'POST' );
@@ -95,7 +95,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				[
 					'status' => 'failed',
 					'id'     => $this->mock_intent_id,
-				],
+				]
 			);
 
 		$request = new WP_REST_Request( 'POST' );
