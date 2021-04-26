@@ -40,6 +40,6 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_account_data( $request ) {
-		return $this->forward_request( 'get_account_data', [ $request ] );
+		return WC_Payments::get_account_service()->get_cached_account_data();
 	}
 }

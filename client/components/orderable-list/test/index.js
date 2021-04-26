@@ -27,7 +27,11 @@ describe( 'OrderableList', () => {
 	} );
 
 	test( 'renders list with custom classes', () => {
-		render( <OrderableList className="some-class another-class" /> );
+		render(
+			<OrderableList className="some-class another-class">
+				<div>foo</div>
+			</OrderableList>
+		);
 		const listClasses = screen.getByRole( 'list' ).className.split( ' ' );
 		expect( listClasses ).toContain( 'some-class' );
 		expect( listClasses ).toContain( 'another-class' );

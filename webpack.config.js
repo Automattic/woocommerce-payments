@@ -66,17 +66,6 @@ const webpackConfig = {
 				exclude: /node_modules/,
 				loader: 'url-loader',
 			},
-			{
-				test: /\.svg$/,
-				use: [
-					{
-						loader: 'file-loader',
-						options: {
-							name: 'images/[hash]-[name].[ext]',
-						},
-					},
-				],
-			},
 		],
 	},
 	resolve: {
