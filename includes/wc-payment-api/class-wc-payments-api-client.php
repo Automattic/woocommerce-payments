@@ -692,6 +692,8 @@ class WC_Payments_API_Client {
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
+	 *
+	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_account_data() {
 		return $this->request(
