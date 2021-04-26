@@ -82,26 +82,6 @@ if ( paymentMethodSettingsContainer ) {
 	);
 }
 
-// Payment Request button settings migrated and adapted from Stripe gateway extension.
-const findParent = ( el, selector ) => {
-	while (
-		( el = el.parentElement ) &&
-		! ( el.matches || el.matchesSelector ).call( el, selector )
-	);
-
-	return el;
-};
-
-const toggleDisplay = ( el, display ) => {
-	if ( el instanceof Element || el instanceof HTMLElement ) {
-		if ( display ) {
-			el.style.display = '';
-		} else {
-			el.style.display = 'none';
-		}
-	}
-};
-
 const paymentRequest = document.getElementById(
 	'woocommerce_woocommerce_payments_payment_request'
 );
@@ -109,86 +89,108 @@ const paymentRequestButtonType = document.getElementById(
 	'woocommerce_woocommerce_payments_payment_request_button_type'
 );
 
-// Payment Request button event listeners.
-paymentRequest.addEventListener( 'change', () => {
-	const inputIds = [
-		'woocommerce_woocommerce_payments_payment_request_button_theme',
-		'woocommerce_woocommerce_payments_payment_request_button_type',
-		'woocommerce_woocommerce_payments_payment_request_button_height',
-		'woocommerce_woocommerce_payments_payment_request_button_locations',
-	];
+if ( paymentRequest && paymentRequestButtonType ) {
+	// Payment Request button settings migrated and adapted from Stripe gateway extension.
+	const findParent = ( el, selector ) => {
+		while (
+			( el = el.parentElement ) &&
+			! ( el.matches || el.matchesSelector ).call( el, selector )
+		);
 
-	if ( paymentRequest.checked ) {
-		inputIds.forEach( ( id ) => {
+		return el;
+	};
+
+	const toggleDisplay = ( el, display ) => {
+		if ( el instanceof Element || el instanceof HTMLElement ) {
+			if ( display ) {
+				el.style.display = '';
+			} else {
+				el.style.display = 'none';
+			}
+		}
+	};
+
+	// Payment Request button event listeners.
+	paymentRequest.addEventListener( 'change', () => {
+		const inputIds = [
+			'woocommerce_woocommerce_payments_payment_request_button_theme',
+			'woocommerce_woocommerce_payments_payment_request_button_type',
+			'woocommerce_woocommerce_payments_payment_request_button_height',
+			'woocommerce_woocommerce_payments_payment_request_button_locations',
+		];
+
+		if ( paymentRequest.checked ) {
+			inputIds.forEach( ( id ) => {
+				toggleDisplay(
+					findParent( document.getElementById( id ), 'tr' ),
+					true
+				);
+			} );
+		} else {
+			inputIds.forEach( ( id ) => {
+				toggleDisplay(
+					findParent( document.getElementById( id ), 'tr' ),
+					false
+				);
+			} );
+		}
+
+		paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
+	} );
+
+	// Toggle Custom Payment Request configs.
+	paymentRequestButtonType.addEventListener( 'change', () => {
+		if (
+			'custom' === paymentRequestButtonType.value &&
+			paymentRequest.checked
+		) {
 			toggleDisplay(
-				findParent( document.getElementById( id ), 'tr' ),
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_label'
+					),
+					'tr'
+				),
 				true
 			);
-		} );
-	} else {
-		inputIds.forEach( ( id ) => {
+		} else {
 			toggleDisplay(
-				findParent( document.getElementById( id ), 'tr' ),
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_label'
+					),
+					'tr'
+				),
 				false
 			);
-		} );
-	}
+		}
 
+		if (
+			'branded' === paymentRequestButtonType.value &&
+			paymentRequest.checked
+		) {
+			toggleDisplay(
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_branded_type'
+					),
+					'tr'
+				),
+				true
+			);
+		} else {
+			toggleDisplay(
+				findParent(
+					document.getElementById(
+						'woocommerce_woocommerce_payments_payment_request_button_branded_type'
+					),
+					'tr'
+				),
+				false
+			);
+		}
+	} );
+
+	paymentRequest.dispatchEvent( new Event( 'change' ) );
 	paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
-} );
-
-// Toggle Custom Payment Request configs.
-paymentRequestButtonType.addEventListener( 'change', () => {
-	if (
-		'custom' === paymentRequestButtonType.value &&
-		paymentRequest.checked
-	) {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_label'
-				),
-				'tr'
-			),
-			true
-		);
-	} else {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_label'
-				),
-				'tr'
-			),
-			false
-		);
-	}
-
-	if (
-		'branded' === paymentRequestButtonType.value &&
-		paymentRequest.checked
-	) {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_branded_type'
-				),
-				'tr'
-			),
-			true
-		);
-	} else {
-		toggleDisplay(
-			findParent(
-				document.getElementById(
-					'woocommerce_woocommerce_payments_payment_request_button_branded_type'
-				),
-				'tr'
-			),
-			false
-		);
-	}
-} );
-
-paymentRequest.dispatchEvent( new Event( 'change' ) );
-paymentRequestButtonType.dispatchEvent( new Event( 'change' ) );
+}
