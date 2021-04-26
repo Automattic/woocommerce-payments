@@ -6,20 +6,17 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
-use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
  */
 class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
-
 	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name     = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$this->settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		$this->name    = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->gateway = WC_Payments::get_gateway();
 	}
 
 	/**
@@ -28,7 +25,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
-		return WC_Payments::get_gateway()->is_available();
+		return $this->gateway->is_available();
 	}
 
 	/**
@@ -65,11 +62,11 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	public function get_payment_method_data() {
 		return array_merge(
 			[
-				'title'       => isset( $this->settings['title'] ) ? $this->settings['title'] : '',
-				'description' => isset( $this->settings['description'] ) ? $this->settings['description'] : '',
+				'title'       => $this->gateway->get_option( 'title', '' ),
+				'description' => $this->gateway->get_option( 'description', '' ),
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
-			WC_Payments::get_gateway()->get_payment_fields_js_config()
+			$this->gateway->get_payment_fields_js_config()
 		);
 	}
 }
