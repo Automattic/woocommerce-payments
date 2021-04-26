@@ -8,25 +8,8 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  */
 import { getPaymentRequestData } from '../utils';
 import { useInitialization } from './use-initialization';
-import { ThreeDSecurePaymentHandler } from '../three-d-secure';
 import { GooglePayButton, shouldUseGooglePayBrand } from './branded-buttons';
 import { CustomButton } from './custom-button';
-
-/**
- * @typedef {import('../stripe-utils/type-defs').Stripe} Stripe
- * @typedef {import('../stripe-utils/type-defs').StripePaymentRequest} StripePaymentRequest
- * @typedef {import('@woocommerce/type-defs/registered-payment-method-props').RegisteredPaymentMethodProps} RegisteredPaymentMethodProps
- */
-
-/**
- * @typedef {Object} WithStripe
- *
- * @property {Stripe} [stripe] Stripe api (might not be present)
- */
-
-/**
- * @typedef {RegisteredPaymentMethodProps & WithStripe} StripeRegisteredPaymentMethodProps
- */
 
 /**
  * PaymentRequestExpressComponent
@@ -39,7 +22,6 @@ const PaymentRequestExpressComponent = ( {
 	api,
 	shippingData,
 	billing,
-	// eventRegistration,
 	onSubmit,
 	setExpressPaymentError,
 	emitResponse,
@@ -48,14 +30,10 @@ const PaymentRequestExpressComponent = ( {
 } ) => {
 	const {
 		paymentRequest,
-		// paymentRequestEventHandlers,
-		// clearPaymentRequestEventHandler,
+		// TODO: Add loading indicator when isProcessing.
 		// isProcessing,
 		canMakePayment,
 		onButtonClick,
-		// abortPayment,
-		// completePayment,
-		// paymentRequestType,
 	} = useInitialization( {
 		api,
 		billing,
@@ -139,7 +117,6 @@ export const PaymentRequestExpress = ( props ) => {
 	return (
 		<Elements stripe={ stripe }>
 			<PaymentRequestExpressComponent { ...props } />
-			<ThreeDSecurePaymentHandler { ...props } />
 		</Elements>
 	);
 };

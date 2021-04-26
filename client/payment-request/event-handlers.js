@@ -41,7 +41,23 @@ export const paymentMethodHandler = async ( api, event ) => {
 
 	if ( 'success' === response.result ) {
 		event.complete( 'success' );
-		window.location = response.redirect;
+
+		try {
+			const confirmation = api.confirmIntent( response.redirect );
+
+			// `true` means there is no intent to confirm.
+			if ( true === confirmation ) {
+				window.location = response.redirect;
+			}
+
+			const { request } = confirmation;
+			const redirectUrl = await request;
+
+			window.location = redirectUrl;
+		} catch ( error ) {
+			// - TODO: Display error message
+		}
+
 	} else {
 		event.complete( 'fail' );
 		// - TODO: Fix error message

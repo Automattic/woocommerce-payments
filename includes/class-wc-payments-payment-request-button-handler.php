@@ -560,7 +560,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		$payment_request_params = [
-			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'ajax_url'        => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => [
 				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),

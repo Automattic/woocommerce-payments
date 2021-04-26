@@ -44,7 +44,6 @@ jQuery( ( $ ) => {
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayPaymentRequest = {
-
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
 			const data = {};

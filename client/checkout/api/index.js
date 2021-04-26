@@ -214,7 +214,13 @@ export default class WCPayAPI {
 					( result.error.setup_intent &&
 						result.error.setup_intent.id );
 
-				const ajaxCall = this.request( getConfig( 'ajaxUrl' ), {
+				// In case this is being called via payment request button from a product page,
+				// the getConfig function won't work, so fallback to getPaymentRequestData.
+				const ajaxUrl =
+					getPaymentRequestData( 'ajax_url' ) ??
+					getConfig( 'ajaxUrl' );
+
+				const ajaxCall = this.request( ajaxUrl, {
 					action: 'update_order_status',
 					// eslint-disable-next-line camelcase
 					order_id: orderId,
