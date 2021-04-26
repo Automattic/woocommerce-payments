@@ -251,9 +251,7 @@ jQuery( ( $ ) => {
 
 			const paymentRequest = stripe.paymentRequest( options );
 
-			const elements = stripe.elements( {
-				locale: wcpayPaymentRequestParams.button.locale,
-			} );
+			const elements = stripe.elements();
 			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
 				elements,
 				paymentRequest

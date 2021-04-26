@@ -45,7 +45,6 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
-				locale: getConfig( 'locale' ),
 			} );
 		}
 		return this.stripe;
