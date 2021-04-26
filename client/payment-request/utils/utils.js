@@ -22,7 +22,7 @@ export const getPaymentRequestData = ( key ) => {
  * @param  {string} endpoint Endpoint.
  * @return {string} URL with interpolated endpoint.
  */
-export const getAjaxURL = ( endpoint ) =>
+export const getPaymentRequestAjaxURL = ( endpoint ) =>
 	getPaymentRequestData( 'ajax_url' )
 		.toString()
 		.replace( '%%endpoint%%', 'wcpay_' + endpoint );

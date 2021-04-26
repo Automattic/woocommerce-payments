@@ -4,6 +4,10 @@
  * Internal dependencies
  */
 import { getConfig } from 'utils/checkout';
+import {
+	getPaymentRequestData,
+	getPaymentRequestAjaxURL,
+} from '../../payment-request/utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -232,7 +236,10 @@ export default class WCPayAPI {
 				}
 
 				return verificationCall.then( ( response ) => {
-					const result = JSON.parse( response );
+					const result =
+						'string' === typeof response
+							? JSON.parse( response )
+							: response;
 
 					if ( result.error ) {
 						throw result.error;
@@ -286,4 +293,91 @@ export default class WCPayAPI {
 		} );
 	}
 
+	/**
+	 * Submits shipping address to get available shipping options
+	 * from Payment Request button.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'get_shipping_options' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.shipping,
+				// eslint-disable-next-line camelcase
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				...shippingAddress,
+			}
+		).then( ( response ) => {
+			return response;
+		} );
+	}
+
+	/**
+	 * Updates cart with selected shipping option.
+	 *
+	 * @param {integer} shippingOption Shipping option id.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestUpdateShippingDetails( shippingOption ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'update_shipping_method' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.update_shipping,
+				/* eslint-disable camelcase */
+				shipping_method: [ shippingOption.id ],
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				/* eslint-enable camelcase */
+			}
+		).then( ( response ) => {
+			return response;
+		} );
+	}
+
+	/**
+	 * Add product to cart from variable product page.
+	 *
+	 * @param {Object} productData Product data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestAddToCart( productData ) {
+		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
+			...productData,
+		} ).then( ( response ) => {
+			return response;
+		} );
+	}
+
+	/**
+	 * Get selected product data from variable product page.
+	 *
+	 * @param {Object} productData Product data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestGetSelectedProductData( productData ) {
+		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
+			security: getPaymentRequestData( 'nonce' )
+				?.get_selected_product_data,
+			...productData,
+		} ).then( ( response ) => {
+			return response;
+		} );
+	}
+
+	/**
+	 * Creates order based on Payment Request payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCreateOrder( paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			...paymentData,
+		} ).then( ( response ) => {
+			return response;
+		} );
+	}
 }

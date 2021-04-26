@@ -559,8 +559,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		$stripe_params = [
+		$payment_request_params = [
 			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'stripe'          => [
+				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
+			],
 			'nonce'           => [
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
@@ -603,7 +607,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
-		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $stripe_params );
+		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 

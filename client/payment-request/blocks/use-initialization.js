@@ -115,7 +115,7 @@ export const useInitialization = ( {
 		setIsProcessing( false );
 	}, [] );
 
-	// whenever paymentRequest changes, hook in event listeners.
+	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
 		const noop = { removeAllListeners: () => void null };
 		let shippingAddressChangeEvent = noop,
@@ -172,17 +172,17 @@ export const useInitialization = ( {
 			// @ts-ignore
 			shippingAddressChangeEvent = paymentRequest.on(
 				'shippingaddresschange',
-				( event ) => shippingAddressChangeHandler( event )
+				( event ) => shippingAddressChangeHandler( api, event )
 			);
 			// @ts-ignore
 			shippingOptionChangeEvent = paymentRequest.on(
 				'shippingoptionchange',
-				( event ) => shippingOptionChangeHandler( event )
+				( event ) => shippingOptionChangeHandler( api, event )
 			);
 			// @ts-ignore
 			paymentMethodChangeEvent = paymentRequest.on(
 				'paymentmethod',
-				( event ) => paymentMethodHandler( event )
+				( event ) => paymentMethodHandler( api, event )
 			);
 			// @ts-ignore
 			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );

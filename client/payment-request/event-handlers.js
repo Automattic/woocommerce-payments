@@ -1,15 +1,10 @@
 /**
  * Internal dependencies
  */
-import {
-	paymentRequestCalculateShippingOptions,
-	paymentRequestUpdateShippingDetails,
-	paymentRequestCreateOrder,
-} from './api';
 import { normalizeShippingAddress, normalizeOrderData } from './utils';
 
-export const shippingAddressChangeHandler = async ( event ) => {
-	const response = await paymentRequestCalculateShippingOptions(
+export const shippingAddressChangeHandler = async ( api, event ) => {
+	const response = await api.paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
 
@@ -22,8 +17,8 @@ export const shippingAddressChangeHandler = async ( event ) => {
 	} );
 };
 
-export const shippingOptionChangeHandler = async ( event ) => {
-	const response = await paymentRequestUpdateShippingDetails( event );
+export const shippingOptionChangeHandler = async ( api, event ) => {
+	const response = await api.paymentRequestUpdateShippingDetails( event );
 
 	if ( 'success' === response.result ) {
 		event.updateWith( {
@@ -38,9 +33,9 @@ export const shippingOptionChangeHandler = async ( event ) => {
 	}
 };
 
-export const paymentMethodHandler = async ( event ) => {
+export const paymentMethodHandler = async ( api, event ) => {
 	// Kick off checkout processing step.
-	const response = await paymentRequestCreateOrder(
+	const response = await api.paymentRequestCreateOrder(
 		normalizeOrderData( event )
 	);
 

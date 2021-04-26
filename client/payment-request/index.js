@@ -246,15 +246,15 @@ jQuery( ( $ ) => {
 			} );
 
 			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				shippingAddressChangeHandler( event )
+				shippingAddressChangeHandler( api, event )
 			);
 
 			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				shippingOptionChangeHandler( event )
+				shippingOptionChangeHandler( api, event )
 			);
 
 			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler( event )
+				paymentMethodHandler( api, event )
 			);
 
 			// paymentRequest.on( 'paymentmethod', ( evt ) => {

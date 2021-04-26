@@ -41,6 +41,36 @@ export const paymentRequestUpdateShippingDetails = ( shippingOption ) => {
 };
 
 /**
+ * Add product to cart from variable product page.
+ *
+ * @param {Object} productData Product data.
+ * @return {Promise} Promise for the request to the server.
+ */
+export const paymentRequestAddToCart = ( productData ) => {
+	return request( getAjaxURL( 'add_to_cart' ), {
+		security: getPaymentRequestData( 'nonce' )?.add_to_cart,
+		...productData,
+	} ).then( ( response ) => {
+		return JSON.parse( response );
+	} );
+};
+
+/**
+ * Get selected product data from variable product page.
+ *
+ * @param {Object} productData Product data.
+ * @return {Promise} Promise for the request to the server.
+ */
+export const paymentRequestGetSelectedProductData = ( productData ) => {
+	return request( getAjaxURL( 'add_to_cart' ), {
+		security: getPaymentRequestData( 'nonce' )?.get_selected_product_data,
+		...productData,
+	} ).then( ( response ) => {
+		return JSON.parse( response );
+	} );
+};
+
+/**
  * Creates order based on Payment Request payment method.
  *
  * @param {Object} paymentData Order data.
@@ -49,7 +79,6 @@ export const paymentRequestUpdateShippingDetails = ( shippingOption ) => {
 export const paymentRequestCreateOrder = ( paymentData ) => {
 	return request( getAjaxURL( 'create_order' ), {
 		_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
-		// eslint-disable-next-line camelcase
 		...paymentData,
 	} ).then( ( response ) => {
 		return JSON.parse( response );
