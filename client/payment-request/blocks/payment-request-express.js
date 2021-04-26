@@ -6,9 +6,9 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
  */
-import { getPaymentRequestData } from '../utils';
+import { getPaymentRequestData, shouldUseGooglePayBrand } from '../utils';
 import { useInitialization } from './use-initialization';
-import { GooglePayButton, shouldUseGooglePayBrand } from './branded-buttons';
+import { GooglePayButton } from './branded-buttons';
 import { CustomButton } from './custom-button';
 
 /**

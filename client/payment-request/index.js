@@ -12,7 +12,11 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import { getPaymentRequestOptions, canDoPaymentRequest } from './utils';
+import {
+	shouldUseGooglePayBrand,
+	getPaymentRequestOptions,
+	canDoPaymentRequest,
+} from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -297,7 +301,7 @@ jQuery( ( $ ) => {
 			}
 
 			if ( wcpayPaymentRequestParams.button.is_branded ) {
-				if ( wcpayPaymentRequest.shouldUseGooglePayBrand() ) {
+				if ( shouldUseGooglePayBrand() ) {
 					button = wcpayPaymentRequest.createGooglePayButton();
 					// Add flag to be sure that created button is branded rather than fallback element.
 					button.data( 'isBranded', true );
@@ -341,17 +345,6 @@ jQuery( ( $ ) => {
 			prButton &&
 			'function' === typeof prButton.data &&
 			prButton.data( 'isBranded' ),
-
-		shouldUseGooglePayBrand: () => {
-			const ua = window.navigator.userAgent.toLowerCase();
-			const isChrome =
-				/chrome/.test( ua ) &&
-				! /edge|edg|opr|brave\//.test( ua ) &&
-				'Google Inc.' === window.navigator.vendor;
-			// newer versions of Brave do not have the userAgent string
-			const isBrave = isChrome && window.navigator.brave;
-			return isChrome && ! isBrave;
-		},
 
 		createGooglePayButton: () => {
 			const allowedThemes = [ 'dark', 'light' ];

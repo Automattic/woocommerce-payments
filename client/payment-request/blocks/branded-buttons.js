@@ -8,17 +8,6 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { getPaymentRequestData } from '../utils';
 
-export const shouldUseGooglePayBrand = () => {
-	const ua = window.navigator.userAgent.toLowerCase();
-	const isChrome =
-		/chrome/.test( ua ) &&
-		! /edge|edg|opr|brave\//.test( ua ) &&
-		'Google Inc.' === window.navigator.vendor;
-	// newer versions of Brave do not have the userAgent string
-	const isBrave = isChrome && window.navigator.brave;
-	return isChrome && ! isBrave;
-};
-
 const useImageOrDefault = ( url, defaultUrl ) => {
 	const [ state, setState ] = useState( url );
 	useEffect( () => {
