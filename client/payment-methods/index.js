@@ -133,7 +133,6 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 				</CardBody>
 				<CardBody className="payment-methods__available-methods-container">
 					<Button
-						isDefault
 						className="payment-methods__add-payment-method"
 						onClick={ () =>
 							setPaymentMethodsSelectorModalVisible( true )
