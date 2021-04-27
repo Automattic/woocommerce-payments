@@ -21,8 +21,8 @@ const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
 	const [ sectionsStatus, setSectionsStatus ] = useState( {
 		checkout: true,
-		productPage: false,
-		cart: false,
+		productPage: true,
+		cart: true,
 	} );
 
 	const makeHandleSectionStatusChange = ( section ) => ( status ) => {

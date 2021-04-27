@@ -38,11 +38,11 @@ describe( 'DigitalWallets', () => {
 		expect( checkoutCheckbox.disabled ).toBeFalsy();
 		expect( checkoutCheckbox.checked ).toBeTruthy();
 		expect( productPageCheckbox.disabled ).toBeFalsy();
-		expect( productPageCheckbox.checked ).toBeFalsy();
+		expect( productPageCheckbox.checked ).toBeTruthy();
 		expect( cartCheckbox.disabled ).toBeFalsy();
-		expect( cartCheckbox.checked ).toBeFalsy();
+		expect( cartCheckbox.checked ).toBeTruthy();
 
-		// enabling the product page location.
+		// disabling the product page location.
 		userEvent.click( screen.getByText( 'Product page' ) );
 		// disabling the checkout location.
 		userEvent.click( screen.getByText( 'Checkout' ) );
@@ -69,12 +69,12 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		// only the product page checkbox is checked once the feature is enabled again.
+		// only the cart checkbox is checked once the feature is enabled again.
 		expect( checkoutCheckbox.disabled ).toBeFalsy();
 		expect( checkoutCheckbox.checked ).toBeFalsy();
 		expect( productPageCheckbox.disabled ).toBeFalsy();
-		expect( productPageCheckbox.checked ).toBeTruthy();
+		expect( productPageCheckbox.checked ).toBeFalsy();
 		expect( cartCheckbox.disabled ).toBeFalsy();
-		expect( cartCheckbox.checked ).toBeFalsy();
+		expect( cartCheckbox.checked ).toBeTruthy();
 	} );
 } );
