@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * REST controller for order processing.
  */
@@ -43,30 +45,67 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/capture',
+			$this->rest_base . '/(?P<order_id>\w+)/process_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'capture_order' ],
+				'callback'            => [ $this, 'process_payment' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [ 'payment_intent_id' ],
+				'args'                => [
+					'payment_intent_id' => [
+						'required' => true,
+					],
+				],
 			]
 		);
 	}
 
 	/**
-	 * Capture an order.
+	 * Given an intent ID and an order ID, add the intent ID to the order and capture it.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function capture_order( $request ) {
-		$order_id = $request['order_id'];
-		$order    = wc_get_order( $order_id );
-		if ( ! $order ) {
-			return new WP_Error( 'wcpay_missing_order', 'Order not found', [ 'status' => 404 ] );
+	public function process_payment( $request ) {
+		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = $request['order_id'];
+			$order     = wc_get_order( $order_id );
+			if ( ! $order ) {
+				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			$intent = $this->api_client->get_intent( $intent_id );
+
+			// Do not process intents that can't be captured.
+			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
+				return rest_ensure_response(
+					[
+						'status' => 'failed',
+						'id'     => $intent_id,
+					]
+				);
+			}
+
+			// Set the payment method on the order.
+			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+			// Mark the order as paid for with WCPay and the intent.
+			$this->gateway->attach_intent_info_to_order(
+				$order,
+				$intent->get_id(),
+				$intent->get_status(),
+				$intent->get_charge_id(),
+				$intent->get_customer_id(),
+				$intent->get_payment_method_id(),
+				$intent->get_currency()
+			);
+
+			// Capture the intent.
+			$result = $this->gateway->capture_charge( $order );
+
+			return rest_ensure_response( $result );
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to process order payment via REST API: ' . $e );
+			return new WP_Error( 'wcpay_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
-
-		$result = $this->gateway->capture_charge( $order );
-
-		return rest_ensure_response( $result );
 	}
 }

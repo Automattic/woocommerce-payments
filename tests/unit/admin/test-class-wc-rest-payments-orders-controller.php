@@ -54,8 +54,19 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_capture_order_success() {
+	public function test_process_payment_success() {
 		$order = $this->create_mock_order();
+
+		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_status' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
 
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -68,10 +79,19 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params( [ 'order_id' => $order->get_id() ] );
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' );
 
-		$response      = $this->controller->capture_order( $request );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response      = $this->controller->process_payment( $request );
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
@@ -84,24 +104,37 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_capture_order_failed() {
+	public function test_process_payment_intent_non_capturable() {
 		$order = $this->create_mock_order();
 
-		$this->mock_gateway
+		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_status' )
+			->willReturn( 'succeeded' );
+
+		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ) )
-			->willReturn(
-				[
-					'status' => 'failed',
-					'id'     => $this->mock_intent_id,
-				]
-			);
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
 
 		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params( [ 'order_id' => $order->get_id() ] );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
 
-		$response      = $this->controller->capture_order( $request );
+		$response      = $this->controller->process_payment( $request );
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
@@ -114,11 +147,40 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_capture_order_not_found() {
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params( [ 'order_id' => 'not_an_order_1234' ] );
+	public function test_process_payment_handles_exceptions() {
+		$order = $this->create_mock_order();
 
-		$response = $this->controller->capture_order( $request );
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willThrowException( new Exception( 'test error' ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->process_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 500, $data['status'] );
+	}
+
+	public function test_process_payment_not_found() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => 'not_an_id',
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->process_payment( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();

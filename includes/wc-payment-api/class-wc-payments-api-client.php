@@ -1270,6 +1270,8 @@ class WC_Payments_API_Client {
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
+			$intention_array['customer'] ?? $charge['customer'] ?? null,
+			$intention_array['payment_method'] ?? $charge['payment_method'] ?? $intention_array['source'] ?? null,
 			$created,
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,

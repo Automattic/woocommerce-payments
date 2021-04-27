@@ -93,6 +93,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 			self::PAYMENT_INTENT_ID,
 			1500,
 			'usd',
+			'cus_12345',
+			'pm_12345',
 			new DateTime(),
 			'succeeded',
 			self::CHARGE_ID,
