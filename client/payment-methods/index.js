@@ -53,8 +53,8 @@ const availableMethods = [
 
 const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 	const [
-		showPaymentMethodsSelector,
-		setShowPaymentMethodsSelector,
+		isPaymentMethodsSelectorModalVisible,
+		setPaymentMethodsSelectorModalVisible,
 	] = useState( false );
 	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
 		availableMethods.find( ( method ) => method.id === methodId )
@@ -94,22 +94,16 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 		}
 	};
 
-	const handleAddPaymentMethod = () => {
-		setShowPaymentMethodsSelector( true );
-	};
-
-	const renderPaymentMethodSelector = () => {
-		return (
-			<PaymentMethodsSelector
-				enabledPaymentMethods={ enabledMethodIds }
-				onClose={ () => setShowPaymentMethodsSelector( false ) }
-			/>
-		);
-	};
-
 	return (
 		<>
-			{ showPaymentMethodsSelector && renderPaymentMethodSelector() }
+			{ isPaymentMethodsSelectorModalVisible && (
+				<PaymentMethodsSelector
+					enabledPaymentMethods={ enabledMethodIds }
+					onClose={ () =>
+						setPaymentMethodsSelectorModalVisible( false )
+					}
+				/>
+			) }
 			<Card className="payment-methods">
 				<CardBody className="payment-methods__enabled-methods-container">
 					<OrderableList
@@ -141,7 +135,9 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 					<Button
 						isDefault
 						className="payment-methods__add-payment-method"
-						onClick={ handleAddPaymentMethod }
+						onClick={ () =>
+							setPaymentMethodsSelectorModalVisible( true )
+						}
 					>
 						{ __( 'Add payment method', 'woocommerce-payments' ) }
 					</Button>
