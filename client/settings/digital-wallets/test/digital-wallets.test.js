@@ -10,14 +10,19 @@ import userEvent from '@testing-library/user-event';
 import DigitalWallets from '..';
 
 describe( 'DigitalWallets', () => {
-	it( 'toggles the payment method locations visibility', async () => {
+	it( 'toggles the payment method locations status', async () => {
 		render( <DigitalWallets /> );
 
-		expect(
-			screen.queryByText(
-				'Show digital wallets & express payment methods on:'
-			)
-		).not.toBeInTheDocument();
+		const [
+			,
+			checkoutCheckbox,
+			productPageCheckbox,
+			cartCheckbox,
+		] = screen.getAllByRole( 'checkbox' );
+
+		expect( checkoutCheckbox.disabled ).toBeTruthy();
+		expect( productPageCheckbox.disabled ).toBeTruthy();
+		expect( cartCheckbox.disabled ).toBeTruthy();
 
 		userEvent.click(
 			screen.getByText(
@@ -25,11 +30,9 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		expect(
-			await screen.findByText(
-				'Show digital wallets & express payment methods on:'
-			)
-		).toBeInTheDocument();
+		expect( checkoutCheckbox.disabled ).toBeFalsy();
+		expect( productPageCheckbox.disabled ).toBeFalsy();
+		expect( cartCheckbox.disabled ).toBeFalsy();
 
 		userEvent.click(
 			screen.getByText(
@@ -37,10 +40,8 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		expect(
-			screen.queryByText(
-				'Show digital wallets & express payment methods on:'
-			)
-		).not.toBeInTheDocument();
+		expect( checkoutCheckbox.disabled ).toBeTruthy();
+		expect( productPageCheckbox.disabled ).toBeTruthy();
+		expect( cartCheckbox.disabled ).toBeTruthy();
 	} );
 } );

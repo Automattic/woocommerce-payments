@@ -9,7 +9,6 @@ import {
 	CardBody,
 	CardDivider,
 	CheckboxControl,
-	Animate,
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
@@ -21,8 +20,9 @@ import './style.scss';
 const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
 	const [ sectionsStatus, setSectionsStatus ] = useState( {
-		productPage: false,
-		cart: false,
+		checkout: true,
+		productPage: true,
+		cart: true,
 	} );
 
 	const makeHandleSectionStatusChange = ( section ) => ( status ) => {
@@ -72,7 +72,7 @@ const DigitalWallets = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="/TODO-google"
+									href="https://androidpay.developers.google.com/terms/sellertos"
 								/>
 							),
 							microsoftLink: (
@@ -80,70 +80,52 @@ const DigitalWallets = () => {
 								<a
 									target="_blank"
 									rel="noreferrer"
-									href="/TODO-microsoft"
+									href="https://www.microsoft.com/en/servicesagreement/"
 								/>
 							),
 						},
 					} ) }
 				</p>
-				{ isEnabled && (
-					<Animate type="appear">
-						{ ( { className } ) => (
-							<div className={ className }>
-								<h4>
-									{ __(
-										'Show digital wallets & express payment methods on:',
-										'woocommerce-payments'
-									) }
-								</h4>
-								<ul>
-									<li>
-										<CheckboxControl
-											label={ __(
-												'Checkout',
-												'woocommerce-payments'
-											) }
-											disabled
-											checked
-										/>
-									</li>
-									<li>
-										<CheckboxControl
-											disabled={ ! isEnabled }
-											checked={
-												sectionsStatus.productPage
-											}
-											onChange={ makeHandleSectionStatusChange(
-												'productPage'
-											) }
-											label={ __(
-												'Product page',
-												'woocommerce-payments'
-											) }
-										/>
-									</li>
-									<li>
-										<CheckboxControl
-											disabled={ ! isEnabled }
-											checked={ sectionsStatus.cart }
-											onChange={ makeHandleSectionStatusChange(
-												'cart'
-											) }
-											label={ __(
-												'Cart',
-												'woocommerce-payments'
-											) }
-										/>
-									</li>
-								</ul>
-							</div>
-						) }
-					</Animate>
-				) }
+				<h4>
+					{ __(
+						'Show digital wallets & express payment methods on:',
+						'woocommerce-payments'
+					) }
+				</h4>
+				<ul>
+					<li>
+						<CheckboxControl
+							disabled={ ! isEnabled }
+							checked={ sectionsStatus.checkout }
+							label={ __( 'Checkout', 'woocommerce-payments' ) }
+						/>
+					</li>
+					<li>
+						<CheckboxControl
+							disabled={ ! isEnabled }
+							checked={ sectionsStatus.productPage }
+							onChange={ makeHandleSectionStatusChange(
+								'productPage'
+							) }
+							label={ __(
+								'Product page',
+								'woocommerce-payments'
+							) }
+						/>
+					</li>
+					<li>
+						<CheckboxControl
+							disabled={ ! isEnabled }
+							checked={ sectionsStatus.cart }
+							onChange={ makeHandleSectionStatusChange( 'cart' ) }
+							label={ __( 'Cart', 'woocommerce-payments' ) }
+						/>
+					</li>
+				</ul>
 			</CardBody>
 			<CardDivider />
 			<CardBody>
-				<Button isDefault href="/TODO">
+				<Button isSecondary href="/TODO">
 					{ __( 'Customize appearance', 'woocommerce-payments' ) }
 				</Button>
 			</CardBody>
