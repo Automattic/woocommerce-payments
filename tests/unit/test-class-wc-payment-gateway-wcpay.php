@@ -1172,7 +1172,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		ob_start();
 		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
-		$this->assertStringContainsString( 'id="wcpay-account-settings-container"', $output );
+		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
@@ -1185,8 +1185,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		ob_start();
 		$gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
-		$this->assertStringContainsString( 'id="wcpay-payment-method-settings-container"', $output );
-		$this->assertStringContainsString( 'data-method-id="foo"', $output );
+		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
 	}
 
 	/**
