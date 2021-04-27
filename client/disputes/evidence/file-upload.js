@@ -7,7 +7,7 @@ import {
 	DropZone,
 	DropZoneProvider,
 	FormFileUpload,
-	IconButton,
+	Button,
 } from '@wordpress/components';
 import Gridicon from 'gridicons';
 
@@ -51,7 +51,6 @@ export const FileUploadControl = ( props ) => {
 				<FormFileUpload
 					id={ `form-file-upload-${ field.key }` }
 					className={ isDone && ! hasError ? 'is-success' : null }
-					isLarge
 					isPrimary
 					isDestructive={ hasError }
 					isBusy={ isLoading }
@@ -74,7 +73,7 @@ export const FileUploadControl = ( props ) => {
 				) }
 
 				{ isDone && ! disabled ? (
-					<IconButton
+					<Button
 						className="delete-uploaded-file-button"
 						aria-label="Remove file"
 						icon={ <Gridicon icon="trash" size={ 18 } /> }
