@@ -34,7 +34,7 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		// only the checkout checkbox is checked once the feature is enabled.
+		// only the checkout checkbox is checked by default, once the feature is enabled.
 		expect( checkoutCheckbox.disabled ).toBeFalsy();
 		expect( checkoutCheckbox.checked ).toBeTruthy();
 		expect( productPageCheckbox.disabled ).toBeFalsy();
@@ -44,6 +44,8 @@ describe( 'DigitalWallets', () => {
 
 		// enabling the product page location.
 		userEvent.click( screen.getByText( 'Product page' ) );
+		// disabling the checkout location.
+		userEvent.click( screen.getByText( 'Checkout' ) );
 
 		// disabling the feature again.
 		userEvent.click(
@@ -67,9 +69,9 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		// only the checkout and product page checkboxes are checked once the feature is enabled again.
+		// only the product page checkbox is checked once the feature is enabled again.
 		expect( checkoutCheckbox.disabled ).toBeFalsy();
-		expect( checkoutCheckbox.checked ).toBeTruthy();
+		expect( checkoutCheckbox.checked ).toBeFalsy();
 		expect( productPageCheckbox.disabled ).toBeFalsy();
 		expect( productPageCheckbox.checked ).toBeTruthy();
 		expect( cartCheckbox.disabled ).toBeFalsy();
