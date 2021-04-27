@@ -18,7 +18,9 @@ use WCPay\Logger;
  */
 class WC_Payments_Account {
 
+	// ACCOUNT_TRANSIENT is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ACCOUNT_OPTION                 = 'wcpay_account_data';
 	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
@@ -48,10 +50,10 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Wipes the account transient, forcing to re-fetch the account status from WP.com.
+	 * Wipes the account data option, forcing to re-fetch the account status from WP.com.
 	 */
 	public function clear_cache() {
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		delete_option( self::ACCOUNT_OPTION );
 	}
 
 	/**
@@ -561,14 +563,13 @@ class WC_Payments_Account {
 			return [];
 		}
 
-		$account = get_transient( self::ACCOUNT_TRANSIENT );
+		$account = $this->read_account_from_cache();
 
 		if ( $this->is_valid_cached_account( $account ) ) {
 			return $account;
 		}
 
-		// If the transient contains the error value and has not expired, return false early and do not attempt another
-		// API call.
+		// If the option contains the error value, return false early and do not attempt another API call.
 		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
 			return false;
 		}
@@ -592,7 +593,8 @@ class WC_Payments_Account {
 			} else {
 				// Failed to retrieve account data. Exception is logged in http client.
 				// Rate limit the account retrieval failures - set a transient for a short time.
-				set_transient( self::ACCOUNT_TRANSIENT, self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+				$this->cache_account( self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+
 				// Return false to signal account retrieval error.
 				return false;
 			}
@@ -607,21 +609,39 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Caches account data for two hours
+	 * Caches account data for a period of time.
 	 *
-	 * @param array $account - Account data to cache.
+	 * @param array|string $account    - Account data to cache.
+	 * @param int|null     $expiration - The length of time to cache the account data, expressed in seconds.
 	 */
-	private function cache_account( $account ) {
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	private function cache_account( $account, int $expiration = null ) {
+		// Default expiration to 2 hours if not set.
+		if ( null === $expiration ) {
+			$expiration = 2 * HOUR_IN_SECONDS;
+		}
+
+		// Add the account data and expiry time to the array we're caching.
+		$account_cache            = [];
+		$account_cache['account'] = $account;
+		$account_cache['expires'] = time() + $expiration;
+
+		// Create or update the account option cache.
+		if ( false === get_option( self::ACCOUNT_OPTION ) ) {
+			$result = add_option( self::ACCOUNT_OPTION, $account_cache, '', 'no' );
+		} else {
+			$result = update_option( self::ACCOUNT_OPTION, $account_cache, 'no' );
+		}
+
+		return $result;
 	}
 
 	/**
 	 * Refetches account data and returns the fresh data.
 	 *
-	 * @return mixed Either the new account data or false if unavailable.
+	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 		return $this->get_cached_account_data();
 	}
 
@@ -706,7 +726,7 @@ class WC_Payments_Account {
 	 * @return bool True if at least one parameter value is changed.
 	 */
 	private function settings_changed( $changes = [] ) {
-		$account = get_transient( self::ACCOUNT_TRANSIENT );
+		$account = $this->read_account_from_cache();
 
 		// Consider changes as valid if we don't have cached account data.
 		if ( ! $this->is_valid_cached_account( $account ) ) {
@@ -857,5 +877,27 @@ class WC_Payments_Account {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Read the account from the WP option we cache it in.
+	 *
+	 * @return array|string|bool
+	 */
+	private function read_account_from_cache() {
+		$account_cache = get_option( self::ACCOUNT_OPTION );
+
+		if ( false === $account_cache || ! isset( $account_cache['account'] ) || ! isset( $account_cache['expires'] ) ) {
+			// No option found or the data isn't in the shape we expect.
+			return false;
+		}
+
+		// Set $account to false if the cache has expired, triggering another fetch.
+		if ( $account_cache['expires'] < time() ) {
+			return false;
+		}
+
+		// We have fresh account data in the cache, so return it.
+		return $account_cache['account'];
 	}
 }

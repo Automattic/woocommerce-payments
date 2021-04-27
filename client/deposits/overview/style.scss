@@ -12,7 +12,7 @@
 	}
 	.wcpay-deposits-overview__schedule {
 		@include font-size( 13 );
-		color: $dark-gray-500;
+		color: $gray-50;
 		margin: 0;
 		.wcpay-deposits-overview__schedule-icon,
 		.wcpay-deposits-overview__schedule-label,
@@ -24,7 +24,7 @@
 		}
 		.wcpay-deposits-overview__schedule-icon {
 			margin-right: 8px;
-			fill: $dark-gray-500;
+			fill: $gray-50;
 		}
 	}
 	.woocommerce-summary {
@@ -46,10 +46,10 @@
 	}
 	a.woocommerce-summary__item {
 		&:hover {
-			background-color: $light-gray-200;
+			background-color: $studio-gray-0;
 		}
 		&:active {
-			background-color: $light-gray-300;
+			background-color: $studio-gray-5;
 		}
 	}
 }
