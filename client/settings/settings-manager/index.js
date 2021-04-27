@@ -10,6 +10,7 @@ import { useState } from 'react';
  */
 import PaymentMethods from '../../payment-methods';
 import GeneralSettings from '../general-settings';
+import TestModeSettings from '../test-mode-settings';
 
 const SettingsSection = ( { title, description, children } ) => (
 	<div className="settings-manager__section">
@@ -54,6 +55,9 @@ const SettingsManager = ( {
 				) }
 			>
 				<GeneralSettings accountLink={ accountStatus.accountLink } />
+			</SettingsSection>
+			<SettingsSection>
+				<TestModeSettings />
 			</SettingsSection>
 		</div>
 	);
