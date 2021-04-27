@@ -290,11 +290,14 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method'       => $payment_method_id,
-			'customer'             => $customer_id,
-			'confirm'              => 'true',
-			'payment_method_types' => [ 'card', 'sepa_debit' ],
+			'payment_method' => $payment_method_id,
+			'customer'       => $customer_id,
+			'confirm'        => 'true',
 		];
+
+		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
+			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
