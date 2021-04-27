@@ -97,6 +97,9 @@ const DigitalWallets = () => {
 						<CheckboxControl
 							disabled={ ! isEnabled }
 							checked={ sectionsStatus.checkout }
+							onChange={ makeHandleSectionStatusChange(
+								'checkout'
+							) }
 							label={ __( 'Checkout', 'woocommerce-payments' ) }
 						/>
 					</li>
