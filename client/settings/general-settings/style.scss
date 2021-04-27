@@ -1,0 +1,17 @@
+.general-settings {
+	&__bank-information {
+		display: flex;
+		flex-direction: column;
+
+		:first-child {
+			flex-grow: 1;
+		}
+
+		@include breakpoint( '>800px' ) {
+			align-items: center;
+			justify-content: space-between;
+			flex-direction: row;
+			flex-wrap: nowrap;
+		}
+	}
+}

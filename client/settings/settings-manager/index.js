@@ -9,6 +9,7 @@ import { useState } from 'react';
  * Internal dependencies
  */
 import PaymentMethods from '../../payment-methods';
+import GeneralSettings from '../general-settings';
 
 const SettingsSection = ( { title, description, children } ) => (
 	<div className="settings-manager__section">
@@ -22,6 +23,7 @@ const SettingsSection = ( { title, description, children } ) => (
 
 const SettingsManager = ( {
 	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
+	accountStatus = {},
 } ) => {
 	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
 		initialEnabledPaymentMethodIds
@@ -43,6 +45,15 @@ const SettingsManager = ( {
 					enabledMethodIds={ enabledPaymentMethodIds }
 					onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
 				/>
+			</SettingsSection>
+			<SettingsSection
+				title={ __( 'Settings', 'woocommerce-payments' ) }
+				description={ __(
+					"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
+					'woocommerce-payments'
+				) }
+			>
+				<GeneralSettings accountLink={ accountStatus.accountLink } />
 			</SettingsSection>
 		</div>
 	);

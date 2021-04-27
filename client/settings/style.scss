@@ -19,12 +19,16 @@
 		}
 	}
 
+	&__section + &__section {
+		margin-top: 24px;
+	}
+
 	&__section-details {
 		flex: 0 1 auto;
 		margin-bottom: 12px;
 
 		@include breakpoint( '>800px' ) {
-			flex: 0 1 328px;
+			flex: 0 0 25%;
 			margin: 0 32px 0 0;
 		}
 
