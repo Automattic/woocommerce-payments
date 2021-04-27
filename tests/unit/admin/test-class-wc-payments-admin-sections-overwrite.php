@@ -33,7 +33,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	/**
 	 * @dataProvider params_not_causing_current_section_overwriting_on_page_init_provider
 	 */
-	public function test_current_section_is_not_modified_on_page_init( ?string $section, string $tab, string $page ) {
+	public function test_current_section_is_not_modified_on_page_init( string $section = null, string $tab, string $page ) {
 		global $current_section, $current_tab, $plugin_page;
 
 		$current_tab         = $tab;
