@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.4
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.3.2 - 2021-xx-xx =
+= 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.
 
 = 2.3.1 - 2021-04-26 =

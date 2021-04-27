@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.3.2 - 2021-xx-xx =
+= 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.
 
 = 2.3.1 - 2021-04-26 =
