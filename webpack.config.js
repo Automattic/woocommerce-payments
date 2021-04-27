@@ -42,6 +42,7 @@ const webpackConfig = {
 							},
 							additionalData:
 								'@import "node_modules/@wordpress/base-styles/_colors.scss"; ' +
+								'@import "node_modules/@wordpress/base-styles/_colors.native.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_variables.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_mixins.scss"; ' +
 								'@import "node_modules/@wordpress/base-styles/_breakpoints.scss"; ' +
@@ -62,19 +63,8 @@ const webpackConfig = {
 			},
 			{
 				test: /\.svg$/,
-				type: 'asset/inline',
 				exclude: /node_modules/,
-			},
-			{
-				test: /\.svg$/,
-				use: [
-					{
-						loader: 'file-loader',
-						options: {
-							name: 'images/[hash]-[name].[ext]',
-						},
-					},
-				],
+				loader: 'url-loader',
 			},
 		],
 	},

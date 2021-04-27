@@ -3,13 +3,15 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import PaymentMethods from '../';
+
+jest.mock( 'data', () => ( { addSelectedPaymentMethods: jest.fn() } ) );
 
 describe( 'PaymentMethods', () => {
 	test( 'renders the "Add payment method" button', () => {
@@ -25,6 +27,22 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		expect( addPaymentMethodButton ).toBeInTheDocument();
+	} );
+
+	test( '"Add payment method" button opens the payment methods selector modal', () => {
+		render(
+			<PaymentMethods
+				enabledMethodIds={ [] }
+				onEnabledMethodIdsChange={ () => {} }
+			/>
+		);
+
+		const addPaymentMethodButton = screen.getByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		fireEvent.click( addPaymentMethodButton );
+		expect( screen.getByText( 'Add payment methods' ) ).toBeInTheDocument();
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {

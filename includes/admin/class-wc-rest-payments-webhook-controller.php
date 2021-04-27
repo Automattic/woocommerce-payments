@@ -127,6 +127,9 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 					$note = $this->read_rest_property( $body, 'data' );
 					$this->remote_note_service->put_note( $note );
 					break;
+				case 'payment_intent.succeeded':
+					$this->process_webhook_payment_intent_succeeded( $body );
+					break;
 			}
 
 			try {
@@ -227,6 +230,38 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		WC_Payments_Utils::mark_payment_expired( $order );
+	}
+
+	/**
+	 * Process webhook for a successul payment intent.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Rest_Request_Exception           Required parameters not found.
+	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
+	 */
+	private function process_webhook_payment_intent_succeeded( $event_body ) {
+		$event_data   = $this->read_rest_property( $event_body, 'data' );
+		$event_object = $this->read_rest_property( $event_data, 'object' );
+
+		$intent_id = $this->read_rest_property( $event_object, 'id' );
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
+		if ( ! $order ) {
+			throw new Invalid_Payment_Method_Exception(
+				sprintf(
+					/* translators: %1: charge ID */
+					__( 'Could not find order via intent ID: %1$s', 'woocommerce-payments' ),
+					$intent_id
+				),
+				'order_not_found'
+			);
+		}
+
+		if ( ! $order->has_status( [ 'processing', 'completed' ] ) ) {
+			$order->payment_complete();
+		}
 	}
 
 	/**
