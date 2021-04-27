@@ -48,12 +48,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'capture_order' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [ 'payment_intent_id' ],
 			]
 		);
 	}
 
 	/**
-	 * Get accounts details via API.
+	 * Capture an order.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
