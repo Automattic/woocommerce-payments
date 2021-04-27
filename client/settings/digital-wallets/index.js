@@ -21,8 +21,8 @@ const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
 	const [ sectionsStatus, setSectionsStatus ] = useState( {
 		checkout: true,
-		productPage: true,
-		cart: true,
+		productPage: false,
+		cart: false,
 	} );
 
 	const makeHandleSectionStatusChange = ( section ) => ( status ) => {
@@ -96,7 +96,7 @@ const DigitalWallets = () => {
 					<li>
 						<CheckboxControl
 							disabled={ ! isEnabled }
-							checked={ sectionsStatus.checkout }
+							checked={ isEnabled && sectionsStatus.checkout }
 							onChange={ makeHandleSectionStatusChange(
 								'checkout'
 							) }
@@ -106,7 +106,7 @@ const DigitalWallets = () => {
 					<li>
 						<CheckboxControl
 							disabled={ ! isEnabled }
-							checked={ sectionsStatus.productPage }
+							checked={ isEnabled && sectionsStatus.productPage }
 							onChange={ makeHandleSectionStatusChange(
 								'productPage'
 							) }
@@ -119,7 +119,7 @@ const DigitalWallets = () => {
 					<li>
 						<CheckboxControl
 							disabled={ ! isEnabled }
-							checked={ sectionsStatus.cart }
+							checked={ isEnabled && sectionsStatus.cart }
 							onChange={ makeHandleSectionStatusChange( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
 						/>
