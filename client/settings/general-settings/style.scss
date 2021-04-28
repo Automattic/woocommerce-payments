@@ -14,4 +14,20 @@
 			flex-wrap: nowrap;
 		}
 	}
+
+	&__account-statement-wrapper {
+		position: relative;
+
+		.input-help-text {
+			position: absolute;
+			right: 10px;
+			top: 7px;
+			font-size: 12px;
+			color: #757575;
+		}
+	}
+
+	.font-style-italic {
+		font-style: italic;
+	}
 }

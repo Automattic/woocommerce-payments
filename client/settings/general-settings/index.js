@@ -55,20 +55,26 @@ const GeneralSettings = ( { accountLink } ) => {
 				<h4>
 					{ __( 'Customer bank statement', 'woocommerce-payments' ) }
 				</h4>
-				<TextControl
-					help={ __(
-						'Edit the way your store name appears on your customers’ bank statements.',
-						'woocommerce-payments'
-					) }
-					label={ __(
-						'Customer bank statement',
-						'woocommerce-payments'
-					) }
-					value={ accountStatement }
-					onChange={ setAccountStatement }
-					maxLength={ 22 }
-					hideLabelFromVision
-				/>
+				<div className="general-settings__account-statement-wrapper">
+					<TextControl
+						className="general-settings__account-statement-input"
+						help={ __(
+							"Edit the way your store name appears on your customers' bank statements.",
+							'woocommerce-payments'
+						) }
+						label={ __(
+							'Customer bank statement',
+							'woocommerce-payments'
+						) }
+						value={ accountStatement }
+						onChange={ setAccountStatement }
+						maxLength={ 22 }
+						hideLabelFromVision
+					/>
+					<span className="input-help-text" aria-hidden="true">
+						{ `${ accountStatement.length } / 22` }
+					</span>
+				</div>
 				<div className="general-settings__bank-information">
 					<div>
 						<h4>
@@ -77,7 +83,7 @@ const GeneralSettings = ( { accountLink } ) => {
 								'woocommerce-payments'
 							) }
 						</h4>
-						<p>
+						<p className="font-style-italic">
 							{ __(
 								'Manage and update your bank account information to receive payments and payouts.',
 								'woocommerce-payments'
