@@ -9,17 +9,18 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import GiropaySettings from './giropay-settings';
 
-const methods = [
-	{
-		id: 'woocommerce_payments_giropay',
+/* eslint-disable camelcase */
+const methods = {
+	woocommerce_payments_giropay: {
 		title: 'giropay',
 		description: 'giropay description.',
 		controls: () => <GiropaySettings />,
 	},
-];
+};
+/* eslint-enable camelcase */
 
 const PaymentMethodSettings = ( { methodId } ) => {
-	const method = methods.find( ( { id } ) => id === methodId );
+	const method = methods[ methodId ];
 
 	if ( ! method ) {
 		return (
