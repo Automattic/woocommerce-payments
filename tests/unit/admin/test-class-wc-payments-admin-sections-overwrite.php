@@ -68,6 +68,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	public function test_current_section_is_overwritten_in_section_list_if_prefixed_with_woocommerce_payments() {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin();
 		$current_section = 'woocommerce_payments_foo';
 		$current_tab     = 'checkout';
 
@@ -77,6 +78,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	public function test_current_section_is_not_overwritten_in_section_list_if_not_prefixed_with_woocommerce_payments() {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin();
 		$current_section = 'foo';
 		$current_tab     = 'checkout';
 
@@ -86,6 +88,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	public function test_current_section_is_not_overwritten_in_section_list_if_tab_is_not_checkout() {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin();
 		$current_section = 'woocommerce_payments_foo';
 		$current_tab     = 'bar';
 
@@ -154,5 +157,15 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 			'tab is not checkout'     => [ null, 'shipping', 'wc-settings' ],
 			'page is not wc-settings' => [ null, 'checkout', 'foo' ],
 		];
+	}
+
+	private function set_is_admin() {
+		global $current_screen;
+
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( true );
 	}
 }

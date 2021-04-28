@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
+
 /**
  * WC_Payments_Utils unit tests.
  */
@@ -334,6 +336,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 	public function test_it_returns_is_payment_settings_page_for_main_settings_page() {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin( true );
 		$current_section = 'woocommerce_payments';
 		$current_tab     = 'checkout';
 
@@ -343,6 +346,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 	public function test_it_returns_is_payment_settings_page_for_payment_method_settings_page() {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin( true );
 		$current_section = 'woocommerce_payments_foo';
 		$current_tab     = 'checkout';
 
@@ -352,9 +356,10 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 	/**
 	 * @dataProvider not_payment_settings_page_conditions_provider
 	 */
-	public function test_it_returns_it_is_not_payment_settings_page( $section, $tab ) {
+	public function test_it_returns_it_is_not_payment_settings_page( $is_admin, $section, $tab ) {
 		global $current_section, $current_tab;
 
+		$this->set_is_admin( $is_admin );
 		$current_section = $section;
 		$current_tab     = $tab;
 
@@ -363,8 +368,27 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 	public function not_payment_settings_page_conditions_provider(): array {
 		return [
-			'section is not woocommerce_payments' => [ 'foo', 'checkout' ],
-			'tab is not checkout'                 => [ 'woocommerce_payments', 'shipping' ],
+			'is_admin() is false'                 => [ false, 'woocommerce_payments_foo', 'checkout' ],
+			'section is not woocommerce_payments' => [ true, 'foo', 'checkout' ],
+			'tab is not checkout'                 => [ true, 'woocommerce_payments', 'shipping' ],
 		];
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null;
+			return;
+		}
+
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
 	}
 }

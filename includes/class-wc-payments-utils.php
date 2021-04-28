@@ -366,7 +366,8 @@ class WC_Payments_Utils {
 		global $current_section, $current_tab;
 
 		return (
-			$current_tab && $current_section
+			is_admin()
+			&& $current_tab && $current_section
 			&& 'checkout' === $current_tab
 			&& 0 === strpos( $current_section, 'woocommerce_payments' )
 		);
