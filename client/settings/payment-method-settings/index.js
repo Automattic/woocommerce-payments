@@ -9,16 +9,16 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import GiropaySettings from './giropay-settings';
 
-const PaymentMethodSettings = ( { methodId } ) => {
-	const methods = [
-		{
-			id: 'woocommerce_payments_giropay',
-			title: 'giropay',
-			description: 'giropay description.',
-			controls: <GiropaySettings />,
-		},
-	];
+const methods = [
+	{
+		id: 'woocommerce_payments_giropay',
+		title: 'giropay',
+		description: 'giropay description.',
+		controls: () => <GiropaySettings />,
+	},
+];
 
+const PaymentMethodSettings = ( { methodId } ) => {
 	const method = methods.find( ( { id } ) => id === methodId );
 
 	if ( ! method ) {
@@ -32,7 +32,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 		);
 	}
 
-	const { title, description, controls } = method;
+	const { title, description, controls: Controls } = method;
 
 	return (
 		<div className="payment-method-settings">
@@ -42,7 +42,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 			</h2>
 
 			<SettingsSection title={ title } description={ description }>
-				{ controls }
+				<Controls />
 			</SettingsSection>
 		</div>
 	);
