@@ -94,7 +94,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 		global $current_section;
 
 		$this->previous_current_section = $current_section;
-		if ( WC_Payments_Admin::is_payments_settings_page() ) {
+		if ( WC_Payments_Utils::is_payments_settings_page() ) {
 			$current_section = 'woocommerce_payments';
 		}
 	}
