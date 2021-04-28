@@ -21,9 +21,13 @@
 		.input-help-text {
 			position: absolute;
 			right: 10px;
-			top: 7px;
+			top: 12px;
 			font-size: 12px;
 			color: #757575;
+
+			@include breakpoint( '>800px' ) {
+				top: 7px;
+			}
 		}
 	}
 
