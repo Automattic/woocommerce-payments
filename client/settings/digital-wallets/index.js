@@ -12,11 +12,6 @@ import {
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
-/**
- * Internal dependencies
- */
-import './style.scss';
-
 const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
 	const [ sectionsStatus, setSectionsStatus ] = useState( {
@@ -42,9 +37,7 @@ const DigitalWallets = () => {
 						'Enable digital wallets & express payment methods',
 						'woocommerce-payments'
 					) }
-				/>
-				<p className="digital-wallets__terms">
-					{ interpolateComponents( {
+					help={ interpolateComponents( {
 						mixedString: __(
 							// eslint-disable-next-line max-len
 							"By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, {{appleLink}}Apple{{/appleLink}}, {{googleLink}}Google{{/googleLink}} and {{microsoftLink}}Microsoft{{/microsoftLink}}'s terms of use.",
@@ -85,7 +78,7 @@ const DigitalWallets = () => {
 							),
 						},
 					} ) }
-				</p>
+				/>
 				<h4>
 					{ __(
 						'Show digital wallets & express payment methods on:',
