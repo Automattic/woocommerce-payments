@@ -10,7 +10,6 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
-import { getPaymentMethodSettingsUrl } from '../../../utils';
 
 describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
@@ -42,7 +41,7 @@ describe( 'PaymentMethod', () => {
 			name: 'Manage',
 		} );
 		expect( manageLink.getAttribute( 'href' ) ).toEqual(
-			getPaymentMethodSettingsUrl( 'foo' )
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
 		);
 	} );
 
@@ -64,7 +63,7 @@ describe( 'PaymentMethod', () => {
 			name: 'Bar',
 		} );
 		expect( paymentMethodLabel.getAttribute( 'href' ) ).toEqual(
-			getPaymentMethodSettingsUrl( 'foo' )
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
 		);
 	} );
 } );
