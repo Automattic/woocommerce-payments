@@ -32,14 +32,18 @@ const PaymentMethodSettings = ( { methodId } ) => {
 		);
 	}
 
+	const { title, description, controls } = method;
+
 	return (
 		<div className="payment-method-settings">
 			<h2 className="payment-method-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
-				&gt; <span>{ method.title }</span>
+				&gt; <span>{ title }</span>
 			</h2>
 
-			<SettingsSection { ...method }>{ method.controls }</SettingsSection>
+			<SettingsSection title={ title } description={ description }>
+				{ controls }
+			</SettingsSection>
 		</div>
 	);
 };
