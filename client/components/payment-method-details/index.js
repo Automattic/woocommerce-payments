@@ -3,22 +3,31 @@
 /**
  * Internal dependencies
  */
+import { Fragment } from 'react';
 import './style.scss';
 
 const PaymentMethodDetails = ( props ) => {
 	const { payment } = props;
 	const paymentMethod = payment ? payment[ payment.type ] : null;
-	return paymentMethod ? (
+
+	if ( ! paymentMethod ) {
+		return <span>&ndash;</span>;
+	}
+
+	const brand = paymentMethod.brand ? paymentMethod.brand : payment.type;
+	return (
 		<span className="payment-method-details">
-			{ /* TODO: deal with other payment methods. Currently this assumes payment type is card */ }
 			<span
-				className={ `payment-method__brand payment-method__brand--${ paymentMethod.brand }` }
-			></span>
-			&nbsp;••••&nbsp;
-			{ paymentMethod.last4 }
+				className={ `payment-method__brand payment-method__brand--${ brand }` }
+			/>
+			{ paymentMethod.last4 ? (
+				<Fragment>
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
+				</Fragment>
+			) : (
+				paymentMethod.bank_code
+			) }
 		</span>
-	) : (
-		<span>&ndash;</span>
 	);
 };
 

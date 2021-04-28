@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Handles and process WC payment tokens API.
@@ -44,26 +47,33 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 	}
 
 	/**
 	 * Creates and add a token to an user, based on the payment_method object
 	 *
-	 * @param array   $payment_method Payment method to be added.
-	 * @param WP_User $user           User to attach payment method to.
-	 * @return WC_Payment_Token_CC    The WC object for the payment token.
+	 * @param   array   $payment_method                             Payment method to be added.
+	 * @param   WP_User $user                                       User to attach payment method to.
+	 * @return  WC_Payment_Token_CC|WC_Payment_Token_Sepa           The WC object for the payment token.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
 		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
 
-		$token = new WC_Payment_Token_CC();
+		if ( Payment_Method::SEPA === $payment_method['type'] ) {
+			$token = new WC_Payment_Token_WCPay_SEPA();
+			$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
+			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
+		} else {
+			$token = new WC_Payment_Token_CC();
+			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+			$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
+			$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
+			$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
+			$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
+		}
 		$token->set_token( $payment_method['id'] );
-		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-		$token->set_card_type( strtolower( $payment_method['card']['brand'] ) );
-		$token->set_last4( $payment_method['card']['last4'] );
-		$token->set_expiry_month( $payment_method['card']['exp_month'] );
-		$token->set_expiry_year( $payment_method['card']['exp_year'] );
 		$token->set_user_id( $user->ID );
 		$token->save();
 
@@ -175,5 +185,21 @@ class WC_Payments_Token_Service {
 				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
+	}
+
+	/**
+	 * Controls the output for SEPA on the my account page.
+	 *
+	 * @param  array            $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token $payment_token The payment token associated with this method entry.
+	 * @return array            Filtered item
+	 */
+	public function get_account_saved_payment_methods_list_item_sepa( $item, $payment_token ) {
+		if ( WC_Payment_Token_WCPay_SEPA::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$item['method']['last4'] = $payment_token->get_last4();
+			$item['method']['brand'] = esc_html__( 'SEPA IBAN', 'woocommerce-payments' );
+		}
+
+		return $item;
 	}
 }

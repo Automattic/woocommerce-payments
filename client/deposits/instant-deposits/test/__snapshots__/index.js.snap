@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Instant deposit button and modal button renders correctly 1`] = `
+<div>
+  <button
+    class="components-button is-secondary is-secondary"
+    type="button"
+  >
+    Instant deposit
+  </button>
+</div>
+`;
+
+exports[`Instant deposit button and modal modal renders correctly 1`] = `
+<div
+  aria-labelledby="components-modal-header-0"
+  class="components-modal__frame wcpay-instant-deposits-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-0"
+        >
+          Instant deposit
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <p>
+      Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1% service fee. 
+      <a
+        href="https://docs.woocommerce.com/document/payments/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Learn more
+      </a>
+    </p>
+    <ul>
+      <li
+        class="wcpay-instant-deposits-modal__balance"
+      >
+        Balance available for instant deposit: 
+        <span>
+          $123.45
+        </span>
+      </li>
+      <li
+        class="wcpay-instant-deposits-modal__fee"
+      >
+        1% service fee: 
+        <span>
+          -
+          $1.23
+        </span>
+      </li>
+      <li
+        class="wcpay-instant-deposits-modal__net"
+      >
+        Net deposit amount: 
+        <span>
+          $122.22
+        </span>
+      </li>
+    </ul>
+    <button
+      class="components-button is-primary"
+      type="button"
+    >
+      Deposit $122.22 now
+    </button>
+    <button
+      class="components-button is-secondary"
+      type="button"
+    >
+      Close
+    </button>
+  </div>
+</div>
+`;

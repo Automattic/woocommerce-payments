@@ -1,0 +1,70 @@
+.payment-methods {
+	&__available-methods-container {
+		align-items: center;
+		display: flex;
+
+		&#{&} {
+			&#{&} {
+				padding: 24px;
+
+				@include breakpoint( '>660px' ) {
+					padding: 24px 32px;
+				}
+			}
+		}
+	}
+
+	&__add-payment-method {
+		&#{&} {
+			margin-right: 16px;
+		}
+	}
+
+	&__available-methods {
+		display: none;
+		margin: 0;
+
+		@include breakpoint( '>660px' ) {
+			display: flex;
+		}
+	}
+
+	&__available-method {
+		background: no-repeat center center;
+		background-size: contain;
+		border-radius: 2px;
+		box-shadow: 0 0 0 1px #ddd;
+		height: 24px;
+		margin: 1px 5px 1px 1px; // 1px to accommodate for box-shadow
+		width: 38.22px;
+
+		&:last-child {
+			margin-right: 1px; // 1px to accommodate for box-shadow
+		}
+	}
+
+	&__available-method.cc {
+		background-image: url( '../../assets/images/payment-methods/cc.svg' );
+		box-shadow: none;
+	}
+
+	&__available-method.giropay {
+		background-image: url( '../../assets/images/payment-methods/giropay.svg' );
+	}
+
+	&__available-method.sepa {
+		background-image: url( '../../assets/images/payment-methods/sepa.svg' );
+	}
+
+	&__available-method.sofort {
+		background-image: url( '../../assets/images/payment-methods/sofort.svg' );
+	}
+
+	&__enabled-methods-container {
+		&#{&} {
+			&#{&} {
+				padding: 0;
+			}
+		}
+	}
+}

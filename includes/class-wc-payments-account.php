@@ -18,7 +18,9 @@ use WCPay\Logger;
  */
 class WC_Payments_Account {
 
+	// ACCOUNT_TRANSIENT is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_TRANSIENT              = 'wcpay_account_data';
+	const ACCOUNT_OPTION                 = 'wcpay_account_data';
 	const ACCOUNT_RETRIEVAL_ERROR        = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT = 'wcpay_on_boarding_disabled';
 	const ERROR_MESSAGE_TRANSIENT        = 'wcpay_error_message';
@@ -40,16 +42,18 @@ class WC_Payments_Account {
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_oauth' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard redirection logic.
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
+		add_action( 'wcpay_instant_deposit_reminder', [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_filter( 'woocommerce_debug_tools', [ $this, 'debug_tool' ] );
 	}
 
 	/**
-	 * Wipes the account transient, forcing to re-fetch the account status from WP.com.
+	 * Wipes the account data option, forcing to re-fetch the account status from WP.com.
 	 */
 	public function clear_cache() {
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		delete_option( self::ACCOUNT_OPTION );
 	}
 
 	/**
@@ -554,19 +558,18 @@ class WC_Payments_Account {
 	 *
 	 * @return array|bool Account data or false if failed to retrieve account data.
 	 */
-	private function get_cached_account_data() {
+	public function get_cached_account_data() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
-		$account = get_transient( self::ACCOUNT_TRANSIENT );
+		$account = $this->read_account_from_cache();
 
 		if ( $this->is_valid_cached_account( $account ) ) {
 			return $account;
 		}
 
-		// If the transient contains the error value and has not expired, return false early and do not attempt another
-		// API call.
+		// If the option contains the error value, return false early and do not attempt another API call.
 		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
 			return false;
 		}
@@ -590,7 +593,8 @@ class WC_Payments_Account {
 			} else {
 				// Failed to retrieve account data. Exception is logged in http client.
 				// Rate limit the account retrieval failures - set a transient for a short time.
-				set_transient( self::ACCOUNT_TRANSIENT, self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+				$this->cache_account( self::ACCOUNT_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
+
 				// Return false to signal account retrieval error.
 				return false;
 			}
@@ -598,25 +602,46 @@ class WC_Payments_Account {
 
 		// Cache the account details so we don't call the server every time.
 		$this->cache_account( $account );
+
+		// Allow us to tie in functionality to an account refresh.
+		do_action( 'woocommerce_payments_account_refreshed', $account );
 		return $account;
 	}
 
 	/**
-	 * Caches account data for two hours
+	 * Caches account data for a period of time.
 	 *
-	 * @param array $account - Account data to cache.
+	 * @param array|string $account    - Account data to cache.
+	 * @param int|null     $expiration - The length of time to cache the account data, expressed in seconds.
 	 */
-	private function cache_account( $account ) {
-		set_transient( self::ACCOUNT_TRANSIENT, $account, 2 * HOUR_IN_SECONDS );
+	private function cache_account( $account, int $expiration = null ) {
+		// Default expiration to 2 hours if not set.
+		if ( null === $expiration ) {
+			$expiration = 2 * HOUR_IN_SECONDS;
+		}
+
+		// Add the account data and expiry time to the array we're caching.
+		$account_cache            = [];
+		$account_cache['account'] = $account;
+		$account_cache['expires'] = time() + $expiration;
+
+		// Create or update the account option cache.
+		if ( false === get_option( self::ACCOUNT_OPTION ) ) {
+			$result = add_option( self::ACCOUNT_OPTION, $account_cache, '', 'no' );
+		} else {
+			$result = update_option( self::ACCOUNT_OPTION, $account_cache, 'no' );
+		}
+
+		return $result;
 	}
 
 	/**
 	 * Refetches account data and returns the fresh data.
 	 *
-	 * @return mixed Either the new account data or false if unavailable.
+	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 		return $this->get_cached_account_data();
 	}
 
@@ -701,7 +726,7 @@ class WC_Payments_Account {
 	 * @return bool True if at least one parameter value is changed.
 	 */
 	private function settings_changed( $changes = [] ) {
-		$account = get_transient( self::ACCOUNT_TRANSIENT );
+		$account = $this->read_account_from_cache();
 
 		// Consider changes as valid if we don't have cached account data.
 		if ( ! $this->is_valid_cached_account( $account ) ) {
@@ -787,5 +812,92 @@ class WC_Payments_Account {
 	public function get_account_country() {
 		$account = $this->get_cached_account_data();
 		return $account['country'] ?? 'US';
+	}
+
+	/**
+	 * Handles adding a note if the merchant is eligible for Instant Deposits.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_note( $account ) {
+		if ( empty( $account ) ) {
+			return;
+		}
+
+		if ( ! $this->is_instant_deposits_eligible( $account ) ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
+		$this->maybe_add_instant_deposit_note_reminder();
+	}
+
+	/**
+	 * Handles removing note about merchant Instant Deposits eligibility.
+	 * Hands off to handle_instant_deposits_inbox_note to add the new note.
+	 *
+	 * @return void
+	 */
+	public function handle_instant_deposits_inbox_reminder() {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+		$this->handle_instant_deposits_inbox_note( $this->get_cached_account_data() );
+	}
+
+	/**
+	 * Handles adding scheduled action for the Instant Deposit note reminder.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_instant_deposit_note_reminder() {
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$action_hook              = 'wcpay_instant_deposit_reminder';
+
+		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+			return;
+		}
+
+		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
+		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
+	}
+
+	/**
+	 * Checks to see if the account is eligible for Instant Deposits.
+	 *
+	 * @param array $account The account data.
+	 *
+	 * @return bool
+	 */
+	private function is_instant_deposits_eligible( array $account ): bool {
+		if ( ! isset( $account['instant_deposits_eligible'] ) || ! $account['instant_deposits_eligible'] ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Read the account from the WP option we cache it in.
+	 *
+	 * @return array|string|bool
+	 */
+	private function read_account_from_cache() {
+		$account_cache = get_option( self::ACCOUNT_OPTION );
+
+		if ( false === $account_cache || ! isset( $account_cache['account'] ) || ! isset( $account_cache['expires'] ) ) {
+			// No option found or the data isn't in the shape we expect.
+			return false;
+		}
+
+		// Set $account to false if the cache has expired, triggering another fetch.
+		if ( $account_cache['expires'] < time() ) {
+			return false;
+		}
+
+		// We have fresh account data in the cache, so return it.
+		return $account_cache['account'];
 	}
 }

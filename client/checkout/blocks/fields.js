@@ -46,6 +46,7 @@ const WCPayFields = ( {
 
 				const cardElement = elements.getElement( CardElement );
 				const paymentElements = {
+					type: 'card',
 					card: cardElement,
 				};
 

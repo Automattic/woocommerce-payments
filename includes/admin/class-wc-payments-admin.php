@@ -303,9 +303,10 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
+				'accountStatus'           => $this->account->get_account_status_data(),
+				'accountFees'             => $this->account->get_fees(),
+				'fraudServices'           => $this->account->get_fraud_services_config(),
+				'enabledPaymentMethodIds' => [ 'cc', 'giropay' ],
 			]
 		);
 
@@ -401,7 +402,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
-			'groupedSettings' => self::is_grouped_settings_enabled(),
+			'groupedSettings' => WC_Payments_Features::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -459,21 +460,17 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Checks whether the grouped settings feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_grouped_settings_enabled() {
-		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
-	}
-
-	/**
 	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
 	 * to remind user that setup is required.
 	 */
 	public function add_menu_notification_badge() {
 		global $menu;
-		if ( $this->account->is_stripe_connected() || 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+		if ( 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
+			return;
+		}
+
+		if ( $this->account->is_stripe_connected() ) {
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 			return;
 		}
 
