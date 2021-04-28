@@ -368,7 +368,9 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $tos_agreement_declined || $tos_agreement_required ) {
+		$track_kyc_completed = get_option( '_wcpay_kyc_completed' );
+
+		if ( $tos_agreement_declined || $tos_agreement_required || $track_kyc_completed ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			wp_localize_script(
 				'WCPAY_TOS',
@@ -377,6 +379,7 @@ class WC_Payments_Admin {
 					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
+					'trackKycCompleted'    => $track_kyc_completed,
 				]
 			);
 

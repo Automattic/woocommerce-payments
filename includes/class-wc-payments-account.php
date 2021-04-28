@@ -538,6 +538,11 @@ class WC_Payments_Account {
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
 
+		// Store a state after completing KYC for tracks. This is stored temporarily in option because
+		// user might not have agreed to TOS yet.
+		// TODO: use return from server to set is_existing_stripe_account.
+		update_option( '_wcpay_kyc_completed', [ 'is_existing_stripe_account' => true ] );
+
 		wp_safe_redirect(
 			add_query_arg(
 				[

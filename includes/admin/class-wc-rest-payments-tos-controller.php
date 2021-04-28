@@ -80,6 +80,16 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/kyc_track_completed',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'remove_kyc_track' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -156,6 +166,18 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 			return new WP_REST_Response( [ 'result' => self::RESULT_ERROR ], 500 );
 		}
 
+		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
+	}
+
+	/**
+	 * Deletes _wcpay_kyc_completed option after KYC completion has been tracked.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function remove_kyc_track( $request ) {
+		delete_option( '_wcpay_kyc_completed' );
 		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
 }
