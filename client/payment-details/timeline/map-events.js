@@ -194,7 +194,7 @@ const composeFeeString = ( event ) => {
 
 	return sprintf(
 		/* translators: %1$s is the total fee amount, %2$f%% is the fee percentage, and %3$s is the fixed fee amount. */
-		__( 'Fee (%2$.1f%% + %3$s): %1$s', 'woocommeerce-payments' ),
+		__( 'Fee (%2$.1f%% + %3$s): %1$s', 'woocommerce-payments' ),
 		formatCurrency( -feeAmount, feeCurrency ),
 		percentage * 100,
 		formatCurrency( fixed, fixedCurrency )
@@ -414,7 +414,7 @@ const mapEventToTimelineItems = ( event ) => {
 						__(
 							// eslint-disable-next-line max-len
 							"The cardholder's bank is requesting more information to decide whether to return these funds to the cardholder.",
-							'woocommerce-services'
+							'woocommerce-payments'
 						),
 					],
 				};
