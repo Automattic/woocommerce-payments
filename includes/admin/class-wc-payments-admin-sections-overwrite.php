@@ -8,15 +8,24 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WC_Payments_Admin Class.
+ * WC_Payments_Admin_Sections_Overwrite Class.
  */
 class WC_Payments_Admin_Sections_Overwrite {
+	/**
+	 * Used for restoring the original value of `$current_section` global variable.
+	 *
+	 * @var string
+	 */
+	private $previous_current_section;
+
 	/**
 	 * WC_Payments_Admin_Sections_Overwrite constructor.
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_settings_page_init', [ $this, 'page_init' ] );
 		add_filter( 'woocommerce_get_sections_checkout', [ $this, 'add_checkout_sections' ] );
+		add_action( 'woocommerce_sections_checkout', [ $this, 'overwrite_current_section_global' ], 5 );
+		add_action( 'woocommerce_sections_checkout', [ $this, 'restore_current_section_global' ], 15 );
 	}
 
 	/**
@@ -73,5 +82,29 @@ class WC_Payments_Admin_Sections_Overwrite {
 		$sections[''] = __( 'All payment methods', 'woocommerce-payments' );
 
 		return $sections;
+	}
+
+	/**
+	 * Overwrites `$current_section`.
+	 *
+	 * Called before rendering the section list to render the "WooCommerce
+	 * Payments" section as active on payment method settings pages.
+	 */
+	public function overwrite_current_section_global() {
+		global $current_section;
+
+		$this->previous_current_section = $current_section;
+		if ( WC_Payments_Utils::is_payments_settings_page() ) {
+			$current_section = 'woocommerce_payments';
+		}
+	}
+
+	/**
+	 * Resets `$current_section` to its original value.
+	 */
+	public function restore_current_section_global() {
+		global $current_section;
+
+		$current_section = $this->previous_current_section;
 	}
 }
