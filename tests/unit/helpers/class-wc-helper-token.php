@@ -6,6 +6,7 @@
  */
 
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Class WC_Helper_Token.
@@ -21,7 +22,7 @@ class WC_Helper_Token {
 	 * @param int    $user_id        ID of the token's user, defaults to get_current_user_id().
 	 * @param string $gateway        Token's Gateway ID, default to WC_Payment_Gateway_WCPay::GATEWAY_ID
 	 */
-	public static function create_token( $payment_method, $user_id = null, $gateway = WC_Payment_Gateway_WCPay::GATEWAY_ID ) {
+	public static function create_token( $payment_method, $user_id = null, $gateway = CC_Payment_Gateway::GATEWAY_ID ) {
 		$token = new WC_Payment_Token_CC();
 		$token->set_token( $payment_method );
 		$token->set_gateway_id( $gateway );

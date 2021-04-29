@@ -6,6 +6,7 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -15,7 +16,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name    = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->name    = CC_Payment_Gateway::GATEWAY_ID;
 		$this->gateway = WC_Payments::get_gateway();
 	}
 
