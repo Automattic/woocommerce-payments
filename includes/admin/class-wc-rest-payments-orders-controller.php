@@ -45,10 +45,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/process_payment',
+			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'process_payment' ],
+				'callback'            => [ $this, 'capture_terminal_payment' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'payment_intent_id' => [
@@ -64,7 +64,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function process_payment( $request ) {
+	public function capture_terminal_payment( $request ) {
 		try {
 			$intent_id = $request['payment_intent_id'];
 			$order_id  = $request['order_id'];

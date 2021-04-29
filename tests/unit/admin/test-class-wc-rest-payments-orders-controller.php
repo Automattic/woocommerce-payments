@@ -54,7 +54,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_process_payment_success() {
+	public function test_capture_terminal_payment_success() {
 		$order = $this->create_mock_order();
 
 		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
@@ -91,7 +91,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response      = $this->controller->process_payment( $request );
+		$response      = $this->controller->capture_terminal_payment( $request );
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
@@ -104,7 +104,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_process_payment_intent_non_capturable() {
+	public function test_capture_terminal_payment_intent_non_capturable() {
 		$order = $this->create_mock_order();
 
 		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
@@ -134,7 +134,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response      = $this->controller->process_payment( $request );
+		$response      = $this->controller->capture_terminal_payment( $request );
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
@@ -147,7 +147,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_process_payment_handles_exceptions() {
+	public function test_capture_terminal_payment_handles_exceptions() {
 		$order = $this->create_mock_order();
 
 		$this->mock_api_client
@@ -163,7 +163,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->process_payment( $request );
+		$response = $this->controller->capture_terminal_payment( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
@@ -171,7 +171,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 500, $data['status'] );
 	}
 
-	public function test_process_payment_not_found() {
+	public function test_capture_terminal_payment_not_found() {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
@@ -180,7 +180,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->process_payment( $request );
+		$response = $this->controller->capture_terminal_payment( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
