@@ -16,7 +16,7 @@ describe( 'PaymentMethodSettings', () => {
 			<PaymentMethodSettings methodId="woocommerce_payments_giropay" />
 		);
 
-		const heading = screen.getByRole( 'heading', { name: 'giropay' } );
+		const heading = screen.queryByRole( 'heading', { name: 'giropay' } );
 		expect( heading ).toBeInTheDocument();
 	} );
 
@@ -26,7 +26,7 @@ describe( 'PaymentMethodSettings', () => {
 		);
 
 		expect(
-			screen.getByText( 'Giropay settings placeholder.' )
+			screen.queryByText( 'Giropay settings placeholder.' )
 		).toBeInTheDocument();
 	} );
 
@@ -47,7 +47,7 @@ describe( 'PaymentMethodSettings', () => {
 	test( 'renders error message for invalid method IDs', () => {
 		render( <PaymentMethodSettings methodId="foo" /> );
 
-		const errorMessage = screen.getByText(
+		const errorMessage = screen.queryByText(
 			'Invalid payment method ID specified.'
 		);
 		expect( errorMessage ).toBeInTheDocument();

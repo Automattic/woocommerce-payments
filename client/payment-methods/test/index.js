@@ -22,7 +22,7 @@ describe( 'PaymentMethods', () => {
 			/>
 		);
 
-		const addPaymentMethodButton = screen.getByRole( 'button', {
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
 		} );
 
@@ -42,7 +42,9 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		fireEvent.click( addPaymentMethodButton );
-		expect( screen.getByText( 'Add payment methods' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Add payment methods' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {

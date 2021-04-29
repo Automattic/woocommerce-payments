@@ -14,8 +14,8 @@ describe( 'SettingsSection', () => {
 	test( 'renders title and description', () => {
 		render( <SettingsSection title="Foo" description="Bar" /> );
 
-		const title = screen.getByRole( 'heading', { name: 'Foo' } );
-		const description = screen.getByText( 'Bar' );
+		const title = screen.queryByRole( 'heading', { name: 'Foo' } );
+		const description = screen.queryByText( 'Bar' );
 
 		expect( title ).toBeInTheDocument();
 		expect( description ).toBeInTheDocument();
@@ -28,6 +28,6 @@ describe( 'SettingsSection', () => {
 			</SettingsSection>
 		);
 
-		expect( screen.getByText( 'Baz' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Baz' ) ).toBeInTheDocument();
 	} );
 } );

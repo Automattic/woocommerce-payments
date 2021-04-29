@@ -15,18 +15,18 @@ describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
 		render( <PaymentMethod label="Foo" description="Bar" /> );
 
-		expect( screen.getByText( 'Foo' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Bar' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Foo' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders "Manage" and "Delete"', () => {
 		render( <PaymentMethod label="Foo" /> );
 
-		const manageLink = screen.getByRole( 'link', {
+		const manageLink = screen.queryByRole( 'link', {
 			name: 'Manage',
 		} );
 
-		const deleteButton = screen.getByRole( 'button', {
+		const deleteButton = screen.queryByRole( 'button', {
 			name: 'Delete',
 		} );
 
