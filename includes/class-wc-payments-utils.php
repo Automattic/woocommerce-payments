@@ -355,4 +355,21 @@ class WC_Payments_Utils {
 	public static function set_order_intent_currency( WC_Order $order, string $currency ) {
 		$order->update_meta_data( self::ORDER_INTENT_CURRENCY_META_KEY, $currency );
 	}
+
+	/**
+	 * Checks if the currently displayed page is the WooCommerce Payments
+	 * settings page or a payment method settings page.
+	 *
+	 * @return bool
+	 */
+	public static function is_payments_settings_page(): bool {
+		global $current_section, $current_tab;
+
+		return (
+			is_admin()
+			&& $current_tab && $current_section
+			&& 'checkout' === $current_tab
+			&& 0 === strpos( $current_section, 'woocommerce_payments' )
+		);
+	}
 }
