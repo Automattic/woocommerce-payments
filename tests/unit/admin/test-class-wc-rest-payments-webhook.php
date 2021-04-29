@@ -58,7 +58,7 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id' ] )
+			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -447,6 +447,99 @@ class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
 
 		$response = $this->controller->handle_webhook( $this->request );
 
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order.
+	 */
+	public function test_payment_intent_successful_and_completes_order() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [],
+			'currency' => 'eur',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'payment_complete', 'has_status' ] )
+			->getMock();
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( [ 'result' => 'success' ], $response_data );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will not complete the order
+	 * if it is already completed/processed.
+	 */
+	public function test_payment_intent_successful_when_retrying() {
+		$this->request_body['type']           = 'payment_intent.succeeded';
+		$this->request_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [],
+			'currency' => 'eur',
+		];
+
+		$this->request->set_body( wp_json_encode( $this->request_body ) );
+
+		$mock_order = $this->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'payment_complete', 'has_status' ] )
+			->getMock();
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( true );
+
+		$mock_order
+			->expects( $this->never() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		// Run the test.
+		$response = $this->controller->handle_webhook( $this->request );
+
+		// Check the response.
 		$response_data = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );

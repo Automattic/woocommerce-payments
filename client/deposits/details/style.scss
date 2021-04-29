@@ -10,13 +10,13 @@
 	.wcpay-deposit-date {
 		font-size: 14px;
 		line-height: 20px;
-		color: #757575;
+		color: $gray-700;
 		margin-bottom: 12px;
 	}
 	.wcpay-deposit-bank-account {
 		font-size: 14px;
 		line-height: 20px;
-		color: #757575;
+		color: $gray-700;
 		margin-top: 12px;
 		text-transform: uppercase;
 	}
@@ -24,7 +24,7 @@
 	.wcpay-deposit-status {
 		font-size: 20px;
 		line-height: 18px;
-		color: $dark-gray-900;
+		color: $gray-900;
 
 		.woocommerce-order-status__indicator {
 			width: 0.85em;
@@ -49,14 +49,14 @@
 	.wcpay-deposit-hero {
 		flex-grow: 5;
 		border-left: 1px solid $light-gray-500;
-		margin: -20px 0;
-		padding: 20px 0;
+		margin: -16px 0;
+		padding: 16px 0;
 	}
 	.wcpay-deposit-amount {
 		text-align: right;
 		font-size: 36px;
 		line-height: 82px;
-		color: $dark-gray-900;
+		color: $gray-900;
 		padding-right: 18px;
 	}
 }

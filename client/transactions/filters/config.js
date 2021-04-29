@@ -98,15 +98,15 @@ export const advancedFilters = {
 			rules: [
 				{
 					value: 'before',
-					label: __( 'Before', 'woocommerce-admin' ),
+					label: __( 'Before', 'woocommerce-payments' ),
 				},
 				{
 					value: 'after',
-					label: __( 'After', 'woocommerce-admin' ),
+					label: __( 'After', 'woocommerce-payments' ),
 				},
 				{
 					value: 'between',
-					label: __( 'Between', 'woocommerce-admin' ),
+					label: __( 'Between', 'woocommerce-payments' ),
 				},
 			],
 			input: {
