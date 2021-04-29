@@ -8,16 +8,14 @@
  */
 export const normalizeLineItems = ( cartTotalItems, pending = false ) => {
 	return cartTotalItems
+		.filter( ( cartTotalItem ) => { return !! cartTotalItem.value; } )
 		.map( ( cartTotalItem ) => {
-			return cartTotalItem.value
-				? {
-						amount: cartTotalItem.value,
-						label: cartTotalItem.label,
-						pending,
-				  }
-				: false;
+			return {
+				amount: cartTotalItem.value,
+				label: cartTotalItem.label,
+				pending,
+			};
 		} )
-		.filter( Boolean );
 };
 
 /**
