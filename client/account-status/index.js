@@ -178,7 +178,14 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 const AccountStatus = ( props ) => {
 	const { accountStatus } = props;
 	if ( accountStatus.error ) {
-		return <div>{ __( 'Error determining the connection status.' ) }</div>;
+		return (
+			<div>
+				{ __(
+					'Error determining the connection status.',
+					'woocommerce-payments'
+				) }
+			</div>
+		);
 	}
 
 	return (
