@@ -25,7 +25,8 @@
 
 	&__drag-handle {
 		.has-drag-handles & {
-			background: url('../../../assets/images/drag-handle.svg') no-repeat center center;
+			background: url( '../../../assets/images/drag-handle.svg' )
+				no-repeat center center;
 			background-size: 10px 6px;
 		}
 	}

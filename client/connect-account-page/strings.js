@@ -24,40 +24,37 @@ export default {
 
 	paymentMethodsHeading: __(
 		'Accepted payment methods',
-		'woocomerce-payments'
+		'woocommerce-payments'
 	),
 
 	recommended: __( 'Recommended', 'woocommerce-payments' ),
 
 	stepsHeading: __(
 		'You’re only steps away from getting paid',
-		'wpoocommerce-payments'
+		'woocommerce-payments'
 	),
 
 	step1: {
 		heading: __(
 			'Create and connect your account',
-			'wpoocommerce-payments'
+			'woocommerce-payments'
 		),
 		description: __(
 			'To ensure safe and secure transactions, a WordPress.com account is required.',
-			'wpoocommerce-payments'
+			'woocommerce-payments'
 		),
 	},
 
 	step2: {
-		heading: __(
-			'Provide a few business details',
-			'wpoocommerce-payments'
-		),
+		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
 			'Next we’ll ask you to verify your business and payment details to enable deposits.',
-			'wpoocommerce-payments'
+			'woocommerce-payments'
 		),
 	},
 
 	step3: {
-		heading: __( 'Setup complete!', 'wpoocommerce-payments' ),
+		heading: __( 'Setup complete!', 'woocommerce-payments' ),
 		description: __(
 			'You’re ready to start using the features and benefits of WooCommerce Payments.'
 		),
@@ -66,8 +63,8 @@ export default {
 	onboardingDisabled: [
 		__(
 			"We've temporarily paused new account creation.",
-			'woocommmerce-payments'
+			'woocommerce-payments'
 		),
-		__( "We'll notify you when we resume!", 'woocommmerce-payments' ),
+		__( "We'll notify you when we resume!", 'woocommerce-payments' ),
 	],
 };

@@ -35,6 +35,9 @@
 			margin-top: 0;
 			margin-bottom: 8px;
 		}
+		.wcpay-deposits-summary__item-detail {
+			color: $dark-gray-500;
+		}
 		/* Hide unused SummaryNumber fields */
 		.woocommerce-summary__item-prev-value,
 		.woocommerce-summary__item-delta {

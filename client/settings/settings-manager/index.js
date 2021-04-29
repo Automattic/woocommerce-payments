@@ -9,18 +9,9 @@ import { useState } from 'react';
  * Internal dependencies
  */
 import PaymentMethods from '../../payment-methods';
+import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
-
-const SettingsSection = ( { title, description, children } ) => (
-	<div className="settings-manager__section">
-		<div className="settings-manager__section-details">
-			<h2>{ title }</h2>
-			<p>{ description }</p>
-		</div>
-		<div className="settings-manager__controls">{ children }</div>
-	</div>
-);
 
 const SettingsManager = ( {
 	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
