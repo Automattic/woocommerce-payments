@@ -174,6 +174,82 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 
+
+	/**
+	 * Test a successful call to create_and_confirm_setup_intent when SEPA is enabled.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_setup_intent_with_SEPA() {
+		// Enable SEPA.
+		update_option( '_wcpay_feature_sepa', '1' );
+
+		$payment_method_id    = 'pm_mock';
+		$customer_id          = 'cus_test12345';
+		$payment_method_types = [ 'card', 'sepa_debit' ];
+		$mandate_data         = [
+			'customer_acceptance' => [
+				'type'   => 'online',
+				'online' => [
+					'ip_address' => '127.0.0.1',
+					'user_agent' => 'Unit Test Agent/0.1.0',
+				],
+			],
+		];
+
+		// Mock the HTTP client manually to assert we are adding mandate data.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			[
+				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
+				'method'          => 'POST',
+				'headers'         => [
+					'Content-Type' => 'application/json; charset=utf-8',
+					'User-Agent'   => 'Unit Test Agent/0.1.0',
+				],
+				'timeout'         => 70,
+				'connect_timeout' => 70,
+			],
+			wp_json_encode(
+				[
+					'test_mode'            => false,
+					'payment_method'       => $payment_method_id,
+					'customer'             => $customer_id,
+					'confirm'              => 'true',
+					'payment_method_types' => $payment_method_types,
+					'mandate_data'         => $mandate_data,
+				]
+			),
+			true
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'             => 'seti_mock',
+							'object'         => 'setup_intent',
+							'payment_method' => $payment_method_id,
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->create_and_confirm_setup_intent( $payment_method_id, $customer_id );
+
+		$this->assertEquals( $payment_method_id, $result['payment_method'] );
+
+		// Disable SEPA.
+		update_option( '_wcpay_feature_sepa', '0' );
+	}
+
 	/**
 	 * Test a successful call to capture intention.
 	 *
