@@ -213,6 +213,40 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create an intention to be used in redirect pay method
+	 *
+	 * @param int    $amount                 - Amount to charge.
+	 * @param string $currency_code          - Currency to charge in.
+	 * @param string $payment_method_id      - ID of payment method to process charge with.
+	 * @param string $customer_id            - ID of the customer making the payment.
+	 * @param bool   $manual_capture         - Whether to capture funds via manual action.
+	 * @param bool   $save_payment_method    - Whether to save payment method for future purchases.
+	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3                 - Level 3 data.
+	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_payment_intention(
+		$amount,
+		$currency_code,
+		$payment_methods,
+		$metadata
+	) {
+		// TODO: There's scope to have amount and currency bundled up into an object.
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['payment_method_types'] = $payment_methods;
+		$request['metadata']             = $metadata;
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.

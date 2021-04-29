@@ -13,6 +13,7 @@ import {
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
+import { supportedUPEProperties } from '../upe-styles.js';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -38,7 +39,14 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
-	const elements = api.getStripe().elements();
+	const elements = api.getStripe().elements( {
+		fonts: [
+			{
+				cssSrc:
+					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.5.1',
+			},
+		],
+	} );
 
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
@@ -434,6 +442,60 @@ jQuery( function ( $ ) {
 		);
 	}
 
+	let paymentElement = null;
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @param {string} paymentMethodId The ID of the payment method.
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	const createPaymentIntent = () => {
+		console.log( supportedUPEProperties );
+		api.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_payment_intent_giropay',
+			'wcpay-payment-method': 'giropay',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			console.log( response );
+
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+
+			if ( ! response.data.client_secret ) {
+				throw new Error( 'Missing client secret.' );
+			}
+			console.log( response.data.client_secret );
+
+			const appearance = {
+				rules: {
+					'.Input': getFieldStyles(
+						'.woocommerce-checkout .form-row input'
+					),
+					'.Label': getFieldStyles(
+						'.woocommerce-checkout .form-row label'
+					),
+					'.Input--invalid, .Input--empty': getFieldStyles(
+						'.woocommerce-checkout .form-row.woocommerce-invalid input'
+					),
+					'.Tab': getFieldStyles(
+						'.woocommerce-checkout .form-row input'
+					),
+				},
+			};
+			console.log( appearance );
+
+			paymentElement = elements.create( 'payment', {
+				clientSecret: response.data.client_secret,
+				appearance,
+			} );
+			paymentElement.mount( '.wc_payment_methods' );
+			//return giropayRedirect( response.data.client_secret );
+		} );
+		return false;
+	};
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
@@ -444,25 +506,24 @@ jQuery( function ( $ ) {
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
-	$( 'form.checkout' ).on( checkoutEvents, function () {
-		if ( ! isUsingSavedPaymentMethod() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				sofortPayment.sofort = {
-					country: $( '#billing_country' ).val(),
-				};
-				paymentMethodDetails = sofortPayment;
-			}
-			return handlePaymentMethodCreation(
-				$( this ),
-				handleOrderPayment,
-				paymentMethodDetails
-			);
-		}
+	$( '.woocommerce-checkout' ).on( 'submit', function ( event ) {
+		event.preventDefault();
+		event.stopPropagation();
+		console.log( 'CLICKED PLACE ORDER' );
+		api.getStripe()
+			.confirmPayment( {
+				element: paymentElement,
+				confirmParams: {
+					return_url: 'http://bb-wcpay.jurassic.tube/123/complete',
+				},
+			} )
+			.then( ( result ) => {
+				console.log( result );
+			} )
+			.catch( ( error ) => {
+				console.log( error.message );
+			} );
+		return false;
 	} );
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
@@ -510,4 +571,62 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
+
+	window.getFieldStyles = ( selector ) => {
+		if ( ! document.querySelector( selector ) ) {
+			return {};
+		}
+
+		const elem = document.querySelector( selector );
+		const styles = window.getComputedStyle( elem );
+		const filteredStyles = {};
+
+		for ( let i = 0; i < styles.length; i++ ) {
+			const camelCase = dashedToCamelCase( styles[ i ] );
+			if ( supportedUPEProperties.includes( camelCase ) ) {
+				filteredStyles[ camelCase ] = styles.getPropertyValue(
+					styles[ i ]
+				);
+			}
+		}
+
+		return filteredStyles;
+	};
+
+	window.getFontURLs = () => {
+		const pattern = /url\(.*?\)/g;
+		for ( let i = 0; i < document.styleSheets.length; i++ ) {
+			try {
+				for (
+					let j = 0;
+					j < document.styleSheets[ i ].cssRules.length;
+					j++
+				) {
+					const urls = document.styleSheets[ i ].cssRules[
+						j
+					].cssText.match( pattern );
+					if ( urls ) {
+						for ( let k = 0; k < urls.length; k++ ) {
+							console.log( urls[ k ] );
+						}
+					}
+				}
+			} catch ( e ) {
+				console.log( e );
+				console.log( document.styleSheets[ i ] );
+			}
+		}
+	};
+
+	const dashedToCamelCase = ( string ) => {
+		return string.replace( /-([a-z])/g, function ( g ) {
+			return g[ 1 ].toUpperCase();
+		} );
+	};
+
+	const camelCaseToDashed = ( string ) => {
+		return string.replace( /[A-Z]/g, ( m ) => '-' + m.toLowerCase() );
+	};
+
+	createPaymentIntent();
 } );

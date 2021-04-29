@@ -45,6 +45,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
+				betas: ['payment_element_beta_1'],
 			} );
 		}
 		return this.stripe;
