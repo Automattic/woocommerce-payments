@@ -1,10 +1,10 @@
 <?php
 /**
- * Class Sepa_Test
- * @package WCPay\Payment_Gateway\Tests
+ * Class Sofort_Payment_Gateway_Test
+ * @package WCPay\Payment_Gateways\Tests
  */
 
-namespace WCPay\Payment_Method;
+namespace WCPay\Payment_Methods;
 
 use DateTime;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -24,13 +24,13 @@ use WP_UnitTestCase;
 use WP_User;
 
 /**
- * WCPay\Payment_Gateway\Sepa Unit tests
+ * WCPay\Payment_Gateway\Sofort Unit tests
  */
-class Sepa_Test extends WP_UnitTestCase {
+class Sofort_Payment_Gateway_Test extends WP_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var Sepa
+	 * @var Sofort_Payment_Gateway
 	 */
 	private $mock_wcpay_gateway;
 
@@ -109,7 +109,7 @@ class Sepa_Test extends WP_UnitTestCase {
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
-		$this->mock_wcpay_gateway = $this->getMockBuilder( Sepa::class )
+		$this->mock_wcpay_gateway = $this->getMockBuilder( Sofort_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -146,14 +146,20 @@ class Sepa_Test extends WP_UnitTestCase {
 	/**
 	 * Test processing payment with the status 'succeeded'.
 	 */
-	public function test_intent_status_success_logged_out_user() {
+	public function test_intent_status_requires_action_logged_out_user() {
 		// Arrange: Reusable data.
-		$intent_id = 'pi_123';
-		$charge_id = 'ch_123';
-		$status    = 'succeeded';
-		$secret    = 'client_secret_123';
-		$order_id  = 123;
-		$total     = 12.23;
+		$intent_id   = 'pi_123';
+		$charge_id   = 'ch_123';
+		$status      = 'requires_action';
+		$secret      = 'client_secret_123';
+		$order_id    = 123;
+		$total       = 12.23;
+		$next_action = [
+			'type'            => 'redirect_to_url',
+			'redirect_to_url' => [
+				'url' => 'sofort_redirect_url',
+			],
+		];
 
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
@@ -184,7 +190,8 @@ class Sepa_Test extends WP_UnitTestCase {
 			new DateTime(),
 			$status,
 			$charge_id,
-			$secret
+			$secret,
+			$next_action
 		);
 		$this->mock_api_client
 			->expects( $this->any() )
@@ -205,124 +212,6 @@ class Sepa_Test extends WP_UnitTestCase {
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
-	}
-
-	/**
-	 * Test processing payment with the status "requires_capture".
-	 */
-	public function test_intent_status_requires_capture() {
-		// Arrange: Reusable data.
-		$intent_id   = 'pi_123';
-		$charge_id   = 'ch_123';
-		$customer_id = 'cu_123';
-		$status      = 'processing'; // This is the status SEPA payments have.
-		$secret      = 'client_secret_123';
-		$order_id    = 123;
-		$total       = 12.23;
-
-		// Arrange: Create an order to test with.
-		$mock_order = $this->createMock( 'WC_Order' );
-
-		// Arrange: Set a good return value for order ID.
-		$mock_order
-			->method( 'get_id' )
-			->willReturn( $order_id );
-
-		// Arrange: Set a good return value for order total.
-		$mock_order
-			->method( 'get_total' )
-			->willReturn( $total );
-
-		// Arrange: Set a WP_User object as a return value of order's get_user.
-		$mock_order
-			->method( 'get_user' )
-			->willReturn( wp_get_current_user() );
-
-		// Arrange: Set a good return value for customer ID.
-		$this->mock_customer_service->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->willReturn( $customer_id );
-
-		// Arrange: Create a mock cart.
-		$mock_cart = $this->createMock( 'WC_Cart' );
-
-		// Arrange: Return a 'requires_capture' response from create_and_confirm_intention().
-		$intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'eur',
-			new DateTime(),
-			$status,
-			$charge_id,
-			$secret
-		);
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will(
-				$this->returnValue( $intent )
-			);
-
-		// Assert: Order has correct charge id meta data.
-		// Assert: Order has correct intention status meta data.
-		// Assert: Order has correct intent ID.
-		// This test is a little brittle because we don't really care about the order
-		// in which the different calls are made, but it's not possible to write it
-		// otherwise for now.
-		// There's an issue open for that here:
-		// https://github.com/sebastianbergmann/phpunit/issues/4026.
-		$mock_order
-			->expects( $this->exactly( 6 ) )
-			->method( 'update_meta_data' )
-			->withConsecutive(
-				[ '_payment_method_id', 'pm_mock' ],
-				[ '_stripe_customer_id', $customer_id ],
-				[ '_intent_id', $intent_id ],
-				[ '_charge_id', $charge_id ],
-				[ '_intention_status', $status ],
-				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' ]
-			);
-
-		// Assert: The order note contains all the information we want:
-		// - status
-		// - intention id
-		// - amount charged.
-		// Note that the note and the order status are updated at the same
-		// time using `set_status()`.
-		$mock_order
-			->expects( $this->exactly( 1 ) )
-			->method( 'set_status' )
-			->with(
-				'on-hold',
-				$this->callback(
-					function( $note ) use ( $intent_id, $total ) {
-						return (
-							strpos( $note, 'authorized' )
-							&& strpos( $note, $intent_id )
-							&& strpos( $note, strval( $total ) )
-						);
-					}
-				)
-			);
-
-		// Assert: Order has correct transaction ID set.
-		$mock_order
-			->expects( $this->exactly( 1 ) )
-			->method( 'set_transaction_id' )
-			->with( $intent_id );
-
-		// Assert: empty_cart() was called.
-		$mock_cart
-			->expects( $this->once() )
-			->method( 'empty_cart' );
-
-		// Act: process payment.
-		$payment_information = Payment_Information::from_payment_request( $_POST, $mock_order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), Payment_Capture_Type::MANUAL() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$result              = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
-
-		// Assert: Returning correct array.
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertEquals( $this->return_url, $result['redirect'] );
+		$this->assertEquals( 'sofort_redirect_url', $result['redirect'] );
 	}
 }

@@ -2,6 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+
+// Handled as an external dependency: see '/webpack.config.js:83'
+// eslint-disable-next-line import/no-unresolved
 import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 
 /**

@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 // Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
 // See discussion in WCPay PR #1263 in GitHub.
+// eslint-disable-next-line import/no-unresolved
 import 'wp-mediaelement';
 
 /**

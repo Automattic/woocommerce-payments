@@ -10,8 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Payment_Method\Card;
-use WCPay\Payment_Method\Sepa;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
+use WCPay\Payment_Methods\Giropay_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -21,16 +23,30 @@ class WC_Payments {
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var CC_Payment_Gateway
 	 */
 	private static $card_gateway;
 
 	/**
-	 * Instance of Sepa gateway, created in init function.
+	 * Instance of Giropay gateway, created in init function.
 	 *
-	 * @var Sepa
+	 * @var Giropay_Payment_Gateway
+	 */
+	private static $giropay_gateway;
+
+	/**
+	 * Instance of SEPA gateway, created in init function.
+	 *
+	 * @var Sepa_Payment_Gateway
 	 */
 	private static $sepa_gateway;
+
+	/**
+	 * Instance of Sofort gateway, created in init function.
+	 *
+	 * @var Sofort_Payment_Gateway
+	 */
+	private static $sofort_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -115,6 +131,7 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		include_once __DIR__ . '/class-wc-payments-features.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		if ( ! self::check_plugin_dependencies( true ) ) {
@@ -141,8 +158,11 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
-		include_once __DIR__ . '/payment-method/class-card.php';
-		include_once __DIR__ . '/payment-method/class-sepa.php';
+		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
+		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -154,6 +174,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
+		include_once __DIR__ . '/constants/class-payment-method.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -169,8 +190,10 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = Card::class;
-		$sepa_class    = Sepa::class;
+		$gateway_class = CC_Payment_Gateway::class;
+		$giropay_class = Giropay_Payment_Gateway::class;
+		$sepa_class    = Sepa_Payment_Gateway::class;
+		$sofort_class  = Sofort_Payment_Gateway::class;
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
@@ -178,7 +201,15 @@ class WC_Payments {
 		}
 
 		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
-		self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		if ( WC_Payments_Features::is_giropay_enabled() ) {
+			self::$giropay_gateway = new $giropay_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			self::$sepa_gateway = new $sepa_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
+		if ( WC_Payments_Features::is_sofort_enabled() ) {
+			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
@@ -188,6 +219,9 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 
+		// Priority 5 so we can manipulate the registered gateways before they are shown.
+		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
+
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -195,6 +229,11 @@ class WC_Payments {
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
+
+			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
+				new WC_Payments_Admin_Sections_Overwrite();
+			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -300,7 +339,7 @@ class WC_Payments {
 			if ( ! $silent ) {
 				$message = WC_Payments_Utils::esc_interpolated_html(
 					sprintf(
-					/* translators: %1: required WC version number, %2: currently installed WC version number */
+						/* translators: %1: required WC version number, %2: currently installed WC version number */
 						__( 'WooCommerce Payments requires <strong>WooCommerce %1$s</strong> or greater to be installed (you are using %2$s).', 'woocommerce-payments' ),
 						$wc_version,
 						WC_VERSION
@@ -410,9 +449,29 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-		$gateways[] = self::$sepa_gateway;
+		if ( WC_Payments_Features::is_giropay_enabled() ) {
+			$gateways[] = self::$giropay_gateway;
+		}
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$gateways[] = self::$sepa_gateway;
+		}
+		if ( WC_Payments_Features::is_sofort_enabled() ) {
+			$gateways[] = self::$sofort_gateway;
+		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Called on Payments setting page.
+	 * Remove all WCPay gateways except CC one.
+	 */
+	public static function hide_gateways_on_settings_page() {
+		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof CC_Payment_Gateway ) {
+				unset( WC()->payment_gateways->payment_gateways[ $index ] );
+			}
+		}
 	}
 
 	/**
@@ -540,6 +599,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Account instance
+	 *
+	 * @return WC_Payments_Account account service instance
+	 */
+	public static function get_account_service() {
+		return self::$account;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -596,6 +664,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
 		}
 	}
 

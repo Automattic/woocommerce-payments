@@ -14,6 +14,7 @@ project.properties
 # Bundle
 dist
 release
+languages/*.pot
 woocommerce-payments.zip
 
 # Grunt

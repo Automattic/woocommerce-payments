@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 /**
@@ -155,6 +156,7 @@ class WC_Payments_API_Client {
 	 * @param array  $metadata               - Meta data values to be sent along with payment intent creation.
 	 * @param array  $level3                 - Level 3 data.
 	 * @param bool   $off_session            - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
+	 * @param array  $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -168,7 +170,8 @@ class WC_Payments_API_Client {
 		$save_payment_method = false,
 		$metadata = [],
 		$level3 = [],
-		$off_session = false
+		$off_session = false,
+		$additional_parameters = []
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -181,8 +184,8 @@ class WC_Payments_API_Client {
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
 
-		if ( '1' === get_option( '_wcpay_feature_sepa' ) ) {
-			$request['payment_method_types'] = [ 'card', 'sepa_debit' ];
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
 			$request['mandate_data']         = [
 				'customer_acceptance' => [
 					'type'   => 'online',
@@ -193,6 +196,8 @@ class WC_Payments_API_Client {
 				],
 			];
 		}
+
+		$request = array_merge( $request, $additional_parameters );
 
 		if ( $off_session ) {
 			$request['off_session'] = true;
@@ -290,11 +295,14 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method'       => $payment_method_id,
-			'customer'             => $customer_id,
-			'confirm'              => 'true',
-			'payment_method_types' => [ 'card', 'sepa_debit' ],
+			'payment_method' => $payment_method_id,
+			'customer'       => $customer_id,
+			'confirm'        => 'true',
 		];
+
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -367,6 +375,25 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposit( $deposit_id ) {
 		return $this->request( [], self::DEPOSITS_API . '/' . $deposit_id, self::GET );
+	}
+
+	/**
+	 * Trigger a manual deposit.
+	 *
+	 * @param string $type Type of deposit. Only "instant" is supported for now.
+	 * @param string $transaction_ids Comma-separated list of transaction IDs that will be associated with this deposit.
+	 * @return array The new deposit object.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function manual_deposit( $type, $transaction_ids ) {
+		return $this->request(
+			[
+				'type'            => $type,
+				'transaction_ids' => $transaction_ids,
+			],
+			self::DEPOSITS_API,
+			self::POST
+		);
 	}
 
 	/**
@@ -668,6 +695,8 @@ class WC_Payments_API_Client {
 	 * Get current account data
 	 *
 	 * @return array An array describing an account object.
+	 *
+	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_account_data() {
 		return $this->request(
@@ -1224,7 +1253,9 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
+		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
@@ -1233,7 +1264,9 @@ class WC_Payments_API_Client {
 			$created,
 			$intention_array['status'],
 			$charge ? $charge['id'] : null,
-			$intention_array['client_secret']
+			$intention_array['client_secret'],
+			$next_action,
+			$last_payment_error
 		);
 
 		return $intent;

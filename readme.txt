@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.4
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.2.0
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,19 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.3.0 - 2021-xx-xx =
+= 2.4.0 - 2021-xx-xx =
+* Update - Improve the Connect Account page.
+* Update - Base UI components and their styling.
+
+= 2.3.2 - 2021-04-27 =
+* Fix - Error when purchasing free trial subscriptions.
+
+= 2.3.1 - 2021-04-26 =
+* Fix - Various account connection cache tweaks
+* Update - Use option instead of transient for caching account data
+* Fix - Error when using SCA / 3DS credit card in checkout block.
+
+= 2.3.0 - 2021-04-21 =
 * Add - Introduced deposit currency filter for transactions overview page.
 * Add - Download transactions report in CSV.
 * Update - Tweak the connection detection logic.
@@ -116,6 +128,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Introduced deposit currency filter for deposits overview page.
 * Update - Make Payment Request Button available for all merchants.
 * Add - Configurable Payment Request Button locations.
+* Add - Addition of the Instant Deposits feature to allow qualified merchants to manually trigger payouts.
 
 = 2.2.0 - 2021-03-31 =
 * Fix - Paying with a saved card for a subscription with a free trial will now correctly save the chosen payment method to the order for future renewals.

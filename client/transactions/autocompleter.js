@@ -44,7 +44,7 @@ export default {
 				{ interpolateComponents( {
 					mixedString: __(
 						'All transactions with customer names or billing emails that include {{query /}}',
-						'woocommerce-admin'
+						'woocommerce-payments'
 					),
 					components: {
 						query: (

@@ -24,10 +24,14 @@
 	"settings": {
 		"react": {
 			"version": "detect"
+		},
+		"import/resolver": {
+			"typescript": {}
 		}
 	},
 	"rules": {
 		"camelcase": [ "error", { "properties": "always" } ],
+		"import/no-extraneous-dependencies": "off",
 		"indent": "off",
 		"max-len": [ "error", { "code": 140 } ],
 		"no-console": "warn",
@@ -63,6 +67,7 @@
 		"jsdoc/require-param":                     "off",
 		"jsdoc/check-param-names":                 "off",
 		"jsdoc/require-property":                  "off",
+		"@wordpress/no-global-event-listener":     "off",
 		"@wordpress/no-unused-vars-before-return": "off",
 		"@wordpress/i18n-translator-comments":     "off",
 		"@wordpress/valid-sprintf":                "off",
