@@ -64,7 +64,7 @@ export const paymentMethodHandler = async (
 				completePayment( redirectUrl );
 			}
 		} catch ( error ) {
-			abortPayment( event, error );
+			abortPayment( event, error.message );
 		}
 	} else {
 		abortPayment( event, getErrorMessageFromNotice( response.messages ) );
