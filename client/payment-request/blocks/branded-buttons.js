@@ -21,12 +21,14 @@ const useImageOrDefault = ( url, defaultUrl ) => {
 
 export const GooglePayButton = ( { onClick } ) => {
 	const {
-		theme,
 		height,
 		locale,
 		// eslint-disable-next-line camelcase
 		branded_type,
 	} = getPaymentRequestData( 'button' );
+	// Allowed themes for Google Pay button image are 'dark' and 'light'.
+	const theme =
+		'dark' === getPaymentRequestData( 'button' )?.theme ? 'dark' : 'light';
 
 	// If we're using the short button type (i.e. logo only) make sure we get the logo only SVG.
 	const googlePlaySvg =
@@ -46,8 +48,11 @@ export const GooglePayButton = ( { onClick } ) => {
 			type="button"
 			id="wcpay-branded-button"
 			aria-label="Google Pay"
-			// eslint-disable-next-line camelcase
-			className={ `gpay-button ${ theme } ${ branded_type }` }
+			className={ `gpay-button ${
+				// For the button class, `light-outline` is also supported.
+				getPaymentRequestData( 'button' )?.theme
+				// eslint-disable-next-line camelcase
+			} ${ branded_type }` }
 			style={ {
 				backgroundImage: `url(${ backgroundUrl })`,
 				height: height + 'px',

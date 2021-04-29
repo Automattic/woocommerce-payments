@@ -347,21 +347,23 @@ jQuery( ( $ ) => {
 			prButton.data( 'isBranded' ),
 
 		createGooglePayButton: () => {
-			const allowedThemes = [ 'dark', 'light' ];
-			const allowedTypes = [ 'short', 'long' ];
-
-			let theme = wcpayPaymentRequestParams.button.theme;
-			let type = wcpayPaymentRequestParams.button.branded_type;
+			const type = wcpayPaymentRequestParams.button.branded_type;
 			const locale = wcpayPaymentRequestParams.button.locale;
 			const height = wcpayPaymentRequestParams.button.height;
-			theme = allowedThemes.includes( theme ) ? theme : 'light';
-			type = allowedTypes.includes( type ) ? type : 'long';
+			// Allowed themes for Google Pay button image are 'dark' and 'light'.
+			const theme =
+				'dark' === wcpayPaymentRequestParams.button.theme
+					? 'dark'
+					: 'light';
 
 			const button = $(
 				'<button type="button" id="wcpay-branded-button" aria-label="Google Pay" class="gpay-button"></button>'
 			);
 			button.css( 'height', height + 'px' );
-			button.addClass( theme + ' ' + type );
+			// For the button class, `light-outline` is also supported.
+			button.addClass(
+				wcpayPaymentRequestParams.button.theme + ' ' + type
+			);
 			if ( 'long' === type ) {
 				const url =
 					'https://www.gstatic.com/instantbuy/svg/' +
