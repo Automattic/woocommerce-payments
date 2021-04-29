@@ -13,6 +13,7 @@ import AccountStatus from 'account-status';
 import AccountFees from 'account-fees';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
+import PaymentMethodSettings from './payment-method-settings';
 
 const statusContainer = document.getElementById(
 	'wcpay-account-status-container'
@@ -66,6 +67,18 @@ if ( settingsContainer ) {
 	ReactDOM.render(
 		<SettingsManager { ...wcpayAdminSettings } />,
 		settingsContainer
+	);
+}
+
+const paymentMethodSettingsContainer = document.getElementById(
+	'wcpay-payment-method-settings-container'
+);
+if ( paymentMethodSettingsContainer ) {
+	const methodId = paymentMethodSettingsContainer.dataset.methodId;
+
+	ReactDOM.render(
+		<PaymentMethodSettings methodId={ methodId } />,
+		paymentMethodSettingsContainer
 	);
 }
 

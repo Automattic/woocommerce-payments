@@ -19,7 +19,7 @@ describe( 'OrderableList', () => {
 			</OrderableList>
 		);
 
-		const list = screen.getByRole( 'list' );
+		const list = screen.queryByRole( 'list' );
 
 		expect( list ).toBeInTheDocument();
 		expect( list ).toContainElement( screen.getByText( 'foo' ) );

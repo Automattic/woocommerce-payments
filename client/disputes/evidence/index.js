@@ -501,8 +501,10 @@ export default ( { query } ) => {
 		// Prevent submit if upload is in progress.
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
-				__( 'Please wait until file upload is finished' ),
-				'woocommerce-payments'
+				__(
+					'Please wait until file upload is finished',
+					'woocommerce-payments'
+				)
 			);
 			return;
 		}
