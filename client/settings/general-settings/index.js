@@ -16,6 +16,8 @@ import {
  */
 import './style.scss';
 
+const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
+
 const GeneralSettings = ( { accountLink } ) => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
 	const [ isManualCaptureEnabled, setIsManualCaptureEnabled ] = useState(
@@ -68,11 +70,11 @@ const GeneralSettings = ( { accountLink } ) => {
 						) }
 						value={ accountStatement }
 						onChange={ setAccountStatement }
-						maxLength={ 22 }
+						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						hideLabelFromVision
 					/>
 					<span className="input-help-text" aria-hidden="true">
-						{ `${ accountStatement.length } / 22` }
+						{ `${ accountStatement.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 				</div>
 				<div className="general-settings__bank-information">
@@ -83,7 +85,7 @@ const GeneralSettings = ( { accountLink } ) => {
 								'woocommerce-payments'
 							) }
 						</h4>
-						<p className="font-style-italic">
+						<p className="general-settings__bank-information-help">
 							{ __(
 								'Manage and update your bank account information to receive payments and payouts.',
 								'woocommerce-payments'
@@ -94,7 +96,7 @@ const GeneralSettings = ( { accountLink } ) => {
 						className="components-button is-secondary"
 						href={ accountLink }
 					>
-						Manage in Stripe
+						{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
 					</ExternalLink>
 				</div>
 			</CardBody>

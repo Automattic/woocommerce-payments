@@ -3,7 +3,7 @@
 		display: flex;
 		flex-direction: column;
 
-		:first-child {
+		> :first-child {
 			flex-grow: 1;
 		}
 
@@ -18,20 +18,25 @@
 	&__account-statement-wrapper {
 		position: relative;
 
+		input[maxlength='22'] {
+			// to make room for the help text, so that the input's text and the help text don't overlap
+			padding-right: 55px;
+		}
+
 		.input-help-text {
 			position: absolute;
 			right: 10px;
-			top: 12px;
+			top: 11px;
 			font-size: 12px;
 			color: #757575;
 
-			@include breakpoint( '>800px' ) {
-				top: 7px;
+			@media ( min-width: 783px ) {
+				top: 6px;
 			}
 		}
 	}
 
-	.font-style-italic {
+	&__bank-information-help {
 		font-style: italic;
 	}
 }
