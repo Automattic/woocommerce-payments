@@ -6,13 +6,13 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
-import GridiconNotice from 'gridicons/dist/notice';
 
 /**
  * Internal dependencies
  */
 import Chip from 'components/chip';
+import DepositsStatus from 'components/deposits-status';
+import PaymentsStatus from 'components/payments-status';
 import './style.scss';
 
 const renderStatusChip = ( status ) => {
@@ -36,79 +36,22 @@ const renderStatusChip = ( status ) => {
 };
 
 const renderPaymentsStatus = ( paymentsEnabled ) => {
-	let className;
-	let description;
-	let icon;
-
-	if ( paymentsEnabled ) {
-		description = __( 'Enabled', 'woocommerce-payments' );
-		icon = <GridiconCheckmarkCircle size={ 18 } />;
-		className = 'account-status__info__green';
-	} else {
-		description = __( 'Disabled', 'woocommerce-payments' );
-		icon = <GridiconNotice size={ 18 } />;
-		className = 'account-status__info__red';
-	}
-
 	return (
 		<span className="account-status__info">
 			{ __( 'Payments:', 'woocommerce-payments' ) }
-			<span className={ className }>
-				{ icon }
-				{ description }
-			</span>
+			<PaymentsStatus
+				paymentsEnabled={ paymentsEnabled }
+				iconSize={ 18 }
+			/>
 		</span>
 	);
 };
 
 const renderDepositsStatus = ( depositsStatus ) => {
-	let className = 'account-status__info__green';
-	let description;
-	let icon = <GridiconCheckmarkCircle size={ 18 } />;
-
-	if ( 'disabled' === depositsStatus ) {
-		description = __( 'Disabled', 'woocommerce-payments' );
-		className = 'account-status__info__red';
-		icon = <GridiconNotice size={ 18 } />;
-	} else if ( 'daily' === depositsStatus ) {
-		description = __( 'Daily', 'woocommerce-payments' );
-	} else if ( 'weekly' === depositsStatus ) {
-		description = __( 'Weekly', 'woocommerce-payments' );
-	} else if ( 'monthly' === depositsStatus ) {
-		description = __( 'Monthly', 'woocommerce-payments' );
-	} else if ( 'manual' === depositsStatus ) {
-		const learnMoreHref =
-			'https://docs.woocommerce.com/document/payments/faq/deposits-suspended/';
-		description = createInterpolateElement(
-			/* translators: <a> - suspended accounts FAQ URL */
-			__(
-				'Temporarily suspended (<a>learn more</a>)',
-				'woocommerce-payments'
-			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={ learnMoreHref }
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
-		);
-		className = 'account-status__info__yellow';
-		icon = <GridiconNotice size={ 18 } />;
-	} else {
-		description = __( 'Unknown', 'woocommerce-payments' );
-	}
-
 	return (
 		<span className="account-status__info">
 			{ __( 'Deposits:', 'woocommerce-payments' ) }
-			<span className={ className }>
-				{ icon }
-				{ description }
-			</span>
+			<DepositsStatus iconSize={ 18 } depositsStatus={ depositsStatus } />
 		</span>
 	);
 };

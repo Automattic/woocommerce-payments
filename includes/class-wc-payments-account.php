@@ -168,6 +168,7 @@ class WC_Payments_Account {
 		}
 
 		return [
+			'email'           => $account['email'] ?? '',
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
