@@ -127,16 +127,20 @@ jQuery( function ( $ ) {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
-			! $( '#wcpay-card-element' ).length ||
+			( ! $( '#wcpay-sepa-element' ).length &&
+				! $( '#wcpay-card-element' ).length ) ||
 			$( '#wcpay-card-element' ).children().length
 		) {
 			return;
 		}
 
-		cardElement.unmount();
-		cardElement.mount( '#wcpay-card-element' );
+		if ( $( '#wcpay-card-element' ).length ) {
+			cardElement.unmount();
+			cardElement.mount( '#wcpay-card-element' );
+		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
+			sepaElement.unmount();
 			sepaElement.mount( '#wcpay-sepa-element' );
 		}
 	} );
@@ -145,7 +149,9 @@ jQuery( function ( $ ) {
 		$( 'form#add_payment_method' ).length ||
 		$( 'form#order_review' ).length
 	) {
-		cardElement.mount( '#wcpay-card-element' );
+		if ( $( '#wcpay-card-element' ).length ) {
+			cardElement.mount( '#wcpay-card-element' );
+		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
