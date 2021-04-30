@@ -103,7 +103,7 @@ const PaymentMethodsSelector = ( props ) => {
 				<Button isPrimary onClick={ handleAddSelected }>
 					{ __( 'Add selected', 'woocommerce-payments' ) }
 				</Button>
-				<Button isTertiary onClick={ onClose }>
+				<Button isSecondary onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 			</div>

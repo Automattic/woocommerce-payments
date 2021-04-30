@@ -131,6 +131,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 						onClick={ () =>
 							setPaymentMethodsSelectorModalVisible( true )
 						}
+						isSecondary
 					>
 						{ __( 'Add payment method', 'woocommerce-payments' ) }
 					</Button>
