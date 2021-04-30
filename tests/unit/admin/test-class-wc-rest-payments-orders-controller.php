@@ -138,17 +138,57 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$response      = $this->controller->capture_terminal_payment( $request );
-		$response_data = $response->get_data();
+		$response = $this->controller->capture_terminal_payment( $request );
 
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 409, $data['status'] );
+	}
+
+	public function test_capture_terminal_payment_error_when_capturing() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_status' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				[
+					'status'  => 'failed',
+					'message' => 'Test error',
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
 			[
-				'status' => 'failed',
-				'id'     => $this->mock_intent_id,
-			],
-			$response_data
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
 		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 502, $data['status'] );
+		$this->assertEquals( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
 	}
 
 	public function test_capture_terminal_payment_handles_exceptions() {

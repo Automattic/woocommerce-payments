@@ -77,12 +77,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
-				return rest_ensure_response(
-					[
-						'status' => 'failed',
-						'id'     => $intent_id,
-					]
-				);
+				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
 			// Set the payment method on the order.
@@ -104,12 +99,27 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			if ( 'succeeded' === $result['status'] ) {
 				$order->update_status( 'completed' );
+			} else {
+				return new WP_Error(
+					'wcpay_capture_error',
+					sprintf(
+						// translators: %s: the error message.
+						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+					),
+					[ 'status' => 502 ]
+				);
 			}
 
-			return rest_ensure_response( $result );
+			return rest_ensure_response(
+				[
+					'status' => $result['status'],
+					'id'     => $result['id'],
+				]
+			);
 		} catch ( \Throwable $e ) {
-			Logger::error( 'Failed to process order payment via REST API: ' . $e );
-			return new WP_Error( 'wcpay_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
 }
