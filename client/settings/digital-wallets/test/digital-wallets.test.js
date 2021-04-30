@@ -23,12 +23,12 @@ describe( 'DigitalWallets', () => {
 		] = screen.getAllByRole( 'checkbox' );
 
 		// all "locations" checkboes are disabled and unchecked.
-		expect( checkoutCheckbox.disabled ).toBeTruthy();
-		expect( checkoutCheckbox.checked ).toBeFalsy();
-		expect( productPageCheckbox.disabled ).toBeTruthy();
-		expect( productPageCheckbox.checked ).toBeFalsy();
-		expect( cartCheckbox.disabled ).toBeTruthy();
-		expect( cartCheckbox.checked ).toBeFalsy();
+		expect( checkoutCheckbox ).toBeDisabled();
+		expect( checkoutCheckbox ).not.toBeChecked();
+		expect( productPageCheckbox ).toBeDisabled();
+		expect( productPageCheckbox ).not.toBeChecked();
+		expect( cartCheckbox ).toBeDisabled();
+		expect( cartCheckbox ).not.toBeChecked();
 
 		userEvent.click(
 			screen.getByText(
@@ -37,12 +37,12 @@ describe( 'DigitalWallets', () => {
 		);
 
 		// all checkboxes are checked by default, once the feature is enabled.
-		expect( checkoutCheckbox.disabled ).toBeFalsy();
-		expect( checkoutCheckbox.checked ).toBeTruthy();
-		expect( productPageCheckbox.disabled ).toBeFalsy();
-		expect( productPageCheckbox.checked ).toBeTruthy();
-		expect( cartCheckbox.disabled ).toBeFalsy();
-		expect( cartCheckbox.checked ).toBeTruthy();
+		expect( checkoutCheckbox ).not.toBeDisabled();
+		expect( checkoutCheckbox ).toBeChecked();
+		expect( productPageCheckbox ).not.toBeDisabled();
+		expect( productPageCheckbox ).toBeChecked();
+		expect( cartCheckbox ).not.toBeDisabled();
+		expect( cartCheckbox ).toBeChecked();
 
 		// disabling the product page location.
 		userEvent.click( screen.getByText( 'Product page' ) );
@@ -57,12 +57,12 @@ describe( 'DigitalWallets', () => {
 		);
 
 		// all checkboxes are disabled an not checked.
-		expect( checkoutCheckbox.disabled ).toBeTruthy();
-		expect( checkoutCheckbox.checked ).toBeFalsy();
-		expect( productPageCheckbox.disabled ).toBeTruthy();
-		expect( productPageCheckbox.checked ).toBeFalsy();
-		expect( cartCheckbox.disabled ).toBeTruthy();
-		expect( cartCheckbox.checked ).toBeFalsy();
+		expect( checkoutCheckbox ).toBeDisabled();
+		expect( checkoutCheckbox ).not.toBeChecked();
+		expect( productPageCheckbox ).toBeDisabled();
+		expect( productPageCheckbox ).not.toBeChecked();
+		expect( cartCheckbox ).toBeDisabled();
+		expect( cartCheckbox ).not.toBeChecked();
 
 		// enabling the feature again.
 		userEvent.click(
@@ -72,11 +72,11 @@ describe( 'DigitalWallets', () => {
 		);
 
 		// only the cart checkbox is checked once the feature is enabled again.
-		expect( checkoutCheckbox.disabled ).toBeFalsy();
-		expect( checkoutCheckbox.checked ).toBeFalsy();
-		expect( productPageCheckbox.disabled ).toBeFalsy();
-		expect( productPageCheckbox.checked ).toBeFalsy();
-		expect( cartCheckbox.disabled ).toBeFalsy();
-		expect( cartCheckbox.checked ).toBeTruthy();
+		expect( checkoutCheckbox ).not.toBeDisabled();
+		expect( checkoutCheckbox ).not.toBeChecked();
+		expect( productPageCheckbox ).not.toBeDisabled();
+		expect( productPageCheckbox ).not.toBeChecked();
+		expect( cartCheckbox ).not.toBeDisabled();
+		expect( cartCheckbox ).toBeChecked();
 	} );
 } );
