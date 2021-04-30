@@ -123,6 +123,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			],
+			'cc_enabled'                          => [
+				'title'       => __( 'Enable/disable Credit Card', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments Credit Card', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'no',
+			],
 			'account_details'                     => [
 				'type' => 'account_actions',
 			],
@@ -1144,8 +1151,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
-			case 'enabled':
-				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_statement_descriptor':
 				return $this->get_account_statement_descriptor();
 			default:
@@ -1176,14 +1181,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$key = static::METHOD_ENABLED_KEY;
 		}
 		return parent::update_option( $key, $value );
-	}
-
-	/**
-	 * Init settings for gateways.
-	 */
-	public function init_settings() {
-		parent::init_settings();
-		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 
 	/**
@@ -1883,7 +1880,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// We only want to track orders created by our payment gateway, and orders with a payment method set.
-		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_id' ) ) ) {
+		if ( $order->get_payment_method() !== static::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_id' ) ) ) {
 			return;
 		}
 
@@ -2001,7 +1998,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$tokens = WC_Payment_Tokens::get_tokens(
 			[
 				'user_id'    => $user_id,
-				'gateway_id' => self::GATEWAY_ID,
+				'gateway_id' => static::GATEWAY_ID,
 			]
 		);
 		return array_map(
