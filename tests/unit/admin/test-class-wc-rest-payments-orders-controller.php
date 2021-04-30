@@ -102,6 +102,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			],
 			$response_data
 		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
+		$this->assertEquals( 'completed', $result_order->get_status() );
 	}
 
 	public function test_capture_terminal_payment_intent_non_capturable() {

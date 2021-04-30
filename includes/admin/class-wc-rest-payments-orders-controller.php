@@ -102,6 +102,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Capture the intent.
 			$result = $this->gateway->capture_charge( $order );
 
+			if ( 'succeeded' === $result['status'] ) {
+				$order->update_status( 'completed' );
+			}
+
 			return rest_ensure_response( $result );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to process order payment via REST API: ' . $e );
