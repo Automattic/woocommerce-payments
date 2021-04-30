@@ -5,6 +5,7 @@
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
  * Author URI: https://woocommerce.com/
+ * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 4.0
