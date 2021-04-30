@@ -2,8 +2,8 @@
 	display: flex;
 	flex-flow: column;
 
-	& + & {
-		margin-top: 24px;
+	&:not( &:last-child ) {
+		margin-bottom: 24px;
 	}
 
 	@include breakpoint( '>800px' ) {
