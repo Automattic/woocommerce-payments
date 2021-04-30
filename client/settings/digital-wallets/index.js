@@ -1,3 +1,5 @@
+/** @format **/
+
 /**
  * External dependencies
  */
@@ -37,6 +39,7 @@ const DigitalWallets = () => {
 						'Enable digital wallets & express payment methods',
 						'woocommerce-payments'
 					) }
+					/* eslint-disable jsx-a11y/anchor-has-content */
 					help={ interpolateComponents( {
 						mixedString: __(
 							// eslint-disable-next-line max-len
@@ -45,7 +48,6 @@ const DigitalWallets = () => {
 						),
 						components: {
 							stripeLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<a
 									target="_blank"
 									rel="noreferrer"
@@ -53,7 +55,6 @@ const DigitalWallets = () => {
 								/>
 							),
 							appleLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<a
 									target="_blank"
 									rel="noreferrer"
@@ -61,7 +62,6 @@ const DigitalWallets = () => {
 								/>
 							),
 							googleLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<a
 									target="_blank"
 									rel="noreferrer"
@@ -69,7 +69,6 @@ const DigitalWallets = () => {
 								/>
 							),
 							microsoftLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
 								<a
 									target="_blank"
 									rel="noreferrer"
@@ -78,6 +77,7 @@ const DigitalWallets = () => {
 							),
 						},
 					} ) }
+					/* eslint-enable max-len */
 				/>
 				<h4>
 					{ __(
