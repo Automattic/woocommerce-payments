@@ -34,7 +34,7 @@ describe( 'DigitalWallets', () => {
 			)
 		);
 
-		// only the checkout checkbox is checked by default, once the feature is enabled.
+		// all checkboxes are checked by default, once the feature is enabled.
 		expect( checkoutCheckbox.disabled ).toBeFalsy();
 		expect( checkoutCheckbox.checked ).toBeTruthy();
 		expect( productPageCheckbox.disabled ).toBeFalsy();
