@@ -22,7 +22,8 @@
 		&:active {
 			background-color: #fff;
 		}
-		&:hover {
+		&:hover,
+		&:focus {
 			background-color: #f8f8f8;
 		}
 		&:focus {
@@ -41,7 +42,8 @@
 		&:active {
 			background-color: #fff;
 		}
-		&:hover {
+		&:hover,
+		&:focus {
 			background-color: #f8f8f8;
 		}
 		&:focus {
@@ -56,7 +58,8 @@
 		&:active {
 			background-color: #5f6368;
 		}
-		&:hover {
+		&:hover,
+		&:focus {
 			background-color: #3c4043;
 		}
 		&:focus {
