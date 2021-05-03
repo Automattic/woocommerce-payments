@@ -31,19 +31,16 @@ describe( 'PaymentMethodsSelector', () => {
 
 		const giroPay = within( paymentMethods[ 0 ] );
 		expect( giroPay.getByRole( 'checkbox' ) ).toBeTruthy();
-		expect( giroPay.getByAltText( 'GiroPay' ) ).toBeTruthy();
 		expect( giroPay.getByText( 'GiroPay' ) ).toBeTruthy();
 		expect( giroPay.getByText( 'missing fees' ) ).toBeTruthy();
 
 		const sofort = within( paymentMethods[ 1 ] );
 		expect( sofort.getByRole( 'checkbox' ) ).toBeTruthy();
-		expect( sofort.getByAltText( 'Sofort' ) ).toBeTruthy();
 		expect( sofort.getByText( 'Sofort' ) ).toBeTruthy();
 		expect( sofort.getByText( 'missing fees' ) ).toBeTruthy();
 
 		const sepa = within( paymentMethods[ 2 ] );
 		expect( sepa.getByRole( 'checkbox' ) ).toBeTruthy();
-		expect( sepa.getByAltText( 'Direct Debit Payments' ) ).toBeTruthy();
 		expect( sepa.getByText( 'Direct Debit Payments' ) ).toBeTruthy();
 		expect( sepa.getByText( 'missing fees' ) ).toBeTruthy();
 
