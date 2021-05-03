@@ -15,6 +15,7 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -208,7 +209,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		add_action(
 			sprintf(
 				'woocommerce_subscription_payment_meta_input_%s_%s_%s',
-				WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				CC_Payment_Gateway::GATEWAY_ID,
 				self::PAYMENT_METHOD_META_TABLE,
 				self::PAYMENT_METHOD_META_KEY
 			),
@@ -400,7 +401,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
 		// make sure payment method is wcpay's.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $old_payment_method ) {
+		if ( CC_Payment_Gateway::GATEWAY_ID !== $old_payment_method ) {
 			return $old_payment_method_title;
 		}
 
@@ -451,7 +452,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
 		// make sure payment method is wcpay's.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+		if ( CC_Payment_Gateway::GATEWAY_ID !== $new_payment_method ) {
 			return $new_payment_method_title;
 		}
 
