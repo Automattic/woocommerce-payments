@@ -45,6 +45,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
+				betas: ['payment_element_beta_1'],
 			} );
 		}
 		return this.stripe;
@@ -266,6 +267,37 @@ export default class WCPayAPI {
 						return setupIntent;
 					} )
 			);
+		} );
+	}
+
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	createIntent() {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_payment_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
+		} );
+	}
+
+	createOrder() {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_order',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createOrderNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
 		} );
 	}
 }

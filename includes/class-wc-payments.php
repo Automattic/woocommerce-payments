@@ -449,15 +449,15 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-		if ( WC_Payments_Features::is_giropay_enabled() ) {
-			$gateways[] = self::$giropay_gateway;
-		}
-		if ( WC_Payments_Features::is_sepa_enabled() ) {
-			$gateways[] = self::$sepa_gateway;
-		}
-		if ( WC_Payments_Features::is_sofort_enabled() ) {
-			$gateways[] = self::$sofort_gateway;
-		}
+		// if ( WC_Payments_Features::is_giropay_enabled() ) {
+		// 	$gateways[] = self::$giropay_gateway;
+		// }
+		// if ( WC_Payments_Features::is_sepa_enabled() ) {
+		// 	$gateways[] = self::$sepa_gateway;
+		// }
+		// if ( WC_Payments_Features::is_sofort_enabled() ) {
+		// 	$gateways[] = self::$sofort_gateway;
+		// }
 
 		return $gateways;
 	}

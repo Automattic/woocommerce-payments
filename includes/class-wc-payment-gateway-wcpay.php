@@ -15,6 +15,9 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Payment_Methods\Giropay_Payment_Gateway;
+use WCPay\Payment_Methods\Sepa_Payment_Gateway;
+use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Tracker;
 
 /**
@@ -111,8 +114,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
+		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->description        = __( 'Enter your payment details', 'woocommerce-payments' );
 		$this->supports           = [
 			'products',
 			'refunds',
@@ -319,7 +322,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wp_ajax_create_order', [ $this, 'create_order_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+
 
 		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
@@ -475,14 +481,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		return [
-			'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'accountId'              => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
-			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'          => $this->account->get_fraud_services_config(),
-			'features'               => $this->supports,
-			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
+			'publishableKey'           => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'                => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'returnUrl'                => $this->get_return_url(),
+			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'createOrderNonce'         => wp_create_nonce( 'wcpay_create_order_nonce' ),
+			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'            => $this->account->get_fraud_services_config(),
+			'features'                 => $this->supports,
+			'forceNetworkSavedCards'   => WC_Payments::is_network_saved_cards_enabled(),
 		];
 	}
 
@@ -657,6 +666,45 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Process complete checkout and create order via AJAX.
+	 *
+	 * @param array $data Form POST fields
+	 */
+	public function create_order_ajax( $data ) {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_order_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception(
+					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
+					'wcpay_upe_create_order_error'
+				);
+			}
+
+			$order_id = WC()->checkout->create_order( $data );
+			$order = wc_get_order( $order_id );
+
+			wp_send_json_success( [ 'redirect_url' => $this->get_return_url( $order ) ], 200 );
+		} catch ( Exception $e ) {
+			if ( $order && $order instanceof WC_Order ) {
+				$order->get_data_store()->release_held_coupons( $order );
+				/**
+				 * Action hook fired when an order is discarded due to Exception.
+				 *
+				 * @since 4.3.0
+				 */
+				do_action( 'woocommerce_checkout_order_exception', $order );
+			}
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -791,8 +839,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( ! $payment_needed && ! $save_payment_method ) {
-			$order->payment_complete();
+		if ( true ) {
+			// $order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				// We need to make sure the saved payment method is saved to the order so we can
@@ -1997,6 +2045,70 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Handle AJAX request for creating a payment intent for Stripe UPE.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_payment_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception(
+					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
+
+			$amount         = WC()->cart->get_cart_contents_total();
+			$currency       = get_woocommerce_currency();
+			$payment_intent = $this->payments_api_client->create_intention(
+				WC_Payments_Utils::prepare_amount( $amount, $currency ),
+				strtolower( $currency ),
+				$this->get_enabled_payment_gateways()
+			);
+
+			wp_send_json_success( [ 'client_secret' => $payment_intent->get_client_secret() ], 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Returns enabled payment gateways, by option value.
+	 *
+	 * @return array
+	 */
+	public function get_enabled_payment_gateways() {
+		$enabled_gateways = [ 'card' ];
+		// if (
+		// 	WC_Payments_Features::is_giropay_enabled() &&
+		// 	'yes' === $this->get_option( Giropay_Payment_Gateway::METHOD_ENABLED_KEY )
+		// ) {
+		// 	$enabled_gateways[] = 'giropay';
+		// }
+		if (
+			WC_Payments_Features::is_sepa_enabled() &&
+			'yes' === $this->get_option( Sepa_Payment_Gateway::METHOD_ENABLED_KEY )
+		) {
+			$enabled_gateways[] = 'ideal';
+		}
+		if (
+			WC_Payments_Features::is_sofort_enabled() &&
+			'yes' === $this->get_option( Sofort_Payment_Gateway::METHOD_ENABLED_KEY )
+		) {
+			$enabled_gateways[] = 'bancontact';
+		}
+		return $enabled_gateways;
 	}
 
 	/**
