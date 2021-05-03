@@ -4,6 +4,7 @@ module.exports = {
 	ignore: [],
 	presets: [ '@wordpress/babel-preset-default' ],
 	plugins: [
+		[ '@babel/transform-runtime', { corejs: 3 } ],
 		'@babel/plugin-proposal-optional-chaining',
 		'@babel/plugin-proposal-nullish-coalescing-operator',
 	],

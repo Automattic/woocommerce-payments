@@ -776,6 +776,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
 		return [
+			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
 		];
 	}

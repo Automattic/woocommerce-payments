@@ -9,38 +9,4 @@
 	@include breakpoint( '>960px' ) {
 		padding: 0 56px;
 	}
-
-	&__section {
-		display: flex;
-		flex-flow: column;
-
-		@include breakpoint( '>800px' ) {
-			flex-flow: row;
-		}
-	}
-
-	&__section-details {
-		flex: 0 1 auto;
-		margin-bottom: 12px;
-
-		@include breakpoint( '>800px' ) {
-			flex: 0 1 328px;
-			margin: 0 32px 0 0;
-		}
-
-		h2 {
-			font-size: 16px;
-			line-height: 24px;
-		}
-
-		p {
-			font-size: 13px;
-			line-height: 17.89px;
-			margin: 12px 0;
-		}
-	}
-
-	&__controls {
-		flex: 1 1 auto;
-	}
 }
