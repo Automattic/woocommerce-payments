@@ -1184,6 +1184,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Init settings for gateways.
+	 */
+	public function init_settings() {
+		parent::init_settings();
+		// The initialized settings need to be both WCPay Gateway wrapper and the actual Payment Method gateway.
+		if ( 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ) {
+			$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
+		} else {
+			$this->enabled = 'no';
+		}
+	}
+
+	/**
 	 * Get payment capture type from WCPay settings.
 	 *
 	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
@@ -2016,19 +2029,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			},
 			array_values( $tokens )
 		);
-	}
-
-	/**
-	 * Init settings for gateways.
-	 */
-	public function init_settings() {
-		parent::init_settings();
-		// The initialized settings need to be both WCPay Gateway wrapper and the actual Payment Method gateway.
-		if ( 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ) {
-			$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
-		} else {
-			$this->enabled = 'no';
-		}
 	}
 
 	/**
