@@ -2019,25 +2019,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Init settings for gateways.
+	 */
+	public function init_settings() {
+		parent::init_settings();
+		// The initialized settings need to be both WCPay Gateway wrapper and the actual Payment Method gateway.
+		if ( 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ) {
+			$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
+		} else {
+			$this->enabled = 'no';
+		}
+	}
+
+	/**
 	 * Checks whether the gateway is enabled.
 	 *
 	 * @return bool The result.
 	 */
 	public function is_enabled() {
-		return 'yes' === $this->get_option( 'enabled' );
+		return 'yes' === $this->get_option( static::METHOD_ENABLED_KEY );
 	}
 
 	/**
 	 * Disables gateway.
 	 */
 	public function disable() {
-		$this->update_option( 'enabled', 'no' );
+		$this->update_option( static::METHOD_ENABLED_KEY, 'no' );
 	}
 
 	/**
 	 * Enables gateway.
 	 */
 	public function enable() {
-		$this->update_option( 'enabled', 'yes' );
+		$this->update_option( static::METHOD_ENABLED_KEY, 'yes' );
 	}
 }
