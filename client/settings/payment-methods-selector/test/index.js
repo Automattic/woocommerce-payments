@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import PaymentMethodsSelector from '../';
+import PaymentMethodsSelector from '..';
 import { addSelectedPaymentMethods } from 'data';
 
 jest.mock( 'data', () => ( { addSelectedPaymentMethods: jest.fn() } ) );
