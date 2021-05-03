@@ -123,13 +123,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'description' => '',
 				'default'     => 'no',
 			],
-			'cc_enabled'                          => [
-				'title'       => __( 'Enable/disable Credit Card', 'woocommerce-payments' ),
-				'label'       => __( 'Enable WooCommerce Payments Credit Card', 'woocommerce-payments' ),
-				'type'        => 'checkbox',
-				'description' => '',
-				'default'     => 'yes',
-			],
 			'account_details'                     => [
 				'type' => 'account_actions',
 			],
@@ -265,6 +258,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'custom_attributes' => [
 					'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
 				],
+			],
+			'cc_enabled'                          => [
+				'title'       => __( 'Enable/disable Credit Card', 'woocommerce-payments' ),
+				'label'       => __( 'Enable WooCommerce Payments Credit Card', 'woocommerce-payments' ),
+				'type'        => 'checkbox',
+				'description' => '',
+				'default'     => 'yes',
 			],
 		];
 
