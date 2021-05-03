@@ -149,23 +149,25 @@ jQuery( function ( $ ) {
 		const $container = $( '.wc_payment_method' );
 		blockUI( $container );
 
-		if( paymentElement ) {
-			paymentElement.destroy();
-		}
-		api.createIntent()
-			.then( ( data ) => {
-				const clientSecret = data.client_secret;
+		if( null === paymentElement ) {
+			api.createIntent()
+				.then( ( data ) => {
+					const clientSecret = data.client_secret;
 
-				paymentElement = elements.create( 'payment', { clientSecret } );
-				paymentElement.mount( '#wcpay-card-element' );
-			} )
-			.catch( ( error ) => {
-				console.log(error);
-				showError( error.message );
-			} )
-			.finally( () => {
-				$container.removeClass( 'processing' ).unblock();
-			} );
+					paymentElement = elements.create( 'payment', { clientSecret } );
+					paymentElement.mount( '#wcpay-card-element' );
+				} )
+				.catch( ( error ) => {
+					console.log(error);
+					showError( error.message );
+				} )
+				.finally( () => {
+					$container.removeClass( 'processing' ).unblock();
+				} );
+		} else {
+			// API request to update payment intent...
+			$container.removeClass( 'processing' ).unblock();
+		}
 	} );
 
 	// Create payment method on submission.
