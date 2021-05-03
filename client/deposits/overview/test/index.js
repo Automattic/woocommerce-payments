@@ -162,8 +162,8 @@ describe( 'Deposits overview', () => {
 			// eslint-disable-next-line camelcase
 			instant_balance: {
 				amount: 12345,
-				fee: 123.45,
-				net: 12221.55,
+				fee: 185.175,
+				net: 12159.83,
 				// eslint-disable-next-line camelcase
 				transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
 			},
