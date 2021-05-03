@@ -2,14 +2,10 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	CardDivider,
-	CardHeader,
-} from '@wordpress/components';
+import { Button, Card, CardBody } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import classNames from 'classnames';
 
 /**
@@ -18,6 +14,7 @@ import classNames from 'classnames';
 import './style.scss';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
+import PaymentMethodsSelector from 'settings/payment-methods-selector';
 
 const availableMethods = [
 	{
@@ -55,17 +52,17 @@ const availableMethods = [
 ];
 
 const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
-	const enabledMethods = availableMethods.filter( ( method ) =>
-		enabledMethodIds.includes( method.id )
+	const [
+		isPaymentMethodsSelectorModalVisible,
+		setPaymentMethodsSelectorModalVisible,
+	] = useState( false );
+	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
+		availableMethods.find( ( method ) => method.id === methodId )
 	);
 
 	const disabledMethods = availableMethods.filter(
 		( method ) => ! enabledMethodIds.includes( method.id )
 	);
-
-	const handleManageClick = ( itemId ) => {
-		console.debug( `Manage item ${ itemId } clicked (not implemented)` );
-	};
 
 	const handleDeleteClick = ( itemId ) => {
 		onEnabledMethodIdsChange(
@@ -73,61 +70,86 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 		);
 	};
 
+	const handleDragEnd = ( event ) => {
+		const { active, over } = event;
+
+		if ( active.id !== over.id ) {
+			const oldIndex = enabledMethodIds.indexOf( active.id );
+			const newIndex = enabledMethodIds.indexOf( over.id );
+
+			const enabledMethodIdsCopy = [ ...enabledMethodIds ];
+			enabledMethodIdsCopy.splice(
+				0 > newIndex
+					? enabledMethodIdsCopy.length + newIndex
+					: newIndex,
+				0,
+				enabledMethodIdsCopy.splice( oldIndex, 1 )[ 0 ]
+			);
+
+			onEnabledMethodIdsChange( enabledMethodIdsCopy );
+		}
+	};
+
 	return (
-		<Card className="payment-methods">
-			<CardHeader className="payment-methods__header">
-				<div className="payment-methods__title">
-					{ __( 'Payment methods', 'woocommerce-payments' ) }
-				</div>
-				<p className="payment-methods__description">
-					{ __(
-						'Increase your store’s conversion by offering your customers preferred and convenient payment methods. ' +
-							'Drag and drop to reorder on checkout.',
-						'woocommerce-payments'
-					) }
-				</p>
-			</CardHeader>
-			<CardBody className="payment-methods__available-methods-container">
-				<Button
-					isDefault
-					className="payment-methods__add-payment-method"
-					onClick={ () =>
-						console.debug(
-							'Add payment method clicked (not implemented)'
-						)
+		<>
+			{ isPaymentMethodsSelectorModalVisible && (
+				<PaymentMethodsSelector
+					enabledPaymentMethods={ enabledMethodIds }
+					onClose={ () =>
+						setPaymentMethodsSelectorModalVisible( false )
 					}
-				>
-					{ __( 'Add payment method', 'woocommerce-payments' ) }
-				</Button>
-				<ul className="payment-methods__available-methods">
-					{ disabledMethods.map( ( { id, label } ) => (
-						<li
-							key={ id }
-							className={ classNames(
-								'payment-methods__available-method',
-								id
-							) }
-							aria-label={ label }
-						/>
-					) ) }
-				</ul>
-			</CardBody>
-			<CardDivider />
-			<CardBody className="payment-methods__enabled-methods-container">
-				<OrderableList className="payment-methods__enabled-methods">
-					{ enabledMethods.map( ( { id, label, description } ) => (
-						<PaymentMethod
-							key={ id }
-							className={ classNames( 'payment-method', id ) }
-							onManageClick={ () => handleManageClick( id ) }
-							onDeleteClick={ () => handleDeleteClick( id ) }
-							label={ label }
-							description={ description }
-						/>
-					) ) }
-				</OrderableList>
-			</CardBody>
-		</Card>
+				/>
+			) }
+			<Card className="payment-methods">
+				<CardBody className="payment-methods__enabled-methods-container">
+					<OrderableList
+						onDragEnd={ handleDragEnd }
+						className="payment-methods__enabled-methods"
+					>
+						{ enabledMethods.map(
+							( { id, label, description } ) => (
+								<PaymentMethod
+									key={ id }
+									className={ classNames(
+										'payment-method',
+										id
+									) }
+									onDeleteClick={ () =>
+										handleDeleteClick( id )
+									}
+									id={ id }
+									label={ label }
+									description={ description }
+								/>
+							)
+						) }
+					</OrderableList>
+				</CardBody>
+				<CardBody className="payment-methods__available-methods-container">
+					<Button
+						className="payment-methods__add-payment-method"
+						onClick={ () =>
+							setPaymentMethodsSelectorModalVisible( true )
+						}
+						isSecondary
+					>
+						{ __( 'Add payment method', 'woocommerce-payments' ) }
+					</Button>
+					<ul className="payment-methods__available-methods">
+						{ disabledMethods.map( ( { id, label } ) => (
+							<li
+								key={ id }
+								className={ classNames(
+									'payment-methods__available-method',
+									id
+								) }
+								aria-label={ label }
+							/>
+						) ) }
+					</ul>
+				</CardBody>
+			</Card>
+		</>
 	);
 };
 

@@ -3,10 +3,7 @@
  */
 import config from 'config';
 
-/**
- * Internal dependencies
- */
-import { CustomerFlow, uiUnblocked } from './index';
+const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 export async function fillCardDetails( page, card ) {
 	const frameHandle = await page.waitForSelector(
@@ -56,13 +53,11 @@ export async function confirmCardAuthentication(
 }
 
 export async function setupProductCheckout( billingDetails ) {
-	await CustomerFlow.goToShop();
-	await CustomerFlow.addToCartFromShopPage(
-		config.get( 'products.simple.name' )
-	);
-	await CustomerFlow.goToCheckout();
+	await shopper.goToShop();
+	await shopper.addToCartFromShopPage( config.get( 'products.simple.name' ) );
+	await shopper.goToCheckout();
 	await uiUnblocked();
-	await CustomerFlow.fillBillingDetails( billingDetails );
+	await shopper.fillBillingDetails( billingDetails );
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitFor( 1000 );

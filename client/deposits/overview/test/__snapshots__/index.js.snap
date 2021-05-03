@@ -90,7 +90,7 @@ exports[`Deposits overview renders correctly 1`] = `
                 </p>
               </div>
               <div
-                aria-label="No change from April 18, 2019"
+                aria-label="No change from Previous Period:"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -134,7 +134,7 @@ exports[`Deposits overview renders correctly 1`] = `
                 </p>
               </div>
               <div
-                aria-label="No change from Est. Apr 22, 2019"
+                aria-label="No change from Previous Period:"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -175,7 +175,7 @@ exports[`Deposits overview renders correctly 1`] = `
                 </p>
               </div>
               <div
-                aria-label="No change from 2 deposits"
+                aria-label="No change from Previous Period:"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -216,7 +216,7 @@ exports[`Deposits overview renders correctly 1`] = `
                 </p>
               </div>
               <div
-                aria-label="No change from "
+                aria-label="No change from Previous Period:"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >
@@ -443,7 +443,7 @@ exports[`Deposits overview renders on error correctly 1`] = `
                 </p>
               </div>
               <div
-                aria-label="No change from "
+                aria-label="No change from Previous Period:"
                 class="woocommerce-summary__item-delta"
                 role="presentation"
               >

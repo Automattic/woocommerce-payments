@@ -3,43 +3,43 @@
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       General evidence
     </div>
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="inspector-textarea-control-0"
           >
             Product description
           </label>
           <textarea
-            class="components-textarea-control__input"
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
             id="inspector-textarea-control-0"
             rows="4"
           />
         </div>
       </div>
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="inspector-text-control-0"
           >
             Customer name
@@ -53,13 +53,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         </div>
       </div>
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="form-file-upload-base-control-customer_signature"
           >
             Customer signature
@@ -78,7 +78,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
               class="components-form-file-upload"
             >
               <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
+                class="components-button is-primary has-text has-icon"
                 id="form-file-upload-customer_signature"
                 type="button"
               >
@@ -112,10 +112,10 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     </div>
   </div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       <p>
         When you submit your evidence, we'll format it and send it to the cardholder's bank, then email you once the dispute has been decided.
@@ -133,20 +133,22 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
       </p>
     </div>
     <div
-      class="components-card__footer is-size-large css-wy9sfy-FooterUI e1q7k77g4"
+      class="components-flex components-card__footer is-size-large e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
-      <button
-        class="components-button is-button is-primary is-large"
-        type="button"
-      >
-        Submit evidence
-      </button>
-      <button
-        class="components-button is-button is-default is-large"
-        type="button"
-      >
-        Save for later
-      </button>
+      <div>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Submit evidence
+        </button>
+        <button
+          class="components-button is-secondary"
+          type="button"
+        >
+          Save for later
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -155,30 +157,30 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+    class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+      class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       General evidence
     </div>
     <div
-      class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="inspector-textarea-control-1"
           >
             Product description
           </label>
           <textarea
-            class="components-textarea-control__input"
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
             disabled=""
             id="inspector-textarea-control-1"
             rows="4"
@@ -186,13 +188,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         </div>
       </div>
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="inspector-text-control-1"
           >
             Customer name
@@ -207,13 +209,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         </div>
       </div>
       <div
-        class="components-base-control"
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
         <div
-          class="components-base-control__field"
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
         >
           <label
-            class="components-base-control__label"
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
             for="form-file-upload-base-control-customer_signature"
           >
             Customer signature
@@ -232,7 +234,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
               class="components-form-file-upload"
             >
               <button
-                class="components-button components-icon-button has-text is-button is-primary is-large"
+                class="components-button is-primary has-text has-icon"
                 disabled=""
                 id="form-file-upload-customer_signature"
                 type="button"
@@ -275,15 +277,15 @@ exports[`Dispute evidence page renders correctly 1`] = `
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Challenge dispute
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
           class="wcpay-dispute-info"
@@ -365,53 +367,89 @@ exports[`Dispute evidence page renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="components-card is-size-large css-l3gor6-CardUI e1q7k77g0"
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
       <div
-        class="components-card__header is-size-large css-6qsnk-HeaderUI e1q7k77g1"
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
         Product type
       </div>
       <div
-        class="components-card__body is-size-large css-1yyn1r2-BodyUI e1q7k77g3"
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
       >
         <div
-          class="components-base-control"
+          class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
         >
           <div
-            class="components-base-control__field"
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
           >
-            <select
-              class="components-select-control__input"
-              id="inspector-select-control-0"
+            <div
+              class="components-flex components-select-control e1cr7zh10 css-38uqbv-Flex-Root eboqfv50"
             >
-              <option
-                disabled=""
-                value=""
+              <div
+                class="components-flex__item e1cr7zh14 css-d373l0-Item-LabelWrapper eboqfv51"
+              />
+              <div
+                class="components-input-control__container css-1ih9r4d-Container e1cr7zh11"
               >
-                Select one…
-              </option>
-              <option
-                value="physical_product"
-              >
-                Physical product
-              </option>
-              <option
-                value="digital_product_or_service"
-              >
-                Digital product or service
-              </option>
-              <option
-                value="offline_service"
-              >
-                Offline service
-              </option>
-              <option
-                value="multiple"
-              >
-                Multiple product types
-              </option>
-            </select>
+                <select
+                  class="components-select-control__input css-1hft3f5-Select e12x0a390"
+                  id="inspector-select-control-0"
+                >
+                  <option
+                    disabled=""
+                    value=""
+                  >
+                    Select one…
+                  </option>
+                  <option
+                    value="physical_product"
+                  >
+                    Physical product
+                  </option>
+                  <option
+                    value="digital_product_or_service"
+                  >
+                    Digital product or service
+                  </option>
+                  <option
+                    value="offline_service"
+                  >
+                    Offline service
+                  </option>
+                  <option
+                    value="multiple"
+                  >
+                    Multiple product types
+                  </option>
+                </select>
+                <span
+                  class="components-input-control__suffix css-1lym30p-Suffix e1cr7zh17"
+                >
+                  <div
+                    class="css-163e8ky-DownArrowWrapper e12x0a391"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="18"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                  </div>
+                </span>
+                <div
+                  aria-hidden="true"
+                  class="components-input-control__backdrop css-96sjau-BackdropUI e1cr7zh15"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

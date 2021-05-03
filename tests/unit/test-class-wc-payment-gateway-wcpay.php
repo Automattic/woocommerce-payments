@@ -104,7 +104,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 */
 	public function tearDown() {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
-		delete_transient( WC_Payments_Account::ACCOUNT_TRANSIENT );
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -1166,6 +1166,27 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			);
 
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
+	}
+
+	public function test_outputs_payments_settings_screen() {
+		ob_start();
+		$this->wcpay_gateway->output_payments_settings_screen();
+		$output = ob_get_clean();
+		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
+	}
+
+	public function test_outputs_payment_method_settings_screen() {
+		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->setMethods( null )
+			->getMock();
+		$gateway->id = 'foo';
+
+		ob_start();
+		$gateway->output_payments_settings_screen();
+		$output = ob_get_clean();
+		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
 	}
 
 	/**

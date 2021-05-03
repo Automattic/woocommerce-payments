@@ -30,7 +30,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 
 	/**
 	 * WC SEPA token to be used in tests.
-	 * @var WC_Payment_Token_Sepa
+	 * @var WC_Payment_Token_WCPay_SEPA
 	 */
 	private $sepa_token;
 

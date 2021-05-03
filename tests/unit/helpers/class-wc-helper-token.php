@@ -42,7 +42,7 @@ class WC_Helper_Token {
 	 * @param int    $user_id        ID of the token's user, defaults to get_current_user_id().
 	 */
 	public static function create_sepa_token( $payment_method, $user_id = null ) {
-		$token = new WC_Payment_Token_Sepa();
+		$token = new WC_Payment_Token_WCPay_SEPA();
 		$token->set_token( $payment_method );
 		$token->set_gateway_id( Sepa_Payment_Gateway::GATEWAY_ID );
 		$token->set_user_id( $user_id ?? get_current_user_id() );

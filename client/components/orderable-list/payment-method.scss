@@ -1,6 +1,7 @@
 .payment-method {
 	flex-wrap: wrap;
 	justify-content: space-between;
+	align-items: center;
 
 	@include breakpoint( '>660px' ) {
 		flex-wrap: nowrap;
@@ -18,6 +19,7 @@
 	}
 
 	&__label {
+		display: inline-block;
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 20px;
