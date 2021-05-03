@@ -9,6 +9,7 @@ import { useState } from 'react';
  * Internal dependencies
  */
 import PaymentMethods from '../../payment-methods';
+import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
@@ -37,6 +38,19 @@ const SettingsManager = ( {
 					enabledMethodIds={ enabledPaymentMethodIds }
 					onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
 				/>
+			</SettingsSection>
+			<SettingsSection
+				title={ __(
+					'Digital wallets & express payment methods',
+					'woocommerce-payments'
+				) }
+				description={ __(
+					// eslint-disable-next-line max-len
+					'Let customers use express payment methods and digital wallets like Apple Pay and Google Pay for fast & easy checkouts.',
+					'woocommerce-payments'
+				) }
+			>
+				<DigitalWallets />
 			</SettingsSection>
 			<SettingsSection
 				title={ __( 'Settings', 'woocommerce-payments' ) }
