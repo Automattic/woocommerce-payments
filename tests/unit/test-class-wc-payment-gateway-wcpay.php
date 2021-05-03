@@ -1168,6 +1168,27 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->wcpay_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
+	public function test_outputs_payments_settings_screen() {
+		ob_start();
+		$this->wcpay_gateway->output_payments_settings_screen();
+		$output = ob_get_clean();
+		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
+	}
+
+	public function test_outputs_payment_method_settings_screen() {
+		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->setMethods( null )
+			->getMock();
+		$gateway->id = 'foo';
+
+		ob_start();
+		$gateway->output_payments_settings_screen();
+		$output = ob_get_clean();
+		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
+	}
+
 	/**
 	 * Tests account statement descriptor validator
 	 *

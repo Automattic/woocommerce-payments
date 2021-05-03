@@ -5,12 +5,13 @@
  * Description: Accept payments via credit card. Manage transactions within WordPress.
  * Author: Automattic
  * Author URI: https://woocommerce.com/
+ * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 4.0
  * WC tested up to: 5.1
  * Requires WP: 5.4
- * Version: 2.3.1
+ * Version: 2.3.2
  *
  * @package WooCommerce\Payments
  */
@@ -58,6 +59,9 @@ $is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authent
 if ( ! $is_autoloading_ready ) {
 	return;
 }
+
+// Subscribe to automated translations.
+add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__return_true' );
 
 /**
  * Initialize the Jetpack connection functionality.

@@ -3,10 +3,12 @@
  */
 import config from 'config';
 
+const { shopper } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
-import { CustomerFlow } from '../../utils';
+import { paymentsShopper } from '../../utils';
 import {
 	fillCardDetails,
 	confirmCardAuthentication,
@@ -23,15 +25,15 @@ describe( 'Saved cards ', () => {
 		'when using a %s card added through my account',
 		( cardType, card ) => {
 			beforeAll( async () => {
-				await CustomerFlow.login();
+				await shopper.login();
 			} );
 
 			afterAll( async () => {
-				await CustomerFlow.logout();
+				await paymentsShopper.logout();
 			} );
 
 			it( 'should save the card', async () => {
-				await CustomerFlow.goToPaymentMethods();
+				await paymentsShopper.goToPaymentMethods();
 				await expect( page ).toClick( 'a', {
 					text: 'Add payment method',
 				} );
@@ -59,12 +61,12 @@ describe( 'Saved cards ', () => {
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
 				);
-				await CustomerFlow.selectSavedPaymentMethod(
+				await paymentsShopper.selectSavedPaymentMethod(
 					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 				);
 
 				if ( 'basic' === cardType ) {
-					await CustomerFlow.placeOrder();
+					await shopper.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );
 					await confirmCardAuthentication( page, cardType );
@@ -77,8 +79,8 @@ describe( 'Saved cards ', () => {
 			} );
 
 			it( 'should delete the card', async () => {
-				await CustomerFlow.goToPaymentMethods();
-				await CustomerFlow.deleteSavedPaymentMethod( card.label );
+				await paymentsShopper.goToPaymentMethods();
+				await paymentsShopper.deleteSavedPaymentMethod( card.label );
 				await expect( page ).toMatch( 'Payment method deleted' );
 			} );
 		}

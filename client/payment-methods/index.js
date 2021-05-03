@@ -64,10 +64,6 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 		( method ) => ! enabledMethodIds.includes( method.id )
 	);
 
-	const handleManageClick = ( itemId ) => {
-		console.debug( `Manage item ${ itemId } clicked (not implemented)` );
-	};
-
 	const handleDeleteClick = ( itemId ) => {
 		onEnabledMethodIdsChange(
 			enabledMethodIds.filter( ( id ) => id !== itemId )
@@ -118,12 +114,10 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 										'payment-method',
 										id
 									) }
-									onManageClick={ () =>
-										handleManageClick( id )
-									}
 									onDeleteClick={ () =>
 										handleDeleteClick( id )
 									}
+									id={ id }
 									label={ label }
 									description={ description }
 								/>
@@ -137,6 +131,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 						onClick={ () =>
 							setPaymentMethodsSelectorModalVisible( true )
 						}
+						isSecondary
 					>
 						{ __( 'Add payment method', 'woocommerce-payments' ) }
 					</Button>

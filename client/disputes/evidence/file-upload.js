@@ -75,7 +75,10 @@ export const FileUploadControl = ( props ) => {
 				{ isDone && ! disabled ? (
 					<Button
 						className="delete-uploaded-file-button"
-						aria-label="Remove file"
+						aria-label={ __(
+							'Remove file',
+							'woocommerce-payments'
+						) }
 						icon={ <Gridicon icon="trash" size={ 18 } /> }
 						onClick={ () => onFileRemove( field.key ) }
 					/>
