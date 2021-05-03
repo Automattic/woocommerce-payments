@@ -120,38 +120,4 @@ describe( 'PaymentMethods', () => {
 			expectedUpdatedMethodIds
 		);
 	} );
-
-	test( 'all methods are rendered with their IDs as classes', () => {
-		const enabledMethods = {
-			'Credit card / debit card': 'cc',
-			giropay: 'giropay',
-		};
-		const availableMethods = {
-			Sofort: 'sofort',
-			'Direct debit payment': 'sepa',
-		};
-
-		render(
-			<PaymentMethods
-				enabledMethodIds={ Object.values( enabledMethods ) }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
-
-		Object.entries( enabledMethods ).forEach(
-			( [ label, expectedClass ] ) => {
-				expect( screen.getByText( label ).closest( 'li' ) ).toHaveClass(
-					expectedClass
-				);
-			}
-		);
-
-		Object.entries( availableMethods ).forEach(
-			( [ label, expectedClass ] ) => {
-				expect( screen.getByLabelText( label ) ).toHaveClass(
-					expectedClass
-				);
-			}
-		);
-	} );
 } );
