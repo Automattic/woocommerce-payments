@@ -22,11 +22,17 @@ const InstantDepositModal = ( {
 	inProgress,
 } ) => {
 	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/';
+	const feePercentage =
+		Math.round( ( ( 100 * fee ) / amount ) * 10 ) / 10 + '%';
 	const description = createInterpolateElement(
+		/* translators: %s - amount representing the fee percentage */
 		/* translators: <a> - instant payout doc URL */
-		__(
-			'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1.5% service fee. <a>Learn more</a>',
-			'woocommerce-payments'
+		sprintf(
+			__(
+				'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal %s service fee. <a>Learn more</a>',
+				'woocommerce-payments'
+			),
+			feePercentage
 		),
 		{
 			a: (
@@ -39,8 +45,7 @@ const InstantDepositModal = ( {
 			),
 		}
 	);
-	// TODO: Need to update isDefault to isSecondary once @wordpress/components is updated
-	// https://github.com/Automattic/woocommerce-payments/pull/1536
+
 	return (
 		<Modal
 			title={ __( 'Instant deposit', 'woocommerce-payments' ) }
@@ -57,7 +62,11 @@ const InstantDepositModal = ( {
 					<span>{ formatCurrency( amount ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__fee">
-					{ __( '1.5% service fee: ', 'woocommerce-payments' ) }
+					{ sprintf(
+						/* translators: %s - amount representing the fee percentage */
+						__( '%s service fee: ', 'woocommerce-payments' ),
+						feePercentage
+					) }
 					<span>-{ formatCurrency( fee ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__net">
