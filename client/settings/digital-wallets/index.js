@@ -42,8 +42,9 @@ const DigitalWallets = () => {
 					/* eslint-disable jsx-a11y/anchor-has-content */
 					help={ interpolateComponents( {
 						mixedString: __(
-							// eslint-disable-next-line max-len
-							"By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, {{appleLink}}Apple{{/appleLink}}, {{googleLink}}Google{{/googleLink}} and {{microsoftLink}}Microsoft{{/microsoftLink}}'s terms of use.",
+							'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
+								'{{appleLink}}Apple{{/appleLink}}, {{googleLink}}Google{{/googleLink}} ' +
+								"and {{microsoftLink}}Microsoft{{/microsoftLink}}'s terms of use.",
 							'woocommerce-payments'
 						),
 						components: {
@@ -77,7 +78,7 @@ const DigitalWallets = () => {
 							),
 						},
 					} ) }
-					/* eslint-enable max-len */
+					/* eslint-enable jsx-a11y/anchor-has-content */
 				/>
 				<h4>
 					{ __(
