@@ -298,6 +298,42 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		$this->form_fields['upe_color'] = [
+			'title'       => __( 'UPE Color', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Color', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
+		$this->form_fields['upe_border'] = [
+			'title'       => __( 'UPE Border', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Border', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
+		$this->form_fields['upe_font_source'] = [
+			'title'       => __( 'UPE Font Source', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Font Source', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
+		$this->form_fields['upe_font_family'] = [
+			'title'       => __( 'UPE Font Family', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Font Family', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
+		$this->form_fields['upe_theme_input_selector'] = [
+			'title'       => __( 'UPE Theme Input Selector', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Theme Input Selector', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
+		$this->form_fields['upe_theme_label_selector'] = [
+			'title'       => __( 'UPE Theme Label Selector', 'woocommerce-payments' ),
+			'label'       => __( 'UPE Theme Label Selector', 'woocommerce-payments' ),
+			'description' => '',
+		];
+
 		// Load the settings.
 		$this->init_settings();
 
@@ -491,6 +527,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
 			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
+			'upeColor'               => $this->get_option( 'upe_color', '' ),
+			'upeBorder'              => $this->get_option( 'upe_border', '' ),
+			'upeFontSource'          => $this->get_option( 'upe_font_source', '' ),
+			'upeFontFamily'          => $this->get_option( 'upe_font_family', '' ),
+			'upeThemeInputSelector'  => $this->get_option( 'upe_theme_input_selector', '.woocommerce-checkout .form-row input'),
+			'upeThemeLabelSelector'  => $this->get_option( 'upe_theme_label_selector', '.woocommerce-checkout .form-row label'),
 		];
 	}
 

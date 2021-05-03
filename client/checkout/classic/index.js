@@ -19,6 +19,12 @@ jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
+	const upeColor = getConfig( 'upeColor' );
+	const upeBorder = getConfig( 'upeBorder' );
+	const upeFontSource = getConfig( 'upeFontSource' );
+	const upeFontFamily = getConfig( 'upeFontFamily' );
+	const upeThemeInputSelector = getConfig( 'upeThemeInputSelector' );
+	const upeThemeLabelSelector = getConfig( 'upeThemeLabelSelector' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -42,8 +48,7 @@ jQuery( function ( $ ) {
 	const elements = api.getStripe().elements( {
 		fonts: [
 			{
-				cssSrc:
-					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.5.1',
+				cssSrc: upeFontSource,
 			},
 		],
 	} );
@@ -470,12 +475,8 @@ jQuery( function ( $ ) {
 
 			const appearance = {
 				rules: {
-					'.Input': getFieldStyles(
-						'.woocommerce-checkout .form-row input'
-					),
-					'.Label': getFieldStyles(
-						'.woocommerce-checkout .form-row label'
-					),
+					'.Input': getFieldStyles( upeThemeInputSelector ),
+					'.Label': getFieldStyles( upeThemeLabelSelector ),
 					'.Input--invalid, .Input--empty': getFieldStyles(
 						'.woocommerce-checkout .form-row.woocommerce-invalid input'
 					),
@@ -588,6 +589,18 @@ jQuery( function ( $ ) {
 					styles[ i ]
 				);
 			}
+		}
+
+		if ( upeColor ) {
+			filteredStyles.color = upeColor;
+		}
+
+		if ( upeBorder ) {
+			filteredStyles.border = upeBorder;
+		}
+
+		if ( upeFontFamily ) {
+			filteredStyles.fontFamily = upeFontFamily;
 		}
 
 		return filteredStyles;
