@@ -18,7 +18,7 @@
 	&__account-statement-wrapper {
 		position: relative;
 
-		input[maxlength='22'] {
+		.components-base-control__field .components-text-control__input {
 			// to make room for the help text, so that the input's text and the help text don't overlap
 			padding-right: 55px;
 		}
