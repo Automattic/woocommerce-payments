@@ -295,11 +295,23 @@ class WC_Payments_API_Client {
 	 */
 	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
 		$request = [
-			'payment_method'       => $payment_method_id,
-			'customer'             => $customer_id,
-			'confirm'              => 'true',
-			'payment_method_types' => [ Payment_Method::CARD, Payment_Method::SEPA ],
+			'payment_method' => $payment_method_id,
+			'customer'       => $customer_id,
+			'confirm'        => 'true',
 		];
+
+		if ( WC_Payments_Features::is_sepa_enabled() ) {
+			$request['payment_method_types'] = [ Payment_Method::CARD, Payment_Method::SEPA ];
+			$request['mandate_data']         = [
+				'customer_acceptance' => [
+					'type'   => 'online',
+					'online' => [
+						'ip_address' => WC_Geolocation::get_ip_address(),
+						'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? $this->user_agent, //phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+					],
+				],
+			];
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}

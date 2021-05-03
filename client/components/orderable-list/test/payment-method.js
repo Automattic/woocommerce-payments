@@ -15,37 +15,37 @@ describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
 		render( <PaymentMethod label="Foo" description="Bar" /> );
 
-		expect( screen.getByText( 'Foo' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Bar' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Foo' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders Manage and Delete buttons', () => {
+	test( 'renders "Manage" and "Delete"', () => {
 		render( <PaymentMethod label="Foo" /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.queryByRole( 'link', {
 			name: 'Manage',
 		} );
 
-		const deleteButton = screen.getByRole( 'button', {
+		const deleteButton = screen.queryByRole( 'button', {
 			name: 'Delete',
 		} );
 
-		expect( manageButton ).toBeInTheDocument( manageButton );
-		expect( deleteButton ).toBeInTheDocument( deleteButton );
+		expect( manageLink ).toBeInTheDocument();
+		expect( deleteButton ).toBeInTheDocument();
 	} );
 
-	test( 'clicking Manage button calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( '"Manage" is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.getByRole( 'link', {
 			name: 'Manage',
 		} );
-		user.click( manageButton );
-		expect( onManageClick ).toHaveBeenCalled();
+		expect( manageLink.getAttribute( 'href' ) ).toEqual(
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
+		);
 	} );
 
-	test( 'clicking Delete button calls onDeleteClick()', () => {
+	test( 'clicking "Delete" button calls onDeleteClick()', () => {
 		const onDeleteClick = jest.fn();
 		render( <PaymentMethod label="Foo" onDeleteClick={ onDeleteClick } /> );
 
@@ -56,14 +56,14 @@ describe( 'PaymentMethod', () => {
 		expect( onDeleteClick ).toHaveBeenCalled();
 	} );
 
-	test( 'clicking label calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( 'label is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
 
-		const paymentMethodLabel = screen.getByRole( 'button', {
-			name: 'Foo',
+		const paymentMethodLabel = screen.getByRole( 'link', {
+			name: 'Bar',
 		} );
-		user.click( paymentMethodLabel );
-		expect( onManageClick ).toHaveBeenCalled();
+		expect( paymentMethodLabel.getAttribute( 'href' ) ).toEqual(
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
+		);
 	} );
 } );

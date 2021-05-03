@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
@@ -11,8 +11,25 @@ import user from '@testing-library/user-event';
  */
 import PaymentMethods from '../';
 
+jest.mock( 'data', () => ( { addSelectedPaymentMethods: jest.fn() } ) );
+
 describe( 'PaymentMethods', () => {
 	test( 'renders the "Add payment method" button', () => {
+		render(
+			<PaymentMethods
+				enabledMethodIds={ [] }
+				onEnabledMethodIdsChange={ () => {} }
+			/>
+		);
+
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		expect( addPaymentMethodButton ).toBeInTheDocument();
+	} );
+
+	test( '"Add payment method" button opens the payment methods selector modal', () => {
 		render(
 			<PaymentMethods
 				enabledMethodIds={ [] }
@@ -24,7 +41,10 @@ describe( 'PaymentMethods', () => {
 			name: 'Add payment method',
 		} );
 
-		expect( addPaymentMethodButton ).toBeInTheDocument();
+		fireEvent.click( addPaymentMethodButton );
+		expect(
+			screen.queryByText( 'Add payment methods' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {
@@ -68,7 +88,7 @@ describe( 'PaymentMethods', () => {
 		const listItem = cc.closest( 'li' );
 
 		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'button', { name: 'Manage' } )
+			within( listItem ).getByRole( 'link', { name: 'Manage' } )
 		);
 		expect( listItem ).toContainElement(
 			within( listItem ).getByRole( 'button', { name: 'Delete' } )

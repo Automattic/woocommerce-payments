@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from 'react';
 
@@ -11,17 +12,7 @@ import { useState } from 'react';
 import { useSettings } from 'data';
 import PaymentMethods from '../../payment-methods';
 import General from './general';
-import { Button, CardFooter } from '@wordpress/components';
-
-const SettingsSection = ( { title, description, children } ) => (
-	<div className="settings-manager__section">
-		<div className="settings-manager__section-details">
-			<h2>{ title }</h2>
-			<p>{ description }</p>
-		</div>
-		<div className="settings-manager__controls">{ children }</div>
-	</div>
-);
+import SettingsSection from '../settings-section';
 
 const SettingsManager = ( {
 	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
