@@ -11,9 +11,12 @@ import { useState } from 'react';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
+import GeneralSettings from '../general-settings';
+import TestModeSettings from '../test-mode-settings';
 
 const SettingsManager = ( {
 	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
+	accountStatus = {},
 } ) => {
 	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
 		initialEnabledPaymentMethodIds
@@ -48,6 +51,18 @@ const SettingsManager = ( {
 				) }
 			>
 				<DigitalWallets />
+			</SettingsSection>
+			<SettingsSection
+				title={ __( 'Settings', 'woocommerce-payments' ) }
+				description={ __(
+					"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
+					'woocommerce-payments'
+				) }
+			>
+				<GeneralSettings accountLink={ accountStatus.accountLink } />
+			</SettingsSection>
+			<SettingsSection>
+				<TestModeSettings />
 			</SettingsSection>
 		</div>
 	);
