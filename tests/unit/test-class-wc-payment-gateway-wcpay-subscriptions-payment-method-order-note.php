@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -118,7 +119,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->token3->set_last4( $this->last4digits[3] );
 		$this->token3->save();
 
-		$this->post_payment_token_parameter  = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
+		$this->post_payment_token_parameter  = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';
 		$this->post_payment_method_parameter = 'wcpay-payment-method';
 
 		// add token to renewal order.
@@ -144,8 +145,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * expect old and new title to be modified. Renewal order is updated.
 	 */
 	public function test_failed_renewal_using_saved_payment() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -164,8 +165,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	}
 
 	public function test_failed_renewal_using_new_payment_method() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -194,8 +195,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * expect old and new title to be modified. Subscription order is updated.
 	 */
 	public function test_subscriptions_order_using_saved_payment() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -219,8 +220,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * modified. Subscription order is updated.
 	 */
 	public function test_subscriptions_order_using_new_payment_method() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -251,8 +252,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * be changed.
 	 */
 	public function test_subscriptions_order_using_new_payment_method_flagged_as_change() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -310,12 +311,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * modified.
 	 */
 	public function test_new_payment_method_non_wc_pay() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
+		$new_payment_method       = CC_Payment_Gateway::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
-		$old_payment_method = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method = CC_Payment_Gateway::GATEWAY_ID;
 		$new_payment_method = 'non-wc-pay';
 		$this->subscription->update_meta_data( '_old_payment_method', $old_payment_method );
 		$this->subscription->set_payment_method( $new_payment_method );

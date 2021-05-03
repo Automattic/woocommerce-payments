@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -15,7 +16,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var CC_Payment_Gateway
 	 */
 	private $mock_wcpay_gateway;
 
@@ -95,9 +96,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
+		// Arrange: Mock CC_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
-		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
+		$this->mock_wcpay_gateway = $this->getMockBuilder( CC_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -790,8 +791,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
 		return [
-			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
+			'payment_method' => CC_Payment_Gateway::GATEWAY_ID,
+			'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
 		];
 	}
 }
