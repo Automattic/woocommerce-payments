@@ -8,7 +8,7 @@ import '@testing-library/jest-dom/extend-expect';
 /**
  * Internal dependencies
  */
-import PaymentMethodIcon from '../';
+import PaymentMethodIcon from '..';
 
 describe( 'PaymentMethodIcon', () => {
 	test( 'renders GiroPay payment method icon', () => {
