@@ -128,7 +128,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'label'       => __( 'Enable WooCommerce Payments Credit Card', 'woocommerce-payments' ),
 				'type'        => 'checkbox',
 				'description' => '',
-				'default'     => 'no',
+				'default'     => 'yes',
 			],
 			'account_details'                     => [
 				'type' => 'account_actions',
@@ -1163,8 +1163,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
 	public function get_option_key() {
-		// Intentionally using self instead of static so options are loaded from main gateway settings.
-		return $this->plugin_id . self::GATEWAY_ID . '_settings';
+		// Intentionally using 'woocommerce_payments_settings' instead of CC_Payment_Gateway::GATEWAY_ID to avoid circular dependency.
+		return $this->plugin_id . 'woocommerce_payments_settings';
 	}
 
 
