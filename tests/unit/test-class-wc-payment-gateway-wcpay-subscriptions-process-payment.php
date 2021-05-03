@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Payment_Methods\CC_Payment_Gateway;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -15,7 +17,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	const CHARGE_ID         = 'ch_mock';
 	const SETUP_INTENT_ID   = 'si_mock';
 	const PAYMENT_INTENT_ID = 'pi_mock';
-	const TOKEN_REQUEST_KEY = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
+	const TOKEN_REQUEST_KEY = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';
 
 	/**
 	 * System under test.

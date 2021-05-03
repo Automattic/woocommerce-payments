@@ -20,7 +20,7 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_WCPay {
+class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends CC_Payment_Gateway {
 
 	const PAYMENT_METHOD_META_TABLE = 'wc_order_tokens';
 	const PAYMENT_METHOD_META_KEY   = 'token';

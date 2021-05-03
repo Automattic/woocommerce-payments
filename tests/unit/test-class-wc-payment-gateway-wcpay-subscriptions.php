@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -527,7 +528,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 		$subscription->add_payment_token( WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID ) );
 
 		$this->wcpay_gateway->add_subscription_payment_meta( [], $subscription );
-		$this->assertTrue( has_action( 'woocommerce_subscription_payment_meta_input_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_wc_order_tokens_token' ) );
+		$this->assertTrue( has_action( 'woocommerce_subscription_payment_meta_input_' . CC_Payment_Gateway::GATEWAY_ID . '_wc_order_tokens_token' ) );
 	}
 
 	public function test_adds_custom_payment_meta_input_fallback_until_subs_3_0_7() {
