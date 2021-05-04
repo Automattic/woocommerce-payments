@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 
 /**
@@ -11,8 +12,17 @@ import { render, screen } from '@testing-library/react';
 import SettingsSection from '../settings-section';
 
 describe( 'SettingsSection', () => {
-	test( 'renders title and description', () => {
-		render( <SettingsSection title="Foo" description="Bar" /> );
+	test( 'renders the Description', () => {
+		render(
+			<SettingsSection
+				Description={ () => (
+					<>
+						<h2>Foo</h2>
+						<p>Bar</p>
+					</>
+				) }
+			/>
+		);
 
 		const title = screen.queryByRole( 'heading', { name: 'Foo' } );
 		const description = screen.queryByText( 'Bar' );
