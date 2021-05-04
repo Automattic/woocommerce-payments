@@ -60,7 +60,7 @@ export const TaskItem = ( { children, title, index, className } ) => {
 		>
 			<ul>
 				<li className="woocommerce-timeline-item">
-					<div className="woocommerce-timeline-item__top-border"></div>
+					<div className="woocommerce-timeline-item__top-border" />
 					<div className="woocommerce-timeline-item__title">
 						<div
 							className="woocommerce-timeline-item__headline"
@@ -68,7 +68,11 @@ export const TaskItem = ( { children, title, index, className } ) => {
 							// on an element that is not interactive.
 							tabIndex="-1"
 						>
-							{ index }
+							<div className="woocommerce-timeline-item__icon-wrapper">
+								<div className="woocommerce-timeline-item__icon-text">
+									{ index }
+								</div>
+							</div>
 							<span>{ title }</span>
 						</div>
 					</div>

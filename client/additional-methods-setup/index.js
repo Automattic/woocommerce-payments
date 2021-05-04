@@ -25,6 +25,7 @@ addFilter(
 				),
 				// it might be worth exploring how to use Suspense
 				// to lazily load the JS that might not be necessary if the action is not taken.
+				// TODO: error boundary to prevent the whole page to be blank
 				container: <MethodSelector />,
 				// please note: marking an item as "dismissed" does not mean it's "completed" - they are considered 2 different things
 				completed:
