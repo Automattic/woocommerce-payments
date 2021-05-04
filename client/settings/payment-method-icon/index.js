@@ -13,18 +13,20 @@ import SepaLogo from './sepa.svg';
 import SofortLogo from './sofort.svg';
 
 const paymentMethods = {
-	giropay: {
+	/* eslint-disable camelcase */
+	woocommerce_payments_giropay: {
 		label: __( 'GiroPay', 'woocommerce-payments' ),
 		logo: GiroPayLogo,
 	},
-	sepa: {
+	woocommerce_payments_sepa: {
 		label: __( 'Direct Debit Payments', 'woocommerce-payments' ),
 		logo: SepaLogo,
 	},
-	sofort: {
+	woocommerce_payments_sofort: {
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		logo: SofortLogo,
 	},
+	/* eslint-enable camelcase */
 };
 
 const PaymentMethodIcon = ( props ) => {

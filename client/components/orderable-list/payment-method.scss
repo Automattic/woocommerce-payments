@@ -96,20 +96,20 @@
 		}
 	}
 
-	&.cc &__icon {
+	&.woocommerce_payments &__icon {
 		background-image: url( '../../../assets/images/payment-methods/cc.svg' );
 		box-shadow: none;
 	}
 
-	&.giropay &__icon {
+	&.woocommerce_payments_giropay &__icon {
 		background-image: url( '../../../assets/images/payment-methods/giropay.svg' );
 	}
 
-	&.sepa &__icon {
+	&.woocommerce_payments_sepa &__icon {
 		background-image: url( '../../../assets/images/payment-methods/sepa.svg' );
 	}
 
-	&.sofort &__icon {
+	&.woocommerce_payments_sofort &__icon {
 		background-image: url( '../../../assets/images/payment-methods/sofort.svg' );
 	}
 

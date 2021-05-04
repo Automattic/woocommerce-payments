@@ -19,7 +19,7 @@ import PaymentMethodsSelector from 'settings/payment-methods-selector';
 
 const availableMethods = [
 	{
-		id: 'cc',
+		id: 'woocommerce_payments',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
@@ -27,7 +27,7 @@ const availableMethods = [
 		),
 	},
 	{
-		id: 'giropay',
+		id: 'woocommerce_payments_giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
 		description: __(
 			'Expand your business with giropay — Germany’s second most popular payment system.',
@@ -35,7 +35,7 @@ const availableMethods = [
 		),
 	},
 	{
-		id: 'sofort',
+		id: 'woocommerce_payments_sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
@@ -43,7 +43,7 @@ const availableMethods = [
 		),
 	},
 	{
-		id: 'sepa',
+		id: 'woocommerce_payments_sepa',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',

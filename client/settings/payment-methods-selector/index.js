@@ -22,7 +22,13 @@ const PaymentMethodsSelector = ( props ) => {
 				acc[ value ] = true;
 				return acc;
 			},
-			{ giropay: false, sofort: false, sepa: false }
+			{
+				/* eslint-disable camelcase */
+				woocommerce_payments_giropay: false,
+				woocommerce_payments_sofort: false,
+				woocommerce_payments_sepa: false,
+				/* eslint-enable camelcase */
+			}
 		)
 	);
 
@@ -57,8 +63,10 @@ const PaymentMethodsSelector = ( props ) => {
 			<ul>
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
-						checked={ paymentMethods.giropay }
-						onChange={ makeHandlePaymentMethodChange( 'giropay' ) }
+						checked={ paymentMethods.woocommerce_payments_giropay }
+						onChange={ makeHandlePaymentMethodChange(
+							'woocommerce_payments_giropay'
+						) }
 						label={ <PaymentMethodIcon name="giropay" showName /> }
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
@@ -71,8 +79,10 @@ const PaymentMethodsSelector = ( props ) => {
 				</li>
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
-						checked={ paymentMethods.sofort }
-						onChange={ makeHandlePaymentMethodChange( 'sofort' ) }
+						checked={ paymentMethods.woocommerce_payments_sofort }
+						onChange={ makeHandlePaymentMethodChange(
+							'woocommerce_payments_sofort'
+						) }
 						label={ <PaymentMethodIcon name="sofort" showName /> }
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
@@ -85,8 +95,10 @@ const PaymentMethodsSelector = ( props ) => {
 				</li>
 				<li className="woocommerce-payments__payment-method-selector__list-item">
 					<CheckboxControl
-						checked={ paymentMethods.sepa }
-						onChange={ makeHandlePaymentMethodChange( 'sepa' ) }
+						checked={ paymentMethods.woocommerce_payments_sepa }
+						onChange={ makeHandlePaymentMethodChange(
+							'woocommerce_payments_sepa'
+						) }
 						label={ <PaymentMethodIcon name="sepa" showName /> }
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
