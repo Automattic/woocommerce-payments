@@ -81,7 +81,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Set the payment method on the order.
-			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			$order->set_payment_method( $this->gateway::GATEWAY_ID );
 
 			// Mark the order as paid for with WCPay and the intent.
 			$this->gateway->attach_intent_info_to_order(

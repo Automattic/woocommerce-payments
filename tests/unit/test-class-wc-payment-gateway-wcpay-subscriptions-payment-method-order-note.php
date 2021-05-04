@@ -155,7 +155,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->renewal_order->set_payment_method( $new_payment_method );
 		$this->renewal_order->set_payment_method_title( $new_payment_method_title );
 
-		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST['payment_method']                      = CC_Payment_Gateway::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $this->token2->get_id();
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
@@ -205,7 +205,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->subscription->set_payment_method( $new_payment_method );
 		$this->subscription->set_payment_method_title( $new_payment_method_title );
 
-		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST['payment_method']                      = CC_Payment_Gateway::GATEWAY_ID;
 		$_POST[ $this->post_payment_token_parameter ] = $this->token2->get_id();
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );

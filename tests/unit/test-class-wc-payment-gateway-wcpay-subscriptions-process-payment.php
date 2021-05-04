@@ -261,7 +261,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 
 		$_POST = [
-			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'payment_method'        => CC_Payment_Gateway::GATEWAY_ID,
 			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
 		];
 
@@ -297,7 +297,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
 		$_POST = [
-			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'payment_method'        => CC_Payment_Gateway::GATEWAY_ID,
 			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
 		];
 
@@ -372,7 +372,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
 		$_POST = [
-			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'payment_method'        => CC_Payment_Gateway::GATEWAY_ID,
 			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
 		];
 		$_GET  = [ 'change_payment_method' => 10 ];

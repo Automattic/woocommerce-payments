@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * WC_REST_Payments_Orders_Controller unit tests.
@@ -25,7 +26,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
-	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 * @var CC_Payment_Gateway|MockObject
 	 */
 	private $mock_gateway;
 
@@ -46,7 +47,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		wp_set_current_user( 1 );
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_gateway    = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_gateway    = $this->createMock( CC_Payment_Gateway::class );
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
