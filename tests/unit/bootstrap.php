@@ -52,6 +52,7 @@ function _manually_load_plugin() {
 
 	// Load the gateway files, so subscriptions can be tested.
 	require_once $_plugin_dir . 'includes/class-wc-payment-gateway-wcpay.php';
+	require_once $_plugin_dir . 'includes/payment-methods/class-cc-payment-gateway.php';
 	require_once $_plugin_dir . 'includes/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
