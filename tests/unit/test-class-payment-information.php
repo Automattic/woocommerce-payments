@@ -121,14 +121,20 @@ class Payment_Information_Test extends WP_UnitTestCase {
 
 	public function test_get_token_from_request_returns_null_when_new() {
 		$token = Payment_Information::get_token_from_request(
-			[ self::CARD_TOKEN_REQUEST_KEY => 'new' ]
+			[
+				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => 'new',
+			]
 		);
 		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_null_when_invalid() {
 		$token = Payment_Information::get_token_from_request(
-			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1 ]
+			[
+				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1,
+			]
 		);
 		$this->assertNull( $token );
 	}
@@ -137,7 +143,10 @@ class Payment_Information_Test extends WP_UnitTestCase {
 		$this->card_token->set_gateway_id( 'wrong_gateway' );
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
-			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() ]
+			[
+				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
+			]
 		);
 		$this->assertNull( $token );
 	}
@@ -146,14 +155,27 @@ class Payment_Information_Test extends WP_UnitTestCase {
 		$this->card_token->set_user_id( get_current_user_id() + 1 );
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
-			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() ]
+			[
+				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
+			]
+		);
+		$this->assertNull( $token );
+	}
+
+	public function test_get_token_from_request_returns_null_when_missing_payment_method() {
+		$token = Payment_Information::get_token_from_request(
+			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1 ]
 		);
 		$this->assertNull( $token );
 	}
 
 	public function test_get_token_from_request_returns_token() {
 		$token = Payment_Information::get_token_from_request(
-			[ self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() ]
+			[
+				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
+			]
 		);
 		$this->assertEquals( $this->card_token, $token );
 	}
@@ -171,6 +193,7 @@ class Payment_Information_Test extends WP_UnitTestCase {
 	public function test_from_payment_request_with_token() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
+				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
 				self::CARD_TOKEN_REQUEST_KEY     => $this->card_token->get_id(),
 			],
