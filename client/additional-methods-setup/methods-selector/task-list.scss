@@ -1,0 +1,15 @@
+.woocommerce-timeline__task-list {
+	.woocommerce-timeline-group {
+		&:first-child {
+			.woocommerce-timeline-item__top-border {
+				display: none;
+			}
+		}
+
+		&:last-child {
+			.woocommerce-timeline-item__body {
+				border-left: none;
+			}
+		}
+	}
+}
