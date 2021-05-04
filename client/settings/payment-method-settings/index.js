@@ -13,7 +13,13 @@ import GiropaySettings from './giropay-settings';
 const methods = {
 	woocommerce_payments_giropay: {
 		title: 'giropay',
-		description: 'giropay description.',
+		description: () => (
+			<>
+				{ /* Whoever picks this up will need to translate these strings */ }
+				<h2>giropay</h2>
+				<p>giropay description.</p>
+			</>
+		),
 		controls: () => <GiropaySettings />,
 	},
 };
@@ -33,7 +39,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 		);
 	}
 
-	const { title, description, controls: Controls } = method;
+	const { title, description: Description, controls: Controls } = method;
 
 	return (
 		<div className="payment-method-settings">
@@ -42,7 +48,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 				&gt; <span>{ title }</span>
 			</h2>
 
-			<SettingsSection title={ title } description={ description }>
+			<SettingsSection Description={ Description }>
 				<Controls />
 			</SettingsSection>
 		</div>
