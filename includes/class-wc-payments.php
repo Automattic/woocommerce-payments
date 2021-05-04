@@ -566,6 +566,10 @@ class WC_Payments {
 		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$conn_tokens_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
 		$timeline_controller->register_routes();
