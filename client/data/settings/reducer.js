@@ -5,20 +5,34 @@
  */
 import TYPES from './action-types';
 
-const defaultState = { byId: {}, queries: {}, count: 0 };
+const defaultState = {
+	isSaving: false,
+};
 
-const receiveSettings = (
+export const receiveSettings = (
 	state = defaultState,
-	{ type, query = {}, data = [], error }
+	{ type, ...action }
 ) => {
 	switch ( type ) {
 		case TYPES.SET_SETTINGS:
 			return {
+				data: {
+					...action.data,
+				},
+			};
+
+		case TYPES.SET_IS_SAVING_SETTINGS:
+			return {
 				...state,
-				overview: {
-					...state.overview,
-					data,
-					error,
+				isSaving: action.isSaving,
+			};
+
+		case TYPES.SET_ENABLED_PAYMENT_METHOD_IDS:
+			return {
+				...state,
+				data: {
+					// eslint-disable-next-line camelcase
+					enabled_payment_method_ids: action.methodIds,
 				},
 			};
 	}

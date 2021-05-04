@@ -12,6 +12,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './style.scss';
+import { useEnabledPaymentMethodIds } from '../data';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -51,11 +52,17 @@ const availableMethods = [
 	},
 ];
 
-const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
+const PaymentMethods = () => {
+	const {
+		enabledPaymentMethodIds: enabledMethodIds,
+		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
+	} = useEnabledPaymentMethodIds();
+
 	const [
 		isPaymentMethodsSelectorModalVisible,
 		setPaymentMethodsSelectorModalVisible,
 	] = useState( false );
+
 	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
 		availableMethods.find( ( method ) => method.id === methodId )
 	);
@@ -65,7 +72,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 	);
 
 	const handleDeleteClick = ( itemId ) => {
-		onEnabledMethodIdsChange(
+		updateEnabledMethodIds(
 			enabledMethodIds.filter( ( id ) => id !== itemId )
 		);
 	};
@@ -86,7 +93,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 				enabledMethodIdsCopy.splice( oldIndex, 1 )[ 0 ]
 			);
 
-			onEnabledMethodIdsChange( enabledMethodIdsCopy );
+			updateEnabledMethodIds( enabledMethodIdsCopy );
 		}
 	};
 

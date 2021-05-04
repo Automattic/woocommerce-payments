@@ -54,7 +54,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$this->namespace,
 			'/' . $this->rest_base,
 			[
-				'methods'             => WP_REST_Server::CREATABLE,
+				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
@@ -62,29 +62,62 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Retrieve Settings
+	 * Retrieve settings.
+	 *
+	 * @return array
 	 */
-	public function get_settings() {
-		$this->gateway->init_settings();
-		return $this->gateway->settings;
+	public function get_settings(): array {
+		$enabled_payment_methods = array_filter(
+			$this->get_available_payment_methods(),
+			function ( WC_Payment_Gateway_WCPay $gateway ) {
+				return $gateway->is_enabled();
+			}
+		);
+
+		$enabled_payment_method_ids = wp_list_pluck( $enabled_payment_methods, 'id' );
+
+		return [
+			'enabled_payment_method_ids' => array_values( $enabled_payment_method_ids ),
+		];
 	}
 
-
 	/**
-	 * Update Settings.
+	 * Update settings.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function update_settings( $request ) {
-		$params = $request->get_params();
-		return $this->forward_request(
-			'update_dispute',
-			[
-				$params['dispute_id'],
-				$params['evidence'],
-				$params['submit'],
-				$params['metadata'],
-			]
+	public function update_settings( WP_REST_Request $request ) {
+		$available_payment_methods    = $this->get_available_payment_methods();
+		$payment_method_ids_to_enable = array_intersect(
+			wp_list_pluck( $this->get_available_payment_methods(), 'id' ),
+			$request->get_param( 'enabled_payment_method_ids' )
+		);
+
+		foreach ( $available_payment_methods as $payment_method ) {
+			$is_enabled        = $payment_method->is_enabled();
+			$should_be_enabled = in_array( $payment_method->id, $payment_method_ids_to_enable, true );
+
+			if ( $should_be_enabled && ! $is_enabled ) {
+				$payment_method->enable();
+			} elseif ( ! $should_be_enabled && $is_enabled ) {
+				$payment_method->disable();
+			}
+		}
+
+		return new WP_HTTP_Response( [], 200 );
+	}
+
+	/**
+	 * Get available payment methods.
+	 *
+	 * @return WC_Payment_Gateway_WCPay[]
+	 */
+	private function get_available_payment_methods(): array {
+		return array_filter(
+			WC()->payment_gateways()->payment_gateways(),
+			function ( $gateway ) {
+				return is_subclass_of( $gateway, WC_Payment_Gateway_WCPay::class );
+			}
 		);
 	}
 

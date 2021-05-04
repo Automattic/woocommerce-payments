@@ -1,13 +1,59 @@
 /** @format */
 
 /**
- * Internal Dependencies
+ * External dependencies
+ */
+import { dispatch, select } from '@wordpress/data';
+import { apiFetch } from '@wordpress/data-controls';
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
  */
 import TYPES from './action-types';
+import { NAMESPACE, STORE_NAME } from '../constants';
 
 export function updateSettings( data ) {
 	return {
 		type: TYPES.SET_SETTINGS,
 		data,
 	};
+}
+
+export function updateEnabledPaymentMethodIds( methodIds ) {
+	return {
+		type: TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
+		methodIds,
+	};
+}
+
+export function setIsSavingSettings( isSaving ) {
+	return {
+		type: TYPES.SET_IS_SAVING_SETTINGS,
+		isSaving,
+	};
+}
+
+export function* saveSettings() {
+	const settings = select( STORE_NAME ).getSettings();
+
+	try {
+		yield setIsSavingSettings( true );
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings`,
+			method: 'post',
+			data: settings,
+		} );
+
+		yield dispatch( 'core/notices' ).createSuccessNotice(
+			__( 'Settings saved.', 'woocommerce-payments' )
+		);
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving settings.', 'woocommerce-payments' )
+		);
+	} finally {
+		yield setIsSavingSettings( false );
+	}
 }

@@ -4,19 +4,41 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
+
+/**
+ * Internal dependencies
+ */
 import { STORE_NAME } from '../constants';
 
-export const useSettings = () => {
-	const { settings, isLoading } = useSelect( ( select ) => {
-		const { getSettings, isResolving } = select( STORE_NAME );
+export const useEnabledPaymentMethodIds = () =>
+	useSelect( ( select ) => {
+		const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+		const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
 		return {
-			settings: getSettings(),
-			isLoading: isResolving( 'getSettings' ),
+			enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
+			updateEnabledPaymentMethodIds,
 		};
 	} );
 
-	const { updateSettings } = useDispatch( STORE_NAME );
+export const useSettings = () =>
+	useSelect( ( select ) => {
+		const {
+			getSettings,
+			hasFinishedResolution,
+			isResolving,
+			isSavingSettings,
+		} = select( STORE_NAME );
 
-	return { settings, isLoading, updateSettings };
-};
+		const isLoading =
+			isResolving( 'getSettings' ) ||
+			! hasFinishedResolution( 'getSettings' );
+		const { saveSettings } = useDispatch( STORE_NAME );
+
+		return {
+			settings: getSettings(),
+			isLoading,
+			saveSettings,
+			isSaving: isSavingSettings(),
+		};
+	} );

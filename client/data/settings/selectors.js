@@ -1,13 +1,5 @@
 /** @format */
 
-/**
- * Retrieves the settings state from the wp.data store if the state
- * has been initialized, otherwise returns an empty state.
- *
- * @param {Object} state Current wp.data state.
- *
- * @return {Object} The settings state.
- */
 const getSettingsState = ( state ) => {
 	if ( ! state ) {
 		return {};
@@ -17,5 +9,13 @@ const getSettingsState = ( state ) => {
 };
 
 export const getSettings = ( state ) => {
-	return getSettingsState( state ) || {};
+	return getSettingsState( state ).data || {};
+};
+
+export const getEnabledPaymentMethodIds = ( state ) => {
+	return getSettings( state ).enabled_payment_method_ids || [];
+};
+
+export const isSavingSettings = ( state ) => {
+	return getSettingsState( state ).isSaving || false;
 };

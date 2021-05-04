@@ -64,10 +64,7 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	ReactDOM.render(
-		<SettingsManager { ...wcpayAdminSettings } />,
-		settingsContainer
-	);
+	ReactDOM.render( <SettingsManager />, settingsContainer );
 }
 
 const paymentMethodSettingsContainer = document.getElementById(

@@ -4,27 +4,18 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from 'react';
 
 /**
  * Internal dependencies
  */
-import { useSettings } from 'data';
+import { useSettings } from '../../data';
 import PaymentMethods from '../../payment-methods';
 import General from './general';
 import SettingsSection from '../settings-section';
+import { LoadableBlock } from '../../components/loadable';
 
-const SettingsManager = ( {
-	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
-} ) => {
-	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
-		initialEnabledPaymentMethodIds
-	);
-	const { settings = {}, isLoading, updateSettings } = useSettings();
-
-	const handleSubmit = () => {
-		updateSettings();
-	};
+const SettingsManager = () => {
+	const { saveSettings, isSaving, isLoading } = useSettings();
 
 	return (
 		<div className="settings-manager">
@@ -38,11 +29,11 @@ const SettingsManager = ( {
 					'woocommerce-payments'
 				) }
 			>
-				<PaymentMethods
-					enabledMethodIds={ enabledPaymentMethodIds }
-					onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
-				/>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<PaymentMethods />
+				</LoadableBlock>
 			</SettingsSection>
+
 			<SettingsSection
 				title={ __( 'General Settings', 'woocommerce-payments' ) }
 				description={ __(
@@ -50,11 +41,21 @@ const SettingsManager = ( {
 					'woocommerce-payments'
 				) }
 			>
-				<General settings={ settings } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<General />
+				</LoadableBlock>
 			</SettingsSection>
-			<Button isPrimary isLarge onClick={ handleSubmit }>
-				{ __( 'Save changes', 'woocommerce-payments' ) }
-			</Button>
+
+			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
+				<Button
+					isPrimary
+					isBusy={ isSaving }
+					disabled={ isSaving || isLoading }
+					onClick={ saveSettings }
+				>
+					{ __( 'Save changes', 'woocommerce-payments' ) }
+				</Button>
+			</LoadableBlock>
 		</div>
 	);
 };

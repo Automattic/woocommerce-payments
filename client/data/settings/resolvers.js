@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -17,7 +16,7 @@ import { updateSettings } from './actions';
  * Retrieve a single deposit from the deposits API.
  */
 export function* getSettings() {
-	const path = addQueryArgs( `${ NAMESPACE }/settings` );
+	const path = `${ NAMESPACE }/settings`;
 
 	try {
 		const result = yield apiFetch( { path } );

@@ -1,11 +1,19 @@
 /** @format */
+
 /**
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CheckboxControl } from '@wordpress/components';
 
-const General = ( { settings } ) => {
+/**
+ * Internal dependencies
+ */
+import { useSettings } from '../../data';
+
+const General = () => {
+	const { settings } = useSettings();
+
 	return (
 		<Card className="general-settings">
 			<CardBody>
