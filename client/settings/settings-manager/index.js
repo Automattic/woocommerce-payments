@@ -14,6 +14,8 @@ import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
+import ApplePayIcon from '../../gateway-icons/apple-pay';
+import GooglePayIcon from '../../gateway-icons/google-pay';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -37,6 +39,14 @@ const DigitalWalletsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</h2>
+		<ul className="settings-section__icons">
+			<li>
+				<ApplePayIcon />
+			</li>
+			<li>
+				<GooglePayIcon />
+			</li>
+		</ul>
 		<p>
 			{ __(
 				'Let customers use express payment methods and digital wallets like Apple Pay and Google Pay for fast & easy checkouts.',
