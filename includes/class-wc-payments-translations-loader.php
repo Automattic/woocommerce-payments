@@ -42,7 +42,7 @@ class WC_Payments_Translations_Loader {
 	 * @param string $locale Locale being retrieved.
 	 * @return string Filename.
 	 */
-	public static function get_combined_translation_filename( $locale ) {
+	private static function get_combined_translation_filename( $locale ) {
 		return implode( '-', [ self::PLUGIN_DOMAIN, $locale ] ) . '.json';
 	}
 
@@ -92,10 +92,16 @@ class WC_Payments_Translations_Loader {
 	 * So long as this function is called during the 'upgrader_process_complete' action,
 	 * the filesystem object should be hooked up.
 	 *
+	 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
+	 *
 	 * @param string $locale Locale being retrieved.
 	 */
-	public static function build_and_save_translations( $locale ) {
+	private static function build_and_save_translations( $locale ) {
 		global $wp_filesystem;
+
+		if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
+			return new WP_Error( 'fs_unavailable', __( 'Could not access filesystem.', 'woocommerce-payments' ) );
+		}
 
 		$translations_from_chunks = self::get_translation_chunk_data( $locale );
 
@@ -115,11 +121,18 @@ class WC_Payments_Translations_Loader {
 	 *
 	 * Only targets files that aren't represented by a registered script (e.g. not passed to wp_register_script()).
 	 *
+	 * @global WP_Filesystem_Base $wp_filesystem WordPress filesystem subclass.
+	 *
 	 * @param string $locale Locale being retrieved.
+	 *
 	 * @return array Combined translation chunk data.
 	 */
-	public static function get_translation_chunk_data( $locale ) {
+	private static function get_translation_chunk_data( $locale ) {
 		global $wp_filesystem;
+
+		if ( ! $wp_filesystem || ! is_object( $wp_filesystem ) ) {
+			return new WP_Error( 'fs_unavailable', __( 'Could not access filesystem.', 'woocommerce-payments' ) );
+		}
 
 		// Grab all JSON files in the current language pack.
 		$json_i18n_filenames       = glob( WP_LANG_DIR . '/plugins/' . self::PLUGIN_DOMAIN . '-' . $locale . '-*.json' );
