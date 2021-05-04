@@ -237,14 +237,8 @@ class Payment_Information {
 	 * @return \WC_Payment_Token|NULL
 	 */
 	public static function get_token_from_request( array $request ) {
-		$payment_method = $request['payment_method'] ?? null;
-		if ( Sepa_Payment_Gateway::GATEWAY_ID === $payment_method ) {
-			$request_gateway_id = Sepa_Payment_Gateway::GATEWAY_ID;
-		} else {
-			$request_gateway_id = CC_Payment_Gateway::GATEWAY_ID;
-		}
-
-		$token_request_key = 'wc-' . $request_gateway_id . '-payment-token';
+		$payment_method    = $request['payment_method'] ?? null;
+		$token_request_key = 'wc-' . $payment_method . '-payment-token';
 		if (
 			! isset( $request[ $token_request_key ] ) ||
 			'new' === $request[ $token_request_key ]
@@ -256,7 +250,7 @@ class Payment_Information {
 		$token = \WC_Payment_Tokens::get( wc_clean( $request[ $token_request_key ] ) );
 
 		// If the token doesn't belong to this gateway or the current user it's invalid.
-		if ( ! $token || $request_gateway_id !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
+		if ( ! $token || $payment_method !== $token->get_gateway_id() || $token->get_user_id() !== get_current_user_id() ) {
 			return null;
 		}
 
