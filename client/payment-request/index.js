@@ -14,7 +14,7 @@ import {
 
 import {
 	shouldUseGooglePayBrand,
-	getPaymentRequestOptions,
+	getPaymentRequest,
 	canDoPaymentRequest,
 } from './utils';
 
@@ -171,11 +171,11 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Starts the payment request
+		 *
+		 * @param {Object} options Payment request options.
 		 */
-		startPaymentRequest: () => {
-			const paymentRequest = api
-				.getStripe()
-				.paymentRequest( getPaymentRequestOptions() );
+		startPaymentRequest: ( options ) => {
+			const paymentRequest = getPaymentRequest( options );
 
 			const elements = api.getStripe().elements();
 			const prButton = wcpayPaymentRequest.createPaymentRequestButton(
@@ -576,7 +576,27 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			wcpayPaymentRequest.startPaymentRequest();
+			if ( wcpayPaymentRequestParams.is_product_page ) {
+				wcpayPaymentRequest.startPaymentRequest( {
+					stripe: api.getStripe(),
+					total: wcpayPaymentRequestParams.product.total.amount,
+					requestShipping:
+						wcpayPaymentRequestParams.product.needs_shipping,
+					displayItems:
+						wcpayPaymentRequestParams.product.displayItems,
+				} );
+			} else {
+				// If this is the cart or checkout page, we need to request the
+				// cart details for the payment request.
+				api.paymentRequestGetCartDetails().then( ( cart ) => {
+					wcpayPaymentRequest.startPaymentRequest( {
+						stripe: api.getStripe(),
+						total: cart.total.amount,
+						requestShipping: cart.needs_shipping,
+						displayItems: cart.displayItems,
+					} );
+				} );
+			}
 		},
 	};
 

@@ -338,6 +338,17 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Get cart items and total amount.
+	 *
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestGetCartDetails() {
+		return this.request( getPaymentRequestAjaxURL( 'get_cart_details' ), {
+			security: getPaymentRequestData( 'nonce' )?.get_cart_details,
+		} );
+	}
+
+	/**
 	 * Add product to cart from variable product page.
 	 *
 	 * @param {Object} productData Product data.

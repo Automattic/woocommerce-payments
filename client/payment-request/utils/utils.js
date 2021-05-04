@@ -17,16 +17,30 @@ export const getPaymentRequestData = ( key ) => {
 };
 
 /**
- * Gets Stripe Payment request options object.
+ * The total PaymentItem object used for the Stripe PaymentRequest object.
  *
+ * @param {int} total  The total amount.
+ * @return {Object} The total object used for Stripe.
+ */
+const getTotalPaymentItem = ( total ) => {
+	return {
+		label: getPaymentRequestData( 'total_label' ),
+		amount: total,
+	};
+};
+
+/**
+ * Returns a Stripe payment request object.
+ *
+ * @param {Object} config A configuration object for getting the payment request.
  * @return {Object} Payment Request options object
  */
-export const getPaymentRequestOptions = () => {
-	// Get total and displayItems for product page or cart/checkout page.
-	const data = getPaymentRequestData( 'is_product_page' )
-		? getPaymentRequestData( 'product' )
-		: getPaymentRequestData( 'cart' );
-
+export const getPaymentRequest = ( {
+	stripe,
+	total,
+	requestShipping,
+	displayItems,
+} ) => {
 	let country = getPaymentRequestData( 'checkout' )?.country_code;
 
 	// Puerto Rico (PR) is the only US territory/possession that's supported by Stripe.
@@ -35,17 +49,35 @@ export const getPaymentRequestOptions = () => {
 		country = 'US';
 	}
 
-	return {
-		total: data.total,
+	const options = {
+		total: getTotalPaymentItem( total ),
 		currency: getPaymentRequestData( 'checkout' )?.currency_code,
-		country: country,
+		country,
 		requestPayerName: true,
 		requestPayerEmail: true,
 		requestPayerPhone: getPaymentRequestData( 'checkout' )
 			?.needs_payer_phone,
-		requestShipping: getPaymentRequestData( 'checkout' )?.needs_shipping,
-		displayItems: data.displayItems,
+		requestShipping,
+		displayItems,
 	};
+
+	return stripe.paymentRequest( options );
+};
+
+/**
+ * Utility function for updating the Stripe PaymentRequest object
+ *
+ * @param {Object} update An object containing the things needed for the update.
+ */
+export const updatePaymentRequest = ( {
+	paymentRequest,
+	total,
+	displayItems,
+} ) => {
+	paymentRequest.update( {
+		total: getTotalPaymentItem( total ),
+		displayItems,
+	} );
 };
 
 /**

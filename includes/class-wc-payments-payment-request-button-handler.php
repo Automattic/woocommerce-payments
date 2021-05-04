@@ -83,6 +83,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
+		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
@@ -566,6 +567,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'accountId'      => $this->account->get_stripe_account_id(),
 			],
 			'nonce'           => [
+				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
@@ -593,7 +595,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_product_page' => $this->is_product(),
 			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
-			'cart'            => $this->get_cart_data(),
+			'total_label'     => $this->get_total_label(),
 		];
 
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
@@ -689,6 +691,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get cart details.
+	 */
+	public function ajax_get_cart_details() {
+		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		WC()->cart->calculate_totals();
+
+		wp_send_json( array_merge( $this->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
 	}
 
 	/**
