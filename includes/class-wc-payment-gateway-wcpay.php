@@ -20,7 +20,7 @@ use WCPay\Tracker;
 /**
  * Gateway class for WooCommerce Payments
  */
-class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
+abstract class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Internal ID of the payment gateway.
@@ -1165,22 +1165,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_option_key() {
 		// Intentionally using 'woocommerce_payments_settings' instead of CC_Payment_Gateway::GATEWAY_ID to avoid circular dependency.
 		return $this->plugin_id . 'woocommerce_payments_settings';
-	}
-
-
-	/**
-	 * Update a single option.
-	 * Overrides parent method to use different key for `enabled`.
-	 *
-	 * @param string $key Option key.
-	 * @param mixed  $value Value to set.
-	 * @return bool was anything saved?
-	 */
-	public function update_option( $key, $value = '' ) {
-		if ( 'enabled' === $key ) {
-			$key = static::METHOD_ENABLED_KEY;
-		}
-		return parent::update_option( $key, $value );
 	}
 
 	/**
