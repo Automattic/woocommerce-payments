@@ -8,22 +8,22 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './style.scss';
-import GiroPayLogo from './giropay.svg';
-import SepaLogo from './sepa.svg';
-import SofortLogo from './sofort.svg';
+import GiropayIcon from '../../gateway-icons/giropay';
+import SepaIcon from '../../gateway-icons/sepa';
+import SofortIcon from '../../gateway-icons/sofort';
 
 const paymentMethods = {
 	giropay: {
 		label: __( 'GiroPay', 'woocommerce-payments' ),
-		logo: GiroPayLogo,
+		Icon: GiropayIcon,
 	},
 	sepa: {
 		label: __( 'Direct Debit Payments', 'woocommerce-payments' ),
-		logo: SepaLogo,
+		Icon: SepaIcon,
 	},
 	sofort: {
 		label: __( 'Sofort', 'woocommerce-payments' ),
-		logo: SofortLogo,
+		Icon: SofortIcon,
 	},
 };
 
@@ -36,11 +36,11 @@ const PaymentMethodIcon = ( props ) => {
 		return <></>;
 	}
 
-	const { label, logo } = paymentMethod;
+	const { label, Icon } = paymentMethod;
 
 	return (
 		<span className="woocommerce-payments__payment-method-icon">
-			<img alt={ label } src={ logo } />
+			<Icon />
 			{ showName && (
 				<span className="woocommerce-payments__payment-method-icon__label">
 					{ label }
