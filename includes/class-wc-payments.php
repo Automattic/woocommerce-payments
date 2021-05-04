@@ -222,6 +222,9 @@ class WC_Payments {
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
+		WC_Payments_Translations_Loader::init();
+
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -689,4 +692,5 @@ class WC_Payments {
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
+
 }

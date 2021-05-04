@@ -342,7 +342,7 @@ export const TransactionsList = ( props ) => {
 	// Generate summary based on loading state and available currencies information
 	const summary = [
 		{
-			label: 'transactions',
+			label: __( 'transactions', 'woocommerce-payments' ),
 			value: `${ transactionsSummary.count }`,
 		},
 	];
@@ -353,21 +353,21 @@ export const TransactionsList = ( props ) => {
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(
 				{
-					label: 'total',
+					label: __( 'total', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.total,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
-					label: 'fees',
+					label: __( 'fees', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.fees,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
-					label: 'net',
+					label: __( 'net', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.net,
 						transactionsSummary.currency
