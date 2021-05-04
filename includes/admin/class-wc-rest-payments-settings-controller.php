@@ -89,8 +89,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function update_settings( WP_REST_Request $request ) {
 		$available_payment_methods    = $this->get_available_payment_methods();
 		$payment_method_ids_to_enable = array_intersect(
-			wp_list_pluck( $this->get_available_payment_methods(), 'id' ),
-			$request->get_param( 'enabled_payment_method_ids' )
+			$request->get_param( 'enabled_payment_method_ids' ),
+			wp_list_pluck( $this->get_available_payment_methods(), 'id' )
 		);
 
 		foreach ( $available_payment_methods as $payment_method ) {
@@ -103,6 +103,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$payment_method->disable();
 			}
 		}
+
+		$this->gateway->update_option( 'payment_method_order', $payment_method_ids_to_enable );
 
 		return new WP_HTTP_Response( [], 200 );
 	}
