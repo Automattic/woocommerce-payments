@@ -1,17 +1,18 @@
 <?php
 /**
- * Class WC_Payment_Gateway_WCPay_Test
+ * Class CC_Payment_Gateway_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
- * WC_Payment_Gateway_WCPay unit tests.
+ * CC_Payment_Gateway unit tests.
  */
-class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
+class CC_Payment_Gateway_Test extends WP_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;
@@ -19,7 +20,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var CC_Payment_Gateway
 	 */
 	private $wcpay_gateway;
 
@@ -90,7 +91,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+		$this->wcpay_gateway = new CC_Payment_Gateway(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
@@ -1255,7 +1256,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
-		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+		$gateway     = $this->getMockBuilder( CC_Payment_Gateway::class )
 			->disableOriginalConstructor()
 			->setMethods( null )
 			->getMock();
