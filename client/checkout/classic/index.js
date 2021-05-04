@@ -41,6 +41,7 @@ jQuery( function ( $ ) {
 
 	const elements = api.getStripe().elements();
 	let paymentElement = null;
+	let paymentIntentId = null;
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
@@ -152,7 +153,7 @@ jQuery( function ( $ ) {
 		if( null === paymentElement ) {
 			api.createIntent()
 				.then( ( data ) => {
-					const clientSecret = data.client_secret;
+					const { client_secret: clientSecret, id: paymentIntentId } = data;
 
 					paymentElement = elements.create( 'payment', { clientSecret } );
 					paymentElement.mount( '#wcpay-card-element' );
@@ -165,7 +166,7 @@ jQuery( function ( $ ) {
 					$container.removeClass( 'processing' ).unblock();
 				} );
 		} else {
-			// API request to update payment intent...
+			// API request to update payment intent using saved ID from above...
 			$container.removeClass( 'processing' ).unblock();
 		}
 	} );

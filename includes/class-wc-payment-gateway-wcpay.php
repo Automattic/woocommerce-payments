@@ -683,6 +683,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order_id = WC()->checkout->create_order( $data );
 			$order = wc_get_order( $order_id );
 
+			// If it hasn't been done so already, we must now update the Payment Intention with our final order total amount.
+
 			wp_send_json_success( [ 'redirect_url' => $this->get_return_url( $order ) ], 200 );
 		} catch ( Exception $e ) {
 			if ( $order && $order instanceof WC_Order ) {
@@ -2070,7 +2072,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->get_enabled_payment_gateways()
 			);
 
-			wp_send_json_success( [ 'client_secret' => $payment_intent->get_client_secret() ], 200 );
+			wp_send_json_success(
+				[
+					'id'            => $payment_intent->get_id(),
+					'client_secret' => $payment_intent->get_client_secret(),
+				],
+				200
+			);
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
