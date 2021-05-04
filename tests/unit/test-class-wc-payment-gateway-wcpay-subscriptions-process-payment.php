@@ -258,7 +258,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_saved_card_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID );
 
-		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
+		$_POST = [
+			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
+		];
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -291,7 +294,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_saved_card_zero_dollar_subscription() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
+		$_POST = [
+			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
+		];
 
 		$this->mock_wcs_order_contains_subscription( true );
 
@@ -363,7 +369,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 	public function test_card_is_saved_when_updating_subscription_using_saved_payment_method() {
 		$order = WC_Helper_Order::create_order( self::USER_ID, 0 );
 
-		$_POST = [ self::TOKEN_REQUEST_KEY => $this->token->get_id() ];
+		$_POST = [
+			'payment_method'        => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			self::TOKEN_REQUEST_KEY => $this->token->get_id(),
+		];
 		$_GET  = [ 'change_payment_method' => 10 ];
 
 		$this->mock_wcs_order_contains_subscription( false );

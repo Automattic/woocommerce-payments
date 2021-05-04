@@ -3,15 +3,12 @@
  */
 import config from 'config';
 
+const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+
 /**
  * Internal dependencies
  */
-import {
-	CustomerFlow,
-	StoreOwnerFlow,
-	uiUnblocked,
-	uiLoaded,
-} from '../../utils';
+import { uiLoaded } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;
@@ -27,7 +24,7 @@ describe( 'Order > Full refund', () => {
 		);
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
-		await CustomerFlow.placeOrder();
+		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
@@ -37,8 +34,8 @@ describe( 'Order > Full refund', () => {
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		// Login and open the order
-		await StoreOwnerFlow.login();
-		await StoreOwnerFlow.goToOrder( orderId );
+		await merchant.login();
+		await merchant.goToOrder( orderId );
 
 		// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
 		await page.removeAllListeners( 'dialog' );
@@ -52,7 +49,7 @@ describe( 'Order > Full refund', () => {
 	} );
 
 	afterAll( async () => {
-		await StoreOwnerFlow.logout();
+		await merchant.logout();
 	} );
 
 	it( 'should process a full refund for an order', async () => {

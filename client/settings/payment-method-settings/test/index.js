@@ -8,7 +8,7 @@ import { render, screen, within } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PaymentMethodSettings from '../';
+import PaymentMethodSettings from '..';
 
 describe( 'PaymentMethodSettings', () => {
 	test( 'renders title and description', () => {

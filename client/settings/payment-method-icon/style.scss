@@ -4,6 +4,11 @@
 	vertical-align: middle;
 	max-width: 160px;
 
+	svg {
+		width: 41px;
+		height: auto;
+	}
+
 	@include breakpoint( '>660px' ) {
 		max-width: inherit;
 	}

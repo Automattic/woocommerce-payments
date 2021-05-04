@@ -2,6 +2,10 @@
 	display: flex;
 	flex-flow: column;
 
+	&:not( &:last-child ) {
+		margin-bottom: 24px;
+	}
+
 	@include breakpoint( '>800px' ) {
 		flex-flow: row;
 	}
@@ -11,7 +15,7 @@
 		margin-bottom: 12px;
 
 		@include breakpoint( '>800px' ) {
-			flex: 0 1 328px;
+			flex: 0 0 25%;
 			margin: 0 32px 0 0;
 		}
 
@@ -24,6 +28,20 @@
 			font-size: 13px;
 			line-height: 17.89px;
 			margin: 12px 0;
+		}
+	}
+
+	&__icons {
+		> li {
+			display: inline-block;
+			margin: 0 5px 0 0;
+		}
+
+		svg {
+			border-radius: 2px;
+			box-shadow: 0 0 0 1px #ddd;
+			height: auto;
+			width: 38px;
 		}
 	}
 
