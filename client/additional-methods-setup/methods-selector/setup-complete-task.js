@@ -3,27 +3,19 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
 import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import CollapsibleBody from './collapsible-body';
 import ChildTaskController from '../setup-tasks/child-provider';
-import { useChildTaskContext } from '../setup-tasks/child-context';
 
 import { TaskItem } from './task-list';
-import './setup-complete-task.scss';
 
 const Body = () => {
-	const { isActive } = useChildTaskContext();
-
 	return (
-		<div
-			className={ classNames( 'setup-complete-task__body', {
-				'is-active': isActive,
-			} ) }
-		>
+		<CollapsibleBody>
 			<p>
 				{ __(
 					"You're ready to begin accepting payments with the new methods!.",
@@ -48,7 +40,7 @@ const Body = () => {
 					{ __( 'Go to WooCommerce Home', 'woocommerce-payments' ) }
 				</Button>
 			</p>
-		</div>
+		</CollapsibleBody>
 	);
 };
 

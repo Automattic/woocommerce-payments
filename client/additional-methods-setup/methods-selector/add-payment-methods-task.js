@@ -3,7 +3,6 @@
  */
 import React, { useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
 import { Button } from '@wordpress/components';
 
 /**
@@ -11,23 +10,18 @@ import { Button } from '@wordpress/components';
  */
 import ChildTaskController from '../setup-tasks/child-provider';
 import { useChildTaskContext } from '../setup-tasks/child-context';
-
+import CollapsibleBody from './collapsible-body';
 import { TaskItem } from './task-list';
-import './add-payment-methods-task.scss';
 
 const Body = () => {
-	const { isActive, setCompleted } = useChildTaskContext();
+	const { setCompleted } = useChildTaskContext();
 
 	const handleContinueClick = useCallback( () => {
 		setCompleted( 'setup-complete' );
 	}, [ setCompleted ] );
 
 	return (
-		<div
-			className={ classNames( 'add-payment-methods-task__body', {
-				'is-active': isActive,
-			} ) }
-		>
+		<CollapsibleBody>
 			<p>
 				{ __(
 					'Selected payment methods need new currencies to be added to your store.',
@@ -39,7 +33,7 @@ const Body = () => {
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 			</p>
-		</div>
+		</CollapsibleBody>
 	);
 };
 
