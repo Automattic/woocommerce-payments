@@ -49,7 +49,7 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 				<DigitalWallets />
 			</SettingsSection>
 			<SettingsSection
-				title={ __( 'Settings', 'woocommerce-payments' ) }
+				title={ __( 'General settings', 'woocommerce-payments' ) }
 				description={ __(
 					"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
 					'woocommerce-payments'
