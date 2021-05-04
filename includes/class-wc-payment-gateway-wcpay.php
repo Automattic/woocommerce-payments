@@ -20,7 +20,7 @@ use WCPay\Tracker;
 /**
  * Gateway class for WooCommerce Payments
  */
-abstract class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
+class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Internal ID of the payment gateway.
