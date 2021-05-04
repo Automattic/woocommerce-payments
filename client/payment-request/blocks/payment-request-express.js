@@ -20,6 +20,8 @@ import { getPaymentRequestData, shouldUseGooglePayBrand } from '../utils';
  */
 const PaymentRequestExpressComponent = ( {
 	api,
+	billing,
+	shippingData,
 	setExpressPaymentError,
 	onClick,
 	onClose,
@@ -35,6 +37,8 @@ const PaymentRequestExpressComponent = ( {
 		onButtonClick,
 	} = useInitialization( {
 		api,
+		billing,
+		shippingData,
 		setExpressPaymentError,
 		onClick,
 		onClose,

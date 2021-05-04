@@ -1,20 +1,20 @@
 /**
  * Normalizes incoming cart total items for use as a displayItems with the Stripe api.
  *
- * @param {Array} cartTotalItems CartTotalItems to normalize.
+ * @param {Array} displayItems Items to normalize.
  * @param {boolean} pending Whether to mark items as pending or not.
  *
  * @return {Array} An array of PaymentItems
  */
-export const normalizeLineItems = ( cartTotalItems, pending = false ) => {
-	return cartTotalItems
-		.filter( ( cartTotalItem ) => {
-			return !! cartTotalItem.value;
+export const normalizeLineItems = ( displayItems, pending = false ) => {
+	return displayItems
+		.filter( ( displayItem ) => {
+			return !! displayItem.value;
 		} )
-		.map( ( cartTotalItem ) => {
+		.map( ( displayItem ) => {
 			return {
-				amount: cartTotalItem.value,
-				label: cartTotalItem.label,
+				amount: displayItem.value,
+				label: displayItem.label,
 				pending,
 			};
 		} );
