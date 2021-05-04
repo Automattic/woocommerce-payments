@@ -8,13 +8,15 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { LoadableBlock } from '../../components/loadable';
 import { useSettings } from '../../data';
 import PaymentMethods from '../../payment-methods';
-import General from './general';
 import SettingsSection from '../settings-section';
-import { LoadableBlock } from '../../components/loadable';
+import DigitalWallets from '../digital-wallets';
+import GeneralSettings from '../general-settings';
+import TestModeSettings from '../test-mode-settings';
 
-const SettingsManager = () => {
+const SettingsManager = ( { accountStatus = {} } ) => {
 	const { saveSettings, isSaving, isLoading } = useSettings();
 
 	return (
@@ -33,19 +35,31 @@ const SettingsManager = () => {
 					<PaymentMethods />
 				</LoadableBlock>
 			</SettingsSection>
-
 			<SettingsSection
-				title={ __( 'General Settings', 'woocommerce-payments' ) }
+				title={ __(
+					'Digital wallets & express payment methods',
+					'woocommerce-payments'
+				) }
 				description={ __(
-					'Change WooCommerce Payments settings and update your store’s configuration to ensure smooth transactions.',
+					// eslint-disable-next-line max-len
+					'Let customers use express payment methods and digital wallets like Apple Pay and Google Pay for fast & easy checkouts.',
 					'woocommerce-payments'
 				) }
 			>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<General />
-				</LoadableBlock>
+				<DigitalWallets />
 			</SettingsSection>
-
+			<SettingsSection
+				title={ __( 'Settings', 'woocommerce-payments' ) }
+				description={ __(
+					"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
+					'woocommerce-payments'
+				) }
+			>
+				<GeneralSettings accountLink={ accountStatus.accountLink } />
+			</SettingsSection>
+			<SettingsSection>
+				<TestModeSettings />
+			</SettingsSection>
 			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 				<Button
 					isPrimary

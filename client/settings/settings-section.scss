@@ -2,6 +2,10 @@
 	display: flex;
 	flex-flow: column;
 
+	&:not( &:last-child ) {
+		margin-bottom: 24px;
+	}
+
 	@include breakpoint( '>800px' ) {
 		flex-flow: row;
 	}
@@ -11,7 +15,7 @@
 		margin-bottom: 12px;
 
 		@include breakpoint( '>800px' ) {
-			flex: 0 1 328px;
+			flex: 0 0 25%;
 			margin: 0 32px 0 0;
 		}
 
