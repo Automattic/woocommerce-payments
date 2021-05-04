@@ -11,5 +11,15 @@
 				border-left: none;
 			}
 		}
+
+		&.is-active {
+			.woocommerce-timeline-item__headline {
+				color: var( --wp-admin-theme-color );
+			}
+		}
+
+		.woocommerce-timeline-item__headline {
+			font-weight: 600;
+		}
 	}
 }

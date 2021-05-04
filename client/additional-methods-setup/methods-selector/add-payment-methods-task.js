@@ -13,7 +13,7 @@ import { useChildTaskContext } from '../setup-tasks/child-context';
 import CollapsibleBody from './collapsible-body';
 import { TaskItem } from './task-list';
 
-const Body = () => {
+const TaskControls = () => {
 	const { setCompleted } = useChildTaskContext();
 
 	const handleContinueClick = useCallback( () => {
@@ -48,12 +48,14 @@ const AddPaymentMethodsTask = () => {
 				) }
 				index={ 1 }
 			>
-				{ __(
-					// eslint-disable-next-line max-len
-					"Increase your store's conversion by offering your customers preferred and convenient payment methods on checkout. You can manage them later in settings.",
-					'woocommerce-payments'
-				) }
-				<Body />
+				<p>
+					{ __(
+						// eslint-disable-next-line max-len
+						"Increase your store's conversion by offering your customers preferred and convenient payment methods on checkout. You can manage them later in settings.",
+						'woocommerce-payments'
+					) }
+				</p>
+				<TaskControls />
 			</TaskItem>
 		</ChildTaskController>
 	);
