@@ -41,14 +41,16 @@ const PaymentMethod = ( {
 				>
 					{ __( 'Manage', 'woocommerce-payments' ) }
 				</a>
-				<Button
-					isLink
-					aria-label={ __( 'Delete', 'woocommerce-payments' ) }
-					className="payment-method__action delete"
-					onClick={ onDeleteClick }
-				>
-					<IconComponent icon={ trash } size={ 24 } />
-				</Button>
+				{ onDeleteClick && (
+					<Button
+						isLink
+						aria-label={ __( 'Delete', 'woocommerce-payments' ) }
+						className="payment-method__action delete"
+						onClick={ onDeleteClick }
+					>
+						<IconComponent icon={ trash } size={ 24 } />
+					</Button>
+				) }
 			</div>
 		</>
 	);
