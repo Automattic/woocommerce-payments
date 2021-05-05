@@ -2,6 +2,16 @@
 	margin-top: 24px;
 }
 
+.settings-manager__banner {
+	margin-bottom: 32px;
+	@include breakpoint( '>480px' ) {
+		.components-card__body {
+			background: url( '../../assets/images/banner.png' ) no-repeat right;
+			background-size: contain;
+		}
+	}
+}
+
 .settings-manager {
 	display: flex;
 	flex-flow: column;

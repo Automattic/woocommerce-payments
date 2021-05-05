@@ -14,7 +14,7 @@ import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
 import HeroImage from './hero-image.js';
-import WCPayLogo from './wcpay-logo.js';
+import WCPayLogo from '../wcpay-logo.js';
 import Visa from './cards/visa.js';
 import MasterCard from './cards/mastercard.js';
 import Maestro from './cards/maestro.js';
