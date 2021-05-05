@@ -20,7 +20,7 @@ class WC_Helper_Token {
 	 *
 	 * @param string $payment_method Token payment method.
 	 * @param int    $user_id        ID of the token's user, defaults to get_current_user_id().
-	 * @param string $gateway        Token's Gateway ID, default to WC_Payment_Gateway_WCPay::GATEWAY_ID
+	 * @param string $gateway        Token's Gateway ID, default to CC_Payment_Gateway::GATEWAY_ID
 	 */
 	public static function create_token( $payment_method, $user_id = null, $gateway = CC_Payment_Gateway::GATEWAY_ID ) {
 		$token = new WC_Payment_Token_CC();
