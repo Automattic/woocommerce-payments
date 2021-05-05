@@ -15,6 +15,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
+use Exception;
 
 /**
  * SEPA Payment method extended from cart payment method.
@@ -118,7 +119,7 @@ class Sepa_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			</fieldset>
 			<?php
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			// Output the error message.
 			?>
 			<div>

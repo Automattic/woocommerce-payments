@@ -48,4 +48,13 @@ class WC_Payments_Features {
 	public static function is_sofort_enabled() {
 		return '1' === get_option( '_wcpay_feature_sofort', '0' );
 	}
+
+	/**
+	 * Checks whether any of our Euro debit payment gateway feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_any_euro_debit_enabled() {
+		return self::is_giropay_enabled() || self::is_sofort_enabled() || self::is_sepa_enabled();
+	}
 }

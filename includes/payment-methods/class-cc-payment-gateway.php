@@ -15,13 +15,7 @@ use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Connection_Exception };
-use WCPay\Logger;
-use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Initiated_By;
-use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Tracker;
+use Exception;
 
 /**
  * Credit Card Payment method.

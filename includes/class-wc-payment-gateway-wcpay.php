@@ -262,7 +262,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		// Show Credit Card enable/disable option only if the other payment methods are enabled.
-		if ( WC_Payments_Features::is_giropay_enabled() || WC_Payments_Features::is_sofort_enabled() || WC_Payments_Features::is_sepa_enabled() ) {
+		if ( WC_Payments_Features::is_any_euro_debit_enabled() ) {
 			$this->form_fields['cc_enabled'] = [
 				'title'       => __( 'Enable/disable Credit Card', 'woocommerce-payments' ),
 				'label'       => __( 'Enable WooCommerce Payments Credit Card', 'woocommerce-payments' ),
@@ -333,7 +333,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		if ( WC_Payments_Features::is_giropay_enabled() || WC_Payments_Features::is_sofort_enabled() || WC_Payments_Features::is_sepa_enabled() ) {
+		if ( WC_Payments_Features::is_any_euro_debit_enabled() ) {
 			add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'set_enabled_based_on_wrapper_only' ] );
 		}
 	}
@@ -1181,7 +1181,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function init_settings() {
 		parent::init_settings();
 
-		if ( WC_Payments_Features::is_giropay_enabled() || WC_Payments_Features::is_sofort_enabled() || WC_Payments_Features::is_sepa_enabled() ) {
+		if ( WC_Payments_Features::is_any_euro_debit_enabled() ) {
 			// The initialized settings need to be both WCPay Gateway wrapper and the actual Payment Method gateway.
 			if ( 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ) {
 				$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
@@ -2032,7 +2032,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool The result.
 	 */
 	public function is_enabled() {
-		if ( WC_Payments_Features::is_giropay_enabled() || WC_Payments_Features::is_sofort_enabled() || WC_Payments_Features::is_sepa_enabled() ) {
+		if ( WC_Payments_Features::is_any_euro_debit_enabled() ) {
 			return 'yes' === $this->get_option( static::METHOD_ENABLED_KEY );
 		} else {
 			return 'yes' === $this->get_option( self::METHOD_ENABLED_KEY );
