@@ -236,6 +236,9 @@ class WC_Payments {
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 				new WC_Payments_Admin_Sections_Overwrite();
+
+				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
+				new WC_Payments_Admin_Additional_Methods_Setup();
 			}
 		}
 
