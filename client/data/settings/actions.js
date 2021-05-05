@@ -34,7 +34,7 @@ export function updateEnabledPaymentMethodIds( methodIds ) {
 	};
 }
 
-export function setIsSavingSettings( isSaving ) {
+export function updateIsSavingSettings( isSaving ) {
 	return {
 		type: TYPES.SET_IS_SAVING_SETTINGS,
 		isSaving,
@@ -45,7 +45,7 @@ export function* saveSettings() {
 	const settings = select( STORE_NAME ).getSettings();
 
 	try {
-		yield setIsSavingSettings( true );
+		yield updateIsSavingSettings( true );
 
 		yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
@@ -61,6 +61,6 @@ export function* saveSettings() {
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
 	} finally {
-		yield setIsSavingSettings( false );
+		yield updateIsSavingSettings( false );
 	}
 }
