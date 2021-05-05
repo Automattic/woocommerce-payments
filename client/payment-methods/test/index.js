@@ -75,6 +75,27 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'enabled methods are rendered with "Manage" and "Delete" buttons', () => {
+		const enabledMethodIds = [ 'cc', 'sepa' ];
+
+		render(
+			<PaymentMethods
+				enabledMethodIds={ enabledMethodIds }
+				onEnabledMethodIdsChange={ () => {} }
+			/>
+		);
+
+		const cc = screen.getByText( 'Credit card / debit card' );
+		const listItem = cc.closest( 'li' );
+
+		expect(
+			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
+		).toBeInTheDocument();
+		expect(
+			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
 		const enabledMethodIds = [ 'cc' ];
 
 		render(
@@ -87,12 +108,12 @@ describe( 'PaymentMethods', () => {
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const listItem = cc.closest( 'li' );
 
-		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'link', { name: 'Manage' } )
-		);
-		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'button', { name: 'Delete' } )
-		);
+		expect(
+			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
+		).toBeInTheDocument();
+		expect(
+			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
