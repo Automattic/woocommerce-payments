@@ -481,7 +481,16 @@ jQuery( function ( $ ) {
 						'.woocommerce-checkout .form-row.woocommerce-invalid input'
 					),
 					'.Tab': getFieldStyles(
-						'.woocommerce-checkout .form-row input'
+						'.woocommerce-checkout .form-row input',
+						'Tab'
+					),
+					'.TabIcon--selected': getFieldStyles(
+						'.woocommerce-checkout .place-order .button.alt',
+						'TabIcon--selected'
+					),
+					'.Tab--selected': getFieldStyles(
+						'.woocommerce-checkout .place-order .button.alt',
+						'Tab--selected'
 					),
 				},
 			};
@@ -573,21 +582,74 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	window.getFieldStyles = ( selector ) => {
+	window.getFieldStyles = ( selector, iFrameElement = null ) => {
 		if ( ! document.querySelector( selector ) ) {
 			return {};
 		}
-
+		let validProperties = supportedUPEProperties;
 		const elem = document.querySelector( selector );
 		const styles = window.getComputedStyle( elem );
 		const filteredStyles = {};
 
+		if ( 'Tab' === iFrameElement ) {
+			validProperties = [
+				'borderStyle',
+				'borderBottomStyle',
+				'borderTopStyle',
+				'borderRightStyle',
+				'borderLeftStyle',
+				'borderColor',
+				'borderBottomColor',
+				'borderTopColor',
+				'borderRightColor',
+				'borderLeftColor',
+				'borderWidth',
+				'borderBottomWidth',
+				'borderTopWidth',
+				'borderRightWidth',
+				'borderLeftWidth',
+				'backgroundColor',
+				'color',
+				'fontFamily',
+			];
+		}
+
+		if ( 'Tab--selected' === iFrameElement ) {
+			validProperties = [
+				'borderStyle',
+				'borderStyle',
+				'borderBottomStyle',
+				'borderTopStyle',
+				'borderRightStyle',
+				'borderLeftStyle',
+				'borderWidth',
+				'borderBottomWidth',
+				'borderTopWidth',
+				'borderRightWidth',
+				'borderLeftWidth',
+			];
+		}
+
+		// Styles to match the "Place Order" button.
+
+		if ( 'Tab--selected' === iFrameElement ) {
+			validProperties.push( 'backgroundColor', 'color' );
+		}
+
+		if ( 'TabIcon--selected' === iFrameElement ) {
+			validProperties = [ 'color' ];
+		}
+
+		// End match the "Place Order" button.
+
 		for ( let i = 0; i < styles.length; i++ ) {
 			const camelCase = dashedToCamelCase( styles[ i ] );
-			if ( supportedUPEProperties.includes( camelCase ) ) {
+			if ( validProperties.includes( camelCase ) ) {
 				filteredStyles[ camelCase ] = styles.getPropertyValue(
 					styles[ i ]
 				);
+				// TODO: If customer defined styles, replace automatic with customer defined.
+				// This would include predefined themes.
 			}
 		}
 
@@ -601,6 +663,10 @@ jQuery( function ( $ ) {
 
 		if ( upeFontFamily ) {
 			filteredStyles.fontFamily = upeFontFamily;
+		}
+
+		if ( 'Tab--selected' === iFrameElement ) {
+			filteredStyles.fontWeight = 'bolder';
 		}
 
 		return filteredStyles;
