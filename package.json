@@ -54,14 +54,6 @@
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break"
   },
-  "husky": {
-    "hooks": {
-      "post-checkout": "npx --no-install yarnhook",
-      "post-merge": "npx --no-install yarnhook",
-      "post-rewrite": "npx --no-install yarnhook",
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "npm run format:provided",
