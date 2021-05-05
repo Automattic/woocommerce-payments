@@ -22,8 +22,7 @@ const InstantDepositModal = ( {
 	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/';
 	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
-		/* translators: %s - amount representing the fee percentage */
-		/* translators: <a> - instant payout doc URL */
+		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */
 		sprintf(
 			__(
 				'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal %s service fee. <a>Learn more</a>',

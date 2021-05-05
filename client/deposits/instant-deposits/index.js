@@ -16,11 +16,7 @@ import { useInstantDeposit } from 'data';
 
 const isButtonDisabled = ( instantBalance ) => {
 	let buttonDisabled = false;
-	if (
-		0 === instantBalance.amount ||
-		0 === instantBalance.fee ||
-		0 === instantBalance.net
-	) {
+	if ( 0 === instantBalance.amount ) {
 		buttonDisabled = true;
 	}
 
