@@ -56,9 +56,9 @@
   },
   "husky": {
     "hooks": {
-      "post-checkout": "yarnhook",
-      "post-merge": "yarnhook",
-      "post-rewrite": "yarnhook",
+      "post-checkout": "npx --no-install yarnhook",
+      "post-merge": "npx --no-install yarnhook",
+      "post-rewrite": "npx --no-install yarnhook",
       "pre-commit": "lint-staged"
     }
   },
