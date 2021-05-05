@@ -20,6 +20,13 @@ export function updateSettings( data ) {
 	};
 }
 
+export function updateIsWCPayEnabled( isEnabled ) {
+	return {
+		type: TYPES.SET_IS_WCPAY_ENABLED,
+		isEnabled,
+	};
+}
+
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return {
 		type: TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,

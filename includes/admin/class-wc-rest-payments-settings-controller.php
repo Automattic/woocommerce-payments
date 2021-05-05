@@ -78,6 +78,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		return [
 			'enabled_payment_method_ids' => array_values( $enabled_payment_method_ids ),
+			'is_wcpay_enabled'           => $this->gateway->is_enabled(),
 		];
 	}
 
@@ -87,6 +88,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function update_settings( WP_REST_Request $request ) {
+		if ( $request->has_param( 'is_wcpay_enabled' ) ) {
+			$is_wcpay_enabled = $request->get_param( 'is_wcpay_enabled' );
+
+			if ( $is_wcpay_enabled ) {
+				$this->gateway->enable();
+			} else {
+				$this->gateway->disable();
+			}
+		}
+
 		$available_payment_methods    = $this->get_available_payment_methods();
 		$payment_method_ids_to_enable = array_intersect(
 			$request->get_param( 'enabled_payment_method_ids' ),

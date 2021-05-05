@@ -21,6 +21,17 @@ export const useEnabledPaymentMethodIds = () =>
 		};
 	} );
 
+export const useGeneralSettings = () =>
+	useSelect( ( select ) => {
+		const { getIsWCPayEnabled } = select( STORE_NAME );
+		const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+
+		return {
+			isWCPayEnabled: getIsWCPayEnabled(),
+			updateIsWCPayEnabled,
+		};
+	} );
+
 export const useSettings = () =>
 	useSelect( ( select ) => {
 		const {

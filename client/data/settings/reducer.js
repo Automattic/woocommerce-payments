@@ -31,8 +31,19 @@ export const receiveSettings = (
 			return {
 				...state,
 				data: {
+					...state.data,
 					// eslint-disable-next-line camelcase
 					enabled_payment_method_ids: action.methodIds,
+				},
+			};
+
+		case TYPES.SET_IS_WCPAY_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_wcpay_enabled: action.isEnabled,
 				},
 			};
 	}

@@ -55,7 +55,11 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 					'woocommerce-payments'
 				) }
 			>
-				<GeneralSettings accountLink={ accountStatus.accountLink } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<GeneralSettings
+						accountLink={ accountStatus.accountLink }
+					/>
+				</LoadableBlock>
 			</SettingsSection>
 			<SettingsSection>
 				<TestModeSettings />
