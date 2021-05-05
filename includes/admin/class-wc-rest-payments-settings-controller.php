@@ -88,14 +88,53 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function update_settings( WP_REST_Request $request ) {
-		if ( $request->has_param( 'is_wcpay_enabled' ) ) {
-			$is_wcpay_enabled = $request->get_param( 'is_wcpay_enabled' );
+		$this->update_is_wcpay_enabled( $request );
+		$this->update_enabled_payment_methods( $request );
 
-			if ( $is_wcpay_enabled ) {
-				$this->gateway->enable();
-			} else {
-				$this->gateway->disable();
+		return new WP_HTTP_Response( [], 200 );
+	}
+
+	/**
+	 * Get available payment methods.
+	 *
+	 * @return WC_Payment_Gateway_WCPay[]
+	 */
+	private function get_available_payment_methods(): array {
+		return array_filter(
+			WC()->payment_gateways()->payment_gateways(),
+			function ( $gateway ) {
+				return is_subclass_of( $gateway, WC_Payment_Gateway_WCPay::class );
 			}
+		);
+	}
+
+	/**
+	 * Updates WooCommerce Payments enabled status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_wcpay_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_wcpay_enabled' ) ) {
+			return;
+		}
+
+		$is_wcpay_enabled = $request->get_param( 'is_wcpay_enabled' );
+
+		if ( $is_wcpay_enabled ) {
+			$this->gateway->enable();
+		} else {
+			$this->gateway->disable();
+		}
+	}
+
+	/**
+	 * Updates the list of enabled payment methods.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_enabled_payment_methods( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'enabled_payment_method_ids' ) ) {
+			return;
 		}
 
 		$available_payment_methods    = $this->get_available_payment_methods();
@@ -116,22 +155,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$this->gateway->update_option( 'payment_method_order', $payment_method_ids_to_enable );
-
-		return new WP_HTTP_Response( [], 200 );
-	}
-
-	/**
-	 * Get available payment methods.
-	 *
-	 * @return WC_Payment_Gateway_WCPay[]
-	 */
-	private function get_available_payment_methods(): array {
-		return array_filter(
-			WC()->payment_gateways()->payment_gateways(),
-			function ( $gateway ) {
-				return is_subclass_of( $gateway, WC_Payment_Gateway_WCPay::class );
-			}
-		);
 	}
 
 }
