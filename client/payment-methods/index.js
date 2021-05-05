@@ -16,6 +16,10 @@ import { useEnabledPaymentMethodIds } from '../data';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
+import CreditCardIcon from '../gateway-icons/credit-card';
+import GiropayIcon from '../gateway-icons/giropay';
+import SofortIcon from '../gateway-icons/sofort';
+import SepaIcon from '../gateway-icons/sepa';
 
 const availableMethods = [
 	{
@@ -25,6 +29,7 @@ const availableMethods = [
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
+		Icon: CreditCardIcon,
 	},
 	{
 		id: 'woocommerce_payments_giropay',
@@ -33,6 +38,7 @@ const availableMethods = [
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
+		Icon: GiropayIcon,
 	},
 	{
 		id: 'woocommerce_payments_sofort',
@@ -41,6 +47,7 @@ const availableMethods = [
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
 			'woocommerce-payments'
 		),
+		Icon: SofortIcon,
 	},
 	{
 		id: 'woocommerce_payments_sepa',
@@ -49,6 +56,7 @@ const availableMethods = [
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
+		Icon: SepaIcon,
 	},
 ];
 
@@ -114,13 +122,13 @@ const PaymentMethods = () => {
 						className="payment-methods__enabled-methods"
 					>
 						{ enabledMethods.map(
-							( { id, label, description } ) => (
+							( { id, label, description, Icon } ) => (
 								<PaymentMethod
 									key={ id }
-									className={ classNames(
-										'payment-method',
-										id
-									) }
+									Icon={ Icon }
+									className={ classNames( 'payment-method', {
+										'has-icon-border': 'cc' !== id,
+									} ) }
 									onDeleteClick={ () =>
 										handleDeleteClick( id )
 									}
@@ -143,15 +151,19 @@ const PaymentMethods = () => {
 						{ __( 'Add payment method', 'woocommerce-payments' ) }
 					</Button>
 					<ul className="payment-methods__available-methods">
-						{ disabledMethods.map( ( { id, label } ) => (
+						{ disabledMethods.map( ( { id, label, Icon } ) => (
 							<li
 								key={ id }
 								className={ classNames(
 									'payment-methods__available-method',
-									id
+									{
+										'has-icon-border': 'cc' !== id,
+									}
 								) }
 								aria-label={ label }
-							/>
+							>
+								<Icon height="24" width="38" />
+							</li>
 						) ) }
 					</ul>
 				</CardBody>

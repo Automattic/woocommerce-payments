@@ -31,6 +31,20 @@
 		}
 	}
 
+	&__icons {
+		> li {
+			display: inline-block;
+			margin: 0 5px 0 0;
+		}
+
+		svg {
+			border-radius: 2px;
+			box-shadow: 0 0 0 1px #ddd;
+			height: auto;
+			width: 38px;
+		}
+	}
+
 	&__controls {
 		flex: 1 1 auto;
 	}

@@ -81,10 +81,7 @@
 	}
 
 	&__icon {
-		background: no-repeat center center;
-		background-size: contain;
 		border-radius: 2px;
-		box-shadow: 0 0 0 1px #ddd;
 		display: none;
 		flex: 0 0 63.69px;
 		height: 40px;
@@ -96,21 +93,8 @@
 		}
 	}
 
-	&.woocommerce_payments &__icon {
-		background-image: url( '../../../assets/images/payment-methods/cc.svg' );
-		box-shadow: none;
-	}
-
-	&.woocommerce_payments_giropay &__icon {
-		background-image: url( '../../../assets/images/payment-methods/giropay.svg' );
-	}
-
-	&.woocommerce_payments_sepa &__icon {
-		background-image: url( '../../../assets/images/payment-methods/sepa.svg' );
-	}
-
-	&.woocommerce_payments_sofort &__icon {
-		background-image: url( '../../../assets/images/payment-methods/sofort.svg' );
+	&.has-icon-border &__icon {
+		box-shadow: 0 0 0 1px #ddd;
 	}
 
 	.orderable-list__drag-handle {
