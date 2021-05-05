@@ -67,7 +67,12 @@ const PaymentMethodsSelector = ( props ) => {
 						onChange={ makeHandlePaymentMethodChange(
 							'woocommerce_payments_giropay'
 						) }
-						label={ <PaymentMethodIcon name="giropay" showName /> }
+						label={
+							<PaymentMethodIcon
+								name="woocommerce_payments_giropay"
+								showName
+							/>
+						}
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
@@ -83,7 +88,12 @@ const PaymentMethodsSelector = ( props ) => {
 						onChange={ makeHandlePaymentMethodChange(
 							'woocommerce_payments_sofort'
 						) }
-						label={ <PaymentMethodIcon name="sofort" showName /> }
+						label={
+							<PaymentMethodIcon
+								name="woocommerce_payments_sofort"
+								showName
+							/>
+						}
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
@@ -99,7 +109,12 @@ const PaymentMethodsSelector = ( props ) => {
 						onChange={ makeHandlePaymentMethodChange(
 							'woocommerce_payments_sepa'
 						) }
-						label={ <PaymentMethodIcon name="sepa" showName /> }
+						label={
+							<PaymentMethodIcon
+								name="woocommerce_payments_sepa"
+								showName
+							/>
+						}
 					/>
 					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
 						missing fees
