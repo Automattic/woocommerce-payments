@@ -102,13 +102,10 @@ export const useInitialization = ( {
 
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
-		const noop = { removeAllListeners: () => void null };
-		let shippingAddressChangeEvent = noop,
-			shippingOptionChangeEvent = noop,
-			paymentMethodChangeEvent = noop,
-			cancelChangeEvent = noop;
-
 		if ( paymentRequest ) {
+			// Remove all previously added event listeners first.
+			paymentRequest.removeAllListeners();
+
 			const cancelHandler = () => {
 				setIsFinished( false );
 				setIsProcessing( false );
@@ -116,38 +113,25 @@ export const useInitialization = ( {
 				onClose();
 			};
 
-			shippingAddressChangeEvent = paymentRequest.on(
-				'shippingaddresschange',
-				( event ) => shippingAddressChangeHandler( api, event )
+			paymentRequest.on( 'shippingaddresschange', ( event ) =>
+				shippingAddressChangeHandler( api, event )
 			);
 
-			shippingOptionChangeEvent = paymentRequest.on(
-				'shippingoptionchange',
-				( event ) => shippingOptionChangeHandler( api, event )
+			paymentRequest.on( 'shippingoptionchange', ( event ) =>
+				shippingOptionChangeHandler( api, event )
 			);
 
-			paymentMethodChangeEvent = paymentRequest.on(
-				'paymentmethod',
-				( event ) =>
-					paymentMethodHandler(
-						api,
-						completePayment,
-						abortPayment,
-						event
-					)
+			paymentRequest.on( 'paymentmethod', ( event ) =>
+				paymentMethodHandler(
+					api,
+					completePayment,
+					abortPayment,
+					event
+				)
 			);
 
-			cancelChangeEvent = paymentRequest.on( 'cancel', cancelHandler );
+			paymentRequest.on( 'cancel', cancelHandler );
 		}
-
-		return () => {
-			if ( paymentRequest ) {
-				shippingAddressChangeEvent.removeAllListeners();
-				shippingOptionChangeEvent.removeAllListeners();
-				paymentMethodChangeEvent.removeAllListeners();
-				cancelChangeEvent.removeAllListeners();
-			}
-		};
 	}, [ paymentRequest ] );
 
 	return {
