@@ -1171,7 +1171,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
 	public function get_option_key() {
-		// Intentionally using 'woocommerce_payments_settings' instead of CC_Payment_Gateway::GATEWAY_ID to avoid circular dependency.
+		// Intentionally using 'woocommerce_payments_settings' instead of self::GATEWAY_ID so that Credit Card, SEPA, Sofort, etc, all
+		// saves the settings under the same option_name.
 		return $this->plugin_id . 'woocommerce_payments_settings';
 	}
 
