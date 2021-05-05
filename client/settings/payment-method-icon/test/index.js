@@ -2,69 +2,48 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 
 /**
  * Internal dependencies
  */
-import PaymentMethodIcon from '../';
+import PaymentMethodIcon from '..';
 
 describe( 'PaymentMethodIcon', () => {
 	test( 'renders GiroPay payment method icon', () => {
-		const { getByAltText } = render( <PaymentMethodIcon name="giropay" /> );
-
-		const method = getByAltText( 'GiroPay' );
-		expect( method ).toBeInTheDocument();
+		const { container } = render( <PaymentMethodIcon name="giropay" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders Sepa payment method icon', () => {
-		const { getByAltText } = render( <PaymentMethodIcon name="sepa" /> );
-
-		const method = getByAltText( 'Direct Debit Payments' );
-		expect( method ).toBeInTheDocument();
+		const { container } = render( <PaymentMethodIcon name="sepa" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders GiroPay payment method icon', () => {
-		const { getByAltText } = render( <PaymentMethodIcon name="sofort" /> );
-
-		const method = getByAltText( 'Sofort' );
-		expect( method ).toBeInTheDocument();
+		const { container } = render( <PaymentMethodIcon name="sofort" /> );
+		expect( container.querySelector( 'svg' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders GiroPay payment method icon and label', () => {
-		const { getByText, getByAltText } = render(
-			<PaymentMethodIcon name="giropay" showName />
-		);
+		render( <PaymentMethodIcon name="giropay" showName /> );
 
-		const method = getByAltText( 'GiroPay' );
-		expect( method ).toBeInTheDocument();
-
-		const label = getByText( 'GiroPay' );
+		const label = screen.queryByText( 'GiroPay' );
 		expect( label ).toBeInTheDocument();
 	} );
 
 	test( 'renders Sepa payment method icon and label', () => {
-		const { getByText, getByAltText } = render(
-			<PaymentMethodIcon name="sepa" showName />
-		);
+		render( <PaymentMethodIcon name="sepa" showName /> );
 
-		const method = getByAltText( 'Direct Debit Payments' );
-		expect( method ).toBeInTheDocument();
-
-		const label = getByText( 'Direct Debit Payments' );
+		const label = screen.queryByText( 'Direct Debit Payments' );
 		expect( label ).toBeInTheDocument();
 	} );
 
 	test( 'renders GiroPay payment method icon and label', () => {
-		const { getByText, getByAltText } = render(
-			<PaymentMethodIcon name="sofort" showName />
-		);
+		render( <PaymentMethodIcon name="sofort" showName /> );
 
-		const method = getByAltText( 'Sofort' );
-		expect( method ).toBeInTheDocument();
-
-		const label = getByText( 'Sofort' );
+		const label = screen.queryByText( 'Sofort' );
 		expect( label ).toBeInTheDocument();
 	} );
 	test( 'renders nothing when using an invalid icon name', () => {
