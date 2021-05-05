@@ -332,6 +332,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		if ( WC_Payments_Features::is_giropay_enabled() || WC_Payments_Features::is_sofort_enabled() || WC_Payments_Features::is_sepa_enabled() ) {
+			add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'set_enabled_based_on_wrapper_only' ] );
+		}
 	}
 
 	/**
@@ -2047,5 +2051,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function enable() {
 		$this->update_option( static::METHOD_ENABLED_KEY, 'yes' );
+	}
+
+	/**
+	 * $this->enabled is set to yes ($this->init_settings()) if both this wrapper and the underlying payment methods are
+	 * both enabled (sepa/giropay/etc). This allows the checkout page to hide all payment methods if the wrapper is
+	 * turned off.
+	 *
+	 * This method handles a special case under the payment methods' settings page. We want to make sure that the
+	 * toggle button reflects the status of "enabled" for this wrapper class only.
+	 */
+	public function set_enabled_based_on_wrapper_only() {
+		$this->enabled = ! empty( $this->settings[ self::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ self::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 }
