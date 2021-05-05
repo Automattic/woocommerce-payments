@@ -21,7 +21,6 @@ jQuery( function ( $ ) {
 	const publishableKey = getConfig( 'publishableKey' );
 	const upeColor = getConfig( 'upeColor' );
 	const upeBorder = getConfig( 'upeBorder' );
-	const upeFontSource = getConfig( 'upeFontSource' );
 	const upeFontFamily = getConfig( 'upeFontFamily' );
 	const upeThemeInputSelector = getConfig( 'upeThemeInputSelector' );
 	const upeThemeLabelSelector = getConfig( 'upeThemeLabelSelector' );
@@ -45,12 +44,29 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
+
+	const fontRules = [],
+		sheets = document.styleSheets,
+		fontDomains = [
+			'fonts.googleapis.com',
+			'fonts.gstatic.com',
+			'fast.fonts.com',
+			'use.typekit.net',
+		];
+	for ( let i = 0; i < sheets.length; i++ ) {
+		if ( ! sheets[ i ].href ) {
+			continue;
+		}
+		const url = new URL( sheets[ i ].href );
+		if ( -1 !== fontDomains.indexOf( url.hostname ) ) {
+			fontRules.push( {
+				cssSrc: sheets[ i ].href,
+			} );
+		}
+	}
+
 	const elements = api.getStripe().elements( {
-		fonts: [
-			{
-				cssSrc: upeFontSource,
-			},
-		],
+		fonts: fontRules,
 	} );
 
 	// Customer information for Pay for Order and Save Payment method.
