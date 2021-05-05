@@ -165,6 +165,8 @@ describe( 'Deposits overview', () => {
 				fee: 185.175,
 				net: 12159.83,
 				// eslint-disable-next-line camelcase
+				fee_percentage: 1.5,
+				// eslint-disable-next-line camelcase
 				transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
 			},
 		};

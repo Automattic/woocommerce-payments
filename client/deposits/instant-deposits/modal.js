@@ -14,16 +14,13 @@ import { formatCurrency } from 'utils/currency';
 import './style.scss';
 
 const InstantDepositModal = ( {
-	amount,
-	fee,
-	net,
+	instantBalance: { amount, fee, net, fee_percentage: percentage },
 	onClose,
 	onSubmit,
 	inProgress,
 } ) => {
 	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/';
-	const feePercentage =
-		Math.round( ( ( 100 * fee ) / amount ) * 10 ) / 10 + '%';
+	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
 		/* translators: %s - amount representing the fee percentage */
 		/* translators: <a> - instant payout doc URL */

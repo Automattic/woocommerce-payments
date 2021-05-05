@@ -184,7 +184,9 @@ const DepositsOverview = () => {
 					</span>
 				</p>
 				{ overview && overview.instant_balance && (
-					<InstantDepositButton overview={ overview } />
+					<InstantDepositButton
+						instantBalance={ overview.instant_balance }
+					/>
 				) }
 			</div>
 			{ isLoading ? (

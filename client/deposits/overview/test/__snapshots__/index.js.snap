@@ -36,13 +36,6 @@ exports[`Deposits overview renders correctly 1`] = `
           Automatic, every business day
         </span>
       </p>
-      <button
-        class="components-button is-secondary is-button is-default"
-        disabled=""
-        type="button"
-      >
-        Instant deposit
-      </button>
     </div>
     <div
       aria-describedby="woocommerce-summary-helptext-1"
@@ -269,13 +262,6 @@ exports[`Deposits overview renders on error correctly 1`] = `
           class="wcpay-deposits-overview__schedule-value"
         />
       </p>
-      <button
-        class="components-button is-secondary is-button is-default"
-        disabled=""
-        type="button"
-      >
-        Instant deposit
-      </button>
     </div>
     <div
       aria-describedby="woocommerce-summary-helptext-2"
