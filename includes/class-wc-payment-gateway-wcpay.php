@@ -882,93 +882,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->add_token_to_order( $order, $token );
 			}
 
-			switch ( $status ) {
-				case 'succeeded':
-					if ( $payment_needed ) {
-						$transaction_url = $this->compose_transaction_url( $charge_id );
-						$note            = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-								]
-							),
-							wc_price( $amount ),
-							$intent_id
-						);
-						$order->add_order_note( $note );
-					}
-					$order->payment_complete( $intent_id );
-					break;
-				case 'processing':
-				case 'requires_capture':
-					$transaction_url = $this->compose_transaction_url( $charge_id );
-					$note            = sprintf(
-						WC_Payments_Utils::esc_interpolated_html(
-							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-							__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-							[
-								'strong' => '<strong>',
-								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-							]
+			if ( 'requires_action' === $status ) {
+				$next_action = $intent->get_next_action();
+				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+					$response = [
+						'result'   => 'success',
+						'redirect' => $next_action['redirect_to_url']['url'],
+					];
+				} else {
+					$response = [
+						'result'   => 'success',
+						// Include a new nonce for update_order_status to ensure the update order
+						// status call works when a guest user creates an account during checkout.
+						'redirect' => sprintf(
+							'#wcpay-confirm-%s:%s:%s:%s',
+							$payment_needed ? 'pi' : 'si',
+							$order_id,
+							$client_secret,
+							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
-						wc_price( $amount ),
-						$intent_id
-					);
-
-					$order->set_status( 'on-hold', $note );
-
-					break;
-				case 'requires_action':
-					if ( $payment_needed ) {
-						// Add a note in case the customer does not complete the payment (exits the page),
-						// so the store owner has some information about what happened to create an order.
-						$note = sprintf(
-							WC_Payments_Utils::esc_interpolated_html(
-								/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-								__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-								[
-									'strong' => '<strong>',
-									'code'   => '<code>',
-								]
-							),
-							wc_price( $amount ),
-							$intent_id
-						);
-						$order->add_order_note( $note );
-					}
-
-					$next_action = $intent->get_next_action();
-					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
-						$response = [
-							'result'   => 'success',
-							'redirect' => $next_action['redirect_to_url']['url'],
-						];
-					} else {
-						$response = [
-							'result'   => 'success',
-							// Include a new nonce for update_order_status to ensure the update order
-							// status call works when a guest user creates an account during checkout.
-							'redirect' => sprintf(
-								'#wcpay-confirm-%s:%s:%s:%s',
-								$payment_needed ? 'pi' : 'si',
-								$order_id,
-								$client_secret,
-								wp_create_nonce( 'wcpay_update_order_status_nonce' )
-							),
-						];
-					}
+					];
+				}
 			}
 		}
 
-		$order->set_transaction_id( $intent_id );
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $status );
-		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
-		$order->save();
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -983,6 +921,91 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		];
+	}
+
+	/**
+	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
+	 *
+	 * @param WC_Order $order The order to update.
+	 * @param string   $intent_id The intent ID.
+	 * @param string   $intent_status Intent status.
+	 * @param string   $payment_method Payment method ID.
+	 * @param string   $customer_id Customer ID.
+	 * @param string   $charge_id Charge ID.
+	 * @param string   $currency Currency code.
+	 */
+	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+		$order_id       = $order->get_id();
+		$amount         = $order->get_total();
+		$payment_needed = $amount > 0;
+
+		switch ( $intent_status ) {
+			case 'succeeded':
+				if ( $payment_needed ) {
+					$transaction_url = $this->compose_transaction_url( $charge_id );
+					$note            = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->add_order_note( $note );
+				}
+				$order->payment_complete( $intent_id );
+				break;
+			case 'processing':
+			case 'requires_capture':
+				$transaction_url = $this->compose_transaction_url( $charge_id );
+				$note            = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+						__( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+						]
+					),
+					wc_price( $amount ),
+					$intent_id
+				);
+
+				$order->set_status( 'on-hold', $note );
+				break;
+			case 'requires_action':
+				if ( $payment_needed ) {
+					// Add a note in case the customer does not complete the payment (exits the page),
+					// so the store owner has some information about what happened to create an order.
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+							__( 'A payment of %1$s was <strong>started</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+								'code'   => '<code>',
+							]
+						),
+						wc_price( $amount ),
+						$intent_id
+					);
+					$order->add_order_note( $note );
+				}
+				break;
+		}
+
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		$order->save();
 	}
 
 	/**
@@ -1409,10 +1432,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Capture previously authorized charge.
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
+	 *
+	 * @return array An array containing the status (succeeded/failed), id (intent ID), and message (error message if any)
 	 */
 	public function capture_charge( $order ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
+		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
@@ -1494,6 +1520,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_authorization_expired ) {
 			WC_Payments_Utils::mark_payment_expired( $order );
 		}
+
+		return [
+			'status'  => $status ?? 'failed',
+			'id'      => ! empty( $intent ) ? $intent->get_id() : null,
+			'message' => $error_message,
+		];
 	}
 
 	/**

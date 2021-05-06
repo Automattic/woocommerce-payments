@@ -20,7 +20,7 @@ describe( 'PaymentMethod', () => {
 	} );
 
 	test( 'renders "Manage" and "Delete"', () => {
-		render( <PaymentMethod label="Foo" /> );
+		render( <PaymentMethod label="Foo" onDeleteClick={ jest.fn() } /> );
 
 		const manageLink = screen.queryByRole( 'link', {
 			name: 'Manage',
@@ -32,6 +32,21 @@ describe( 'PaymentMethod', () => {
 
 		expect( manageLink ).toBeInTheDocument();
 		expect( deleteButton ).toBeInTheDocument();
+	} );
+
+	test( 'does not render "Delete" when the handler is not provided', () => {
+		render( <PaymentMethod label="Foo" onDeleteClick={ undefined } /> );
+
+		const manageLink = screen.queryByRole( 'link', {
+			name: 'Manage',
+		} );
+
+		const deleteButton = screen.queryByRole( 'button', {
+			name: 'Delete',
+		} );
+
+		expect( manageLink ).toBeInTheDocument();
+		expect( deleteButton ).not.toBeInTheDocument();
 	} );
 
 	test( '"Manage" is a link to expected URL', () => {
@@ -46,14 +61,19 @@ describe( 'PaymentMethod', () => {
 	} );
 
 	test( 'clicking "Delete" button calls onDeleteClick()', () => {
-		const onDeleteClick = jest.fn();
-		render( <PaymentMethod label="Foo" onDeleteClick={ onDeleteClick } /> );
+		const handleDeleteClickMock = jest.fn();
+		render(
+			<PaymentMethod
+				label="Foo"
+				onDeleteClick={ handleDeleteClickMock }
+			/>
+		);
 
 		const deleteButton = screen.getByRole( 'button', {
 			name: 'Delete',
 		} );
 		user.click( deleteButton );
-		expect( onDeleteClick ).toHaveBeenCalled();
+		expect( handleDeleteClickMock ).toHaveBeenCalled();
 	} );
 
 	test( 'label is a link to expected URL', () => {
