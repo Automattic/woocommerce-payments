@@ -23,7 +23,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	/**
 	 * Name of the note for use in the database.
 	 */
-	const NOTE_DOCUMENTATION_URL = 'https://docs.woocommerce.com/document/payments/';
+	const NOTE_DOCUMENTATION_URL = 'https://docs.woocommerce.com/document/payments/instant-deposits/';
 
 	/**
 	 * Get the note.
