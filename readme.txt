@@ -105,6 +105,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
+* Update - Additional logic and styling for instant deposits.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
 
