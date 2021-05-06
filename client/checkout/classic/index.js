@@ -14,6 +14,7 @@ import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { supportedUPEProperties } from '../upe-styles.js';
+import { applyFilters } from '@wordpress/hooks';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -66,7 +67,7 @@ jQuery( function ( $ ) {
 	}
 
 	const elements = api.getStripe().elements( {
-		fonts: fontRules,
+		fonts: applyFilters( 'woocommerce_payments_stripe_fonts', fontRules ),
 	} );
 
 	// Customer information for Pay for Order and Save Payment method.
