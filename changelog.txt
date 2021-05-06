@@ -7,7 +7,7 @@
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
 
-= 2.3.3 - 2021-xx-xx =
+= 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.
 
 = 2.3.2 - 2021-04-27 =
