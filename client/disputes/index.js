@@ -23,6 +23,8 @@ import { reasons } from './strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency } from 'utils/currency';
 
+import './style.scss';
+
 const headers = [
 	{ key: 'details', label: '', required: true, cellClassName: 'info-button' },
 	{
@@ -175,6 +177,7 @@ export const DisputesList = () => {
 		<Page>
 			<TestModeNotice topic={ topics.disputes } />
 			<TableCard
+				className="disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ 10 }

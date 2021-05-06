@@ -15,6 +15,12 @@
 			fill: $studio-gray-30;
 		}
 	}
+
+	// alignment override
+	.woocommerce-table__header:not( .is-left-aligned ),
+	.woocommerce-table__item:not( .is-left-aligned ) {
+		text-align: center;
+	}
 }
 
 /**
