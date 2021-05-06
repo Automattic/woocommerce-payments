@@ -42,9 +42,9 @@ export function updateIsSavingSettings( isSaving ) {
 }
 
 export function* saveSettings() {
-	const settings = select( STORE_NAME ).getSettings();
-
 	try {
+		const settings = select( STORE_NAME ).getSettings();
+
 		yield updateIsSavingSettings( true );
 
 		yield apiFetch( {

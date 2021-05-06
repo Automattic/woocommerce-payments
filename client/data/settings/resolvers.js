@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
+import { apiFetch } from '@wordpress/data-controls';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -13,7 +14,7 @@ import { NAMESPACE } from '../constants';
 import { updateSettings } from './actions';
 
 /**
- * Retrieve a single deposit from the deposits API.
+ * Retrieve settings from the site's REST API.
  */
 export function* getSettings() {
 	const path = `${ NAMESPACE }/settings`;
@@ -22,9 +23,7 @@ export function* getSettings() {
 		const result = yield apiFetch( { path } );
 		yield updateSettings( result );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving settings.', 'woocommerce-payments' )
 		);
 	}
