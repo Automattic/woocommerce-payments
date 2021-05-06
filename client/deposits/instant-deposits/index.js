@@ -14,11 +14,21 @@ import './style.scss';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'data';
 
-const InstantDepositButton = ( {
-	balance: { amount, fee, net, transaction_ids: transactionIds },
-} ) => {
+const isButtonDisabled = ( instantBalance ) => {
+	let buttonDisabled = false;
+	if ( 0 === instantBalance.amount ) {
+		buttonDisabled = true;
+	}
+
+	return buttonDisabled;
+};
+
+const InstantDepositButton = ( { instantBalance } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
-	const { inProgress, submit } = useInstantDeposit( transactionIds );
+	const buttonDisabled = isButtonDisabled( instantBalance );
+	const { inProgress, submit } = useInstantDeposit(
+		instantBalance.transaction_ids
+	);
 	const onClose = () => {
 		setModalOpen( false );
 	};
@@ -33,15 +43,14 @@ const InstantDepositButton = ( {
 			<Button
 				isDefault
 				className="is-secondary"
+				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
 			>
 				{ __( 'Instant deposit', 'woocommerce-payments' ) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
 				<InstantDepositModal
-					amount={ amount }
-					fee={ fee }
-					net={ net }
+					instantBalance={ instantBalance }
 					inProgress={ inProgress }
 					onSubmit={ onSubmit }
 					onClose={ onClose }

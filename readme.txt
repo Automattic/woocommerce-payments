@@ -101,6 +101,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.3.3 - 2021-xx-xx =
+* Update - Additional logic and styling for instant deposits.
+
 = 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.
 
