@@ -8,7 +8,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { paymentsShopper } from '../../utils';
+import { shopper } from '../../utils';
 import {
 	fillCardDetails,
 	confirmCardAuthentication,
@@ -29,11 +29,11 @@ describe( 'Saved cards ', () => {
 			} );
 
 			afterAll( async () => {
-				await paymentsShopper.logout();
+				await shopper.logout();
 			} );
 
 			it( 'should save the card', async () => {
-				await paymentsShopper.goToPaymentMethods();
+				await shopper.goToPaymentMethods();
 				await expect( page ).toClick( 'a', {
 					text: 'Add payment method',
 				} );
@@ -61,7 +61,7 @@ describe( 'Saved cards ', () => {
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
 				);
-				await paymentsShopper.selectSavedPaymentMethod(
+				await shopper.selectSavedPaymentMethod(
 					`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 				);
 
@@ -79,8 +79,8 @@ describe( 'Saved cards ', () => {
 			} );
 
 			it( 'should delete the card', async () => {
-				await paymentsShopper.goToPaymentMethods();
-				await paymentsShopper.deleteSavedPaymentMethod( card.label );
+				await shopper.goToPaymentMethods();
+				await shopper.deleteSavedPaymentMethod( card.label );
 				await expect( page ).toMatch( 'Payment method deleted' );
 			} );
 		}
