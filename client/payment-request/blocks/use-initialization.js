@@ -102,36 +102,30 @@ export const useInitialization = ( {
 
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
-		if ( paymentRequest ) {
-			// Remove all previously added event listeners first.
-			paymentRequest.removeAllListeners();
+		const cancelHandler = () => {
+			setIsFinished( false );
+			setIsProcessing( false );
+			setPaymentRequest( null );
+			onClose();
+		};
 
-			const cancelHandler = () => {
-				setIsFinished( false );
-				setIsProcessing( false );
-				setPaymentRequest( null );
-				onClose();
-			};
+		paymentRequest?.on( 'shippingaddresschange', ( event ) =>
+			shippingAddressChangeHandler( api, event )
+		);
 
-			paymentRequest.on( 'shippingaddresschange', ( event ) =>
-				shippingAddressChangeHandler( api, event )
-			);
+		paymentRequest?.on( 'shippingoptionchange', ( event ) =>
+			shippingOptionChangeHandler( api, event )
+		);
 
-			paymentRequest.on( 'shippingoptionchange', ( event ) =>
-				shippingOptionChangeHandler( api, event )
-			);
+		paymentRequest?.on( 'paymentmethod', ( event ) =>
+			paymentMethodHandler( api, completePayment, abortPayment, event )
+		);
 
-			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler(
-					api,
-					completePayment,
-					abortPayment,
-					event
-				)
-			);
+		paymentRequest?.on( 'cancel', cancelHandler );
 
-			paymentRequest.on( 'cancel', cancelHandler );
-		}
+		return () => {
+			paymentRequest?.removeAllListeners();
+		};
 	}, [ paymentRequest ] );
 
 	return {
