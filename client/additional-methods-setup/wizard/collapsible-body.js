@@ -1,17 +1,17 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import { useChildTaskContext } from '../setup-tasks/child-context';
+import TaskContext from './task/context';
 import './collapsible-body.scss';
 
 const CollapsibleBody = ( { children } ) => {
-	const { isActive } = useChildTaskContext();
+	const { isActive } = useContext( TaskContext );
 
 	return (
 		<div

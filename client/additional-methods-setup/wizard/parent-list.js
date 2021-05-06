@@ -1,0 +1,49 @@
+/**
+ * External dependencies
+ */
+import React, { useLayoutEffect, useRef, useContext } from 'react';
+
+/**
+ * Internal dependencies
+ */
+import WizardContext from './parent/context';
+import './parent-list.scss';
+
+const ParentList = ( { children } ) => {
+	const isFirstMount = useRef( true );
+	const wrapperRef = useRef( null );
+	const { activeTask } = useContext( WizardContext );
+
+	useLayoutEffect( () => {
+		// set the focus on the next active heading.
+		// but need to set the focus only after the first mount, only when the active task changes.
+		if ( true === isFirstMount.current ) {
+			isFirstMount.current = false;
+			return;
+		}
+
+		if ( ! wrapperRef.current ) {
+			return;
+		}
+
+		const nextActiveTitle = wrapperRef.current.querySelector(
+			'.woocommerce-timeline-group.is-active .woocommerce-timeline-item__headline'
+		);
+		if ( ! nextActiveTitle ) {
+			return;
+		}
+
+		nextActiveTitle.focus();
+	}, [ activeTask ] );
+
+	return (
+		<div
+			className="woocommerce-timeline woocommerce-timeline__parent-list"
+			ref={ wrapperRef }
+		>
+			<ul>{ children }</ul>
+		</div>
+	);
+};
+
+export default ParentList;

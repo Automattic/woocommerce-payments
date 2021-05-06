@@ -3,12 +3,12 @@
  */
 import React, { useState, useMemo } from 'react';
 
-import { SetupTasksControllerContext } from './setup-context';
+import WizardContext from './context';
 
-const SetupTasksController = ( {
+const WizardContextProvider = ( {
 	children,
 	defaultActiveTask = '',
-	defaultCompletedTasks = [],
+	defaultCompletedTasks = {},
 } ) => {
 	const [ activeTask, setActiveTask ] = useState( defaultActiveTask );
 	const [ completedTasks, setCompletedTasks ] = useState(
@@ -26,10 +26,10 @@ const SetupTasksController = ( {
 	);
 
 	return (
-		<SetupTasksControllerContext.Provider value={ contextValue }>
+		<WizardContext.Provider value={ contextValue }>
 			{ children }
-		</SetupTasksControllerContext.Provider>
+		</WizardContext.Provider>
 	);
 };
 
-export default SetupTasksController;
+export default WizardContextProvider;
