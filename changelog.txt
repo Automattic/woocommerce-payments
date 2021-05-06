@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 2.3.3 - 2021-05-06 =
+* Update - Additional logic and styling for instant deposits.
+
 = 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.
 
