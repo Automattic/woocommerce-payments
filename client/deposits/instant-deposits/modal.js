@@ -19,7 +19,7 @@ const InstantDepositModal = ( {
 	onSubmit,
 	inProgress,
 } ) => {
-	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/';
+	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/instant-deposits/';
 	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
 		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */
