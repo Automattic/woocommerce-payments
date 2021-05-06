@@ -6,7 +6,7 @@ exports[`Disputes list renders correctly 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card disputes-list has-menu"
     >
       <div
         class="woocommerce-card__header"
