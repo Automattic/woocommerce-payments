@@ -17,3 +17,4 @@ describe( 'Admin deposits', () => {
 		await merchantWCP.openDeposits();
 	} );
 } );
+ 

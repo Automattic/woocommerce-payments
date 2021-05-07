@@ -17,3 +17,4 @@ describe( 'Admin transactions', () => {
 		await merchantWCP.openTransactions();
 	} );
 } );
+ 
