@@ -275,7 +275,6 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			risk_level: {
 				value: calculateRiskMapping( txn.risk_level ),
-				actualValue: txn.risk_level,
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.deposit_id, display: deposit },
