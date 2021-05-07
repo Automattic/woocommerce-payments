@@ -7,6 +7,7 @@
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
 * Add - Payment request button support for checkout and cart blocks.
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

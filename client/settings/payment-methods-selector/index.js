@@ -100,11 +100,11 @@ const PaymentMethodsSelector = ( props ) => {
 			</ul>
 			<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
 			<div className="woocommerce-payments__payment-method-selector__footer">
-				<Button isPrimary onClick={ handleAddSelected }>
-					{ __( 'Add selected', 'woocommerce-payments' ) }
-				</Button>
 				<Button isSecondary onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
+				</Button>
+				<Button isPrimary onClick={ handleAddSelected }>
+					{ __( 'Add selected', 'woocommerce-payments' ) }
 				</Button>
 			</div>
 		</Modal>

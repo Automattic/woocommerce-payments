@@ -29,13 +29,6 @@
 	}
 
 	&__footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		:last-child {
-			margin: 0 24px;
-			margin-right: auto;
-		}
+		@include modal-footer-buttons;
 	}
 }
