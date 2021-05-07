@@ -6,20 +6,18 @@ import config from 'config';
 const {
 	merchant,
 	shopper,
+	uiUnblocked,
 } = require('@woocommerce/e2e-utils');
 
 /**
  * Internal dependencies
  */
-import {
-	fillCardDetails,
-	setupProductCheckout,
-	merchantWCP,
-} from '../../utils';
+import { merchantWCP } from '../../utils/flows';
+import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;
 
-describe('Disputes > Submit winning dispute', () => {
+describe('Disputes > Submit losing dispute', () => {
 	beforeAll(async () => {
 		await page.goto(config.get('url'), { waitUntil: 'networkidle0' });
 
@@ -32,7 +30,7 @@ describe('Disputes > Submit winning dispute', () => {
 		await shopper.placeOrder();
 		await expect(page).toMatch('Order received');
 
-		// Get the order ID so we can open it in the merchant view
+		// Get the order ID for a verification
 		const orderIdField = await page.$(
 			'.woocommerce-order-overview__order.order > strong'
 		);
@@ -53,11 +51,16 @@ describe('Disputes > Submit winning dispute', () => {
 		await expect(page).toMatchElement('.components-card__header', { text: "Dispute: Product not received" });
 
 		// Accept the dispute
-		await expect(page).toClick('button.components-button', { text: "Accept dispute" });
-		await page.on("dialog", (dialog) => { dialog.accept() });
+		await page.removeAllListeners('dialog');
+		const disputeDialog = await expect(page).toDisplayDialog(async () => {
+			await expect(page).toClick('button.components-button', { text: "Accept dispute" });
+		});
+		await disputeDialog.accept();
+		await uiUnblocked();
+		await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
 		// Verify the dispute has been accepted properly
-		await expect(page).toMatchElement('span.chip .chip-light .is-compact', { text: "Lost" });
+		await expect(page).toMatchElement('span.chip.chip-light.is-compact', { text: "Lost" });
 		await expect(page).toClick('.woocommerce-table__item > a');
 		await expect(page).not.toMatchElement('button.components-button', { text: "Challenge dispute" });
 		await expect(page).not.toMatchElement('button.components-button', { text: "Accept dispute" });
