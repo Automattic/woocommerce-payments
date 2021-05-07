@@ -54,10 +54,12 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 		// Accept the dispute
 		await page.removeAllListeners( 'dialog' );
-		const disputeDialog = await expect( page ).toDisplayDialog( async () => {
-			await expect( page ).toClick( 'button.components-button', {
-				text: 'Accept dispute',
-			} );
+		const disputeDialog = await expect( page ).toDisplayDialog(
+			async () => {
+				await expect( page ).toClick( 'button.components-button', {
+					text: 'Accept dispute',
+				},
+			);
 		} );
 		await disputeDialog.accept();
 		await uiUnblocked();
