@@ -86,6 +86,7 @@
     "@automattic/color-studio": "2.3.1",
     "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils",
     "@babel/plugin-proposal-object-rest-spread": "7.12.13",
+    "@babel/preset-typescript": "^7.13.0",
     "@testing-library/jest-dom": "5.11.9",
     "@testing-library/react": "11.2.5",
     "@testing-library/user-event": "10.4.1",
