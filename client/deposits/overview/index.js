@@ -185,7 +185,7 @@ const DepositsOverview = () => {
 				</p>
 				{ overview && overview.instant_balance && (
 					<InstantDepositButton
-						balance={ overview.instant_balance }
+						instantBalance={ overview.instant_balance }
 					/>
 				) }
 			</div>
