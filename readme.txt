@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - REST endpoint to capture payments by order ID
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
+* Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.
