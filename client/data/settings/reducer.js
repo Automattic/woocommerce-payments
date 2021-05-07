@@ -7,6 +7,7 @@ import TYPES from './action-types';
 
 const defaultState = {
 	isSaving: false,
+	data: {},
 };
 
 export const receiveSettings = (
@@ -16,9 +17,8 @@ export const receiveSettings = (
 	switch ( type ) {
 		case TYPES.SET_SETTINGS:
 			return {
-				data: {
-					...action.data,
-				},
+				...state,
+				data: action.data,
 			};
 
 		case TYPES.SET_IS_SAVING_SETTINGS:
