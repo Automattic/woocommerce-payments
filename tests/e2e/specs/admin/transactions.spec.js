@@ -6,7 +6,7 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchant } from '../../utils/flows';
+import { merchantWCP } from '../../utils/flows';
 
 describe( 'Admin transactions', () => {
 	beforeAll( async () => {
@@ -14,6 +14,6 @@ describe( 'Admin transactions', () => {
 	} );
 
 	it( 'page should load without any errors', async () => {
-		await merchant.openTransactions();
+		await merchantWCP.openTransactions();
 	} );
 } );

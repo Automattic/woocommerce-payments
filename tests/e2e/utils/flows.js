@@ -17,7 +17,7 @@ const WCPAY_TRANSACTIONS = baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/pay
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
-export const shopper = {
+export const shopperWCP = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
 			waitUntil: 'networkidle0',
@@ -74,7 +74,7 @@ export const shopper = {
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
-export const merchant = {
+export const merchantWCP = {
 	openDisputes: async () => {
 		await page.goto( WCPAY_DISPUTES, {
 			waitUntil: 'networkidle0',
