@@ -17,4 +17,3 @@ describe( 'Admin disputes', () => {
 		await merchantWCP.openDisputes();
 	} );
 } );
- 
