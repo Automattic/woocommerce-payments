@@ -1,0 +1,32 @@
+.woocommerce-payments-banner {
+	margin-bottom: 32px;
+
+	&.account-page {
+		border: none;
+		border-bottom: 1px solid $studio-gray-5;
+		border-radius: 0;
+		.components-card__body {
+			padding: 24px 24px;
+		}
+	}
+
+	@include breakpoint( '>480px' ) {
+		.components-card__body {
+			background: url( '../../assets/images/banner.png' ) no-repeat right;
+			background-size: contain;
+		}
+	}
+
+	.woocommerce-payments-banner-pill {
+		/* adapted from https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/pill/style.scss */
+		font-size: 12px;
+		border: 1px solid $studio-gray-70;
+		border-radius: 28px;
+		color: $studio-gray-70;
+		display: inline-block;
+		padding: 2px 8px;
+		position: relative;
+		top: -27px;
+		left: 25px;
+	}
+}

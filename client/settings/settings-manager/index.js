@@ -4,11 +4,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import React, { useState } from 'react';
-import { Card, CardBody, ExternalLink } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import WCPayLogo from '../../wcpay-logo.js';
+import Banner from '../../banner';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
@@ -84,11 +84,7 @@ const SettingsManager = ( {
 
 	return (
 		<>
-			<Card size="large" className="settings-manager__banner">
-				<CardBody>
-					<WCPayLogo width="257" height="72" />
-				</CardBody>
-			</Card>
+			<Banner />
 			<div className="settings-manager">
 				<SettingsSection Description={ PaymentMethodsDescription }>
 					<PaymentMethods

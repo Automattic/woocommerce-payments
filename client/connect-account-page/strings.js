@@ -27,8 +27,6 @@ export default {
 		'woocommerce-payments'
 	),
 
-	recommended: __( 'Recommended', 'woocommerce-payments' ),
-
 	stepsHeading: __(
 		'You’re only steps away from getting paid',
 		'woocommerce-payments'
