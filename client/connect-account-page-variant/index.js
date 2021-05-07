@@ -84,9 +84,9 @@ const StepNumber = ( props ) => (
 );
 
 const TermsOfService = () => (
-	<div className="wcpay-connect-account-page-terms-of-service">
+	<span className="wcpay-connect-account-page-terms-of-service">
 		{ strings.terms }
-	</div>
+	</span>
 );
 
 const ConnectPageError = () => {
@@ -142,7 +142,6 @@ const ConnectPageOnboarding = () => {
 				<TermsOfService />
 				<Button
 					isPrimary
-					isLarge
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
