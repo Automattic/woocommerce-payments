@@ -17,7 +17,6 @@ import HeroImage from './hero-image.js';
 import WCPayLogo from './wcpay-logo.js';
 import Visa from './cards/visa.js';
 import MasterCard from './cards/mastercard.js';
-import Maestro from './cards/maestro.js';
 import Amex from './cards/amex.js';
 import ApplePay from './cards/applepay.js';
 import CB from './cards/cb.js';
@@ -66,7 +65,6 @@ const PaymentMethods = () => (
 	<div className="wcpay-connect-account-page-payment-methods">
 		<Visa />
 		<MasterCard />
-		<Maestro />
 		<Amex />
 		<DinersClub />
 		<CB />
