@@ -8,7 +8,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { shopperWCP } from '../../utils';
+import { shopperWCP } from '../../utils/flows';
 import {
 	fillCardDetails,
 	confirmCardAuthentication,

@@ -43,8 +43,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 		} );
 		await expect( page ).toClick( '.woocommerce-table__item > a' );
 
-		// Verify there is a content present
-		await expect( page ).toMatchElement( 'div.wcpay-dispute-details' );
+		// Verify the heading for two component cards
 		await expect( page ).toMatchElement( '.components-card__header', {
 			text: 'Dispute overview',
 		} );
