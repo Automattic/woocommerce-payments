@@ -2,67 +2,19 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import Page from 'components/page';
+import HeroImage from './hero-image';
 import strings from './strings';
 import wcpayTracks from 'tracks';
-import Visa from './cards/visa.js';
-import MasterCard from './cards/mastercard.js';
-import Maestro from './cards/maestro.js';
-import Amex from './cards/amex.js';
-import ApplePay from './cards/applepay.js';
-import CB from './cards/cb.js';
-import DinersClub from './cards/diners.js';
-import Discover from './cards/discover.js';
-import JCB from './cards/jcb.js';
-import UnionPay from './cards/unionpay.js';
-import Banner from '../banner';
-
-const LearnMore = () => {
-	const handleClick = () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.CONNECT_ACCOUNT_LEARN_MORE
-		);
-	};
-	return (
-		<a
-			onClick={ handleClick }
-			href="https://woocommerce.com/payments/"
-			target="_blank"
-			rel="noreferrer"
-		>
-			{ strings.learnMore }
-		</a>
-	);
-};
-
-const PaymentMethods = () => (
-	<div className="wcpay-connect-account-page-payment-methods">
-		<Visa />
-		<MasterCard />
-		<Maestro />
-		<Amex />
-		<DinersClub />
-		<CB />
-		<Discover />
-		<UnionPay />
-		<JCB />
-		<ApplePay />
-	</div>
-);
-
-const StepNumber = ( props ) => (
-	<span className="wcpay-connect-account-page-step-number">
-		{ props.children }
-	</span>
-);
 
 const ConnectPageError = () => {
 	if ( ! wcpaySettings.errorMessage ) {
@@ -100,19 +52,8 @@ const ConnectPageOnboarding = () => {
 
 	return (
 		<>
-			<h2>{ strings.onboarding.heading }</h2>
-			<p>
-				{ strings.onboarding.description }
-				<br />
-				<LearnMore />
-			</p>
-
-			<h3>{ strings.paymentMethodsHeading }</h3>
-
-			<PaymentMethods />
-
+			<p className="connect-account__terms">{ strings.terms }</p>
 			<hr className="full-width" />
-
 			<p className="connect-account__action">
 				<Button
 					isPrimary
@@ -121,63 +62,29 @@ const ConnectPageOnboarding = () => {
 					onClick={ handleSetup }
 					href={ wcpaySettings.connectUrl }
 				>
-					{ strings.button }
+					{ __( 'Set up', 'woocommerce-payments' ) }
 				</Button>
 			</p>
 		</>
 	);
 };
 
-const ConnectPageOnboardingSteps = () => {
-	return (
-		<>
-			<h2>{ strings.stepsHeading }</h2>
-			<div className="connect-page-onboarding-steps">
-				<div className="connect-page-onboarding-steps-item">
-					<StepNumber>1</StepNumber>
-					<h3>{ strings.step1.heading }</h3>
-					<p>{ strings.step1.description }</p>
-				</div>
-				<div className="connect-page-onboarding-steps-item">
-					<StepNumber>2</StepNumber>
-					<h3>{ strings.step2.heading }</h3>
-					<p>{ strings.step2.description }</p>
-				</div>
-				<div className="connect-page-onboarding-steps-item">
-					<StepNumber>3</StepNumber>
-					<h3>{ strings.step3.heading }</h3>
-					<p>{ strings.step3.description }</p>
-				</div>
-			</div>
-		</>
-	);
-};
-
 const ConnectAccountPage = () => {
-	useEffect( () => {
-		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_VIEW, {
-			path: 'payments_connect_v2',
-		} );
-	}, [] );
-
 	return (
 		<Page isNarrow className="connect-account">
 			<ConnectPageError />
 			<Card className="connect-account__card">
-				<Banner style="account-page" />
-				<div className="content">
-					{ wcpaySettings.onBoardingDisabled ? (
-						<ConnectPageOnboardingDisabled />
-					) : (
-						<ConnectPageOnboarding />
-					) }
-				</div>
+				<HeroImage className="hero-image" />
+				<h2>{ strings.heading }</h2>
+				<p className="connect-account__description">
+					{ strings.description }
+				</p>
+				{ wcpaySettings.onBoardingDisabled ? (
+					<ConnectPageOnboardingDisabled />
+				) : (
+					<ConnectPageOnboarding />
+				) }
 			</Card>
-			{ ! wcpaySettings.onBoardingDisabled && (
-				<Card className="connect-account__steps">
-					<ConnectPageOnboardingSteps />
-				</Card>
-			) }
 		</Page>
 	);
 };

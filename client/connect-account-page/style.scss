@@ -1,81 +1,46 @@
-.wcpay-connect-account-page-payment-methods {
-	svg {
-		display: inline-block;
-		margin-right: 0.5em;
-		margin-bottom: 0.5em;
-	}
-}
-
-.connect-page-onboarding-steps {
-	@include breakpoint( '>660px' ) {
-		display: flex;
-		flex-direction: row;
-	}
-
-	.connect-page-onboarding-steps-item {
-		margin-top: 30px;
-
-		@include breakpoint( '>660px' ) {
-			margin-top: 0;
-			margin-right: 80px;
-		}
-	}
-}
-
-.wcpay-connect-account-page-step-number {
-	background-color: $studio-woocommerce-purple-50;
-	color: $white;
-	font-size: 20px;
-	border-radius: 50%;
-	min-height: 32px;
-	min-width: 32px;
-	display: inline-block;
-	text-align: center;
-	line-height: 32px;
-}
-
 .connect-account {
-	h2 {
-		font-size: 20px;
-		font-weight: 300;
-	}
-
-	h3 {
-		font-size: 1em;
-	}
-
 	.connect-account__card {
 		.woocommerce-card__body {
-			padding: 0;
-
-			.content {
-				padding: 0 24px 24px 24px;
-
-				a {
-					text-decoration: none;
-				}
-
-				hr {
-					position: relative;
-					left: -24px;
-					width: calc( 100% + 48px );
-				}
+			line-height: 1.5;
+			p,
+			h2 {
+				text-align: center;
+			}
+			h2 {
+				font-size: 20px;
+				font-size: 1.2rem;
+				font-weight: 300;
+				margin: 16px 0 8px;
 			}
 		}
-	}
 
-	.connect-account__action {
-		margin-top: 16px;
-		margin-bottom: 0;
-	}
-
-	.connect-account__steps {
-		.woocommerce-card__body {
-			padding: 24px;
+		.hero-image {
+			margin: 16px auto 24px;
+			display: block;
 		}
 
-		h2 {
-			margin-top: 0;
+		.connect-account__description {
+			margin: 0 0 16px;
+			font-weight: 300;
+			font-size: 14px;
+			color: $studio-gray-60;
+		}
+
+		.connect-account__terms {
+			margin: 0 0 16px;
+			font-weight: 300;
+			font-size: 12px;
+			color: $studio-gray-60;
+		}
+
+		.connect-account__action {
+			margin-top: 16px;
+
+			.is-button {
+				height: 32px;
+				line-height: 30px;
+				padding: 0 20px 2px;
+			}
 		}
 	}
 }
