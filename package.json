@@ -58,7 +58,8 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "npm run format:provided",
-      "npm run lint:js"
+      "tsc --noEmit",
+      "eslint"
     ],
     "*.{scss,css}": [
       "npm run format:provided",
