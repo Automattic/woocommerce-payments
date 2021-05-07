@@ -22,6 +22,7 @@ import ApplePay from './cards/applepay.js';
 import CB from './cards/cb.js';
 import DinersClub from './cards/diners.js';
 import Discover from './cards/discover.js';
+import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
 
@@ -71,6 +72,7 @@ const PaymentMethods = () => (
 		<Discover />
 		<UnionPay />
 		<JCB />
+		<GPay />
 		<ApplePay />
 	</div>
 );
