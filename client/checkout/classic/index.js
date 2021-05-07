@@ -393,9 +393,9 @@ jQuery( function ( $ ) {
 		const $container = $( '.wc_payment_method' );
 		blockUI( $container );
 
-		api.createOrder()
+		api.processCheckout()
 			.then( ( data ) => {
-				const redirectUrl = data.redirect_url;
+				const redirectUrl = data.redirect;
 				api.getStripe()
 					.confirmPayment( {
 						element: paymentElement,

@@ -323,7 +323,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-		add_action( 'wp_ajax_create_order', [ $this, 'create_order_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
 
@@ -487,7 +486,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'returnUrl'                => $this->get_return_url(),
 			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'createOrderNonce'         => wp_create_nonce( 'wcpay_create_order_nonce' ),
+			'processCheckoutNonce'     => wp_create_nonce( 'woocommerce-process_checkout' ),
 			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'            => $this->account->get_fraud_services_config(),
 			'features'                 => $this->supports,
@@ -666,47 +665,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Process complete checkout and create order via AJAX.
-	 *
-	 * @param array $data Form POST fields
-	 */
-	public function create_order_ajax( $data ) {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_order_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Exception(
-					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
-					'wcpay_upe_create_order_error'
-				);
-			}
-
-			$order_id = WC()->checkout->create_order( $data );
-			$order = wc_get_order( $order_id );
-
-			// If it hasn't been done so already, we must now update the Payment Intention with our final order total amount.
-
-			wp_send_json_success( [ 'redirect_url' => $this->get_return_url( $order ) ], 200 );
-		} catch ( Exception $e ) {
-			if ( $order && $order instanceof WC_Order ) {
-				$order->get_data_store()->release_held_coupons( $order );
-				/**
-				 * Action hook fired when an order is discarded due to Exception.
-				 *
-				 * @since 4.3.0
-				 */
-				do_action( 'woocommerce_checkout_order_exception', $order );
-			}
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => $e->getMessage(),
-					],
-				]
-			);
-		}
-	}
-
-	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -718,7 +676,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			$payment_information = $this->prepare_payment_information( $order );
-			return $this->process_payment_for_order( WC()->cart, $payment_information );
+			return [
+				'result'       => 'success',
+				'redirect_url' => wp_sanitize_redirect(
+					esc_url_raw(
+						add_query_arg(
+							[
+								'order_id'            => $order_id,
+								'save_payment_method' => $payment_information->should_save_payment_method(),
+							],
+							$this->get_return_url( $order )
+						)
+					)
+				),
+			];
 		} catch ( Exception $e ) {
 			// TODO: Create more exceptions to handle merchant specific errors.
 			$error_message = $e->getMessage();
@@ -841,8 +812,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( true ) {
-			// $order->payment_complete();
+		if ( ! $payment_needed && ! $save_payment_method ) {
+			$order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				// We need to make sure the saved payment method is saved to the order so we can

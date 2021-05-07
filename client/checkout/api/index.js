@@ -288,11 +288,11 @@ export default class WCPayAPI {
 		} );
 	}
 
-	createOrder() {
+	processCheckout() {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'create_order',
+			action: 'woocommerce_checkout',
 			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'createOrderNonce' ),
+			_ajax_nonce: getConfig( 'processCheckoutNonce' ),
 		} ).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
