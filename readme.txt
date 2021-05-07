@@ -107,6 +107,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
+* Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
 
 = 2.3.3 - 2021-05-06 =
