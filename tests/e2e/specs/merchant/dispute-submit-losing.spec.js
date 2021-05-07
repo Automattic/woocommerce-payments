@@ -39,24 +39,24 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 		// Verify a dispute is present with a proper ID and open it
 		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
-			text: orderId
+			text: orderId,
 		} );
 		await expect( page ).toClick( '.woocommerce-table__item > a' );
 
 		// Verify there is a content present
 		await expect( page ).toMatchElement( 'div.wcpay-dispute-details' );
 		await expect( page ).toMatchElement( '.components-card__header', {
-			text: "Dispute overview"
+			text: 'Dispute overview',
 		} );
 		await expect( page ).toMatchElement( '.components-card__header', {
-			text: "Dispute: Product not received"
+			text: 'Dispute: Product not received',
 		} );
 
 		// Accept the dispute
 		await page.removeAllListeners( 'dialog' );
 		const disputeDialog = await expect( page ).toDisplayDialog( async () => {
 			await expect( page ).toClick( 'button.components-button', {
-				text: "Accept dispute"
+				text: 'Accept dispute',
 			} );
 		} );
 		await disputeDialog.accept();
@@ -64,15 +64,17 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 		// Verify the dispute has been accepted properly
-		await expect( page ).toMatchElement( 'span.chip.chip-light.is-compact', {
-			text: "Lost"
+		await expect( page ).toMatchElement(
+			'span.chip.chip-light.is-compact',
+			{
+			text: 'Lost',
 		} );
-		await expect( page ).toClick( '.woocommerce-table__item > a');
+		await expect( page ).toClick( '.woocommerce-table__item > a' );
 		await expect( page ).not.toMatchElement( 'button.components-button', {
-			text: "Challenge dispute"
+			text: 'Challenge dispute',
 		} );
 		await expect( page ).not.toMatchElement( 'button.components-button', {
-			text: "Accept dispute"
+			text: 'Accept dispute',
 		} );
 	} );
 } );
