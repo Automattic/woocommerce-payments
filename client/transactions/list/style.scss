@@ -1,5 +1,7 @@
 @import 'node_modules/@wordpress/components/src/tooltip/style.scss';
 
+$space-header-item: 15px;
+
 .transactions-list {
 	.date-time {
 		min-width: 195px;
@@ -16,10 +18,15 @@
 		}
 	}
 
-	// alignment override
+	// alignment override for header items
 	.woocommerce-table__header:not( .is-left-aligned ),
 	.woocommerce-table__item:not( .is-left-aligned ) {
 		text-align: center;
+	}
+
+	// slight adjustment to align header items with sorting button to account for icon width
+	.woocommerce-table__header.is-numeric .components-button {
+		margin-right: $space-header-item;
 	}
 }
 
