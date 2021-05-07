@@ -58,9 +58,9 @@ describe( 'Disputes > Submit losing dispute', () => {
 			async () => {
 				await expect( page ).toClick( 'button.components-button', {
 					text: 'Accept dispute',
-				},
-			);
-		} );
+				} );
+			}
+		);
 		await disputeDialog.accept();
 		await uiUnblocked();
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
@@ -69,8 +69,9 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await expect( page ).toMatchElement(
 			'span.chip.chip-light.is-compact',
 			{
-			text: 'Lost',
-		} );
+				text: 'Lost',
+			}
+		);
 		await expect( page ).toClick( '.woocommerce-table__item > a' );
 		await expect( page ).not.toMatchElement( 'button.components-button', {
 			text: 'Challenge dispute',
