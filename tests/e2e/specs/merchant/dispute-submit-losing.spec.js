@@ -3,7 +3,12 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const {
+	merchant,
+	shopper,
+	uiUnblocked,
+	evalAndClick,
+} = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -17,7 +22,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
-		// Place an order to refund later
+		// Place an order to dispute later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -26,7 +31,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 
-		// Get the order ID so we can open it in the merchant view
+		// Get the order ID so we can verify it in the disputes listing
 		const orderIdField = await page.$(
 			'.woocommerce-order-overview__order.order > strong'
 		);
@@ -46,7 +51,11 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
 			text: orderId,
 		} );
-		await expect( page ).toClick( '.woocommerce-table__item > a' );
+		await page.waitForSelector( '.woocommerce-table__item > a', {
+			visible: true,
+			timeout: 1000,
+		} );
+		await evalAndClick( '.woocommerce-table__item > a' );
 
 		// Verify the heading for two component cards
 		await expect( page ).toMatchElement( '.components-card__header', {
