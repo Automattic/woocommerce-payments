@@ -58,7 +58,10 @@
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
       "npm run format:provided",
-      "npm run lint:js"
+      "eslint"
+    ],
+    "*.{ts,tsx}": [
+      "tsc --noEmit"
     ],
     "*.{scss,css}": [
       "npm run format:provided",
@@ -72,6 +75,7 @@
     "@dnd-kit/sortable": "^2.0.1",
     "@stripe/react-stripe-js": "1.1.2",
     "@stripe/stripe-js": "1.12.1",
+    "@woocommerce/explat": "^1.0.0",
     "css-loader": "^5.0.0",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
