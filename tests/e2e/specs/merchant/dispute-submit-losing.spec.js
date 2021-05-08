@@ -31,10 +31,15 @@ describe( 'Disputes > Submit losing dispute', () => {
 			'.woocommerce-order-overview__order.order > strong'
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+
+		await merchant.login();
+	} );
+
+	afterAll( async () => {
+		await merchant.logout();
 	} );
 
 	it( 'should process a losing dispute', async () => {
-		await merchant.login();
 		await merchantWCP.openDisputes();
 
 		// Verify a dispute is present with a proper ID and open it
