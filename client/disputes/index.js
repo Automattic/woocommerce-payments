@@ -177,7 +177,7 @@ export const DisputesList = () => {
 		<Page>
 			<TestModeNotice topic={ topics.disputes } />
 			<TableCard
-				className="disputes-list"
+				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ 10 }
