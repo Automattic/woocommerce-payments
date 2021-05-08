@@ -3,12 +3,7 @@
  */
 import config from 'config';
 
-const {
-	merchant,
-	shopper,
-	uiUnblocked,
-	evalAndClick,
-} = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -48,14 +43,13 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchantWCP.openDisputes();
 
 		// Verify a dispute is present with a proper ID and open it
+		await page.waitForSelector( '.woocommerce-table__item > a', {
+			text: orderId,
+		} );
 		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
 			text: orderId,
 		} );
-		await page.waitForSelector( '.woocommerce-table__item > a', {
-			visible: true,
-			timeout: 1000,
-		} );
-		await evalAndClick( '.woocommerce-table__item > a' );
+		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
 
 		// Verify the heading for two component cards
 		await expect( page ).toMatchElement( '.components-card__header', {
