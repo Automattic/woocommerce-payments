@@ -520,13 +520,11 @@ class WC_Payments {
 			$api_client_class = 'WC_Payments_API_Client';
 		}
 
-		$payments_api_client = new $api_client_class(
+		return new $api_client_class(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			$http_class,
 			self::$db_helper
 		);
-
-		return $payments_api_client;
 	}
 
 	/**
