@@ -64,12 +64,12 @@ exports[`AccountStatus renders normal status 1`] = `
         class="woocommerce-account-status-item"
       >
         <div
-          class="woocommerce-account-status-item-label"
+          class="woocommerce-account-status-item__label"
         >
           Payments:
         </div>
         <div
-          class="woocommerce-account-status-item-value"
+          class="woocommerce-account-status-item__value"
         >
           <span
             class="account-status__info__green"
@@ -95,12 +95,12 @@ exports[`AccountStatus renders normal status 1`] = `
         class="woocommerce-account-status-item"
       >
         <div
-          class="woocommerce-account-status-item-label"
+          class="woocommerce-account-status-item__label"
         >
           Deposits:
         </div>
         <div
-          class="woocommerce-account-status-item-value"
+          class="woocommerce-account-status-item__value"
         >
           <span
             class="account-status__info__green"
@@ -126,12 +126,12 @@ exports[`AccountStatus renders normal status 1`] = `
         class="woocommerce-account-status-item"
       >
         <div
-          class="woocommerce-account-status-item-label"
+          class="woocommerce-account-status-item__label"
         >
           BaseFee:
         </div>
         <div
-          class="woocommerce-account-status-item-value"
+          class="woocommerce-account-status-item__value"
         >
           Euro 
           (EUR) 
