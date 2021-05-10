@@ -1,6 +1,6 @@
 <?php
 /**
- * Class CC_Payment_Gateway
+ * Class Digital_Wallets_Payment_Gateway
  *
  * @package WCPay\Payment_Methods
  */
