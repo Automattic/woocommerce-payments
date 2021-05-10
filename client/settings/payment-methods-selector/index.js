@@ -18,13 +18,10 @@ import './style.scss';
 
 const PaymentMethodsSelector = ( { onClose, enabledPaymentMethods = [] } ) => {
 	const [ paymentMethods, setPaymentMethods ] = useState(
-		enabledPaymentMethods.reduce(
-			( acc, value ) => {
-				acc[ value ] = true;
-				return acc;
-			},
-			{ giropay: false, sofort: false, sepa: false }
-		)
+		enabledPaymentMethods.reduce( ( acc, value ) => {
+			acc[ value ] = true;
+			return acc;
+		}, {} )
 	);
 
 	const handleChange = ( paymentMethod, enabled ) => {

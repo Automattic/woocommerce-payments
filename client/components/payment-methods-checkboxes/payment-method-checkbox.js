@@ -12,7 +12,7 @@ import { useCallback, useMemo } from '@wordpress/element';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import './payment-method-checkbox.scss';
 
-const PaymentMethodCheckbox = ( { onChange, name, checked, fees } ) => {
+const PaymentMethodCheckbox = ( { onChange, name, checked = false, fees } ) => {
 	const handleChange = useCallback(
 		( enabled ) => {
 			onChange( name, enabled );
