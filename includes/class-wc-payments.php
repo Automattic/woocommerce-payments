@@ -518,13 +518,13 @@ class WC_Payments {
 
 		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
 			$api_client_class = 'WC_Payments_API_Client';
-        }
+		}
 
-        $payments_api_client = new $api_client_class(
-            'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-            $http_class,
-            self::$db_helper
-        );
+		$payments_api_client = new $api_client_class(
+			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
+			$http_class,
+			self::$db_helper
+		);
 
 		return $payments_api_client;
 	}
