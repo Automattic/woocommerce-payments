@@ -122,8 +122,10 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 									className={ classNames( 'payment-method', {
 										'has-icon-border': 'cc' !== id,
 									} ) }
-									onDeleteClick={ () =>
-										handleDeleteClick( id )
+									onDeleteClick={
+										1 < enabledMethods.length
+											? () => handleDeleteClick( id )
+											: undefined
 									}
 									id={ id }
 									label={ label }

@@ -187,6 +187,8 @@ class Sofort_Payment_Gateway_Test extends WP_UnitTestCase {
 			$intent_id,
 			1500,
 			'eur',
+			'cus_12345',
+			'pm_12345',
 			new DateTime(),
 			$status,
 			$charge_id,

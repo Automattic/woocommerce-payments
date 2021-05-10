@@ -89,8 +89,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_clear_cart', [ $this, 'ajax_clear_cart' ] );
-		add_action( 'wc_ajax_wcpay_log_errors', [ $this, 'ajax_log_errors' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
@@ -214,7 +212,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Gets the product data for the currently viewed page
+	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
 	 */
@@ -226,7 +224,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product = $this->get_product();
 
 		if ( 'variable' === $product->get_type() ) {
-			$attributes = wc_clean( wp_unslash( $_GET ) ); // phpcs:ignore WordPress.Security.NonceVerification
+			$variation_attributes = $product->get_variation_attributes();
+			$attributes           = [];
+
+			foreach ( $variation_attributes as $attribute_name => $attribute_values ) {
+				$attribute_key = 'attribute_' . sanitize_title( $attribute_name );
+
+				// Passed value via GET takes precedence. Otherwise get the default value for given attribute.
+				$attributes[ $attribute_key ] = isset( $_GET[ $attribute_key ] ) // phpcs:ignore WordPress.Security.NonceVerification
+					? wc_clean( wp_unslash( $_GET[ $attribute_key ] ) ) // phpcs:ignore WordPress.Security.NonceVerification
+					: $product->get_variation_default_attribute( $attribute_name );
+			}
 
 			$data_store   = WC_Data_Store::load( 'product' );
 			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
@@ -274,11 +282,24 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'pending' => true,
 		];
 
-		$data['requestShipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-		$data['currency']        = strtolower( get_woocommerce_currency() );
-		$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+		$data['currency']       = strtolower( get_woocommerce_currency() );
+		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Get cart data.
+	 *
+	 * @return mixed Returns false if on a product page, the product information otherwise.
+	 */
+	public function get_cart_data() {
+		if ( $this->is_product() ) {
+			return false;
+		}
+
+		return $this->build_display_items();
 	}
 
 	/**
@@ -301,7 +322,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return $method_title;
 		}
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Chrome Payment Request (WooCommerce Payments)' === $method_title ) {
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Payment Request (WooCommerce Payments)' === $method_title ) {
 			return $method_title;
 		}
 
@@ -352,12 +373,70 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( 'apple_pay' === $payment_request_type ) {
 			$order->set_payment_method_title( 'Apple Pay (WooCommerce Payments)' );
 			$order->save();
-		}
-
-		if ( 'payment_request_api' === $payment_request_type ) {
-			$order->set_payment_method_title( 'Chrome Payment Request (WooCommerce Payments)' );
+		} elseif ( 'google_pay' === $payment_request_type ) {
+			$order->set_payment_method_title( 'Google Pay (WooCommerce Payments)' );
+			$order->save();
+		} else {
+			$order->set_payment_method_title( 'Payment Request (WooCommerce Payments)' );
 			$order->save();
 		}
+	}
+
+	/**
+	 * Checks whether Payment Request Button should be available on this page.
+	 *
+	 * @return bool
+	 */
+	public function should_show_payment_request_button() {
+		// If account is not connected, then bail.
+		if ( ! $this->account->is_stripe_connected( false ) ) {
+			return false;
+		}
+
+		// If no SSL, bail.
+		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
+			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			return false;
+		}
+
+		// User isn't authenticated and authentication is required.
+		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
+			return false;
+		}
+
+		// Page not supported.
+		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		// Product page, but not available in settings.
+		if ( $this->is_product() && ! $this->is_available_at( 'product' ) ) {
+			return false;
+		}
+
+		// Checkout page, but not available in settings.
+		if ( $this->is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
+			return false;
+		}
+
+		// Cart page, but not available in settings.
+		if ( $this->is_cart() && ! $this->is_available_at( 'cart' ) ) {
+			return false;
+		}
+
+		// Product page, but has unsupported product type.
+		if ( $this->is_product() && ! $this->is_product_supported() ) {
+			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+			return false;
+		}
+
+		// Cart has unsupported product type.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
+			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -386,9 +465,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
-	 * @return  boolean
+	 * @return boolean
 	 */
-	public function allowed_items_in_cart() {
+	public function has_allowed_items_in_cart() {
 		// Pre Orders compatbility where we don't support charge upon release.
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
@@ -416,21 +495,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Checks if this page contains a cart or checkout block.
-	 *
-	 * @return boolean
-	 */
-	public function is_block() {
-		return has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' );
-	}
-
-	/**
 	 * Checks if this is a product page or content contains a product_page shortcode.
 	 *
 	 * @return boolean
 	 */
 	public function is_product() {
 		return is_product() || wc_post_content_has_shortcode( 'product_page' );
+	}
+
+	/**
+	 * Checks if this is the cart page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_cart() {
+		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Checks if this is the checkout page or content contains a cart block.
+	 *
+	 * @return boolean
+	 */
+	public function is_checkout() {
+		return is_checkout() || has_block( 'woocommerce/checkout' );
 	}
 
 	/**
@@ -476,49 +564,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
-		// If account is not connected then bail.
-		if ( ! $this->account->is_stripe_connected( false ) ) {
+		// Don't load scripts if page is not supported.
+		if ( ! $this->should_show_payment_request_button() ) {
 			return;
 		}
 
-		// If no SSL bail.
-		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
-			return;
-		}
-
-		// If page is not supported, bail.
-		if ( ! $this->is_block() && ! $this->is_product() && ! is_cart() && ! is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		$stripe_params = [
-			'ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+		$payment_request_params = [
+			'ajax_url'        => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'          => [
-				'publishableKey'     => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
-				'accountId'          => $this->account->get_stripe_account_id(),
-				'allow_prepaid_card' => apply_filters( 'wcpay_allow_prepaid_card', true ) ? 'yes' : 'no',
+				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
 			],
 			'nonce'           => [
-				'payment'                   => wp_create_nonce( 'wcpay-payment-request' ),
+				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'log_errors'                => wp_create_nonce( 'wcpay-log-errors' ),
-				'clear_cart'                => wp_create_nonce( 'wcpay-clear-cart' ),
-			],
-			'i18n'            => [
-				'no_prepaid_card'  => __( 'Sorry, we\'re not accepting prepaid cards at this time.', 'woocommerce-payments' ),
-				/* translators: Do not translate the [option] placeholder */
-				'unknown_shipping' => __( 'Unknown shipping option "[option]".', 'woocommerce-payments' ),
 			],
 			'checkout'        => [
-				'url'               => wc_get_checkout_url(),
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'    => WC()->cart->needs_shipping() ? 'yes' : 'no',
+				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
@@ -526,6 +595,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
 				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 				'height'       => $this->get_button_height(),
+				'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
 				'is_custom'    => $this->is_custom_button(),
 				'is_branded'   => $this->is_branded_button(),
@@ -533,16 +603,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
 			],
 			'is_product_page' => $this->is_product(),
+			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
+			'total_label'     => $this->get_total_label(),
 		];
 
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
 		wp_enqueue_style( 'payment_request_styles' );
 
-		wp_register_script( 'stripe', 'https://js.stripe.com/v3/', [], '3.0', true );
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
-		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $stripe_params );
+		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
@@ -556,21 +627,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_payment_request_button_html() {
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
-			return;
-		}
-
-		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
-			return;
-		}
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
@@ -592,70 +648,20 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
-		$gateways = WC()->payment_gateways->get_available_payment_gateways();
-
-		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
-			return;
-		}
-
-		if ( ! is_cart() && ! is_checkout() && ! $this->is_product() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		if ( $this->is_product() && ! $this->should_show_payment_button_on_product_page() ) {
-			return;
-		} elseif ( ! $this->should_show_payment_button_on_cart_or_checkout() ) {
-			return;
-		}
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
 	/**
-	 * Whether payment button html should be rendered on the Cart
+	 * Whether product page has a supported product.
 	 *
 	 * @return boolean
 	 */
-	private function should_show_payment_button_on_cart_or_checkout() {
-		// Not supported when user isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
-			return false;
-		}
-
-		if ( is_checkout() && ! $this->is_available_at( 'checkout' ) ) {
-			return false;
-		}
-
-		if ( is_cart() && ! $this->is_available_at( 'cart' ) ) {
-			return false;
-		}
-
-		if ( ! $this->allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart has unsupported product type ( Payment Request button disabled )' );
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Whether payment button html should be rendered
-	 *
-	 * @return boolean
-	 */
-	private function should_show_payment_button_on_product_page() {
-		if ( ! $this->is_available_at( 'product' ) ) {
-			return false;
-		}
-
+	private function is_product_supported() {
 		$product = $this->get_product();
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
-		}
-
-		// Not supported when user isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
 			return false;
 		}
 
@@ -698,37 +704,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Log errors coming from Payment Request
-	 */
-	public function ajax_log_errors() {
-		check_ajax_referer( 'wcpay-log-errors', 'security' );
-
-		if ( empty( $_POST['errors'] ) ) {
-			exit;
-		}
-
-		$errors = wc_clean( wp_unslash( $_POST['errors'] ) );
-
-		Logger::log( $errors );
-
-		exit;
-	}
-
-	/**
-	 * Clears cart.
-	 */
-	public function ajax_clear_cart() {
-		check_ajax_referer( 'wcpay-clear-cart', 'security' );
-
-		WC()->cart->empty_cart();
-		exit;
-	}
-
-	/**
 	 * Get cart details.
 	 */
 	public function ajax_get_cart_details() {
-		check_ajax_referer( 'wcpay-payment-request', 'security' );
+		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
@@ -736,20 +715,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$currency = get_woocommerce_currency();
-
-		// Set mandatory payment details.
-		$data = [
-			'shipping_required' => WC()->cart->needs_shipping(),
-			'order_data'        => [
-				'currency'     => strtolower( $currency ),
-				'country_code' => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-			],
-		];
-
-		$data['order_data'] += $this->build_display_items();
-
-		wp_send_json( $data );
+		wp_send_json( array_merge( $this->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
 	}
 
 	/**
@@ -769,7 +735,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'state'     => FILTER_SANITIZE_STRING,
 				'postcode'  => FILTER_SANITIZE_STRING,
 				'city'      => FILTER_SANITIZE_STRING,
-				'address'   => FILTER_SANITIZE_STRING,
+				'address_1' => FILTER_SANITIZE_STRING,
 				'address_2' => FILTER_SANITIZE_STRING,
 			]
 		);
@@ -980,9 +946,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'pending' => true,
 			];
 
-			$data['requestShipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-			$data['currency']        = strtolower( get_woocommerce_currency() );
-			$data['country_code']    = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+			$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+			$data['currency']       = strtolower( get_woocommerce_currency() );
+			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {
@@ -1229,7 +1195,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$state     = $address['state'];
 		$postcode  = $address['postcode'];
 		$city      = $address['city'];
-		$address_1 = $address['address'];
+		$address_1 = $address['address_1'];
 		$address_2 = $address['address_2'];
 
 		// Normalizes state to calculate shipping zones.

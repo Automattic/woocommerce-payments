@@ -27,7 +27,7 @@ import Gridicon from 'gridicons';
  */
 import { useTransactions, useTransactionsSummary } from 'data';
 import OrderLink from 'components/order-link';
-import RiskLevel from 'components/risk-level';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
@@ -274,7 +274,7 @@ export const TransactionsList = ( props ) => {
 			},
 			// eslint-disable-next-line camelcase
 			risk_level: {
-				value: txn.risk_level,
+				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.deposit_id, display: deposit },
@@ -342,7 +342,7 @@ export const TransactionsList = ( props ) => {
 	// Generate summary based on loading state and available currencies information
 	const summary = [
 		{
-			label: 'transactions',
+			label: __( 'transactions', 'woocommerce-payments' ),
 			value: `${ transactionsSummary.count }`,
 		},
 	];
@@ -353,21 +353,21 @@ export const TransactionsList = ( props ) => {
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(
 				{
-					label: 'total',
+					label: __( 'total', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.total,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
-					label: 'fees',
+					label: __( 'fees', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.fees,
 						transactionsSummary.currency
 					) }`,
 				},
 				{
-					label: 'net',
+					label: __( 'net', 'woocommerce-payments' ),
 					value: `${ formatCurrency(
 						transactionsSummary.net,
 						transactionsSummary.currency
