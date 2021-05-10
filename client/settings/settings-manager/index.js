@@ -9,6 +9,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
+import './style.scss';
 import { LoadableBlock } from '../../components/loadable';
 import { useSettings } from '../../data';
 import PaymentMethods from '../../payment-methods';
@@ -99,14 +100,16 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 			<SettingsSection>
 				<TestModeSettings />
 			</SettingsSection>
-			<Button
-				isPrimary
-				isBusy={ isSaving }
-				disabled={ isSaving || isLoading }
-				onClick={ saveSettings }
-			>
-				{ __( 'Save changes', 'woocommerce-payments' ) }
-			</Button>
+			<SettingsSection className="settings-manager__buttons">
+				<Button
+					isPrimary
+					isBusy={ isSaving }
+					disabled={ isSaving || isLoading }
+					onClick={ saveSettings }
+				>
+					{ __( 'Save changes', 'woocommerce-payments' ) }
+				</Button>
+			</SettingsSection>
 		</div>
 	);
 };
