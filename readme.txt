@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
 * Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
+* Update - Implement expirement on Connect Page.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

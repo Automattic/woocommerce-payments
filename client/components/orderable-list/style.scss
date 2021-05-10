@@ -24,7 +24,12 @@
 	}
 
 	&__drag-handle {
+		&#{&} {
+			display: none;
+		}
+
 		.has-drag-handles & {
+			display: inline-flex;
 			background: url( '../../../assets/images/drag-handle.svg' )
 				no-repeat center center;
 			background-size: 10px 6px;
