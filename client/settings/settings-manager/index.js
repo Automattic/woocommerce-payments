@@ -99,16 +99,14 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 			<SettingsSection>
 				<TestModeSettings />
 			</SettingsSection>
-			<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
-				<Button
-					isPrimary
-					isBusy={ isSaving }
-					disabled={ isSaving || isLoading }
-					onClick={ saveSettings }
-				>
-					{ __( 'Save changes', 'woocommerce-payments' ) }
-				</Button>
-			</LoadableBlock>
+			<Button
+				isPrimary
+				isBusy={ isSaving }
+				disabled={ isSaving || isLoading }
+				onClick={ saveSettings }
+			>
+				{ __( 'Save changes', 'woocommerce-payments' ) }
+			</Button>
 		</div>
 	);
 };
