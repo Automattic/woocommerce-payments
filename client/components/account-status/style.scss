@@ -32,19 +32,18 @@
 	line-height: 16px;
 	margin-bottom: 8px;
 }
-.woocommerce-account-status-item-label {
+.woocommerce-account-status-item__label {
 	color: $gray-900;
 	margin: 0 4px;
 	width: 130px;
 }
-.woocommerce-account-status-item-value {
+.woocommerce-account-status-item__value {
 	color: $gray-700;
 	flex-grow: 3;
 	text-align: left;
 	margin-left: 1.6rem;
 	line-height: 16px;
-}
-.woocommerce-account-status-item-value {
+
 	svg {
 		margin: 0 0.2rem;
 		position: relative;
