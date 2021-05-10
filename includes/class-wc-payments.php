@@ -508,7 +508,7 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-				require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
+		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
 
