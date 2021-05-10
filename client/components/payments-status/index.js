@@ -12,27 +12,35 @@ import GridiconNotice from 'gridicons/dist/notice';
  */
 import 'components/account-status/shared.scss';
 
-const PaymentsStatus = ( props ) => {
-	const { paymentsEnabled, iconSize } = props;
-	let className;
-	let description;
-	let icon;
-
-	if ( paymentsEnabled ) {
-		description = __( 'Enabled', 'woocommerce-payments' );
-		icon = <GridiconCheckmarkCircle size={ iconSize } />;
-		className = 'account-status__info__green';
-	} else {
-		description = __( 'Disabled', 'woocommerce-payments' );
-		icon = <GridiconNotice size={ iconSize } />;
-		className = 'account-status__info__red';
-	}
+const PaymentsStatusEnabled = ( props ) => {
+	const { iconSize } = props;
 
 	return (
-		<span className={ className }>
-			{ icon }
-			{ description }
+		<span className={ 'account-status__info__green' }>
+			<GridiconCheckmarkCircle size={ iconSize } />
+			{ __( 'Enabled', 'woocommerce-payments' ) }
 		</span>
+	);
+};
+
+const PaymentsStatusDisabled = ( props ) => {
+	const { iconSize } = props;
+
+	return (
+		<span className={ 'account-status__info__red' }>
+			<GridiconNotice size={ iconSize } />
+			{ __( 'Disabled', 'woocommerce-payments' ) }
+		</span>
+	);
+};
+
+const PaymentsStatus = ( props ) => {
+	const { paymentsEnabled } = props;
+
+	return paymentsEnabled ? (
+		<PaymentsStatusEnabled { ...props } />
+	) : (
+		<PaymentsStatusDisabled { ...props } />
 	);
 };
 
