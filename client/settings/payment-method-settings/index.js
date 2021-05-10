@@ -24,11 +24,11 @@ const methods = {
 		controls: () => <GiropaySettings />,
 	},
 	woocommerce_payments_digital_wallets: {
-		title: 'digital_wallets',
+		title: 'Digital wallets & express payment methods',
 		description: () => (
 			<>
 				{ /* Whoever picks this up will need to translate these strings */ }
-				<h2>digital wallets</h2>
+				<h2>Digital wallets &amp; saved cards</h2>
 				<p>digital wallets description.</p>
 			</>
 		),
