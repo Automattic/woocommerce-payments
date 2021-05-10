@@ -1,21 +1,39 @@
 /**
  * External dependencies
  */
-import React, { useCallback } from 'react';
+import React from 'react';
+import { useEffect, useCallback, useContext } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import CollapsibleBody from '../wizard/collapsible-body';
 import TaskItem from '../wizard/task-item';
+import WizardTaskContext from '../wizard/task/context';
 
 const SetupComplete = () => {
+	const { isActive } = useContext( WizardTaskContext );
+
 	const handleGoHome = useCallback( () => {
 		getHistory().push( getNewPath( {}, '/', {} ) );
 	}, [] );
+
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+
+	useEffect( () => {
+		if ( ! isActive ) {
+			return;
+		}
+
+		updateOptions( {
+			// eslint-disable-next-line camelcase
+			wcpay_additional_methods_setup_completed: 'yes',
+		} );
+	}, [ isActive, updateOptions ] );
 
 	return (
 		<TaskItem
