@@ -10,13 +10,13 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import TaskContext from '../wizard/task/context';
+import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import TaskItem from '../wizard/task-item';
 import './add-payment-methods-task.scss';
 
 const AddPaymentMethodsTask = () => {
-	const { setCompleted } = useContext( TaskContext );
+	const { setCompleted } = useContext( WizardTaskContext );
 
 	const handleContinueClick = useCallback( () => {
 		setCompleted( true, 'setup-complete' );

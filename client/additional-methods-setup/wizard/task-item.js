@@ -7,10 +7,10 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import TaskContext from './task/context';
+import WizardTaskContext from './task/context';
 
 const TaskItem = ( { children, title, index, className } ) => {
-	const { isCompleted, isActive } = useContext( TaskContext );
+	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
 	return (
 		<li

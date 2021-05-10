@@ -7,11 +7,11 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import TaskContext from './task/context';
+import WizardTaskContext from './task/context';
 import './collapsible-body.scss';
 
 const CollapsibleBody = ( { children } ) => {
-	const { isActive } = useContext( TaskContext );
+	const { isActive } = useContext( WizardTaskContext );
 
 	return (
 		<div

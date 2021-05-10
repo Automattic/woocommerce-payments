@@ -5,7 +5,7 @@ import React, { useState, useMemo } from 'react';
 
 import WizardContext from './context';
 
-const WizardContextProvider = ( {
+const Wizard = ( {
 	children,
 	defaultActiveTask = '',
 	defaultCompletedTasks = {},
@@ -32,4 +32,4 @@ const WizardContextProvider = ( {
 	);
 };
 
-export default WizardContextProvider;
+export default Wizard;

@@ -6,7 +6,7 @@ import React, { useLayoutEffect, useRef, useContext } from 'react';
 /**
  * Internal dependencies
  */
-import WizardContext from './parent/context';
+import WizardContext from './wrapper/context';
 import './parent-list.scss';
 
 const ParentList = ( { children } ) => {

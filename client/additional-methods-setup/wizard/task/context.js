@@ -3,11 +3,11 @@
  */
 import { createContext } from 'react';
 
-const TaskContext = createContext( {
+const WizardTaskContext = createContext( {
 	isActive: false,
 	setActive: () => null,
 	isCompleted: false,
 	setCompleted: () => null,
 } );
 
-export default TaskContext;
+export default WizardTaskContext;

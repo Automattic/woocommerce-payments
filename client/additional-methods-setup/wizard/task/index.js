@@ -3,10 +3,10 @@
  */
 import React, { useMemo, useContext } from 'react';
 
-import WizardContext from '../parent/context';
-import TaskContext from './context';
+import WizardContext from '../wrapper/context';
+import WizardTaskContext from './context';
 
-const TaskContextProvider = ( { children, id = '' } ) => {
+const WizardTask = ( { children, id = '' } ) => {
 	const {
 		activeTask,
 		completedTasks,
@@ -34,10 +34,10 @@ const TaskContextProvider = ( { children, id = '' } ) => {
 	);
 
 	return (
-		<TaskContext.Provider value={ contextValue }>
+		<WizardTaskContext.Provider value={ contextValue }>
 			{ children }
-		</TaskContext.Provider>
+		</WizardTaskContext.Provider>
 	);
 };
 
-export default TaskContextProvider;
+export default WizardTask;

@@ -7,8 +7,8 @@ import { Card, CardBody } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import WizardContextProvider from '../wizard/parent/provider';
-import TaskContextProvider from '../wizard/task/provider';
+import Wizard from '../wizard/wrapper';
+import WizardTask from '../wizard/task';
 import ParentList from '../wizard/parent-list';
 import AddPaymentMethodsTask from './add-payment-methods-task';
 import SetupCompleteTask from './setup-complete-task';
@@ -16,16 +16,16 @@ import SetupCompleteTask from './setup-complete-task';
 const MethodsSelector = () => (
 	<Card className="methods-selector">
 		<CardBody>
-			<WizardContextProvider defaultActiveTask="add-payment-methods">
+			<Wizard defaultActiveTask="add-payment-methods">
 				<ParentList>
-					<TaskContextProvider id="add-payment-methods">
+					<WizardTask id="add-payment-methods">
 						<AddPaymentMethodsTask />
-					</TaskContextProvider>
-					<TaskContextProvider id="setup-complete">
+					</WizardTask>
+					<WizardTask id="setup-complete">
 						<SetupCompleteTask />
-					</TaskContextProvider>
+					</WizardTask>
 				</ParentList>
-			</WizardContextProvider>
+			</Wizard>
 		</CardBody>
 	</Card>
 );

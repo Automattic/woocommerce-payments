@@ -3,7 +3,7 @@ Use these components to simplify (hopefully) setting up a wizard.
 
 The components are as follows:
 
-### `parent/context`: `WizardContext`
+### `wrapper/context`: `WizardContext`
 #### Description:
 Contains the data for the wizard. It just uses `React.createContext()`.
 
@@ -22,7 +22,7 @@ const Consumer = () => {
 }
 ```
 
-### `parent/provider`: `WizardContextProvider`
+### `wrapper/index`: `Wizard`
 #### Description:
 Implementation of the `WizardContext`. Wrap all your components with this component.  
 By leveraging the `WizardContext` you can instruct this component to update the values of the context provider.
@@ -36,15 +36,15 @@ By leveraging the `WizardContext` you can instruct this component to update the 
 ```jsx
 const Consumer = () => {
     return (
-      <WizardContextProvider defaultActiveTask="task-2" defaultCompletedTasks={{'task-1': true}}>
-        <TaskContextProvider id="task-1"><Task1Controls /></TaskContextProvider>
-        <TaskContextProvider id="task-2"><Task2Controls /></TaskContextProvider>
-      </WizardContextProvider>
+      <WizardTask defaultActiveTask="task-2" defaultCompletedTasks={{'task-1': true}}>
+        <WizardTask id="task-1"><Task1Controls /></WizardTask>
+        <WizardTask id="task-2"><Task2Controls /></WizardTask>
+      </Wizard>
     );
 }
 ```
 
-### `task/context`: `TaskContext`
+### `task/context`: `WizardTaskContext`
 #### Description:
 Contains the data for one individual task within the wizard. It just uses `React.createContext()`.
 
@@ -58,7 +58,7 @@ Contains the data for one individual task within the wizard. It just uses `React
 ```jsx
 const Consumer = () => {
   const { setActiveTask } = useContext( WizardContext );
-  const { isActive, isCompleted, setCompleted } = useContext( TaskContext );
+  const { isActive, isCompleted, setCompleted } = useContext( WizardTaskContext );
     
     return (
       <div className={ classNames({'id-active': isActive, 'is-completed': isCompleted })}>
@@ -73,10 +73,10 @@ const Consumer = () => {
 }
 ```
 
-### `task/provider`: `TaskContextProvider`
+### `task/index`: `WizardTask`
 #### Description:
-Implementation of the `TaskContext`. Wrap the componentry of one individual task with this component.  
-By leveraging the `TaskContext` you can instruct the `TaskContextProvider` to update the values of the context provider.
+Implementation of the `WizardTaskContext`. Wrap the componentry of one individual task with this component.  
+By leveraging the `WizardTaskContext` you can instruct the `WizardTask` to update the values of the context provider.
 
 #### props
 - `children`: the React children hierarchy
@@ -86,9 +86,9 @@ By leveraging the `TaskContext` you can instruct the `TaskContextProvider` to up
 ```jsx
 const Task1 = () => {
     return (
-      <TaskContextProvider id="task-1">
+      <WizardTask id="task-1">
         <Task1Controls />
-      </TaskContextProvider>
+      </WizardTask>
     );
 }
 ```
