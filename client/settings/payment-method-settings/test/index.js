@@ -52,4 +52,15 @@ describe( 'PaymentMethodSettings', () => {
 		);
 		expect( errorMessage ).toBeInTheDocument();
 	} );
+
+	test( 'renders digital wallets settings and confirm its h2 copy', () => {
+		render(
+			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
+		);
+
+		const heading = screen.queryByRole( 'heading', {
+			name: 'Digital wallets & saved cards',
+		} );
+		expect( heading ).toBeInTheDocument();
+	} );
 } );
