@@ -16,8 +16,7 @@ const AccountFees = ( props ) => {
 
 	const currency = getCurrency( baseFee.currency );
 	const currencyName = formatCurrencyName( baseFee.currency );
-	const currencyCode =
-		currency !== undefined ? currency.getCurrencyConfig().code : '';
+	const currencyCode = currency?.getCurrencyConfig()?.code;
 	const feeDescription = formatAccountFeesDescription( accountFees );
 
 	return (
