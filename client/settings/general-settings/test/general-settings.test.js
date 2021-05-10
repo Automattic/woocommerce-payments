@@ -71,7 +71,7 @@ describe( 'GeneralSettings', () => {
 	);
 
 	it.each( [ [ true ], [ false ] ] )(
-		'updates WCPay enabled state when toggling checkbox',
+		'updates WCPay enabled state to %s when toggling checkbox',
 		( isEnabled ) => {
 			useGeneralSettings.mockReturnValue( {
 				isWCPayEnabled: isEnabled,
