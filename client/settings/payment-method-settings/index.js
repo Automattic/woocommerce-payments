@@ -8,6 +8,7 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import GiropaySettings from './giropay-settings';
+import DigitalWalletsSettings from './digital-wallets-settings';
 
 /* eslint-disable camelcase */
 const methods = {
@@ -21,6 +22,17 @@ const methods = {
 			</>
 		),
 		controls: () => <GiropaySettings />,
+	},
+	woocommerce_payments_digital_wallets: {
+		title: 'digital_wallets',
+		description: () => (
+			<>
+				{ /* Whoever picks this up will need to translate these strings */ }
+				<h2>digital wallets</h2>
+				<p>digital wallets description.</p>
+			</>
+		),
+		controls: () => <DigitalWalletsSettings />,
 	},
 };
 /* eslint-enable camelcase */
