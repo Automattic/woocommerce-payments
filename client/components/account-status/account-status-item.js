@@ -14,7 +14,7 @@ const AccountStatusItem = ( props ) => {
 
 	return (
 		<div className="woocommerce-account-status-item">
-			<div className="woocommerce-account-status-item-label">
+			<div className="woocommerce-account-status-item__label">
 				{ label }
 			</div>
 			<div className="woocommerce-account-status-item-value">
