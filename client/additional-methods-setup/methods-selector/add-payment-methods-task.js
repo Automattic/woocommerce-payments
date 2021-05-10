@@ -15,13 +15,7 @@ import CollapsibleBody from '../wizard/collapsible-body';
 import TaskItem from '../wizard/task-item';
 import './add-payment-methods-task.scss';
 
-const AddPaymentMethodsTask = () => {
-	const { setCompleted } = useContext( WizardTaskContext );
-
-	const handleContinueClick = useCallback( () => {
-		setCompleted( true, 'setup-complete' );
-	}, [ setCompleted ] );
-
+const useGetCountryName = () => {
 	const baseLocation = useSelect(
 		( select ) =>
 			select( 'wc/admin/settings' ).getSetting(
@@ -36,6 +30,18 @@ const AddPaymentMethodsTask = () => {
 			select( 'wc/admin/settings' ).getSetting( 'wc_admin', 'countries' ),
 		[]
 	);
+
+	return countries[ baseLocation.country ];
+};
+
+const AddPaymentMethodsTask = () => {
+	const { setCompleted } = useContext( WizardTaskContext );
+
+	const handleContinueClick = useCallback( () => {
+		setCompleted( true, 'setup-complete' );
+	}, [ setCompleted ] );
+
+	const countryName = useGetCountryName();
 
 	return (
 		<TaskItem
@@ -74,7 +80,7 @@ const AddPaymentMethodsTask = () => {
 										'Popular with customers in %1$s',
 										'woocommerce-payments'
 									),
-									countries[ baseLocation.country ]
+									countryName
 								) }
 							</p>
 						</CardBody>
