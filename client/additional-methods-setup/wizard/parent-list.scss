@@ -1,41 +1,51 @@
-.woocommerce-timeline__parent-list {
-	&__description-element {
-		margin-bottom: 1em !important;
-	}
+.wcpay-wizard {
+	&__task {
+		margin-bottom: 0;
 
-	.woocommerce-timeline-group {
 		&:first-child {
-			.woocommerce-timeline-item__top-border {
+			.wcpay-wizard__task__top-border {
 				display: none;
 			}
 		}
 
 		&:last-child {
-			.woocommerce-timeline-item__body {
+			.wcpay-wizard__task__body {
 				border-left: none;
 			}
 		}
 
-		.woocommerce-timeline-item__body {
-			padding-left: 30px;
-			padding-right: 30px;
-		}
-
 		&.is-active {
-			.woocommerce-timeline-item__headline {
+			.wcpay-wizard__task__title {
 				color: var( --wp-admin-theme-color );
 			}
 
-			.woocommerce-timeline-item__icon-wrapper {
+			.wcpay-wizard__task__icon-wrapper {
 				border-color: var( --wp-admin-theme-color );
 			}
 		}
 
-		.woocommerce-timeline-item__headline {
-			font-weight: 600;
+		&__title {
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+			justify-content: space-between;
+			color: #2c3338;
 		}
 
-		.woocommerce-timeline-item__icon-wrapper {
+		&__headline {
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+			margin: 8px 0;
+			font-weight: 600;
+			font-size: 16px;
+
+			> span {
+				padding: 0 16px;
+			}
+		}
+
+		&__icon-wrapper {
 			position: relative;
 			width: 24px;
 			height: 24px;
@@ -45,20 +55,41 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
+		}
 
-			.woocommerce-timeline-item__icon-text {
-				font-size: 13px;
-			}
+		&__icon-text {
+			font-size: 13px;
+		}
 
-			.woocommerce-timeline-item__icon {
-				opacity: 0;
-				transition: opacity 500ms ease;
-				position: absolute;
+		&__icon {
+			opacity: 0;
+			transition: opacity 500ms ease;
+			position: absolute;
 
-				.is-completed & {
-					opacity: 1;
-				}
+			.is-completed & {
+				opacity: 1;
 			}
 		}
+
+		&__body {
+			display: flex;
+			flex-direction: column;
+			color: #50575e;
+			margin: 0 12px;
+			padding: 8px 30px;
+			border-left: 1px solid #c3c4c7;
+			font-size: 14px;
+		}
+	}
+
+	&__task__top-border {
+		min-height: 16px;
+		border-left: 1px solid #c3c4c7;
+		margin: 0 12px;
+	}
+
+	&__description-element {
+		margin-bottom: 1em;
+		margin-top: 0;
 	}
 }

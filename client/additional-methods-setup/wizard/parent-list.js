@@ -27,7 +27,7 @@ const ParentList = ( { children } ) => {
 		}
 
 		const nextActiveTitle = wrapperRef.current.querySelector(
-			'.woocommerce-timeline-group.is-active .woocommerce-timeline-item__headline'
+			'.wcpay-wizard__task.is-active .wcpay-wizard__task__headline'
 		);
 		if ( ! nextActiveTitle ) {
 			return;
@@ -37,10 +37,7 @@ const ParentList = ( { children } ) => {
 	}, [ activeTask ] );
 
 	return (
-		<div
-			className="woocommerce-timeline woocommerce-timeline__parent-list"
-			ref={ wrapperRef }
-		>
+		<div className="wcpay-wizard__parent-list" ref={ wrapperRef }>
 			<ul>{ children }</ul>
 		</div>
 	);

@@ -14,34 +14,28 @@ const TaskItem = ( { children, title, index, className } ) => {
 
 	return (
 		<li
-			className={ classNames( 'woocommerce-timeline-group', className, {
+			className={ classNames( 'wcpay-wizard__task', className, {
 				'is-completed': isCompleted,
 				'is-active': isActive,
 			} ) }
 		>
-			<ul>
-				<li className="woocommerce-timeline-item">
-					<div className="woocommerce-timeline-item__top-border" />
-					<div className="woocommerce-timeline-item__title">
-						<div
-							className="woocommerce-timeline-item__headline"
-							// tabindex with value `-1` is necessary to programmatically set the focus
-							// on an element that is not interactive.
-							tabIndex="-1"
-						>
-							<div className="woocommerce-timeline-item__icon-wrapper">
-								<div className="woocommerce-timeline-item__icon-text">
-									{ index }
-								</div>
-							</div>
-							<span>{ title }</span>
+			<div className="wcpay-wizard__task__top-border" />
+			<div className="wcpay-wizard__task__title">
+				<div
+					className="wcpay-wizard__task__headline"
+					// tabindex with value `-1` is necessary to programmatically set the focus
+					// on an element that is not interactive.
+					tabIndex="-1"
+				>
+					<div className="wcpay-wizard__task__icon-wrapper">
+						<div className="wcpay-wizard__task__icon-text">
+							{ index }
 						</div>
 					</div>
-					<div className="woocommerce-timeline-item__body">
-						{ children }
-					</div>
-				</li>
-			</ul>
+					<span>{ title }</span>
+				</div>
+			</div>
+			<div className="wcpay-wizard__task__body">{ children }</div>
 		</li>
 	);
 };
