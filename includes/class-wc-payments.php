@@ -508,27 +508,23 @@ class WC_Payments {
 	 * @return WC_Payments_API_Client
 	 */
 	public static function create_api_client() {
-		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
+				require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
 
 		$http_class = self::get_wc_payments_http();
 
-		$api_client_class = apply_filters( 'wc_api_client', null );
+		$api_client_class = apply_filters( 'wc_api_client', 'WC_Payments_API_Client' );
 
-		$payments_api_client = new $api_client_class(
-			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-			$http_class,
-			self::$db_helper
-		);
+		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
+			$api_client_class = 'WC_Payments_API_Client';
+        }
 
-		if ( ! $payments_api_client instanceof WC_Payments_API_Client ) {
-			$payments_api_client = new WC_Payments_API_Client(
-				'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
-				$http_class,
-				self::$db_helper
-			);
-		}
+        $payments_api_client = new $api_client_class(
+            'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
+            $http_class,
+            self::$db_helper
+        );
 
 		return $payments_api_client;
 	}
