@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Card, CardBody, CardDivider } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
@@ -13,6 +13,8 @@ import interpolateComponents from 'interpolate-components';
 import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import TaskItem from '../wizard/task-item';
+import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
+import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import './add-payment-methods-task.scss';
 
 const useGetCountryName = () => {
@@ -34,6 +36,21 @@ const useGetCountryName = () => {
 	return countries[ baseLocation.country ];
 };
 
+const usePaymentMethodsCheckboxState = () => {
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+	const handleChange = useCallback(
+		( paymentMethodName, enabled ) => {
+			setPaymentMethodsState( ( oldValues ) => ( {
+				...oldValues,
+				[ paymentMethodName ]: enabled,
+			} ) );
+		},
+		[ setPaymentMethodsState ]
+	);
+
+	return [ paymentMethodsState, handleChange ];
+};
+
 const AddPaymentMethodsTask = () => {
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -42,6 +59,11 @@ const AddPaymentMethodsTask = () => {
 	}, [ setCompleted ] );
 
 	const countryName = useGetCountryName();
+
+	const [
+		paymentMethodsState,
+		handlePaymentMethodChange,
+	] = usePaymentMethodsCheckboxState();
 
 	return (
 		<TaskItem
@@ -52,7 +74,7 @@ const AddPaymentMethodsTask = () => {
 			) }
 			index={ 1 }
 		>
-			<p className="woocommerce-timeline__parent-list__description-element">
+			<p className="wcpay-wizard__description-element">
 				{ interpolateComponents( {
 					mixedString: __(
 						"Increase your store's conversion by offering " +
@@ -70,42 +92,72 @@ const AddPaymentMethodsTask = () => {
 				} ) }
 			</p>
 			<CollapsibleBody>
-				<div className="add-payment-methods-task__payment-selector-wrapper woocommerce-timeline__parent-list__description-element">
-					<Card>
-						<CardBody>
-							{ /* eslint-disable-next-line max-len */ }
-							<p className="add-payment-methods-task__payment-selector-title woocommerce-timeline__parent-list__description-element">
-								{ sprintf(
-									__(
-										'Popular with customers in %1$s',
-										'woocommerce-payments'
-									),
-									countryName
-								) }
-							</p>
-						</CardBody>
-						<CardDivider />
-						<CardBody>
-							<p className="add-payment-methods-task__payment-selector-title">
-								{ __(
-									'Additional payment methods',
+				<Card className="add-payment-methods-task__payment-selector-wrapper">
+					<CardBody>
+						{ /* eslint-disable-next-line max-len */ }
+						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard__description-element">
+							{ sprintf(
+								__(
+									'Popular with customers in %1$s',
 									'woocommerce-payments'
-								) }
-							</p>
-						</CardBody>
-					</Card>
-				</div>
-				<p className="woocommerce-timeline__parent-list__description-element">
+								),
+								countryName
+							) }
+						</p>
+						<PaymentMethodCheckboxes>
+							<PaymentMethodCheckbox
+								checked={ paymentMethodsState.giropay }
+								onChange={ handlePaymentMethodChange }
+								fees="missing fees"
+								name="giropay"
+							/>
+							<PaymentMethodCheckbox
+								checked={ paymentMethodsState.sofort }
+								onChange={ handlePaymentMethodChange }
+								fees="missing fees"
+								name="sofort"
+							/>
+						</PaymentMethodCheckboxes>
+					</CardBody>
+					<CardDivider />
+					<CardBody>
+						<p className="add-payment-methods-task__payment-selector-title">
+							{ __(
+								'Additional payment methods',
+								'woocommerce-payments'
+							) }
+						</p>
+						<PaymentMethodCheckboxes>
+							<PaymentMethodCheckbox
+								checked={ paymentMethodsState.sepa }
+								onChange={ handlePaymentMethodChange }
+								fees="missing fees"
+								name="sepa"
+							/>
+							<PaymentMethodCheckbox
+								checked={ paymentMethodsState[ 'apple-pay' ] }
+								onChange={ handlePaymentMethodChange }
+								fees="missing fees"
+								name="apple-pay"
+							/>
+							<PaymentMethodCheckbox
+								checked={ paymentMethodsState[ 'google-pay' ] }
+								onChange={ handlePaymentMethodChange }
+								fees="missing fees"
+								name="google-pay"
+							/>
+						</PaymentMethodCheckboxes>
+					</CardBody>
+				</Card>
+				<p className="wcpay-wizard__description-element">
 					{ __(
 						'Selected payment methods need new currencies to be added to your store.',
 						'woocommerce-payments'
 					) }
 				</p>
-				<p>
-					<Button onClick={ handleContinueClick } isPrimary>
-						{ __( 'Continue', 'woocommerce-payments' ) }
-					</Button>
-				</p>
+				<Button onClick={ handleContinueClick } isPrimary>
+					{ __( 'Continue', 'woocommerce-payments' ) }
+				</Button>
 			</CollapsibleBody>
 		</TaskItem>
 	);
