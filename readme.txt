@@ -110,6 +110,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
 * Update - Implement expirement on Connect Page.
+* Fix - Columns are misaligned on Payments->Transactions/Disputes page.
+* Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.
