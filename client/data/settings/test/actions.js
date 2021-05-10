@@ -35,28 +35,27 @@ describe( 'Settings actions tests', () => {
 		} );
 
 		test( 'makes POST request with settings', () => {
-			const settingsState = {
-				isSaving: false,
+			const settingsMock = {
 				/* eslint-disable camelcase */
-				data: {
-					enabled_payment_method_ids: [ 'foo', 'bar' ],
-					is_wcpay_enabled: true,
-				},
+				enabled_payment_method_ids: [ 'foo', 'bar' ],
+				is_wcpay_enabled: true,
 				/* eslint-enable camelcase */
 			};
 
 			select.mockReturnValue( {
-				getSettings: () => settingsState,
+				getSettings: () => settingsMock,
 			} );
+
+			apiFetch.mockReturnValue( 'api response' );
 
 			const yielded = [ ...saveSettings() ];
 
 			expect( apiFetch ).toHaveBeenCalledWith( {
 				method: 'post',
 				path: '/wc/v3/payments/settings',
-				data: settingsState.data,
+				data: settingsMock,
 			} );
-			expect( yielded ).toContainEqual( 'api request' );
+			expect( yielded ).toContainEqual( 'api response' );
 		} );
 
 		test( 'before saving sets isSaving to true, and after - to false', () => {
