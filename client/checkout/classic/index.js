@@ -38,7 +38,9 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
-	const elements = api.getStripe().elements();
+	const elements = api.getStripe().elements( {
+		locale: getConfig( 'locale' ),
+	} );
 
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */

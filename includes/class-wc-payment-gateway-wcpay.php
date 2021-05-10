@@ -491,6 +491,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
 			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
+			'locale'                 => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 		];
 	}
 
