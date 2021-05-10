@@ -9,5 +9,5 @@ export default async function request( url, args ) {
 		body: data,
 	} );
 
-	return response.text();
+	return await response.json();
 }

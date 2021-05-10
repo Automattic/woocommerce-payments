@@ -6,6 +6,13 @@
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
+* Add - Payment request button support for checkout and cart blocks.
+* Update - Implement expirement on Connect Page.
+* Fix - Columns are misaligned on Payments->Transactions/Disputes page.
+* Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+
+= 2.3.3 - 2021-05-06 =
+* Update - Additional logic and styling for instant deposits.
 
 = 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.

@@ -27,7 +27,7 @@ import Gridicon from 'gridicons';
  */
 import { useTransactions, useTransactionsSummary } from 'data';
 import OrderLink from 'components/order-link';
-import RiskLevel from 'components/risk-level';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
@@ -274,7 +274,7 @@ export const TransactionsList = ( props ) => {
 			},
 			// eslint-disable-next-line camelcase
 			risk_level: {
-				value: txn.risk_level,
+				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.deposit_id, display: deposit },

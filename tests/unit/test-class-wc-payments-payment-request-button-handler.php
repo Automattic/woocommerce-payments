@@ -14,7 +14,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		'state'     => 'CA',
 		'postcode'  => '94110',
 		'city'      => 'San Francisco',
-		'address'   => '60 29th Street',
+		'address_1' => '60 29th Street',
 		'address_2' => '#343',
 	];
 
