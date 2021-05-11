@@ -29,10 +29,15 @@ const SetupComplete = () => {
 			return;
 		}
 
+		// extracted to a separate const, just so that eslint doesn't complain about the name not being camelCase.
+		const OPTION_NAME = 'wcpay_additional_methods_setup_completed';
 		updateOptions( {
-			// eslint-disable-next-line camelcase
-			wcpay_additional_methods_setup_completed: 'yes',
+			[ OPTION_NAME ]: 'yes',
 		} );
+
+		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
+		// Please note that marking an item as "completed" is different from "dismissing" it.
+		window.wcpayAdditionalMethodsSetup.isSetupCompleted = 'yes';
 	}, [ isActive, updateOptions ] );
 
 	return (
