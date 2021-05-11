@@ -615,6 +615,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
 
+		wp_set_script_translations( 'WCPAY_PAYMENT_REQUEST', 'woocommerce-payments' );
+
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();

@@ -163,7 +163,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_enqueue_script( 'wcpay-giropay-checkout' );
 
 			wp_enqueue_style(
-				'wcpay-checkout',
+				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )
