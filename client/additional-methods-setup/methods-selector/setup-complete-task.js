@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
+import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
@@ -14,6 +15,7 @@ import { useDispatch } from '@wordpress/data';
 import CollapsibleBody from '../wizard/collapsible-body';
 import TaskItem from '../wizard/task-item';
 import WizardTaskContext from '../wizard/task/context';
+import './setup-complete-task.scss';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
@@ -47,33 +49,62 @@ const SetupComplete = () => {
 			index={ 2 }
 		>
 			<CollapsibleBody>
-				<p>
+				<p className="wcpay-wizard__description-element">
 					{ __(
 						"You're ready to begin accepting payments with the new methods!.",
 						'woocommerce-payments'
 					) }
 				</p>
-				<p>
-					{ __(
-						// eslint-disable-next-line max-len
-						'Enter your VAT account information and set up taxe to ensure smooth transactions if you plan to sell to customers in Europe.',
-						'woocommerce-payments'
-					) }
+				<p className="wcpay-wizard__description-element">
+					{ interpolateComponents( {
+						mixedString: __(
+							'{{vatInformationLink /}} and {{setupTaxesLink /}} ' +
+								'to ensure smooth transactions if you plan to sell to customers in Europe.',
+							'woocommerce-payments'
+						),
+						components: {
+							vatInformationLink: (
+								<a href="admin.php?page=wc-settings">
+									{ __(
+										'Enter your VAT account information',
+										'woocommerce-payments'
+									) }
+								</a>
+							),
+							setupTaxesLink: (
+								<a href="admin.php?page=wc-settings&tab=tax">
+									{ __(
+										'set up taxes',
+										'woocommerce-payments'
+									) }
+								</a>
+							),
+						},
+					} ) }
 				</p>
-				<p>
+				<p className="wcpay-wizard__description-element">
 					{ __(
 						'To manage other payment settings or update your payment information, visit the payment settings.',
 						'woocommerce-payments'
 					) }
 				</p>
-				<p>
+				<div className="setup-complete-task__buttons">
 					<Button onClick={ handleGoHome } isPrimary>
 						{ __(
 							'Go to WooCommerce Home',
 							'woocommerce-payments'
 						) }
 					</Button>
-				</p>
+					<Button
+						href="admin.php?page=wc-settings&tab=checkout"
+						isTertiary
+					>
+						{ __(
+							'View payment settings',
+							'woocommerce-payments'
+						) }
+					</Button>
+				</div>
 			</CollapsibleBody>
 		</TaskItem>
 	);
