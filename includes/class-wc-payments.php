@@ -217,9 +217,9 @@ class WC_Payments {
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
-		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'insert_payment_methods_after_wcpay_gateway' ], 3 );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'insert_payment_methods_after_wcpay_gateway' ], 4 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
 
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
@@ -502,14 +502,14 @@ class WC_Payments {
 	}
 
 	/**
-	 * Insert payment methods after the main WCPay gateway when
-	 * retrieving the "woocommerce_gateway_order" option.
+	 * Replace the main WCPay gateway with all WCPay payment methods
+	 * when retrieving the "woocommerce_gateway_order" option.
 	 *
 	 * @param array $ordering Gateway order.
 	 *
 	 * @return array
 	 */
-	public static function insert_payment_methods_after_wcpay_gateway( $ordering ) {
+	public static function replace_wcpay_gateway_with_payment_methods( $ordering ) {
 		$ordering    = (array) $ordering;
 		$wcpay_index = array_search(
 			self::get_gateway()->id,
@@ -524,12 +524,12 @@ class WC_Payments {
 
 		$method_order = self::get_gateway()->get_option( 'payment_method_order', [] );
 
+		if ( empty( $method_order ) ) {
+			return $ordering;
+		}
+
 		$ordering = array_keys( $ordering );
 
-		/*
-		 * TODO Once credit card payments are in a separate gateway, the offset
-		 * and length parameters should be changed to `$wcpay_index + 1` and `0`, respectively.
-		 */
 		array_splice( $ordering, $wcpay_index, 1, $method_order );
 		return array_flip( $ordering );
 	}
