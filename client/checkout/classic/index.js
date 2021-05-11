@@ -455,14 +455,13 @@ jQuery( function ( $ ) {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	const createPaymentIntent = () => {
-		console.log( supportedUPEProperties );
 		api.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_payment_intent_giropay',
 			'wcpay-payment-method': 'giropay',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
 		} ).then( ( response ) => {
-			console.log( response );
+			//console.log( response );
 
 			if ( ! response.success ) {
 				throw response.data.error;
@@ -471,37 +470,85 @@ jQuery( function ( $ ) {
 			if ( ! response.data.client_secret ) {
 				throw new Error( 'Missing client secret.' );
 			}
-			console.log( response.data.client_secret );
 
-			const appearance = {
-				rules: {
-					'.Input': getFieldStyles( upeThemeInputSelector ),
-					'.Label': getFieldStyles( upeThemeLabelSelector ),
-					'.Input--invalid, .Input--empty': getFieldStyles(
-						'.woocommerce-checkout .form-row.woocommerce-invalid input'
-					),
-					'.Tab': getFieldStyles(
-						'.woocommerce-checkout .form-row input',
-						'Tab'
-					),
-					'.TabIcon--selected': getFieldStyles(
-						'.woocommerce-checkout .place-order .button.alt',
-						'TabIcon--selected'
-					),
-					'.Tab--selected': getFieldStyles(
-						'.woocommerce-checkout .place-order .button.alt',
-						'Tab--selected'
-					),
-				},
-			};
-			console.log( appearance );
+			// Hiden div. If we use this method, refactor me.
+			const hiddenDiv = document.createElement( 'div' );
+			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
+			hiddenDiv.style.border = 0;
+			hiddenDiv.style.clip = 'rect(0 0 0 0)';
+			hiddenDiv.style.height = '1px';
+			hiddenDiv.style.margin = '-1px';
+			hiddenDiv.style.overflow = 'hidden';
+			hiddenDiv.style.padding = '0';
+			hiddenDiv.style.position = 'absolute';
+			hiddenDiv.style.width = '1px';
+			$( hiddenDiv ).insertAfter( '#billing_postcode' );
 
-			paymentElement = elements.create( 'payment', {
-				clientSecret: response.data.client_secret,
-				appearance,
-			} );
-			paymentElement.mount( '.wc_payment_methods' );
-			//return giropayRedirect( response.data.client_secret );
+			// Get element to spoof focus rules for inputs.
+			const hiddenInput = jQuery( '#billing_postcode' )
+				.clone()
+				.prop( 'id', 'wcpay-hidden-input' );
+			// Add to hidden div.
+			hiddenDiv.appendChild( hiddenInput.get( 0 ) );
+			// Todo: Get current (active) focused element
+			// Focus our hidden element
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
+
+			// Create hidden invalid element. The class is applied on the parent paragraph.
+			const hiddenInvalidRow = document.createElement( 'p' );
+			hiddenInvalidRow.classList.add(
+				'form-row',
+				'woocommerce-invalid',
+				'woocommerce-invalid-required-field'
+			);
+			const hiddenInvalidInput = jQuery( '#billing_postcode' )
+				.clone()
+				.prop( 'id', 'wcpay-hidden-invalid-input' );
+			hiddenInvalidRow.appendChild( hiddenInvalidInput.get( 0 ) );
+			hiddenDiv.appendChild( hiddenInvalidRow );
+
+			// We need to wait for the focus to finish or we don't get the right styles.
+			$( '#wcpay-hidden-input' )
+				.promise()
+				.done( function () {
+					const focusInputRules = getFieldStyles(
+						'#wcpay-hidden-input'
+					);
+					const invalidInputRules = getFieldStyles(
+						'#wcpay-hidden-invalid-input'
+					);
+
+					$( '#wcpay-hidden-div' ).remove();
+
+					// Todo: Return focus to previously focused element.
+					const appearance = {
+						rules: {
+							'.Input': getFieldStyles( upeThemeInputSelector ),
+							'.Input:focus': focusInputRules,
+							'.Label': getFieldStyles( upeThemeLabelSelector ),
+							'.Input--invalid': invalidInputRules,
+							'.Tab': getFieldStyles(
+								'.woocommerce-checkout .form-row input',
+								'Tab'
+							),
+							'.TabIcon--selected': getFieldStyles(
+								'.woocommerce-checkout .place-order .button.alt',
+								'TabIcon--selected'
+							),
+							'.Tab--selected, .Tab:hover': getFieldStyles(
+								'.woocommerce-checkout .place-order .button.alt',
+								'Tab--selected'
+							),
+						},
+					};
+
+					paymentElement = elements.create( 'payment', {
+						clientSecret: response.data.client_secret,
+						appearance,
+					} );
+					paymentElement.mount( '.wc_payment_methods' );
+					//return giropayRedirect( response.data.client_secret );
+				} );
 		} );
 		return false;
 	};
@@ -516,10 +563,11 @@ jQuery( function ( $ ) {
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
+
 	$( '.woocommerce-checkout' ).on( 'submit', function ( event ) {
 		event.preventDefault();
 		event.stopPropagation();
-		console.log( 'CLICKED PLACE ORDER' );
+		//console.log( 'CLICKED PLACE ORDER' );
 		api.getStripe()
 			.confirmPayment( {
 				element: paymentElement,
@@ -528,10 +576,10 @@ jQuery( function ( $ ) {
 				},
 			} )
 			.then( ( result ) => {
-				console.log( result );
+				//console.log( result );
 			} )
 			.catch( ( error ) => {
-				console.log( error.message );
+				//console.log( error.message );
 			} );
 		return false;
 	} );
@@ -587,10 +635,13 @@ jQuery( function ( $ ) {
 			return {};
 		}
 		let validProperties = supportedUPEProperties;
-		const elem = document.querySelector( selector );
-		const styles = window.getComputedStyle( elem );
-		const filteredStyles = {};
 
+		const elem = document.querySelector( selector );
+
+		const styles = window.getComputedStyle( elem );
+
+		const filteredStyles = {};
+		// Todo: map each element to the set of allowed properties instead of the conditions below.
 		if ( 'Tab' === iFrameElement ) {
 			validProperties = [
 				'borderStyle',
@@ -631,15 +682,12 @@ jQuery( function ( $ ) {
 		}
 
 		// Styles to match the "Place Order" button.
-
 		if ( 'Tab--selected' === iFrameElement ) {
 			validProperties.push( 'backgroundColor', 'color' );
 		}
-
 		if ( 'TabIcon--selected' === iFrameElement ) {
 			validProperties = [ 'color' ];
 		}
-
 		// End match the "Place Order" button.
 
 		for ( let i = 0; i < styles.length; i++ ) {
@@ -668,6 +716,21 @@ jQuery( function ( $ ) {
 		if ( 'Tab--selected' === iFrameElement ) {
 			filteredStyles.fontWeight = 'bolder';
 		}
+
+		// Only outline is accepted by UPE. Todo: Refactor me please.
+		if ( filteredStyles.outlineWidth && filteredStyles.outlineColor ) {
+			const outlineStyle = filteredStyles.outlineStyle
+				? filteredStyles.outlineStyle
+				: 'solid';
+			filteredStyles.outline = [
+				filteredStyles.outlineWidth,
+				outlineStyle,
+				filteredStyles.outlineColor,
+			].join( ' ' );
+		}
+		delete filteredStyles.outlineWidth;
+		delete filteredStyles.outlineColor;
+		delete filteredStyles.outlineStyle;
 
 		return filteredStyles;
 	};
