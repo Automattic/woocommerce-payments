@@ -12,7 +12,7 @@ import interpolateComponents from 'interpolate-components';
  */
 import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
-import TaskItem from '../wizard/task-item';
+import WizardTaskItem from '../wizard/task-item';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import './add-payment-methods-task.scss';
@@ -66,7 +66,7 @@ const AddPaymentMethodsTask = () => {
 	] = usePaymentMethodsCheckboxState();
 
 	return (
-		<TaskItem
+		<WizardTaskItem
 			className="add-payment-methods-task"
 			title={ __(
 				'Set up additional payment methods',
@@ -159,7 +159,7 @@ const AddPaymentMethodsTask = () => {
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 			</CollapsibleBody>
-		</TaskItem>
+		</WizardTaskItem>
 	);
 };
 

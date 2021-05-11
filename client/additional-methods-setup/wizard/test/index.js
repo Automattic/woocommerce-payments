@@ -9,8 +9,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import Wizard from '../wrapper';
 import WizardTask from '../task';
-import ParentList from '../parent-list';
-import TaskItem from '../task-item';
+import WizardTaskList from '../task-list';
+import WizardTaskItem from '../task-item';
 import WizardContext from '../wrapper/context';
 import WizardTaskContext from '../task/context';
 
@@ -44,18 +44,18 @@ describe( 'Wizard', () => {
 				defaultActiveTask="task-1"
 				defaultCompletedTasks={ { 'task-0': true } }
 			>
-				<ParentList>
+				<WizardTaskList>
 					<WizardTask id="task-0">
-						<TaskItem title="Task 0" index={ 0 }>
+						<WizardTaskItem title="Task 0" index={ 0 }>
 							<TaskContent />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
 					<WizardTask id="task-1">
-						<TaskItem title="Task 1" index={ 1 }>
+						<WizardTaskItem title="Task 1" index={ 1 }>
 							<TaskContent />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
-				</ParentList>
+				</WizardTaskList>
 			</Wizard>
 		);
 
@@ -74,26 +74,26 @@ describe( 'Wizard', () => {
 	it( 'should allow to navigate to another task', () => {
 		render(
 			<Wizard defaultActiveTask="task-1">
-				<ParentList>
+				<WizardTaskList>
 					<WizardTask id="task-0">
-						<TaskItem title="Task 0" index={ 0 }>
+						<WizardTaskItem title="Task 0" index={ 0 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-1" />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
 					<WizardTask id="task-1">
-						<TaskItem title="Task 1" index={ 1 }>
+						<WizardTaskItem title="Task 1" index={ 1 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-2" />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
 					<WizardTask id="task-2">
-						<TaskItem title="Task 2" index={ 2 }>
+						<WizardTaskItem title="Task 2" index={ 2 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-0" />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
-				</ParentList>
+				</WizardTaskList>
 			</Wizard>
 		);
 
@@ -129,20 +129,20 @@ describe( 'Wizard', () => {
 	it( 'should set the new active element when navigating to a new task', () => {
 		render(
 			<Wizard defaultActiveTask="task-0">
-				<ParentList>
+				<WizardTaskList>
 					<WizardTask id="task-0">
-						<TaskItem title="First Task" index={ 0 }>
+						<WizardTaskItem title="First Task" index={ 0 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-1" />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
 					<WizardTask id="task-1">
-						<TaskItem title="Second Task" index={ 1 }>
+						<WizardTaskItem title="Second Task" index={ 1 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-0" />
-						</TaskItem>
+						</WizardTaskItem>
 					</WizardTask>
-				</ParentList>
+				</WizardTaskList>
 			</Wizard>
 		);
 

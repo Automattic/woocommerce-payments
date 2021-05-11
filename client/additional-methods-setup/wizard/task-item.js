@@ -9,8 +9,9 @@ import { Icon, check } from '@wordpress/icons';
  * Internal dependencies
  */
 import WizardTaskContext from './task/context';
+import './task-item.scss';
 
-const TaskItem = ( { children, title, index, className } ) => {
+const WizardTaskItem = ( { children, title, index, className } ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
 	return (
@@ -45,4 +46,4 @@ const TaskItem = ( { children, title, index, className } ) => {
 	);
 };
 
-export default TaskItem;
+export default WizardTaskItem;

@@ -7,9 +7,8 @@ import React, { useLayoutEffect, useRef, useContext } from 'react';
  * Internal dependencies
  */
 import WizardContext from './wrapper/context';
-import './parent-list.scss';
 
-const ParentList = ( { children } ) => {
+const WizardTaskList = ( { children } ) => {
 	const isFirstMount = useRef( true );
 	const wrapperRef = useRef( null );
 	const { activeTask } = useContext( WizardContext );
@@ -43,4 +42,4 @@ const ParentList = ( { children } ) => {
 	);
 };
 
-export default ParentList;
+export default WizardTaskList;

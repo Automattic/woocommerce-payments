@@ -13,7 +13,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import CollapsibleBody from '../wizard/collapsible-body';
-import TaskItem from '../wizard/task-item';
+import WizardTaskItem from '../wizard/task-item';
 import WizardTaskContext from '../wizard/task/context';
 import './setup-complete-task.scss';
 
@@ -31,10 +31,9 @@ const SetupComplete = () => {
 			return;
 		}
 
-		// extracted to a separate const, just so that eslint doesn't complain about the name not being camelCase.
-		const OPTION_NAME = 'wcpay_additional_methods_setup_completed';
 		updateOptions( {
-			[ OPTION_NAME ]: 'yes',
+			// eslint-disable-next-line camelcase
+			wcpay_additional_methods_setup_completed: 'yes',
 		} );
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
@@ -43,7 +42,7 @@ const SetupComplete = () => {
 	}, [ isActive, updateOptions ] );
 
 	return (
-		<TaskItem
+		<WizardTaskItem
 			className="setup-complete-task"
 			title={ __( 'Setup complete', 'woocommerce-payments' ) }
 			index={ 2 }
@@ -106,7 +105,7 @@ const SetupComplete = () => {
 					</Button>
 				</div>
 			</CollapsibleBody>
-		</TaskItem>
+		</WizardTaskItem>
 	);
 };
 
