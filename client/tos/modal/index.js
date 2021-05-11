@@ -14,7 +14,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { getPaymentMethodsUrl } from 'utils';
 import {
 	makeTosAcceptanceRequest,
-	maybeTrackKycCompleted,
+	maybeTrackStripeConnected,
 } from '../request.js';
 import './style.scss';
 
@@ -153,7 +153,7 @@ const TosModal = () => {
 			setAcceptanceError( false );
 			setIsBusy( true );
 			await makeTosAcceptanceRequest( { accept: true } );
-			maybeTrackKycCompleted();
+			maybeTrackStripeConnected();
 			closeTosModal();
 		} catch ( err ) {
 			setAcceptanceError( true );

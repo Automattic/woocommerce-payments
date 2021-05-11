@@ -83,10 +83,10 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/kyc_track_completed',
+			'/' . $this->rest_base . '/stripe_track_connected',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'remove_kyc_track' ],
+				'callback'            => [ $this, 'remove_stripe_connect_track' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -170,14 +170,14 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Deletes _wcpay_oauth_stripe_completed option after KYC completion has been tracked.
+	 * Deletes _wcpay_oauth_stripe_connected option after KYC completion has been tracked.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
-	public function remove_kyc_track( $request ) {
-		delete_option( '_wcpay_oauth_stripe_completed' );
+	public function remove_stripe_connect_track( $request ) {
+		delete_option( '_wcpay_oauth_stripe_connected' );
 		return new WP_REST_Response( [ 'result' => self::RESULT_SUCCESS ] );
 	}
 }

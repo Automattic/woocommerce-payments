@@ -23,21 +23,24 @@ export const enableGatewayAfterTosDecline = async () =>
  * Records track if we're able to and send an API request to delete the option
  * that triggers this track.
  */
-export const maybeTrackKycCompleted = async () => {
+export const maybeTrackStripeConnected = async () => {
 	// eslint-disable-next-line camelcase
-	const trackKycCompleted = wcpay_tos_settings.trackKycCompleted;
-	if ( ! wcpayTracks.isEnabled || ! trackKycCompleted ) {
+	const trackStripeConnected = wcpay_tos_settings.trackStripeConnected;
+	if ( ! wcpayTracks.isEnabled || ! trackStripeConnected ) {
 		return;
 	}
 
-	wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_KYC_COMPLETED, {
-		// eslint-disable-next-line camelcase
-		is_existing_stripe_account:
-			trackKycCompleted.is_existing_stripe_account,
-	} );
+	wcpayTracks.recordEvent(
+		wcpayTracks.events.CONNECT_ACCOUNT_STRIPE_CONNECTED,
+		{
+			// eslint-disable-next-line camelcase
+			is_existing_stripe_account:
+				trackStripeConnected.is_existing_stripe_account,
+		}
+	);
 
 	apiFetch( {
-		path: '/wc/v3/payments/tos/kyc_track_completed',
+		path: '/wc/v3/payments/tos/stripe_track_connected',
 		method: 'POST',
 	} );
 };

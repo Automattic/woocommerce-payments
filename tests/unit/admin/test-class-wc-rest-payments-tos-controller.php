@@ -106,12 +106,12 @@ class WC_REST_Payments_Tos_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'result' => 'bad_request' ], $response_data );
 	}
 
-	public function test_remove_kyc_track_should_delete_option() {
-		add_option( '_wcpay_oauth_stripe_completed', [ 'props' => true ] );
+	public function test_remove_stripe_connect_track_should_delete_option() {
+		add_option( '_wcpay_oauth_stripe_connected', [ 'props' => true ] );
 
 		// Run the test.
-		$this->controller->remove_kyc_track( $this->request );
+		$this->controller->remove_stripe_connect_track( $this->request );
 
-		$this->assertFalse( get_option( '_wcpay_oauth_stripe_completed', false ) );
+		$this->assertFalse( get_option( '_wcpay_oauth_stripe_connected', false ) );
 	}
 }

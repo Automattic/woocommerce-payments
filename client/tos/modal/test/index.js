@@ -53,7 +53,7 @@ describe( 'ToS modal', () => {
 	beforeAll( () => {
 		// eslint-disable-next-line camelcase
 		global.wcpay_tos_settings = {
-			trackKycCompleted: {
+			trackStripeConnected: {
 				// eslint-disable-next-line camelcase
 				is_existing_stripe_account: true,
 			},

@@ -32,7 +32,7 @@ const events = {
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
-	CONNECT_ACCOUNT_KYC_COMPLETED: 'wcpay_kyc_completed',
+	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
 };
 
 export default {
