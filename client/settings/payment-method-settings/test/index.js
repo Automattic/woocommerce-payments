@@ -63,4 +63,13 @@ describe( 'PaymentMethodSettings', () => {
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
+
+	test( 'renders banner at the top', () => {
+		render(
+			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
+		);
+
+		const banner = screen.queryByTitle( 'WooCommerce Payments' );
+		expect( banner ).toBeInTheDocument();
+	} );
 } );
