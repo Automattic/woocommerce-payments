@@ -40,7 +40,7 @@ Our global support team is available to answer questions you may have about WooC
 
 * United States-based business.
 * WordPress 5.4 or newer.
-* WooCommerce 4.0 or newer.
+* WooCommerce 4.5 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -109,6 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - REST endpoint to capture payments by order ID
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
+* Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
