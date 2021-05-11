@@ -8,7 +8,7 @@ The setup script requires the below env variables to be configured. Make sure yo
 
 ```
 E2E_GH_TOKEN='githubPersonalAccessToken'
-WC_SUBSCRIPTIONS_REPO='https://github.com/woocommerce-subscriptions or git@github.com:org/woocommerce-subscriptions.git
+WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
 ```
 
 For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](E2E_GH_TOKEN) and assign the `repo` scope to it.
