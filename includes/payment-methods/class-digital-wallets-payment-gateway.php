@@ -28,7 +28,7 @@ class Digital_Wallets_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	const METHOD_ENABLED_KEY = 'digital_wallets_enabled';
 
 	/**
-	 * Sepa Constrictor same parameters as WC_Payment_Gateway_WCPay constructor.
+	 * Digital Wallets Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
 	 * @param WC_Payments_Account                  $account                  - Account class instance.
