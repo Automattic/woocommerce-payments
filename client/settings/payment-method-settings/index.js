@@ -9,6 +9,7 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import GiropaySettings from './giropay-settings';
 import DigitalWalletsSettings from './digital-wallets-settings';
+import Banner from '../../banner';
 
 /* eslint-disable camelcase */
 const methods = {
@@ -55,6 +56,8 @@ const PaymentMethodSettings = ( { methodId } ) => {
 
 	return (
 		<div className="payment-method-settings">
+			<Banner />
+
 			<h2 className="payment-method-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
 				&gt; <span>{ title }</span>
