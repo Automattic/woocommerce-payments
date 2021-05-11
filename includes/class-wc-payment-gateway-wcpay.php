@@ -672,6 +672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
+		// TODO: Need to update Payment Intent at this point...
 		$order = wc_get_order( $order_id );
 
 		// $payment_information = $this->prepare_payment_information( $order );
