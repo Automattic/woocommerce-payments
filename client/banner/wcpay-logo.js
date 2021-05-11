@@ -1,11 +1,12 @@
-export default () => (
-	/* eslint-disable */
+export default ( props ) => (
+	/* eslint-disable max-len */
 	<svg
 		width="196"
 		height="41"
 		viewBox="0 0 196 41"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
+		{ ...props }
 	>
 		<title>WooCommerce Payments</title>
 		<path
@@ -57,5 +58,5 @@ export default () => (
 			fill="black"
 		/>
 	</svg>
-	/* eslint-enable */
+	/* eslint-enable max-len */
 );
