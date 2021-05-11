@@ -111,6 +111,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Payment request button support for checkout and cart blocks.
 * Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
+* Fix - Columns are misaligned on Payments->Transactions/Disputes page.
+* Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

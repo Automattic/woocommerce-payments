@@ -13,8 +13,7 @@ import './style.scss';
 import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
-import HeroImage from './hero-image.js';
-import WCPayLogo from './wcpay-logo.js';
+import Banner from '../banner';
 import Visa from './cards/visa.js';
 import MasterCard from './cards/mastercard.js';
 import Amex from './cards/amex.js';
@@ -25,24 +24,6 @@ import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
-
-const Masthead = () => (
-	<header className="wcpay-connect-account-page-masthead">
-		<h1>
-			<WCPayLogo />
-		</h1>
-		<div className="wcpay-connect-account-page-recommended">
-			<Pill>{ strings.recommended }</Pill>
-		</div>
-		<div className="wcpay-connect-account-page-hero">
-			<HeroImage />
-		</div>
-	</header>
-);
-
-const Pill = ( props ) => (
-	<div className="wcpay-connect-account-page-pill">{ props.children }</div>
-);
 
 const LearnMore = () => {
 	const handleClick = () => {
@@ -191,7 +172,7 @@ const ConnectAccountPageVariant = () => {
 			<Page isNarrow className="connect-account">
 				<ConnectPageError />
 				<Card className="connect-account__card">
-					<Masthead />
+					<Banner style="account-page" />
 					<div className="content">
 						{ wcpaySettings.onBoardingDisabled ? (
 							<ConnectPageOnboardingDisabled />
