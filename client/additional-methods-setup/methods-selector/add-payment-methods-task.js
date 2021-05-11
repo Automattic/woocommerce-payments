@@ -3,7 +3,13 @@
  */
 import React, { useCallback, useContext, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Card, CardBody, CardDivider } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardDivider,
+	CheckboxControl,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import interpolateComponents from 'interpolate-components';
 
@@ -65,6 +71,8 @@ const AddPaymentMethodsTask = () => {
 		handlePaymentMethodChange,
 	] = usePaymentMethodsCheckboxState();
 
+	const [ isWalletsChecked, setWalletsChecked ] = useState( false );
+
 	return (
 		<WizardTaskItem
 			className="add-payment-methods-task"
@@ -74,7 +82,7 @@ const AddPaymentMethodsTask = () => {
 			) }
 			index={ 1 }
 		>
-			<p className="wcpay-wizard-task__description-element">
+			<p className="wcpay-wizard-task__description-element is-muted-color">
 				{ interpolateComponents( {
 					mixedString: __(
 						"Increase your store's conversion by offering " +
@@ -149,12 +157,73 @@ const AddPaymentMethodsTask = () => {
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>
-				<p className="wcpay-wizard-task__description-element">
-					{ __(
-						'Selected payment methods need new currencies to be added to your store.',
-						'woocommerce-payments'
-					) }
-				</p>
+				<div className="wcpay-wizard-task__description-element">
+					<CheckboxControl
+						checked={ isWalletsChecked }
+						onChange={ setWalletsChecked }
+						label={ __(
+							'Enable Apple Pay & Google Pay',
+							'woocommerce-payments'
+						) }
+						help={ interpolateComponents( {
+							mixedString: __(
+								'By enabling this feature, you agree to {{stripeLink /}}, ' +
+									"{{appleLink /}}, {{googleLink /}} and {{microsoftLink /}}'s terms of use.",
+								'woocommerce-payments'
+							),
+							components: {
+								stripeLink: (
+									<a
+										target="_blank"
+										rel="noreferrer"
+										href="https://stripe.com/apple-pay/legal"
+									>
+										{ __(
+											'Stripe',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+								appleLink: (
+									<a
+										target="_blank"
+										rel="noreferrer"
+										href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
+									>
+										{ __(
+											'Apple',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+								googleLink: (
+									<a
+										target="_blank"
+										rel="noreferrer"
+										href="https://androidpay.developers.google.com/terms/sellertos"
+									>
+										{ __(
+											'Google',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+								microsoftLink: (
+									<a
+										target="_blank"
+										rel="noreferrer"
+										href="https://www.microsoft.com/en/servicesagreement/"
+									>
+										{ __(
+											'Microsoft',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+							},
+						} ) }
+					/>
+				</div>
 				<Button onClick={ handleContinueClick } isPrimary>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>

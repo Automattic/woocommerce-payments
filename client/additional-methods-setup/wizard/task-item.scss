@@ -88,7 +88,6 @@
 		padding: 0 30px;
 		border-left: 1px solid #c3c4c7;
 		font-size: 14px;
-		color: $gray-700;
 	}
 
 	// this class can be applied to `p` elements, for example, but also to `div` elements.
@@ -96,5 +95,9 @@
 	&__description-element {
 		margin-top: 0;
 		margin-bottom: 1em;
+
+		&.is-muted-color {
+			color: $gray-700;
+		}
 	}
 }

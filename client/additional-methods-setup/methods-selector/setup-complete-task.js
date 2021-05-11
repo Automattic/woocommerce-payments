@@ -48,13 +48,13 @@ const SetupComplete = () => {
 			index={ 2 }
 		>
 			<CollapsibleBody>
-				<p className="wcpay-wizard-task__description-element">
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
 						"You're ready to begin accepting payments with the new methods!.",
 						'woocommerce-payments'
 					) }
 				</p>
-				<p className="wcpay-wizard-task__description-element">
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
 							'{{vatInformationLink /}} and {{setupTaxesLink /}} ' +
@@ -81,7 +81,7 @@ const SetupComplete = () => {
 						},
 					} ) }
 				</p>
-				<p className="wcpay-wizard-task__description-element">
+				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
 						'To manage other payment settings or update your payment information, visit the payment settings.',
 						'woocommerce-payments'
