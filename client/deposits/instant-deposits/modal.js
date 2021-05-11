@@ -72,18 +72,23 @@ const InstantDepositModal = ( {
 				</li>
 			</ul>
 
-			<Button
-				isPrimary
-				onClick={ onSubmit }
-				isBusy={ inProgress }
-				disabled={ inProgress }
-			>
-				{ sprintf(
-					/* translators: %s: Monetary amount to deposit */
-					__( 'Deposit %s now', 'woocommerce-payments' ),
-					formatCurrency( net )
-				) }
-			</Button>
+			<div className="wcpay-instant-deposits-modal__footer">
+				<Button isSecondary onClick={ onClose }>
+					{ __( 'Cancel', 'woocommerce-payments' ) }
+				</Button>
+				<Button
+					isPrimary
+					onClick={ onSubmit }
+					isBusy={ inProgress }
+					disabled={ inProgress }
+				>
+					{ sprintf(
+						/* translators: %s: Monetary amount to deposit */
+						__( 'Deposit %s now', 'woocommerce-payments' ),
+						formatCurrency( net )
+					) }
+				</Button>
+			</div>
 		</Modal>
 	);
 };
