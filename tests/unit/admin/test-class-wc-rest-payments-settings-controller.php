@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
@@ -30,6 +32,24 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	 * @var MockObject|WC_Payment_Gateways
 	 */
 	private $payment_gateways_mock;
+
+	public static function setUpBeforeClass() {
+		parent::setUpBeforeClass();
+
+		/*
+		 * Deregister WooCommerce Blocks REST routes to prevent _doing_it_wrong() notices
+		 * after calls to rest_do_request().
+		 */
+		$wc_blocks_rest_api = Package::container()->get( RestApi::class );
+		remove_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
+	}
+
+	public static function tearDownAfterClass() {
+		parent::tearDownAfterClass();
+
+		$wc_blocks_rest_api = Package::container()->get( RestApi::class );
+		add_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
+	}
 
 	/**
 	 * Pre-test setup
