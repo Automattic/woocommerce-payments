@@ -107,11 +107,11 @@ class WC_REST_Payments_Tos_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_remove_kyc_track_should_delete_option() {
-		add_option( '_wcpay_kyc_completed', [ 'props' => true ] );
+		add_option( '_wcpay_oauth_stripe_completed', [ 'props' => true ] );
 
 		// Run the test.
 		$this->controller->remove_kyc_track( $this->request );
 
-		$this->assertFalse( get_option( '_wcpay_kyc_completed', false ) );
+		$this->assertFalse( get_option( '_wcpay_oauth_stripe_completed', false ) );
 	}
 }

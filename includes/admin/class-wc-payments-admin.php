@@ -368,7 +368,7 @@ class WC_Payments_Admin {
 			)
 		);
 
-		$track_kyc_completed = get_option( '_wcpay_kyc_completed' );
+		$track_kyc_completed = get_option( '_wcpay_oauth_stripe_completed' );
 
 		if ( $tos_agreement_declined || $tos_agreement_required || $track_kyc_completed ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
