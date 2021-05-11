@@ -251,6 +251,15 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
 
+			// Multi-currency settings page.
+			add_filter(
+				'woocommerce_get_settings_pages',
+				function( $settings_pages ) {
+					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-multi-currency-settings.php';
+					return $settings_pages;
+				}
+			);
+
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
