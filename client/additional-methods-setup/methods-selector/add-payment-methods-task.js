@@ -74,7 +74,7 @@ const AddPaymentMethodsTask = () => {
 			) }
 			index={ 1 }
 		>
-			<p className="wcpay-wizard__description-element">
+			<p className="wcpay-wizard-task__description-element">
 				{ interpolateComponents( {
 					mixedString: __(
 						"Increase your store's conversion by offering " +
@@ -95,7 +95,7 @@ const AddPaymentMethodsTask = () => {
 				<Card className="add-payment-methods-task__payment-selector-wrapper">
 					<CardBody>
 						{ /* eslint-disable-next-line max-len */ }
-						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard__description-element">
+						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
 							{ sprintf(
 								__(
 									'Popular with customers in %1$s',
@@ -149,7 +149,7 @@ const AddPaymentMethodsTask = () => {
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>
-				<p className="wcpay-wizard__description-element">
+				<p className="wcpay-wizard-task__description-element">
 					{ __(
 						'Selected payment methods need new currencies to be added to your store.',
 						'woocommerce-payments'

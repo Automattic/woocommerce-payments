@@ -98,8 +98,10 @@
 		color: $gray-700;
 	}
 
-	.wcpay-wizard__description-element {
-		margin-bottom: 1em;
+	// this class can be applied to `p` elements, for example, but also to `div` elements.
+	// all `p` elements have a margin on the top, but we don't need it.
+	&__description-element {
 		margin-top: 0;
+		margin-bottom: 1em;
 	}
 }
