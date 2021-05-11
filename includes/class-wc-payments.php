@@ -236,6 +236,9 @@ class WC_Payments {
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 				new WC_Payments_Admin_Sections_Overwrite();
+
+				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
+				new WC_Payments_Admin_Additional_Methods_Setup();
 			}
 		}
 
@@ -511,13 +514,17 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
-		$payments_api_client = new WC_Payments_API_Client(
+		$api_client_class = apply_filters( 'wc_api_client', 'WC_Payments_API_Client' );
+
+		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
+			$api_client_class = 'WC_Payments_API_Client';
+		}
+
+		return new $api_client_class(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			$http_class,
 			self::$db_helper
 		);
-
-		return $payments_api_client;
 	}
 
 	/**
