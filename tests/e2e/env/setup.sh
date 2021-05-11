@@ -183,7 +183,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_SUBSCRIPTIONS_REPO/archive/$LATEST_RELEASE.zip"
 
 	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
-	mv woocommerce-subscriptions-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
