@@ -4,12 +4,6 @@
 	}
 
 	&__footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		:last-child {
-			margin: 0 auto 0 24px;
-		}
+		@include modal-footer-buttons;
 	}
 }
