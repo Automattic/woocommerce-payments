@@ -1,17 +1,23 @@
 .wcpay-wizard {
-	&__task {
+	&-task {
 		margin-bottom: 0;
 
 		&:first-child {
-			.wcpay-wizard__task__top-border {
+			.wcpay-wizard-task__top-border {
 				display: none;
 			}
 		}
 
 		&:last-child {
-			.wcpay-wizard__task__body {
+			.wcpay-wizard-task__body {
 				border-left: none;
 			}
+		}
+
+		&__top-border {
+			min-height: 16px;
+			border-left: 1px solid #c3c4c7;
+			margin: 0 12px;
 		}
 
 		&__title {
@@ -92,12 +98,6 @@
 			font-size: 14px;
 			color: $gray-700;
 		}
-	}
-
-	&__task__top-border {
-		min-height: 16px;
-		border-left: 1px solid #c3c4c7;
-		margin: 0 12px;
 	}
 
 	&__description-element {

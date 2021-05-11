@@ -27,7 +27,7 @@ const ParentList = ( { children } ) => {
 		}
 
 		const nextActiveTitle = wrapperRef.current.querySelector(
-			'.wcpay-wizard__task.is-active .wcpay-wizard__task__headline'
+			'.wcpay-wizard-task.is-active .wcpay-wizard-task__headline'
 		);
 		if ( ! nextActiveTitle ) {
 			return;
@@ -37,7 +37,7 @@ const ParentList = ( { children } ) => {
 	}, [ activeTask ] );
 
 	return (
-		<div className="wcpay-wizard__parent-list" ref={ wrapperRef }>
+		<div ref={ wrapperRef }>
 			<ul>{ children }</ul>
 		</div>
 	);

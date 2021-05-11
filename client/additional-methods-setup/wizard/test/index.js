@@ -8,7 +8,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import Wizard from '../wrapper';
-import Task from '../task';
+import WizardTask from '../task';
 import ParentList from '../parent-list';
 import TaskItem from '../task-item';
 import WizardContext from '../wrapper/context';
@@ -45,16 +45,16 @@ describe( 'Wizard', () => {
 				defaultCompletedTasks={ { 'task-0': true } }
 			>
 				<ParentList>
-					<Task id="task-0">
+					<WizardTask id="task-0">
 						<TaskItem title="Task 0" index={ 0 }>
 							<TaskContent />
 						</TaskItem>
-					</Task>
-					<Task id="task-1">
+					</WizardTask>
+					<WizardTask id="task-1">
 						<TaskItem title="Task 1" index={ 1 }>
 							<TaskContent />
 						</TaskItem>
-					</Task>
+					</WizardTask>
 				</ParentList>
 			</Wizard>
 		);
@@ -75,24 +75,24 @@ describe( 'Wizard', () => {
 		render(
 			<Wizard defaultActiveTask="task-1">
 				<ParentList>
-					<Task id="task-0">
+					<WizardTask id="task-0">
 						<TaskItem title="Task 0" index={ 0 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-1" />
 						</TaskItem>
-					</Task>
-					<Task id="task-1">
+					</WizardTask>
+					<WizardTask id="task-1">
 						<TaskItem title="Task 1" index={ 1 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-2" />
 						</TaskItem>
-					</Task>
-					<Task id="task-2">
+					</WizardTask>
+					<WizardTask id="task-2">
 						<TaskItem title="Task 2" index={ 2 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-0" />
 						</TaskItem>
-					</Task>
+					</WizardTask>
 				</ParentList>
 			</Wizard>
 		);
@@ -130,18 +130,18 @@ describe( 'Wizard', () => {
 		render(
 			<Wizard defaultActiveTask="task-0">
 				<ParentList>
-					<Task id="task-0">
+					<WizardTask id="task-0">
 						<TaskItem title="First Task" index={ 0 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-1" />
 						</TaskItem>
-					</Task>
-					<Task id="task-1">
+					</WizardTask>
+					<WizardTask id="task-1">
 						<TaskItem title="Second Task" index={ 1 }>
 							<TaskContent />
 							<GoToTaskButton goTo="task-0" />
 						</TaskItem>
-					</Task>
+					</WizardTask>
 				</ParentList>
 			</Wizard>
 		);
