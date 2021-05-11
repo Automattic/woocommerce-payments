@@ -8,6 +8,8 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import GiropaySettings from './giropay-settings';
+import DigitalWalletsSettings from './digital-wallets-settings';
+import Banner from '../../banner';
 
 /* eslint-disable camelcase */
 const methods = {
@@ -21,6 +23,17 @@ const methods = {
 			</>
 		),
 		controls: () => <GiropaySettings />,
+	},
+	woocommerce_payments_digital_wallets: {
+		title: 'Digital wallets & express payment methods',
+		description: () => (
+			<>
+				{ /* Whoever picks this up will need to translate these strings */ }
+				<h2>Digital wallets &amp; saved cards</h2>
+				<p>digital wallets description.</p>
+			</>
+		),
+		controls: () => <DigitalWalletsSettings />,
 	},
 };
 /* eslint-enable camelcase */
@@ -43,6 +56,8 @@ const PaymentMethodSettings = ( { methodId } ) => {
 
 	return (
 		<div className="payment-method-settings">
+			<Banner />
+
 			<h2 className="payment-method-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
 				&gt; <span>{ title }</span>

@@ -104,12 +104,22 @@ exports[`Instant deposit button and modal modal renders correctly 1`] = `
         </span>
       </li>
     </ul>
-    <button
-      class="components-button is-primary"
-      type="button"
+    <div
+      class="wcpay-instant-deposits-modal__footer"
     >
-      Deposit $122.22 now
-    </button>
+      <button
+        class="components-button is-secondary"
+        type="button"
+      >
+        Cancel
+      </button>
+      <button
+        class="components-button is-primary"
+        type="button"
+      >
+        Deposit $122.22 now
+      </button>
+    </div>
   </div>
 </div>
 `;
