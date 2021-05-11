@@ -16,16 +16,7 @@
 	}
 
 	.woocommerce-payments__tos-footer {
-		display: flex;
-		justify-content: flex-end;
-
-		button.components-button {
-			padding: 9px 16px;
-			margin-left: 16px;
-			font-size: 14px;
-			line-height: 18px;
-			height: auto;
-		}
+		@include modal-footer-buttons;
 	}
 
 	.woocommerce-payments__tos-error {
