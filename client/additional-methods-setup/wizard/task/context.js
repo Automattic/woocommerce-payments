@@ -8,6 +8,7 @@ const WizardTaskContext = createContext( {
 	setActive: () => null,
 	isCompleted: false,
 	setCompleted: () => null,
+	taskId: '',
 } );
 
 export default WizardTaskContext;

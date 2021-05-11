@@ -28,6 +28,7 @@ const WizardTask = ( { children, id = '' } ) => {
 					setActiveTask( nextTask );
 				}
 			},
+			taskId: id,
 			isCompleted: Boolean( completedTasks[ id ] ),
 		} ),
 		[ setActiveTask, setCompletedTasks, activeTask, completedTasks, id ]
