@@ -12,6 +12,7 @@ import React from 'react';
 import './style.scss';
 import { LoadableBlock } from '../../components/loadable';
 import { useSettings } from '../../data';
+import Banner from '../../banner';
 import PaymentMethods from '../../payment-methods';
 import SettingsSection from '../settings-section';
 import DigitalWallets from '../digital-wallets';
@@ -81,36 +82,39 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 	const { saveSettings, isSaving, isLoading } = useSettings();
 
 	return (
-		<div className="settings-manager">
-			<SettingsSection Description={ PaymentMethodsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<PaymentMethods />
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection Description={ DigitalWalletsDescription }>
-				<DigitalWallets />
-			</SettingsSection>
-			<SettingsSection Description={ GeneralSettingsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<GeneralSettings
-						accountLink={ accountStatus.accountLink }
-					/>
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection>
-				<TestModeSettings />
-			</SettingsSection>
-			<SettingsSection className="settings-manager__buttons">
-				<Button
-					isPrimary
-					isBusy={ isSaving }
-					disabled={ isSaving || isLoading }
-					onClick={ saveSettings }
-				>
-					{ __( 'Save changes', 'woocommerce-payments' ) }
-				</Button>
-			</SettingsSection>
-		</div>
+		<>
+			<Banner />
+			<div className="settings-manager">
+				<SettingsSection Description={ PaymentMethodsDescription }>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<PaymentMethods />
+					</LoadableBlock>
+				</SettingsSection>
+				<SettingsSection Description={ DigitalWalletsDescription }>
+					<DigitalWallets />
+				</SettingsSection>
+				<SettingsSection Description={ GeneralSettingsDescription }>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<GeneralSettings
+							accountLink={ accountStatus.accountLink }
+						/>
+					</LoadableBlock>
+				</SettingsSection>
+				<SettingsSection>
+					<TestModeSettings />
+				</SettingsSection>
+				<SettingsSection className="settings-manager__buttons">
+					<Button
+						isPrimary
+						isBusy={ isSaving }
+						disabled={ isSaving || isLoading }
+						onClick={ saveSettings }
+					>
+						{ __( 'Save changes', 'woocommerce-payments' ) }
+					</Button>
+				</SettingsSection>
+			</div>
+		</>
 	);
 };
 
