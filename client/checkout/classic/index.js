@@ -106,7 +106,7 @@ jQuery( function ( $ ) {
 
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
-		const messageWrapper =
+		const messageWrapper = errorMessage.messages ? errorMessage.messages :
 			'<ul class="woocommerce-error" role="alert">' +
 			errorMessage +
 			'</ul>';
@@ -393,9 +393,14 @@ jQuery( function ( $ ) {
 		const $container = $( '.wc_payment_method' );
 		blockUI( $container );
 
-		api.processCheckout()
+		const fields = $( this ).serializeArray().reduce( ( data, field ) => {
+			data[ field.name ] = field.value;
+			return data;
+		}, {} );
+
+		api.processCheckout( fields )
 			.then( ( data ) => {
-				const redirectUrl = data.redirect;
+				const redirectUrl = data.redirect_url;
 				api.getStripe()
 					.confirmPayment( {
 						element: paymentElement,
@@ -416,7 +421,7 @@ jQuery( function ( $ ) {
 			.catch( ( error ) => {
 				console.log(error);
 				$container.removeClass( 'processing' ).unblock();
-				showError( error.message );
+				showError( error );
 			} );
 		return false;
 	} );
@@ -438,23 +443,23 @@ jQuery( function ( $ ) {
 	// } );
 
 	// // Handle the add payment method form for WooCommerce Payments.
-	// $( 'form#add_payment_method' ).on( 'submit', function () {
-	// 	if ( ! $( '#wcpay-setup-intent' ).val() ) {
-	// 		let paymentMethodDetails = cardPayment;
-	// 		if ( isWCPaySepaChosen() ) {
-	// 			paymentMethodDetails = sepaPayment;
-	// 		} else if ( isWCPayGiropayChosen() ) {
-	// 			paymentMethodDetails = giropayPayment;
-	// 		} else if ( isWCPaySofortChosen() ) {
-	// 			paymentMethodDetails = sofortPayment;
-	// 		}
-	// 		return handlePaymentMethodCreation(
-	// 			$( 'form#add_payment_method' ),
-	// 			handleAddCard,
-	// 			paymentMethodDetails
-	// 		);
-	// 	}
-	// } );
+	$( 'form#add_payment_method' ).on( 'submit', function () {
+		if ( ! $( '#wcpay-setup-intent' ).val() ) {
+			let paymentMethodDetails = cardPayment;
+			if ( isWCPaySepaChosen() ) {
+				paymentMethodDetails = sepaPayment;
+			} else if ( isWCPayGiropayChosen() ) {
+				paymentMethodDetails = giropayPayment;
+			} else if ( isWCPaySofortChosen() ) {
+				paymentMethodDetails = sofortPayment;
+			}
+			return handlePaymentMethodCreation(
+				$( 'form#add_payment_method' ),
+				handleAddCard,
+				paymentMethodDetails
+			);
+		}
+	} );
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.

@@ -322,8 +322,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 
 
 		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
@@ -486,7 +487,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'returnUrl'                => $this->get_return_url(),
 			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'processCheckoutNonce'     => wp_create_nonce( 'woocommerce-process_checkout' ),
 			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'            => $this->account->get_fraud_services_config(),
 			'features'                 => $this->supports,
@@ -674,59 +674,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		try {
-			$payment_information = $this->prepare_payment_information( $order );
-			return [
-				'result'       => 'success',
-				'redirect_url' => wp_sanitize_redirect(
-					esc_url_raw(
-						add_query_arg(
-							[
-								'order_id'            => $order_id,
-								'save_payment_method' => $payment_information->should_save_payment_method(),
-							],
-							$this->get_return_url( $order )
-						)
-					)
-				),
-			];
-		} catch ( Exception $e ) {
-			// TODO: Create more exceptions to handle merchant specific errors.
-			$error_message = $e->getMessage();
-			if ( $e instanceof Connection_Exception ) {
-				$error_message = __( 'There was an error while processing the payment. If you continue to see this notice, please contact the admin.', 'woocommerce-payments' );
-			} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
-				$error_message = __( 'We\'re not able to process this payment. Please refresh the page and try again.', 'woocommerce-payments' );
-			}
-
-			wc_add_notice( $error_message, 'error' );
-
-			$order->update_status( 'failed' );
-
-			if ( ! empty( $payment_information ) ) {
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
-						),
+		// $payment_information = $this->prepare_payment_information( $order );
+		return [
+			'result'       => 'success',
+			'redirect_url' => wp_sanitize_redirect(
+				esc_url_raw(
+					add_query_arg(
 						[
-							'strong' => '<strong>',
-							'code'   => '<code>',
-						]
-					),
-					wc_price( $order->get_total() ),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
-				);
-				$order->add_order_note( $note );
-			}
-
-			return [
-				'result'   => 'fail',
-				'redirect' => '',
-			];
-		}
+							'order_id'            => $order_id,
+							// 'save_payment_method' => $payment_information->should_save_payment_method(),
+						],
+						$this->get_return_url( $order )
+					)
+				)
+			),
+		];
 	}
 
 	/**

@@ -288,16 +288,15 @@ export default class WCPayAPI {
 		} );
 	}
 
-	processCheckout() {
+	processCheckout( fields ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
+			...fields,
 			action: 'woocommerce_checkout',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'processCheckoutNonce' ),
 		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
+			if ( 'failure' === response.result ) {
+				throw response;
 			}
-			return response.data;
+			return response;
 		} );
 	}
 }
