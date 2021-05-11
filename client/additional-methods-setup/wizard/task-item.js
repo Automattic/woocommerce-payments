@@ -3,6 +3,7 @@
  */
 import React, { useContext } from 'react';
 import classNames from 'classnames';
+import { Icon, check } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -31,6 +32,10 @@ const TaskItem = ( { children, title, index, className } ) => {
 						<div className="wcpay-wizard__task__icon-text">
 							{ index }
 						</div>
+						<Icon
+							icon={ check }
+							className="wcpay-wizard__task__icon-checkmark"
+						/>
 					</div>
 					<span>{ title }</span>
 				</div>
