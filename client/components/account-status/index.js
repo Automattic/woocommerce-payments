@@ -9,13 +9,13 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './style.scss';
-import './shared.scss';
 import AccountFees from './account-fees';
 import AccountStatusItem from './account-status-item';
 import DepositsStatus from 'components/deposits-status';
 import PaymentsStatus from 'components/payments-status';
 import StatusChip from './status-chip';
+import './style.scss';
+import './shared.scss';
 
 const AccountStatusCard = ( props ) => {
 	const { title, content } = props;
