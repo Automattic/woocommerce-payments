@@ -176,6 +176,22 @@ cli wp plugin activate $DEV_TOOLS_DIR
 echo "Setting Jetpack blog_id"
 cli wp wcpay_dev set_blog_id $BLOG_ID
 
+if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
+	echo "Install and activate the latest release of WooCommerce Subscriptions"
+	cd $E2E_ROOT/deps
+	LATEST_RELEASE=$(curl -H "Authorization: token $E2E_GH_TOKEN" -sL https://api.github.com/repos/$WC_SUBSCRIPTIONS_REPO/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+	curl -LJO -H "Authorization: token $E2E_GH_TOKEN" "https://github.com/$WC_SUBSCRIPTIONS_REPO/archive/$LATEST_RELEASE.zip"
+
+	unzip -qq woocommerce-subscriptions-$LATEST_RELEASE.zip
+	mv woocommerce-subscriptions-$LATEST_RELEASE/* $E2E_ROOT/deps/woocommerce-subscriptions
+
+	cli wp plugin activate woocommerce-subscriptions
+
+	rm -rf woocommerce-subscriptions-$LATEST_RELEASE
+else
+	echo "Skipping install of WooCommerce Subscriptions"
+fi
+
 echo "Setting redirection to local server"
 
 # host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
@@ -186,4 +202,3 @@ cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8086/wp
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
-
