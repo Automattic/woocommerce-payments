@@ -30,6 +30,7 @@ jQuery( function ( $ ) {
 			publishableKey,
 			accountId: getConfig( 'accountId' ),
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
+			locale: getConfig( 'locale' ),
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -38,9 +39,7 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
-	const elements = api.getStripe().elements( {
-		locale: getConfig( 'locale' ),
-	} );
+	const elements = api.getStripe().elements();
 
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
