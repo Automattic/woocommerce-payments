@@ -12,6 +12,7 @@ import WizardTask from '../wizard/task';
 import ParentList from '../wizard/parent-list';
 import AddPaymentMethodsTask from './add-payment-methods-task';
 import SetupCompleteTask from './setup-complete-task';
+import './index.scss';
 
 const MethodsSelector = () => (
 	<Card className="methods-selector">
