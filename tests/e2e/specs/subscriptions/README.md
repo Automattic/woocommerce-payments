@@ -4,13 +4,14 @@ The tests included here require the WooCommerce Subscriptions plugin to be insta
 
 ## Installing the plugin
 
-To install the plugin, make sure you have the following set in your `local.env` in the `tests/e2e/config` folder:
+The setup script requires the below env variables to be configured. Make sure you have the following set in your `local.env` in the `tests/e2e/config` folder:
 
 ```
+E2E_GH_TOKEN='githubPersonalAccessToken'
 WC_SUBSCRIPTIONS_REPO='https://github.com/woocommerce-subscriptions or git@github.com:org/woocommerce-subscriptions.git
 ```
 
-The setup script requires the above env variable to be configured in order to pull in the plugin.
+For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](E2E_GH_TOKEN) and assign the `repo` scope to it.
 
 ## Skipping tests
 
