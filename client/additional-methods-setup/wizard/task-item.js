@@ -22,24 +22,22 @@ const WizardTaskItem = ( { children, title, index, className } ) => {
 			} ) }
 		>
 			<div className="wcpay-wizard-task__top-border" />
-			<div className="wcpay-wizard-task__title">
-				<div
-					className="wcpay-wizard-task__headline"
-					// tabindex with value `-1` is necessary to programmatically set the focus
-					// on an element that is not interactive.
-					tabIndex="-1"
-				>
-					<div className="wcpay-wizard-task__icon-wrapper">
-						<div className="wcpay-wizard-task__icon-text">
-							{ index }
-						</div>
-						<Icon
-							icon={ check }
-							className="wcpay-wizard-task__icon-checkmark"
-						/>
+			<div
+				className="wcpay-wizard-task__headline"
+				// tabindex with value `-1` is necessary to programmatically set the focus
+				// on an element that is not interactive.
+				tabIndex="-1"
+			>
+				<div className="wcpay-wizard-task__icon-wrapper">
+					<div className="wcpay-wizard-task__icon-text">
+						{ index }
 					</div>
-					<span>{ title }</span>
+					<Icon
+						icon={ check }
+						className="wcpay-wizard-task__icon-checkmark"
+					/>
 				</div>
+				<span className="wcpay-wizard-task__title">{ title }</span>
 			</div>
 			<div className="wcpay-wizard-task__body">{ children }</div>
 		</li>

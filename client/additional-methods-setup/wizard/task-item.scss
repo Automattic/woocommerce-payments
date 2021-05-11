@@ -19,18 +19,6 @@
 		margin: 0 12px;
 	}
 
-	&__title {
-		display: flex;
-		align-items: center;
-		flex-direction: row;
-		justify-content: space-between;
-		color: #2c3338;
-
-		.is-active & {
-			color: var( --wp-admin-theme-color );
-		}
-	}
-
 	&__headline {
 		display: flex;
 		align-items: center;
@@ -38,10 +26,15 @@
 		margin-bottom: 4px;
 		font-weight: 600;
 		font-size: 16px;
+		color: #2c3338;
 
-		> span {
-			padding: 0 16px;
+		.is-active & {
+			color: var( --wp-admin-theme-color );
 		}
+	}
+
+	&__title {
+		padding: 0 16px;
 	}
 
 	&__icon-wrapper {
