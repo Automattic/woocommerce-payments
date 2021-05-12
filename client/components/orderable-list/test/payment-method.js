@@ -60,20 +60,42 @@ describe( 'PaymentMethod', () => {
 		);
 	} );
 
-	test( 'clicking "Delete" button calls onDeleteClick()', () => {
+	test( 'clicking the "Delete" button with confirmation calls onDeleteClick()', () => {
 		const handleDeleteClickMock = jest.fn();
 		render(
 			<PaymentMethod
 				label="Foo"
+				id="foo"
 				onDeleteClick={ handleDeleteClickMock }
 			/>
 		);
 
-		const deleteButton = screen.getByRole( 'button', {
-			name: 'Delete',
-		} );
-		user.click( deleteButton );
-		expect( handleDeleteClickMock ).toHaveBeenCalled();
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Delete',
+			} )
+		);
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Cancel',
+			} )
+		);
+
+		expect( handleDeleteClickMock ).not.toHaveBeenCalled();
+
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Delete',
+			} )
+		);
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Remove',
+			} )
+		);
+
+		expect( handleDeleteClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleDeleteClickMock ).toHaveBeenCalledWith( 'foo' );
 	} );
 
 	test( 'label is a link to expected URL', () => {

@@ -124,7 +124,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 									} ) }
 									onDeleteClick={
 										1 < enabledMethods.length
-											? () => handleDeleteClick( id )
+											? handleDeleteClick
 											: undefined
 									}
 									id={ id }

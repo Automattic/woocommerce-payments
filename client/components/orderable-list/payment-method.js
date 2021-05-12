@@ -3,14 +3,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
-import { Icon as IconComponent, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import './payment-method.scss';
 import { getPaymentMethodSettingsUrl } from '../../utils';
+import PaymentMethodDeleteButton from './delete-button';
 
 const PaymentMethod = ( {
 	id,
@@ -42,14 +41,13 @@ const PaymentMethod = ( {
 					{ __( 'Manage', 'woocommerce-payments' ) }
 				</a>
 				{ onDeleteClick && (
-					<Button
-						isLink
-						aria-label={ __( 'Delete', 'woocommerce-payments' ) }
+					<PaymentMethodDeleteButton
 						className="payment-method__action delete"
 						onClick={ onDeleteClick }
-					>
-						<IconComponent icon={ trash } size={ 24 } />
-					</Button>
+						label={ label }
+						Icon={ Icon }
+						id={ id }
+					/>
 				) }
 			</div>
 		</>
