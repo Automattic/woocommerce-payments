@@ -24,8 +24,8 @@ DEBUG=true
 For local setup:
 
 1. Create file `local.env` in the `tests/e2e/config` folder with required values.
-  * If you have access to the Subscriptions plugin, please follow the instructions from `tests/e2e/specs/subscriptions/README.md` before running the setup.
-  * If you don't, you may skip Subscriptions setup and tests by adding `SKIP_WC_SUBSCRIPTIONS_TESTS=1` to your `local.env` in the `tests/e2e/config` folder.
+    * If you have access to the Subscriptions plugin, please follow the instructions from `tests/e2e/specs/subscriptions/README.md` before running the setup.
+    * If you don't, you may skip Subscriptions setup and tests by adding `SKIP_WC_SUBSCRIPTIONS_TESTS=1` to your `local.env` in the `tests/e2e/config` folder.
 
 1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
 
