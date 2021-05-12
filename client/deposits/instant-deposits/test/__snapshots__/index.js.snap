@@ -23,6 +23,18 @@ exports[`Instant deposit button and modal button renders correctly with zero bal
 </div>
 `;
 
+exports[`Instant deposit button and modal button renders correctly with zero balance 1`] = `
+<div>
+  <button
+    class="components-button is-secondary is-button is-default"
+    disabled=""
+    type="button"
+  >
+    Instant deposit
+  </button>
+</div>
+`;
+
 exports[`Instant deposit button and modal modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-0"
