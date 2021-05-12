@@ -39,12 +39,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
-		/*
-		 * Deregister WooCommerce Blocks REST routes to prevent _doing_it_wrong() notices
-		 * after calls to rest_do_request().
-		 */
-		$wc_blocks_rest_api = Package::container()->get( RestApi::class );
-		remove_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
+		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -285,5 +280,20 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->payment_gateways_mock
 			->method( 'payment_gateways' )
 			->willReturn( $gateways );
+	}
+
+	/**
+	 * Deregister WooCommerce Blocks REST routes to prevent _doing_it_wrong() notices
+	 * after calls to rest_do_request().
+	 */
+	public function deregister_wc_blocks_rest_api() {
+		try {
+			/* For WooCommerce Blocks >= 2.6.0: */
+			$wc_blocks_rest_api = Package::container()->get( RestApi::class );
+			remove_action( 'rest_api_init', [ $wc_blocks_rest_api, 'register_rest_routes' ] );
+		} catch ( Exception $e ) {
+			/* For WooCommerce Blocks < 2.6.0: */
+			remove_action( 'rest_api_init', [ RestApi::class, 'register_rest_routes' ] );
+		}
 	}
 }
