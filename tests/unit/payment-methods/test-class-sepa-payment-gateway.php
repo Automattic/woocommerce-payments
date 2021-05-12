@@ -1,10 +1,10 @@
 <?php
 /**
- * Class Sepa_Test
- * @package WCPay\Payment_Gateway\Tests
+ * Class Sepa_Payment_Gateway_Test
+ * @package WCPay\Payment_Gateways\Tests
  */
 
-namespace WCPay\Payment_Method;
+namespace WCPay\Payment_Methods;
 
 use DateTime;
 use PHPUnit_Framework_MockObject_MockObject;
@@ -26,11 +26,11 @@ use WP_User;
 /**
  * WCPay\Payment_Gateway\Sepa Unit tests
  */
-class Sepa_Test extends WP_UnitTestCase {
+class Sepa_Payment_Gateway_Test extends WP_UnitTestCase {
 	/**
 	 * System under test.
 	 *
-	 * @var Sepa
+	 * @var Sepa_Payment_Gateway
 	 */
 	private $mock_wcpay_gateway;
 
@@ -109,7 +109,7 @@ class Sepa_Test extends WP_UnitTestCase {
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
-		$this->mock_wcpay_gateway = $this->getMockBuilder( Sepa::class )
+		$this->mock_wcpay_gateway = $this->getMockBuilder( Sepa_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -140,6 +140,7 @@ class Sepa_Test extends WP_UnitTestCase {
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments_sepa',
 		];
 	}
 
@@ -181,6 +182,8 @@ class Sepa_Test extends WP_UnitTestCase {
 			$intent_id,
 			1500,
 			'eur',
+			'cus_12345',
+			'pm_12345',
 			new DateTime(),
 			$status,
 			$charge_id,
@@ -252,6 +255,8 @@ class Sepa_Test extends WP_UnitTestCase {
 			$intent_id,
 			1500,
 			'eur',
+			$customer_id,
+			'pm_12345',
 			new DateTime(),
 			$status,
 			$charge_id,
@@ -273,7 +278,7 @@ class Sepa_Test extends WP_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 6 ) )
+			->expects( $this->exactly( 8 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -281,6 +286,8 @@ class Sepa_Test extends WP_UnitTestCase {
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
+				[ '_payment_method_id', 'pm_mock' ],
+				[ '_stripe_customer_id', $customer_id ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' ]
 			);
 

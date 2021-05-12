@@ -9,7 +9,7 @@ exports[`ToS modal should render ToS modal 1`] = `
 >
   <div
     class="components-modal__content"
-    tabindex="0"
+    role="document"
   >
     <div
       class="components-modal__header"
@@ -46,13 +46,13 @@ exports[`ToS modal should render ToS modal 1`] = `
         class="woocommerce-payments__tos-footer"
       >
         <button
-          class="components-button is-tertiary"
+          class="components-button is-secondary"
           type="button"
         >
           Decline
         </button>
         <button
-          class="components-button is-button is-primary"
+          class="components-button is-primary"
           type="button"
         >
           Accept
@@ -72,7 +72,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
 >
   <div
     class="components-modal__content"
-    tabindex="0"
+    role="document"
   >
     <div
       class="components-modal__header"
@@ -115,7 +115,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
           Back
         </button>
         <button
-          class="components-button is-button is-primary"
+          class="components-button is-primary"
           type="button"
         >
           Disable

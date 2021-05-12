@@ -57,7 +57,6 @@ const ConnectPageOnboarding = () => {
 			<p className="connect-account__action">
 				<Button
 					isPrimary
-					isLarge
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }

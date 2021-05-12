@@ -130,7 +130,10 @@ export const DepositsList = () => {
 	} );
 
 	const summary = [
-		{ label: 'deposits', value: `${ depositsSummary.count }` },
+		{
+			label: __( 'deposits', 'woocommerce-payments' ),
+			value: `${ depositsSummary.count }`,
+		},
 	];
 
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
@@ -139,7 +142,7 @@ export const DepositsList = () => {
 			2 > ( depositsSummary.store_currencies || [] ).length;
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
-				label: 'total',
+				label: __( 'total', 'woocommerce-payments' ),
 				value: `${ formatCurrency(
 					depositsSummary.total,
 					depositsSummary.currency

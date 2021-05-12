@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import RiskLevel from '../';
+import RiskLevel, { calculateRiskMapping } from '../';
 
 describe( 'RiskLevel', () => {
 	test( 'Renders normal risk correctly.', () => {
@@ -29,4 +29,21 @@ describe( 'RiskLevel', () => {
 	function renderRisk( risk ) {
 		return render( <RiskLevel risk={ risk } /> ).container;
 	}
+} );
+
+describe( 'Test calculateRiskMapping', () => {
+	test( 'Returns correct risk mapping as Normal when value is 0', () => {
+		const riskMapping = calculateRiskMapping( 0 );
+		expect( riskMapping ).toEqual( 'Normal' );
+	} );
+
+	test( 'Returns correct risk mapping as Elevated when value is 1', () => {
+		const riskMapping = calculateRiskMapping( 1 );
+		expect( riskMapping ).toEqual( 'Elevated' );
+	} );
+
+	test( 'Returns correct risk mapping as Highest when value is 2', () => {
+		const riskMapping = calculateRiskMapping( 2 );
+		expect( riskMapping ).toEqual( 'Highest' );
+	} );
 } );

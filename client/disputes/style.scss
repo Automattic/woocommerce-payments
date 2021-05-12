@@ -1,38 +1,38 @@
+// dispute list table css override
+.wcpay-disputes-list {
+	.woocommerce-table__header:not( .is-left-aligned ),
+	.woocommerce-table__item:not( .is-left-aligned ) {
+		text-align: center;
+	}
+}
+
 // TODO generalize most of these styles to other WCPay views, if not WooCommerce Admin in general.
 .wcpay-dispute-details,
 .wcpay-dispute-evidence {
 	$horizontal-card-padding: 24px;
 
-	.components-card__header{
-		font-size:20px;
+	.components-card__header {
+		font-size: 20px;
 	}
 
-	.components-card{
-		margin-bottom:24px;
+	.components-card {
+		margin-bottom: 24px;
 	}
 
-	.components-form-file-upload .is-button.is-large {
-		padding: 6px 12px;
-		margin-top: 4px;
-
-		svg {
-			margin-right: 6px;
-		}
-	}
-	.is-button + .is-button {
+	.components-button + .components-button {
 		margin-left: 10px;
 	}
 
 	// Evidence form
 
-	.components-textarea-control__input{
+	.components-textarea-control__input {
 		display: block;
 		margin-top: 4px;
 		width: 100%;
 	}
 
-	.components-text-control__input{
-		margin-top:4px;
+	.components-text-control__input {
+		margin-top: 4px;
 	}
 
 	.components-base-control {
@@ -61,8 +61,7 @@
 		align-items: center;
 
 		// Selector here is super specific to ensure styles are overwritten.
-		.components-icon-button.is-primary:not( :disabled ):not( [aria-disabled='true'] ) {
-
+		.components-button.is-primary:not( :disabled ):not( [aria-disabled='true'] ) {
 			&.is-success {
 				background-color: $studio-green;
 				border-color: $studio-green;
@@ -84,7 +83,7 @@
 			}
 		}
 
-		.components-icon-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
+		.components-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
 			&:hover {
 				color: $studio-red-60;
 				box-shadow: none;

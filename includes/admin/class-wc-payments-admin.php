@@ -303,9 +303,10 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
+				'accountStatus'           => $this->account->get_account_status_data(),
+				'accountFees'             => $this->account->get_fees(),
+				'fraudServices'           => $this->account->get_fraud_services_config(),
+				'enabledPaymentMethodIds' => [ 'cc', 'giropay' ],
 			]
 		);
 
@@ -337,13 +338,7 @@ class WC_Payments_Admin {
 
 		$this->register_payments_scripts();
 
-		$is_settings_page = (
-			$current_tab && $current_section
-			&& 'checkout' === $current_tab
-			&& 'woocommerce_payments' === $current_section
-		);
-
-		if ( $is_settings_page ) {
+		if ( WC_Payments_Utils::is_payments_settings_page() ) {
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -365,7 +360,7 @@ class WC_Payments_Admin {
 		$tos_agreement_required = (
 			$this->is_tos_agreement_required() &&
 			(
-				$is_settings_page ||
+				WC_Payments_Utils::is_payments_settings_page() ||
 
 				// Or a WC Admin page?
 				// Note: Merchants can navigate from analytics to payments w/o reload,
@@ -401,7 +396,7 @@ class WC_Payments_Admin {
 			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
 			'accountOverview' => self::is_account_overview_page_enabled(),
-			'groupedSettings' => self::is_grouped_settings_enabled(),
+			'groupedSettings' => WC_Payments_Features::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -456,15 +451,6 @@ class WC_Payments_Admin {
 	 */
 	private static function is_account_overview_page_enabled() {
 		return get_option( '_wcpay_feature_account_overview' );
-	}
-
-	/**
-	 * Checks whether the grouped settings feature is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_grouped_settings_enabled() {
-		return get_option( '_wcpay_feature_grouped_settings', '0' ) === '1';
 	}
 
 	/**

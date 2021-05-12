@@ -36,13 +36,11 @@ const InstantDepositButton = ( { instantBalance } ) => {
 		setModalOpen( false );
 		submit();
 	};
-	// TODO: Need to update isDefault to isSecondary once @wordpress/components is updated
-	// https://github.com/Automattic/woocommerce-payments/pull/1536
+
 	return (
 		<>
 			<Button
-				isDefault
-				className="is-secondary"
+				isSecondary
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
 			>

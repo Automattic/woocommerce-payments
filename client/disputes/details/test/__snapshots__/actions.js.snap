@@ -6,14 +6,13 @@ exports[`Dispute details actions renders correctly for dispute needing response,
 <div>
   <div>
     <a
-      class="components-button is-button is-primary is-large"
-      data-link-type="wc-admin"
+      class="components-button is-primary"
       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
     >
       Challenge dispute
     </a>
     <button
-      class="components-button is-button is-default"
+      class="components-button is-secondary"
       type="button"
     >
       Accept dispute
@@ -26,8 +25,7 @@ exports[`Dispute details actions renders correctly for dispute with evidence sub
 <div>
   <div>
     <a
-      class="components-button is-button is-primary is-large"
-      data-link-type="wc-admin"
+      class="components-button is-primary"
       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_mock"
     >
       View submitted evidence

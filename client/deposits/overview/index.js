@@ -208,15 +208,19 @@ const DepositsOverview = () => {
 										overview.last_deposit,
 										overview.account.default_currency
 									),
-									prevLabel: getDepositDate(
-										overview.last_deposit
-									),
 									href: overview.last_deposit
 										? getDetailsURL(
 												overview.last_deposit.id,
 												'deposits'
 										  )
 										: '',
+									children: (
+										<span className="wcpay-deposits-summary__item-detail">
+											{ getDepositDate(
+												overview.last_deposit
+											) }
+										</span>
+									),
 								} ) }
 							/>,
 							<SummaryNumber
@@ -230,15 +234,19 @@ const DepositsOverview = () => {
 										overview.next_deposit,
 										overview.account.default_currency
 									),
-									prevLabel: getNextDepositLabelFormatted(
-										overview.next_deposit
-									),
 									href: overview.next_deposit
 										? getDetailsURL(
 												overview.next_deposit.id,
 												'deposits'
 										  )
 										: '',
+									children: (
+										<span className="wcpay-deposits-summary__item-detail">
+											{ getNextDepositLabelFormatted(
+												overview.next_deposit
+											) }
+										</span>
+									),
 								} ) }
 							/>,
 							<SummaryNumber
@@ -252,8 +260,12 @@ const DepositsOverview = () => {
 										overview.balance.pending,
 										overview.account.default_currency
 									),
-									prevLabel: getBalanceDepositCount(
-										overview.balance.pending
+									children: (
+										<span className="wcpay-deposits-summary__item-detail">
+											{ getBalanceDepositCount(
+												overview.balance.pending
+											) }
+										</span>
 									),
 								} ) }
 							/>,
@@ -270,7 +282,6 @@ const DepositsOverview = () => {
 										overview.account.default_currency
 									)
 								}
-								prevLabel=""
 							/>,
 						];
 					} }
