@@ -8,7 +8,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../utils/flows';
+import { merchantWCP, uiLoaded } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;
@@ -41,6 +41,8 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 	it( 'should process a losing dispute', async () => {
 		await merchantWCP.openDisputes();
+
+		await uiLoaded();
 
 		// Verify a dispute is present with a proper ID and open it
 		await page.waitForSelector( '.woocommerce-table__item > a', {
