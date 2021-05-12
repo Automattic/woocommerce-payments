@@ -66,6 +66,14 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->controller            = new WC_REST_Payments_Settings_Controller( $mock_api_client, $this->gateway, $this->payment_gateways_mock );
 	}
 
+	public function test_get_settings_request_returns_status_code_200() {
+		$request = new WP_REST_Request( 'GET', self::SETTINGS_ROUTE );
+
+		$response = rest_do_request( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
 	public function test_get_settings_returns_enabled_payment_method_ids() {
 		$enabled_gateway_mock_one = $this->create_wcpay_gateway_mock( 'enabled 1' );
 		$enabled_gateway_mock_one->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
@@ -133,6 +141,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$response = rest_do_request( new WP_REST_Request( 'GET', self::SETTINGS_ROUTE ) );
 		$this->assertEquals( 200, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
+	}
+
+	public function test_update_settings_request_returns_status_code_200() {
+		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request->set_param( 'is_wcpay_enabled', true );
+		$request->set_param( 'enabled_payment_method_ids', [ 'woocommerce_payments' ] );
+
+		$response = rest_do_request( $request );
+
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_update_settings_enables_wcpay() {
