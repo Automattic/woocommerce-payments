@@ -575,6 +575,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'stripe'          => [
 				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
+				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
 			'nonce'           => [
 				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
