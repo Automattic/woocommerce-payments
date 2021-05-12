@@ -9,12 +9,14 @@
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import TaskList from './task-list';
+import { tasks } from './task-list/tasks';
+import './style.scss';
 
 const OverviewPage = () => {
 	return (
 		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
-			<TaskList />
+			<TaskList tasks={ tasks } />
 		</Page>
 	);
 };

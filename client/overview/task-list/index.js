@@ -6,16 +6,13 @@
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { Badge } from '@woocommerce/components';
-import { CollapsibleList, Text } from '@woocommerce/experimental';
+import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
 
 /**
  * Internal dependencies.
  */
-import './style.scss';
 
-const tasks = [];
-
-const TaskList = () => {
+const TaskList = ( { tasks } ) => {
 	return (
 		<Card
 			size="large"
@@ -34,7 +31,20 @@ const TaskList = () => {
 					collapsed={ false }
 					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
 					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
-				/>
+				>
+					{ tasks.map( ( task ) => (
+						<TaskItem
+							key={ task.key }
+							title={ task.title }
+							completed={ task.completed }
+							content={ task.content }
+							expanded
+							onClick={ task.onClick }
+							time={ task.time }
+							level={ task.level }
+						/>
+					) ) }
+				</CollapsibleList>
 			</CardBody>
 		</Card>
 	);
