@@ -158,6 +158,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( $status_before_request, $this->gateway->is_enabled() );
 	}
 
+	public function test_update_settings_returns_error_on_non_bool_is_wcpay_enabled_value() {
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
+		$request->set_param( 'is_wcpay_enabled', 'foo' );
+
+		$response = rest_do_request( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
 	public function test_update_settings_saves_enabled_payment_methods() {
 		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
 		$bar_gateway = $this->create_wcpay_gateway_mock( 'bar' );
@@ -188,38 +197,29 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ 'foo', 'bar' ], $this->gateway->get_option( 'payment_method_order' ) );
 	}
 
-	public function test_update_settings_ignores_unavailable_gateways() {
+	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
 		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-		$foo_gateway->expects( $this->once() )->method( 'enable' );
 
-		$bar_gateway = $this->create_wcpay_gateway_mock( 'bar' );
-		$bar_gateway->expects( $this->once() )->method( 'disable' );
+		$this->set_available_gateways( [ $foo_gateway ] );
 
-		$baz_gateway = $this->create_wcpay_gateway_mock( 'baz' );
-		$baz_gateway->expects( $this->never() )->method( 'enable' );
-		$baz_gateway->expects( $this->never() )->method( 'disable' );
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
+		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
 
-		$this->set_available_gateways( [ $foo_gateway, $bar_gateway ] );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ $foo_gateway->id, $baz_gateway->id ] );
-
-		$this->controller->update_settings( $request );
+		$response = rest_do_request( $request );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
-	public function test_update_settings_ignores_non_wcpay_gateways() {
+	public function test_update_settings_validation_fails_if_non_wcpay_gateway_id_supplied() {
 		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-		$foo_gateway->expects( $this->once() )->method( 'enable' );
-
 		$bar_gateway = $this->create_non_wcpay_gateway_mock( 'bar' );
 
 		$this->set_available_gateways( [ $foo_gateway, $bar_gateway ] );
 
-		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ $foo_gateway->id, $bar_gateway->id ] );
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
+		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
 
-		$this->controller->update_settings( $request );
-		$this->assertEquals( [ 'foo' ], $this->gateway->get_option( 'payment_method_order' ) );
+		$response = rest_do_request( $request );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {

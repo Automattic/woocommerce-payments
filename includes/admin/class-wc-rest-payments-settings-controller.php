@@ -66,6 +66,22 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'is_wcpay_enabled'           => [
+						'description'       => __( 'If WooCommerce Payments should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'enabled_payment_method_ids' => [
+						'description'       => __( 'Payment method IDs that should be enabled, in the order they should appear in during checkout. Other methods will be disabled.', 'woocommerce-payments' ),
+						'type'              => 'array',
+						'items'             => [
+							'type' => 'string',
+							'enum' => wp_list_pluck( $this->get_available_wcpay_payment_methods(), 'id' ),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+				],
 			]
 		);
 	}
@@ -148,13 +164,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$available_payment_methods    = $this->get_available_wcpay_payment_methods();
-		$payment_method_ids_to_enable = array_intersect(
-			$request->get_param( 'enabled_payment_method_ids' ),
-			wp_list_pluck( $this->get_available_wcpay_payment_methods(), 'id' )
-		);
+		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 
-		foreach ( $available_payment_methods as $payment_method ) {
+		foreach ( $this->get_available_wcpay_payment_methods() as $payment_method ) {
 			$should_be_enabled = in_array( $payment_method->id, $payment_method_ids_to_enable, true );
 
 			if ( $should_be_enabled ) {
