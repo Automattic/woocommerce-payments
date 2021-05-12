@@ -447,6 +447,15 @@ jQuery( function ( $ ) {
 		);
 	}
 
+	function generateHoverColors( backgroundColor, textColor ) {
+		const hoverColors = {
+			backgroundColor,
+			textColor,
+		};
+		// Todo: manipulate the base colors to create hover colors.
+		return hoverColors;
+	}
+
 	let paymentElement = null;
 	/**
 	 * Sets up an intent based on a payment method.
@@ -470,6 +479,8 @@ jQuery( function ( $ ) {
 			if ( ! response.data.client_secret ) {
 				throw new Error( 'Missing client secret.' );
 			}
+
+			// Generate Appearance. Todo: Check if custom before getting automated styles.
 
 			// Hiden div. If we use this method, refactor me.
 			const hiddenDiv = document.createElement( 'div' );
@@ -511,11 +522,24 @@ jQuery( function ( $ ) {
 			$( '#wcpay-hidden-input' )
 				.promise()
 				.done( function () {
+					$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
 					const focusInputRules = getFieldStyles(
 						'#wcpay-hidden-input'
 					);
 					const invalidInputRules = getFieldStyles(
 						'#wcpay-hidden-invalid-input'
+					);
+					const tabRules = getFieldStyles(
+						'.woocommerce-checkout .form-row input',
+						'Tab'
+					);
+					const selectedTabRules = getFieldStyles(
+						'.woocommerce-checkout .place-order .button.alt',
+						'Tab--selected'
+					);
+					const selectedIconRules = getFieldStyles(
+						'.woocommerce-checkout .place-order .button.alt',
+						'TabIcon--selected'
 					);
 
 					$( '#wcpay-hidden-div' ).remove();
@@ -525,20 +549,11 @@ jQuery( function ( $ ) {
 						rules: {
 							'.Input': getFieldStyles( upeThemeInputSelector ),
 							'.Input:focus': focusInputRules,
-							'.Label': getFieldStyles( upeThemeLabelSelector ),
 							'.Input--invalid': invalidInputRules,
-							'.Tab': getFieldStyles(
-								'.woocommerce-checkout .form-row input',
-								'Tab'
-							),
-							'.TabIcon--selected': getFieldStyles(
-								'.woocommerce-checkout .place-order .button.alt',
-								'TabIcon--selected'
-							),
-							'.Tab--selected, .Tab:hover': getFieldStyles(
-								'.woocommerce-checkout .place-order .button.alt',
-								'Tab--selected'
-							),
+							'.Label': getFieldStyles( upeThemeLabelSelector ),
+							'.Tab': tabRules,
+							'.TabIcon--selected': selectedIconRules,
+							'.Tab--selected, .Tab:hover': selectedTabRules,
 						},
 					};
 
