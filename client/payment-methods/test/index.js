@@ -133,6 +133,11 @@ describe( 'PaymentMethods', () => {
 			name: 'Delete',
 		} );
 		user.click( ccDeleteButton );
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Remove',
+			} )
+		);
 
 		const expectedUpdatedMethodIds = enabledMethodIds.filter(
 			( id ) => 'cc' !== id
