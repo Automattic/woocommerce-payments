@@ -8,7 +8,7 @@
  */
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
-import { TaskList } from './task-list';
+import TaskList from './task-list';
 
 const OverviewPage = () => {
 	return (

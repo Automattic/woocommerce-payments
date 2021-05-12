@@ -11,7 +11,7 @@ import { CollapsibleList } from '@woocommerce/experimental';
  */
 import './style.scss';
 
-export const TaskList = () => {
+const TaskList = () => {
 	return (
 		<CollapsibleList
 			collapsed={ false }
@@ -20,3 +20,5 @@ export const TaskList = () => {
 		/>
 	);
 };
+
+export default TaskList;
