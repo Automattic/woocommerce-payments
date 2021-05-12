@@ -25,11 +25,19 @@ const SetupComplete = () => {
 	}, [] );
 
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	useEffect( () => {
 		if ( ! isActive ) {
 			return;
 		}
+
+		createInfoNotice(
+			__(
+				'This content will be updated in a subsequent PR. Well done!',
+				'woocommerce-services'
+			)
+		);
 
 		updateOptions( {
 			// eslint-disable-next-line camelcase
@@ -39,7 +47,7 @@ const SetupComplete = () => {
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
 		window.wcpayAdditionalMethodsSetup.isSetupCompleted = 'yes';
-	}, [ isActive, updateOptions ] );
+	}, [ isActive, updateOptions, createInfoNotice ] );
 
 	return (
 		<WizardTaskItem
