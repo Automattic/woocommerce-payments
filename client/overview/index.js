@@ -12,7 +12,7 @@ import TaskList from './task-list';
 
 const OverviewPage = () => {
 	return (
-		<Page>
+		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
 			<TaskList />
 		</Page>
