@@ -11,6 +11,8 @@ import './style.scss';
 import GiropayIcon from '../../gateway-icons/giropay';
 import SepaIcon from '../../gateway-icons/sepa';
 import SofortIcon from '../../gateway-icons/sofort';
+import ApplePayIcon from '../../gateway-icons/apple-pay';
+import GooglePayIcon from '../../gateway-icons/google-pay';
 
 const paymentMethods = {
 	giropay: {
@@ -24,6 +26,14 @@ const paymentMethods = {
 	sofort: {
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		Icon: SofortIcon,
+	},
+	'apple-pay': {
+		label: __( 'Apple Pay', 'woocommerce-payments' ),
+		Icon: ApplePayIcon,
+	},
+	'google-pay': {
+		label: __( 'Google Pay', 'woocommerce-payments' ),
+		Icon: GooglePayIcon,
 	},
 };
 
