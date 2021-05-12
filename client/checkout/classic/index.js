@@ -398,7 +398,7 @@ jQuery( function ( $ ) {
 			return data;
 		}, {} );
 
-		api.processCheckout( fields )
+		api.processCheckout( paymentIntentId, fields )
 			.then( ( data ) => {
 				const redirectUrl = data.redirect_url;
 				api.getStripe()

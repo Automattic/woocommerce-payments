@@ -288,9 +288,10 @@ export default class WCPayAPI {
 		} );
 	}
 
-	processCheckout( fields ) {
+	processCheckout( paymentIntentId, fields ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			...fields,
+			wc_payment_intent_id: paymentIntentId,
 			action: 'woocommerce_checkout',
 		} ).then( ( response ) => {
 			if ( 'failure' === response.result ) {
