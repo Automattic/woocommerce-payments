@@ -1,6 +1,9 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.4.0 - 2021-xx-xx =
+= 2.5.0 - 2021-xx-xx =
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+
+= 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.

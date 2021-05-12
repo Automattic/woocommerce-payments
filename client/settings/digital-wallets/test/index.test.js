@@ -79,4 +79,16 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).not.toBeDisabled();
 		expect( cartCheckbox ).toBeChecked();
 	} );
+
+	it( 'has the correct href link to the digital wallets setting page', async () => {
+		render( <DigitalWallets /> );
+
+		const customizeAppearanceButton = screen.getByText(
+			'Customize appearance'
+		);
+		expect( customizeAppearanceButton ).toHaveAttribute(
+			'href',
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_digital_wallets'
+		);
+	} );
 } );
