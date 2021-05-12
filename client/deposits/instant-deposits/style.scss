@@ -38,4 +38,8 @@ div.wcpay-instant-deposits-modal {
 			}
 		}
 	}
+
+	&__footer {
+		@include modal-footer-buttons;
+	}
 }
