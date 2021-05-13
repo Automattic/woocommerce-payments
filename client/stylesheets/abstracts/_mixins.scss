@@ -19,3 +19,12 @@
 		content: '\00a0';
 	}
 }
+
+@mixin modal-footer-buttons {
+	display: flex;
+	justify-content: flex-end;
+
+	button.components-button {
+		margin-left: 16px;
+	}
+}

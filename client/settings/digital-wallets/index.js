@@ -13,6 +13,7 @@ import {
 	CheckboxControl,
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
+import { getPaymentMethodSettingsUrl } from '../../utils';
 
 const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
@@ -122,7 +123,10 @@ const DigitalWallets = () => {
 			</CardBody>
 			<CardDivider />
 			<CardBody>
-				<Button isSecondary href="/TODO">
+				<Button
+					isSecondary
+					href={ getPaymentMethodSettingsUrl( 'digital_wallets' ) }
+				>
 					{ __( 'Customize appearance', 'woocommerce-payments' ) }
 				</Button>
 			</CardBody>

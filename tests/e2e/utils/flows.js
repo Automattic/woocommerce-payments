@@ -18,6 +18,9 @@ const WCPAY_DEPOSITS =
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 
+export const RUN_SUBSCRIPTIONS_TESTS =
+	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
+
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const shopperWCP = {

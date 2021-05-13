@@ -108,3 +108,17 @@
 		padding: 4px 0;
 	}
 }
+
+/**
+ * There is a bug with the Modal component that when the close X is hovered or focused, a tooltip
+ * appears outside of the view of the modal causing scrollbars. This is a work around to hide the
+ * tooltip until the bug is fixed.
+ * TODO: remove rule ones bug is closed
+ * https://github.com/WordPress/gutenberg/issues/15434
+ */
+.components-modal__content
+	.components-modal__header
+	.components-button
+	.components-tooltip {
+	display: none;
+}
