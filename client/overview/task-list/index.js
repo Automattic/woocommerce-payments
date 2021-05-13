@@ -13,6 +13,8 @@ import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
  */
 
 const TaskList = ( { tasks } ) => {
+	const pendingTaskCount = tasks.filter( ( task ) => ! task.completed )
+		.length;
 	return (
 		<Card
 			size="large"
@@ -23,7 +25,9 @@ const TaskList = ( { tasks } ) => {
 					<Text variant="title.small">
 						{ __( 'Things to do', 'woocommerce-payments' ) }
 					</Text>
-					<Badge count={ tasks.length } />
+					{ 0 < pendingTaskCount && (
+						<Badge count={ pendingTaskCount } />
+					) }
 				</div>
 			</CardHeader>
 			<CardBody>
