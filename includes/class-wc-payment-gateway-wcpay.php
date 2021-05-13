@@ -685,16 +685,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_intent_id = isset( $_GET['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_intent_id'] ) ) : '';
 		$order             = wc_get_order( $order_id );
 
-		// $payment_information = $this->prepare_payment_information( $order );
+		$payment_information = $this->prepare_payment_information( $order );
 		return [
 			'result'       => 'success',
 			'redirect_url' => wp_sanitize_redirect(
 				esc_url_raw(
 					add_query_arg(
 						[
-							'order_id'          => $order_id,
-							'wc_payment_method' => self::GATEWAY_ID,
-							// 'save_payment_method' => $payment_information->should_save_payment_method(),
+							'order_id'            => $order_id,
+							'wc_payment_method'   => self::GATEWAY_ID,
+							'save_payment_method' => $payment_information->should_save_payment_method() ? 'yes' : 'no',
 						],
 						$this->get_return_url( $order )
 					)
@@ -729,7 +729,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_redirect_payment( $order_id ) {
 		try {
-			$intent_id = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+			$intent_id           = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+			$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( empty( $intent_id ) || empty( $order_id ) ) {
 				return;
@@ -765,6 +766,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wp_safe_redirect( wc_get_checkout_url() );
 				exit;
 			} else {
+				if ( $save_payment_method ) {
+					try {
+						$user = $order->get_user();
+						if ( false === $user ) {
+							$user = wp_get_current_user();
+						}
+						$token = $this->token_service->add_payment_method_to_user( $intent->get_payment_method_id(), $user );
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					}
+				}
+
 				$response = $this->update_order_for_confirmed_intent( $order, $intent );
 
 				if ( 'requires_action' === $status && $response ) {

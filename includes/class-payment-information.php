@@ -98,7 +98,7 @@ class Payment_Information {
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null
 	) {
-		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
+		if ( empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
 			throw new Invalid_Payment_Method_Exception(
 				__( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ),
@@ -217,7 +217,7 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+		foreach ( [ 'wcpay-payment-method' ] as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
 				return wc_clean( $request[ $key ] );
 			}
