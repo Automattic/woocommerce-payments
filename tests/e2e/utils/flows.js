@@ -11,6 +11,9 @@ const baseUrl = config.get( 'url' );
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 
+export const RUN_SUBSCRIPTIONS_TESTS =
+	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
+
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const paymentsShopper = {
