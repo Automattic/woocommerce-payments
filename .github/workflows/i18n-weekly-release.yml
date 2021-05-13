@@ -30,18 +30,16 @@ jobs:
           tools:       composer
           coverage:    none
       # build the release
-      - run: |        
+      - run: |
           npm ci
           npm run build
-          echo "VERSION_NAME=i18n-$(date +%y%m%d)" >> $GITHUB_ENV
-      # tag and create the pre-release in GitHub
-      - uses: softprops/action-gh-release@v1
-        with:
-          name: Version for internationalization testing ${{ env.VERSION_NAME }}. Not for production.
-          tag_name: ${{ env.VERSION_NAME }}
-          body: This version is intended to test the internationalization strings. It should NOT be used for production.
-          target_commitish: develop
-          prerelease: true
-          files: woocommerce-payments.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG="i18n-$(date +%y%m%d)"
+          NAME="Version for internationalization testing $TAG. Not for production."
+          BODY='This version is intended to test the internationalization strings. It should NOT be used for production.'
+          response=$(curl -s -o release.json -w '%{http_code}' \
+            --request POST \
+            --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Content-Type: application/json' \
+            --data "{\"tag_name\":\"$TAG\",\"target_commitish\":\"develop\",\"name\":\"$NAME\",\"body\":\"$BODY\",\"prerelease\":true}" \
+            https://api.github.com/repos/Automattic/woocommerce-payments/releases)
+          cat release.json
