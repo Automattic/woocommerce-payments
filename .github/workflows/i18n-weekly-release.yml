@@ -1,0 +1,44 @@
+name: I18N Weekly Release
+on:
+  schedule:
+    - cron: '0 18 * * 7'
+
+jobs:
+  i18n-release:
+    name: Release
+    runs-on: ubuntu-16.04
+
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm/
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools:       composer
+          coverage:    none
+      # build the release
+      - run: |        
+          npm ci
+          npm run build
+          echo "VERSION_NAME=i18n-$(date +%y%m%d)" >> $GITHUB_ENV
+      # tag and create the pre-release in GitHub
+      - uses: softprops/action-gh-release@v1
+        with:
+          name: Version for internationalization testing ${{ env.VERSION_NAME }}. Not for production.
+          tag_name: ${{ env.VERSION_NAME }}
+          body: This version is intended to test the internationalization strings. It should NOT be used for production.
+          target_commitish: develop
+          prerelease: true
+          files: woocommerce-payments.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
