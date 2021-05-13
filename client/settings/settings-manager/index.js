@@ -5,10 +5,12 @@
 import { __ } from '@wordpress/i18n';
 import React, { useState } from 'react';
 import { ExternalLink } from '@wordpress/components';
+
 /**
  * Internal dependencies
  */
 import Banner from '../../banner';
+import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
@@ -101,6 +103,7 @@ const SettingsManager = ( {
 				<SettingsSection>
 					<TestModeSettings />
 				</SettingsSection>
+				<AdvancedSettings />
 			</div>
 		</>
 	);
