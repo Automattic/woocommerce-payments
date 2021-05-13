@@ -1,5 +1,5 @@
 /* global jQuery */
-
+import tinycolor from 'tinycolor2';
 /**
  * Internal dependencies
  */
@@ -447,12 +447,38 @@ jQuery( function ( $ ) {
 		);
 	}
 
-	function generateHoverColors( backgroundColor, textColor ) {
+	function generateHoverColors( backgroundColor, color ) {
 		const hoverColors = {
 			backgroundColor,
-			textColor,
+			color,
 		};
-		// Todo: manipulate the base colors to create hover colors.
+
+		// Todo: Check for transparent or unreadable colors and offer a fallback.
+
+		const tinyBackgroundColor = tinycolor( backgroundColor );
+		const tinyTextColor = tinycolor( color );
+
+		//Option 1: If light ( brightness > 128 ) -> darken, else lighten.
+		const newBackgroundColor = tinycolor( tinyBackgroundColor ).isLight()
+			? tinycolor( tinyBackgroundColor ).darken( 5 )
+			: tinycolor( tinyBackgroundColor ).lighten( 5 );
+
+		// Option 2: Darken if brightness > 50 (Storefront Button 51 ), else lighten
+		// const newBackgroundColor =
+		// 	50 < tinyBackgroundColor.getBrightness()
+		// 		? tinycolor( tinyBackgroundColor ).darken( 5 )
+		// 		: tinycolor( tinyBackgroundColor ).lighten( 5 );
+
+		// Returns provided color if readable, otherwise black or white.
+		const mostReadableColor = tinycolor.mostReadable(
+			newBackgroundColor,
+			[ tinyTextColor ],
+			{ includeFallbackColors: true }
+		);
+
+		hoverColors.backgroundColor = newBackgroundColor.toRgbString();
+		hoverColors.color = mostReadableColor.toRgbString();
+
 		return hoverColors;
 	}
 
@@ -537,6 +563,26 @@ jQuery( function ( $ ) {
 						'.woocommerce-checkout .place-order .button.alt',
 						'Tab--selected'
 					);
+
+					// Option 1: With Selected tab rules as a basis.
+					const hoverTabRules = Object.assign( {}, selectedTabRules );
+
+					const hoverColors = generateHoverColors(
+						selectedTabRules.backgroundColor,
+						selectedTabRules.color
+					);
+
+					// Option 2: With tab rules as a basis.
+					// const hoverTabRules = Object.assign( {}, tabRules );
+
+					// const hoverColors = generateHoverColors(
+					// 	tabRules.backgroundColor,
+					// 	tabRules.color
+					// );
+
+					hoverTabRules.backgroundColor = hoverColors.backgroundColor;
+					hoverTabRules.color = hoverColors.color;
+
 					const selectedIconRules = getFieldStyles(
 						'.woocommerce-checkout .place-order .button.alt',
 						'TabIcon--selected'
@@ -553,7 +599,8 @@ jQuery( function ( $ ) {
 							'.Label': getFieldStyles( upeThemeLabelSelector ),
 							'.Tab': tabRules,
 							'.TabIcon--selected': selectedIconRules,
-							'.Tab--selected, .Tab:hover': selectedTabRules,
+							'.Tab--selected': selectedTabRules,
+							'.Tab:hover': hoverTabRules,
 						},
 					};
 
