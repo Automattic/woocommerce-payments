@@ -1,35 +1,70 @@
 <?php
 /**
- * Class WC_Payments_Multi_Currency_Currency
+ * Class Currency
  *
  * @package WooCommerce\Payments
  */
+
+namespace WCPay\Multi_Currency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Multi Currency Currency object.
  */
-class WC_Payments_Multi_Currency_Currency {
+class Currency {
+
+	/**
+	 * Three letter currency code.
+	 *
+	 * @var string
+	 */
+	protected $code;
+
+	/**
+	 * Three letter currency code lowecased.
+	 *
+	 * @var string
+	 */
+	protected $id;
+
+	/**
+	 * Flag image for the currency.
+	 *
+	 * @var string
+	 */
+	protected $img;
+
+	/**
+	 * Currency name.
+	 *
+	 * @var string
+	 */
+	protected $name;
+
+	/**
+	 * Currency conversion rate.
+	 *
+	 * @var string
+	 */
+	protected $rate;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param string $code Three letter currency code.
 	 * @param float  $rate The conversion rate.
-	 * @param bool   $auto Whether to enable by default or not, for dev purposes.
 	 */
-	public function __construct( $code = '', $rate = '', $auto = false ) {
-		$this->id   = strtolower( $code );
-		$this->name = $this->get_currency_name_from_code( $code );
+	public function __construct( $code = '', $rate = '' ) {
 		$this->code = $code;
-		$this->rate = $rate;
+		$this->id   = strtolower( $code );
 		$this->img  = '';
-		$this->auto = $auto; // Auto enable for dev purposes.
+		$this->name = $this->get_currency_name_from_code( $code );
+		$this->rate = $rate;
 	}
 
 	/**
-	 * Don't lint me.
+	 * Retrieves the currency's translated name from WooCommerce core.
 	 *
 	 * @param string $code The currency code.
 	 */
