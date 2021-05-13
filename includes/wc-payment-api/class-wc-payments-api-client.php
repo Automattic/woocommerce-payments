@@ -213,6 +213,32 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create an intention, without confirming it.
+	 *
+	 * @param int    $amount          - Amount to charge.
+	 * @param string $currency_code   - Currency to charge in.
+	 * @param array  $payment_methods - Payment methods to include.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_intention(
+		$amount,
+		$currency_code,
+		$payment_methods
+	) {
+		// TODO: There's scope to have amount and currency bundled up into an object.
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['payment_method_types'] = $payment_methods;
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.

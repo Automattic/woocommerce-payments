@@ -38,45 +38,14 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
-	const elements = api.getStripe().elements();
 
+	const elements = api.getStripe().elements();
+	let paymentElement = null;
+	let paymentIntentId = null;
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
 	const preparedCustomerData =
 		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
-
-	// Create a card element.
-	const cardElement = elements.create( 'card', {
-		hidePostalCode: true,
-		classes: { base: 'wcpay-card-mounted' },
-	} );
-
-	const cardPayment = {
-		type: 'card',
-		card: cardElement,
-	};
-
-	// Giropay payment method details
-	const giropayPayment = {
-		type: 'giropay' /* eslint-disable camelcase */,
-	};
-
-	// Create a SEPA element
-	const sepaElement = elements.create( 'iban', {
-		// 'SEPA' Indicates all countries in the Single Euro Payments Area (SEPA).
-		supportedCountries: [ 'SEPA' ],
-		classes: { base: 'wcpay-sepa-mounted' },
-	} );
-
-	const sepaPayment = {
-		type: 'sepa_debit' /* eslint-disable camelcase */,
-		sepa_debit: sepaElement,
-	};
-
-	// Sofort payment method details
-	const sofortPayment = {
-		type: 'sofort' /* eslint-disable camelcase */,
-	};
 
 	/**
 	 * Check if Card payment is being used.
@@ -120,63 +89,6 @@ jQuery( function ( $ ) {
 		);
 	};
 
-	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
-	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
-	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', () => {
-		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
-		// We also don't re-mount if already mounted in DOM.
-		if (
-			! $( '#wcpay-card-element' ).length ||
-			$( '#wcpay-card-element' ).children().length
-		) {
-			return;
-		}
-
-		cardElement.unmount();
-		cardElement.mount( '#wcpay-card-element' );
-
-		if ( $( '#wcpay-sepa-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-element' );
-		}
-	} );
-
-	if (
-		$( 'form#add_payment_method' ).length ||
-		$( 'form#order_review' ).length
-	) {
-		cardElement.mount( '#wcpay-card-element' );
-
-		if ( $( '#wcpay-sepa-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-element' );
-		}
-	}
-
-	// Update the validation state based on the element's state.
-	cardElement.addEventListener( 'change', ( event ) => {
-		const displayError = $( '#wcpay-errors' );
-		if ( event.error ) {
-			displayError
-				.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' )
-				.text( event.error.message );
-		} else {
-			displayError.empty();
-		}
-	} );
-
-	sepaElement.addEventListener( 'change', ( event ) => {
-		const displayError = $( '#wcpay-sepa-errors' );
-		if ( event.error ) {
-			displayError
-				.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' )
-				.text( event.error.message );
-		} else {
-			displayError.empty();
-		}
-	} );
-
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
 	 *
@@ -194,7 +106,7 @@ jQuery( function ( $ ) {
 
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
-		const messageWrapper =
+		const messageWrapper = errorMessage.messages ? errorMessage.messages :
 			'<ul class="woocommerce-error" role="alert">' +
 			errorMessage +
 			'</ul>';
@@ -228,6 +140,37 @@ jQuery( function ( $ ) {
 		$.scroll_to_notices( scrollElement );
 		$( document.body ).trigger( 'checkout_error' );
 	};
+
+	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
+	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
+	// first to ensure the card element is re-mounted correctly.
+	$( document.body ).on( 'updated_checkout', () => {
+		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
+		// We also don't re-mount if already mounted in DOM.
+		const $container = $( '.wc_payment_method' );
+		blockUI( $container );
+
+		if( null === paymentElement ) {
+			api.createIntent()
+				.then( ( data ) => {
+					const { client_secret: clientSecret, id: id } = data;
+
+					paymentIntentId = id;
+					paymentElement = elements.create( 'payment', { clientSecret } );
+					paymentElement.mount( '#wcpay-card-element' );
+				} )
+				.catch( ( error ) => {
+					console.log(error);
+					showError( error.message );
+				} )
+				.finally( () => {
+					$container.removeClass( 'processing' ).unblock();
+				} );
+		} else {
+			// API request to update payment intent using saved ID from above...
+			$container.removeClass( 'processing' ).unblock();
+		}
+	} );
 
 	// Create payment method on submission.
 	let paymentMethodGenerated;
@@ -444,44 +387,63 @@ jQuery( function ( $ ) {
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
-	$( 'form.checkout' ).on( checkoutEvents, function () {
-		if ( ! isUsingSavedPaymentMethod() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				sofortPayment.sofort = {
-					country: $( '#billing_country' ).val(),
-				};
-				paymentMethodDetails = sofortPayment;
-			}
-			return handlePaymentMethodCreation(
-				$( this ),
-				handleOrderPayment,
-				paymentMethodDetails
-			);
-		}
+	$( 'form.checkout' ).on( checkoutEvents, function ( event ) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		const $container = $( '.wc_payment_method' );
+		blockUI( $container );
+
+		const fields = $( this ).serializeArray().reduce( ( data, field ) => {
+			data[ field.name ] = field.value;
+			return data;
+		}, {} );
+
+		api.processCheckout( paymentIntentId, fields )
+			.then( ( data ) => {
+				const redirectUrl = data.redirect_url;
+				api.getStripe()
+					.confirmPayment( {
+						element: paymentElement,
+						confirmParams: {
+							'return_url': redirectUrl,
+						},
+					} )
+					.then( ( result ) => {
+						console.log( result );
+					} )
+					.catch( ( error ) => {
+						console.log( error.message );
+					} )
+					.finally( () => {
+						$container.removeClass( 'processing' ).unblock();
+					} );
+			} )
+			.catch( ( error ) => {
+				console.log(error);
+				$container.removeClass( 'processing' ).unblock();
+				showError( error );
+			} );
+		return false;
 	} );
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', () => {
-		if (
-			isUsingSavedPaymentMethod() ||
-			( ! isWCPayCardChosen() && ! isWCPaySepaChosen() )
-		) {
-			return;
-		}
+	// $( '#order_review' ).on( 'submit', () => {
+	// 	if (
+	// 		isUsingSavedPaymentMethod() ||
+	// 		( ! isWCPayCardChosen() && ! isWCPaySepaChosen() )
+	// 	) {
+	// 		return;
+	// 	}
 
-		return handlePaymentMethodCreation(
-			$( '#order_review' ),
-			handleOrderPayment,
-			isWCPaySepaChosen() ? sepaPayment : cardPayment
-		);
-	} );
+	// 	return handlePaymentMethodCreation(
+	// 		$( '#order_review' ),
+	// 		handleOrderPayment,
+	// 		isWCPaySepaChosen() ? sepaPayment : cardPayment
+	// 	);
+	// } );
 
-	// Handle the add payment method form for WooCommerce Payments.
+	// // Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			let paymentMethodDetails = cardPayment;

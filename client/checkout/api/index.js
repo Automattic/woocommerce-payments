@@ -49,6 +49,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
+				betas: [ 'payment_element_beta_1' ],
 			} );
 		}
 		return this.stripe;
@@ -296,6 +297,45 @@ export default class WCPayAPI {
 						return setupIntent;
 					} )
 			);
+		} );
+	}
+
+	/**
+	 * Sets up an intent based on a payment method.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	createIntent() {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'create_payment_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
+		} );
+	}
+
+	/**
+	 * Process checkout and update payment intent via AJAX.
+	 *
+	 * @param {string} paymentIntentId ID of payment intent to be updated.
+	 * @param {Object} fields Checkout fields.
+	 * @return {Promise} Promise containing redirect URL for UPE element.
+	 */
+	processCheckout( paymentIntentId, fields ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			...fields,
+			// eslint-disable-next-line camelcase
+			wc_payment_intent_id: paymentIntentId,
+			action: 'woocommerce_checkout',
+		} ).then( ( response ) => {
+			if ( 'failure' === response.result ) {
+				throw response;
+			}
+			return response;
 		} );
 	}
 
