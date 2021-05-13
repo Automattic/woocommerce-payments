@@ -9,14 +9,16 @@
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import TaskList from './task-list';
-import { tasks } from './task-list/tasks';
+import { getTasks } from './task-list/tasks';
 import './style.scss';
+
+const { accountStatus } = wcpaySettings;
 
 const OverviewPage = () => {
 	return (
 		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
-			<TaskList tasks={ tasks } />
+			<TaskList tasks={ getTasks( { accountStatus } ) } />
 		</Page>
 	);
 };
