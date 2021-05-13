@@ -38,10 +38,7 @@ const GeneralSettings = ( { accountLink } ) => {
 					) }
 				/>
 				<h4>
-					{ __(
-						'Credit card payment capture',
-						'woocommerce-payments'
-					) }
+					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
@@ -90,15 +87,15 @@ const GeneralSettings = ( { accountLink } ) => {
 							{ __(
 								'Manage and update your bank account information to receive payments and payouts.',
 								'woocommerce-payments'
-							) }
+							) }{ ' ' }
+							<ExternalLink href={ accountLink }>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
 						</p>
 					</div>
-					<ExternalLink
-						className="components-button is-secondary"
-						href={ accountLink }
-					>
-						{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
-					</ExternalLink>
 				</div>
 			</CardBody>
 		</Card>
