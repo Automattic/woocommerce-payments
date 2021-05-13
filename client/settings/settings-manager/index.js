@@ -24,7 +24,9 @@ const PaymentMethodsDescription = () => (
 		</h2>
 		<p>
 			{ __(
-				'Add and edit payments available to customers at checkout. Drag & drop to reorder.',
+				'Add and edit payments available to customers at checkout. ' +
+					'Based on their device type, location, and purchase history, ' +
+					'your customers will only see the most relevant payment methods.',
 				'woocommerce-payments'
 			) }
 		</p>
@@ -33,12 +35,7 @@ const PaymentMethodsDescription = () => (
 
 const DigitalWalletsDescription = () => (
 	<>
-		<h2>
-			{ __(
-				'Digital wallets & express payment methods',
-				'woocommerce-payments'
-			) }
-		</h2>
+		<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
 			<li>
 				<ApplePayIcon />
@@ -49,12 +46,13 @@ const DigitalWalletsDescription = () => (
 		</ul>
 		<p>
 			{ __(
-				'Let customers use express payment methods and digital wallets like Apple Pay and Google Pay for fast & easy checkouts.',
+				'Let your customers use their favorite digital wallets ' +
+					'for faster, more secure checkouts across different parts of your store.',
 				'woocommerce-payments'
 			) }
 		</p>
 		<ExternalLink href="https://docs.woocommerce.com/document/payments/apple-pay/">
-			{ __( 'Learn more', 'woocommerce-payments' ) }
+			{ __( 'How it works?', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
