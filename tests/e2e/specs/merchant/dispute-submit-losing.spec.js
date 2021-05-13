@@ -55,15 +55,15 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
 
 		// Verify the heading for two component cards
-		await page.waitForSelector( '.components-card__header', {
-			visible: true,
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute overview',
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute: Product not received',
-		} );
+		// await page.waitForSelector( '.components-card__header', {
+		// 	visible: true,
+		// } );
+		// await expect( page ).toMatchElement( '.components-card__header', {
+		// 	text: 'Dispute overview',
+		// } );
+		// await expect( page ).toMatchElement( '.components-card__header', {
+		// 	text: 'Dispute: Product not received',
+		// } );
 
 		// Accept the dispute
 		await page.removeAllListeners( 'dialog' );
