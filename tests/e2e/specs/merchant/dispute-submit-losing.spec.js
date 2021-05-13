@@ -15,13 +15,6 @@ let orderId;
 
 describe( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
-	} );
-
-	afterAll( async () => {
-		await merchant.logout();
-	} );
-
-	it( 'place an order', async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
 		// Place an order to dispute later
@@ -40,6 +33,10 @@ describe( 'Disputes > Submit losing dispute', () => {
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		await merchant.login();
+	} );
+
+	afterAll( async () => {
+		await merchant.logout();
 	} );
 
 	it( 'should process a losing dispute', async () => {
