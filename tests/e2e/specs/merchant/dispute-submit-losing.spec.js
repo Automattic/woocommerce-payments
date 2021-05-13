@@ -41,7 +41,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 	it( 'should process a losing dispute', async () => {
 		await merchantWCP.openDisputes();
-
 		await uiLoaded();
 
 		// Verify a dispute is present with a proper ID and open it
@@ -51,9 +50,14 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
 			text: orderId,
 		} );
+
+		await uiLoaded();
 		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
 
 		// Verify the heading for two component cards
+		await page.waitForSelector( '.components-card__header', {
+			visible: true,
+		} );
 		await expect( page ).toMatchElement( '.components-card__header', {
 			text: 'Dispute overview',
 		} );
