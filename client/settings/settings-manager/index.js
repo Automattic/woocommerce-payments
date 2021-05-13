@@ -12,14 +12,14 @@ import React from 'react';
 import './style.scss';
 import { LoadableBlock } from 'components/loadable';
 import { useSettings } from 'data';
-import Banner from '../../banner';
-import PaymentMethods from '../../payment-methods';
-import SettingsSection from '../settings-section';
+import Banner from 'banner';
+import PaymentMethods from 'payment-methods';
+import SettingsSection from 'settings/settings-section';
 import DigitalWallets from 'settings/digital-wallets';
-import GeneralSettings from '../general-settings';
-import TestModeSettings from '../test-mode-settings';
-import ApplePayIcon from '../../gateway-icons/apple-pay';
-import GooglePayIcon from '../../gateway-icons/google-pay';
+import GeneralSettings from 'settings/general-settings';
+import TestModeSettings from 'settings/test-mode-settings';
+import ApplePayIcon from 'gateway-icons/apple-pay';
+import GooglePayIcon from 'gateway-icons/google-pay';
 
 const PaymentMethodsDescription = () => (
 	<>
