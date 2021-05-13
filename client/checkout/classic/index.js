@@ -30,6 +30,7 @@ jQuery( function ( $ ) {
 			publishableKey,
 			accountId: getConfig( 'accountId' ),
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
+			locale: getConfig( 'locale' ),
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {

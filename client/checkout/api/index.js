@@ -37,11 +37,12 @@ export default class WCPayAPI {
 			publishableKey,
 			accountId,
 			forceNetworkSavedCards,
+			locale,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
-				this.stripePlatform = new Stripe( publishableKey );
+				this.stripePlatform = new Stripe( publishableKey, { locale } );
 			}
 			return this.stripePlatform;
 		}
@@ -49,6 +50,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			this.stripe = new Stripe( publishableKey, {
 				stripeAccount: accountId,
+				locale,
 			} );
 		}
 		return this.stripe;
