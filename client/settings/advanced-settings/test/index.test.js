@@ -20,5 +20,6 @@ describe( 'AdvancedSettings', () => {
 		userEvent.click( screen.getByText( 'Advanced settings' ) );
 
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Debug mode' ) ).toHaveFocus();
 	} );
 } );
