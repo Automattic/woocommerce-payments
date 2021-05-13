@@ -12,13 +12,15 @@ import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
 import './style.scss';
 
-const { accountStatus } = wcpaySettings;
+const { accountStatus, showUpdateDetailsTask } = wcpaySettings;
 
 const OverviewPage = () => {
 	return (
 		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
-			<TaskList tasks={ getTasks( { accountStatus } ) } />
+			<TaskList
+				tasks={ getTasks( { accountStatus, showUpdateDetailsTask } ) }
+			/>
 		</Page>
 	);
 };

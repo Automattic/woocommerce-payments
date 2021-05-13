@@ -6,7 +6,7 @@
 import { getTasks } from '../tasks';
 
 describe( 'getTasks()', () => {
-	it( 'should include business details when account will be restricted', () => {
+	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -14,16 +14,20 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
+			showUpdateDetailsTask: 'yes',
 		} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
-				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( {
+					key: 'update-business-details',
+					completed: false,
+				} ),
 			] )
 		);
 	} );
 
-	it( 'should include business details when account is restricted', () => {
+	it( 'should omit business details when flag is not set', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted',
@@ -31,16 +35,20 @@ describe( 'getTasks()', () => {
 				pastDue: true,
 				accountLink: 'http://example.com',
 			},
+			showUpdateDetailsTask: 'no',
 		} );
 
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
-				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( {
+					key: 'update-business-details',
+					completed: false,
+				} ),
 			] )
 		);
 	} );
 
-	it( 'should not include business details when account is complete', () => {
+	it( 'handles when account is complete', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'complete',
@@ -48,11 +56,15 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
+			showUpdateDetailsTask: 'yes',
 		} );
 
 		expect( actual ).toEqual(
 			expect.not.arrayContaining( [
-				expect.objectContaining( { key: 'update-business-details' } ),
+				expect.objectContaining( {
+					key: 'update-business-details',
+					completed: true,
+				} ),
 			] )
 		);
 	} );

@@ -7,7 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
-export const getTasks = ( { accountStatus } ) => {
+export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -34,7 +34,7 @@ export const getTasks = ( { accountStatus } ) => {
 			);
 	}
 	return [
-		( accountRestrictedSoon || accountDetailsPastDue ) && {
+		'yes' === showUpdateDetailsTask && {
 			key: 'update-business-details',
 			level: 1,
 			title: __(
@@ -42,10 +42,13 @@ export const getTasks = ( { accountStatus } ) => {
 				'woocommerce-payments'
 			),
 			content: accountDetailsTaskDescription,
-			completed: false,
-			onClick: () => {
-				window.open( accountLink, '_blank' );
-			},
+			completed: 'complete' === status,
+			onClick:
+				'complete' === status
+					? undefined
+					: () => {
+							window.open( accountLink, '_blank' );
+					  },
 		},
 	].filter( Boolean );
 };

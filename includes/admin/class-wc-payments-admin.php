@@ -219,6 +219,7 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
+		$this->add_update_business_details_task();
 	}
 
 	/**
@@ -257,6 +258,7 @@ class WC_Payments_Admin {
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
 				'accountStatus'         => $this->account->get_account_status_data(),
+				'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			]
 		);
 
@@ -473,6 +475,24 @@ class WC_Payments_Admin {
 				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
+		}
+	}
+
+	/**
+	 * Attempts to add a setup task to remind the user to update
+	 * their business details when the account is facing restriction.
+	 */
+	public function add_update_business_details_task() {
+		if ( 'yes' === get_option( 'wcpay_show_update_business_details_task', 'no' ) ) {
+			return;
+		}
+
+		$account  = $this->account->get_account_status_data();
+		$status   = $account['status'];
+		$past_due = isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false;
+
+		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
+			update_option( 'wcpay_show_update_business_details_task', 'yes' );
 		}
 	}
 }
