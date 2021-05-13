@@ -144,10 +144,10 @@ export const TransactionsList = ( props ) => {
 		getQuery(),
 		props.depositId
 	);
-	const {
-		transactionsSummary,
-		isLoading: isSummaryLoading,
-	} = useTransactionsSummary( getQuery(), props.depositId );
+	const { transactionsSummary } = useTransactionsSummary(
+		getQuery(),
+		props.depositId
+	);
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
@@ -340,17 +340,20 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
-	// Generate summary based on loading state and available currencies information
-	const summary = [
-		{
+	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+
+	const isSingleCurrency =
+		2 > ( transactionsSummary.store_currencies || [] ).length;
+
+	const summary = [];
+
+	// Generate summary if the data has been loaded and available currencies information
+	if ( transactionsSummary.count !== undefined ) {
+		summary.push( {
 			label: __( 'transactions', 'woocommerce-payments' ),
 			value: `${ transactionsSummary.count }`,
-		},
-	];
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	if ( ! isSummaryLoading ) {
-		const isSingleCurrency =
-			2 > ( transactionsSummary.store_currencies || [] ).length;
+		} );
+
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(
 				{
