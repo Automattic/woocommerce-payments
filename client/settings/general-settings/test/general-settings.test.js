@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import { useGeneralSettings } from '../../../data';
+import { useGeneralSettings } from 'data';
 
 jest.mock( '../../../data', () => ( {
 	useGeneralSettings: jest.fn(),

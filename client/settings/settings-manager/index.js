@@ -10,12 +10,12 @@ import React from 'react';
  * Internal dependencies
  */
 import './style.scss';
-import { LoadableBlock } from '../../components/loadable';
-import { useSettings } from '../../data';
+import { LoadableBlock } from 'components/loadable';
+import { useSettings } from 'data';
 import Banner from '../../banner';
 import PaymentMethods from '../../payment-methods';
 import SettingsSection from '../settings-section';
-import DigitalWallets from '../digital-wallets';
+import DigitalWallets from 'settings/digital-wallets';
 import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';

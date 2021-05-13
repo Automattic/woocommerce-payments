@@ -15,7 +15,7 @@ import {
  * Internal dependencies
  */
 import './style.scss';
-import { useGeneralSettings } from '../../data';
+import { useGeneralSettings } from 'data';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 

@@ -12,7 +12,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './style.scss';
-import { useEnabledPaymentMethodIds } from '../data';
+import { useEnabledPaymentMethodIds } from 'data';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';

@@ -11,7 +11,7 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import PaymentMethods from '../';
-import { useEnabledPaymentMethodIds } from '../../data';
+import { useEnabledPaymentMethodIds } from 'data';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
