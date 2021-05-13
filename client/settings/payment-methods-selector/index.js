@@ -3,36 +3,32 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl, Icon, Modal } from '@wordpress/components';
+import { Button, Modal } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { HorizontalRule } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
  */
+
 import { addSelectedPaymentMethods } from 'data';
-import PaymentMethodIcon from 'settings/payment-method-icon';
+import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
+import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import './style.scss';
 
-const PaymentMethodsSelector = ( props ) => {
-	const { onClose, enabledPaymentMethods = [] } = props;
+const PaymentMethodsSelector = ( { onClose, enabledPaymentMethods = [] } ) => {
 	const [ paymentMethods, setPaymentMethods ] = useState(
-		enabledPaymentMethods.reduce(
-			( acc, value ) => {
-				acc[ value ] = true;
-				return acc;
-			},
-			{ giropay: false, sofort: false, sepa: false }
-		)
+		enabledPaymentMethods.reduce( ( acc, value ) => {
+			acc[ value ] = true;
+			return acc;
+		}, {} )
 	);
 
-	const makeHandlePaymentMethodChange = ( paymentMethod ) => {
-		return ( enabled ) => {
-			setPaymentMethods( ( oldPaymentMethods ) => ( {
-				...oldPaymentMethods,
-				[ paymentMethod ]: enabled,
-			} ) );
-		};
+	const handleChange = ( paymentMethod, enabled ) => {
+		setPaymentMethods( ( oldPaymentMethods ) => ( {
+			...oldPaymentMethods,
+			[ paymentMethod ]: enabled,
+		} ) );
 	};
 
 	const handleAddSelected = () => {
@@ -54,57 +50,33 @@ const PaymentMethodsSelector = ( props ) => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ul>
-				<li className="woocommerce-payments__payment-method-selector__list-item">
-					<CheckboxControl
-						checked={ paymentMethods.giropay }
-						onChange={ makeHandlePaymentMethodChange( 'giropay' ) }
-						label={ <PaymentMethodIcon name="giropay" showName /> }
-					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
-						missing fees
-					</span>
-					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item__info"
-						icon="info-outline"
-					/>
-				</li>
-				<li className="woocommerce-payments__payment-method-selector__list-item">
-					<CheckboxControl
-						checked={ paymentMethods.sofort }
-						onChange={ makeHandlePaymentMethodChange( 'sofort' ) }
-						label={ <PaymentMethodIcon name="sofort" showName /> }
-					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
-						missing fees
-					</span>
-					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item__info"
-						icon="info-outline"
-					/>
-				</li>
-				<li className="woocommerce-payments__payment-method-selector__list-item">
-					<CheckboxControl
-						checked={ paymentMethods.sepa }
-						onChange={ makeHandlePaymentMethodChange( 'sepa' ) }
-						label={ <PaymentMethodIcon name="sepa" showName /> }
-					/>
-					<span className="woocommerce-payments__payment-method-selector__list-item__fees">
-						missing fees
-					</span>
-					<Icon
-						className="woocommerce-payments__payment-method-selector__list-item__info"
-						icon="info-outline"
-					/>
-				</li>
-			</ul>
+			<PaymentMethodCheckboxes>
+				<PaymentMethodCheckbox
+					checked={ paymentMethods.giropay }
+					onChange={ handleChange }
+					fees="missing fees"
+					name="giropay"
+				/>
+				<PaymentMethodCheckbox
+					checked={ paymentMethods.sofort }
+					onChange={ handleChange }
+					fees="missing fees"
+					name="sofort"
+				/>
+				<PaymentMethodCheckbox
+					checked={ paymentMethods.sepa }
+					onChange={ handleChange }
+					fees="missing fees"
+					name="sepa"
+				/>
+			</PaymentMethodCheckboxes>
 			<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
 			<div className="woocommerce-payments__payment-method-selector__footer">
+				<Button isSecondary onClick={ onClose }>
+					{ __( 'Cancel', 'woocommerce-payments' ) }
+				</Button>
 				<Button isPrimary onClick={ handleAddSelected }>
 					{ __( 'Add selected', 'woocommerce-payments' ) }
-				</Button>
-				<Button isTertiary onClick={ onClose }>
-					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 			</div>
 		</Modal>

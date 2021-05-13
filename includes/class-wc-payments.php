@@ -14,6 +14,7 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
+use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -47,6 +48,13 @@ class WC_Payments {
 	 * @var Sofort_Payment_Gateway
 	 */
 	private static $sofort_gateway;
+
+	/**
+	 * Instance of Digital Wallets payment gateway, created in init function.
+	 *
+	 * @var Digital_Wallets_Payment_Gateway
+	 */
+	private static $digital_wallets_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -162,6 +170,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-digital-wallets-payment-gateway.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -190,10 +199,12 @@ class WC_Payments {
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
 
-		$gateway_class = CC_Payment_Gateway::class;
-		$giropay_class = Giropay_Payment_Gateway::class;
-		$sepa_class    = Sepa_Payment_Gateway::class;
-		$sofort_class  = Sofort_Payment_Gateway::class;
+		$gateway_class         = CC_Payment_Gateway::class;
+		$giropay_class         = Giropay_Payment_Gateway::class;
+		$sepa_class            = Sepa_Payment_Gateway::class;
+		$sofort_class          = Sofort_Payment_Gateway::class;
+		$digital_wallets_class = Digital_Wallets_Payment_Gateway::class;
+
 		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
@@ -210,6 +221,9 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			self::$digital_wallets_gateway = new $digital_wallets_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
+		}
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
@@ -222,6 +236,9 @@ class WC_Payments {
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
 
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-translations-loader.php';
+		WC_Payments_Translations_Loader::init();
+
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -233,6 +250,9 @@ class WC_Payments {
 			if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 				include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
 				new WC_Payments_Admin_Sections_Overwrite();
+
+				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
+				new WC_Payments_Admin_Additional_Methods_Setup();
 			}
 		}
 
@@ -449,26 +469,20 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		$gateways[] = self::$card_gateway;
-		// if ( WC_Payments_Features::is_giropay_enabled() ) {
-		// 	$gateways[] = self::$giropay_gateway;
-		// }
-		// if ( WC_Payments_Features::is_sepa_enabled() ) {
-		// 	$gateways[] = self::$sepa_gateway;
-		// }
-		// if ( WC_Payments_Features::is_sofort_enabled() ) {
-		// 	$gateways[] = self::$sofort_gateway;
-		// }
-
 		return $gateways;
 	}
 
 	/**
 	 * Called on Payments setting page.
-	 * Remove all WCPay gateways except CC one.
+	 *
+	 * Remove all WCPay gateways except CC one. Comparison is done against
+	 * $self::card_gateway because it should be the same instance as
+	 * registered with WooCommerce and class can change depending on
+	 * environment (see `init` method where $card_gateway is set).
 	 */
 	public static function hide_gateways_on_settings_page() {
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
-			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && ! $payment_gateway instanceof CC_Payment_Gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== self::$card_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
 			}
 		}
@@ -504,13 +518,17 @@ class WC_Payments {
 
 		$http_class = self::get_wc_payments_http();
 
-		$payments_api_client = new WC_Payments_API_Client(
+		$api_client_class = apply_filters( 'wc_payments_api_client', 'WC_Payments_API_Client' );
+
+		if ( ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
+			$api_client_class = 'WC_Payments_API_Client';
+		}
+
+		return new $api_client_class(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			$http_class,
 			self::$db_helper
 		);
-
-		return $payments_api_client;
 	}
 
 	/**
@@ -561,6 +579,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-connection-tokens-controller.php';
 		$conn_tokens_controller = new WC_REST_Payments_Connection_Tokens_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$conn_tokens_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::$card_gateway );
+		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-timeline-controller.php';
 		$timeline_controller = new WC_REST_Payments_Timeline_Controller( self::$api_client );
@@ -681,4 +703,5 @@ class WC_Payments {
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
+
 }

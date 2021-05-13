@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
@@ -11,8 +11,25 @@ import user from '@testing-library/user-event';
  */
 import PaymentMethods from '../';
 
+jest.mock( 'data', () => ( { addSelectedPaymentMethods: jest.fn() } ) );
+
 describe( 'PaymentMethods', () => {
 	test( 'renders the "Add payment method" button', () => {
+		render(
+			<PaymentMethods
+				enabledMethodIds={ [] }
+				onEnabledMethodIdsChange={ () => {} }
+			/>
+		);
+
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		expect( addPaymentMethodButton ).toBeInTheDocument();
+	} );
+
+	test( '"Add payment method" button opens the payment methods selector modal', () => {
 		render(
 			<PaymentMethods
 				enabledMethodIds={ [] }
@@ -24,7 +41,10 @@ describe( 'PaymentMethods', () => {
 			name: 'Add payment method',
 		} );
 
-		expect( addPaymentMethodButton ).toBeInTheDocument();
+		fireEvent.click( addPaymentMethodButton );
+		expect(
+			screen.queryByText( 'Add payment methods' )
+		).toBeInTheDocument();
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {
@@ -55,6 +75,27 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'enabled methods are rendered with "Manage" and "Delete" buttons', () => {
+		const enabledMethodIds = [ 'cc', 'sepa' ];
+
+		render(
+			<PaymentMethods
+				enabledMethodIds={ enabledMethodIds }
+				onEnabledMethodIdsChange={ () => {} }
+			/>
+		);
+
+		const cc = screen.getByText( 'Credit card / debit card' );
+		const listItem = cc.closest( 'li' );
+
+		expect(
+			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
+		).toBeInTheDocument();
+		expect(
+			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+		).toBeInTheDocument();
+	} );
+
+	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
 		const enabledMethodIds = [ 'cc' ];
 
 		render(
@@ -67,12 +108,12 @@ describe( 'PaymentMethods', () => {
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const listItem = cc.closest( 'li' );
 
-		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'button', { name: 'Manage' } )
-		);
-		expect( listItem ).toContainElement(
-			within( listItem ).getByRole( 'button', { name: 'Delete' } )
-		);
+		expect(
+			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
+		).toBeInTheDocument();
+		expect(
+			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
@@ -98,40 +139,6 @@ describe( 'PaymentMethods', () => {
 		);
 		expect( onEnabledMethodIdsChange ).toHaveBeenCalledWith(
 			expectedUpdatedMethodIds
-		);
-	} );
-
-	test( 'all methods are rendered with their IDs as classes', () => {
-		const enabledMethods = {
-			'Credit card / debit card': 'cc',
-			giropay: 'giropay',
-		};
-		const availableMethods = {
-			Sofort: 'sofort',
-			'Direct debit payment': 'sepa',
-		};
-
-		render(
-			<PaymentMethods
-				enabledMethodIds={ Object.values( enabledMethods ) }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
-
-		Object.entries( enabledMethods ).forEach(
-			( [ label, expectedClass ] ) => {
-				expect( screen.getByText( label ).closest( 'li' ) ).toHaveClass(
-					expectedClass
-				);
-			}
-		);
-
-		Object.entries( availableMethods ).forEach(
-			( [ label, expectedClass ] ) => {
-				expect( screen.getByLabelText( label ) ).toHaveClass(
-					expectedClass
-				);
-			}
 		);
 	} );
 } );

@@ -326,7 +326,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 
-
 		add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
@@ -466,11 +465,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function output_payments_settings_screen() {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
-		$hide_save_button = true;
+		$hide_save_button                  = true;
+		$is_payment_method_settings_screen = self::GATEWAY_ID !== $this->id;
 
-		?>
-		<div id="wcpay-account-settings-container"></div>
-		<?php
+		if ( $is_payment_method_settings_screen ) :
+			?>
+			<div
+				id="wcpay-payment-method-settings-container"
+				data-method-id="<?php echo esc_attr( $this->id ); ?>"
+			></div>
+		<?php else : ?>
+			<div id="wcpay-account-settings-container"></div>
+			<?php
+		endif;
 	}
 
 	/**
@@ -704,7 +711,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		// Just in case we get here from any other redirection payment methods
+		// Just in case we get here from any other redirection payment methods.
 		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 		if ( self::GATEWAY_ID !== $payment_method ) {
 			return;
@@ -935,7 +942,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$token = $payment_information->get_payment_token();
 				$this->add_token_to_order( $order, $token );
 			}
-
 		}
 
 		$response = $this->update_order_for_confirmed_intent( $order, $intent );
@@ -958,8 +964,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Updates the order status after a payment/setup intent has been confirmed.
 	 *
-	 * @param WC_Order $order Order in progress
-	 * @param WC_Payments_API_Intention|array $intent Payment/Setup intent
+	 * @param WC_Order                        $order Order in progress.
+	 * @param WC_Payments_API_Intention|array $intent Payment/Setup intent.
 	 */
 	public function update_order_for_confirmed_intent( $order, $intent ) {
 		$is_payment_intent = $intent instanceof WC_Payments_API_Intention;
@@ -1011,7 +1017,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$order->set_status( 'on-hold', $note );
-
 				break;
 			case 'requires_action':
 				if ( $payment_needed ) {
@@ -1057,7 +1062,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $status );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
 		$order->save();
 
@@ -1488,10 +1495,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Capture previously authorized charge.
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
+	 *
+	 * @return array An array containing the status (succeeded/failed), id (intent ID), and message (error message if any)
 	 */
 	public function capture_charge( $order ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
+		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
@@ -1573,6 +1583,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_authorization_expired ) {
 			WC_Payments_Utils::mark_payment_expired( $order );
 		}
+
+		return [
+			'status'  => $status ?? 'failed',
+			'id'      => ! empty( $intent ) ? $intent->get_id() : null,
+			'message' => $error_message,
+		];
 	}
 
 	/**
@@ -2135,12 +2151,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_enabled_payment_gateways() {
 		$enabled_gateways = [ 'card' ];
-		// if (
-		// 	WC_Payments_Features::is_giropay_enabled() &&
-		// 	'yes' === $this->get_option( Giropay_Payment_Gateway::METHOD_ENABLED_KEY )
-		// ) {
-		// 	$enabled_gateways[] = 'giropay';
-		// }
 		if (
 			WC_Payments_Features::is_sepa_enabled() &&
 			'yes' === $this->get_option( Sepa_Payment_Gateway::METHOD_ENABLED_KEY )

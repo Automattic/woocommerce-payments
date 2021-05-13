@@ -15,6 +15,8 @@ const webpackConfig = {
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
+		'additional-methods-setup':
+			'./client/additional-methods-setup/index.js',
 	},
 	output: {
 		filename: '[name].js',
@@ -62,7 +64,7 @@ const webpackConfig = {
 				loader: 'source-map-loader',
 			},
 			{
-				test: /\.svg$/,
+				test: /\.(svg|png)$/,
 				exclude: /node_modules/,
 				loader: 'url-loader',
 			},

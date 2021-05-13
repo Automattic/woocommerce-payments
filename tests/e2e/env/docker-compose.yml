@@ -18,6 +18,7 @@ services:
       - ${E2E_ROOT}/docker/logs/apache2/:/var/log/apache2
       - ${WCP_ROOT}:/var/www/html/wp-content/plugins/woocommerce-payments
       - ${E2E_ROOT}/deps/${DEV_TOOLS_DIR}:/var/www/html/wp-content/plugins/${DEV_TOOLS_DIR}
+      - ${E2E_ROOT}/deps/woocommerce-subscriptions:/var/www/html/wp-content/plugins/woocommerce-subscriptions
   db:
     container_name: wcp_e2e_mysql
     image: mysql:5.7

@@ -153,8 +153,9 @@ jQuery( function ( $ ) {
 		if( null === paymentElement ) {
 			api.createIntent()
 				.then( ( data ) => {
-					const { client_secret: clientSecret, id: paymentIntentId } = data;
+					const { client_secret: clientSecret, id: id } = data;
 
+					paymentIntentId = id;
 					paymentElement = elements.create( 'payment', { clientSecret } );
 					paymentElement.mount( '#wcpay-card-element' );
 				} )

@@ -15,55 +15,75 @@ describe( 'PaymentMethod', () => {
 	test( 'renders label and description', () => {
 		render( <PaymentMethod label="Foo" description="Bar" /> );
 
-		expect( screen.getByText( 'Foo' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'Bar' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Foo' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	test( 'renders Manage and Delete buttons', () => {
-		render( <PaymentMethod label="Foo" /> );
+	test( 'renders "Manage" and "Delete"', () => {
+		render( <PaymentMethod label="Foo" onDeleteClick={ jest.fn() } /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.queryByRole( 'link', {
 			name: 'Manage',
 		} );
 
-		const deleteButton = screen.getByRole( 'button', {
+		const deleteButton = screen.queryByRole( 'button', {
 			name: 'Delete',
 		} );
 
-		expect( manageButton ).toBeInTheDocument( manageButton );
-		expect( deleteButton ).toBeInTheDocument( deleteButton );
+		expect( manageLink ).toBeInTheDocument();
+		expect( deleteButton ).toBeInTheDocument();
 	} );
 
-	test( 'clicking Manage button calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( 'does not render "Delete" when the handler is not provided', () => {
+		render( <PaymentMethod label="Foo" onDeleteClick={ undefined } /> );
 
-		const manageButton = screen.getByRole( 'button', {
+		const manageLink = screen.queryByRole( 'link', {
 			name: 'Manage',
 		} );
-		user.click( manageButton );
-		expect( onManageClick ).toHaveBeenCalled();
+
+		const deleteButton = screen.queryByRole( 'button', {
+			name: 'Delete',
+		} );
+
+		expect( manageLink ).toBeInTheDocument();
+		expect( deleteButton ).not.toBeInTheDocument();
 	} );
 
-	test( 'clicking Delete button calls onDeleteClick()', () => {
-		const onDeleteClick = jest.fn();
-		render( <PaymentMethod label="Foo" onDeleteClick={ onDeleteClick } /> );
+	test( '"Manage" is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
+
+		const manageLink = screen.getByRole( 'link', {
+			name: 'Manage',
+		} );
+		expect( manageLink.getAttribute( 'href' ) ).toEqual(
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
+		);
+	} );
+
+	test( 'clicking "Delete" button calls onDeleteClick()', () => {
+		const handleDeleteClickMock = jest.fn();
+		render(
+			<PaymentMethod
+				label="Foo"
+				onDeleteClick={ handleDeleteClickMock }
+			/>
+		);
 
 		const deleteButton = screen.getByRole( 'button', {
 			name: 'Delete',
 		} );
 		user.click( deleteButton );
-		expect( onDeleteClick ).toHaveBeenCalled();
+		expect( handleDeleteClickMock ).toHaveBeenCalled();
 	} );
 
-	test( 'clicking label calls onManageClick()', () => {
-		const onManageClick = jest.fn();
-		render( <PaymentMethod label="Foo" onManageClick={ onManageClick } /> );
+	test( 'label is a link to expected URL', () => {
+		render( <PaymentMethod id="foo" label="Bar" /> );
 
-		const paymentMethodLabel = screen.getByRole( 'button', {
-			name: 'Foo',
+		const paymentMethodLabel = screen.getByRole( 'link', {
+			name: 'Bar',
 		} );
-		user.click( paymentMethodLabel );
-		expect( onManageClick ).toHaveBeenCalled();
+		expect( paymentMethodLabel.getAttribute( 'href' ) ).toEqual(
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_foo'
+		);
 	} );
 } );

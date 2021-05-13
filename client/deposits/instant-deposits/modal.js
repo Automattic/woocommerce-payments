@@ -14,19 +14,22 @@ import { formatCurrency } from 'utils/currency';
 import './style.scss';
 
 const InstantDepositModal = ( {
-	amount,
-	fee,
-	net,
+	instantBalance: { amount, fee, net, fee_percentage: percentage },
 	onClose,
 	onSubmit,
 	inProgress,
 } ) => {
-	const learnMoreHref = 'https://docs.woocommerce.com/document/payments/';
+	const learnMoreHref =
+		'https://docs.woocommerce.com/document/payments/instant-deposits/';
+	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
-		/* translators: <a> - instant payout doc URL */
-		__(
-			'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal 1% service fee. <a>Learn more</a>',
-			'woocommerce-payments'
+		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */
+		sprintf(
+			__(
+				'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal %s service fee. <a>Learn more</a>',
+				'woocommerce-payments'
+			),
+			feePercentage
 		),
 		{
 			a: (
@@ -39,6 +42,7 @@ const InstantDepositModal = ( {
 			),
 		}
 	);
+
 	return (
 		<Modal
 			title={ __( 'Instant deposit', 'woocommerce-payments' ) }
@@ -55,7 +59,11 @@ const InstantDepositModal = ( {
 					<span>{ formatCurrency( amount ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__fee">
-					{ __( '1% service fee: ', 'woocommerce-payments' ) }
+					{ sprintf(
+						/* translators: %s - amount representing the fee percentage */
+						__( '%s service fee: ', 'woocommerce-payments' ),
+						feePercentage
+					) }
 					<span>-{ formatCurrency( fee ) }</span>
 				</li>
 				<li className="wcpay-instant-deposits-modal__net">
@@ -64,21 +72,23 @@ const InstantDepositModal = ( {
 				</li>
 			</ul>
 
-			<Button
-				isPrimary
-				onClick={ onSubmit }
-				isBusy={ inProgress }
-				disabled={ inProgress }
-			>
-				{ sprintf(
-					/* translators: %s: Monetary amount to deposit */
-					__( 'Deposit %s now', 'woocommerce-payments' ),
-					formatCurrency( net )
-				) }
-			</Button>
-			<Button isSecondary onClick={ onClose }>
-				{ __( 'Close', 'woocommerce-payments' ) }
-			</Button>
+			<div className="wcpay-instant-deposits-modal__footer">
+				<Button isSecondary onClick={ onClose }>
+					{ __( 'Cancel', 'woocommerce-payments' ) }
+				</Button>
+				<Button
+					isPrimary
+					onClick={ onSubmit }
+					isBusy={ inProgress }
+					disabled={ inProgress }
+				>
+					{ sprintf(
+						/* translators: %s: Monetary amount to deposit */
+						__( 'Deposit %s now', 'woocommerce-payments' ),
+						formatCurrency( net )
+					) }
+				</Button>
+			</div>
 		</Modal>
 	);
 };
