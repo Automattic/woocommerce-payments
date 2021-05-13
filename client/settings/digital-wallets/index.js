@@ -37,7 +37,7 @@ const DigitalWallets = () => {
 					checked={ isEnabled }
 					onChange={ setIsEnabled }
 					label={ __(
-						'Enable digital wallets & express payment methods',
+						'Enable 1-click checkouts',
 						'woocommerce-payments'
 					) }
 					/* eslint-disable jsx-a11y/anchor-has-content */
@@ -83,7 +83,7 @@ const DigitalWallets = () => {
 				/>
 				<h4>
 					{ __(
-						'Show digital wallets & express payment methods on:',
+						'Show 1-click checkouts on:',
 						'woocommerce-payments'
 					) }
 				</h4>
