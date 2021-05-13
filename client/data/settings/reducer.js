@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import TYPES from './action-types';
+import ACTION_TYPES from './action-types';
 
 const defaultState = {
 	isSaving: false,
@@ -15,19 +15,19 @@ export const receiveSettings = (
 	{ type, ...action }
 ) => {
 	switch ( type ) {
-		case TYPES.SET_SETTINGS:
+		case ACTION_TYPES.SET_SETTINGS:
 			return {
 				...state,
 				data: action.data,
 			};
 
-		case TYPES.SET_IS_SAVING_SETTINGS:
+		case ACTION_TYPES.SET_IS_SAVING_SETTINGS:
 			return {
 				...state,
 				isSaving: action.isSaving,
 			};
 
-		case TYPES.SET_ENABLED_PAYMENT_METHOD_IDS:
+		case ACTION_TYPES.SET_ENABLED_PAYMENT_METHOD_IDS:
 			return {
 				...state,
 				data: {
@@ -37,7 +37,7 @@ export const receiveSettings = (
 				},
 			};
 
-		case TYPES.SET_IS_WCPAY_ENABLED:
+		case ACTION_TYPES.SET_IS_WCPAY_ENABLED:
 			return {
 				...state,
 				data: {

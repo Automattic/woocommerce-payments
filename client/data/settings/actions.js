@@ -10,33 +10,33 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import TYPES from './action-types';
+import ACTION_TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from '../constants';
 
 export function updateSettings( data ) {
 	return {
-		type: TYPES.SET_SETTINGS,
+		type: ACTION_TYPES.SET_SETTINGS,
 		data,
 	};
 }
 
 export function updateIsWCPayEnabled( isEnabled ) {
 	return {
-		type: TYPES.SET_IS_WCPAY_ENABLED,
+		type: ACTION_TYPES.SET_IS_WCPAY_ENABLED,
 		isEnabled,
 	};
 }
 
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return {
-		type: TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
+		type: ACTION_TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
 		methodIds,
 	};
 }
 
 export function updateIsSavingSettings( isSaving ) {
 	return {
-		type: TYPES.SET_IS_SAVING_SETTINGS,
+		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
 		isSaving,
 	};
 }
