@@ -15,4 +15,4 @@ export * from './transactions';
 export * from './charges';
 export * from './timeline';
 export * from './disputes';
-export * from './settings';
+export * from './settings/hooks';
