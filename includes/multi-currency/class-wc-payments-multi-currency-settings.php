@@ -16,52 +16,19 @@ if ( class_exists( 'WC_Payments_Multi_Currency_Settings', false ) ) {
  */
 class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 	// TODO: make all filters uniform.
-	/**
-	 * Mock currencies.
-	 */
-	public function get_enabled_currencies() {
-		$usd          = new stdClass();
-		$usd->name    = 'US Dollars';
-		$usd->abbr    = 'USD';
-		$usd->img     = '';
-		$usd->default = true;
-		$usd->id      = strtolower( $usd->abbr );
-
-		$cad          = new stdClass();
-		$cad->name    = 'Canadian Dollars';
-		$cad->abbr    = 'CAD';
-		$cad->img     = '';
-		$cad->default = false;
-		$cad->id      = strtolower( $cad->abbr );
-
-		$gbp          = new stdClass();
-		$gbp->name    = 'British Pounds';
-		$gbp->abbr    = 'GBP';
-		$gbp->img     = '';
-		$gbp->default = false;
-		$gbp->id      = strtolower( $gbp->abbr );
-
-		$eur          = new stdClass();
-		$eur->name    = 'Euros';
-		$eur->abbr    = 'EUR';
-		$eur->img     = '';
-		$eur->default = false;
-		$eur->id      = strtolower( $eur->abbr );
-
-		return [ $usd, $cad, $gbp, $eur ];
-	}
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->id    = 'wcpay-multi-currency';
+		$this->id    = 'wcpay_multi_currency';
 		$this->label = _x( 'WIP Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		add_action( 'woocommerce_admin_field_wcpay_multi_currencies', [ $this, 'wcpay_multi_currencies_setting' ] );
 		parent::__construct();
 
-		$this->enabled_currencies = $this->get_enabled_currencies();
+		$this->available_currencies = $this->get_available_currencies();
+		$this->enabled_currencies   = $this->get_enabled_currencies();
 	}
 
 	/**
@@ -72,6 +39,65 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 	 *
 	 * TODO: Make sure to fix any text domains for translations.
 	 */
+
+	/**
+	 * Mock currencies.
+	 */
+	public function get_available_currencies() {
+		$mock_currencies = [
+			[ 'US Dollars', 'USD', '1.00', true ],
+			[ 'Canadian Dollars', 'CAD', '1.206823', true ],
+			[ 'British Pounds', 'GBP', '0.708099', true ],
+			[ 'Euros', 'EUR', '0.826381', true ],
+			[ 'Arab Emirates Dirhams', 'AED', '3.6732', false ],
+			[ 'Congolese Francs', 'CDF', '2000', false ],
+			[ 'New Zealand Dollars', 'NZD', '1.387163', false ],
+			[ 'Danish Krones', 'DKK', '6.144615', false ],
+			[ 'Burundian Francs', 'BIF', '1974', false ], // Zero dollar currency.
+			[ 'Chilean Pesos', 'CLP', '706.8', false ], // Zero dollar currency.
+		];
+
+		$available = [];
+		foreach ( $mock_currencies as $currency ) {
+			$c       = new stdClass();
+			$c->id   = strtolower( $currency[1] );
+			$c->name = $currency[0];
+			$c->abbr = $currency[1];
+			$c->rate = $currency[2];
+			$c->img  = '';
+			$c->auto = $currency[3]; // Auto enable for dev purposes.
+
+			$available[ $c->abbr ] = $c;
+		}
+
+		return $available;
+	}
+
+	/**
+	 * Mock currencies.
+	 */
+	public function get_default_currency() {
+
+		// For dev purposes.
+		foreach ( $this->available_currencies as $currency ) {
+			if ( $currency->auto ) {
+				$default[] = $currency;
+			}
+		}
+		return $default;
+
+		return $this->available_currencies[ get_woocommerce_currency() ];
+	}
+
+	/**
+	 * Mock currencies.
+	 */
+	public function get_enabled_currencies() {
+		// This should pull from the database.
+		// If there is no setting in the database, then use the store's default currency.
+
+		return get_option( $this->id . '_enabled_currencies', $this->get_default_currency() );
+	}
 
 	/**
 	 * Get sections.
@@ -97,7 +123,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 		if ( '' === $current_section ) {
 			$settings = apply_filters(
-				'wcpay_multi_currency_currencies',
+				$this->id . '_enabled_currencies_settings',
 				[
 					[
 						'title' => __( 'Enabled currencies', 'woocommerce-payments' ),
@@ -108,7 +134,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 							''
 						),
 						'type'  => 'title',
-						'id'    => 'wcpay_enabled_currencies',
+						'id'    => $this->id . '_enabled_currencies',
 					],
 
 					[
@@ -117,13 +143,13 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 					[
 						'type' => 'sectionend',
-						'id'   => 'wcpay_enabled_currencies',
+						'id'   => $this->id . '_enabled_currencies',
 					],
 				]
 			);
 		} elseif ( 'store' === $current_section ) {
 			$settings = apply_filters(
-				'wcpay_multi_currency_store_settings',
+				$this->id . 'store_settings',
 				[
 					[
 						'title' => __( 'Store settings', 'woocommerce-payments' ),
@@ -134,7 +160,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 							''
 						),
 						'type'  => 'title',
-						'id'    => 'store_settings',
+						'id'    => $this->id . '_store_settings',
 					],
 
 					[
@@ -146,7 +172,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 							__( 'Customers will be notified via store alert banner. <a href="%s">Preview</a>', 'woocommerce-payments' ),
 							''
 						),
-						'id'            => 'wcpay_mc_enable_auto_currency',
+						'id'            => $this->id . '_enable_auto_currency',
 						'default'       => 'no',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'start',
@@ -161,7 +187,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
 							''
 						),
-						'id'            => 'wcpay_mc_enable_cart_switcher',
+						'id'            => $this->id . '_enable_cart_switcher',
 						'default'       => 'no',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'end',
@@ -169,7 +195,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 					[
 						'type' => 'sectionend',
-						'id'   => 'store_settings',
+						'id'   => $this->id . 'store_settings',
 					],
 				]
 			);
@@ -198,6 +224,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 	 * Output payment gateway settings.
 	 */
 	public function wcpay_multi_currencies_setting() {
+		$wc_currency = get_woocommerce_currency();
 
 		?>
 		<tr valign="top">
@@ -210,7 +237,7 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 							'name' => __( 'Currency name', 'woocommerce-payments' ),
 						];
 
-						$columns = apply_filters( 'wcpay_enabled_currencies_columns', $default_columns );
+						$columns = apply_filters( $this->id . '_enabled_currencies_columns', $default_columns );
 
 						foreach ( $columns as $key => $column ) {
 							echo '<th class="' . esc_attr( $key ) . '">' . esc_html( $column ) . '</th>';
@@ -229,9 +256,9 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 								switch ( $key ) {
 									case 'name':
-										echo '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=' . $this->id . '&section=' . strtolower( $currency->id ) ) ) . '" class="wcpay_multi_currencies_name">' . wp_kses_post( $currency->name ) . '</a>';
-										$abbr = '<span class="wc-payment-gateway-method-name">(' . wp_kses_post( $currency->abbr );
-										if ( $currency->default ) {
+										echo '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=' . $this->id . '&section=' . strtolower( $currency->id ) ) ) . '" class="' . $this->id . '_name">' . wp_kses_post( $currency->name ) . '</a>';
+										$abbr = '<span class="' . $this->id . '_abbreviation">(' . wp_kses_post( $currency->abbr );
+										if ( $wc_currency == $currency->abbr ) {
 											$abbr .= '&nbsp;&ndash;&nbsp;';
 											$abbr .= __( 'Default currency', 'woocommerce-payments' );
 										}
@@ -240,8 +267,9 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 										break;
 								}
+								// TODO: This should probably be sprintf.
 								echo '<div class="row-actions">';
-								echo '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=' . $this->id . '&section=' . strtolower( $currency->id ) ) ) . '">Edit</a> | <a href="#" class="wcpay_multi_currencies_remove">Remove</a>';
+								echo '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=' . $this->id . '&section=' . strtolower( $currency->id ) ) ) . '">Edit</a> | <a href="#" class="' . $this->id . '_remove">Remove</a>';
 								echo '</div>';
 								echo '</td>';
 							}
@@ -257,22 +285,33 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 	}
 
 	/**
+	 * Don't lint me.
+	 * 
+	 * @param string $abbr The currency abbreviation.
+	 */
+	public function get_currency_name( $abbr ) {
+		$wc_currencies = get_woocommerce_currencies();
+		return $wc_currencies[ $abbr ];
+	}
+
+	/**
 	 * This docbloc still needs to be completed.
 	 * TODO: this ^
 	 *
 	 * @param object $currency The currency object we're getting settings for.
 	 */
 	public function get_currency_setting( $currency ) {
-
 		$back_url      = esc_url( admin_url( 'admin.php?page=wc-settings&tab=' . $this->id ) );
-		$currency_name = $currency->name . ' (' . $currency->abbr . ')';
+
+		$currency_name = $this->get_currency_name( $currency->abbr );
 		$page_title    = sprintf(
-			/* translators: %1$s: url back to currencies, %2$s: current currency name for page title */
-			__( '<a href="%1$s">Currencies</a> > %2$s', 'woocommerce-payments' ),
+			/* translators: %1$s: url back to currencies, %2$s: current currency name for page title, %3$s: currency abbreviation. */
+			__( '<a href="%1$s">Currencies</a> > %2$s (%3$s)', 'woocommerce-payments' ),
 			$back_url,
-			$currency_name
+			$currency_name,
+			$currency->abbr
 		);
-		$page_id = 'wcpay_mc_single_currency';
+		$page_id = $this->id . '_single_currency';
 
 		$option_automatic = sprintf(
 			/* translators: %1$s: default currency rate, %2$s: new currency exchange rate, %3$s: time rates were last updated. */
@@ -290,7 +329,10 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 			''
 		);
 		$rounding_options = [
-			'100' => __( '$1.00 (recommended)', 'woocommerce-payments' ),
+			'1000' => '$10.00',
+			'100'  => __( '$1.00 (recommended)', 'woocommerce-payments' ),
+			'10'   => '$0.10',
+			'1'    => '$0.01',
 		];
 
 		$charm_desc = sprintf(
@@ -306,12 +348,12 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 		$preview_desc = sprintf(
 			/* translators: %1$s: default currency of the store, %2$s currency being converted to. */
 			__( 'Enter a price in your default currency (%1$s) to see it converted into %2$s using the excange rate and formatting rules above.', 'woocommerce-payments' ),
-			'US Dollars',
-			$currency->name
+			'Default currency abbr',
+			$currency->abbr
 		);
 
 		return apply_filters(
-			'wcpay_multi_currency_single_settings',
+			$this->id . '_single_settings',
 			[
 				[
 					'title' => $page_title,
@@ -321,8 +363,8 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 
 				[
 					'title'           => __( 'Exchange rate', 'woocommerce-payments' ),
-					'id'              => 'wcpay_mc_exchange_rate_' . $currency->id,
-					'default'         => 'billing',
+					'id'              => $this->id . '_exchange_rate_' . $currency->id,
+					'default'         => 'automatic',
 					'type'            => 'radio',
 					'options'         => [
 						'automatic' => $option_automatic,
@@ -341,20 +383,20 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 				[
 					'name'     => __( 'Price rounding', 'woocommerce-payments' ),
 					'desc'     => $rounding_desc,
-					'id'       => 'wcpay_mc_price_rounding_' . $currency->id,
+					'id'       => $this->id . '_price_rounding_' . $currency->id,
 					'default'  => 100,
 					'type'     => 'select',
-					'options'  => apply_filters( 'wcpay_mc_price_rounding_options', $rounding_options ),
+					'options'  => apply_filters( $this->id . '_price_rounding_options', $rounding_options ),
 					'desc_tip' => __( 'Recommend doing $1.00', 'woocommerce-payments' ),
 				],
 
 				[
 					'name'     => __( 'Charm pricing', 'woocommerce-payments' ),
 					'desc'     => $charm_desc,
-					'id'       => 'wcpay_mc_price_charm_' . $currency->id,
+					'id'       => $this->id . '_price_charm_' . $currency->id,
 					'default'  => 0,
 					'type'     => 'select',
-					'options'  => apply_filters( 'wcpay_mc_price_charm_options', $charm_options ),
+					'options'  => apply_filters( $this->id . '_price_charm_options', $charm_options ),
 					'desc_tip' => __( 'Hey there!', 'woocommerce-payments' ),
 				],
 
@@ -371,16 +413,16 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 				],
 
 				[
-					'name'        => __( 'US Dollars', 'woocommerce-payments' ), // Should be default currency.
-					'id'          => $page_id . '_preview_default',
+					'name'        => $this->get_default_currency(), // Should be default currency.
+					'id'          => $this->id . '_preview_default_' . $currency->id,
 					'default'     => '$20.00',
 					'type'        => 'text',
 					'placeholder' => '$20.00',
 				],
 
 				[
-					'name'    => $currency->name,
-					'id'      => $page_id . '_preview_converted',
+					'name'    => $currency_name,
+					'id'      => $this->id . '_preview_converted_' . $currency->id,
 					'default' => '',
 					'type'    => 'text',
 				],
@@ -397,31 +439,41 @@ class WC_Payments_Multi_Currency_Settings extends WC_Settings_Page {
 	 * Save settings.
 	 */
 	public function save() {
-		/*
-		Save not yet implemented.
 		global $current_section;
-
-		$wc_payment_gateways = WC_Payment_Gateways::instance();
 
 		// Save settings fields based on section.
 		WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
 		if ( ! $current_section ) {
-		If section is empty, we're on the main settings page. This makes sure 'gateway ordering' is saved.
-		$wc_payment_gateways->process_admin_options();
-		$wc_payment_gateways->init();
+			// No current section means it's the enabled currencies.
+		} elseif ( 'store' === $current_section ) {
+			// Store settings.
 		} else {
-		There is a section - this may be a gateway or custom section.
-		foreach ( $wc_payment_gateways->payment_gateways() as $gateway ) {
-		if ( in_array( $current_section, array( $gateway->id, sanitize_title( get_class( $gateway ) ) ), true ) ) {
-		do_action( 'woocommerce_update_options_payment_gateways_' . $gateway->id );
-		$wc_payment_gateways->init();
-		}
+			// Single currency settings.
+			// Update the single currency in the enabled currencies, then update the option. 
+			$this->update_single_currency_settings();
 		}
 
 		do_action( 'woocommerce_update_options_' . $this->id . '_' . $current_section );
-		}
-		*/
+	}
+
+	/**
+	 * New function.
+	 */
+	public function update_single_currency_settings() {
+		global $current_section;
+		$enabled       = $this->get_enabled_currencies();
+		$wc_currencies = get_woocommerce_currencies();
+
+		$c           = new stdClass();
+		$c->id       = strtolower( $current_section );
+		$c->abbr     = strtoupper( $current_section );
+		$c->rounding = $_POST[ $this->id . '_price_rounding_' . $current_section ];
+		$c->charm    = $_POST[ $this->id . '_price_charm_' . $current_section ]; // Should use wc_clean?
+
+		update_option( $this->id . '_enabled_currencies_previous', $enabled );
+		$enabled[ $c->abbr ] = $c;
+		update_option( $this->id . '_enabled_currencies', $enabled );
 	}
 }
 

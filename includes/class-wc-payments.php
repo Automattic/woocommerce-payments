@@ -113,6 +113,13 @@ class WC_Payments {
 	private static $fraud_service;
 
 	/**
+	 * Instance of WC_Payments_Multi_Currency, created in init function
+	 *
+	 * @var WC_Payments_Multi_Currency
+	 */
+	private static $multi_currency;
+
+	/**
 	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
@@ -189,6 +196,7 @@ class WC_Payments {
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
+		include_once __DIR__ . '/multi-currency/class-wc-payments-multi-currency.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -204,6 +212,7 @@ class WC_Payments {
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$multi_currency           = new WC_Payments_Multi_Currency();
 
 		$gateway_class         = CC_Payment_Gateway::class;
 		$giropay_class         = Giropay_Payment_Gateway::class;
@@ -250,15 +259,6 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
-
-			// Multi-currency settings page.
-			add_filter(
-				'woocommerce_get_settings_pages',
-				function( $settings_pages ) {
-					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-multi-currency-settings.php';
-					return $settings_pages;
-				}
-			);
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
