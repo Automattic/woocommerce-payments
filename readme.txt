@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.4
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.3.3
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.4.0 - 2021-xx-xx =
+= 2.5.0 - 2021-xx-xx =
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+
+= 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
@@ -109,7 +112,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - REST endpoint to capture payments by order ID
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
-* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
