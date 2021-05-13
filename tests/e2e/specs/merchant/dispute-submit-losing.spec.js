@@ -58,7 +58,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await page.waitForSelector( '.woocommerce-table__clickable-cell', {
 			visible: true,
 		} );
-		await waitFor(10000);
 		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
 
 		// Verify the heading for two component cards
