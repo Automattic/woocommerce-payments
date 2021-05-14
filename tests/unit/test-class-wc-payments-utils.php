@@ -366,6 +366,20 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$this->assertFalse( WC_Payments_Utils::is_payments_settings_page() );
 	}
 
+	public function test_convert_to_stripe_locale() {
+		$result = WC_Payments_Utils::convert_to_stripe_locale( 'en_GB' );
+		$this->assertEquals( 'en-GB', $result );
+
+		$result = WC_Payments_Utils::convert_to_stripe_locale( 'fr_FR' );
+		$this->assertEquals( 'fr', $result );
+
+		$result = WC_Payments_Utils::convert_to_stripe_locale( 'fr_CA' );
+		$this->assertEquals( 'fr-CA', $result );
+
+		$result = WC_Payments_Utils::convert_to_stripe_locale( 'es_UY' );
+		$this->assertEquals( 'es', $result );
+	}
+
 	public function not_payment_settings_page_conditions_provider(): array {
 		return [
 			'is_admin() is false'                 => [ false, 'woocommerce_payments_foo', 'checkout' ],

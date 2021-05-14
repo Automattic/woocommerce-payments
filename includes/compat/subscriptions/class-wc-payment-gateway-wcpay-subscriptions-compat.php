@@ -317,6 +317,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			]
 		);
 
+		wp_set_script_translations( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'woocommerce-payments' );
+
 		wp_enqueue_script( 'WCPAY_SUBSCRIPTION_EDIT_PAGE' );
 	}
 
