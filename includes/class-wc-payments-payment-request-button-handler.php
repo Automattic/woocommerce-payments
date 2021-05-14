@@ -76,9 +76,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_redirect_dialog' ], 3 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_redirect_dialog' ], 3 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
@@ -89,15 +91,33 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_set_redirect_url', [ $this, 'ajax_set_redirect_url' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
 		// This option does not get stored in the database at all, and this function
 		// will be used to calculate it whenever the option value is retrieved instead.
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
+	}
+
+	/**
+	 * Returns the login redirect URL.
+	 *
+	 * @param string $redirect Default redirect URL.
+	 * @return string Redirect URL.
+	 */
+	public function get_login_redirect_url( $redirect ) {
+		$url = wp_unslash( $_COOKIE['wcpay_payment_request_redirect_url'] ); // @codingStandardsIgnoreLine
+
+		if ( empty( $url ) ) {
+			return $redirect;
+		}
+		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
+		return $url;
 	}
 
 	/**
@@ -431,11 +451,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// User isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
-			return false;
-		}
-
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
@@ -602,33 +617,35 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		$payment_request_params = [
-			'ajax_url'        => admin_url( 'admin-ajax.php' ),
-			'wc_ajax_url'     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'stripe'          => [
+			'ajax_url'          => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'       => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'stripe'            => [
 				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
-			'nonce'           => [
+			'nonce'             => [
 				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'set_redirect_url'          => wp_create_nonce( 'wcpay-set-redirect-url' ),
 			],
-			'checkout'        => [
+			'checkout'          => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
-			'button'          => $this->get_button_settings(),
-			'is_product_page' => $this->is_product(),
-			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-			'product'         => $this->get_product_data(),
-			'total_label'     => $this->get_total_label(),
+			'button'            => $this->get_button_settings(),
+			'is_login_required' => ! is_user_logged_in() && $this->is_authentication_required(),
+			'is_product_page'   => $this->is_product(),
+			'has_block'         => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
+			'product'           => $this->get_product_data(),
+			'total_label'       => $this->get_total_label(),
 		];
 
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
@@ -675,6 +692,30 @@ class WC_Payments_Payment_Request_Button_Handler {
 	public function display_payment_request_button_separator_html() {
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+		<?php
+	}
+
+	/**
+	 * Display payment request redirect dialog.
+	 */
+	public function display_payment_request_redirect_dialog() {
+		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {
+			return;
+		}
+
+		add_thickbox();
+		$my_account_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
+		?>
+		<div id="payment-request-redirect-dialog" style="display:none;">
+			<p>
+				<br>
+				To complete your transaction with Apple Pay, you must log in or create an account with our site.
+			</p>
+			<p style="text-align: right">
+				<a href="#" onClick="tb_remove()" class="">Cancel</a> &nbsp;
+				<a href="<?php echo esc_url( $my_account_url ); ?>" class="button alt">Continue</a>
+			</p>
+		</div>
 		<?php
 	}
 
@@ -1022,6 +1063,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_send_json( $data );
 	}
+
+	/**
+	 * Sets the login redirect URL when the payment request button
+	 * is clicked and authentication is required for checkout.
+	 */
+	public function ajax_set_redirect_url() {
+		check_ajax_referer( 'wcpay-set-redirect-url', 'security' );
+		// Sets a redirect URL cookie for 10 minutes.
+		wc_setcookie( 'wcpay_payment_request_redirect_url', wp_get_referer(), time() + MINUTE_IN_SECONDS * 10 );
+	}
+
 
 	/**
 	 * Normalizes billing and shipping state fields.

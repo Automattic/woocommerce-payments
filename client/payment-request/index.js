@@ -430,6 +430,17 @@ jQuery( ( $ ) => {
 
 				wcpayPaymentRequest.addToCart();
 
+				if ( wcpayPaymentRequestParams.is_login_required ) {
+					evt.preventDefault();
+					api.paymentRequestSetRedirectURL();
+					// eslint-disable-next-line no-undef
+					tb_show(
+						'9799a63f4f0f.ngrok.io',
+						'#TB_inline?width=400&height=300&inlineId=payment-request-redirect-dialog'
+					);
+					return;
+				}
+
 				if (
 					wcpayPaymentRequest.isCustomPaymentRequestButton(
 						prButton
@@ -501,21 +512,30 @@ jQuery( ( $ ) => {
 		},
 
 		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
-			if (
-				( ! wcpayPaymentRequestParams.button.is_custom ||
-					! wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ) &&
-				( ! wcpayPaymentRequestParams.button.is_branded ||
-					! wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					) )
-			) {
-				return;
-			}
-
 			prButton.on( 'click', ( evt ) => {
 				evt.preventDefault();
+				if ( wcpayPaymentRequestParams.is_login_required ) {
+					api.paymentRequestSetRedirectURL();
+					// eslint-disable-next-line no-undef
+					tb_show(
+						'9799a63f4f0f.ngrok.io',
+						'#TB_inline?width=400&height=300&inlineId=payment-request-redirect-dialog'
+					);
+					return;
+				}
+
+				// if (
+				// 	( ! wcpayPaymentRequestParams.button.is_custom ||
+				// 		! wcpayPaymentRequest.isCustomPaymentRequestButton(
+				// 			prButton
+				// 		) ) &&
+				// 	( ! wcpayPaymentRequestParams.button.is_branded ||
+				// 		! wcpayPaymentRequest.isBrandedPaymentRequestButton(
+				// 			prButton
+				// 		) )
+				// ) {
+				// 	return;
+				// }
 				paymentRequest.show();
 			} );
 		},

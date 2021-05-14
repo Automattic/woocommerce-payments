@@ -476,4 +476,15 @@ export default class WCPayAPI {
 			...paymentData,
 		} );
 	}
+
+	/**
+	 * Sets Payment Request redirect URL.
+	 *
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestSetRedirectURL() {
+		return this.request( getPaymentRequestAjaxURL( 'set_redirect_url' ), {
+			security: getPaymentRequestData( 'nonce' )?.set_redirect_url,
+		} );
+	}
 }
