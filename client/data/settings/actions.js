@@ -29,7 +29,7 @@ export function updateIsWCPayEnabled( isEnabled ) {
 
 export function updateIsDigitalWalletsEnabled( isEnabled ) {
 	return {
-		type: TYPES.SET_IS_DIGITAL_WALLETS_ENABLED,
+		type: ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED,
 		isEnabled,
 	};
 }
@@ -74,7 +74,7 @@ export function* saveSettings() {
 
 export function updateDigitalWalletsSectionsToShowOn( sections ) {
 	return {
-		type: TYPES.SET_DIGITAL_WALLETS_SECTIONS,
+		type: ACTION_TYPES.SET_DIGITAL_WALLETS_SECTIONS,
 		sections,
 	};
 }

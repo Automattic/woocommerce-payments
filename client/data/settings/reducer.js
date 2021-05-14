@@ -47,7 +47,7 @@ export const receiveSettings = (
 				},
 			};
 
-		case TYPES.SET_IS_DIGITAL_WALLETS_ENABLED:
+		case ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED:
 			return {
 				...state,
 				data: {
@@ -57,14 +57,15 @@ export const receiveSettings = (
 				},
 			};
 
-		case TYPES.SET_DIGITAL_WALLETS_SECTIONS:
+		case ACTION_TYPES.SET_DIGITAL_WALLETS_SECTIONS:
 			return {
 				...state,
 				data: {
 					...state.data,
 					// eslint-disable-next-line camelcase
 					digital_wallets_enabled_sections: {
-						...action.digital_wallets_enabled_sections,
+						...state.data.digital_wallets_enabled_sections,
+						...action.sections,
 					},
 				},
 			};

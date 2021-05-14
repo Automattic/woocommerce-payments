@@ -33,10 +33,9 @@ const DigitalWallets = () => {
 	} = useDigitalWalletsSectionsToShowOn();
 
 	const makeHandleSectionStatusChange = ( section ) => ( status ) => {
-		updateDigitalWalletsSectionsToShowOn( ( oldStatuses ) => ( {
-			...oldStatuses,
+		updateDigitalWalletsSectionsToShowOn( {
 			[ section ]: status,
-		} ) );
+		} );
 	};
 
 	return (
