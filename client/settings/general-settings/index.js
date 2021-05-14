@@ -15,11 +15,12 @@ import {
  * Internal dependencies
  */
 import './style.scss';
+import { useGeneralSettings } from 'data';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
 const GeneralSettings = ( { accountLink } ) => {
-	const [ isEnabled, setIsEnabled ] = useState( false );
+	const { isWCPayEnabled, updateIsWCPayEnabled } = useGeneralSettings();
 	const [ isManualCaptureEnabled, setIsManualCaptureEnabled ] = useState(
 		false
 	);
@@ -29,8 +30,8 @@ const GeneralSettings = ( { accountLink } ) => {
 		<Card className="general-settings">
 			<CardBody size="large">
 				<CheckboxControl
-					checked={ isEnabled }
-					onChange={ setIsEnabled }
+					checked={ isWCPayEnabled }
+					onChange={ updateIsWCPayEnabled }
 					label={ __(
 						'Enable WooCommerce Payments',
 						'woocommerce-payments'

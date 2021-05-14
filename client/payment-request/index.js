@@ -35,6 +35,7 @@ jQuery( ( $ ) => {
 		{
 			publishableKey,
 			accountId: wcpayPaymentRequestParams.stripe.accountId,
+			locale: wcpayPaymentRequestParams.stripe.locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
