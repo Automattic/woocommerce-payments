@@ -303,10 +303,9 @@ class WC_Payments_Admin {
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayAdminSettings',
 			[
-				'accountStatus'           => $this->account->get_account_status_data(),
-				'accountFees'             => $this->account->get_fees(),
-				'fraudServices'           => $this->account->get_fraud_services_config(),
-				'enabledPaymentMethodIds' => [ 'cc', 'giropay' ],
+				'accountStatus' => $this->account->get_account_status_data(),
+				'accountFees'   => $this->account->get_fees(),
+				'fraudServices' => $this->account->get_fraud_services_config(),
 			]
 		);
 
