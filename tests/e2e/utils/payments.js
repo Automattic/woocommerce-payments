@@ -56,7 +56,16 @@ export async function confirmCardAuthentication(
 export async function setupProductCheckout( billingDetails ) {
 	await shopper.goToShop();
 	await shopper.addToCartFromShopPage( config.get( 'products.simple.name' ) );
-	setupCheckout( billingDetails );
+	await shopper.goToCheckout();
+	await uiUnblocked();
+	await shopper.fillBillingDetails( billingDetails );
+	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
+	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
+	await page.waitFor( 1000 );
+	await uiUnblocked();
+	await expect( page ).toClick(
+		'.wc_payment_method.payment_method_woocommerce_payments'
+	);
 }
 
 // Set up checkout
