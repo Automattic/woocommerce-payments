@@ -52,9 +52,15 @@ export async function confirmCardAuthentication(
 	await button.click();
 }
 
+// Set up checkout with simple product
 export async function setupProductCheckout( billingDetails ) {
 	await shopper.goToShop();
 	await shopper.addToCartFromShopPage( config.get( 'products.simple.name' ) );
+	setupCheckout( billingDetails );
+}
+
+// Set up checkout
+export async function setupCheckout( billingDetails ) {
 	await shopper.goToCheckout();
 	await uiUnblocked();
 	await shopper.fillBillingDetails( billingDetails );
