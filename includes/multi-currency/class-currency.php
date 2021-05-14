@@ -50,6 +50,15 @@ class Currency {
 	}
 
 	/**
+	 * Retrieves the currency's code.
+	 *
+	 * @return string Three letter currency code.
+	 */
+	public function get_code() {
+		return $this->code;
+	}
+
+	/**
 	 * Retrieves the currency's flag.
 	 *
 	 * @return string Currency flag.
@@ -76,6 +85,15 @@ class Currency {
 	public function get_name() {
 		$wc_currencies = get_woocommerce_currencies();
 		return $wc_currencies[ $this->code ];
+	}
+
+	/**
+	 * Retrieves the currency's conversion rate.
+	 *
+	 * @return float The conversion rate.
+	 */
+	public function get_rate() {
+		return $this->rate;
 	}
 
 	/**
