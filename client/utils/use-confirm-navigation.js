@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useCallback, useRef } from '@wordpress/element';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -14,11 +14,17 @@ import { getHistory } from '@woocommerce/navigation';
  * - useConfirmNavigation( saved => { if ( ! saved ) return 'Discard unsaved changes?' }, [ saved ] );
  *
  * @param {Function} getMessage returns confirmation message string if one should appear
- * @param {Array} deps effect dependencies
+ * @return {Function} The callback to execute
  */
-const useConfirmNavigation = ( getMessage, deps ) => {
+const useConfirmNavigation = ( getMessage ) => {
+	const savedCallback = useRef();
+
 	useEffect( () => {
-		const message = getMessage();
+		savedCallback.current = getMessage;
+	} );
+
+	return useCallback( () => {
+		const message = savedCallback.current();
 		if ( ! message ) {
 			return;
 		}
@@ -34,7 +40,7 @@ const useConfirmNavigation = ( getMessage, deps ) => {
 			window.removeEventListener( 'beforeunload', handler );
 			unblock();
 		};
-	}, deps );
+	}, [] );
 };
 
 export default useConfirmNavigation;
