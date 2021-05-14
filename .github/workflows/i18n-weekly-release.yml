@@ -56,4 +56,6 @@ jobs:
               "${upload_url}?name=woocommerce-payments.zip"
 
       - name: Trigger GlotPress import
-        run: curl --request POST ${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG
+        run: |
+          echo ">>${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG<<"
+          curl --request POST ${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG
