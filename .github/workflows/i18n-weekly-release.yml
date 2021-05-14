@@ -2,9 +2,6 @@ name: I18N Weekly Release
 on:
   schedule:
     - cron: '0 20 * * 0'
-  push:
-    branches:
-      - add/weekly-release-workflow
 
 jobs:
   i18n-release:
