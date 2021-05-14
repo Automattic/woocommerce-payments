@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { useSettings } from 'data';
 import Banner from '../../banner';
+import { LoadableBlock } from '../../components/loadable';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
@@ -19,7 +20,6 @@ import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
-import { LoadableBlock } from 'components/loadable';
 import './style.scss';
 
 const PaymentMethodsDescription = () => (
