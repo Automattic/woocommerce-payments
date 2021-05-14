@@ -89,6 +89,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
+				'is_digital_wallets_enabled'       => true,
+				'digital_wallets_enabled_sections' => [
+					'checkout'     => true,
+					'product_page' => true,
+					'cart'         => true,
+				],
 			]
 		);
 	}
@@ -101,6 +107,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function update_settings( WP_REST_Request $request ) {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
+		// TODO: Add update digital wallets settings.
 
 		return new WP_REST_Response( [], 200 );
 	}

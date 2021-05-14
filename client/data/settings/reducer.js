@@ -46,6 +46,28 @@ export const receiveSettings = (
 					is_wcpay_enabled: action.isEnabled,
 				},
 			};
+
+		case TYPES.SET_IS_DIGITAL_WALLETS_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_digital_wallets_enabled: action.isEnabled,
+				},
+			};
+
+		case TYPES.SET_DIGITAL_WALLETS_SECTIONS:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					digital_wallets_enabled_sections: {
+						...action.digital_wallets_enabled_sections,
+					},
+				},
+			};
 	}
 
 	return state;

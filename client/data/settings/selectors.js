@@ -30,3 +30,18 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
+
+export const getIsDigitalWalletsEnabled = ( state ) => {
+	return getSettings( state ).is_digital_wallets_enabled || false;
+};
+
+export const getDigitalWalletsSections = ( state ) => {
+	return (
+		getSettings( state ).digital_wallets_enabled_sections || {
+			checkout: false,
+			// eslint-disable-next-line camelcase
+			product_page: false,
+			cart: false,
+		}
+	);
+};

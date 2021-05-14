@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Button,
@@ -15,16 +14,26 @@ import {
 import interpolateComponents from 'interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 
+/**
+ * Internal dependencies
+ */
+import {
+	useDigitalWalletsSettings,
+	useDigitalWalletsSectionsToShowOn,
+} from '../../data';
+
 const DigitalWallets = () => {
-	const [ isEnabled, setIsEnabled ] = useState( false );
-	const [ sectionsStatus, setSectionsStatus ] = useState( {
-		checkout: true,
-		productPage: true,
-		cart: true,
-	} );
+	const {
+		isDigitalWalletsEnabled,
+		updateIsDigitalWalletsEnabled,
+	} = useDigitalWalletsSettings();
+	const {
+		digitalWalletsSections,
+		updateDigitalWalletsSectionsToShowOn,
+	} = useDigitalWalletsSectionsToShowOn();
 
 	const makeHandleSectionStatusChange = ( section ) => ( status ) => {
-		setSectionsStatus( ( oldStatuses ) => ( {
+		updateDigitalWalletsSectionsToShowOn( ( oldStatuses ) => ( {
 			...oldStatuses,
 			[ section ]: status,
 		} ) );
@@ -34,8 +43,8 @@ const DigitalWallets = () => {
 		<Card className="digital-wallets">
 			<CardBody size="large">
 				<CheckboxControl
-					checked={ isEnabled }
-					onChange={ setIsEnabled }
+					checked={ isDigitalWalletsEnabled }
+					onChange={ updateIsDigitalWalletsEnabled }
 					label={ __(
 						'Enable 1-click checkouts',
 						'woocommerce-payments'
@@ -90,8 +99,11 @@ const DigitalWallets = () => {
 				<ul>
 					<li>
 						<CheckboxControl
-							disabled={ ! isEnabled }
-							checked={ isEnabled && sectionsStatus.checkout }
+							disabled={ ! isDigitalWalletsEnabled }
+							checked={
+								isDigitalWalletsEnabled &&
+								digitalWalletsSections.checkout
+							}
 							onChange={ makeHandleSectionStatusChange(
 								'checkout'
 							) }
@@ -100,10 +112,13 @@ const DigitalWallets = () => {
 					</li>
 					<li>
 						<CheckboxControl
-							disabled={ ! isEnabled }
-							checked={ isEnabled && sectionsStatus.productPage }
+							disabled={ ! isDigitalWalletsEnabled }
+							checked={
+								isDigitalWalletsEnabled &&
+								digitalWalletsSections.product_page
+							}
 							onChange={ makeHandleSectionStatusChange(
-								'productPage'
+								'product_page'
 							) }
 							label={ __(
 								'Product page',
@@ -113,8 +128,11 @@ const DigitalWallets = () => {
 					</li>
 					<li>
 						<CheckboxControl
-							disabled={ ! isEnabled }
-							checked={ isEnabled && sectionsStatus.cart }
+							disabled={ ! isDigitalWalletsEnabled }
+							checked={
+								isDigitalWalletsEnabled &&
+								digitalWalletsSections.cart
+							}
 							onChange={ makeHandleSectionStatusChange( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
 						/>
