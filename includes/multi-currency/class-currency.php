@@ -19,35 +19,35 @@ class Currency {
 	 *
 	 * @var string
 	 */
-	protected $code;
+	public $code;
 
 	/**
 	 * Three letter currency code lowecased.
 	 *
 	 * @var string
 	 */
-	protected $id;
+	public $id;
 
 	/**
 	 * Flag image for the currency.
 	 *
 	 * @var string
 	 */
-	protected $img;
+	public $img;
 
 	/**
 	 * Currency name.
 	 *
 	 * @var string
 	 */
-	protected $name;
+	public $name;
 
 	/**
 	 * Currency conversion rate.
 	 *
 	 * @var string
 	 */
-	protected $rate;
+	public $rate;
 
 	/**
 	 * Constructor.

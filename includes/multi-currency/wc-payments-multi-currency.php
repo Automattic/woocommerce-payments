@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 // Include the main Multi_Currency class.
 if ( ! class_exists( 'WCPay\Multi_Currency\Multi_Currency', false ) ) {
-	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-payments-multi-currency.php';
+	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-multi-currency.php';
 }
 
 /**
