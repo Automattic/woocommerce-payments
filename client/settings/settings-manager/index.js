@@ -2,13 +2,14 @@
 /**
  * External dependencies
  */
+import React from 'react';
+import { Button, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import React, { useState } from 'react';
-import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { useSettings } from 'data';
 import Banner from '../../banner';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
@@ -18,6 +19,8 @@ import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
+import { LoadableBlock } from 'components/loadable';
+import './style.scss';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -61,7 +64,7 @@ const DigitalWalletsDescription = () => (
 
 const GeneralSettingsDescription = () => (
 	<>
-		<h2>{ __( 'Settings', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'General settings', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
 				"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
@@ -74,36 +77,42 @@ const GeneralSettingsDescription = () => (
 	</>
 );
 
-const SettingsManager = ( {
-	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
-	accountStatus = {},
-} ) => {
-	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
-		initialEnabledPaymentMethodIds
-	);
+const SettingsManager = ( { accountStatus = {} } ) => {
+	const { saveSettings, isSaving, isLoading } = useSettings();
 
 	return (
 		<>
 			<Banner />
 			<div className="settings-manager">
 				<SettingsSection Description={ PaymentMethodsDescription }>
-					<PaymentMethods
-						enabledMethodIds={ enabledPaymentMethodIds }
-						onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
-					/>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<PaymentMethods />
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection Description={ DigitalWalletsDescription }>
 					<DigitalWallets />
 				</SettingsSection>
 				<SettingsSection Description={ GeneralSettingsDescription }>
-					<GeneralSettings
-						accountLink={ accountStatus.accountLink }
-					/>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<GeneralSettings
+							accountLink={ accountStatus.accountLink }
+						/>
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection>
 					<TestModeSettings />
 				</SettingsSection>
 				<AdvancedSettings />
+				<SettingsSection className="settings-manager__buttons">
+					<Button
+						isPrimary
+						isBusy={ isSaving }
+						disabled={ isSaving || isLoading }
+						onClick={ saveSettings }
+					>
+						{ __( 'Save changes', 'woocommerce-payments' ) }
+					</Button>
+				</SettingsSection>
 			</div>
 		</>
 	);
