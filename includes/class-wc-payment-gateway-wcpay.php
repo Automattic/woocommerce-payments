@@ -685,7 +685,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_intent_id = isset( $_GET['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_intent_id'] ) ) : '';
 		$order             = wc_get_order( $order_id );
 
-		$payment_information = $this->prepare_payment_information( $order );
 		return [
 			'result'       => 'success',
 			'redirect_url' => wp_sanitize_redirect(
@@ -694,7 +693,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						[
 							'order_id'            => $order_id,
 							'wc_payment_method'   => self::GATEWAY_ID,
-							'save_payment_method' => $payment_information->should_save_payment_method() ? 'yes' : 'no',
+							'save_payment_method' => empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 						],
 						$this->get_return_url( $order )
 					)
@@ -782,7 +781,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$response = $this->update_order_for_confirmed_intent( $order, $intent );
 
 				if ( 'requires_action' === $status && $response ) {
-					// I don't think this should ever happen...
+					// I don't think this should ever happen, but just in case...
 					wp_safe_redirect( $response['redirect'] );
 					exit;
 				}
@@ -1076,9 +1075,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->set_transaction_id( $intent_id );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $intent_status );
-		$order->update_meta_data( '_payment_method_id', $payment_method );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$order->update_meta_data( '_intention_status', $status );
 		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
 		$order->save();
 

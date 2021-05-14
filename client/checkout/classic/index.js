@@ -336,7 +336,7 @@ jQuery( function ( $ ) {
 	$( 'form.checkout' ).on(
 		`checkout_place_order_${ PAYMENT_METHOD_NAME_CARD }`,
 		function ( event ) {
-			if ( ! isUsingSavedPaymentMethod() ) {
+			if ( isUsingSavedPaymentMethod() ) {
 				return true;
 			}
 

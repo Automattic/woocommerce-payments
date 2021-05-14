@@ -301,7 +301,7 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Sets up an intent based on a payment method.
+	 * Creates an intent based on a payment method.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
