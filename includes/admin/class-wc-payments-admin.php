@@ -203,6 +203,21 @@ class WC_Payments_Admin {
 					'path'   => '/payments/disputes/challenge',
 				]
 			);
+			// if ( self::is_account_overview_page_enabled() ) {
+			// 	/**
+			// 	 * Once page is fully implemented it should become the main
+			// 	 * entry page and implement a proper adjustment of
+			// 	 * $top_level_link if needed to avoid menu item duplication.
+			// 	 */
+			// 	wc_admin_register_page(
+			// 		[
+			// 			'id'       => 'wc-payments-overview-details',
+			// 			'title'    => __( 'Overview', 'woocommerce-payments' ),
+			// 			'parent'   => 'wc-payments-transaction',
+			// 			'path'     => '/payments/overview/details',
+			// 		]
+			// 	);
+			// }
 		}
 
 		wp_enqueue_style(
