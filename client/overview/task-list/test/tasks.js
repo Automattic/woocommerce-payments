@@ -39,10 +39,9 @@ describe( 'getTasks()', () => {
 		} );
 
 		expect( actual ).toEqual(
-			expect.arrayContaining( [
+			expect.not.arrayContaining( [
 				expect.objectContaining( {
 					key: 'update-business-details',
-					completed: false,
 				} ),
 			] )
 		);
@@ -60,7 +59,7 @@ describe( 'getTasks()', () => {
 		} );
 
 		expect( actual ).toEqual(
-			expect.not.arrayContaining( [
+			expect.arrayContaining( [
 				expect.objectContaining( {
 					key: 'update-business-details',
 					completed: true,
