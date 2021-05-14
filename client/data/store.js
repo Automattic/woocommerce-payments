@@ -13,6 +13,7 @@ import * as transactions from './transactions';
 import * as charges from './charges';
 import * as timeline from './timeline';
 import * as disputes from './disputes';
+import * as settings from './settings';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -23,6 +24,7 @@ export const initStore = () =>
 			charges: charges.reducer,
 			timeline: timeline.reducer,
 			disputes: disputes.reducer,
+			settings: settings.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -30,6 +32,7 @@ export const initStore = () =>
 			...charges.actions,
 			...timeline.actions,
 			...disputes.actions,
+			...settings.actions,
 		},
 		controls,
 		selectors: {
@@ -38,6 +41,7 @@ export const initStore = () =>
 			...charges.selectors,
 			...timeline.selectors,
 			...disputes.selectors,
+			...settings.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -45,5 +49,6 @@ export const initStore = () =>
 			...charges.resolvers,
 			...timeline.resolvers,
 			...disputes.resolvers,
+			...settings.resolvers,
 		},
 	} );

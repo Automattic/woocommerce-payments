@@ -52,22 +52,22 @@ const PaymentMethodsSelector = ( { onClose, enabledPaymentMethods = [] } ) => {
 			</p>
 			<PaymentMethodCheckboxes>
 				<PaymentMethodCheckbox
-					checked={ paymentMethods.giropay }
+					checked={ paymentMethods.woocommerce_payments_giropay }
 					onChange={ handleChange }
 					fees="missing fees"
-					name="giropay"
+					name="woocommerce_payments_giropay"
 				/>
 				<PaymentMethodCheckbox
-					checked={ paymentMethods.sofort }
+					checked={ paymentMethods.woocommerce_payments_sofort }
 					onChange={ handleChange }
 					fees="missing fees"
-					name="sofort"
+					name="woocommerce_payments_sofort"
 				/>
 				<PaymentMethodCheckbox
-					checked={ paymentMethods.sepa }
+					checked={ paymentMethods.woocommerce_payments_sepa }
 					onChange={ handleChange }
 					fees="missing fees"
-					name="sepa"
+					name="woocommerce_payments_sepa"
 				/>
 			</PaymentMethodCheckboxes>
 			<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />

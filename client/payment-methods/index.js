@@ -12,6 +12,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './style.scss';
+import { useEnabledPaymentMethodIds } from 'data';
 import OrderableList from 'components/orderable-list';
 import PaymentMethod from 'components/orderable-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -22,7 +23,7 @@ import SepaIcon from '../gateway-icons/sepa';
 
 const availableMethods = [
 	{
-		id: 'cc',
+		id: 'woocommerce_payments',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
@@ -31,7 +32,7 @@ const availableMethods = [
 		Icon: CreditCardIcon,
 	},
 	{
-		id: 'giropay',
+		id: 'woocommerce_payments_giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
 		description: __(
 			'Expand your business with giropay — Germany’s second most popular payment system.',
@@ -40,7 +41,7 @@ const availableMethods = [
 		Icon: GiropayIcon,
 	},
 	{
-		id: 'sofort',
+		id: 'woocommerce_payments_sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
@@ -49,7 +50,7 @@ const availableMethods = [
 		Icon: SofortIcon,
 	},
 	{
-		id: 'sepa',
+		id: 'woocommerce_payments_sepa',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
@@ -59,11 +60,17 @@ const availableMethods = [
 	},
 ];
 
-const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
+const PaymentMethods = () => {
+	const {
+		enabledPaymentMethodIds: enabledMethodIds,
+		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
+	} = useEnabledPaymentMethodIds();
+
 	const [
 		isPaymentMethodsSelectorModalVisible,
 		setPaymentMethodsSelectorModalVisible,
 	] = useState( false );
+
 	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
 		availableMethods.find( ( method ) => method.id === methodId )
 	);
@@ -73,7 +80,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 	);
 
 	const handleDeleteClick = ( itemId ) => {
-		onEnabledMethodIdsChange(
+		updateEnabledMethodIds(
 			enabledMethodIds.filter( ( id ) => id !== itemId )
 		);
 	};
@@ -94,7 +101,7 @@ const PaymentMethods = ( { enabledMethodIds, onEnabledMethodIdsChange } ) => {
 				enabledMethodIdsCopy.splice( oldIndex, 1 )[ 0 ]
 			);
 
-			onEnabledMethodIdsChange( enabledMethodIdsCopy );
+			updateEnabledMethodIds( enabledMethodIdsCopy );
 		}
 	};
 
