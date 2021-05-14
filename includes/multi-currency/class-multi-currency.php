@@ -68,7 +68,7 @@ class Multi_Currency {
 	 * Init.
 	 */
 	public function init() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-payments-multi-currency-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 
 		$this->id = 'wcpay_multi_currency';
 		$this->get_available_currencies();
@@ -147,11 +147,11 @@ class Multi_Currency {
 				$count = 0;
 				foreach ( $this->available_currencies as $currency ) {
 					$this->enabled_currencies[ $currency->code ] = $currency;
-					if ( $count >= 4 ) {
+					if ( $count >= 3 ) {
 						break;
 					}
+					$count++;
 				}
-				$count++;
 			} else {
 				$default = $this->get_default_currency();
 				// Need to set the default as an array.
