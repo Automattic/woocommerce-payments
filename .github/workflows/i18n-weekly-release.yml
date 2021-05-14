@@ -49,12 +49,11 @@ jobs:
 
           upload_url=$(echo $response | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
 
-          echo $upload_url
-
-          response=$(curl --request POST \
+          curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
               --header 'Content-Type: application/zip' \
               --data-binary @woocommerce-payments.zip \
-              "${upload_url}?name=woocommerce-payments.zip")
+              "${upload_url}?name=woocommerce-payments.zip"
 
-          echo $response
+      - name: Trigger GlotPress import
+        run: curl --request POST ${{ secrets.GLOTPRESS_IMPORT_URL }}/$TAG
