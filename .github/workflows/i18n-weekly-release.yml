@@ -9,7 +9,7 @@ on:
 jobs:
   i18n-release:
     name: Release
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
 
     steps:
       # clone the repository
@@ -35,7 +35,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Create GitHub release
+      - name: Upload release
         run: |
           TAG="i18n-$(date +%y%m%d)"
           NAME="Version for internationalization testing $TAG. Not for production."
