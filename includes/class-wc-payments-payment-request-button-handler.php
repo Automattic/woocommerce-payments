@@ -605,28 +605,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
 
-		// If the cart is not empty, flash a 10 second cookie to initiate the
+		// If the cart is not empty, flash a 5 second cookie to initiate the
 		// Payment Request flow automatically after the redirect.
 		if ( WC()->cart->total ) {
-			wc_setcookie( 'wcpay_payment_request_auto_init', true, time() + 10 );
+			wc_setcookie( 'wcpay_payment_request_auto_init', true, time() + 5 );
 		}
 
 		return $url;
-	}
-
-	/**
-	 * Returns whether or not the payment request should start automatically
-	 * based on a cookie. If the cookie is set, unset it.
-	 *
-	 * @return bool Auto initiate Payment Request.
-	 */
-	public function should_auto_init() {
-		$auto_init = filter_var( wp_unslash( $_COOKIE['wcpay_payment_request_auto_init'] ?? false ), FILTER_VALIDATE_BOOLEAN ); // @codingStandardsIgnoreLine
-		if ( $auto_init ) {
-			wc_setcookie( 'wcpay_payment_request_auto_init', null );
-		}
-
-		return $auto_init;
 	}
 
 	/**
@@ -665,7 +650,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'            => $this->get_button_settings(),
 			'is_login_required' => ! is_user_logged_in() && $this->is_authentication_required(),
 			'is_product_page'   => $this->is_product(),
-			'should_auto_init'  => $this->should_auto_init(),
+			'should_auto_init'  => wp_unslash( $_COOKIE['wcpay_payment_request_auto_init'] ?? false ), // @codingStandardsIgnoreLine
 			'has_block'         => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'           => $this->get_product_data(),
 			'total_label'       => $this->get_total_label(),
