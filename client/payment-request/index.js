@@ -123,6 +123,8 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Adds the item to the cart and return cart details.
+		 *
+		 * @return {Promise} Promise for the request to the server.
 		 */
 		addToCart: () => {
 			let productId = $( '.single_add_to_cart_button' ).val();
@@ -163,7 +165,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			api.paymentRequestAddToCart( data );
+			return api.paymentRequestAddToCart( data );
 		},
 
 		/**
@@ -194,6 +196,10 @@ jQuery( ( $ ) => {
 					paymentRequest
 				);
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
+
+				if ( wcpayPaymentRequestParams.auto_init ) {
+					paymentRequest.show();
+				}
 			} );
 
 			paymentRequest.on( 'shippingaddresschange', ( event ) =>
@@ -593,7 +599,13 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayPaymentRequestParams.is_product_page ) {
+			// When initiating automatically after a redirect, the payment
+			// request should always be based on the cart details, not
+			// the product page.
+			if (
+				wcpayPaymentRequestParams.is_product_page &&
+				! wcpayPaymentRequestParams.auto_init
+			) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
 					total: wcpayPaymentRequestParams.product.total.amount,
