@@ -1,3 +1,16 @@
+/* Responsive Thickbox wrapper for redirect confirmation dialog */
+.TB_wrapper {
+	position: fixed;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: 100050;
+	justify-content: center;
+	align-items: center;
+}
+
 /* Payment Request Button styles for branded and custom types */
 #wcpay-custom-button {
 	display: block;

@@ -197,7 +197,7 @@ jQuery( ( $ ) => {
 				);
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
 
-				if ( wcpayPaymentRequestParams.auto_init ) {
+				if ( wcpayPaymentRequestParams.should_auto_init ) {
 					paymentRequest.show();
 				}
 			} );
@@ -439,11 +439,7 @@ jQuery( ( $ ) => {
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					evt.preventDefault();
 					api.paymentRequestSetRedirectURL();
-					// eslint-disable-next-line no-undef
-					tb_show(
-						'9799a63f4f0f.ngrok.io',
-						'#TB_inline?width=400&height=300&inlineId=payment-request-redirect-dialog'
-					);
+					displayThickbox();
 					return;
 				}
 
@@ -522,26 +518,22 @@ jQuery( ( $ ) => {
 				evt.preventDefault();
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					api.paymentRequestSetRedirectURL();
-					// eslint-disable-next-line no-undef
-					tb_show(
-						'9799a63f4f0f.ngrok.io',
-						'#TB_inline?width=400&height=300&inlineId=payment-request-redirect-dialog'
-					);
+					displayThickbox();
 					return;
 				}
 
-				// if (
-				// 	( ! wcpayPaymentRequestParams.button.is_custom ||
-				// 		! wcpayPaymentRequest.isCustomPaymentRequestButton(
-				// 			prButton
-				// 		) ) &&
-				// 	( ! wcpayPaymentRequestParams.button.is_branded ||
-				// 		! wcpayPaymentRequest.isBrandedPaymentRequestButton(
-				// 			prButton
-				// 		) )
-				// ) {
-				// 	return;
-				// }
+				if (
+					( ! wcpayPaymentRequestParams.button.is_custom ||
+						! wcpayPaymentRequest.isCustomPaymentRequestButton(
+							prButton
+						) ) &&
+					( ! wcpayPaymentRequestParams.button.is_branded ||
+						! wcpayPaymentRequest.isBrandedPaymentRequestButton(
+							prButton
+						) )
+				) {
+					return;
+				}
 				paymentRequest.show();
 			} );
 		},
@@ -604,7 +596,7 @@ jQuery( ( $ ) => {
 			// the product page.
 			if (
 				wcpayPaymentRequestParams.is_product_page &&
-				! wcpayPaymentRequestParams.auto_init
+				! wcpayPaymentRequestParams.should_auto_init
 			) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
@@ -641,6 +633,11 @@ jQuery( ( $ ) => {
 		wcpayPaymentRequest.init();
 	} );
 
+	// Remove Thickbox wrapper once it's closed.
+	$( document.body ).on( 'thickbox:removed', () => {
+		$( '.TB_wrapper' ).remove();
+	} );
+
 	function setBackgroundImageWithFallback( element, background, fallback ) {
 		element.css( 'background-image', 'url(' + background + ')' );
 		// Need to use an img element to avoid CORS issues
@@ -649,5 +646,35 @@ jQuery( ( $ ) => {
 			element.css( 'background-image', 'url(' + fallback + ')' );
 		};
 		testImg.src = background;
+	}
+
+	function displayThickbox() {
+		// eslint-disable-next-line no-undef
+		tb_show(
+			wcpayPaymentRequestParams.site_url,
+			'#TB_inline?width=400&inlineId=payment-request-redirect-dialog'
+		);
+
+		// Refactor positioning of Thickbox to be mobile-friendly.
+		// For reference, check `tb_show` and `tb_position` in WP's thickbox.js.
+		// Note: We shouldn't change the CSS for the default Thickbox elements,
+		// otherwise it may break the styling in other pages.
+		$( 'body' ).append( '<div class="TB_wrapper"></div>' );
+		$( '#TB_window' ).css( {
+			position: 'initial',
+			width: '100%',
+			height: '',
+			'margin-left': '',
+			'margin-top': '',
+			'max-width': '400px',
+		} );
+		$( '#TB_ajaxContent' ).css( {
+			width: '',
+			height: '',
+		} );
+		$( '#TB_title' ).css( {
+			position: 'relative',
+		} );
+		$( '#TB_window' ).appendTo( '.TB_wrapper' );
 	}
 } );

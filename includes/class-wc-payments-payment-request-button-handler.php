@@ -651,6 +651,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_login_required' => ! is_user_logged_in() && $this->is_authentication_required(),
 			'is_product_page'   => $this->is_product(),
 			'should_auto_init'  => wp_unslash( $_COOKIE['wcpay_payment_request_auto_init'] ?? false ), // @codingStandardsIgnoreLine
+			'site_url'          => get_site_url(),
 			'has_block'         => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'           => $this->get_product_data(),
 			'total_label'       => $this->get_total_label(),
@@ -715,14 +716,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$my_account_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
 		?>
 		<div id="payment-request-redirect-dialog" style="display:none;">
-			<p>
-				<br>
-				To complete your transaction with Apple Pay, you must log in or create an account with our site.
-			</p>
-			<p style="text-align: right">
-				<a href="#" onClick="tb_remove()" class="">Cancel</a> &nbsp;
-				<a href="<?php echo esc_url( $my_account_url ); ?>" class="button alt">Continue</a>
-			</p>
+			<div style="padding: 1.5rem 0">
+				<?php
+					echo esc_attr( __( 'To complete your transaction, you must log in or create an account with our site.', 'woocommerce-payments' ) );
+				?>
+			</div>
+			<div style="text-align: right">
+				<a href="<?php echo esc_url( $my_account_url ); ?>" class="button alt"><?php echo esc_attr( __( 'Continue', 'woocommerce-payments' ) ); ?></a>
+			</div>
 		</div>
 		<?php
 	}
