@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -34,6 +35,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $gateway;
 
 	/**
+	 * Digital_Wallets_Payment_Gateway Gateway.
+	 *
+	 * @var Digital_Wallets_Payment_Gateway
+	 */
+	private $digital_wallets_gateway;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -58,6 +66,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->gateway    = new WC_Payment_Gateway_WCPay( $mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->controller = new WC_REST_Payments_Settings_Controller( $mock_api_client, $this->gateway );
 		$this->set_available_gateways( [ 'woocommerce_payments' ] );
+		$this->digital_wallets_gateway = new Digital_Wallets_Payment_Gateway( $mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {

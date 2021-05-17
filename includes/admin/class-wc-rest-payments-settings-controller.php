@@ -36,7 +36,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
 	 * @param Digital_Wallets_Payment_Gateway $digital_wallets_gateway Digital_Wallets_Payment_Gateway instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway, Digital_Wallets_Payment_Gateway $digital_wallets_gateway ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway, $digital_wallets_gateway ) {
 		parent::__construct( $api_client );
 
 		$this->wcpay_gateway = $wcpay_gateway;
@@ -89,15 +89,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		return new WP_REST_Response(
-			[
-				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
-				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
-				'is_digital_wallets_enabled'       => $this->digital_wallets_gateway->is_enabled(),
-				'digital_wallets_enabled_sections' => $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' ),
-			]
-		);
+		$response = [
+			'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+			'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
+			'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
+		];
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			$response['is_digital_wallets_enabled']       = $this->digital_wallets_gateway->is_enabled();
+			$response['digital_wallets_enabled_sections'] = $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' );
+		}
+
+		return new WP_REST_Response( $response );
 	}
 
 	/**
