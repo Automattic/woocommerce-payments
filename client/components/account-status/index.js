@@ -83,31 +83,29 @@ const AccountStatusDetails = ( props ) => {
 								'Connected email:',
 								'woocommerce-payments'
 							) }
-							value={ accountStatus.email }
-						/>
+						>
+							{ accountStatus.email }
+						</AccountStatusItem>
 					) }
 					<AccountStatusItem
 						label={ __( 'Payments:', 'woocommerce-payments' ) }
-						value={
-							<PaymentsStatus
-								paymentsEnabled={
-									accountStatus.paymentsEnabled
-								}
-							/>
-						}
-					/>
+					>
+						<PaymentsStatus
+							paymentsEnabled={ accountStatus.paymentsEnabled }
+						/>
+					</AccountStatusItem>
 					<AccountStatusItem
 						label={ __( 'Deposits:', 'woocommerce-payments' ) }
-						value={
-							<DepositsStatus
-								depositsStatus={ accountStatus.depositsStatus }
-							/>
-						}
-					/>
+					>
+						<DepositsStatus
+							depositsStatus={ accountStatus.depositsStatus }
+						/>
+					</AccountStatusItem>
 					<AccountStatusItem
 						label={ __( 'BaseFee:', 'woocommerce-payments' ) }
-						value={ <AccountFees accountFees={ accountFees } /> }
-					/>
+					>
+						<AccountFees accountFees={ accountFees } />
+					</AccountStatusItem>
 				</>
 			}
 		/>

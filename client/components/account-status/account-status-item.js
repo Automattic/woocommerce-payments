@@ -9,9 +9,7 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 
-const AccountStatusItem = ( props ) => {
-	const { label, value } = props;
-
+const AccountStatusItem = ( { label, value, children } ) => {
 	return (
 		<Flex
 			direction={ 'row' }
@@ -24,7 +22,7 @@ const AccountStatusItem = ( props ) => {
 				{ label }
 			</FlexItem>
 			<FlexBlock className="woocommerce-account-status-item__value">
-				{ value }
+				{ children || value || null }
 			</FlexBlock>
 		</Flex>
 	);
