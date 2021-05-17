@@ -12,6 +12,14 @@ export const getSettings = ( state ) => {
 	return getSettingsState( state ).data || {};
 };
 
+export const getAccountStatementDescriptor = ( state ) => {
+	return getSettings( state ).account_statement_descriptor || '';
+};
+
+export const getIsManualCaptureEnabled = ( state ) => {
+	return getSettings( state ).is_manual_capture_enabled || false;
+};
+
 export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };

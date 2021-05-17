@@ -23,12 +23,20 @@ export const useEnabledPaymentMethodIds = () =>
 
 export const useGeneralSettings = () =>
 	useSelect( ( select ) => {
+		const { getAccountStatementDescriptor } = select( STORE_NAME );
 		const { getIsWCPayEnabled } = select( STORE_NAME );
+		const { getIsManualCaptureEnabled } = select( STORE_NAME );
+		const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
+		const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 		const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
 		return {
+			accountStatementDescriptor: getAccountStatementDescriptor(),
 			isWCPayEnabled: getIsWCPayEnabled(),
+			isManualCaptureEnabled: getIsManualCaptureEnabled(),
 			updateIsWCPayEnabled,
+			updateAccountStatementDescriptor,
+			updateIsManualCaptureEnabled,
 		};
 	} );
 

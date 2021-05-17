@@ -7,6 +7,8 @@ import {
 	updateIsWCPayEnabled,
 	updateEnabledPaymentMethodIds,
 	updateIsSavingSettings,
+	updateIsManualCaptureEnabled,
+	updateAccountStatementDescriptor,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -169,6 +171,88 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					is_wcpay_enabled: true, // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_IS_MANUAL_CAPTURE_ENABLED', () => {
+		test( 'toggles `data.is_manual_capture_enabled`', () => {
+			const oldState = {
+				data: {
+					is_manual_capture_enabled: false, // eslint-disable-line
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsManualCaptureEnabled( true )
+			);
+
+			expect( state.data.is_manual_capture_enabled ).toBeTruthy();
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					is_manual_capture_enabled: false, // eslint-disable-line
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsManualCaptureEnabled( true )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					is_manual_capture_enabled: true, // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_ACCOUNT_STATEMENT_DESCRIPTOR_ENABLED', () => {
+		test( 'toggles `data.account_statement_descriptor`', () => {
+			const oldState = {
+				data: {
+					account_statement_descriptor: 'Statement', // eslint-disable-line
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateAccountStatementDescriptor( 'New Statement' )
+			);
+
+			expect( state.data.account_statement_descriptor ).toEqual(
+				'New Statement'
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					account_statement_descriptor: 'Statement', // eslint-disable-line
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateAccountStatementDescriptor( 'New Statement' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					account_statement_descriptor: 'New Statement', // eslint-disable-line
 					baz: 'quux',
 				},
 			} );

@@ -103,8 +103,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids' => array_values( $enabled_payment_method_ids ),
-				'is_wcpay_enabled'           => $this->wcpay_gateway->is_enabled(),
+				'enabled_payment_method_ids'   => array_values( $enabled_payment_method_ids ),
+				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'    => $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 			]
 		);
 	}
@@ -117,6 +119,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function update_settings( WP_REST_Request $request ) {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
+		$this->update_is_manual_capture_enabled( $request );
+		$this->update_account_statement_descriptor( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -179,4 +183,33 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->wcpay_gateway->update_option( 'payment_method_order', $payment_method_ids_to_enable );
 	}
 
+	/**
+	 * Updates WooCommerce Payments manual capture.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_manual_capture_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_manual_capture_enabled' ) ) {
+			return;
+		}
+
+		$is_manual_capture_enabled = $request->get_param( 'is_manual_capture_enabled' );
+
+		$this->wcpay_gateway->update_option( 'manual_capture', $is_manual_capture_enabled );
+	}
+
+	/**
+	 * Updates WooCommerce Payments account statement descriptor.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_account_statement_descriptor( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'account_statement_descriptor' ) ) {
+			return;
+		}
+
+		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
+
+		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
+	}
 }
