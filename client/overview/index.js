@@ -18,7 +18,7 @@ const OverviewPage = () => {
 	return (
 		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
-			{ tasks.length && <TaskList tasks={ tasks } /> }
+			{ 0 < tasks.length && <TaskList tasks={ tasks } /> }
 		</Page>
 	);
 };
