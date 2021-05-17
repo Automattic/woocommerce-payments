@@ -6,20 +6,14 @@ exports[`AccountStatus renders error status 1`] = `
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-medium woocommerce-card__header woocommerce-account-status-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
-      <div
-        class="title"
-      >
-        Account details
-      </div>
+      Account details
     </div>
     <div
       class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
-        Error determining the connection status.
-      </div>
+      Error determining the connection status.
     </div>
   </div>
 </div>
@@ -31,45 +25,53 @@ exports[`AccountStatus renders normal status 1`] = `
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-medium woocommerce-card__header woocommerce-account-status-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
       <div
-        class="title"
+        class="components-flex css-1cw5ysz-Flex eboqfv50"
+        direction="row"
       >
-        Account details
-      </div>
-      <div>
-        <span
-          class="chip chip-primary is-compact"
+        <div
+          class="components-flex__item css-1s295sp-Item eboqfv51"
         >
-          Complete
-        </span>
-      </div>
-      <div
-        class="woocommerce-account-status-header-controls"
-      >
-        <button
-          class="components-button is-link"
-          disabled=""
-          type="button"
+          Account details
+        </div>
+        <div
+          class="components-flex__block css-yr442k-Item-Block eboqfv52"
         >
-          Edit details
-        </button>
+          <span
+            class="chip chip-primary is-compact"
+          >
+            Complete
+          </span>
+        </div>
+        <div
+          class="components-flex__item woocommerce-account-status__controls css-1s295sp-Item eboqfv51"
+        >
+          <button
+            class="components-button is-link"
+            disabled=""
+            type="button"
+          >
+            Edit details
+          </button>
+        </div>
       </div>
     </div>
     <div
       class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
     >
       <div
-        class="woocommerce-account-status-item"
+        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
+        direction="row"
       >
         <div
-          class="woocommerce-account-status-item__label"
+          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
         >
           Payments:
         </div>
         <div
-          class="woocommerce-account-status-item__value"
+          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -92,15 +94,16 @@ exports[`AccountStatus renders normal status 1`] = `
         </div>
       </div>
       <div
-        class="woocommerce-account-status-item"
+        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
+        direction="row"
       >
         <div
-          class="woocommerce-account-status-item__label"
+          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
         >
           Deposits:
         </div>
         <div
-          class="woocommerce-account-status-item__value"
+          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -123,15 +126,16 @@ exports[`AccountStatus renders normal status 1`] = `
         </div>
       </div>
       <div
-        class="woocommerce-account-status-item"
+        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
+        direction="row"
       >
         <div
-          class="woocommerce-account-status-item__label"
+          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
         >
           BaseFee:
         </div>
         <div
-          class="woocommerce-account-status-item__value"
+          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
         >
           Euro 
           (EUR) 
