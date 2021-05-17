@@ -1,25 +1,5 @@
 /** @format */
-.woocommerce-account-status-header {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	padding: 22px 16px 22px 16px;
-}
-.woocommerce-account-status-header .title {
-	font-size: 16px;
-	line-height: 24px;
-	color: $gray-80;
-}
-.woocommerce-account-status-header div {
-	padding: 0;
-	height: 24px;
-	margin: 0 12px 0 0;
-}
-.woocommerce-account-status-header-controls {
-	flex-grow: 1;
-	text-align: right;
-}
-.woocommerce-account-status-header-controls button.components-button {
+.woocommerce-account-status__controls .components-button.is-link {
 	text-decoration: none;
 }
 .woocommerce-account-status-item {

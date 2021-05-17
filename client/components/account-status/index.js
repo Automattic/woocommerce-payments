@@ -3,7 +3,15 @@
 /**
  * External dependencies
  */
-import { Button, Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+	FlexBlock,
+	FlexItem,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -21,13 +29,7 @@ const AccountStatusCard = ( props ) => {
 	const { title, content } = props;
 	return (
 		<Card isSmall>
-			<CardHeader
-				className={
-					'woocommerce-card__header woocommerce-account-status-header'
-				}
-			>
-				{ title }
-			</CardHeader>
+			<CardHeader>{ title }</CardHeader>
 			<CardBody>{ content }</CardBody>
 		</Card>
 	);
@@ -36,19 +38,11 @@ const AccountStatusCard = ( props ) => {
 const AccountStatusError = () => {
 	return (
 		<AccountStatusCard
-			title={
-				<div className="title">
-					{ __( 'Account details', 'woocommerce-payments' ) }
-				</div>
-			}
-			content={
-				<div>
-					{ __(
-						'Error determining the connection status.',
-						'woocommerce-payments'
-					) }
-				</div>
-			}
+			title={ __( 'Account details', 'woocommerce-payments' ) }
+			content={ __(
+				'Error determining the connection status.',
+				'woocommerce-payments'
+			) }
 		/>
 	);
 };
@@ -59,19 +53,27 @@ const AccountStatusDetails = ( props ) => {
 	return (
 		<AccountStatusCard
 			title={
-				<>
-					<div className="title">
+				<Flex
+					direction={ 'row' }
+					align={ 'center' }
+					justify={ 'left' }
+					gap={ 3 }
+					expanded
+				>
+					<FlexItem>
 						{ __( 'Account details', 'woocommerce-payments' ) }
-					</div>
-					<div>
+					</FlexItem>
+					<FlexBlock>
 						<StatusChip accountStatus={ accountStatus.status } />
-					</div>
-					<div className="woocommerce-account-status-header-controls">
+					</FlexBlock>
+					<FlexItem
+						className={ 'woocommerce-account-status__controls' }
+					>
 						<Button disabled isLink>
 							{ __( 'Edit details', 'woocommerce-payments' ) }
 						</Button>
-					</div>
-				</>
+					</FlexItem>
+				</Flex>
 			}
 			content={
 				<>
