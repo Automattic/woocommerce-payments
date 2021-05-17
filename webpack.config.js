@@ -52,7 +52,8 @@ const webpackConfig = {
 								'@import "node_modules/@wordpress/base-styles/_z-index.scss"; ' +
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
-								'@import "_mixins"; ',
+								'@import "_mixins"; ' +
+								'@import "_variables"; ',
 						},
 					},
 				],
