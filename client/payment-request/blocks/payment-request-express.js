@@ -33,6 +33,7 @@ const PaymentRequestExpressComponent = ( {
 		paymentRequest,
 		// paymentRequestType,
 		// isProcessing,
+		canMakePayment,
 		onButtonClick,
 	} = useInitialization( {
 		api,
@@ -56,7 +57,7 @@ const PaymentRequestExpressComponent = ( {
 		},
 	};
 
-	if ( ! paymentRequest ) {
+	if ( ! canMakePayment || ! paymentRequest ) {
 		return null;
 	}
 

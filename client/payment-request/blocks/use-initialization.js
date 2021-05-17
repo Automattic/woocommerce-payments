@@ -16,6 +16,7 @@ import {
 import {
 	getPaymentRequest,
 	updatePaymentRequest,
+	canDoPaymentRequest,
 	normalizeLineItems,
 } from '../utils';
 
@@ -32,6 +33,7 @@ export const useInitialization = ( {
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isFinished, setIsFinished ] = useState( false );
 	const [ isProcessing, setIsProcessing ] = useState( false );
+	const [ canMakePayment, setCanMakePayment ] = useState( false );
 	const [ paymentRequestType, setPaymentRequestType ] = useState( '' );
 
 	// Create the initial paymentRequest object. Note, we can't do anything if stripe isn't available yet or we have zero total.
@@ -53,17 +55,10 @@ export const useInitialization = ( {
 			displayItems: normalizeLineItems( billing?.cartTotalItems ),
 		} );
 
-		pr.canMakePayment().then( ( result ) => {
-			if ( result ) {
-				setPaymentRequest( pr );
-				if ( result.applePay ) {
-					setPaymentRequestType( 'apple_pay' );
-				} else if ( result.googlePay ) {
-					setPaymentRequestType( 'google_pay' );
-				} else {
-					setPaymentRequestType( 'payment_request_api' );
-				}
-			}
+		canDoPaymentRequest( pr ).then( ( result ) => {
+			setPaymentRequest( pr );
+			setPaymentRequestType( result.requestType || '' );
+			setCanMakePayment( result.canPay );
 		} );
 	}, [ stripe, paymentRequest ] );
 
@@ -136,6 +131,7 @@ export const useInitialization = ( {
 	return {
 		paymentRequest,
 		isProcessing,
+		canMakePayment,
 		onButtonClick,
 		paymentRequestType,
 	};

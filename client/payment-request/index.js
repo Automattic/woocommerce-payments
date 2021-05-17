@@ -12,7 +12,11 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
+import {
+	shouldUseGooglePayBrand,
+	getPaymentRequest,
+	canDoPaymentRequest,
+} from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -181,8 +185,8 @@ jQuery( ( $ ) => {
 			);
 
 			// Check the availability of the Payment Request API first.
-			paymentRequest.canMakePayment().then( ( result ) => {
-				if ( ! result ) {
+			canDoPaymentRequest( paymentRequest ).then( ( result ) => {
+				if ( ! result || ! result.canPay ) {
 					return;
 				}
 

@@ -81,6 +81,35 @@ export const updatePaymentRequest = ( {
 };
 
 /**
+ * Returns whether or not the current session can make payments and what type of request it uses.
+ *
+ * @param {Object} paymentRequest A Stripe PaymentRequest instance.
+ *
+ * @return {Promise} Object containing canPay and the requestType, which can be either
+ * - payment_request_api
+ * - apple_pay
+ * - google_pay
+ */
+export const canDoPaymentRequest = ( paymentRequest ) => {
+	return new Promise( ( resolve ) => {
+		paymentRequest.canMakePayment().then( ( result ) => {
+			if ( result ) {
+				let paymentRequestType = 'payment_request_api';
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				}
+
+				resolve( { canPay: true, requestType: paymentRequestType } );
+			} else {
+				resolve( { canPay: false } );
+			}
+		} );
+	} );
+};
+
+/**
  * Get WC AJAX endpoint URL.
  *
  * @param {string} endpoint Endpoint.
