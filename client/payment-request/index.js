@@ -14,6 +14,8 @@ import {
 
 import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
 
+import { displayThickbox } from './redirect-dialog';
+
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if ( wcpayPaymentRequestParams.has_block ) {
@@ -633,11 +635,6 @@ jQuery( ( $ ) => {
 		wcpayPaymentRequest.init();
 	} );
 
-	// Remove Thickbox wrapper once it's closed.
-	$( document.body ).on( 'thickbox:removed', () => {
-		$( '.TB_wrapper' ).remove();
-	} );
-
 	function setBackgroundImageWithFallback( element, background, fallback ) {
 		element.css( 'background-image', 'url(' + background + ')' );
 		// Need to use an img element to avoid CORS issues
@@ -646,35 +643,5 @@ jQuery( ( $ ) => {
 			element.css( 'background-image', 'url(' + fallback + ')' );
 		};
 		testImg.src = background;
-	}
-
-	function displayThickbox() {
-		// eslint-disable-next-line no-undef
-		tb_show(
-			wcpayPaymentRequestParams.site_url,
-			'#TB_inline?width=400&inlineId=payment-request-redirect-dialog'
-		);
-
-		// Refactor positioning of Thickbox to be mobile-friendly.
-		// For reference, check `tb_show` and `tb_position` in WP's thickbox.js.
-		// Note: We shouldn't change the CSS for the default Thickbox elements,
-		// otherwise it may break the styling in other pages.
-		$( 'body' ).append( '<div class="TB_wrapper"></div>' );
-		$( '#TB_window' ).css( {
-			position: 'initial',
-			width: '100%',
-			height: '',
-			'margin-left': '',
-			'margin-top': '',
-			'max-width': '400px',
-		} );
-		$( '#TB_ajaxContent' ).css( {
-			width: '',
-			height: '',
-		} );
-		$( '#TB_title' ).css( {
-			position: 'relative',
-		} );
-		$( '#TB_window' ).appendTo( '.TB_wrapper' );
 	}
 } );

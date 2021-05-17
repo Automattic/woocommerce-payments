@@ -10,6 +10,7 @@ import { useInitialization } from './use-initialization';
 import { GooglePayButton } from './branded-buttons';
 import { CustomButton } from './custom-button';
 import { getPaymentRequestData, shouldUseGooglePayBrand } from '../utils';
+import { displayThickbox } from '../redirect-dialog';
 
 /**
  * PaymentRequestExpressComponent
@@ -62,7 +63,12 @@ const PaymentRequestExpressComponent = ( {
 	if ( isCustom ) {
 		return (
 			<CustomButton
-				onClick={ () => {
+				onClick={ ( evt ) => {
+					if ( getPaymentRequestData( 'is_login_required' ) ) {
+						evt.preventDefault();
+						displayThickbox();
+						return;
+					}
 					onButtonClick();
 					// Since we're using a custom button we must manually call
 					// `paymentRequest.show()`.
@@ -76,7 +82,12 @@ const PaymentRequestExpressComponent = ( {
 	if ( isBranded && shouldUseGooglePayBrand() ) {
 		return (
 			<GooglePayButton
-				onClick={ () => {
+				onClick={ ( evt ) => {
+					if ( getPaymentRequestData( 'is_login_required' ) ) {
+						evt.preventDefault();
+						displayThickbox();
+						return;
+					}
 					onButtonClick();
 					// Since we're using a custom button we must manually call
 					// `paymentRequest.show()`.
@@ -97,7 +108,15 @@ const PaymentRequestExpressComponent = ( {
 
 	return (
 		<PaymentRequestButtonElement
-			onClick={ onButtonClick }
+			onClick={ ( evt ) => {
+				if ( getPaymentRequestData( 'is_login_required' ) ) {
+					evt.preventDefault();
+					displayThickbox();
+					return;
+				}
+
+				onButtonClick();
+			} }
 			options={ {
 				style: paymentRequestButtonStyle,
 				paymentRequest,
