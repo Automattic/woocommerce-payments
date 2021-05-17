@@ -10,6 +10,7 @@
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
+import TaskList from './task-list';
 
 const OverviewPage = () => {
 	return (
@@ -19,6 +20,7 @@ const OverviewPage = () => {
 				accountStatus={ wcpaySettings.accountStatus }
 				accountFees={ wcpaySettings.accountFees }
 			/>
+			<TaskList />
 		</Page>
 	);
 };

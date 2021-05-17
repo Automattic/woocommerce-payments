@@ -3,39 +3,7 @@
 		margin: 24px -24px;
 	}
 
-	&__list-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-
-		& > * {
-			margin: 0 3px;
-		}
-
-		&__fees {
-			margin-left: auto;
-			text-transform: uppercase;
-			border-radius: 16px;
-			padding: 0 8px;
-			border: 1px solid $studio-gray-70;
-			color: $studio-gray-70;
-			font-size: 12px;
-		}
-		&__info {
-			margin: 0;
-			fill: $studio-gray-70;
-		}
-	}
-
 	&__footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		:last-child {
-			margin: 0 24px;
-			margin-right: auto;
-		}
+		@include modal-footer-buttons-left;
 	}
 }

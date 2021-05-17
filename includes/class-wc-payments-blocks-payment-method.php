@@ -43,15 +43,15 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		);
 
 		wp_register_script(
-			'wc-payment-method-wcpay',
+			'WCPAY_BLOCKS_CHECKOUT',
 			plugins_url( 'dist/blocks-checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe' ],
 			'1.0.1',
 			true
 		);
-		wp_set_script_translations( 'wc-payment-method-wcpay', 'woocommerce-payments' );
+		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
-		return [ 'wc-payment-method-wcpay' ];
+		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
 	}
 
 	/**

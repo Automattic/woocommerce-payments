@@ -13,6 +13,7 @@ import {
 	CheckboxControl,
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
+import { getPaymentMethodSettingsUrl } from '../../utils';
 
 const DigitalWallets = () => {
 	const [ isEnabled, setIsEnabled ] = useState( false );
@@ -36,7 +37,7 @@ const DigitalWallets = () => {
 					checked={ isEnabled }
 					onChange={ setIsEnabled }
 					label={ __(
-						'Enable digital wallets & express payment methods',
+						'Enable 1-click checkouts',
 						'woocommerce-payments'
 					) }
 					/* eslint-disable jsx-a11y/anchor-has-content */
@@ -82,7 +83,7 @@ const DigitalWallets = () => {
 				/>
 				<h4>
 					{ __(
-						'Show digital wallets & express payment methods on:',
+						'Show 1-click checkouts on:',
 						'woocommerce-payments'
 					) }
 				</h4>
@@ -122,7 +123,10 @@ const DigitalWallets = () => {
 			</CardBody>
 			<CardDivider />
 			<CardBody>
-				<Button isSecondary href="/TODO">
+				<Button
+					isSecondary
+					href={ getPaymentMethodSettingsUrl( 'digital_wallets' ) }
+				>
 					{ __( 'Customize appearance', 'woocommerce-payments' ) }
 				</Button>
 			</CardBody>
