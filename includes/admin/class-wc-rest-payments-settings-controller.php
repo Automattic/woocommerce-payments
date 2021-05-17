@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
+use WCPay\Constants\Digital_Wallets_Sections;
 
 /**
  * REST controller for settings.
@@ -94,7 +95,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
 				'is_digital_wallets_enabled'       => $this->digital_wallets_gateway ? $this->digital_wallets_gateway->is_enabled() : 'no', // TODO: Digital wallet is hidden behind feature flag so it could be null. Remove this condition feature flag is removed.
-				'digital_wallets_enabled_sections' => [
+				'digital_wallets_enabled_sections' => $this->digital_wallets_gateway ? $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' ) : [
 					'checkout'     => true,
 					'product_page' => true,
 					'cart'         => true,
@@ -112,6 +113,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
 		$this->update_is_digital_wallets_enabled( $request );
+		$this->update_digital_wallets_enabled_sections( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -177,5 +179,26 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		} else {
 			$this->digital_wallets_gateway->disable();
 		}
+	}
+
+	/**
+	 * Updates the list of sections that will show digital wallets.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_digital_wallets_enabled_sections( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'digital_wallets_enabled_sections' ) ) {
+			return;
+		}
+
+		$digital_wallets_enabled_sections         = $request->get_param( 'digital_wallets_enabled_sections' );
+		$updated_digital_wallets_enabled_sections = [];
+
+		$remove_invalid_sections                  = function ( $section ) {
+			return ! Digital_Wallets_Sections::isValidKey( $section );
+		};
+		$updated_digital_wallets_enabled_sections = array_filter( $digital_wallets_enabled_sections, $remove_invalid_sections );
+
+		$this->digital_wallets_gateway->update_option( 'digital_wallets_enabled_sections', $updated_digital_wallets_enabled_sections );
 	}
 }
