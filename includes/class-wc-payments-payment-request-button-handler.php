@@ -318,12 +318,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$order        = wc_get_order( $post->ID );
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Apple Pay (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
-		}
-
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Payment Request (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
+			if (
+				'Apple Pay (WooCommerce Payments)' === $method_title
+				|| 'Google Pay (WooCommerce Payments)' === $method_title
+				|| 'Payment Request (WooCommerce Payments)' === $method_title
+			) {
+				return $method_title;
+			}
 		}
 
 		return $title;
