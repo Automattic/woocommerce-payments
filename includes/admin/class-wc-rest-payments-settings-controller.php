@@ -94,12 +94,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
-				'is_digital_wallets_enabled'       => $this->digital_wallets_gateway ? $this->digital_wallets_gateway->is_enabled() : 'no', // TODO: Digital wallet is hidden behind feature flag so it could be null. Remove this condition feature flag is removed.
-				'digital_wallets_enabled_sections' => $this->digital_wallets_gateway ? $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' ) : [
-					'checkout'     => true,
-					'product_page' => true,
-					'cart'         => true,
-				],
+				'is_digital_wallets_enabled'       => $this->digital_wallets_gateway->is_enabled(),
+				'digital_wallets_enabled_sections' => $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' ),
 			]
 		);
 	}
