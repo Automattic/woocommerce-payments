@@ -1,7 +1,7 @@
 <?php
 /**
  * Class WC_Payments_Payment_Request_Button_Handler
- * Adds support for Apple Pay and Chrome Payment Request API buttons.
+ * Adds support for Apple Pay, Google Pay and Payment Request API buttons.
  * Utilizes the Stripe Payment Request Button to support checkout from the product detail and cart pages.
  *
  * Adapted from WooCommerce Stripe Gateway extension.
