@@ -575,6 +575,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'stripe'          => [
 				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
+				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
 			'nonce'           => [
 				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
@@ -614,6 +615,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		wp_register_script( 'WCPAY_PAYMENT_REQUEST', plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE ), [ 'jquery', 'stripe' ], WC_Payments::get_file_version( 'dist/payment-request.js' ), true );
 
 		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestParams', $payment_request_params );
+
+		wp_set_script_translations( 'WCPAY_PAYMENT_REQUEST', 'woocommerce-payments' );
 
 		wp_enqueue_script( 'WCPAY_PAYMENT_REQUEST' );
 

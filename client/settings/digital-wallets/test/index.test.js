@@ -30,11 +30,7 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).toBeDisabled();
 		expect( cartCheckbox ).not.toBeChecked();
 
-		userEvent.click(
-			screen.getByText(
-				'Enable digital wallets & express payment methods'
-			)
-		);
+		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
 
 		// all checkboxes are checked by default, once the feature is enabled.
 		expect( checkoutCheckbox ).not.toBeDisabled();
@@ -50,11 +46,7 @@ describe( 'DigitalWallets', () => {
 		userEvent.click( screen.getByText( 'Checkout' ) );
 
 		// disabling the feature again.
-		userEvent.click(
-			screen.getByText(
-				'Enable digital wallets & express payment methods'
-			)
-		);
+		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
 
 		// all checkboxes are disabled an not checked.
 		expect( checkoutCheckbox ).toBeDisabled();
@@ -65,11 +57,7 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).not.toBeChecked();
 
 		// enabling the feature again.
-		userEvent.click(
-			screen.getByText(
-				'Enable digital wallets & express payment methods'
-			)
-		);
+		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
 
 		// only the cart checkbox is checked once the feature is enabled again.
 		expect( checkoutCheckbox ).not.toBeDisabled();
@@ -78,5 +66,17 @@ describe( 'DigitalWallets', () => {
 		expect( productPageCheckbox ).not.toBeChecked();
 		expect( cartCheckbox ).not.toBeDisabled();
 		expect( cartCheckbox ).toBeChecked();
+	} );
+
+	it( 'has the correct href link to the digital wallets setting page', async () => {
+		render( <DigitalWallets /> );
+
+		const customizeAppearanceButton = screen.getByText(
+			'Customize appearance'
+		);
+		expect( customizeAppearanceButton ).toHaveAttribute(
+			'href',
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_digital_wallets'
+		);
 	} );
 } );

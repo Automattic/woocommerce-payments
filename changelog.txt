@@ -1,12 +1,17 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.4.0 - 2021-xx-xx =
+= 2.5.0 - 2021-xx-xx =
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+* Update - Use Site Language when rendering Stripe elements.
+
+= 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
 * Add - Payment request button support for checkout and cart blocks.
+* Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
