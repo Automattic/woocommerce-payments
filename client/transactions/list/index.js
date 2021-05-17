@@ -345,14 +345,19 @@ export const TransactionsList = ( props ) => {
 	const isSingleCurrency =
 		2 > ( transactionsSummary.store_currencies || [] ).length;
 
-	const summary = [];
+	let summary;
+	const isTransactionsSummaryDataLoaded =
+		transactionsSummary.count !== undefined &&
+		transactionsSummary.total !== undefined;
 
-	// Generate summary if the data has been loaded and available currencies information
-	if ( transactionsSummary.count !== undefined ) {
-		summary.push( {
-			label: __( 'transactions', 'woocommerce-payments' ),
-			value: `${ transactionsSummary.count }`,
-		} );
+	// Generate summary only if the data has been loaded
+	if ( isTransactionsSummaryDataLoaded ) {
+		summary = [
+			{
+				label: __( 'transactions', 'woocommerce-payments' ),
+				value: `${ transactionsSummary.count }`,
+			},
+		];
 
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(

@@ -131,14 +131,19 @@ export const DepositsList = () => {
 	const isSingleCurrency =
 		2 > ( depositsSummary.store_currencies || [] ).length;
 
-	const summary = [];
+	let summary;
+	const isDespositsSummaryDataLoaded =
+		depositsSummary.count !== undefined &&
+		depositsSummary.total !== undefined;
 
-	// Generate summary if the data has been loaded and available currencies information
-	if ( depositsSummary.count !== undefined ) {
-		summary.push( {
-			label: __( 'deposits', 'woocommerce-payments' ),
-			value: `${ depositsSummary.count }`,
-		} );
+	// Generate summary only if the data has been loaded
+	if ( isDespositsSummaryDataLoaded ) {
+		summary = [
+			{
+				label: __( 'deposits', 'woocommerce-payments' ),
+				value: `${ depositsSummary.count }`,
+			},
+		];
 
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
