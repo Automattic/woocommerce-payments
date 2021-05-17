@@ -2,20 +2,24 @@
 /**
  * External dependencies
  */
+import { Button, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import React, { useState } from 'react';
-import { ExternalLink } from '@wordpress/components';
+import React from 'react';
+
 /**
  * Internal dependencies
  */
-import Banner from '../../banner';
-import PaymentMethods from '../../payment-methods';
-import DigitalWallets from '../digital-wallets';
-import SettingsSection from '../settings-section';
-import GeneralSettings from '../general-settings';
-import TestModeSettings from '../test-mode-settings';
-import ApplePayIcon from '../../gateway-icons/apple-pay';
-import GooglePayIcon from '../../gateway-icons/google-pay';
+import './style.scss';
+import { LoadableBlock } from 'components/loadable';
+import { useSettings } from 'data';
+import Banner from 'banner';
+import PaymentMethods from 'payment-methods';
+import SettingsSection from 'settings/settings-section';
+import DigitalWallets from 'settings/digital-wallets';
+import GeneralSettings from 'settings/general-settings';
+import TestModeSettings from 'settings/test-mode-settings';
+import ApplePayIcon from 'gateway-icons/apple-pay';
+import GooglePayIcon from 'gateway-icons/google-pay';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -59,7 +63,7 @@ const DigitalWalletsDescription = () => (
 
 const GeneralSettingsDescription = () => (
 	<>
-		<h2>{ __( 'Settings', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'General settings', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
 				"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
@@ -72,34 +76,40 @@ const GeneralSettingsDescription = () => (
 	</>
 );
 
-const SettingsManager = ( {
-	enabledPaymentMethodIds: initialEnabledPaymentMethodIds,
-	accountStatus = {},
-} ) => {
-	const [ enabledPaymentMethodIds, setEnabledPaymentMethodIds ] = useState(
-		initialEnabledPaymentMethodIds
-	);
+const SettingsManager = ( { accountStatus = {} } ) => {
+	const { saveSettings, isSaving, isLoading } = useSettings();
 
 	return (
 		<>
 			<Banner />
 			<div className="settings-manager">
 				<SettingsSection Description={ PaymentMethodsDescription }>
-					<PaymentMethods
-						enabledMethodIds={ enabledPaymentMethodIds }
-						onEnabledMethodIdsChange={ setEnabledPaymentMethodIds }
-					/>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<PaymentMethods />
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection Description={ DigitalWalletsDescription }>
 					<DigitalWallets />
 				</SettingsSection>
 				<SettingsSection Description={ GeneralSettingsDescription }>
-					<GeneralSettings
-						accountLink={ accountStatus.accountLink }
-					/>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<GeneralSettings
+							accountLink={ accountStatus.accountLink }
+						/>
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection>
 					<TestModeSettings />
+				</SettingsSection>
+				<SettingsSection className="settings-manager__buttons">
+					<Button
+						isPrimary
+						isBusy={ isSaving }
+						disabled={ isSaving || isLoading }
+						onClick={ saveSettings }
+					>
+						{ __( 'Save changes', 'woocommerce-payments' ) }
+					</Button>
 				</SettingsSection>
 			</div>
 		</>

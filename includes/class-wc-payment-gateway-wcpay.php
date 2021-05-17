@@ -491,6 +491,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'fraudServices'          => $this->account->get_fraud_services_config(),
 			'features'               => $this->supports,
 			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
+			'locale'                 => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 		];
 	}
 
@@ -513,12 +514,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		wp_register_script(
-			'wcpay-checkout',
+			'WCPAY_CHECKOUT',
 			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe', 'wc-checkout' ],
 			WC_Payments::get_file_version( 'dist/checkout.js' ),
 			true
 		);
+
+		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 	}
 
 	/**
@@ -595,16 +598,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
-			wp_localize_script( 'wcpay-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'wcpay-checkout' );
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'wcpay-checkout', 'wcpayCustomerData', $prepared_customer_data );
+				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
 			wp_enqueue_style(
-				'wcpay-checkout',
+				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )
