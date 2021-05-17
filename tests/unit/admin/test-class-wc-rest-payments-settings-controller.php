@@ -259,6 +259,63 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		remove_filter( 'user_has_cap', $cb );
 	}
 
+	public function test_update_settings_enables_manual_capture() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertTrue( $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_disables_manual_capture() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertFalse( $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_does_not_toggle_is_manual_capture_enabled_if_not_supplied() {
+		$status_before_request = $this->gateway->get_option( 'manual_capture' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_returns_error_on_non_bool_is_manual_capture_enabled_value() {
+		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request->set_param( 'is_manual_capture_enabled', 'foo' );
+
+		$response = rest_do_request( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_settings_saves_account_statement() {
+		$request                = new WP_REST_Request();
+		$new_account_descriptor = 'new account descriptor';
+		$request->set_param( 'account_statement', $new_account_descriptor );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $new_account_descriptor, $this->gateway->get_option( 'account_statement' ) );
+	}
+
+	public function test_update_settings_does_not_save_account_statement_if_not_supplied() {
+		$status_before_request = $this->gateway->get_option( 'account_statement' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'account_statement' ) );
+	}
+
 	/**
 	 * @return MockObject|WC_Payment_Gateway_WCPay
 	 */
