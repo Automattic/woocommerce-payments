@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,14 +13,20 @@ const AccountStatusItem = ( props ) => {
 	const { label, value } = props;
 
 	return (
-		<div className="woocommerce-account-status-item">
-			<div className="woocommerce-account-status-item__label">
+		<Flex
+			direction={ 'row' }
+			align={ 'center' }
+			justify={ 'left' }
+			gap={ 3 }
+			className={ 'woocommerce-account-status-item' }
+		>
+			<FlexItem className="woocommerce-account-status-item__label">
 				{ label }
-			</div>
-			<div className="woocommerce-account-status-item__value">
+			</FlexItem>
+			<FlexBlock className="woocommerce-account-status-item__value">
 				{ value }
-			</div>
-		</div>
+			</FlexBlock>
+		</Flex>
 	);
 };
 
