@@ -447,6 +447,13 @@ jQuery( function ( $ ) {
 		);
 	}
 
+	/**
+	 * Generates hover colors from a background color and a text color.
+	 *
+	 * @param {string}  backgroundColor Background color, Any format accepted by tinyColor library
+	 * @param {string}  color Text color, any format accepted by tinyColor library
+	 * @return {Object} Object with new background color and text color.
+	 */
 	function generateHoverColors( backgroundColor, color ) {
 		const hoverColors = {
 			backgroundColor,
@@ -458,16 +465,11 @@ jQuery( function ( $ ) {
 		const tinyBackgroundColor = tinycolor( backgroundColor );
 		const tinyTextColor = tinycolor( color );
 
-		//Option 1: If light ( brightness > 128 ) -> darken, else lighten.
-		const newBackgroundColor = tinycolor( tinyBackgroundColor ).isLight()
-			? tinycolor( tinyBackgroundColor ).darken( 5 )
-			: tinycolor( tinyBackgroundColor ).lighten( 5 );
-
-		// Option 2: Darken if brightness > 50 (Storefront Button 51 ), else lighten
-		// const newBackgroundColor =
-		// 	50 < tinyBackgroundColor.getBrightness()
-		// 		? tinycolor( tinyBackgroundColor ).darken( 5 )
-		// 		: tinycolor( tinyBackgroundColor ).lighten( 5 );
+		// Darken if brightness > 50 (Storefront Button 51 ), else lighten
+		const newBackgroundColor =
+			50 < tinyBackgroundColor.getBrightness()
+				? tinycolor( tinyBackgroundColor ).darken( 7 )
+				: tinycolor( tinyBackgroundColor ).lighten( 7 );
 
 		// Returns provided color if readable, otherwise black or white.
 		const mostReadableColor = tinycolor.mostReadable(
@@ -480,6 +482,26 @@ jQuery( function ( $ ) {
 		hoverColors.color = mostReadableColor.toRgbString();
 
 		return hoverColors;
+	}
+
+	/**
+	 * Generates hover rules for UPE using a set of appearance rules as a basis.
+	 *
+	 * @param {Object}  baseRules UPE appearance rules to use as a base to generate hover colors
+	 * @return {Object} Object with generated hover rules.
+	 */
+	function generateHoverRules( baseRules ) {
+		const hoverRules = Object.assign( {}, baseRules );
+
+		const hoverColors = generateHoverColors(
+			baseRules.backgroundColor,
+			baseRules.color
+		);
+
+		hoverRules.backgroundColor = hoverColors.backgroundColor;
+		hoverRules.color = hoverColors.color;
+
+		return hoverRules;
 	}
 
 	let paymentElement = null;
@@ -564,24 +586,10 @@ jQuery( function ( $ ) {
 						'Tab--selected'
 					);
 
-					// Option 1: With Selected tab rules as a basis.
-					const hoverTabRules = Object.assign( {}, selectedTabRules );
-
-					const hoverColors = generateHoverColors(
-						selectedTabRules.backgroundColor,
-						selectedTabRules.color
+					const hoverSelectedTabRules = generateHoverRules(
+						selectedTabRules
 					);
-
-					// Option 2: With tab rules as a basis.
-					// const hoverTabRules = Object.assign( {}, tabRules );
-
-					// const hoverColors = generateHoverColors(
-					// 	tabRules.backgroundColor,
-					// 	tabRules.color
-					// );
-
-					hoverTabRules.backgroundColor = hoverColors.backgroundColor;
-					hoverTabRules.color = hoverColors.color;
+					const hoverTabRules = generateHoverRules( tabRules );
 
 					const selectedIconRules = getFieldStyles(
 						'.woocommerce-checkout .place-order .button.alt',
@@ -601,6 +609,7 @@ jQuery( function ( $ ) {
 							'.TabIcon--selected': selectedIconRules,
 							'.Tab--selected': selectedTabRules,
 							'.Tab:hover': hoverTabRules,
+							'.Tab--selected:hover': hoverSelectedTabRules,
 						},
 					};
 
