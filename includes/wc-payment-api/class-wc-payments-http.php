@@ -41,12 +41,13 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 *
 	 * @param array  $args             - The arguments to passed to Jetpack.
 	 * @param string $body             - The body passed on to the HTTP request.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 *
 	 * @return array HTTP response on success.
 	 * @throws API_Exception - If not connected or request failed.
 	 */
-	public function remote_request( $args, $body = null, $is_site_specific = true ) {
+	public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
 		// Make sure we're not sending requests if Jetpack is not connected.
 		if ( ! $this->is_connected() ) {
 			Logger::error( 'HTTP_REQUEST_ERROR Site is not connected to WordPress.com' );
@@ -58,7 +59,10 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		}
 
 		$args['blog_id'] = $this->get_blog_id();
-		$args['user_id'] = $this->connection_manager->get_connection_owner_id();
+
+		if ( $use_user_token ) {
+			$args['user_id'] = $this->connection_manager->get_connection_owner_id();
+		}
 
 		if ( $is_site_specific ) {
 			// We expect `url` to include a `%s` placeholder which will allow us inject the blog id.
