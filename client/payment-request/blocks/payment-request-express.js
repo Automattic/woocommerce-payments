@@ -28,11 +28,9 @@ const PaymentRequestExpressComponent = ( {
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
-	// TODO: Add loading indicator when isProcessing.
 	const {
 		paymentRequest,
 		// paymentRequestType,
-		// isProcessing,
 		onButtonClick,
 	} = useInitialization( {
 		api,

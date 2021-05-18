@@ -31,7 +31,6 @@ export const useInitialization = ( {
 
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isFinished, setIsFinished ] = useState( false );
-	const [ isProcessing, setIsProcessing ] = useState( false );
 	const [ paymentRequestType, setPaymentRequestType ] = useState( '' );
 
 	// Create the initial paymentRequest object. Note, we can't do anything if stripe isn't available yet or we have zero total.
@@ -40,7 +39,6 @@ export const useInitialization = ( {
 			! stripe ||
 			! billing?.cartTotal?.value ||
 			isFinished ||
-			isProcessing ||
 			paymentRequest
 		) {
 			return;
@@ -70,7 +68,6 @@ export const useInitialization = ( {
 		paymentRequest,
 		billing?.cartTotal?.value,
 		isFinished,
-		isProcessing,
 		shippingData?.needsShipping,
 		billing?.cartTotalItems,
 	] );
@@ -83,7 +80,6 @@ export const useInitialization = ( {
 
 	// When the payment button is clicked, update the request and show it.
 	const onButtonClick = useCallback( () => {
-		setIsProcessing( true );
 		setIsFinished( false );
 		setExpressPaymentError( '' );
 		updatePaymentRequest( {
@@ -104,21 +100,18 @@ export const useInitialization = ( {
 	useEffect( () => {
 		const cancelHandler = () => {
 			setIsFinished( false );
-			setIsProcessing( false );
 			setPaymentRequest( null );
 			onClose();
 		};
 
 		const completePayment = ( redirectUrl ) => {
 			setIsFinished( true );
-			setIsProcessing( false );
 			window.location = redirectUrl;
 		};
 
 		const abortPayment = ( paymentMethod, message ) => {
 			paymentMethod.complete( 'fail' );
 			setIsFinished( true );
-			setIsProcessing( false );
 			setExpressPaymentError( message );
 		};
 
@@ -144,14 +137,12 @@ export const useInitialization = ( {
 		paymentRequest,
 		api,
 		setIsFinished,
-		setIsProcessing,
 		setPaymentRequest,
 		onClose,
 	] );
 
 	return {
 		paymentRequest,
-		isProcessing,
 		onButtonClick,
 		paymentRequestType,
 	};
