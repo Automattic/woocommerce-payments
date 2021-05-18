@@ -38,10 +38,10 @@ export const getIsDigitalWalletsEnabled = ( state ) => {
 export const getDigitalWalletsSections = ( state ) => {
 	return (
 		getSettings( state ).digital_wallets_enabled_sections || {
-			checkout: false,
+			checkout: true,
 			// eslint-disable-next-line camelcase
-			product_page: false,
-			cart: false,
+			product_page: true,
+			cart: true,
 		}
 	);
 };

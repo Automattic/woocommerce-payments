@@ -20,7 +20,7 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	useDigitalWalletsSettings,
 	useDigitalWalletsSectionsToShowOn,
-} from '../../data';
+} from 'data';
 
 const DigitalWallets = () => {
 	const {
