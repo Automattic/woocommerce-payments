@@ -31,6 +31,32 @@ const useToggle = ( initialValue = false ) => {
 	return [ value, toggleValue ];
 };
 
+const CheckboxToggle = ( { label, defaultIsChecked, children } ) => {
+	const [ isExpanded, toggleIsExpanded ] = useToggle( defaultIsChecked );
+	const wrapperRef = useRef( null );
+
+	useEffect( () => {
+		if ( ! isExpanded ) return;
+		if ( ! wrapperRef.current ) return;
+
+		const input = wrapperRef.current.querySelector( 'input, textarea' );
+		if ( ! input ) return;
+
+		input.focus();
+	}, [ isExpanded ] );
+
+	return (
+		<>
+			<CheckboxControl
+				label={ label }
+				checked={ isExpanded }
+				onChange={ toggleIsExpanded }
+			/>
+			{ isExpanded && <div ref={ wrapperRef }>{ children }</div> }
+		</>
+	);
+};
+
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
 	const firstHeadingElementRef = useRef( null );
@@ -104,23 +130,41 @@ const AdvancedSettings = () => {
 									'woocommerce-payments'
 								) }
 							</Notice>
-							<TextControl
+							<div className="advanced-settings__custom-font-url-wrapper">
+								<CheckboxToggle
+									label={ __(
+										'Use a custom font',
+										'woocommerce-payments'
+									) }
+								>
+									<TextControl
+										label={ __(
+											'Custom font URL',
+											'woocommerce-payments'
+										) }
+										value={ customFontValue }
+										onChange={ setCustomFontValue }
+										autoComplete="off"
+										hideLabelFromVision
+									/>
+								</CheckboxToggle>
+							</div>
+							<CheckboxToggle
 								label={ __(
-									'Custom font',
+									'Add CSS styling',
 									'woocommerce-payments'
 								) }
-								value={ customFontValue }
-								onChange={ setCustomFontValue }
-								autoComplete="off"
-							/>
-							<TextareaControl
-								label={ __(
-									'Additional CSS styling',
-									'woocommerce-payments'
-								) }
-								value={ cssStylingValue }
-								onChange={ setCssStylingValue }
-							/>
+							>
+								<TextareaControl
+									label={ __(
+										'Additional CSS styling',
+										'woocommerce-payments'
+									) }
+									value={ cssStylingValue }
+									onChange={ setCssStylingValue }
+									hideLabelFromVision
+								/>
+							</CheckboxToggle>
 						</CardBody>
 					</Card>
 				</SettingsSection>
