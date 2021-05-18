@@ -103,6 +103,8 @@ Please note that our support for the checkout block is still experimental and th
 
 = 2.5.0 - 2021-xx-xx =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+* Update - Use Site Language when rendering Stripe elements.
+* Update - Use blog ID for authenticating most of the requests.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.

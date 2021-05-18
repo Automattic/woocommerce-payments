@@ -28,3 +28,13 @@
 		margin-left: 16px;
 	}
 }
+
+@mixin modal-footer-buttons-left {
+	display: flex;
+
+	> * {
+		&:not( :last-child ) {
+			margin-right: 16px;
+		}
+	}
+}
