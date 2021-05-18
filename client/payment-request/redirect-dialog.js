@@ -6,14 +6,16 @@ jQuery( ( $ ) => {
 	} );
 } );
 
-export const displayThickbox = () => {
+export const displayRedirectDialog = () => {
 	tb_show(
 		wcpayPaymentRequestParams.site_url,
 		'#TB_inline?width=400&inlineId=payment-request-redirect-dialog'
 	);
 
-	// Refactor positioning of Thickbox to be mobile-friendly.
-	// For reference, check `tb_show` and `tb_position` in WP's thickbox.js.
+	// Refactor positioning of Thickbox to be mobile-friendly by displaying it
+	// inside a special container.
+	//
+	// For reference, check `tb_show` and `tb_position` in WP core thickbox.js.
 	// Note: We shouldn't change the CSS for the default Thickbox elements,
 	// otherwise it may break the styling in other pages.
 	jQuery( 'body' ).append( '<div class="TB_wrapper"></div>' );

@@ -14,7 +14,7 @@ import {
 
 import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
 
-import { displayThickbox } from './redirect-dialog';
+import { displayRedirectDialog } from './redirect-dialog';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -440,7 +440,7 @@ jQuery( ( $ ) => {
 
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					evt.preventDefault();
-					displayThickbox();
+					displayRedirectDialog();
 					return;
 				}
 
@@ -516,25 +516,23 @@ jQuery( ( $ ) => {
 
 		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
 			prButton.on( 'click', ( evt ) => {
-				evt.preventDefault();
 				if ( wcpayPaymentRequestParams.is_login_required ) {
-					displayThickbox();
+					evt.preventDefault();
+					displayRedirectDialog();
 					return;
 				}
 
 				if (
-					( ! wcpayPaymentRequestParams.button.is_custom ||
-						! wcpayPaymentRequest.isCustomPaymentRequestButton(
-							prButton
-						) ) &&
-					( ! wcpayPaymentRequestParams.button.is_branded ||
-						! wcpayPaymentRequest.isBrandedPaymentRequestButton(
-							prButton
-						) )
+					wcpayPaymentRequest.isCustomPaymentRequestButton(
+						prButton
+					) ||
+					wcpayPaymentRequest.isBrandedPaymentRequestButton(
+						prButton
+					)
 				) {
-					return;
+					evt.preventDefault();
+					paymentRequest.show();
 				}
-				paymentRequest.show();
 			} );
 		},
 

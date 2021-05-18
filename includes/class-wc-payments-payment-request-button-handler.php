@@ -180,8 +180,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Handles payment request redirect when the dialog confirmation button
-	 * is clicked and authentication is required for checkout.
+	 * Handles payment request redirect when the redirect dialog "Continue" button is clicked.
 	 */
 	public function handle_payment_request_redirect() {
 		if (
@@ -739,7 +738,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$redirect_url = add_query_arg(
 			[
 				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
-				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ), // Current URL to redirect after login.
+				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ), // Current URL to redirect to after login.
 			],
 			home_url()
 		);

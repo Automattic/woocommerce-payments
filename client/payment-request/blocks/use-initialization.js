@@ -20,7 +20,7 @@ import {
 	normalizeLineItems,
 } from '../utils';
 
-import { displayThickbox } from '../redirect-dialog';
+import { displayRedirectDialog } from '../redirect-dialog';
 
 export const useInitialization = ( {
 	api,
@@ -84,10 +84,10 @@ export const useInitialization = ( {
 	// When the payment button is clicked, update the request and show it.
 	const onButtonClick = useCallback(
 		( evt, pr ) => {
-			// If login is required, save current page and display dialog.
+			// If login is required, display redirect confirmation dialog.
 			if ( getPaymentRequestData( 'is_login_required' ) ) {
 				evt.preventDefault();
-				displayThickbox();
+				displayRedirectDialog();
 				return;
 			}
 
