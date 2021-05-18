@@ -1,0 +1,322 @@
+<?php
+/**
+ * Class UPE_Payment_Gateway
+ *
+ * @package WCPay\Payment_Methods
+ */
+
+namespace WCPay\Payment_Methods;
+
+use WCPay\Logger;
+use WC_Payment_Gateway_WCPay;
+use WC_Payments_Account;
+use WC_Payments_Action_Scheduler_Service;
+use WC_Payments_API_Client;
+use WC_Payments_Customer_Service;
+use WC_Payments_Token_Service;
+use WC_Payments;
+use WC_Payments_Utils;
+use Exception;
+
+/**
+ * UPE Payment method extended from WCPay generic Gateway.
+ */
+class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
+	/**
+	 * Internal ID of the payment gateway.
+	 *
+	 * @type string
+	 */
+	const GATEWAY_ID = 'woocommerce_payments_upe';
+
+	const METHOD_ENABLED_KEY = 'upe_enabled';
+
+	/**
+	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
+	 *
+	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                  $account                  - Account class instance.
+	 * @param WC_Payments_Customer_Service         $customer_service         - Customer class instance.
+	 * @param WC_Payments_Token_Service            $token_service            - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service - Action Scheduler service instance.
+	 */
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
+		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->method_title       = __( 'WooCommerce Payments - UPE', 'woocommerce-payments' );
+		$this->method_description = __( 'Accept payments via Stripe UPE.', 'woocommerce-payments' );
+		$this->title              = __( 'UPE', 'woocommerce-payments' );
+		$this->description        = __( 'You will be redirected to Stripe.', 'woocommerce-payments' );
+
+		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
+	}
+
+	/**
+	 * Handle AJAX request for creating a payment intent for Stripe UPE.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function create_payment_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception(
+					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
+
+			$amount         = WC()->cart->get_cart_contents_total();
+			$currency       = get_woocommerce_currency();
+			$payment_intent = $this->payments_api_client->create_intention(
+				WC_Payments_Utils::prepare_amount( $amount, $currency ),
+				strtolower( $currency ),
+				$this->get_enabled_payment_gateways()
+			);
+
+			wp_send_json_success(
+				[
+					'id'            => $payment_intent->get_id(),
+					'client_secret' => $payment_intent->get_client_secret(),
+				],
+				200
+			);
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Returns enabled payment gateways.
+	 *
+	 * @return array
+	 */
+	public function get_enabled_payment_gateways() {
+		$enabled_gateways = [ 'card' ];
+		return $enabled_gateways;
+	}
+
+	/**
+	 * Update payment intent for completed checkout and return redirect URL for Stripe to confirm payment.
+	 *
+	 * @param int $order_id Order ID to process the payment for.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
+	public function process_payment( $order_id ) {
+		// TODO: Need to update Payment Intent at this point...
+		$payment_intent_id = isset( $_GET['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_intent_id'] ) ) : ''; // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$order             = wc_get_order( $order_id );
+
+		return [
+			'result'       => 'success',
+			'redirect_url' => wp_sanitize_redirect(
+				esc_url_raw(
+					add_query_arg(
+						[
+							'order_id'            => $order_id,
+							'wc_payment_method'   => self::GATEWAY_ID,
+							'save_payment_method' => empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+						],
+						$this->get_return_url( $order )
+					)
+				)
+			),
+		];
+	}
+
+	/**
+	 * Check for a redirect payment method on order received page.
+	 */
+	public function maybe_process_redirect_order() {
+		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] || empty( $_GET['wc_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( self::GATEWAY_ID !== $payment_method ) {
+			return;
+		}
+
+		$order_id = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
+		$this->process_redirect_payment( $order_id );
+	}
+
+	/**
+	 * Processes redirect payments.
+	 *
+	 * @param int $order_id The order ID being processed.
+	 *
+	 * @throws Process_Payment_Exception When the payment intent has an error.
+	 */
+	public function process_redirect_payment( $order_id ) {
+		try {
+			$intent_id           = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+			$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification
+
+			if ( empty( $intent_id ) || empty( $order_id ) ) {
+				return;
+			}
+
+			$order = wc_get_order( $order_id );
+
+			if ( ! is_object( $order ) ) {
+				return;
+			}
+
+			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+				return;
+			}
+
+			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+
+			// Get user/customer for order.
+			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+
+			// Get payment intent to confirm status.
+			$intent         = $this->payments_api_client->get_intent( $intent_id );
+			$status         = $intent->get_status();
+			$charge_id      = $intent->get_charge_id();
+			$currency       = $intent->get_currency();
+			$payment_method = $intent->get_payment_method_id();
+			$amount         = $order->get_total();
+
+			$error = $intent->get_last_payment_error();
+			if ( ! empty( $error ) ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'upe_payment_intent_error'
+				);
+			} else {
+				if ( $save_payment_method ) {
+					try {
+						$token = $this->token_service->add_payment_method_to_user( $payment_method, $user );
+						$this->add_token_to_order( $order, $token );
+						// TODO: May need to update Payment Intent with the key 'setup_future_usage' => 'off_session' here...
+					} catch ( Exception $e ) {
+						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
+						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					}
+				}
+
+				$response = $this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+
+				if ( 'requires_action' === $status ) {
+					// I don't think this case should be possible, but just in case...
+					$next_action = $intent->get_next_action();
+					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+						wp_safe_redirect( $next_action['redirect_to_url']['url'] );
+						exit;
+					} else {
+						$payment_needed = 0 < $order->get_total();
+						$client_secret  = $intent->get_client_secret();
+						$redirect_url   = sprintf(
+							'#wcpay-confirm-%s:%s:%s:%s',
+							$payment_needed ? 'pi' : 'si',
+							$order_id,
+							$client_secret,
+							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+						);
+						wp_safe_redirect( $redirect_url );
+						exit;
+					}
+				}
+			}
+		} catch ( Exception $e ) {
+			Logger::log( 'Error: ' . $e->getMessage() );
+
+			/* translators: localized exception message */
+			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
+
+			wc_add_notice( $e->getLocalizedMessage(), 'error' );
+			wp_safe_redirect( wc_get_checkout_url() );
+			exit;
+		}
+	}
+
+	/**
+	 * Renders the UPE input fields needed to get the user's payment information on the checkout page.
+	 *
+	 * We also add the JavaScript which drives the UI.
+	 */
+	public function payment_fields() {
+		try {
+			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
+
+			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
+			wp_enqueue_script( 'wcpay-upe-checkout' );
+
+			$prepared_customer_data = $this->get_prepared_customer_data();
+			if ( ! empty( $prepared_customer_data ) ) {
+				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+			}
+
+			wp_enqueue_style(
+				'wcpay-upe-checkout',
+				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/checkout.css' )
+			);
+
+			// Output the form HTML.
+			?>
+			<?php if ( ! empty( $this->get_description() ) ) : ?>
+				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
+			<?php endif; ?>
+
+			<?php if ( $this->is_in_test_mode() ) : ?>
+				<p class="testmode-info">
+				<?php
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: link to Stripe testing page */
+						__( '<strong>Test mode:</strong> you will be redirected to a Stripe test page to authorize payment.', 'woocommerce-payments' ),
+						[
+							'strong' => '<strong>',
+						]
+					);
+				?>
+				</p>
+			<?php endif; ?>
+
+			<?php
+			if ( $display_tokenization ) {
+				$this->tokenization_script();
+				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+			?>
+
+			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+				<div id="wcpay-upe-element"></div>
+				<div id="wcpay-upe-errors" role="alert"></div>
+				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
+
+			<?php
+			if ( $this->is_saved_cards_enabled() ) {
+				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+				$this->save_payment_method_checkbox( $force_save_payment );
+			}
+			?>
+
+			</fieldset>
+			<?php
+		} catch ( Exception $e ) {
+			// Output the error message.
+			?>
+			<div>
+				<?php
+				echo esc_html__( 'An error was encountered when preparing the payment form. Please try again later.', 'woocommerce-payments' );
+				?>
+			</div>
+			<?php
+		}
+	}
+}

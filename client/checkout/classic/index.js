@@ -9,6 +9,7 @@ import {
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
+	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
@@ -128,14 +129,20 @@ jQuery( function ( $ ) {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
-			! $( '#wcpay-card-element' ).length ||
-			$( '#wcpay-card-element' ).children().length
+			$( '#wcpay-card-element' ).length &&
+			! $( '#wcpay-card-element' ).children().length
 		) {
-			return;
+			cardElement.unmount();
+			cardElement.mount( '#wcpay-card-element' );
 		}
 
-		cardElement.unmount();
-		cardElement.mount( '#wcpay-card-element' );
+		if (
+			$( '#wcpay-upe-element' ).length &&
+			! $( '#wcpay-upe-element' ).children().length
+		) {
+			cardElement.unmount();
+			cardElement.mount( '#wcpay-card-element' );
+		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
@@ -441,6 +448,7 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
+		PAYMENT_METHOD_NAME_UPE,
 	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
