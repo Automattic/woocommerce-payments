@@ -488,8 +488,8 @@ class WC_Payments_Admin {
 		}
 
 		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'];
-		$past_due = isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false;
+		$status   = $account['status'] ?? '';
+		$past_due = $account['has_overdue_requirements'] ?? false;
 
 		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
 			update_option( 'wcpay_show_update_business_details_task', 'yes' );

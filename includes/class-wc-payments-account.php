@@ -146,7 +146,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
-	 * @return array An array containing the status data.
+	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
 	 */
 	public function get_account_status_data() {
 		$account = $this->get_cached_account_data();
