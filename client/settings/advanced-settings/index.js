@@ -32,32 +32,30 @@ const useToggle = ( initialValue = false ) => {
 };
 
 const AdvancedSettings = () => {
-	const [ isExpanded, toggleIsExpanded ] = useToggle( false );
+	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
 	const firstHeadingElementRef = useRef( null );
 	const [ isLoggingChecked, setIsLoggingChecked ] = useState( false );
 	const [ customFontValue, setCustomFontValue ] = useState( '' );
 	const [ cssStylingValue, setCssStylingValue ] = useState( '' );
 
 	useEffect( () => {
-		if ( ! isExpanded ) return;
+		if ( ! isSectionExpanded ) return;
 		if ( ! firstHeadingElementRef.current ) return;
 
 		firstHeadingElementRef.current.focus();
-	}, [ isExpanded ] );
+	}, [ isSectionExpanded ] );
 
 	return (
 		<>
 			<SettingsSection>
-				<Button
-					// icon={ isExpanded ? chevronUp : chevronDown }
-					onClick={ toggleIsExpanded }
-					isTertiary
-				>
+				<Button onClick={ toggleIsSectionExpanded } isTertiary>
 					{ __( 'Advanced settings', 'wordpress-components' ) }
-					<Icon icon={ isExpanded ? chevronUp : chevronDown } />
+					<Icon
+						icon={ isSectionExpanded ? chevronUp : chevronDown }
+					/>
 				</Button>
 			</SettingsSection>
-			{ isExpanded && (
+			{ isSectionExpanded && (
 				<SettingsSection>
 					<Card>
 						<CardBody size="large">
