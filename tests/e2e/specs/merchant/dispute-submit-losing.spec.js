@@ -73,9 +73,10 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await expect( page ).toMatchElement(
 			'div.components-snackbar > .components-snackbar__content',
 			{
-				text: 'You have accepted the dispute for order #'+orderId+'.',
+				text:
+					'You have accepted the dispute for order #' + orderId + '.',
 			}
-		)
+		);
 		await merchantWCP.goToDisputeViaOrder( orderId );
 		await expect( page ).not.toMatchElement( 'button.components-button', {
 			text: 'Challenge dispute',

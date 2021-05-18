@@ -111,23 +111,26 @@ export const merchantWCP = {
 	},
 
 	goToDisputeViaOrder: async ( orderId ) => {
-	await merchant.openAllOrdersView();
-	await merchant.goToOrder( orderId );
-	const paymentDetailsLink = await page.$eval(
-		'p.order_number > a',
-		( anchor ) => anchor.getAttribute( 'href' )
-	);
-	await Promise.all( [
-		page.goto( paymentDetailsLink, {
-			waitUntil: 'networkidle0',
-		} ),
-		uiLoaded(),
-	] );
-	await uiLoaded();
-	await expect( page ).toClick( 'div.woocommerce-timeline-item__body > span > a', {
-		text: 'View dispute',
-	} );
-	await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-	await uiLoaded();
+		await merchant.openAllOrdersView();
+		await merchant.goToOrder( orderId );
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
+		await expect( page ).toClick(
+			'div.woocommerce-timeline-item__body > span > a',
+			{
+				text: 'View dispute',
+			}
+		);
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 	},
 };
