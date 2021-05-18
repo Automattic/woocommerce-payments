@@ -127,7 +127,8 @@ const PaymentMethods = () => {
 									key={ id }
 									Icon={ Icon }
 									className={ classNames( 'payment-method', {
-										'has-icon-border': 'cc' !== id,
+										'has-icon-border':
+											'woocommerce_payments' !== id,
 									} ) }
 									onDeleteClick={
 										1 < enabledMethods.length
@@ -159,7 +160,8 @@ const PaymentMethods = () => {
 								className={ classNames(
 									'payment-methods__available-method',
 									{
-										'has-icon-border': 'cc' !== id,
+										'has-icon-border':
+											'woocommerce_payments' !== id,
 									}
 								) }
 								aria-label={ label }
