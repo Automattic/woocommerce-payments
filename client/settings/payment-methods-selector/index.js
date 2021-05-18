@@ -32,7 +32,7 @@ const PaymentMethodsSelector = ( { className } ) => {
 		setIsPaymentMethodsSelectorModalOpen,
 	] = useState( false );
 
-	const [ paymentMethods, setPaymentMethods ] = useState();
+	const [ paymentMethods, setPaymentMethods ] = useState( {} );
 
 	useEffect( () => {
 		setPaymentMethods(

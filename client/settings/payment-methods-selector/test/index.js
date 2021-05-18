@@ -111,6 +111,7 @@ describe( 'PaymentMethodsSelector', () => {
 			} )
 		).toBeNull();
 	} );
+
 	test( 'Only payment methods that are not enabled are listed', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
 			enabledPaymentMethodIds: [
@@ -133,6 +134,7 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( paymentMethods ).toHaveLength( 2 );
 		expect( queryByRole( 'checkbox', { name: 'Sofort' } ) ).toBeNull();
 	} );
+
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
 			enabledPaymentMethodIds: [
@@ -162,6 +164,7 @@ describe( 'PaymentMethodsSelector', () => {
 			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
 		).not.toHaveBeenCalled();
 	} );
+
 	test( 'Selecting a payment method and clicking "Add selected" adds the method and closes the modal', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
 			enabledPaymentMethodIds: [
