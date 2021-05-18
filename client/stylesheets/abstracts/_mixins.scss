@@ -24,17 +24,9 @@
 	display: flex;
 	justify-content: flex-end;
 
-	button.components-button {
-		margin-left: 16px;
-	}
-}
-
-@mixin modal-footer-buttons-left {
-	display: flex;
-
 	> * {
-		&:not( :last-child ) {
-			margin-right: 16px;
+		&:not( :first-child ) {
+			margin-left: 16px;
 		}
 	}
 }
