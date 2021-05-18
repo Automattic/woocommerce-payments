@@ -22,6 +22,9 @@ const mockDeposit = {
 	amount: 2000,
 	status: 'paid',
 	bankAccount: 'MOCK BANK •••• 1234 (USD)',
+	automatic: true,
+	fee: 30,
+	fee_percetange: 1.5, // eslint-disable-line camelcase
 };
 
 describe( 'Deposit overview', () => {
