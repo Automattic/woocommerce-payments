@@ -129,7 +129,7 @@ const PaymentMethods = () => {
 					</OrderableList>
 				</CardBody>
 				<CardBody className="payment-methods__available-methods-container">
-					<PaymentMethodsSelector className="payment-methods__add-payment-method"></PaymentMethodsSelector>
+					<PaymentMethodsSelector className="payment-methods__add-payment-method" />
 					<ul className="payment-methods__available-methods">
 						{ disabledMethods.map( ( { id, label, Icon } ) => (
 							<li

@@ -17,6 +17,11 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import './style.scss';
 
 const PaymentMethodsSelector = ( { className } ) => {
+	const availablePaymentMethods = [
+		'woocommerce_payments_giropay',
+		'woocommerce_payments_sofort',
+		'woocommerce_payments_sepa',
+	];
 	const {
 		enabledPaymentMethodIds: enabledMethodIds,
 		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
@@ -31,10 +36,14 @@ const PaymentMethodsSelector = ( { className } ) => {
 
 	useEffect( () => {
 		setPaymentMethods(
-			enabledMethodIds.reduce( ( acc, value ) => {
-				acc[ value ] = true;
-				return acc;
-			}, {} )
+			availablePaymentMethods
+				.filter(
+					( methodId ) => ! enabledMethodIds.includes( methodId )
+				)
+				.reduce( ( acc, value ) => {
+					acc[ value ] = false;
+					return acc;
+				}, {} )
 		);
 	}, [ enabledMethodIds ] );
 
@@ -66,7 +75,6 @@ const PaymentMethodsSelector = ( { className } ) => {
 			.map( ( [ method ] ) => method );
 		addSelectedPaymentMethods( selectedPaymentMethods );
 	};
-
 	return (
 		<>
 			{ isPaymentMethodsSelectorModalOpen && (
@@ -84,28 +92,17 @@ const PaymentMethodsSelector = ( { className } ) => {
 						) }
 					</p>
 					<PaymentMethodCheckboxes>
-						<PaymentMethodCheckbox
-							checked={
-								paymentMethods.woocommerce_payments_giropay
-							}
-							onChange={ handleChange }
-							fees="missing fees"
-							name="woocommerce_payments_giropay"
-						/>
-						<PaymentMethodCheckbox
-							checked={
-								paymentMethods.woocommerce_payments_sofort
-							}
-							onChange={ handleChange }
-							fees="missing fees"
-							name="woocommerce_payments_sofort"
-						/>
-						<PaymentMethodCheckbox
-							checked={ paymentMethods.woocommerce_payments_sepa }
-							onChange={ handleChange }
-							fees="missing fees"
-							name="woocommerce_payments_sepa"
-						/>
+						{ Object.entries( paymentMethods ).map(
+							( [ key, enabled ] ) => (
+								<PaymentMethodCheckbox
+									key={ key }
+									checked={ enabled }
+									onChange={ handleChange }
+									fees="missing fees"
+									name={ key }
+								/>
+							)
+						) }
 					</PaymentMethodCheckboxes>
 					<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
 					<div className="woocommerce-payments__payment-method-selector__footer">

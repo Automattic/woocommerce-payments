@@ -46,10 +46,7 @@ describe( 'PaymentMethodsSelector', () => {
 
 	test( 'Clicking "Add Payment Method" opens the Payment method selection', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-			],
+			enabledPaymentMethodIds: [ 'woocommerce_payments' ],
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
@@ -71,14 +68,16 @@ describe( 'PaymentMethodsSelector', () => {
 		const paymentMethods = getAllByRole( 'listitem' );
 		expect( paymentMethods ).toHaveLength( 3 );
 
-		const giroPay = within( paymentMethods[ 0 ] );
-		expect( giroPay.getByRole( 'checkbox' ) ).not.toBeChecked();
+		const giroPayCheckbox = getByRole( 'checkbox', { name: 'GiroPay' } );
+		expect( giroPayCheckbox ).not.toBeChecked();
 
-		const sofort = within( paymentMethods[ 1 ] );
-		expect( sofort.getByRole( 'checkbox' ) ).not.toBeChecked();
+		const sofortCheckbox = getByRole( 'checkbox', { name: 'Sofort' } );
+		expect( sofortCheckbox ).not.toBeChecked();
 
-		const sepa = within( paymentMethods[ 2 ] );
-		expect( sepa.getByRole( 'checkbox' ) ).toBeChecked();
+		const sepaCheckbox = getByRole( 'checkbox', {
+			name: 'Direct Debit Payments',
+		} );
+		expect( sepaCheckbox ).not.toBeChecked();
 
 		expect(
 			getByRole( 'button', {
@@ -112,7 +111,28 @@ describe( 'PaymentMethodsSelector', () => {
 			} )
 		).toBeNull();
 	} );
+	test( 'Only payment methods that are not enabled are listed', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( {
+			enabledPaymentMethodIds: [
+				'woocommerce_payments',
+				'woocommerce_payments_sofort',
+			],
+			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
+		} );
 
+		const { getByRole, getAllByRole, queryByRole } = render(
+			<PaymentMethodsSelector />
+		);
+
+		const addPaymentMethodButton = getByRole( 'button', {
+			name: 'Add payment method',
+		} );
+		user.click( addPaymentMethodButton );
+
+		const paymentMethods = getAllByRole( 'listitem' );
+		expect( paymentMethods ).toHaveLength( 2 );
+		expect( queryByRole( 'checkbox', { name: 'Sofort' } ) ).toBeNull();
+	} );
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
 			enabledPaymentMethodIds: [
@@ -132,12 +152,12 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( addPaymentMethodButton );
 
 		const paymentMethods = getAllByRole( 'listitem' );
-		const giroPayCheckbox = within( paymentMethods[ 0 ] ).getByRole(
+		const paymentMethodCheckbox = within( paymentMethods[ 0 ] ).getByRole(
 			'checkbox'
 		);
-		user.click( giroPayCheckbox );
+		user.click( paymentMethodCheckbox );
 
-		expect( giroPayCheckbox ).toBeChecked();
+		expect( paymentMethodCheckbox ).toBeChecked();
 		expect(
 			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
 		).not.toHaveBeenCalled();
@@ -151,19 +171,14 @@ describe( 'PaymentMethodsSelector', () => {
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
-		const { getByRole, getAllByRole, queryByRole } = render(
-			<PaymentMethodsSelector />
-		);
+		const { getByRole, queryByRole } = render( <PaymentMethodsSelector /> );
 
 		const addPaymentMethodButton = getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		user.click( addPaymentMethodButton );
 
-		const paymentMethods = getAllByRole( 'listitem' );
-		const giroPayCheckbox = within( paymentMethods[ 0 ] ).getByRole(
-			'checkbox'
-		);
+		const giroPayCheckbox = getByRole( 'checkbox', { name: 'GiroPay' } );
 		user.click( giroPayCheckbox );
 
 		const addSelectedButton = getByRole( 'button', {
