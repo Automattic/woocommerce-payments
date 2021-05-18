@@ -5,6 +5,7 @@
 /**
  * External dependencies
  */
+const { merchant } = require( '@woocommerce/e2e-utils' );
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
@@ -20,6 +21,11 @@ const WCPAY_TRANSACTIONS =
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
+
+/**
+ * Internal dependencies
+ */
+import { uiLoaded } from './helpers';
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
@@ -96,10 +102,32 @@ export const merchantWCP = {
 			text: 'Deposit history',
 		} );
 	},
+
 	openTransactions: async () => {
 		await page.goto( WCPAY_TRANSACTIONS, {
 			waitUntil: 'networkidle0',
 		} );
 		await expect( page ).toMatchElement( 'h2', { text: 'Transactions' } );
+	},
+
+	goToDisputeViaOrder: async ( orderId ) => {
+	await merchant.openAllOrdersView();
+	await merchant.goToOrder( orderId );
+	const paymentDetailsLink = await page.$eval(
+		'p.order_number > a',
+		( anchor ) => anchor.getAttribute( 'href' )
+	);
+	await Promise.all( [
+		page.goto( paymentDetailsLink, {
+			waitUntil: 'networkidle0',
+		} ),
+		uiLoaded(),
+	] );
+	await uiLoaded();
+	await expect( page ).toClick( 'div.woocommerce-timeline-item__body > span > a', {
+		text: 'View dispute',
+	} );
+	await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+	await uiLoaded();
 	},
 };

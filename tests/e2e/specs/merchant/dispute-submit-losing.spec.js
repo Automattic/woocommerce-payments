@@ -26,7 +26,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 
-		// Get the order ID so we can verify it in the disputes listing
+		// Get the order ID
 		const orderIdField = await page.$(
 			'.woocommerce-order-overview__order.order > strong'
 		);
@@ -40,22 +40,8 @@ describe( 'Disputes > Submit losing dispute', () => {
 	} );
 
 	it( 'should process a losing dispute', async () => {
-		await merchantWCP.openDisputes();
-		await uiLoaded();
-
-		// Verify a dispute is present with a proper ID and open it
-		await page.waitForSelector( '.woocommerce-table__item > a', {
-			text: orderId,
-		} );
-		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
-			text: orderId,
-		} );
-
-		await uiLoaded();
-		await page.waitForSelector( '.woocommerce-table__clickable-cell', {
-			visible: true,
-		} );
-		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
+		// Go to dispute page
+		await merchantWCP.goToDisputeViaOrder( orderId );
 
 		// Verify the heading for two component cards
 		await page.waitForSelector( '.components-card__header', {
@@ -80,15 +66,17 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await disputeDialog.accept();
 		await uiUnblocked();
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 
 		// Verify the dispute has been accepted properly
+		await uiLoaded();
 		await expect( page ).toMatchElement(
-			'span.chip.chip-light.is-compact',
+			'div.components-snackbar > .components-snackbar__content',
 			{
-				text: 'Lost',
+				text: 'You have accepted the dispute for order #'+orderId+'.',
 			}
-		);
-		await expect( page ).toClick( '.woocommerce-table__item > a' );
+		)
+		await merchantWCP.goToDisputeViaOrder( orderId );
 		await expect( page ).not.toMatchElement( 'button.components-button', {
 			text: 'Challenge dispute',
 		} );
