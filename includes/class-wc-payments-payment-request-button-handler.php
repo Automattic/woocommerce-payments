@@ -76,14 +76,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_redirect_dialog' ], 3 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_redirect_dialog' ], 3 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
+		add_action( 'wp_footer', [ $this, 'display_payment_request_redirect_dialog' ] );
 
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
@@ -708,7 +708,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request redirect dialog.
 	 */
 	public function display_payment_request_redirect_dialog() {
-		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {
+		if (
+			! $this->should_show_payment_request_button()
+			|| is_user_logged_in()
+			|| ! $this->is_authentication_required()
+		) {
 			return;
 		}
 
@@ -1081,6 +1085,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 		check_ajax_referer( 'wcpay-set-redirect-url', 'security' );
 		// Sets a redirect URL cookie for 10 minutes.
 		wc_setcookie( 'wcpay_payment_request_redirect_url', wp_get_referer(), time() + MINUTE_IN_SECONDS * 10 );
+		// Send back a JSON response to avoid errors with the cart block.
+		wp_send_json( [ 'result' => 'success' ] );
 	}
 
 
