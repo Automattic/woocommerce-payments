@@ -115,15 +115,13 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
-		const enabledMethodIds = [
-			'woocommerce_payments',
-			'woocommerce_payments_sepa',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-		];
-
 		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: enabledMethodIds,
+			enabledPaymentMethodIds: [
+				'woocommerce_payments',
+				'woocommerce_payments_sepa',
+				'woocommerce_payments_giropay',
+				'woocommerce_payments_sofort',
+			],
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
@@ -135,12 +133,18 @@ describe( 'PaymentMethods', () => {
 			name: 'Delete',
 		} );
 		user.click( ccDeleteButton );
-
-		const expectedUpdatedMethodIds = enabledMethodIds.filter(
-			( id ) => 'woocommerce_payments' !== id
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Remove',
+			} )
 		);
+
 		expect(
 			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).toHaveBeenCalledWith( expectedUpdatedMethodIds );
+		).toHaveBeenCalledWith( [
+			'woocommerce_payments_sepa',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+		] );
 	} );
 } );
