@@ -4,8 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { Card, CardBody } from '@wordpress/components';
 import classNames from 'classnames';
 
 /**
@@ -66,11 +65,6 @@ const PaymentMethods = () => {
 		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
 	} = useEnabledPaymentMethodIds();
 
-	const [
-		isPaymentMethodsSelectorModalVisible,
-		setPaymentMethodsSelectorModalVisible,
-	] = useState( false );
-
 	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
 		availableMethods.find( ( method ) => method.id === methodId )
 	);
@@ -107,14 +101,6 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			{ isPaymentMethodsSelectorModalVisible && (
-				<PaymentMethodsSelector
-					enabledPaymentMethods={ enabledMethodIds }
-					onClose={ () =>
-						setPaymentMethodsSelectorModalVisible( false )
-					}
-				/>
-			) }
 			<Card className="payment-methods">
 				<CardBody className="payment-methods__enabled-methods-container">
 					<OrderableList
@@ -144,15 +130,7 @@ const PaymentMethods = () => {
 					</OrderableList>
 				</CardBody>
 				<CardBody className="payment-methods__available-methods-container">
-					<Button
-						className="payment-methods__add-payment-method"
-						onClick={ () =>
-							setPaymentMethodsSelectorModalVisible( true )
-						}
-						isSecondary
-					>
-						{ __( 'Add payment method', 'woocommerce-payments' ) }
-					</Button>
+					<PaymentMethodsSelector className="payment-methods__add-payment-method" />
 					<ul className="payment-methods__available-methods">
 						{ disabledMethods.map( ( { id, label, Icon } ) => (
 							<li
