@@ -22,50 +22,86 @@ const DigitalWalletsSettings = () => {
 				<CardBody>
 					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 					<RadioControl
-						help="Select a button label that fits best with the flow of purchase or payment experience on your store."
+						help={ __(
+							'Select a button label that fits best with the flow of purchase or payment experience on your store.',
+							'woocommerce-payments'
+						) }
 						selected={ cta }
 						options={ [
-							{ label: 'Only icon', value: 'only-icon' },
-							{ label: 'Buy', value: 'buy' },
-							{ label: 'Donate', value: 'donate' },
-							{ label: 'Book', value: 'book' },
+							{
+								label: __(
+									'Only icon',
+									'woocommerce-payments'
+								),
+								value: 'only-icon',
+							},
+							{
+								label: __( 'Buy', 'woocommerce-payments' ),
+								value: 'buy',
+							},
+							{
+								label: __( 'Donate', 'woocommerce-payments' ),
+								value: 'donate',
+							},
+							{
+								label: __( 'Book', 'woocommerce-payments' ),
+								value: 'book',
+							},
 						] }
-						onChange={ ( option ) => {
-							setCta( option );
-						} }
+						onChange={ setCta }
 					/>
 					<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
 					<RadioControl
-						help="Note that larger buttons are more suitable for mobile use."
-						label="Size"
+						help={ __(
+							'Note that larger buttons are more suitable for mobile use.',
+							'woocommerce-payments'
+						) }
+						label={ __( 'Size', 'woocommerce-payments' ) }
 						selected={ size }
 						options={ [
-							{ label: 'Default (40 px)', value: 'default' },
-							{ label: 'Medium (48 px)', value: 'medium' },
-							{ label: 'Large (56 px)', value: 'large' },
+							{
+								label: __(
+									'Default (40 px)',
+									'woocommerce-payments'
+								),
+								value: 'default',
+							},
+							{
+								label: __(
+									'Medium (48 px)',
+									'woocommerce-payments'
+								),
+								value: 'medium',
+							},
+							{
+								label: __(
+									'Large (56 px)',
+									'woocommerce-payments'
+								),
+								value: 'large',
+							},
 						] }
-						onChange={ ( option ) => {
-							setSize( option );
-						} }
+						onChange={ setSize }
 					/>
 					<RadioControl
-						// eslint-disable-next-line max-len
-						help="Dark is recommended for white or light-colored backgrounds and light is recommended for dark or colored backgrounds."
-						label="Theme"
+						help={ __(
+							// eslint-disable-next-line max-len
+							'Dark is recommended for white or light-colored backgrounds and light is recommended for dark or colored backgrounds.',
+							'woocommerce-payments'
+						) }
+						label={ __( 'Theme', 'woocommerce-payments' ) }
 						selected={ theme }
 						options={ [
 							{
-								label: 'Dark',
+								label: __( 'Dark', 'woocommerce-payments' ),
 								value: 'dark',
 							},
 							{
-								label: 'Light',
+								label: __( 'Light', 'woocommerce-payments' ),
 								value: 'light',
 							},
 						] }
-						onChange={ ( option ) => {
-							setTheme( option );
-						} }
+						onChange={ setTheme }
 					/>
 				</CardBody>
 			</Card>
