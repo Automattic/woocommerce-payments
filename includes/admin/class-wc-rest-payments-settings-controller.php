@@ -67,12 +67,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'is_wcpay_enabled'           => [
+					'is_wcpay_enabled'             => [
 						'description'       => __( 'If WooCommerce Payments should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'enabled_payment_method_ids' => [
+					'enabled_payment_method_ids'   => [
 						'description'       => __( 'Payment method IDs that should be enabled, in the order they should appear in during checkout. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -81,12 +81,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_manual_capture_enabled'  => [
+					'is_manual_capture_enabled'    => [
 						'description'       => __( 'If WooCommerce Payments manual capture of charges should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'account_statement'          => [
+					'account_statement_descriptor' => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
@@ -113,10 +113,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids' => array_values( $enabled_payment_method_ids ),
-				'is_wcpay_enabled'           => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'  => $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'account_statement'          => $this->wcpay_gateway->get_option( 'account_statement' ),
+				'enabled_payment_method_ids'   => array_values( $enabled_payment_method_ids ),
+				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'    => $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 			]
 		);
 	}
@@ -130,7 +130,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
 		$this->update_is_manual_capture_enabled( $request );
-		$this->update_account_statement( $request );
+		$this->update_account_statement_descriptor( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -213,13 +213,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_account_statement( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'account_statement' ) ) {
+	private function update_account_statement_descriptor( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'account_statement_descriptor' ) ) {
 			return;
 		}
 
-		$account_statement = $request->get_param( 'account_statement' );
+		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
 
-		$this->wcpay_gateway->update_option( 'account_statement', $account_statement );
+		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
 	}
 }
