@@ -15,9 +15,12 @@ import {
 
 import {
 	getPaymentRequest,
+	getPaymentRequestData,
 	updatePaymentRequest,
 	normalizeLineItems,
 } from '../utils';
+
+import { displayThickbox } from '../redirect-dialog';
 
 export const useInitialization = ( {
 	api,
@@ -79,22 +82,39 @@ export const useInitialization = ( {
 	}, [ shippingData.needsShipping ] );
 
 	// When the payment button is clicked, update the request and show it.
-	const onButtonClick = useCallback( () => {
-		setIsFinished( false );
-		setExpressPaymentError( '' );
-		updatePaymentRequest( {
+	const onButtonClick = useCallback(
+		( evt, pr ) => {
+			// If login is required, save current page and display dialog.
+			if ( getPaymentRequestData( 'is_login_required' ) ) {
+				evt.preventDefault();
+				api.paymentRequestSetRedirectURL();
+				displayThickbox();
+				return;
+			}
+
+			setIsFinished( false );
+			setExpressPaymentError( '' );
+			updatePaymentRequest( {
+				paymentRequest,
+				total: billing?.cartTotal?.value,
+				displayItems: normalizeLineItems( billing?.cartTotalItems ),
+			} );
+			onClick();
+
+			// We must manually call payment request `show()` for custom buttons.
+			if ( pr ) {
+				pr.show();
+			}
+		},
+		[
+			api,
+			onClick,
 			paymentRequest,
-			total: billing?.cartTotal?.value,
-			displayItems: normalizeLineItems( billing?.cartTotalItems ),
-		} );
-		onClick();
-	}, [
-		onClick,
-		paymentRequest,
-		setExpressPaymentError,
-		billing.cartTotal,
-		billing.cartTotalItems,
-	] );
+			setExpressPaymentError,
+			billing.cartTotal,
+			billing.cartTotalItems,
+		]
+	);
 
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
