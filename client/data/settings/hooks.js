@@ -76,26 +76,27 @@ export const useSettings = () => {
 	);
 };
 
-export const useDigitalWalletsSettings = () =>
-	useSelect( ( select ) => {
+export const useDigitalWalletsSettings = () => {
+	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+	return useSelect( ( select ) => {
 		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
-		const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
 
 		return {
 			isDigitalWalletsEnabled: getIsDigitalWalletsEnabled(),
 			updateIsDigitalWalletsEnabled,
 		};
 	} );
+};
 
-export const useDigitalWalletsSectionsToShowOn = () =>
-	useSelect( ( select ) => {
+export const useDigitalWalletsSectionsToShowOn = () => {
+	const { updateDigitalWalletsSectionsToShowOn } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
 		const { getDigitalWalletsSections } = select( STORE_NAME );
-		const { updateDigitalWalletsSectionsToShowOn } = useDispatch(
-			STORE_NAME
-		);
 
 		return {
 			digitalWalletsSections: getDigitalWalletsSections(),
 			updateDigitalWalletsSectionsToShowOn,
 		};
 	} );
+};
