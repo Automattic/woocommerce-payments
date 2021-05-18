@@ -739,7 +739,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$redirect_url = add_query_arg(
 			[
 				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
-				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( $wp->request ) ) ), // Current URL to redirect after login.
+				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ), // Current URL to redirect after login.
 			],
 			home_url()
 		);
