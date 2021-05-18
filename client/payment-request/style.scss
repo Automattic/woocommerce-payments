@@ -9,6 +9,12 @@
 	z-index: 100050;
 	justify-content: center;
 	align-items: center;
+	pointer-events: none;
+	// Allow pointer events in inner window only, so the overlay
+	// is still clickable and allows for closing the dialog.
+	div {
+		pointer-events: all;
+	}
 }
 
 /* Payment Request Button styles for branded and custom types */
