@@ -440,7 +440,6 @@ jQuery( ( $ ) => {
 
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					evt.preventDefault();
-					api.paymentRequestSetRedirectURL();
 					displayThickbox();
 					return;
 				}
@@ -519,7 +518,6 @@ jQuery( ( $ ) => {
 			prButton.on( 'click', ( evt ) => {
 				evt.preventDefault();
 				if ( wcpayPaymentRequestParams.is_login_required ) {
-					api.paymentRequestSetRedirectURL();
 					displayThickbox();
 					return;
 				}

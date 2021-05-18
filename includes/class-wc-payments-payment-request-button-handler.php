@@ -72,6 +72,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
@@ -91,7 +92,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_set_redirect_url', [ $this, 'ajax_set_redirect_url' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
@@ -177,6 +177,25 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		WC()->session->set_customer_session_cookie( true );
+	}
+
+	/**
+	 * Handles payment request redirect when the dialog confirmation button
+	 * is clicked and authentication is required for checkout.
+	 */
+	public function handle_payment_request_redirect() {
+		if (
+			! empty( $_GET['wcpay_payment_request_redirect_url'] )
+			&& ! empty( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
+		) {
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_payment_request_redirect_url'] ) ) );
+			// Sets a redirect URL cookie for 10 minutes,
+			// which we will redirect to after authentication.
+			wc_setcookie( 'wcpay_payment_request_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			// Redirects to "my-account" page.
+			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
+		}
 	}
 
 	/**
@@ -638,7 +657,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'set_redirect_url'          => wp_create_nonce( 'wcpay-set-redirect-url' ),
 			],
 			'checkout'          => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
@@ -716,8 +734,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
+		global $wp;
 		add_thickbox();
-		$my_account_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
+		$redirect_url = add_query_arg(
+			[
+				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
+				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( $wp->request ) ) ), // Current URL to redirect after login.
+			],
+			home_url()
+		);
 		?>
 		<div id="payment-request-redirect-dialog" style="display:none;">
 			<div style="padding: 1.5rem 0">
@@ -726,7 +751,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				?>
 			</div>
 			<div style="text-align: right">
-				<a href="<?php echo esc_url( $my_account_url ); ?>" class="button alt"><?php echo esc_attr( __( 'Continue', 'woocommerce-payments' ) ); ?></a>
+				<a href="<?php echo esc_url( $redirect_url ); ?>" class="button alt"><?php echo esc_attr( __( 'Continue', 'woocommerce-payments' ) ); ?></a>
 			</div>
 		</div>
 		<?php
@@ -1076,19 +1101,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		wp_send_json( $data );
 	}
-
-	/**
-	 * Sets the login redirect URL when the payment request button
-	 * is clicked and authentication is required for checkout.
-	 */
-	public function ajax_set_redirect_url() {
-		check_ajax_referer( 'wcpay-set-redirect-url', 'security' );
-		// Sets a redirect URL cookie for 10 minutes.
-		wc_setcookie( 'wcpay_payment_request_redirect_url', wp_get_referer(), time() + MINUTE_IN_SECONDS * 10 );
-		// Send back a JSON response to avoid errors with the cart block.
-		wp_send_json( [ 'result' => 'success' ] );
-	}
-
 
 	/**
 	 * Normalizes billing and shipping state fields.

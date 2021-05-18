@@ -87,7 +87,6 @@ export const useInitialization = ( {
 			// If login is required, save current page and display dialog.
 			if ( getPaymentRequestData( 'is_login_required' ) ) {
 				evt.preventDefault();
-				api.paymentRequestSetRedirectURL();
 				displayThickbox();
 				return;
 			}
