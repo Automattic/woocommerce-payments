@@ -78,8 +78,8 @@ describe( 'PaymentMethodsSelector', () => {
 
 		expect( addSelectedPaymentMethods ).toHaveBeenCalledTimes( 1 );
 		expect( addSelectedPaymentMethods ).toHaveBeenCalledWith( [
-			'giropay',
-			'sofort',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
 		] );
 
 		expect( handleClose ).toHaveBeenCalledTimes( 1 );
@@ -87,7 +87,9 @@ describe( 'PaymentMethodsSelector', () => {
 
 	test( 'allows to preselect payment methods', () => {
 		const { getAllByRole } = render(
-			<PaymentMethodsSelector enabledPaymentMethods={ [ 'giropay' ] } />
+			<PaymentMethodsSelector
+				enabledPaymentMethods={ [ 'woocommerce_payments_giropay' ] }
+			/>
 		);
 
 		const paymentMethods = getAllByRole( 'listitem' );

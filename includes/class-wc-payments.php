@@ -231,7 +231,9 @@ class WC_Payments {
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
 
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
@@ -521,6 +523,39 @@ class WC_Payments {
 	}
 
 	/**
+	 * Replace the main WCPay gateway with all WCPay payment methods
+	 * when retrieving the "woocommerce_gateway_order" option.
+	 *
+	 * @param array $ordering Gateway order.
+	 *
+	 * @return array
+	 */
+	public static function replace_wcpay_gateway_with_payment_methods( $ordering ) {
+		$ordering    = (array) $ordering;
+		$wcpay_index = array_search(
+			self::get_gateway()->id,
+			array_keys( $ordering ),
+			true
+		);
+
+		if ( false === $wcpay_index ) {
+			// The main WCPay gateway isn't on the list.
+			return $ordering;
+		}
+
+		$method_order = self::get_gateway()->get_option( 'payment_method_order', [] );
+
+		if ( empty( $method_order ) ) {
+			return $ordering;
+		}
+
+		$ordering = array_keys( $ordering );
+
+		array_splice( $ordering, $wcpay_index, 1, $method_order );
+		return array_flip( $ordering );
+	}
+
+	/**
 	 * Create the API client.
 	 *
 	 * @return WC_Payments_API_Client
@@ -609,6 +644,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway, WC()->payment_gateways() );
+		$settings_controller->register_routes();
 	}
 
 	/**
