@@ -11,23 +11,11 @@ import { ExternalLink } from '@wordpress/components';
 import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
-import GiropaySettings from './giropay-settings';
 import DigitalWalletsSettings from './digital-wallets-settings';
 import Banner from '../../banner';
 
 /* eslint-disable camelcase */
 const methods = {
-	woocommerce_payments_giropay: {
-		title: 'giropay',
-		description: () => (
-			<>
-				{ /* Whoever picks this up will need to translate these strings */ }
-				<h2>giropay</h2>
-				<p>giropay description.</p>
-			</>
-		),
-		controls: () => <GiropaySettings />,
-	},
 	woocommerce_payments_digital_wallets: {
 		title: '1-click checkouts',
 		description: () => (
