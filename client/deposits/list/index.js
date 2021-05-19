@@ -76,10 +76,8 @@ export const DepositsList = () => {
 		getQuery()
 	);
 
-	const columnsArgs = [
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
-	const columns = useMemo( () => getColumns( ...columnsArgs ), columnsArgs );
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (

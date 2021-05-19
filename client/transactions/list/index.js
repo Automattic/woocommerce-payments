@@ -149,14 +149,15 @@ export const TransactionsList = ( props ) => {
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId );
 
-	const columnsArgs = [
-		! props.depositId,
-		wcpaySettings.isSubscriptionsActive,
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
-		() => getColumns( ...columnsArgs ),
-		columnsArgs
+		() =>
+			getColumns(
+				! props.depositId,
+				wcpaySettings.isSubscriptionsActive,
+				sortByDate
+			),
+		[ props.depositId, sortByDate ]
 	);
 
 	const rows = transactions.map( ( txn ) => {

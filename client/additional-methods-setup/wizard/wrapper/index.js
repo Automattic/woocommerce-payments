@@ -22,7 +22,7 @@ const Wizard = ( {
 			completedTasks,
 			setCompletedTasks,
 		} ),
-		[ activeTask, setActiveTask, completedTasks, completedTasks ]
+		[ activeTask, setActiveTask, completedTasks ]
 	);
 
 	return (
