@@ -72,7 +72,9 @@ const getColumns = ( sortByDate ) => [
 
 export const DepositsList = () => {
 	const { deposits, depositsCount, isLoading } = useDeposits( getQuery() );
-	const { depositsSummary } = useDepositsSummary( getQuery() );
+	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
+		getQuery()
+	);
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
@@ -131,10 +133,12 @@ export const DepositsList = () => {
 	const isSingleCurrency =
 		2 > ( depositsSummary.store_currencies || [] ).length;
 
+	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDespositsSummaryDataLoaded =
 		depositsSummary.count !== undefined &&
-		depositsSummary.total !== undefined;
+		depositsSummary.total !== undefined &&
+		false === isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isDespositsSummaryDataLoaded ) {

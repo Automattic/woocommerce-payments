@@ -144,10 +144,10 @@ export const TransactionsList = ( props ) => {
 		getQuery(),
 		props.depositId
 	);
-	const { transactionsSummary } = useTransactionsSummary(
-		getQuery(),
-		props.depositId
-	);
+	const {
+		transactionsSummary,
+		isLoading: isSummaryLoading,
+	} = useTransactionsSummary( getQuery(), props.depositId );
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
@@ -345,10 +345,12 @@ export const TransactionsList = ( props ) => {
 	const isSingleCurrency =
 		2 > ( transactionsSummary.store_currencies || [] ).length;
 
+	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isTransactionsSummaryDataLoaded =
 		transactionsSummary.count !== undefined &&
-		transactionsSummary.total !== undefined;
+		transactionsSummary.total !== undefined &&
+		false === isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isTransactionsSummaryDataLoaded ) {
