@@ -6,6 +6,8 @@ import {
 	getIsWCPayEnabled,
 	getEnabledPaymentMethodIds,
 	isSavingSettings,
+	getIsDigitalWalletsEnabled,
+	getDigitalWalletsSections,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -98,5 +100,68 @@ describe( 'Settings selectors tests', () => {
 				expect( isSavingSettings( state ) ).toBeFalsy();
 			}
 		);
+	} );
+
+	describe( 'getIsDigitalWalletsEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_digital_wallets_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						is_digital_wallets_enabled: true,
+					},
+				},
+			};
+
+			expect( getIsDigitalWalletsEnabled( state ) ).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getIsDigitalWalletsEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getDigitalWalletsSections()', () => {
+		test( 'returns the value of state.settings.data.digital_wallets_enabled_sections', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						digital_wallets_enabled_sections: {
+							// eslint-disable-next-line camelcase
+							product_page: true,
+							checkout: false,
+							cart: true,
+						},
+					},
+				},
+			};
+
+			expect( getDigitalWalletsSections( state ) ).toEqual( {
+				// eslint-disable-next-line camelcase
+				product_page: true,
+				checkout: false,
+				cart: true,
+			} );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns defaults if missing (tested state: %j)', ( state ) => {
+			expect( getDigitalWalletsSections( state ) ).toEqual( {
+				checkout: true,
+				// eslint-disable-next-line camelcase
+				product_page: true,
+				cart: true,
+			} );
+		} );
 	} );
 } );
