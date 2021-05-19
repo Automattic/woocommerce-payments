@@ -132,9 +132,9 @@ class Multi_Currency {
 	/**
 	 * Gets the store base currency.
 	 *
-	 * @return object Currency object.
+	 * @return Currency The store base currency.
 	 */
-	public function get_default_currency() {
+	public function get_default_currency(): Currency {
 		if ( isset( $this->default_currency ) ) {
 			return $this->default_currency;
 		}
