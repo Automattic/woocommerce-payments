@@ -10,8 +10,8 @@ import { getHistory } from '@woocommerce/navigation';
  * Hook for displaying an optional confirmation message.
  *
  * Usage:
- * - useConfirmNavigation( () => 'Are you sure you want to leave?' );
- * - useConfirmNavigation( saved => { if ( ! saved ) return 'Discard unsaved changes?' }, [ saved ] );
+ * - const callback = useConfirmNavigation( () => 'Are you sure you want to leave?' );
+ *   useEffect( callback , [ callback, otherDependency ] );
  *
  * @param {Function} getMessage returns confirmation message string if one should appear
  * @return {Function} The callback to execute
