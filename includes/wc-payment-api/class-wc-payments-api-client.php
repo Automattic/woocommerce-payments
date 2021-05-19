@@ -728,7 +728,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$stripe_account_settings,
 			self::ACCOUNTS_API,
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -756,7 +758,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
+		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
 	}
 
 	/**
@@ -773,7 +775,9 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -912,7 +916,9 @@ class WC_Payments_API_Client {
 				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -1006,12 +1012,13 @@ class WC_Payments_API_Client {
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	private function request( $params, $api, $method, $is_site_specific = true ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -1065,7 +1072,8 @@ class WC_Payments_API_Client {
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
-			$is_site_specific
+			$is_site_specific,
+			$use_user_token
 		);
 
 		$response_body = $this->extract_response_body( $response );

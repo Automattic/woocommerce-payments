@@ -21,6 +21,8 @@ function recordEvent( eventName, eventProperties ) {
 
 const events = {
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
+	CONNECT_ACCOUNT_VIEW: 'page_view',
+	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 };
 
 export default {

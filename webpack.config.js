@@ -15,6 +15,8 @@ const webpackConfig = {
 		'payment-request': './client/payment-request/index.js',
 		'subscription-edit-page': './client/subscription-edit-page.js',
 		tos: './client/tos/index.js',
+		'additional-methods-setup':
+			'./client/additional-methods-setup/index.js',
 	},
 	output: {
 		filename: '[name].js',
@@ -50,7 +52,8 @@ const webpackConfig = {
 								'@import "node_modules/@wordpress/base-styles/_z-index.scss"; ' +
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
-								'@import "_mixins"; ',
+								'@import "_mixins"; ' +
+								'@import "_variables"; ',
 						},
 					},
 				],
@@ -62,7 +65,7 @@ const webpackConfig = {
 				loader: 'source-map-loader',
 			},
 			{
-				test: /\.svg$/,
+				test: /\.(svg|png)$/,
 				exclude: /node_modules/,
 				loader: 'url-loader',
 			},
