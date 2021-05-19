@@ -13,7 +13,11 @@ import * as transactions from './transactions';
 import * as charges from './charges';
 import * as timeline from './timeline';
 import * as disputes from './disputes';
+<<<<<<< HEAD
 import * as settings from './settings';
+=======
+import * as multiCurrency from './multi-currency';
+>>>>>>> 971f3b8a (Create data store for multi shopper currency feature (#1856))
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -25,6 +29,7 @@ export const initStore = () =>
 			timeline: timeline.reducer,
 			disputes: disputes.reducer,
 			settings: settings.reducer,
+			multiCurrency: multiCurrency.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -33,6 +38,7 @@ export const initStore = () =>
 			...timeline.actions,
 			...disputes.actions,
 			...settings.actions,
+			...multiCurrency.actions,
 		},
 		controls,
 		selectors: {
@@ -42,6 +48,7 @@ export const initStore = () =>
 			...timeline.selectors,
 			...disputes.selectors,
 			...settings.selectors,
+			...multiCurrency.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -50,5 +57,6 @@ export const initStore = () =>
 			...timeline.resolvers,
 			...disputes.resolvers,
 			...settings.resolvers,
+			...multiCurrency.resolvers,
 		},
 	} );
