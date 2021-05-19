@@ -24,7 +24,7 @@ export const initStore = () =>
 			charges: charges.reducer,
 			timeline: timeline.reducer,
 			disputes: disputes.reducer,
-			multiCurrency: disputes.reducer,
+			multiCurrency: multiCurrency.reducer,
 		} ),
 		actions: {
 			...deposits.actions,

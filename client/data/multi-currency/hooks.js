@@ -11,7 +11,7 @@ export const useAvailableCurrencies = () =>
 		const { getAvailableCurrencies, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getAvailableCurrencies(),
+			available: getAvailableCurrencies(),
 			isLoading: isResolving( 'getAvailableCurrencies', [] ),
 		};
 	}, [] );
@@ -21,7 +21,7 @@ export const useEnabledCurrencies = () =>
 		const { getEnabledCurrencies, isResolving } = select( STORE_NAME );
 
 		return {
-			deposit: getEnabledCurrencies(),
+			enabled: getEnabledCurrencies(),
 			isLoading: isResolving( 'getEnabledCurrencies', [] ),
 		};
 	}, [] );

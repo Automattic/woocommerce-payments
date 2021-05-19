@@ -21,11 +21,11 @@ const getMultiCurrencyState = ( state ) => {
 };
 
 export const getAvailableCurrencies = ( state ) => {
-	const available = getMultiCurrencyState( state ).available || {};
+	const available = getMultiCurrencyState( state ).available || [];
 	return available;
 };
 
 export const getEnabledCurrencies = ( state ) => {
-	const enabled = getMultiCurrencyState( state ).enabled || {};
+	const enabled = getMultiCurrencyState( state ).enabled || [];
 	return enabled;
 };
