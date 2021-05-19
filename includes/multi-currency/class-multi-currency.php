@@ -205,4 +205,53 @@ class Multi_Currency {
 		}
 	}
 
+	/**
+	 * Gets the rounding precision in the format used by round().
+	 *
+	 * @return int The rounding precision.
+	 */
+	public function get_round_precision(): float {
+		return 0;
+	}
+
+	/**
+	 * Gets the charm pricing to be added to the converted price after rounding.
+	 *
+	 * @return float The charm pricing.
+	 */
+	public function get_charm_pricing(): float {
+		return -0.1;
+	}
+
+	/**
+	 * Gets the price after adjusting it with the rounding and charm settings.
+	 *
+	 * @param float $price The price to be adjusted.
+	 *
+	 * @return float The adjusted price.
+	 */
+	public function get_adjusted_price( $price ): float {
+		$precision = $this->get_round_precision();
+		$charm     = $this->get_charm_pricing();
+
+		// TODO: round up.
+		return round( $price, $precision ) + $charm;
+	}
+
+	/**
+	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
+	 *
+	 * @param mixed $price The price to be converted.
+	 *
+	 * @return float The converted price.
+	 */
+	public function get_price( $price ): float {
+		$current_currency = $this->get_selected_currency();
+
+		if ( $current_currency->get_code() === $this->get_default_currency()->get_code() ) {
+			return (float) $price;
+		}
+
+		return $this->get_adjusted_price( ( (float) $price ) * $current_currency->get_rate() );
+	}
 }
