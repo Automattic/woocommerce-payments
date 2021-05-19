@@ -23,7 +23,7 @@ describe( 'PaymentMethod', () => {
 		render( <PaymentMethod label="Foo" onDeleteClick={ undefined } /> );
 
 		const deleteButton = screen.queryByRole( 'button', {
-			name: 'Delete',
+			name: 'Delete Foo from checkout',
 		} );
 
 		expect( deleteButton ).not.toBeInTheDocument();
@@ -41,7 +41,7 @@ describe( 'PaymentMethod', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Delete',
+				name: 'Delete Foo from checkout',
 			} )
 		);
 		user.click(
@@ -54,7 +54,7 @@ describe( 'PaymentMethod', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Delete',
+				name: 'Delete Foo from checkout',
 			} )
 		);
 		user.click(
