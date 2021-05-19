@@ -59,7 +59,7 @@ describe( 'PaymentMethodSettings', () => {
 		);
 
 		const heading = screen.queryByRole( 'heading', {
-			name: 'Digital wallets & saved cards',
+			name: '1-click checkouts',
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
