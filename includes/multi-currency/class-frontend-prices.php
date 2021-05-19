@@ -44,6 +44,9 @@ class Frontend_Prices {
 		// Variation price range hooks.
 		add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ] );
 		add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ] );
+
+		// Shipping methods hooks.
+		add_filter( 'woocommerce_package_rates', [ $this, 'get_shipping_rates_prices' ] );
 	}
 
 	/**
@@ -101,5 +104,21 @@ class Frontend_Prices {
 	public function add_exchange_rate_to_variation_prices_hash( $prices_hash ) {
 		$prices_hash[] = $this->get_product_price( 1 );
 		return $prices_hash;
+	}
+
+	/**
+	 * Returns the shipping rates with their prices converted.
+	 *
+	 * @param array $rates Shipping rates.
+	 *
+	 * @return array Shipping rates with converted costs.
+	 */
+	public function get_shipping_rates_prices( $rates ) {
+		foreach ( $rates as $key => $rate ) {
+			if ( $rate->cost ) {
+				$rates[ $key ]->cost = $this->multi_currency->get_price( $rate->cost );
+			}
+		}
+		return $rates;
 	}
 }
