@@ -215,7 +215,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Gets the product total price.
 	 *
 	 * @param object $product WC_Product_* object.
-	 * @return integer Total price.
+	 * @return mixed Total price.
 	 */
 	public function get_product_price( $product ) {
 		$product_price = $product->get_price();
