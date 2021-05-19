@@ -3,6 +3,7 @@
 = 2.5.0 - 2021-xx-xx =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Use Site Language when rendering Stripe elements.
+* Update - Use blog ID for authenticating most of the requests.
 * Update - Deposit overview details.
 
 = 2.4.0 - 2021-05-12 =
@@ -16,6 +17,7 @@
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

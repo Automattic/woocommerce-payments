@@ -24,8 +24,10 @@
 	display: flex;
 	justify-content: flex-end;
 
-	button.components-button {
-		margin-left: 16px;
+	> * {
+		&:not( :first-child ) {
+			margin-left: 16px;
+		}
 	}
 }
 
