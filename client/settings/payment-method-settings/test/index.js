@@ -13,26 +13,26 @@ import PaymentMethodSettings from '..';
 describe( 'PaymentMethodSettings', () => {
 	test( 'renders title and description', () => {
 		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_giropay" />
+			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
 		);
 
-		const heading = screen.queryByRole( 'heading', { name: 'giropay' } );
+		const heading = screen.queryByRole( 'heading', {
+			name: '1-click checkouts',
+		} );
 		expect( heading ).toBeInTheDocument();
 	} );
 
 	test( 'renders settings', () => {
 		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_giropay" />
+			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
 		);
 
-		expect(
-			screen.queryByText( 'Giropay settings placeholder.' )
-		).toBeInTheDocument();
+		expect( screen.queryByText( 'Call to action' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders breadcrumbs', () => {
 		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_giropay" />
+			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
 		);
 
 		const linkToPayments = screen.getByRole( 'link', {
@@ -40,7 +40,9 @@ describe( 'PaymentMethodSettings', () => {
 		} );
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
-		const methodName = within( breadcrumbs ).getByText( 'giropay' );
+		const methodName = within( breadcrumbs ).getByText(
+			'1-click checkouts'
+		);
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
 
