@@ -8,6 +8,7 @@
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 * Update - Deposit overview details.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
@@ -20,7 +21,6 @@
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
-* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.
