@@ -3,14 +3,18 @@
 /**
  * External dependencies
  */
+<<<<<<< HEAD
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
+=======
+>>>>>>> 893218d1 (Create data store for multi shopper currency feature (#1856))
 
 /**
  * Internal Dependencies
  */
 import TYPES from './action-types';
+<<<<<<< HEAD
 import { NAMESPACE, STORE_NAME } from '../constants';
 
 export function updateCurrencies( data ) {
@@ -19,6 +23,8 @@ export function updateCurrencies( data ) {
 		data,
 	};
 }
+=======
+>>>>>>> 893218d1 (Create data store for multi shopper currency feature (#1856))
 
 export function updateAvailableCurrencies( data ) {
 	return {
