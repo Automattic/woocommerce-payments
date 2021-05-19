@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
@@ -75,7 +75,7 @@ describe( 'PaymentMethods', () => {
 		} );
 	} );
 
-	test( 'enabled methods are rendered with "Manage" and "Delete" buttons', () => {
+	test( 'enabled methods are rendered with "Delete" buttons', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( {
 			enabledPaymentMethodIds: [
 				'woocommerce_payments',
@@ -85,14 +85,10 @@ describe( 'PaymentMethods', () => {
 
 		render( <PaymentMethods /> );
 
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const listItem = cc.closest( 'li' );
-
 		expect(
-			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
-		).toBeInTheDocument();
-		expect(
-			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+			screen.queryByRole( 'button', {
+				name: 'Delete Credit card / debit card from checkout',
+			} )
 		).toBeInTheDocument();
 	} );
 
@@ -103,44 +99,42 @@ describe( 'PaymentMethods', () => {
 
 		render( <PaymentMethods /> );
 
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const listItem = cc.closest( 'li' );
-
 		expect(
-			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
-		).toBeInTheDocument();
-		expect(
-			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+			screen.queryByRole( 'button', {
+				name: 'Delete Credit card / debit card from checkout',
+			} )
 		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
-		const enabledMethodIds = [
-			'woocommerce_payments',
-			'woocommerce_payments_sepa',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-		];
-
 		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: enabledMethodIds,
+			enabledPaymentMethodIds: [
+				'woocommerce_payments',
+				'woocommerce_payments_sepa',
+				'woocommerce_payments_giropay',
+				'woocommerce_payments_sofort',
+			],
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
 		render( <PaymentMethods /> );
 
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const ccListItem = cc.closest( 'li' );
-		const ccDeleteButton = within( ccListItem ).getByRole( 'button', {
-			name: 'Delete',
+		const ccDeleteButton = screen.getByRole( 'button', {
+			name: 'Delete Credit card / debit card from checkout',
 		} );
 		user.click( ccDeleteButton );
-
-		const expectedUpdatedMethodIds = enabledMethodIds.filter(
-			( id ) => 'woocommerce_payments' !== id
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Remove',
+			} )
 		);
+
 		expect(
 			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).toHaveBeenCalledWith( expectedUpdatedMethodIds );
+		).toHaveBeenCalledWith( [
+			'woocommerce_payments_sepa',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+		] );
 	} );
 } );

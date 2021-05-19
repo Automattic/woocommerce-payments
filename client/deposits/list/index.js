@@ -22,6 +22,8 @@ import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
 
+import './style.scss';
+
 const getColumns = ( sortByDate ) => [
 	{
 		key: 'details',
@@ -159,7 +161,7 @@ export const DepositsList = () => {
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
-				className="deposits-list woocommerce-report-table"
+				className="wcpay-deposits-list woocommerce-report-table"
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
