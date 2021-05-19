@@ -11,11 +11,25 @@ import { render, screen } from '@testing-library/react';
 import DigitalWalletsSettings from '../digital-wallets-settings';
 
 describe( 'DigitalWalletsSettings', () => {
-	test( 'renders settings', () => {
+	test( 'renders settings with defaults', () => {
 		render( <DigitalWalletsSettings /> );
 
-		expect(
-			screen.queryByText( 'Digital Wallets placeholder.' )
-		).toBeInTheDocument();
+		// confirm settings headings
+		expect( screen.queryByText( 'Call to action' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Appearance' ) ).toBeInTheDocument();
+
+		// confirm radio button groups displayed
+		const [ ctaRadio, sizeRadio, themeRadio ] = screen.getAllByRole(
+			'radio'
+		);
+
+		expect( ctaRadio ).toBeInTheDocument();
+		expect( sizeRadio ).toBeInTheDocument();
+		expect( themeRadio ).toBeInTheDocument();
+
+		// confirm default values
+		expect( screen.getByLabelText( 'Buy' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Default (40 px)' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Dark' ) ).toBeChecked();
 	} );
 } );
