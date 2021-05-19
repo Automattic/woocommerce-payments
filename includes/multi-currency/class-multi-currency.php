@@ -24,6 +24,13 @@ class Multi_Currency {
 	protected static $instance = null;
 
 	/**
+	 * Frontend_Prices instance.
+	 *
+	 * @var Frontend_Prices
+	 */
+	protected $frontend_prices;
+
+	/**
 	 * The available currencies.
 	 *
 	 * @var array
@@ -78,8 +85,13 @@ class Multi_Currency {
 		$this->get_default_currency();
 		$this->get_enabled_currencies();
 
-		add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+
+		$is_frontend_request = ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+		if ( $is_frontend_request ) {
+			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
+			$this->frontend_prices = new Frontend_Prices( $this );
+		}
 	}
 
 	/**
