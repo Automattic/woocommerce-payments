@@ -63,6 +63,10 @@ class Frontend_Prices {
 	 * @return float The converted product's price.
 	 */
 	public function get_product_price( $price ) {
+		if ( ! $price ) {
+			return $price;
+		}
+
 		return $this->multi_currency->get_price( $price );
 	}
 
@@ -76,7 +80,9 @@ class Frontend_Prices {
 	public function get_variation_price_range( $variation_prices ) {
 		foreach ( $variation_prices as $price_type => $prices ) {
 			foreach ( $prices as $variation_id => $price ) {
-				$variation_prices[ $price_type ][ $variation_id ] = $this->multi_currency->get_price( $price );
+				if ( $price ) {
+					$variation_prices[ $price_type ][ $variation_id ] = $this->multi_currency->get_price( $price );
+				}
 			}
 		}
 
