@@ -114,16 +114,20 @@ const AddPaymentMethodsTask = () => {
 						</p>
 						<PaymentMethodCheckboxes>
 							<PaymentMethodCheckbox
-								checked={ paymentMethodsState.giropay }
+								checked={
+									paymentMethodsState.woocommerce_payments_giropay
+								}
 								onChange={ handlePaymentMethodChange }
 								fees="missing fees"
-								name="giropay"
+								name="woocommerce_payments_giropay"
 							/>
 							<PaymentMethodCheckbox
-								checked={ paymentMethodsState.sofort }
+								checked={
+									paymentMethodsState.woocommerce_payments_sofort
+								}
 								onChange={ handlePaymentMethodChange }
 								fees="missing fees"
-								name="sofort"
+								name="woocommerce_payments_sofort"
 							/>
 						</PaymentMethodCheckboxes>
 					</CardBody>
@@ -137,10 +141,12 @@ const AddPaymentMethodsTask = () => {
 						</p>
 						<PaymentMethodCheckboxes>
 							<PaymentMethodCheckbox
-								checked={ paymentMethodsState.sepa }
+								checked={
+									paymentMethodsState.woocommerce_payments_sepa
+								}
 								onChange={ handlePaymentMethodChange }
 								fees="missing fees"
-								name="sepa"
+								name="woocommerce_payments_sepa"
 							/>
 							<PaymentMethodCheckbox
 								checked={ paymentMethodsState[ 'apple-pay' ] }
