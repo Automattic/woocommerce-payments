@@ -50,6 +50,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		parent::setUp();
 
 		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
+		remove_filter( 'woocommerce_settings_api_sanitized_fields_woocommerce_payments', [ WC_Payments::get_gateway(), 'sanitize_plugin_settings' ] );
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -321,7 +322,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client->expects( $this->never() )
 			->method( 'update_account' )
-			->with( $this->equalTo( [ 'statement_descriptor' => $new_account_descriptor ] ) );
+			->with( $this->anything() );
 
 		$this->controller->update_settings( $request );
 	}
