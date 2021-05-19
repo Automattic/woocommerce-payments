@@ -113,6 +113,19 @@ class Multi_Currency {
 			$this->frontend_prices     = new Frontend_Prices( $this );
 			$this->frontend_currencies = new Frontend_Currencies( $this );
 		}
+
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+		if ( is_admin() ) {
+			// Multi-currency settings page.
+			add_filter(
+				'woocommerce_get_settings_pages',
+				function( $settings_pages ) {
+					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+					return $settings_pages;
+				}
+			);
+		}
 	}
 
 	/**
@@ -122,6 +135,58 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
+	}
+
+	/**
+	 * Register the CSS and JS scripts.
+	 */
+	public function register_scripts() {
+		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		wp_register_script(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
+			true
+		);
+
+		wp_localize_script(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			'wcpayMultiCurrencySettings',
+			[
+				'enabledCurrencies'   => $this->get_enabled_currencies_for_settings(),
+				'availableCurrencies' => $this->get_available_currencies_for_settings(),
+				'defaultCurrency'     => $this->get_default_currency(),
+			]
+		);
+
+		/*
+		TODO: Add styling.
+		// @codingStandardsIgnoreStart
+		wp_register_style(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
+		// @codingStandardsIgnoreEnd
+		*/
+	}
+
+	/**
+	 * Load the assets.
+	 */
+	public function enqueue_scripts() {
+		global $current_tab, $current_section;
+
+		$this->register_scripts();
+
+		// TODO: Set this to only display when needed.
+		// Output the settings JS and CSS only on the settings page.
+		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -345,5 +410,63 @@ class Multi_Currency {
 	protected function ceil_price( $price, $precision ) {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	}
+
+	/**
+	 * Gets currencies for settings pages.
+	 *
+	 * @param string $type The type of currencies to return.
+	 *
+	 * @return array Array of arrays of currencies, defaults to enabled.
+	 */
+	private function get_currencies_for_settings( $type = '' ) {
+		switch ( $type ) {
+			case 'available':
+				$currencies = $this->get_available_currencies();
+				break;
+			default:
+				$currencies = $this->get_enabled_currencies();
+		}
+
+		// Set the name to the main key for sorting purposes.
+		foreach ( $currencies as $currency ) {
+			$list[ $currency->get_name() ] = [
+				'code' => $currency->get_code(),
+				'name' => $currency->get_name(),
+				'flag' => $currency->get_flag(),
+			];
+		}
+		ksort( $list );
+
+		// Now that we are sorted, drop the name and use the code as the key.
+		foreach ( $list as $currency ) {
+			$return[ $currency['code'] ] = $currency;
+		}
+
+		// Set default currency to the top of the list.
+		$default_currency                         = $this->get_default_currency();
+		$default[ $default_currency->get_code() ] = $return[ $default_currency->get_code() ];
+		unset( $return[ $default_currency->get_code() ] );
+		$return = array_merge( $default, $return );
+
+		return $return;
+	}
+
+	/**
+	 * Gets the available currencies for the settings pages.
+	 *
+	 * @return array Array of arrays of available currencies.
+	 */
+	public function get_available_currencies_for_settings() {
+		return $this->get_currencies_for_settings( 'available' );
+	}
+
+	/**
+	 * Gets the enabled currencies for the settings pages.
+	 *
+	 * @return array Array of arrays of enabled currencies.
+	 */
+	public function get_enabled_currencies_for_settings() {
+		return $this->get_currencies_for_settings( 'enabled' );
 	}
 }
