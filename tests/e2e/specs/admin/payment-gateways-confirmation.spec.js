@@ -13,11 +13,11 @@ const WP_CLI = `docker run --rm --user xfs --volumes-from wcp_e2e_wordpress --ne
 
 describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
+		await merchant.login();
+
 		shell.exec( `${ WP_CLI } wp option _wcpay_feature_grouped_settings 1`, {
 			silent: true,
 		} );
-
-		await merchant.login();
 	} );
 
 	beforeEach( async () => {
@@ -26,13 +26,15 @@ describe( 'payment gateways disable confirmation', () => {
 		} );
 	} );
 
-	afterAll( () => {
+	afterAll( async () => {
 		shell.exec(
 			`${ WP_CLI } wp option delete _wcpay_feature_grouped_settings`,
 			{
 				silent: true,
 			}
 		);
+
+		await merchant.logout();
 	} );
 
 	it( 'should show the confirmation dialog when disabling WCPay', async () => {
