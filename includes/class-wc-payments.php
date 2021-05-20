@@ -222,7 +222,7 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+		if ( WC_Payments_Features::is_grouped_settings_enabled() || WCPAY_TEST_ENV ) {
 			self::$digital_wallets_gateway = new $digital_wallets_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
