@@ -112,7 +112,8 @@ const PaymentMethods = () => {
 								className={ classNames(
 									'payment-methods__available-method',
 									{
-										'has-icon-border': 'cc' !== id,
+										'has-icon-border':
+											'woocommerce_payments' !== id,
 									}
 								) }
 								aria-label={ label }
