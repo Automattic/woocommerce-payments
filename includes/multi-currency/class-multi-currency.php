@@ -196,8 +196,12 @@ class Multi_Currency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		if ( WC()->session ) {
+			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
+			return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		}
+
+		return $this->default_currency;
 	}
 
 	/**
@@ -213,7 +217,7 @@ class Multi_Currency {
 		$code     = strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
-		if ( $currency ) {
+		if ( $currency && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
 		}
 	}
