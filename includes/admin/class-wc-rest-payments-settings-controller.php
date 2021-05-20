@@ -131,7 +131,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * Validate the digital wallets enabled sections are supported and their values
 	 * are boolean.
 	 *
-	 * @param string|bool     $value Value to check.
+	 * @param object          $value Value to check.
 	 * @param WP_REST_Request $request The request sent to the WP REST API.
 	 * @param string          $param Name of the parameter passed to endpoint holding $value.
 	 * @return bool
