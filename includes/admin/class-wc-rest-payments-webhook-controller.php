@@ -25,7 +25,7 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	const RESULT_ERROR       = 'error';
 
 	/**
-	 * Events, which triggers refreshing cached account properties.
+	 * Events triggering account cache refresh.
 	 */
 	const EVENT_ACCOUNT_UPDATED                  = 'account.updated';
 	const EVENT_ACCOUNT_EXTERNAL_ACCOUNT_CREATED = 'account.external_account.created';
