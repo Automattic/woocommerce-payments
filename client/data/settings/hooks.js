@@ -88,15 +88,15 @@ export const useDigitalWalletsSettings = () => {
 	} );
 };
 
-export const useDigitalWalletsSectionsToShowOn = () => {
-	const { updateDigitalWalletsSectionsToShowOn } = useDispatch( STORE_NAME );
+export const useDigitalWalletsLocations = () => {
+	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsSections } = select( STORE_NAME );
+		const { getDigitalWalletsLocations } = select( STORE_NAME );
 
 		return {
-			digitalWalletsSections: getDigitalWalletsSections(),
-			updateDigitalWalletsSectionsToShowOn,
+			digitalWalletsLocations: getDigitalWalletsLocations(),
+			updateDigitalWalletsLocations,
 		};
 	} );
 };

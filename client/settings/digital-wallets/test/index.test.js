@@ -10,14 +10,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import DigitalWallets from '..';
-import {
-	useDigitalWalletsSettings,
-	useDigitalWalletsSectionsToShowOn,
-} from 'data';
+import { useDigitalWalletsSettings, useDigitalWalletsLocations } from 'data';
 
 jest.mock( 'data', () => ( {
 	useDigitalWalletsSettings: jest.fn(),
-	useDigitalWalletsSectionsToShowOn: jest.fn(),
+	useDigitalWalletsLocations: jest.fn(),
 } ) );
 
 const getMockDigitalWalletsSettings = (
@@ -28,19 +25,19 @@ const getMockDigitalWalletsSettings = (
 	updateIsDigitalWalletsEnabled: updateIsDigitalWalletsEnabledHandler,
 } );
 
-const getMockDigitalWalletsSections = (
+const getMockDigitalWalletsLocations = (
 	checkoutStatus,
 	productPageStatus,
 	cartStatus,
-	updateDigitalWalletsSectionsToShowOnHandler
+	updateDigitalWalletsLocationsHandler
 ) => ( {
-	digitalWalletsSections: {
+	digitalWalletsLocations: {
 		checkout: checkoutStatus,
 		// eslint-disable-next-line camelcase
 		product_page: productPageStatus,
 		cart: cartStatus,
 	},
-	updateDigitalWalletsSectionsToShowOn: updateDigitalWalletsSectionsToShowOnHandler,
+	updateDigitalWalletsLocations: updateDigitalWalletsLocationsHandler,
 } );
 
 describe( 'DigitalWallets', () => {
@@ -48,12 +45,12 @@ describe( 'DigitalWallets', () => {
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings( false, jest.fn() )
 		);
-		useDigitalWalletsSectionsToShowOn.mockReturnValue(
-			getMockDigitalWalletsSections( true, true, true, jest.fn() )
+		useDigitalWalletsLocations.mockReturnValue(
+			getMockDigitalWalletsLocations( true, true, true, jest.fn() )
 		);
 	} );
 
-	it( 'should enable 1-click checkout sections if 1-click checkout is enabled', async () => {
+	it( 'should enable 1-click checkout locations if 1-click checkout is enabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
@@ -84,7 +81,7 @@ describe( 'DigitalWallets', () => {
 		expect( updateIsDigitalWalletsEnabledHandler ).toBeCalledTimes( 1 );
 	} );
 
-	it( 'should disable 1-click checkout sections if 1-click checkout is disabled', async () => {
+	it( 'should disable 1-click checkout locations if 1-click checkout is disabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
@@ -115,17 +112,17 @@ describe( 'DigitalWallets', () => {
 		expect( updateIsDigitalWalletsEnabledHandler ).toBeCalledTimes( 1 );
 	} );
 
-	it( 'should trigger an action to save the checked sections when toggling the checkboxes', async () => {
-		const updateDigitalWalletsSectionsToShowOnHandler = jest.fn();
+	it( 'should trigger an action to save the checked locations when toggling the checkboxes', async () => {
+		const updateDigitalWalletsLocationsHandler = jest.fn();
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings( true, jest.fn() )
 		);
-		useDigitalWalletsSectionsToShowOn.mockReturnValue(
-			getMockDigitalWalletsSections(
+		useDigitalWalletsLocations.mockReturnValue(
+			getMockDigitalWalletsLocations(
 				true,
 				true,
 				true,
-				updateDigitalWalletsSectionsToShowOnHandler
+				updateDigitalWalletsLocationsHandler
 			)
 		);
 
@@ -136,20 +133,14 @@ describe( 'DigitalWallets', () => {
 		userEvent.click( screen.getByText( 'Checkout' ) );
 		userEvent.click( screen.getByText( 'Cart' ) );
 
-		expect(
-			updateDigitalWalletsSectionsToShowOnHandler
-		).toHaveBeenCalledWith( {
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
 			// eslint-disable-next-line camelcase
 			product_page: false,
 		} );
-		expect(
-			updateDigitalWalletsSectionsToShowOnHandler
-		).toHaveBeenCalledWith( {
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
 			checkout: false,
 		} );
-		expect(
-			updateDigitalWalletsSectionsToShowOnHandler
-		).toHaveBeenCalledWith( {
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
 			cart: false,
 		} );
 
@@ -157,14 +148,10 @@ describe( 'DigitalWallets', () => {
 		userEvent.click( screen.getByText( 'Cart' ) );
 		userEvent.click( screen.getByText( 'Product page' ) );
 
-		expect(
-			updateDigitalWalletsSectionsToShowOnHandler
-		).toHaveBeenCalledWith( {
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
 			cart: false,
 		} );
-		expect(
-			updateDigitalWalletsSectionsToShowOnHandler
-		).toHaveBeenCalledWith( {
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
 			// eslint-disable-next-line camelcase
 			product_page: false,
 		} );

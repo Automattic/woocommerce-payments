@@ -8,7 +8,7 @@ import {
 	updateEnabledPaymentMethodIds,
 	updateIsSavingSettings,
 	updateIsDigitalWalletsEnabled,
-	updateDigitalWalletsSectionsToShowOn,
+	updateDigitalWalletsLocations,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -220,7 +220,7 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_DIGITAL_WALLETS_SECTIONS', () => {
+	describe( 'SET_DIGITAL_WALLETS_LOCATIONS', () => {
 		const initDigitalWalletsState = {
 			// eslint-disable-next-line camelcase
 			product_page: true,
@@ -234,22 +234,20 @@ describe( 'Settings reducer tests', () => {
 			cart: true,
 		};
 
-		test( 'toggle `data.digital_wallets_enabled_sections`', () => {
+		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
 			const oldState = {
 				data: {
 					// eslint-disable-next-line camelcase
-					digital_wallets_enabled_sections: initDigitalWalletsState,
+					digital_wallets_enabled_locations: initDigitalWalletsState,
 				},
 			};
 
 			const state = reducer(
 				oldState,
-				updateDigitalWalletsSectionsToShowOn(
-					enableAlldigitalWalletsState
-				)
+				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
 			);
 
-			expect( state.data.digital_wallets_enabled_sections ).toEqual(
+			expect( state.data.digital_wallets_enabled_locations ).toEqual(
 				enableAlldigitalWalletsState
 			);
 		} );
@@ -259,23 +257,21 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					// eslint-disable-next-line camelcase
-					digital_wallets_enabled_sections: initDigitalWalletsState,
+					digital_wallets_enabled_locations: initDigitalWalletsState,
 					baz: 'quux',
 				},
 			};
 
 			const state = reducer(
 				oldState,
-				updateDigitalWalletsSectionsToShowOn(
-					enableAlldigitalWalletsState
-				)
+				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
 			);
 
 			expect( state ).toEqual( {
 				foo: 'bar',
 				data: {
 					// eslint-disable-next-line camelcase
-					digital_wallets_enabled_sections: enableAlldigitalWalletsState,
+					digital_wallets_enabled_locations: enableAlldigitalWalletsState,
 					baz: 'quux',
 				},
 			} );

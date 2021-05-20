@@ -17,10 +17,7 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 /**
  * Internal dependencies
  */
-import {
-	useDigitalWalletsSettings,
-	useDigitalWalletsSectionsToShowOn,
-} from 'data';
+import { useDigitalWalletsSettings, useDigitalWalletsLocations } from 'data';
 
 const DigitalWallets = () => {
 	const {
@@ -28,12 +25,12 @@ const DigitalWallets = () => {
 		updateIsDigitalWalletsEnabled,
 	} = useDigitalWalletsSettings();
 	const {
-		digitalWalletsSections,
-		updateDigitalWalletsSectionsToShowOn,
-	} = useDigitalWalletsSectionsToShowOn();
+		digitalWalletsLocations,
+		updateDigitalWalletsLocations,
+	} = useDigitalWalletsLocations();
 
-	const makeHandleSectionStatusChange = ( section ) => ( status ) => {
-		updateDigitalWalletsSectionsToShowOn( {
+	const locationChangeHandler = ( section ) => ( status ) => {
+		updateDigitalWalletsLocations( {
 			[ section ]: status,
 		} );
 	};
@@ -101,11 +98,9 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsSections.checkout
+								digitalWalletsLocations.checkout
 							}
-							onChange={ makeHandleSectionStatusChange(
-								'checkout'
-							) }
+							onChange={ locationChangeHandler( 'checkout' ) }
 							label={ __( 'Checkout', 'woocommerce-payments' ) }
 						/>
 					</li>
@@ -114,11 +109,9 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsSections.product_page
+								digitalWalletsLocations.product_page
 							}
-							onChange={ makeHandleSectionStatusChange(
-								'product_page'
-							) }
+							onChange={ locationChangeHandler( 'product_page' ) }
 							label={ __(
 								'Product page',
 								'woocommerce-payments'
@@ -130,9 +123,9 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsSections.cart
+								digitalWalletsLocations.cart
 							}
-							onChange={ makeHandleSectionStatusChange( 'cart' ) }
+							onChange={ locationChangeHandler( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
 						/>
 					</li>

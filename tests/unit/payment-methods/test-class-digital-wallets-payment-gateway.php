@@ -113,15 +113,15 @@ class Digital_Wallets_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test first time setting up such that digital_wallets_enabled_sections is not set. It should return defaults.
+	 * Test first time setting up such that digital_wallets_enabled_locations is not set. It should return defaults.
 	 */
-	public function test_get_digital_wallets_enabled_sections_defaults() {
+	public function test_get_digital_wallets_enabled_locations_defaults() {
 		$this->mock_wcpay_gateway->expects( $this->once() )
 			->method( 'get_option' )
-			->with( 'digital_wallets_enabled_sections' )
+			->with( 'digital_wallets_enabled_locations' )
 			->willReturn( '' );
 
-		$actual   = $this->mock_wcpay_gateway->get_digital_wallets_enabled_sections();
+		$actual   = $this->mock_wcpay_gateway->get_digital_wallets_enabled_locations();
 		$expected = [
 			'cart'         => true,
 			'checkout'     => true,
@@ -132,12 +132,12 @@ class Digital_Wallets_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test retrieving data from wp_options digital_wallets_enabled_sections.
+	 * Test retrieving data from wp_options digital_wallets_enabled_locations.
 	 */
-	public function test_get_digital_wallets_enabled_sections() {
+	public function test_get_digital_wallets_enabled_locations() {
 		$this->mock_wcpay_gateway->expects( $this->once() )
 			->method( 'get_option' )
-			->with( 'digital_wallets_enabled_sections' )
+			->with( 'digital_wallets_enabled_locations' )
 			->willReturn(
 				[
 					'cart'         => false,
@@ -146,7 +146,7 @@ class Digital_Wallets_Payment_Gateway_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$actual   = $this->mock_wcpay_gateway->get_digital_wallets_enabled_sections();
+		$actual   = $this->mock_wcpay_gateway->get_digital_wallets_enabled_locations();
 		$expected = [
 			'cart'         => false,
 			'checkout'     => true,

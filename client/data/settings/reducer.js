@@ -57,15 +57,15 @@ export const receiveSettings = (
 				},
 			};
 
-		case ACTION_TYPES.SET_DIGITAL_WALLETS_SECTIONS:
+		case ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS:
 			return {
 				...state,
 				data: {
 					...state.data,
 					// eslint-disable-next-line camelcase
-					digital_wallets_enabled_sections: {
-						...state.data.digital_wallets_enabled_sections,
-						...action.sections,
+					digital_wallets_enabled_locations: {
+						...state.data.digital_wallets_enabled_locations,
+						...action.locations,
 					},
 				},
 			};

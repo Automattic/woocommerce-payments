@@ -13,7 +13,7 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
-use WCPay\Constants\Digital_Wallets_Sections;
+use WCPay\Constants\Digital_Wallets_Locations;
 
 /**
  * Digital Wallets
@@ -48,15 +48,15 @@ class Digital_Wallets_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Retrieve the digital wallets enabled locations. If not found, return defaults.
 	 */
-	public function get_digital_wallets_enabled_sections() {
-		$enabled_digital_wallets_sections = $this->get_option( 'digital_wallets_enabled_sections' );
-		if ( ! $enabled_digital_wallets_sections ) {
+	public function get_digital_wallets_enabled_locations() {
+		$enabled_digital_wallets_locations = $this->get_option( 'digital_wallets_enabled_locations' );
+		if ( ! $enabled_digital_wallets_locations ) {
 			return [
-				Digital_Wallets_Sections::CART         => true,
-				Digital_Wallets_Sections::CHECKOUT     => true,
-				Digital_Wallets_Sections::PRODUCT_PAGE => true,
+				Digital_Wallets_Locations::CART         => true,
+				Digital_Wallets_Locations::CHECKOUT     => true,
+				Digital_Wallets_Locations::PRODUCT_PAGE => true,
 			];
 		}
-		return $enabled_digital_wallets_sections;
+		return $enabled_digital_wallets_locations;
 	}
 }

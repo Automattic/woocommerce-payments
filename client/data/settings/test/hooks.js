@@ -11,7 +11,7 @@ import {
 	useGeneralSettings,
 	useSettings,
 	useDigitalWalletsSettings,
-	useDigitalWalletsSectionsToShowOn,
+	useDigitalWalletsLocations,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -156,7 +156,7 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useDigitalWalletsSectionsToShowOn()', () => {
+	describe( 'useDigitalWalletsLocations()', () => {
 		test( 'returns digital wallets sections to shown on if digital wallets is enabled', () => {
 			const sectionsBeforeUpdated = {
 				checkout: false,
@@ -173,25 +173,25 @@ describe( 'Settings hooks tests', () => {
 			};
 
 			actions = {
-				updateDigitalWalletsSectionsToShowOn: jest.fn(),
+				updateDigitalWalletsLocations: jest.fn(),
 			};
 
 			selectors = {
-				getDigitalWalletsSections: jest.fn(
+				getDigitalWalletsLocations: jest.fn(
 					() => sectionsBeforeUpdated
 				),
 			};
 
 			const {
-				digitalWalletsSections,
-				updateDigitalWalletsSectionsToShowOn,
-			} = useDigitalWalletsSectionsToShowOn();
+				digitalWalletsLocations,
+				updateDigitalWalletsLocations,
+			} = useDigitalWalletsLocations();
 
-			updateDigitalWalletsSectionsToShowOn( sectionsAfterUpdated );
+			updateDigitalWalletsLocations( sectionsAfterUpdated );
 
-			expect( digitalWalletsSections ).toEqual( sectionsBeforeUpdated );
+			expect( digitalWalletsLocations ).toEqual( sectionsBeforeUpdated );
 			expect(
-				actions.updateDigitalWalletsSectionsToShowOn
+				actions.updateDigitalWalletsLocations
 			).toHaveBeenCalledWith( sectionsAfterUpdated );
 		} );
 	} );

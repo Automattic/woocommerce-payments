@@ -72,9 +72,9 @@ export function* saveSettings() {
 	}
 }
 
-export function updateDigitalWalletsSectionsToShowOn( sections ) {
+export function updateDigitalWalletsLocations( locations ) {
 	return {
-		type: ACTION_TYPES.SET_DIGITAL_WALLETS_SECTIONS,
-		sections,
+		type: ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS,
+		locations,
 	};
 }

@@ -7,7 +7,7 @@ import {
 	getEnabledPaymentMethodIds,
 	isSavingSettings,
 	getIsDigitalWalletsEnabled,
-	getDigitalWalletsSections,
+	getDigitalWalletsLocations,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -126,13 +126,13 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
-	describe( 'getDigitalWalletsSections()', () => {
-		test( 'returns the value of state.settings.data.digital_wallets_enabled_sections', () => {
+	describe( 'getDigitalWalletsLocations()', () => {
+		test( 'returns the value of state.settings.data.digital_wallets_enabled_locations', () => {
 			const state = {
 				settings: {
 					data: {
 						// eslint-disable-next-line camelcase
-						digital_wallets_enabled_sections: {
+						digital_wallets_enabled_locations: {
 							// eslint-disable-next-line camelcase
 							product_page: true,
 							checkout: false,
@@ -142,7 +142,7 @@ describe( 'Settings selectors tests', () => {
 				},
 			};
 
-			expect( getDigitalWalletsSections( state ) ).toEqual( {
+			expect( getDigitalWalletsLocations( state ) ).toEqual( {
 				// eslint-disable-next-line camelcase
 				product_page: true,
 				checkout: false,
@@ -156,7 +156,7 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
 		] )( 'returns {} if missing (tested state: %j)', ( state ) => {
-			expect( getDigitalWalletsSections( state ) ).toEqual( {} );
+			expect( getDigitalWalletsLocations( state ) ).toEqual( {} );
 		} );
 	} );
 } );
