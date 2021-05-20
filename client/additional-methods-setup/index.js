@@ -10,7 +10,6 @@ import { addFilter } from '@wordpress/hooks';
  * Internal dependencies
  */
 import MethodSelector from './methods-selector';
-import './index.scss';
 
 addFilter(
 	'woocommerce_admin_onboarding_task_list',

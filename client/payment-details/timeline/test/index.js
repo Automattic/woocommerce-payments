@@ -170,14 +170,4 @@ describe( 'PaymentDetailsTimeline', () => {
 
 		expect( container ).toMatchSnapshot();
 	} );
-
-	test( 'does not render when the feature flag is disabled', () => {
-		wcpaySettings.featureFlags.paymentTimeline = false;
-
-		const { container } = render(
-			<PaymentDetailsTimeline chargeId={ 'ch_test' } />
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
 } );

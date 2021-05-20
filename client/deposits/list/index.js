@@ -22,6 +22,8 @@ import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
 
+import './style.scss';
+
 const getColumns = ( sortByDate ) => [
 	{
 		key: 'details',
@@ -74,10 +76,8 @@ export const DepositsList = () => {
 		getQuery()
 	);
 
-	const columnsArgs = [
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
-	const columns = useMemo( () => getColumns( ...columnsArgs ), columnsArgs );
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (
@@ -159,7 +159,7 @@ export const DepositsList = () => {
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
-				className="deposits-list woocommerce-report-table"
+				className="wcpay-deposits-list woocommerce-report-table"
 				title={ __( 'Deposit history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ getQuery().per_page || 25 }
