@@ -10,18 +10,17 @@ import { HorizontalRule } from '@wordpress/primitives';
 /**
  * Internal dependencies
  */
-
-import { useEnabledPaymentMethodIds } from 'data';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import './style.scss';
 
-const availablePaymentMethods = [
-	'woocommerce_payments_giropay',
-	'woocommerce_payments_sofort',
-	'woocommerce_payments_sepa',
-];
 const PaymentMethodsSelector = ( { className } ) => {
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+
 	const {
 		enabledPaymentMethodIds: enabledMethodIds,
 		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
@@ -36,7 +35,7 @@ const PaymentMethodsSelector = ( { className } ) => {
 
 	useEffect( () => {
 		setPaymentMethods(
-			availablePaymentMethods
+			availablePaymentMethodIds
 				.filter(
 					( methodId ) => ! enabledMethodIds.includes( methodId )
 				)
@@ -45,7 +44,7 @@ const PaymentMethodsSelector = ( { className } ) => {
 					return acc;
 				}, {} )
 		);
-	}, [ enabledMethodIds ] );
+	}, [ availablePaymentMethodIds, enabledMethodIds ] );
 
 	const addSelectedPaymentMethods = ( itemIds ) => {
 		updateEnabledMethodIds( [
@@ -122,6 +121,9 @@ const PaymentMethodsSelector = ( { className } ) => {
 				isSecondary
 				className={ className }
 				onClick={ handlePaymentMethodAddButtonClick }
+				disabled={
+					enabledMethodIds.length === availablePaymentMethodIds.length
+				}
 			>
 				{ __( 'Add payment method', 'woocommerce-payments' ) }
 			</Button>
