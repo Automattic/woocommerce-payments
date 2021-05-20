@@ -62,7 +62,7 @@ class Multi_Currency {
 	/**
 	 * Constructor.
 	 */
-	public function __construct() {
+	private function __construct() {
 		$this->init();
 	}
 
