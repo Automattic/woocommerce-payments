@@ -56,6 +56,8 @@ const WCPayFields = ( {
 					billingData
 				);
 			} ),
+		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[ elements, stripe, activePaymentMethod ]
 	);
 
@@ -66,7 +68,9 @@ const WCPayFields = ( {
 				( { processingResponse: { paymentDetails } } ) =>
 					confirmCardPayment( api, paymentDetails, emitResponse )
 			),
-		[ elements, stripe ]
+		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ elements, stripe, api ]
 	);
 
 	// Checks whether there are errors within a field, and saves them for later reporting.

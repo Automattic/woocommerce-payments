@@ -146,7 +146,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
-	 * @return array An array containing the status data.
+	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
 	 */
 	public function get_account_status_data() {
 		$account = $this->get_cached_account_data();
@@ -251,6 +251,18 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Immediately redirect to the WooCommerce Admin home page.
+	 */
+	private function redirect_to_wc_admin_home() {
+		$params = [
+			'page' => 'wc-admin',
+		];
+
+		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+		exit();
+	}
+
+	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the redirection happened.
@@ -329,12 +341,13 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connection-success'] ) ) {
 			$account_status = $this->get_account_status_data();
+
 			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
-				$message = __( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' );
+				$this->redirect_to_wc_admin_home();
 			} else {
 				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
+				$this->add_notice_to_settings_page( $message, 'notice-success' );
 			}
-			$this->add_notice_to_settings_page( $message, 'notice-success' );
 			return;
 		}
 
