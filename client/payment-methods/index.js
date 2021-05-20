@@ -11,7 +11,10 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 import './style.scss';
-import { useEnabledPaymentMethodIds } from 'data';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';
@@ -20,8 +23,9 @@ import GiropayIcon from '../gateway-icons/giropay';
 import SofortIcon from '../gateway-icons/sofort';
 import SepaIcon from '../gateway-icons/sepa';
 
-const availableMethods = [
-	{
+const methodsConfiguration = {
+	// eslint-disable-next-line camelcase
+	woocommerce_payments: {
 		id: 'woocommerce_payments',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		description: __(
@@ -30,7 +34,8 @@ const availableMethods = [
 		),
 		Icon: CreditCardIcon,
 	},
-	{
+	// eslint-disable-next-line camelcase
+	woocommerce_payments_giropay: {
 		id: 'woocommerce_payments_giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
 		description: __(
@@ -39,7 +44,8 @@ const availableMethods = [
 		),
 		Icon: GiropayIcon,
 	},
-	{
+	// eslint-disable-next-line camelcase
+	woocommerce_payments_sofort: {
 		id: 'woocommerce_payments_sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
@@ -48,7 +54,8 @@ const availableMethods = [
 		),
 		Icon: SofortIcon,
 	},
-	{
+	// eslint-disable-next-line camelcase
+	woocommerce_payments_sepa: {
 		id: 'woocommerce_payments_sepa',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
@@ -57,7 +64,7 @@ const availableMethods = [
 		),
 		Icon: SepaIcon,
 	},
-];
+};
 
 const PaymentMethods = () => {
 	const {
@@ -65,13 +72,15 @@ const PaymentMethods = () => {
 		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
 	} = useEnabledPaymentMethodIds();
 
-	const enabledMethods = enabledMethodIds.map( ( methodId ) =>
-		availableMethods.find( ( method ) => method.id === methodId )
-	);
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	const disabledMethods = availableMethods.filter(
-		( method ) => ! enabledMethodIds.includes( method.id )
-	);
+	const enabledMethods = availablePaymentMethodIds
+		.filter( ( method ) => enabledMethodIds.includes( method ) )
+		.map( ( methodId ) => methodsConfiguration[ methodId ] );
+
+	const disabledMethods = availablePaymentMethodIds
+		.filter( ( methodId ) => ! enabledMethodIds.includes( methodId ) )
+		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
 	const handleDeleteClick = ( itemId ) => {
 		updateEnabledMethodIds(
@@ -102,27 +111,34 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				<CardDivider />
-				<CardBody className="payment-methods__available-methods-container">
-					<PaymentMethodsSelector className="payment-methods__add-payment-method" />
-					<ul className="payment-methods__available-methods">
-						{ disabledMethods.map( ( { id, label, Icon } ) => (
-							<li
-								key={ id }
-								className={ classNames(
-									'payment-methods__available-method',
-									{
-										'has-icon-border':
-											'woocommerce_payments' !== id,
-									}
+				{ 1 < availablePaymentMethodIds.length ? (
+					<>
+						<CardDivider />
+						<CardBody className="payment-methods__available-methods-container">
+							<PaymentMethodsSelector className="payment-methods__add-payment-method" />
+							<ul className="payment-methods__available-methods">
+								{ disabledMethods.map(
+									( { id, label, Icon } ) => (
+										<li
+											key={ id }
+											className={ classNames(
+												'payment-methods__available-method',
+												{
+													'has-icon-border':
+														'woocommerce_payments' !==
+														id,
+												}
+											) }
+											aria-label={ label }
+										>
+											<Icon height="24" width="38" />
+										</li>
+									)
 								) }
-								aria-label={ label }
-							>
-								<Icon height="24" width="38" />
-							</li>
-						) ) }
-					</ul>
-				</CardBody>
+							</ul>
+						</CardBody>
+					</>
+				) : null }
 			</Card>
 		</>
 	);
