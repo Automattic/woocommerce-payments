@@ -57,6 +57,42 @@
 	}
 }
 
+/* SummaryNumber modifications: some margins, colors and hide of unused fields */
+.woocommerce-summary {
+	.woocommerce-summary__item-label {
+		margin-bottom: 12px;
+	}
+	.woocommerce-summary__item-data {
+		margin-top: 0;
+		margin-bottom: 8px;
+	}
+	.wcpay-summary__item-detail {
+		color: $dark-gray-500;
+	}
+	/* Hide unused SummaryNumber fields */
+	.woocommerce-summary__item-prev-value,
+	.woocommerce-summary__item-delta {
+		display: none;
+	}
+	.woocommerce-summary__item {
+		background: $studio-white;
+		&:hover .woocommerce-summary__item-label {
+			color: $gray-700;
+		}
+	}
+	a.woocommerce-summary__item {
+		&:hover {
+			background-color: $studio-gray-0;
+			&:hover .woocommerce-summary__item-label {
+				color: var( --wp-admin-theme-color );
+			}
+		}
+		&:active {
+			background-color: $studio-gray-5;
+		}
+	}
+}
+
 /**
  * This styling changes the appearance of warning notices to match our designs.
  * In particular it removes margins that aren't supposed to be present, and

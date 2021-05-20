@@ -16,12 +16,12 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import './style.scss';
 
+const availablePaymentMethods = [
+	'woocommerce_payments_giropay',
+	'woocommerce_payments_sofort',
+	'woocommerce_payments_sepa',
+];
 const PaymentMethodsSelector = ( { className } ) => {
-	const availablePaymentMethods = [
-		'woocommerce_payments_giropay',
-		'woocommerce_payments_sofort',
-		'woocommerce_payments_sepa',
-	];
 	const {
 		enabledPaymentMethodIds: enabledMethodIds,
 		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
