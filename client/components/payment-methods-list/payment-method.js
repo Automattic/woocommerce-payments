@@ -22,7 +22,7 @@ const PaymentMethod = ( {
 		<li
 			className={ classNames(
 				'payment-method',
-				{ 'has-icon-border': 'cc' !== id },
+				{ 'has-icon-border': 'woocommerce_payments' !== id },
 				className
 			) }
 		>

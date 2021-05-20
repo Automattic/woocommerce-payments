@@ -106,6 +106,8 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Use Site Language when rendering Stripe elements.
 * Update - Use blog ID for authenticating most of the requests.
 * Fix: Misaligned columns on Deposits page.
+* Add - Tracking for returning from OAuth connection.
+* Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
