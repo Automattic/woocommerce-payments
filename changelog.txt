@@ -6,6 +6,7 @@
 * Update - Use blog ID for authenticating most of the requests.
 * Fix: Misaligned columns on Deposits page.
 * Add - Tracking for returning from OAuth connection.
+* Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
