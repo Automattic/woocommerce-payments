@@ -40,26 +40,10 @@ class WC_REST_Controller extends \WC_Payments_REST_Controller {
 	 * Retrieve currencies for the store.
 	 */
 	public function get_store_currencies() {
-		$default    = WC_Payments_Multi_Currency()->get_default_currency();
-		$currencies = [
+		return [
 			'available' => WC_Payments_Multi_Currency()->get_available_currencies(),
 			'enabled'   => WC_Payments_Multi_Currency()->get_enabled_currencies(),
-			'default'   => [ $default->get_code() => $default ],
+			'default'   => WC_Payments_Multi_Currency()->get_default_currency(),
 		];
-
-		foreach ( $currencies as $grouping => $group ) {
-			foreach ( $group as $code => $currency ) {
-				$currencies[ $grouping ][ $code ] = [
-					'code'   => $code,
-					'rate'   => $currency->get_rate(),
-					'name'   => $currency->get_name(),
-					'id'     => $currency->get_id(),
-					'flag'   => $currency->get_flag(),
-					'symbol' => $currency->get_symbol(),
-				];
-			}
-		}
-
-		return $currencies;
 	}
 }
