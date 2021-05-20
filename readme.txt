@@ -108,6 +108,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix: Misaligned columns on Deposits page.
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
+* Update - Deposit overview details.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
