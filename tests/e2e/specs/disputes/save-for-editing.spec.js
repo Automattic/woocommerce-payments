@@ -113,6 +113,8 @@ describe( 'Disputes > Save dispute for editing', () => {
 			uiLoaded(),
 		] );
 
+		await uiLoaded();
+
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(
 			'.components-select-control__input',
