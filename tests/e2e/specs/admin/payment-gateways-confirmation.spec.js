@@ -36,8 +36,8 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	it( 'should show the confirmation dialog when disabling WCPay', async () => {
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 
 		// Click the "Disable WCPay" toggle button
@@ -61,14 +61,14 @@ describe( 'payment gateways disable confirmation', () => {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 	} );
 
 	it( 'should allow disabling WCPay', async () => {
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 
 		// Click the "Disable WCPay" toggle button
@@ -94,8 +94,8 @@ describe( 'payment gateways disable confirmation', () => {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently disabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently disabled']`
 		);
 
 		// now we can re-enable it with no issues
@@ -108,14 +108,14 @@ describe( 'payment gateways disable confirmation', () => {
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 	} );
 
 	it( 'should show the modal even after cancelling the action one time', async () => {
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 
 		// Click the "Disable WCPay" toggle button
@@ -133,8 +133,8 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// After clicking "Cancel", the modal should close and WCPay should still be enabled
 		await expect( page ).not.toMatch( 'Disable WooCommerce Payments' );
-		await expect( page ).toMatch(
-			'The "WooCommerce Payments" payment method is currently enabled'
+		await expect( page ).toMatchElement(
+			`[aria-label='The "WooCommerce Payments" payment method is currently enabled']`
 		);
 
 		// trying again to disable it - the modal should display again
