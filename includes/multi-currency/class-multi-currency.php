@@ -2,7 +2,7 @@
 /**
  * Class Multi_Currency
  *
- * @package WooCommerce\Payments
+ * @package WooCommerce\Payments\Multi_Currency
  */
 
 namespace WCPay\Multi_Currency;
@@ -78,6 +78,16 @@ class Multi_Currency {
 		$this->get_enabled_currencies();
 
 		add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
+		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+	}
+
+	/**
+	 * Initialize the REST API controller.
+	 */
+	public static function init_rest_api() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
+		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
+		$api_controller->register_routes();
 	}
 
 	/**
