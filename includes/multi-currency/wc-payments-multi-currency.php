@@ -12,11 +12,6 @@ if ( ! class_exists( 'WCPay\Multi_Currency\Multi_Currency', false ) ) {
 	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-multi-currency.php';
 }
 
-// Include the Frontend_Prices class.
-if ( ! class_exists( 'WCPay\Multi_Currency\Frontend_Prices', false ) ) {
-	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-}
-
 /**
  * Returns the main instance of Multi_Currency.
  *
