@@ -155,13 +155,8 @@ describe( 'Settings selectors tests', () => {
 			[ {} ],
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
-		] )( 'returns defaults if missing (tested state: %j)', ( state ) => {
-			expect( getDigitalWalletsSections( state ) ).toEqual( {
-				checkout: true,
-				// eslint-disable-next-line camelcase
-				product_page: true,
-				cart: true,
-			} );
+		] )( 'returns {} if missing (tested state: %j)', ( state ) => {
+			expect( getDigitalWalletsSections( state ) ).toEqual( {} );
 		} );
 	} );
 } );
