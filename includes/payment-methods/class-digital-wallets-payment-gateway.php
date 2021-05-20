@@ -13,6 +13,7 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
+use WCPay\Constants\Digital_Wallets_Sections;
 
 /**
  * Digital Wallets
@@ -42,5 +43,20 @@ class Digital_Wallets_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->method_description = __( 'Accept payments via Digital Wallets.', 'woocommerce-payments' );
 		$this->title              = __( 'Digital Wallets', 'woocommerce-payments' );
 		$this->description        = __( 'Mandate Information.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Retrieve the digital wallets enabled locations. If not found, return defaults.
+	 */
+	public function get_digital_wallets_enabled_sections() {
+		$enabled_digital_wallets_sections = $this->get_option( 'digital_wallets_enabled_sections' );
+		if ( ! $enabled_digital_wallets_sections ) {
+			return [
+				Digital_Wallets_Sections::CART         => true,
+				Digital_Wallets_Sections::CHECKOUT     => true,
+				Digital_Wallets_Sections::PRODUCT_PAGE => true,
+			];
+		}
+		return $enabled_digital_wallets_sections;
 	}
 }

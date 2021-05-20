@@ -32,14 +32,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_API_Client          $api_client WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay        $wcpay_gateway WC_Payment_Gateway_WCPay instance.
 	 * @param Digital_Wallets_Payment_Gateway $digital_wallets_gateway Digital_Wallets_Payment_Gateway instance.
 	 */
 	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway, $digital_wallets_gateway ) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway = $wcpay_gateway;
+		$this->wcpay_gateway           = $wcpay_gateway;
 		$this->digital_wallets_gateway = $digital_wallets_gateway;
 	}
 
@@ -97,7 +97,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 			$response['is_digital_wallets_enabled']       = $this->digital_wallets_gateway->is_enabled();
-			$response['digital_wallets_enabled_sections'] = $this->digital_wallets_gateway->get_option( 'digital_wallets_enabled_sections' );
+			$response['digital_wallets_enabled_sections'] = $this->digital_wallets_gateway->get_digital_wallets_enabled_sections();
 		}
 
 		return new WP_REST_Response( $response );
@@ -190,8 +190,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$digital_wallets_enabled_sections         = $request->get_param( 'digital_wallets_enabled_sections' );
-		$updated_digital_wallets_enabled_sections = [];
+		$digital_wallets_enabled_sections = $request->get_param( 'digital_wallets_enabled_sections' );
 
 		$remove_invalid_sections                  = function ( $section ) {
 			return ! Digital_Wallets_Sections::isValidKey( $section );
