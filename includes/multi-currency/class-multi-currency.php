@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Multi_Currency {
 
+	const CURRENCY_SESSION_KEY = 'wcpay_currency';
+
 	/**
 	 * The single instance of the class.
 	 *
@@ -74,6 +76,8 @@ class Multi_Currency {
 		$this->get_available_currencies();
 		$this->get_default_currency();
 		$this->get_enabled_currencies();
+
+		add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 	}
 
 	/**
@@ -161,4 +165,33 @@ class Multi_Currency {
 
 		return $this->enabled_currencies;
 	}
+
+	/**
+	 * Gets the user selected currency, or `$default_currency` if is not set.
+	 *
+	 * @return Currency
+	 */
+	public function get_selected_currency(): Currency {
+		$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
+		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+	}
+
+	/**
+	 * Update the selected currency from url param `currency`.
+	 *
+	 * @return void
+	 */
+	public function update_selected_currency_by_url() {
+		if ( ! isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$code     = strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
+
+		if ( $currency ) {
+			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
+		}
+	}
+
 }
