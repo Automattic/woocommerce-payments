@@ -25,7 +25,7 @@ import './style.scss';
 import './shared.scss';
 
 const AccountStatusCard = ( props ) => {
-	const { title, content } = props;
+	const { title, content, children, value } = props;
 	return (
 		<Card isMedium>
 			<CardHeader
@@ -37,7 +37,7 @@ const AccountStatusCard = ( props ) => {
 			>
 				{ title }
 			</CardHeader>
-			<CardBody>{ content }</CardBody>
+			<CardBody>{ children || value || content }</CardBody>
 		</Card>
 	);
 };
@@ -46,11 +46,12 @@ const AccountStatusError = () => {
 	return (
 		<AccountStatusCard
 			title={ __( 'Account details', 'woocommerce-payments' ) }
-			content={ __(
+		>
+			{ __(
 				'Error determining the connection status.',
 				'woocommerce-payments'
 			) }
-		/>
+		</AccountStatusCard>
 	);
 };
 
@@ -76,40 +77,34 @@ const AccountStatusDetails = ( props ) => {
 					</FlexItem>
 				</>
 			}
-			content={
-				<>
-					{ accountStatus.email && (
-						<AccountStatusItem
-							label={ __(
-								'Connected email:',
-								'woocommerce-payments'
-							) }
-						>
-							{ accountStatus.email }
-						</AccountStatusItem>
-					) }
-					<AccountStatusItem
-						label={ __( 'Payments:', 'woocommerce-payments' ) }
-					>
-						<PaymentsStatus
-							paymentsEnabled={ accountStatus.paymentsEnabled }
-						/>
-					</AccountStatusItem>
-					<AccountStatusItem
-						label={ __( 'Deposits:', 'woocommerce-payments' ) }
-					>
-						<DepositsStatus
-							depositsStatus={ accountStatus.depositsStatus }
-						/>
-					</AccountStatusItem>
-					<AccountStatusItem
-						label={ __( 'BaseFee:', 'woocommerce-payments' ) }
-					>
-						<AccountFees accountFees={ accountFees } />
-					</AccountStatusItem>
-				</>
-			}
-		/>
+		>
+			{ accountStatus.email && (
+				<AccountStatusItem
+					label={ __( 'Connected email:', 'woocommerce-payments' ) }
+				>
+					{ accountStatus.email }
+				</AccountStatusItem>
+			) }
+			<AccountStatusItem
+				label={ __( 'Payments:', 'woocommerce-payments' ) }
+			>
+				<PaymentsStatus
+					paymentsEnabled={ accountStatus.paymentsEnabled }
+				/>
+			</AccountStatusItem>
+			<AccountStatusItem
+				label={ __( 'Deposits:', 'woocommerce-payments' ) }
+			>
+				<DepositsStatus
+					depositsStatus={ accountStatus.depositsStatus }
+				/>
+			</AccountStatusItem>
+			<AccountStatusItem
+				label={ __( 'BaseFee:', 'woocommerce-payments' ) }
+			>
+				<AccountFees accountFees={ accountFees } />
+			</AccountStatusItem>
+		</AccountStatusCard>
 	);
 };
 
