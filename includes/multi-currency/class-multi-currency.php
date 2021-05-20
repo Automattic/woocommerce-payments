@@ -247,7 +247,10 @@ class Multi_Currency {
 		$charm     = $this->get_charm_pricing();
 
 		// TODO: round up.
-		return round( $price, $precision ) + $charm;
+		$adjusted_price = round( $price, $precision ) + $charm;
+
+		// Do not return negative prices (possible because of $charm).
+		return max( 0, $adjusted_price );
 	}
 
 	/**
