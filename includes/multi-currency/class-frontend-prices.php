@@ -88,9 +88,7 @@ class Frontend_Prices {
 	public function get_variation_price_range( $variation_prices ) {
 		foreach ( $variation_prices as $price_type => $prices ) {
 			foreach ( $prices as $variation_id => $price ) {
-				if ( $price ) {
-					$variation_prices[ $price_type ][ $variation_id ] = $this->multi_currency->get_price( $price );
-				}
+				$variation_prices[ $price_type ][ $variation_id ] = $this->get_product_price( $price );
 			}
 		}
 
