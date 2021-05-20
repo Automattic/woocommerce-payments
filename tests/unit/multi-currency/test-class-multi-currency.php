@@ -24,6 +24,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 	public function tearDown() {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
+		remove_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
+		remove_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		parent::tearDown();
 	}
@@ -58,5 +60,35 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_url();
 
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_get_price_returns_price_in_default_currency() {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, get_woocommerce_currency() );
+
+		$this->assertSame( 5.0, $this->multi_currency->get_price( '5.0' ) );
+	}
+
+	public function test_get_price_returns_converted_product_price_with_charm() {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
+
+		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
+		$this->assertSame( 6.9, $this->multi_currency->get_price( '10.0' ) );
+	}
+
+	public function test_get_price_returns_converted_non_product_price_with_charm() {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
+
+		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
+		$this->assertSame( 6.9, $this->multi_currency->get_price( '10.0', false ) );
+	}
+
+	public function test_get_price_returns_converted_non_product_price_without_charm() {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
+
+		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
+		$this->assertSame( 7.0, $this->multi_currency->get_price( '10.0', false ) );
 	}
 }
