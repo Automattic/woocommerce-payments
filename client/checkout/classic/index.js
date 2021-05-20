@@ -81,18 +81,22 @@ jQuery( function ( $ ) {
 		type: 'sofort' /* eslint-disable camelcase */,
 	};
 
+	let isUPEComplete = false;
 	const upeElement = paymentIntent
 		? elements.create( 'payment', {
 				clientSecret: paymentIntent.client_secret,
 		  } )
 		: null;
+	upeElement.on( 'change', ( event ) => {
+		isUPEComplete = event.complete;
+	} );
 
 	/**
 	 * Check if Card payment is being used.
 	 *
 	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
 	 */
-	const isWCPayCardChosen = function () {
+	const isWCPayChosen = function () {
 		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
 	};
 
@@ -127,15 +131,6 @@ jQuery( function ( $ ) {
 		return $( '#payment_method_woocommerce_payments_sofort' ).is(
 			':checked'
 		);
-	};
-
-	/**
-	 * Check if UPE payment method is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Sofort payment method is being used.
-	 */
-	const isWCPayUPEChosen = function () {
-		return $( '#payment_method_woocommerce_payments_upe' ).is( ':checked' );
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -401,6 +396,19 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm payment to trigger validation errors
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: '',
+				},
+			} );
+			showError( error.message );
+
+			return;
+		}
+
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
@@ -428,8 +436,6 @@ jQuery( function ( $ ) {
 			$form.removeClass( 'processing' ).unblock();
 			showError( error );
 		}
-
-		return false;
 	};
 
 	/**
@@ -537,8 +543,9 @@ jQuery( function ( $ ) {
 					country: $( '#billing_country' ).val(),
 				};
 				paymentMethodDetails = sofortPayment;
-			} else if ( isWCPayUPEChosen() ) {
-				return handleUPECheckout( $( this ) );
+			} else if ( paymentIntent ) {
+				handleUPECheckout( $( this ) );
+				return false;
 			}
 
 			return handlePaymentMethodCreation(
@@ -553,7 +560,7 @@ jQuery( function ( $ ) {
 	$( '#order_review' ).on( 'submit', () => {
 		if (
 			isUsingSavedPaymentMethod() ||
-			( ! isWCPayCardChosen() && ! isWCPaySepaChosen() )
+			( ! isWCPayChosen() && ! isWCPaySepaChosen() )
 		) {
 			return;
 		}
