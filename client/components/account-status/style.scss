@@ -2,13 +2,28 @@
 .woocommerce-account-status__controls .components-button.is-link {
 	text-decoration: none;
 }
+.woocommerce-account-status__header {
+	flex-wrap: wrap;
+
+	div {
+		flex-shrink: 1;
+		flex-basis: auto;
+	}
+}
 .woocommerce-account-status-item {
-	height: 2em;
 	line-height: 16px;
+	flex-wrap: wrap;
+	height: auto;
+	min-height: 2em;
+
+	div {
+		flex-shrink: 1;
+		flex-basis: 250px;
+	}
 
 	&__label {
 		color: $gray-900;
-		width: 130px;
+		flex-basis: 130px;
 	}
 
 	&__value {

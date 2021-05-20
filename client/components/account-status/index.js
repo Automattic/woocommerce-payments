@@ -29,6 +29,7 @@ const AccountStatusCard = ( props ) => {
 	return (
 		<Card isMedium>
 			<CardHeader
+				className={ 'woocommerce-account-status__header' }
 				direction={ 'row' }
 				align={ 'center' }
 				justify={ 'left' }
