@@ -39,6 +39,14 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
+	// Set a default currency to be used for the multi-currency tests.
+	add_filter(
+		'woocommerce_currency',
+		function () {
+			return 'USD';
+		}
+	);
+
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
