@@ -143,7 +143,7 @@ class WC_Payments_Admin {
 						'id'       => 'wc-payments-overview',
 						'title'    => __( 'Overview', 'woocommerce-payments' ),
 						'parent'   => 'wc-payments',
-						'path'     => '/payments/overview/',
+						'path'     => '/payments/overview',
 						'nav_args' => [
 							'parent' => 'wc-payments',
 							'order'  => 5,
