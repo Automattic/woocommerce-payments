@@ -13,6 +13,7 @@ const baseUrl = config.get( 'url' );
 
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
+const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
 
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
@@ -74,6 +75,12 @@ export const paymentsShopper = {
 
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
+	},
+
+	goToSubscriptions: async () => {
+		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
+			waitUntil: 'networkidle0',
+		} );
 	},
 };
 
