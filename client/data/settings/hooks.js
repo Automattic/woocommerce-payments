@@ -42,6 +42,13 @@ export const useGeneralSettings = () => {
 	);
 };
 
+export const useGetAvailablePaymentMethodIds = () =>
+	useSelect( ( select ) => {
+		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
+
+		return getAvailablePaymentMethodIds();
+	} );
+
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
 
