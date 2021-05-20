@@ -8,8 +8,11 @@
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
+import { uiLoaded } from './helpers';
+
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
+const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
 	'1' !== process.env.SKIP_WC_SUBSCRIPTIONS_TESTS;
@@ -68,5 +71,34 @@ export const paymentsShopper = {
 
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
+	},
+};
+
+export const merchantWCP = {
+	openDisputeDetails: async ( disputeDetailsLink ) => {
+		await Promise.all( [
+			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
+
+		await expect( page ).toMatchElement(
+			'div.components-flex.components-card__header.is-size-large',
+			{
+				text: 'Dispute overview',
+			}
+		);
+	},
+
+	openPaymentDetails: async ( paymentDetailsLink ) => {
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
 	},
 };
