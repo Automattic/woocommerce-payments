@@ -15,9 +15,12 @@ describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
 		await merchant.login();
 
-		shell.exec( `${ WP_CLI } wp option _wcpay_feature_grouped_settings 1`, {
-			silent: true,
-		} );
+		await shell.exec(
+			`${ WP_CLI } wp option _wcpay_feature_grouped_settings 1`,
+			{
+				silent: true,
+			}
+		);
 	} );
 
 	beforeEach( async () => {
@@ -27,7 +30,7 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	afterAll( async () => {
-		shell.exec(
+		await shell.exec(
 			`${ WP_CLI } wp option delete _wcpay_feature_grouped_settings`,
 			{
 				silent: true,
