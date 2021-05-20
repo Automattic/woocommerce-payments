@@ -5,7 +5,6 @@
 /**
  * External dependencies
  */
-const { merchant } = require( '@woocommerce/e2e-utils' );
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
@@ -110,9 +109,7 @@ export const merchantWCP = {
 		await expect( page ).toMatchElement( 'h2', { text: 'Transactions' } );
 	},
 
-	goToDisputeViaOrder: async ( orderId ) => {
-		await merchant.openAllOrdersView();
-		await merchant.goToOrder( orderId );
+	viewDisputeFromOrder: async () => {
 		const paymentDetailsLink = await page.$eval(
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )

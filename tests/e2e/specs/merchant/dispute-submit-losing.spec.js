@@ -41,7 +41,9 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 	it( 'should process a losing dispute', async () => {
 		// Go to dispute page
-		await merchantWCP.goToDisputeViaOrder( orderId );
+		await merchant.openAllOrdersView();
+		await merchant.goToOrder( orderId );
+		await merchantWCP.viewDisputeFromOrder();
 
 		// Verify the heading for two component cards
 		await page.waitForSelector( '.components-card__header', {
@@ -69,7 +71,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await uiLoaded();
 
 		// Verify the dispute has been accepted properly
-		await uiLoaded();
 		await expect( page ).toMatchElement(
 			'div.components-snackbar > .components-snackbar__content',
 			{
@@ -77,7 +78,9 @@ describe( 'Disputes > Submit losing dispute', () => {
 					'You have accepted the dispute for order #' + orderId + '.',
 			}
 		);
-		await merchantWCP.goToDisputeViaOrder( orderId );
+		await merchant.openAllOrdersView();
+		await merchant.goToOrder( orderId );
+		await merchantWCP.viewDisputeFromOrder();
 		await expect( page ).not.toMatchElement( 'button.components-button', {
 			text: 'Challenge dispute',
 		} );
