@@ -223,7 +223,7 @@ class Multi_Currency {
 	 * @return int The rounding precision.
 	 */
 	public function get_round_precision(): float {
-		return 0;
+		return apply_filters( 'wcpay_multi_currency_round_precision', 0 );
 	}
 
 	/**
@@ -232,7 +232,7 @@ class Multi_Currency {
 	 * @return float The charm pricing.
 	 */
 	public function get_charm_pricing(): float {
-		return -0.1;
+		return apply_filters( 'wcpay_multi_currency_charm_pricing', -0.1 );
 	}
 
 	/**
