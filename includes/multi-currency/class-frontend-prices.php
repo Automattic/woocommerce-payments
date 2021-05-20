@@ -63,7 +63,7 @@ class Frontend_Prices {
 	 *
 	 * @param mixed $price The product's price.
 	 *
-	 * @return float The converted product's price.
+	 * @return mixed The converted product's price.
 	 */
 	public function get_product_price( $price ) {
 		if ( ! $price ) {
