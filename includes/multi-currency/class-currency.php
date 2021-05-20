@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Multi Currency Currency object.
  */
-class Currency {
+class Currency implements \JsonSerializable {
 
 	/**
 	 * Three letter currency code.
@@ -103,5 +103,21 @@ class Currency {
 	 */
 	public function get_symbol() {
 		return get_woocommerce_currency_symbol( $this->code );
+	}
+
+	/**
+	 * Specify the data that should be serialized to JSON.
+	 *
+	 * @return mixed Serialized Currency object.
+	 */
+	public function jsonSerialize() {
+		return [
+			'code'   => $this->code,
+			'rate'   => $this->get_rate(),
+			'name'   => $this->get_name(),
+			'id'     => $this->get_id(),
+			'flag'   => $this->get_flag(),
+			'symbol' => $this->get_symbol(),
+		];
 	}
 }
