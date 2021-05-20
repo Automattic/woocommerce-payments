@@ -6,7 +6,7 @@ exports[`AccountStatus renders error status 1`] = `
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-medium e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium woocommerce-account-status__header e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
       direction="row"
     >
       Account details
@@ -26,7 +26,7 @@ exports[`AccountStatus renders normal status 1`] = `
     class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-medium e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium woocommerce-account-status__header e1q7k77g1 css-2ewdaq-Flex-HeaderUI eboqfv50"
       direction="row"
     >
       <div
@@ -63,12 +63,12 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
+          class="components-flex__item css-1s295sp-Item eboqfv51"
         >
           Payments:
         </div>
         <div
-          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -95,12 +95,12 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
+          class="components-flex__item css-1s295sp-Item eboqfv51"
         >
           Deposits:
         </div>
         <div
-          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -127,12 +127,12 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item woocommerce-account-status-item__label css-1s295sp-Item eboqfv51"
+          class="components-flex__item css-1s295sp-Item eboqfv51"
         >
           BaseFee:
         </div>
         <div
-          class="components-flex__block woocommerce-account-status-item__value css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block css-yr442k-Item-Block eboqfv52"
         >
           Euro 
           (EUR) 
