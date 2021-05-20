@@ -2,16 +2,23 @@
 /**
  * External dependencies
  */
-import { render, within } from '@testing-library/react';
+import { render, within, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import PaymentMethodsSelector from '..';
-import { useEnabledPaymentMethodIds } from 'data';
 
-jest.mock( 'data', () => ( { useEnabledPaymentMethodIds: jest.fn() } ) );
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
+
+jest.mock( 'data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn(),
+} ) );
 
 describe( 'PaymentMethodsSelector', () => {
 	beforeEach( () => {
@@ -19,26 +26,30 @@ describe( 'PaymentMethodsSelector', () => {
 			enabledPaymentMethodIds: [],
 			updateEnabledPaymentMethodIds: jest.fn(),
 		} );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'woocommerce_payments',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+			'woocommerce_payments_sepa',
+		] );
 	} );
 
 	test( 'Displays "Add payment Method" button, modal is not visible', () => {
-		const { getByRole, queryByText, queryByRole } = render(
-			<PaymentMethodsSelector />
-		);
+		render( <PaymentMethodsSelector /> );
 
-		const addPaymentMethodButton = getByRole( 'button', {
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		expect( addPaymentMethodButton ).toBeInTheDocument();
 
 		expect(
-			queryByText(
+			screen.queryByText(
 				"Increase your store's conversion by offering your customers preferred and convenient payment methods."
 			)
 		).toBeNull();
 
 		expect(
-			queryByRole( 'button', {
+			screen.queryByRole( 'button', {
 				name: 'Add selected',
 			} )
 		).toBeNull();
@@ -50,53 +61,55 @@ describe( 'PaymentMethodsSelector', () => {
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
-		const { getByText, getByRole, getAllByRole } = render(
-			<PaymentMethodsSelector />
-		);
+		render( <PaymentMethodsSelector /> );
 
-		const addPaymentMethodButton = getByRole( 'button', {
+		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		user.click( addPaymentMethodButton );
 
 		expect(
-			getByText(
+			screen.getByText(
 				"Increase your store's conversion by offering your customers preferred and convenient payment methods."
 			)
 		).toBeInTheDocument();
 
-		const paymentMethods = getAllByRole( 'listitem' );
+		const paymentMethods = screen.getAllByRole( 'listitem' );
 		expect( paymentMethods ).toHaveLength( 3 );
 
-		const giroPayCheckbox = getByRole( 'checkbox', { name: 'GiroPay' } );
+		const giroPayCheckbox = screen.getByRole( 'checkbox', {
+			name: 'GiroPay',
+		} );
 		expect( giroPayCheckbox ).not.toBeChecked();
 
-		const sofortCheckbox = getByRole( 'checkbox', { name: 'Sofort' } );
+		const sofortCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Sofort',
+		} );
 		expect( sofortCheckbox ).not.toBeChecked();
 
-		const sepaCheckbox = getByRole( 'checkbox', {
+		const sepaCheckbox = screen.getByRole( 'checkbox', {
 			name: 'Direct Debit Payments',
 		} );
 		expect( sepaCheckbox ).not.toBeChecked();
 
 		expect(
-			getByRole( 'button', {
+			screen.getByRole( 'button', {
 				name: 'Add selected',
 			} )
 		).toBeInTheDocument();
 	} );
 
 	test( 'Payment method selection can be dismissed', () => {
-		const { getByRole, queryByRole } = render( <PaymentMethodsSelector /> );
+		render( <PaymentMethodsSelector /> );
 
 		user.click(
-			getByRole( 'button', {
+			screen.getByRole( 'button', {
 				name: 'Add payment method',
 			} )
 		);
 
 		user.click(
-			getByRole( 'button', {
+			screen.getByRole( 'button', {
 				name: 'Cancel',
 			} )
 		);
@@ -106,7 +119,7 @@ describe( 'PaymentMethodsSelector', () => {
 		).not.toHaveBeenCalled();
 
 		expect(
-			queryByRole( 'button', {
+			screen.queryByRole( 'button', {
 				name: 'Cancel',
 			} )
 		).toBeNull();
@@ -121,18 +134,18 @@ describe( 'PaymentMethodsSelector', () => {
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
-		const { getByRole, getAllByRole, queryByRole } = render(
-			<PaymentMethodsSelector />
-		);
+		render( <PaymentMethodsSelector /> );
 
-		const addPaymentMethodButton = getByRole( 'button', {
+		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		user.click( addPaymentMethodButton );
 
-		const paymentMethods = getAllByRole( 'listitem' );
+		const paymentMethods = screen.getAllByRole( 'listitem' );
 		expect( paymentMethods ).toHaveLength( 2 );
-		expect( queryByRole( 'checkbox', { name: 'Sofort' } ) ).toBeNull();
+		expect(
+			screen.queryByRole( 'checkbox', { name: 'Sofort' } )
+		).toBeNull();
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
@@ -144,16 +157,14 @@ describe( 'PaymentMethodsSelector', () => {
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
-		const { getByRole, getAllByRole } = render(
-			<PaymentMethodsSelector />
-		);
+		render( <PaymentMethodsSelector /> );
 
-		const addPaymentMethodButton = getByRole( 'button', {
+		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		user.click( addPaymentMethodButton );
 
-		const paymentMethods = getAllByRole( 'listitem' );
+		const paymentMethods = screen.getAllByRole( 'listitem' );
 		const paymentMethodCheckbox = within( paymentMethods[ 0 ] ).getByRole(
 			'checkbox'
 		);
@@ -174,17 +185,19 @@ describe( 'PaymentMethodsSelector', () => {
 			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
 		} );
 
-		const { getByRole, queryByRole } = render( <PaymentMethodsSelector /> );
+		render( <PaymentMethodsSelector /> );
 
-		const addPaymentMethodButton = getByRole( 'button', {
+		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 		user.click( addPaymentMethodButton );
 
-		const giroPayCheckbox = getByRole( 'checkbox', { name: 'GiroPay' } );
+		const giroPayCheckbox = screen.getByRole( 'checkbox', {
+			name: 'GiroPay',
+		} );
 		user.click( giroPayCheckbox );
 
-		const addSelectedButton = getByRole( 'button', {
+		const addSelectedButton = screen.getByRole( 'button', {
 			name: 'Add selected',
 		} );
 		user.click( addSelectedButton );
@@ -196,7 +209,7 @@ describe( 'PaymentMethodsSelector', () => {
 			'woocommerce_payments_giropay',
 		] );
 		expect(
-			queryByRole( 'button', {
+			screen.queryByRole( 'button', {
 				name: 'Add selected',
 			} )
 		).toBeNull();
