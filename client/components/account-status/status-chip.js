@@ -8,8 +8,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './style.scss';
 import Chip from 'components/chip';
+import './style.scss';
 
 const StatusChip = ( props ) => {
 	const { accountStatus } = props;

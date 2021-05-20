@@ -44,10 +44,9 @@ const AccountStatusCard = ( props ) => {
 };
 
 const AccountStatusError = () => {
+	const cardTitle = __( 'Account details', 'woocommerce-payments' );
 	return (
-		<AccountStatusCard
-			title={ __( 'Account details', 'woocommerce-payments' ) }
-		>
+		<AccountStatusCard title={ cardTitle }>
 			{ __(
 				'Error determining the connection status.',
 				'woocommerce-payments'
@@ -59,26 +58,24 @@ const AccountStatusError = () => {
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
 
+	const cardTitle = (
+		<>
+			<FlexItem>
+				{ __( 'Account details', 'woocommerce-payments' ) }
+			</FlexItem>
+			<FlexBlock>
+				<StatusChip accountStatus={ accountStatus.status } />
+			</FlexBlock>
+			<FlexItem className={ 'woocommerce-account-status__controls' }>
+				<Button disabled isLink>
+					{ __( 'Edit details', 'woocommerce-payments' ) }
+				</Button>
+			</FlexItem>
+		</>
+	);
+
 	return (
-		<AccountStatusCard
-			title={
-				<>
-					<FlexItem>
-						{ __( 'Account details', 'woocommerce-payments' ) }
-					</FlexItem>
-					<FlexBlock>
-						<StatusChip accountStatus={ accountStatus.status } />
-					</FlexBlock>
-					<FlexItem
-						className={ 'woocommerce-account-status__controls' }
-					>
-						<Button disabled isLink>
-							{ __( 'Edit details', 'woocommerce-payments' ) }
-						</Button>
-					</FlexItem>
-				</>
-			}
-		>
+		<AccountStatusCard title={ cardTitle }>
 			{ accountStatus.email && (
 				<AccountStatusItem
 					label={ __( 'Connected email:', 'woocommerce-payments' ) }
