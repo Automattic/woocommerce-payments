@@ -54,7 +54,10 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 							<Icon
 								className={ classNames(
 									'payment-method-delete-modal__payment-icon',
-									{ 'has-border': 'cc' !== id }
+									{
+										'has-border':
+											'woocommerce_payments' !== id,
+									}
 								) }
 							/>
 							<Gridicon
@@ -112,7 +115,14 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 			) }
 			<Button
 				isLink
-				aria-label={ __( 'Delete', 'woocommerce-payments' ) }
+				aria-label={ sprintf(
+					__(
+						/* translators: %1: Name of the payment method being removed */
+						'Delete %1$s from checkout',
+						'woocommerce-payments'
+					),
+					label
+				) }
 				className={ className }
 				onClick={ handleDeleteIconClick }
 			>

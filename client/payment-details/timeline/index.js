@@ -15,11 +15,8 @@ import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
 
 const PaymentDetailsTimeline = ( { chargeId } ) => {
-	if ( ! wcpaySettings.featureFlags.paymentTimeline ) {
-		return null;
-	}
-
 	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
+
 	const items = mapTimelineEvents( timeline );
 
 	return (

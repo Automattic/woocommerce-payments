@@ -189,6 +189,39 @@ describe( 'Transactions list', () => {
 			expectSortingToBe( 'net', 'asc' );
 		} );
 
+		test( 'renders table summary only when the transactions summary data is available', () => {
+			useTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {},
+				isLoading: true,
+			} );
+
+			( { container } = render( <TransactionsList /> ) );
+			let tableSummary = container.querySelectorAll(
+				'.woocommerce-table__summary'
+			);
+			expect( tableSummary ).toHaveLength( 0 );
+
+			useTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 10,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					store_currencies: [ 'usd' ],
+					fees: 100,
+					total: 1000,
+					net: 900,
+				},
+				isLoading: false,
+			} );
+
+			( { container } = render( <TransactionsList /> ) );
+			tableSummary = container.querySelectorAll(
+				'.woocommerce-table__summary'
+			);
+
+			expect( tableSummary ).toHaveLength( 1 );
+		} );
+
 		function sortBy( field ) {
 			user.click( screen.getByRole( 'button', { name: field } ) );
 			rerender( <TransactionsList /> );

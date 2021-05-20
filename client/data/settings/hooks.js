@@ -10,46 +10,61 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
-export const useEnabledPaymentMethodIds = () =>
-	useSelect( ( select ) => {
-		const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-		const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
+export const useEnabledPaymentMethodIds = () => {
+	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-		return {
-			enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
-			updateEnabledPaymentMethodIds,
-		};
-	} );
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
 
-export const useGeneralSettings = () =>
-	useSelect( ( select ) => {
-		const { getIsWCPayEnabled } = select( STORE_NAME );
-		const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+			return {
+				enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
+				updateEnabledPaymentMethodIds,
+			};
+		},
+		[ updateEnabledPaymentMethodIds ]
+	);
+};
 
-		return {
-			isWCPayEnabled: getIsWCPayEnabled(),
-			updateIsWCPayEnabled,
-		};
-	} );
+export const useGeneralSettings = () => {
+	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
-export const useSettings = () =>
-	useSelect( ( select ) => {
-		const {
-			getSettings,
-			hasFinishedResolution,
-			isResolving,
-			isSavingSettings,
-		} = select( STORE_NAME );
+	return useSelect(
+		( select ) => {
+			const { getIsWCPayEnabled } = select( STORE_NAME );
 
-		const isLoading =
-			isResolving( 'getSettings' ) ||
-			! hasFinishedResolution( 'getSettings' );
-		const { saveSettings } = useDispatch( STORE_NAME );
+			return {
+				isWCPayEnabled: getIsWCPayEnabled(),
+				updateIsWCPayEnabled,
+			};
+		},
+		[ updateIsWCPayEnabled ]
+	);
+};
 
-		return {
-			settings: getSettings(),
-			isLoading,
-			saveSettings,
-			isSaving: isSavingSettings(),
-		};
-	} );
+export const useSettings = () => {
+	const { saveSettings } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const {
+				getSettings,
+				hasFinishedResolution,
+				isResolving,
+				isSavingSettings,
+			} = select( STORE_NAME );
+
+			const isLoading =
+				isResolving( 'getSettings' ) ||
+				! hasFinishedResolution( 'getSettings' );
+
+			return {
+				settings: getSettings(),
+				isLoading,
+				saveSettings,
+				isSaving: isSavingSettings(),
+			};
+		},
+		[ saveSettings ]
+	);
+};

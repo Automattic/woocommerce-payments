@@ -60,7 +60,15 @@ export const useInitialization = ( {
 			setPaymentRequestType( result.requestType || '' );
 			setCanMakePayment( result.canPay );
 		} );
-	}, [ stripe, paymentRequest ] );
+	}, [
+		stripe,
+		paymentRequest,
+		billing?.cartTotal?.value,
+		isFinished,
+		isProcessing,
+		shippingData?.needsShipping,
+		billing?.cartTotalItems,
+	] );
 
 	// It's not possible to update the `requestShipping` property in the `paymentRequest`
 	// object, so when `needsShipping` changes, we need to reset the `paymentRequest` object.
@@ -87,19 +95,6 @@ export const useInitialization = ( {
 		billing.cartTotalItems,
 	] );
 
-	const abortPayment = ( paymentMethod, message ) => {
-		paymentMethod.complete( 'fail' );
-		setIsFinished( true );
-		setIsProcessing( false );
-		setExpressPaymentError( message );
-	};
-
-	const completePayment = ( redirectUrl ) => {
-		setIsFinished( true );
-		setIsProcessing( false );
-		window.location = redirectUrl;
-	};
-
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
 		const cancelHandler = () => {
@@ -107,6 +102,19 @@ export const useInitialization = ( {
 			setIsProcessing( false );
 			setPaymentRequest( null );
 			onClose();
+		};
+
+		const completePayment = ( redirectUrl ) => {
+			setIsFinished( true );
+			setIsProcessing( false );
+			window.location = redirectUrl;
+		};
+
+		const abortPayment = ( paymentMethod, message ) => {
+			paymentMethod.complete( 'fail' );
+			setIsFinished( true );
+			setIsProcessing( false );
+			setExpressPaymentError( message );
 		};
 
 		paymentRequest?.on( 'shippingaddresschange', ( event ) =>
@@ -126,7 +134,15 @@ export const useInitialization = ( {
 		return () => {
 			paymentRequest?.removeAllListeners();
 		};
-	}, [ paymentRequest ] );
+	}, [
+		setExpressPaymentError,
+		paymentRequest,
+		api,
+		setIsFinished,
+		setIsProcessing,
+		setPaymentRequest,
+		onClose,
+	] );
 
 	return {
 		paymentRequest,
