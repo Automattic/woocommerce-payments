@@ -47,6 +47,11 @@ class Frontend_Prices {
 
 		// Shipping methods hooks.
 		add_filter( 'woocommerce_package_rates', [ $this, 'get_shipping_rates_prices' ] );
+
+		// Coupon hooks.
+		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 20, 2 );
+		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ] );
+		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ] );
 	}
 
 	/**
@@ -120,5 +125,38 @@ class Frontend_Prices {
 			}
 		}
 		return $rates;
+	}
+
+	/**
+	 * Returns the amount for a coupon.
+	 *
+	 * @param mixed  $amount The coupon's amount.
+	 * @param object $coupon The coupon object.
+	 *
+	 * @return mixed The converted coupon's amount.
+	 */
+	public function get_coupon_amount( $amount, $coupon ) {
+		$percent_coupon_types = [ 'percent' ];
+
+		if ( ! $amount || $coupon->is_type( $percent_coupon_types ) ) {
+			return $amount;
+		}
+
+		return $this->multi_currency->get_price( $amount );
+	}
+
+	/**
+	 * Returns the min or max amount for a coupon.
+	 *
+	 * @param mixed $amount The coupon's min or max amount.
+	 *
+	 * @return mixed The converted coupon's min or max amount.
+	 */
+	public function get_coupon_min_max_amount( $amount ) {
+		if ( ! $amount ) {
+			return $amount;
+		}
+
+		return $this->multi_currency->get_price( $amount );
 	}
 }
