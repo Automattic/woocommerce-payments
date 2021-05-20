@@ -35,7 +35,6 @@ describe( 'Overview page', () => {
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
-		global.wcpaySettings = {};
 		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 
