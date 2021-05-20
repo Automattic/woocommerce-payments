@@ -122,5 +122,5 @@ describe( 'Disputes > Save dispute for editing', () => {
 				text: 'Offline service',
 			}
 		);
-	} );
+	}, 200000 );
 } );
