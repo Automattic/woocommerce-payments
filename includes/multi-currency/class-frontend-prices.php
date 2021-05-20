@@ -121,7 +121,7 @@ class Frontend_Prices {
 	public function get_shipping_rates_prices( $rates ) {
 		foreach ( $rates as $key => $rate ) {
 			if ( $rate->cost ) {
-				$rates[ $key ]->cost = $this->multi_currency->get_price( $rate->cost );
+				$rates[ $key ]->cost = $this->multi_currency->get_price( $rate->cost, false );
 			}
 		}
 		return $rates;
@@ -142,7 +142,7 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount );
+		return $this->multi_currency->get_price( $amount, false );
 	}
 
 	/**
@@ -157,6 +157,6 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount );
+		return $this->multi_currency->get_price( $amount, false );
 	}
 }

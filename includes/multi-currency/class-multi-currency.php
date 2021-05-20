@@ -236,18 +236,32 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Gets the configured value for apply charm pricing only to products.
+	 *
+	 * @return bool The configured value.
+	 */
+	public function get_apply_charm_only_to_products() {
+		return apply_filters( 'wcpay_multi_currency_apply_charm_only_to_products', true );
+	}
+
+	/**
 	 * Gets the price after adjusting it with the rounding and charm settings.
 	 *
-	 * @param float $price The price to be adjusted.
+	 * @param float $price               The price to be adjusted.
+	 * @param bool  $apply_charm_pricing Whether charm pricing should be applied.
 	 *
 	 * @return float The adjusted price.
 	 */
-	public function get_adjusted_price( $price ): float {
+	public function get_adjusted_price( $price, $apply_charm_pricing ): float {
 		$precision = $this->get_round_precision();
 		$charm     = $this->get_charm_pricing();
 
 		// TODO: round up.
-		$adjusted_price = round( $price, $precision ) + $charm;
+		$adjusted_price = round( $price, $precision );
+
+		if ( $apply_charm_pricing ) {
+			$adjusted_price += $charm;
+		}
 
 		// Do not return negative prices (possible because of $charm).
 		return max( 0, $adjusted_price );
@@ -256,17 +270,21 @@ class Multi_Currency {
 	/**
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
-	 * @param mixed $price The price to be converted.
+	 * @param mixed $price      The price to be converted.
+	 * @param bool  $is_product True if converting the price for a product.
 	 *
 	 * @return float The converted price.
 	 */
-	public function get_price( $price ): float {
+	public function get_price( $price, $is_product = true ): float {
 		$current_currency = $this->get_selected_currency();
 
 		if ( $current_currency->get_code() === $this->get_default_currency()->get_code() ) {
 			return (float) $price;
 		}
 
-		return $this->get_adjusted_price( ( (float) $price ) * $current_currency->get_rate() );
+		$converted_price     = ( (float) $price ) * $current_currency->get_rate();
+		$apply_charm_pricing = $this->get_apply_charm_only_to_products() ? $is_product : true;
+
+		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
 	}
 }
