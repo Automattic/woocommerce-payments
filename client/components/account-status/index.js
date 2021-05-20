@@ -8,7 +8,6 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
-	Flex,
 	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
@@ -28,8 +27,16 @@ import './shared.scss';
 const AccountStatusCard = ( props ) => {
 	const { title, content } = props;
 	return (
-		<Card isSmall>
-			<CardHeader>{ title }</CardHeader>
+		<Card isMedium>
+			<CardHeader
+				direction={ 'row' }
+				align={ 'center' }
+				justify={ 'left' }
+				gap={ 3 }
+				expanded
+			>
+				{ title }
+			</CardHeader>
 			<CardBody>{ content }</CardBody>
 		</Card>
 	);
@@ -53,13 +60,7 @@ const AccountStatusDetails = ( props ) => {
 	return (
 		<AccountStatusCard
 			title={
-				<Flex
-					direction={ 'row' }
-					align={ 'center' }
-					justify={ 'left' }
-					gap={ 3 }
-					expanded
-				>
+				<>
 					<FlexItem>
 						{ __( 'Account details', 'woocommerce-payments' ) }
 					</FlexItem>
@@ -73,7 +74,7 @@ const AccountStatusDetails = ( props ) => {
 							{ __( 'Edit details', 'woocommerce-payments' ) }
 						</Button>
 					</FlexItem>
-				</Flex>
+				</>
 			}
 			content={
 				<>
