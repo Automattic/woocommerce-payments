@@ -19,6 +19,7 @@ jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
+	const paymentIntent = getConfig( 'paymentIntent' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -80,6 +81,12 @@ jQuery( function ( $ ) {
 		type: 'sofort' /* eslint-disable camelcase */,
 	};
 
+	const upeElement = paymentIntent
+		? elements.create( 'payment', {
+				clientSecret: paymentIntent.client_secret,
+		  } )
+		: null;
+
 	/**
 	 * Check if Card payment is being used.
 	 *
@@ -122,6 +129,15 @@ jQuery( function ( $ ) {
 		);
 	};
 
+	/**
+	 * Check if UPE payment method is being used.
+	 *
+	 * @return {boolean} Boolean indicating whether or not Sofort payment method is being used.
+	 */
+	const isWCPayUPEChosen = function () {
+		return $( '#payment_method_woocommerce_payments_upe' ).is( ':checked' );
+	};
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -138,10 +154,10 @@ jQuery( function ( $ ) {
 
 		if (
 			$( '#wcpay-upe-element' ).length &&
-			! $( '#wcpay-upe-element' ).children().length
+			! $( '#wcpay-upe-element' ).children().length &&
+			upeElement
 		) {
-			cardElement.unmount();
-			cardElement.mount( '#wcpay-card-element' );
+			upeElement.mount( '#wcpay-upe-element' );
 		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
@@ -153,10 +169,23 @@ jQuery( function ( $ ) {
 		$( 'form#add_payment_method' ).length ||
 		$( 'form#order_review' ).length
 	) {
-		cardElement.mount( '#wcpay-card-element' );
+		if (
+			$( '#wcpay-card-element' ).length &&
+			! $( '#wcpay-card-element' ).children().length
+		) {
+			cardElement.mount( '#wcpay-card-element' );
+		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
+		}
+
+		if (
+			$( '#wcpay-upe-element' ).length &&
+			! $( '#wcpay-upe-element' ).children().length &&
+			upeElement
+		) {
+			upeElement.mount( '#wcpay-upe-element' );
 		}
 	}
 
@@ -361,6 +390,49 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Submits checkout form via AJAX to create order and uses custom
+	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
+	const handleUPECheckout = async ( $form ) => {
+		if ( ! paymentIntent ) {
+			return;
+		}
+
+		blockUI( $form );
+		// Create object where keys are form field names and keys are form field values
+		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
+			obj[ field.name ] = field.value;
+			return obj;
+		}, {} );
+
+		try {
+			const response = await api.processCheckout(
+				paymentIntent.id,
+				formFields
+			);
+			const redirectUrl = response.redirect_url;
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					// eslint-disable-next-line camelcase
+					return_url: redirectUrl,
+				},
+			} );
+			if ( error ) {
+				throw error.message;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error );
+		}
+
+		return false;
+	};
+
+	/**
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
@@ -465,7 +537,10 @@ jQuery( function ( $ ) {
 					country: $( '#billing_country' ).val(),
 				};
 				paymentMethodDetails = sofortPayment;
+			} else if ( isWCPayUPEChosen() ) {
+				return handleUPECheckout( $( this ) );
 			}
+
 			return handlePaymentMethodCreation(
 				$( this ),
 				handleOrderPayment,

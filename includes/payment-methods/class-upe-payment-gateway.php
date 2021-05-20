@@ -27,9 +27,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @type string
 	 */
-	const GATEWAY_ID = 'woocommerce_payments_upe';
+	const GATEWAY_ID = 'woocommerce_payments';
 
-	const METHOD_ENABLED_KEY = 'upe_enabled';
+	const METHOD_ENABLED_KEY = 'enabled';
 
 	/**
 	 * UPE Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
@@ -67,19 +67,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			$amount         = WC()->cart->get_cart_contents_total();
-			$currency       = get_woocommerce_currency();
-			$payment_intent = $this->payments_api_client->create_intention(
-				WC_Payments_Utils::prepare_amount( $amount, $currency ),
-				strtolower( $currency ),
-				$this->get_enabled_payment_gateways()
-			);
-
 			wp_send_json_success(
-				[
-					'id'            => $payment_intent->get_id(),
-					'client_secret' => $payment_intent->get_client_secret(),
-				],
+				$this->create_payment_intent(),
 				200
 			);
 		} catch ( Exception $e ) {
@@ -92,6 +81,25 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Creates payment intent using current cart and store details.
+	 *
+	 * @return WC_Payments_API_Intention
+	 */
+	public function create_payment_intent() {
+		$amount         = WC()->cart->get_cart_contents_total();
+		$currency       = get_woocommerce_currency();
+		$payment_intent = $this->payments_api_client->create_intention(
+			WC_Payments_Utils::prepare_amount( $amount, $currency ),
+			strtolower( $currency ),
+			$this->get_enabled_payment_gateways()
+		);
+		return [
+			'id'            => $payment_intent->get_id(),
+			'client_secret' => $payment_intent->get_client_secret(),
+		];
 	}
 
 	/**
@@ -252,16 +260,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		try {
 			$display_tokenization = $this->supports( 'tokenization' ) && is_checkout();
 
-			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $this->get_payment_fields_js_config() );
-			wp_enqueue_script( 'wcpay-upe-checkout' );
+			$payment_fields                  = $this->get_payment_fields_js_config();
+			$payment_fields['paymentIntent'] = $this->create_payment_intent();
+			wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $payment_fields );
+			wp_enqueue_script( 'WCPAY_CHECKOUT' );
 
 			$prepared_customer_data = $this->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
 			}
 
 			wp_enqueue_style(
-				'wcpay-upe-checkout',
+				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )

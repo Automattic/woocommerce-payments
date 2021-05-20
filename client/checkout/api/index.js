@@ -335,7 +335,7 @@ export default class WCPayAPI {
 			action: 'woocommerce_checkout',
 		} ).then( ( response ) => {
 			if ( 'failure' === response.result ) {
-				throw response;
+				throw response.messages;
 			}
 			return response;
 		} );

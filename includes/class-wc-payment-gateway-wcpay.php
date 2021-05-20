@@ -476,7 +476,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
-	 * Isolated as a separate method in order to be avaiable both
+	 * Isolated as a separate method in order to be available both
 	 * during the classic checkout, as well as the checkout block.
 	 *
 	 * @return array
