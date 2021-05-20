@@ -64,12 +64,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'is_wcpay_enabled'           => [
+					'is_wcpay_enabled'                 => [
 						'description'       => __( 'If WooCommerce Payments should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'enabled_payment_method_ids' => [
+					'enabled_payment_method_ids'       => [
 						'description'       => __( 'Payment method IDs that should be enabled. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -77,6 +77,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 							'enum' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_digital_wallets_enabled'       => [
+						'description'       => __( 'If WooCommerce Payments 1-click checkouts should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'digital_wallets_enabled_sections' => [
+						'description'       => __( '1-click checkout locations that should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'object',
+						'validate_callback' => __CLASS__ . '::validate_digital_wallets_enabled_sections',
 					],
 				],
 			]
@@ -115,6 +125,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_digital_wallets_enabled_sections( $request );
 
 		return new WP_REST_Response( [], 200 );
+	}
+
+	/**
+	 * Validate the digital wallets enabled sections are supported and their values
+	 * are boolean.
+	 *
+	 * @param string|bool     $value Value to check.
+	 * @param WP_REST_Request $request The request sent to the WP REST API.
+	 * @param string          $param Name of the parameter passed to endpoint holding $value.
+	 * @return bool
+	 */
+	public static function validate_digital_wallets_enabled_sections( $value, $request, $param ) {
+		foreach ( $value as $checkbox => $is_checked ) {
+			if ( ! Digital_Wallets_Sections::isValid( $checkbox ) ) {
+				return false;
+			}
+
+			if ( ! is_bool( $is_checked ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -192,11 +224,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$digital_wallets_enabled_sections = $request->get_param( 'digital_wallets_enabled_sections' );
 
-		$remove_invalid_sections                  = function ( $section ) {
-			return ! Digital_Wallets_Sections::isValidKey( $section );
-		};
-		$updated_digital_wallets_enabled_sections = array_filter( $digital_wallets_enabled_sections, $remove_invalid_sections );
-
-		$this->digital_wallets_gateway->update_option( 'digital_wallets_enabled_sections', $updated_digital_wallets_enabled_sections );
+		$this->digital_wallets_gateway->update_option( 'digital_wallets_enabled_sections', $digital_wallets_enabled_sections );
 	}
 }
