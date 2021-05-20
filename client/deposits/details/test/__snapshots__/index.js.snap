@@ -71,7 +71,7 @@ exports[`Deposit overview renders correctly 1`] = `
               <div
                 class="woocommerce-summary__item-value"
               >
-                $20.00
+                $20.30
               </div>
             </div>
           </div>
@@ -115,7 +115,7 @@ exports[`Deposit overview renders correctly 1`] = `
               <div
                 class="woocommerce-summary__item-value wcpay-deposit-net"
               >
-                $19.70
+                $20.00
               </div>
             </div>
           </div>
