@@ -24,8 +24,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 	public function tearDown() {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
-		remove_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
-		remove_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
+		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
+		remove_all_filters( 'wcpay_multi_currency_round_precision' );
 
 		parent::tearDown();
 	}
@@ -73,7 +73,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
 		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
-		$this->assertSame( 6.9, $this->multi_currency->get_price( '10.0' ) );
+		$this->assertSame( 7.9, $this->multi_currency->get_price( '10.0' ) );
 	}
 
 	public function test_get_price_returns_converted_non_product_price_with_charm() {
@@ -81,7 +81,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
-		$this->assertSame( 6.9, $this->multi_currency->get_price( '10.0', false ) );
+		$this->assertSame( 7.9, $this->multi_currency->get_price( '10.0', false ) );
 	}
 
 	public function test_get_price_returns_converted_non_product_price_without_charm() {
@@ -89,6 +89,40 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
 
 		// 0.708099 * 10 = 7,08099 -> rounded to 7 -> 7 - 0.1 = 6.9
-		$this->assertSame( 7.0, $this->multi_currency->get_price( '10.0', false ) );
+		$this->assertSame( 8.0, $this->multi_currency->get_price( '10.0', false ) );
+	}
+
+	/**
+	 * @dataProvider get_price_provider
+	 */
+	public function test_get_price_converts_using_ceil_and_precision( $price, $precision, $expected ) {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
+		add_filter(
+			'wcpay_multi_currency_round_precision',
+			function () use ( $precision ) {
+				return $precision;
+			}
+		);
+
+		$this->assertSame( $expected, $this->multi_currency->get_price( $price, false ) );
+	}
+
+	public function get_price_provider() {
+		return [
+			[ '7.07', 2, 5.01 ], // 5.006 after conversion
+			[ '7.06', 2, 5.0 ], // 4.999 after conversion
+			[ '7.04', 2, 4.99 ], // 4.985 after conversion
+			[ '7.07', 1, 5.1 ], // 5.006 after conversion
+			[ '7.06', 1, 5.0 ], // 4.999 after conversion
+			[ '6.90', 1, 4.9 ], // 4.885 after conversion
+			[ '7.07', 0, 6.0 ], // 5.006 after conversion
+			[ '7.06', 0, 5.0 ], // 4.999 after conversion
+			[ '5.80', 0, 5.0 ], // 4.106 after conversion
+			[ '14.26', -1, 20.0 ], // 10.097 after conversion
+			[ '14.02', -1, 10.0 ], // 9.927 after conversion
+			[ '141.0', -2, 100.0 ], // 99.841 after conversion
+			[ '142.0', -2, 200.0 ], // 100.550 after conversion
+		];
 	}
 }

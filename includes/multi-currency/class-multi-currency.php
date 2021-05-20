@@ -282,8 +282,7 @@ class Multi_Currency {
 		$precision = $this->get_round_precision();
 		$charm     = $this->get_charm_pricing();
 
-		// TODO: round up.
-		$adjusted_price = round( $price, $precision );
+		$adjusted_price = $this->ceil_price( $price, $precision );
 
 		if ( $apply_charm_pricing ) {
 			$adjusted_price += $charm;
@@ -291,5 +290,18 @@ class Multi_Currency {
 
 		// Do not return negative prices (possible because of $charm).
 		return max( 0, $adjusted_price );
+	}
+
+	/**
+	 * Ceils the price to the next number based on the precision.
+	 *
+	 * @param float $price     The price to be ceiled.
+	 * @param int   $precision The precision to be used.
+	 *
+	 * @return float The ceiled price.
+	 */
+	protected function ceil_price( $price, $precision ) {
+		$precision_modifier = pow( 10, $precision );
+		return ceil( $price * $precision_modifier ) / $precision_modifier;
 	}
 }
