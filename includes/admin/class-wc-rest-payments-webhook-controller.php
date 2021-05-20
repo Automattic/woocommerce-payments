@@ -25,6 +25,14 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 	const RESULT_ERROR       = 'error';
 
 	/**
+	 * Events, which triggers refreshing cached account properties.
+	 */
+	const EVENT_ACCOUNT_UPDATED                  = 'account.updated';
+	const EVENT_ACCOUNT_EXTERNAL_ACCOUNT_CREATED = 'account.external_account.created';
+	const EVENT_ACCOUNT_EXTERNAL_ACCOUNT_DELETED = 'account.external_account.deleted';
+	const EVENT_ACCOUNT_EXTERNAL_ACCOUNT_UPDATED = 'account.external_account.updated';
+
+	/**
 	 * Endpoint path.
 	 *
 	 * @var string
@@ -120,7 +128,10 @@ class WC_REST_Payments_Webhook_Controller extends WC_Payments_REST_Controller {
 				case 'charge.expired':
 					$this->process_webhook_expired_authorization( $body );
 					break;
-				case 'account.updated':
+				case self::EVENT_ACCOUNT_UPDATED:
+				case self::EVENT_ACCOUNT_EXTERNAL_ACCOUNT_CREATED:
+				case self::EVENT_ACCOUNT_EXTERNAL_ACCOUNT_DELETED:
+				case self::EVENT_ACCOUNT_EXTERNAL_ACCOUNT_UPDATED:
 					$this->account->refresh_account_data();
 					break;
 				case 'wcpay.notification':
