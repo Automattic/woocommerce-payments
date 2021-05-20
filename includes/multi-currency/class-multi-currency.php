@@ -77,7 +77,7 @@ class Multi_Currency {
 		$this->get_default_currency();
 		$this->get_enabled_currencies();
 
-    add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
+		add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 	}
 
