@@ -87,7 +87,7 @@ export const DepositOverview = ( { depositId } ) => {
 								'woocommerce-payments'
 							) }
 							value={ formatCurrency(
-								deposit.amount,
+								deposit.amount + deposit.fee,
 								deposit.currency
 							) }
 						/>,
@@ -113,7 +113,7 @@ export const DepositOverview = ( { depositId } ) => {
 								'woocommerce-payments'
 							) }
 							value={ formatCurrency(
-								deposit.amount - deposit.fee,
+								deposit.amount,
 								deposit.currency
 							) }
 							valueClass="wcpay-deposit-net"
