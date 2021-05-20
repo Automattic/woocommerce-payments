@@ -29,9 +29,9 @@ const DigitalWallets = () => {
 		updateDigitalWalletsLocations,
 	} = useDigitalWalletsLocations();
 
-	const locationChangeHandler = ( section ) => ( status ) => {
+	const locationChangeHandler = ( location ) => ( status ) => {
 		updateDigitalWalletsLocations( {
-			[ section ]: status,
+			[ location ]: status,
 		} );
 	};
 

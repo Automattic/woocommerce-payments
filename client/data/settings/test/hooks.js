@@ -157,15 +157,15 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useDigitalWalletsLocations()', () => {
-		test( 'returns digital wallets sections to shown on if digital wallets is enabled', () => {
-			const sectionsBeforeUpdated = {
+		test( 'returns digital wallets locations to shown on if digital wallets is enabled', () => {
+			const locationsBeforeUpdated = {
 				checkout: false,
 				// eslint-disable-next-line camelcase
 				product_page: false,
 				cart: false,
 			};
 
-			const sectionsAfterUpdated = {
+			const locationsAfterUpdated = {
 				checkout: false,
 				// eslint-disable-next-line camelcase
 				product_page: false,
@@ -178,7 +178,7 @@ describe( 'Settings hooks tests', () => {
 
 			selectors = {
 				getDigitalWalletsLocations: jest.fn(
-					() => sectionsBeforeUpdated
+					() => locationsBeforeUpdated
 				),
 			};
 
@@ -187,12 +187,12 @@ describe( 'Settings hooks tests', () => {
 				updateDigitalWalletsLocations,
 			} = useDigitalWalletsLocations();
 
-			updateDigitalWalletsLocations( sectionsAfterUpdated );
+			updateDigitalWalletsLocations( locationsAfterUpdated );
 
-			expect( digitalWalletsLocations ).toEqual( sectionsBeforeUpdated );
+			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdated );
 			expect(
 				actions.updateDigitalWalletsLocations
-			).toHaveBeenCalledWith( sectionsAfterUpdated );
+			).toHaveBeenCalledWith( locationsAfterUpdated );
 		} );
 	} );
 } );
