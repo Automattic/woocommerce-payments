@@ -53,7 +53,7 @@ describe( 'DigitalWallets', () => {
 		);
 	} );
 
-	it( 'should disable 1-click checkout sections if 1-click checkout is disabled', async () => {
+	it( 'should enable 1-click checkout sections if 1-click checkout is enabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
@@ -84,7 +84,7 @@ describe( 'DigitalWallets', () => {
 		expect( updateIsDigitalWalletsEnabledHandler ).toBeCalledTimes( 1 );
 	} );
 
-	it( 'should enable 1-click checkout sections if 1-click checkout is enabled', async () => {
+	it( 'should disable 1-click checkout sections if 1-click checkout is disabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
