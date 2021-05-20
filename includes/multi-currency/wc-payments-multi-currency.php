@@ -13,7 +13,7 @@ if ( ! class_exists( 'WCPay\Multi_Currency\Multi_Currency', false ) ) {
 }
 
 // Include the Frontend_Prices class.
-if ( ! class_exists( 'WCPay\Multi_Currency\Prices', false ) ) {
+if ( ! class_exists( 'WCPay\Multi_Currency\Frontend_Prices', false ) ) {
 	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 }
 
