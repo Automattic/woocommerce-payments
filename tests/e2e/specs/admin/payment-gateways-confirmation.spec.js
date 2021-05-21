@@ -2,25 +2,28 @@
  * External dependencies
  */
 import config from 'config';
-import shell from 'shelljs';
+import apiFetch from '@wordpress/api-fetch';
 
 const { merchant } = require( '@woocommerce/e2e-utils' );
 
 const WCADMIN_GATEWAYS_LIST = `${ config.get(
 	'url'
 ) }wp-admin/admin.php?page=wc-settings&tab=checkout&section`;
-const WP_CLI = `docker run --rm --user xfs --volumes-from wcp_e2e_wordpress --network container:wcp_e2e_wordpress wordpress:cli`;
 
 describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
 		await merchant.login();
 
-		await shell.exec(
-			`${ WP_CLI } wp option _wcpay_feature_grouped_settings 1`,
-			{
-				silent: true,
-			}
-		);
+		await page.goto( WCADMIN_GATEWAYS_LIST, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await apiFetch( {
+			path: '/wc-admin/options',
+			method: 'POST',
+			// eslint-disable-next-line camelcase
+			data: { _wcpay_feature_grouped_settings: '1' },
+		} );
 	} );
 
 	beforeEach( async () => {
@@ -30,12 +33,12 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	afterAll( async () => {
-		await shell.exec(
-			`${ WP_CLI } wp option delete _wcpay_feature_grouped_settings`,
-			{
-				silent: true,
-			}
-		);
+		await apiFetch( {
+			path: '/wc-admin/options',
+			method: 'POST',
+			// eslint-disable-next-line camelcase
+			data: { _wcpay_feature_grouped_settings: '0' },
+		} );
 
 		await merchant.logout();
 	} );
