@@ -41,7 +41,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 	it( 'should process a losing dispute', async () => {
 		// Go to dispute page
-		await merchant.openAllOrdersView();
 		await merchant.goToOrder( orderId );
 		await merchantWCP.viewDisputeFromOrder();
 
@@ -69,9 +68,12 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await page.removeAllListeners( 'dialog' );
 		const disputeDialog = await expect( page ).toDisplayDialog(
 			async () => {
-				await expect( page ).toClick( 'button.components-button', {
-					text: 'Accept dispute',
-				} );
+				await expect( page ).toClick(
+					'div.components-card > .components-card__footer > div > button',
+					{
+						text: 'Accept dispute',
+					}
+				);
 			}
 		);
 		await disputeDialog.accept();
@@ -87,7 +89,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 		// 			'You have accepted the dispute for order #' + orderId + '.',
 		// 	}
 		// );
-		await merchant.openAllOrdersView();
 		await merchant.goToOrder( orderId );
 		await merchantWCP.viewDisputeFromOrder();
 		// await expect( page ).not.toMatchElement(
