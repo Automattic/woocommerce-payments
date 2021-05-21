@@ -47,6 +47,10 @@ function _manually_load_plugin() {
 		}
 	);
 
+	// Set the 'wcpaydev_dev_mode' option to enable more currencies for now.
+	// TODO: Remove dev mode option here.
+	update_option( 'wcpaydev_dev_mode', true );
+
 	$_plugin_dir = dirname( __FILE__ ) . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
