@@ -9,11 +9,11 @@ import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
  * Internal dependencies
  */
 
-const AccountStatusItem = ( { label, value, children } ) => {
+const AccountStatusItem = ( { label, align, value, children } ) => {
 	return (
 		<Flex
 			direction={ 'row' }
-			align={ 'center' }
+			align={ align || 'center' }
 			justify={ 'left' }
 			gap={ 3 }
 			className={ 'woocommerce-account-status-item' }
