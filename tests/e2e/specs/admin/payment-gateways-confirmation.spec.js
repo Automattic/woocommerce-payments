@@ -25,7 +25,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect( page ).toClick( 'label', {
 			text: 'Enable grouped settings',
 		} );
-		await expect( page ).toClick( 'Submit' );
+		await expect( page ).toClick( 'input[type="submit"]' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
@@ -42,7 +42,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect( page ).toClick( 'label', {
 			text: 'Enable grouped settings',
 		} );
-		await expect( page ).toClick( 'Submit' );
+		await expect( page ).toClick( 'input[type="submit"]' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
