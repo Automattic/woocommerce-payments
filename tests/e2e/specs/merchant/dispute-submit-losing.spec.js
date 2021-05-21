@@ -46,15 +46,24 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchantWCP.viewDisputeFromOrder();
 
 		// Verify the heading for two component cards
-		await page.waitForSelector( '.components-card__header', {
-			visible: true,
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute overview',
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute: Product not received',
-		} );
+		await page.waitForSelector(
+			'div.components-card > .components-card__header',
+			{
+				visible: true,
+			}
+		);
+		await expect( page ).toMatchElement(
+			'div.components-card > .components-card__header',
+			{
+				text: 'Dispute overview',
+			}
+		);
+		await expect( page ).toMatchElement(
+			'div.components-card > .components-card__header',
+			{
+				text: 'Dispute: Product not received',
+			}
+		);
 
 		// Accept the dispute
 		await page.removeAllListeners( 'dialog' );
@@ -81,11 +90,17 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchant.openAllOrdersView();
 		await merchant.goToOrder( orderId );
 		await merchantWCP.viewDisputeFromOrder();
-		await expect( page ).not.toMatchElement( 'button.components-button', {
-			text: 'Challenge dispute',
-		} );
-		await expect( page ).not.toMatchElement( 'button.components-button', {
-			text: 'Accept dispute',
-		} );
+		await expect( page ).not.toMatchElement(
+			'div.components-card > .components-card__footer > a',
+			{
+				text: 'Challenge dispute',
+			}
+		);
+		await expect( page ).not.toMatchElement(
+			'div.components-card > .components-card__footer > button',
+			{
+				text: 'Accept dispute',
+			}
+		);
 	} );
 } );
