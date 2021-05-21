@@ -15,10 +15,11 @@
 	flex-wrap: wrap;
 	height: auto;
 	min-height: 2em;
+	margin-bottom: 8px;
 
 	div {
 		flex-shrink: 1;
-		flex-basis: 250px;
+		flex-basis: min-content;
 	}
 
 	div:first-child {
