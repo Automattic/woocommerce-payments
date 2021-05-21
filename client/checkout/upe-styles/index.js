@@ -1,75 +1,35 @@
-// List of supported CSS properties accepted by UPE elements. Source: https://stripe.com/docs/stripe-js/payment-element#appearance.
-const paddingColorProps = [
-	'color',
-	'padding',
-	'paddingTop',
-	'paddingRight',
-	'paddingBottom',
-	'paddingLeft',
-];
+/**
+ * Internal dependencies
+ */
+import { upeRestrictedProperties } from './upe-styles';
 
-const textFontTransitionProps = [
-	'fontFamily',
-	'fontSize',
-	'lineHeight',
-	'letterSpacing',
-	'fontWeight',
-	'fontVariation',
-	'textDecoration',
-	'textShadow',
-	'textTransform',
-	'-webkit-font-smoothing',
-	'-moz-osx-font-smoothing',
-	'transition',
-];
-const borderOutlineBackgroundProps = [
-	'border',
-	'borderTop',
-	'borderRight',
-	'borderBottom',
-	'borderLeft',
-	'borderRadius',
-	'borderWidth',
-	'borderColor',
-	'borderStyle',
-	'borderTopWidth',
-	'borderTopColor',
-	'borderTopStyle',
-	'borderRightWidth',
-	'borderRightColor',
-	'borderRightStyle',
-	'borderBottomWidth',
-	'borderBottomColor',
-	'borderBottomStyle',
-	'borderLeftWidth',
-	'borderLeftColor',
-	'borderLeftStyle',
-	'borderTopLeftRadius',
-	'borderTopRightRadius',
-	'borderBottomRightRadius',
-	'borderBottomLeftRadius',
-	'outline',
-	'outlineOffset',
-	'backgroundColor',
-	'boxShadow',
-];
-export const supportedUPEProperties = {
-	'.Label': [ ...paddingColorProps, ...textFontTransitionProps ],
-	'.Input': [
-		...paddingColorProps,
-		...textFontTransitionProps,
-		...borderOutlineBackgroundProps,
-	],
-	'.Error': [
-		...paddingColorProps,
-		...textFontTransitionProps,
-		...borderOutlineBackgroundProps,
-	],
-	'.Tab': [
-		...paddingColorProps,
-		...textFontTransitionProps,
-		...borderOutlineBackgroundProps,
-	],
-	'.TabIcon': [ ...paddingColorProps ],
-	'.TabLabel': [ ...paddingColorProps, ...textFontTransitionProps ],
+const dashedToCamelCase = ( string ) => {
+	return string.replace( /-([a-z])/g, function ( g ) {
+		return g[ 1 ].toUpperCase();
+	} );
+};
+
+export const getFieldStyles = ( selector, upeElement ) => {
+	if ( ! document.querySelector( selector ) ) {
+		return {};
+	}
+
+	const validProperties = upeRestrictedProperties[ upeElement ];
+
+	const elem = document.querySelector( selector );
+
+	const styles = window.getComputedStyle( elem );
+
+	const filteredStyles = {};
+
+	for ( let i = 0; i < styles.length; i++ ) {
+		const camelCase = dashedToCamelCase( styles[ i ] );
+		if ( validProperties.includes( camelCase ) ) {
+			filteredStyles[ camelCase ] = styles.getPropertyValue(
+				styles[ i ]
+			);
+		}
+	}
+
+	return filteredStyles;
 };
