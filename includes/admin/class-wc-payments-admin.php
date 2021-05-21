@@ -343,6 +343,12 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/payment-gateways.js' ),
 			true
 		);
+		wp_register_style(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/payment-gateways.css' )
+		);
 	}
 
 	/**
@@ -411,6 +417,7 @@ class WC_Payments_Admin {
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
 			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
+			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
 	}
 

@@ -4,7 +4,17 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+/**
+ * Internal dependencies
+ */
+import DisableConfirmationModal from './disable-confirmation-modal';
+import { useSettings } from 'data';
+
 const PaymentGatewaysConfirmation = () => {
+	// pre-fetching the settings (and available payment methods) _before_ the modal is displayed,
+	// so that there isn't a delay in the modal rendering
+	useSettings();
+
 	const [
 		isConfirmationModalVisible,
 		setIsConfirmationModalVisible,
@@ -85,11 +95,10 @@ const PaymentGatewaysConfirmation = () => {
 	}
 
 	return (
-		<div>
-			<h1>Disable WooCommerce Payments</h1>
-			<button onClick={ handleDialogDismissal }>Cancel</button>
-			<button onClick={ handleDialogConfirmation }>Disable</button>
-		</div>
+		<DisableConfirmationModal
+			onClose={ handleDialogDismissal }
+			onConfirm={ handleDialogConfirmation }
+		/>
 	);
 };
 
