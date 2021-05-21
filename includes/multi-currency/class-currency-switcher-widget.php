@@ -53,13 +53,15 @@ class Currency_Switcher_Widget extends WP_Widget {
 		}
 
 		?>
-		<select>
-			<?php
-			foreach ( Multi_Currency::instance()->get_enabled_currencies() as $currency ) {
-				$this->display_currency_option( $currency, $instance['symbol'], $instance['flag'] );
-			}
-			?>
-		</select>
+		<form>
+			<select name="currency" onchange="this.form.submit()">
+				<?php
+				foreach ( Multi_Currency::instance()->get_enabled_currencies() as $currency ) {
+					$this->display_currency_option( $currency, $instance['symbol'], $instance['flag'] );
+				}
+				?>
+			</select>
+		</form>
 		<?php
 
 		echo $args['after_widget']; // phpcs:ignore WordPress.Security.EscapeOutput
@@ -144,14 +146,18 @@ class Currency_Switcher_Widget extends WP_Widget {
 	 * @return void Displays HTML of currency <option>
 	 */
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
-		$text = $currency->get_code();
+		$code     = $currency->get_code();
+		$text     = $code;
+		$selected = Multi_Currency::instance()->get_selected_currency()->code === $code ? 'selected' : '';
+
 		if ( $with_symbol ) {
 			$text = $currency->get_symbol() . ' ' . $text;
 		}
 		if ( $with_flag ) {
 			$text = $currency->get_flag() . ' ' . $text;
 		}
-		echo "<option>$text</option>"; // phpcs:ignore WordPress.Security.EscapeOutput
+
+		echo "<option value='$code' $selected>$text</option>"; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 }
 
