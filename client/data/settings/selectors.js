@@ -1,15 +1,18 @@
 /** @format */
 
+const EMPTY_OBJ = {};
+const EMPTY_ARR = [];
+
 const getSettingsState = ( state ) => {
 	if ( ! state ) {
-		return {};
+		return EMPTY_OBJ;
 	}
 
-	return state.settings || {};
+	return state.settings || EMPTY_OBJ;
 };
 
 export const getSettings = ( state ) => {
-	return getSettingsState( state ).data || {};
+	return getSettingsState( state ).data || EMPTY_OBJ;
 };
 
 export const getIsWCPayEnabled = ( state ) => {
@@ -17,7 +20,11 @@ export const getIsWCPayEnabled = ( state ) => {
 };
 
 export const getEnabledPaymentMethodIds = ( state ) => {
-	return getSettings( state ).enabled_payment_method_ids || [];
+	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
+};
+
+export const getAvailablePaymentMethodIds = ( state ) => {
+	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
 };
 
 export const isSavingSettings = ( state ) => {
