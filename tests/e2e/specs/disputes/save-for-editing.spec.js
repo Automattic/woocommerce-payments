@@ -94,12 +94,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 			'Offline service'
 		);
 
-		await Promise.all( [
-			expect( page ).toClick( 'button.components-button.is-secondary', {
-				text: 'Save for later',
-			} ),
-			uiLoaded(),
-		] );
+		await expect( page ).toClick( 'button.components-button.is-secondary', {
+			text: 'Save for later',
+		} );
+
+		await uiLoaded();
 
 		// Re-open the dispute to view the details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
