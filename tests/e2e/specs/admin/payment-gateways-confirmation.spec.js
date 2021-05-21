@@ -94,7 +94,7 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 	} );
 
-	it( 'should allow disabling WCPay', async () => {
+	it( 'should disable WCPay after confirming, then enable again without confirming', async () => {
 		await expect(
 			page
 		).toMatchElement(
@@ -157,7 +157,7 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 	} );
 
-	it( 'should show the modal even after cancelling the action one time', async () => {
+	it( 'should show the modal even after clicking the cancel button multiple times', async () => {
 		await expect(
 			page
 		).toMatchElement(
