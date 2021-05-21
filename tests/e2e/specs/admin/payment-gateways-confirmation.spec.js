@@ -2,7 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-import apiFetch from '@wordpress/api-fetch';
 
 const { merchant } = require( '@woocommerce/e2e-utils' );
 
@@ -10,19 +9,27 @@ const WCADMIN_GATEWAYS_LIST = `${ config.get(
 	'url'
 ) }wp-admin/admin.php?page=wc-settings&tab=checkout&section`;
 
+const WCPAY_DEV_TOOLS = `${ config.get(
+	'url'
+) }wp-admin/admin.php?page=wcpaydev`;
+
 describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
 		await merchant.login();
 
-		await page.goto( WCADMIN_GATEWAYS_LIST, {
+		await page.goto( WCPAY_DEV_TOOLS, {
 			waitUntil: 'networkidle0',
 		} );
 
-		await apiFetch( {
-			path: '/wc-admin/options',
-			method: 'POST',
-			// eslint-disable-next-line camelcase
-			data: { _wcpay_feature_grouped_settings: '1' },
+		// Enable the "Enable grouped settings" checkbox and save
+		await expect( page ).toClick( 'label', {
+			text: 'Enable grouped settings',
+		} );
+		await expect( page ).toClick( 'button', {
+			text: 'Submit',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
 		} );
 	} );
 
@@ -33,11 +40,15 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	afterAll( async () => {
-		await apiFetch( {
-			path: '/wc-admin/options',
-			method: 'POST',
-			// eslint-disable-next-line camelcase
-			data: { _wcpay_feature_grouped_settings: '0' },
+		// Disable the "Enable grouped settings" checkbox and save
+		await expect( page ).toClick( 'label', {
+			text: 'Enable grouped settings',
+		} );
+		await expect( page ).toClick( 'button', {
+			text: 'Submit',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
 		} );
 
 		await merchant.logout();
