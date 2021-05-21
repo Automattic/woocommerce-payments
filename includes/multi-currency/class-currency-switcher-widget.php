@@ -54,7 +54,11 @@ class Currency_Switcher_Widget extends WP_Widget {
 
 		?>
 		<form>
-			<select name="currency" onchange="this.form.submit()">
+			<select
+				name="currency"
+				aria-label="<?php echo esc_attr( $title ); ?>"
+				onchange="this.form.submit()"
+			>
 				<?php
 				foreach ( Multi_Currency::instance()->get_enabled_currencies() as $currency ) {
 					$this->display_currency_option( $currency, $instance['symbol'], $instance['flag'] );
