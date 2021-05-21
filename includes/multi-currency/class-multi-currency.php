@@ -285,7 +285,10 @@ class Multi_Currency {
 			return $converted_price;
 		}
 
-		$apply_charm_pricing = $this->get_apply_charm_only_to_products() ? 'product' === $type : true;
+		$charm_compatible_types = [ 'product', 'shipping' ];
+		$apply_charm_pricing    = $this->get_apply_charm_only_to_products()
+			? 'product' === $type
+			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
 	}
