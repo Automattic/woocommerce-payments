@@ -23,6 +23,10 @@ export const getEnabledPaymentMethodIds = ( state ) => {
 	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
 };
 
+export const getAvailablePaymentMethodIds = ( state ) => {
+	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
+};
+
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
