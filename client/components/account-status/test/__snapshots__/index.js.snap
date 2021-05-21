@@ -123,7 +123,7 @@ exports[`AccountStatus renders normal status 1`] = `
         </div>
       </div>
       <div
-        class="components-flex woocommerce-account-status-item css-1cw5ysz-Flex eboqfv50"
+        class="components-flex woocommerce-account-status-item css-1k5rnjg-Flex eboqfv50"
         direction="row"
       >
         <div
