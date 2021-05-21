@@ -13,6 +13,9 @@ const WCPAY_DEV_TOOLS = `${ config.get(
 	'url'
 ) }wp-admin/admin.php?page=wcpaydev`;
 
+const WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE =
+	'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled';
+
 describe( 'payment gateways disable confirmation', () => {
 	beforeAll( async () => {
 		await merchant.login();
@@ -38,6 +41,10 @@ describe( 'payment gateways disable confirmation', () => {
 	} );
 
 	afterAll( async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
 		// Disable the "Enable grouped settings" checkbox and save
 		await expect( page ).toClick( 'label', {
 			text: 'Enable grouped settings',
@@ -60,7 +67,7 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// Click the "Disable WCPay" toggle button
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
 
 		// Dialog should be displayed
@@ -97,7 +104,7 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// Click the "Disable WCPay" toggle button
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
 
 		// Dialog should be displayed
@@ -110,6 +117,10 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// After clicking "Disable", the modal should close
 		await expect( page ).not.toMatch( 'Disable WooCommerce Payments' );
+
+		await page.waitForSelector(
+			`${ WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE } .woocommerce-input-toggle:not(.woocommerce-input-toggle--loading)`
+		);
 
 		// and refreshing the page should show WCPay become disabled
 		await expect( page ).toClick( 'button', {
@@ -127,7 +138,10 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// now we can re-enable it with no issues
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
+		);
+		await page.waitForSelector(
+			`${ WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE } .woocommerce-input-toggle:not(.woocommerce-input-toggle--loading)`
 		);
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
@@ -153,7 +167,7 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// Click the "Disable WCPay" toggle button
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
 
 		// Dialog should be displayed
@@ -175,7 +189,7 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// trying again to disable it - the modal should display again
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
 		await expect( page ).toMatch( 'Disable WooCommerce Payments' );
 		await expect( page ).toClick( 'button', {
@@ -183,7 +197,7 @@ describe( 'payment gateways disable confirmation', () => {
 		} );
 		await expect( page ).not.toMatch( 'Disable WooCommerce Payments' );
 		await expect( page ).toClick(
-			'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled'
+			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
 		await expect( page ).toMatch( 'Disable WooCommerce Payments' );
 		await expect( page ).toClick( 'button', {
