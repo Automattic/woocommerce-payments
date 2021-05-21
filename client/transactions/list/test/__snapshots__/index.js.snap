@@ -231,7 +231,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-10-1"
+                    aria-describedby="header-10-0"
                     class="components-button"
                     type="button"
                   >
@@ -261,7 +261,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-10-1"
+                    id="header-10-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -280,6 +280,48 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     class="screen-reader-text"
                   >
                     Type
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-10-2"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-10-2"
+                  >
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -309,19 +351,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     <span
                       aria-hidden="true"
                     >
-                      Amount
+                      Fees
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Amount
+                      Fees
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-10-3"
                   >
-                    Sort by Amount in descending order
+                    Sort by Fees in descending order
                   </span>
                 </th>
                 <th
@@ -351,59 +393,17 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Net
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Net
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-10-4"
-                  >
-                    Sort by Fees in descending order
-                  </span>
-                </th>
-                <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <button
-                    aria-describedby="header-10-5"
-                    class="components-button"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Net
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Net
-                    </span>
-                  </button>
-                  <span
-                    class="screen-reader-text"
-                    id="header-10-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -956,7 +956,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-11-1"
+                    aria-describedby="header-11-0"
                     class="components-button"
                     type="button"
                   >
@@ -986,7 +986,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-11-1"
+                    id="header-11-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -1005,6 +1005,48 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     class="screen-reader-text"
                   >
                     Type
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-11-2"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-11-2"
+                  >
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -1034,19 +1076,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Amount
+                      Fees
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Amount
+                      Fees
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-11-3"
                   >
-                    Sort by Amount in descending order
+                    Sort by Fees in descending order
                   </span>
                 </th>
                 <th
@@ -1076,59 +1118,17 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Net
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Net
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-11-4"
-                  >
-                    Sort by Fees in descending order
-                  </span>
-                </th>
-                <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <button
-                    aria-describedby="header-11-5"
-                    class="components-button"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Net
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Net
-                    </span>
-                  </button>
-                  <span
-                    class="screen-reader-text"
-                    id="header-11-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -2271,7 +2271,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   scope="col"
                 >
                   <button
-                    aria-describedby="header-9-1"
+                    aria-describedby="header-9-0"
                     class="components-button"
                     type="button"
                   >
@@ -2301,7 +2301,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-9-1"
+                    id="header-9-0"
                   >
                     Sort by Date and time in ascending order
                   </span>
@@ -2320,6 +2320,48 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     class="screen-reader-text"
                   >
                     Type
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-9-2"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-9-2"
+                  >
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -2349,19 +2391,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Amount
+                      Fees
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Amount
+                      Fees
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-9-3"
                   >
-                    Sort by Amount in descending order
+                    Sort by Fees in descending order
                   </span>
                 </th>
                 <th
@@ -2391,59 +2433,17 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Net
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Net
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-9-4"
-                  >
-                    Sort by Fees in descending order
-                  </span>
-                </th>
-                <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
-                  role="columnheader"
-                  scope="col"
-                >
-                  <button
-                    aria-describedby="header-9-5"
-                    class="components-button"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Net
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Net
-                    </span>
-                  </button>
-                  <span
-                    class="screen-reader-text"
-                    id="header-9-5"
                   >
                     Sort by Net in descending order
                   </span>
