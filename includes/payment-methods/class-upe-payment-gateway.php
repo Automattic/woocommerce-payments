@@ -121,6 +121,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function process_payment( $order_id ) {
 		// TODO: Need to update Payment Intent at this point...
+		// TODO: If save_payment_method below is true, must update Payment Intent and set 'setup_future_usage' = 'off_session'.
 		$payment_intent_id = isset( $_GET['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_intent_id'] ) ) : ''; // phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$order             = wc_get_order( $order_id );
 
@@ -209,7 +210,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					try {
 						$token = $this->token_service->add_payment_method_to_user( $payment_method, $user );
 						$this->add_token_to_order( $order, $token );
-						// TODO: May need to update Payment Intent with the key 'setup_future_usage' => 'off_session' here...
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
