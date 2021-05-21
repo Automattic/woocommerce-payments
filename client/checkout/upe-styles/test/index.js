@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { getFontRulesFromPage } from '..';
 import { getFieldStyles } from '../index';
 
 describe( 'Getting styles for automated theming', () => {
@@ -46,7 +47,53 @@ describe( 'Getting styles for automated theming', () => {
 		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
 			return undefined;
 		} );
+
 		const fieldStyles = getFieldStyles( '.i-do-not-exist', '.Input' );
 		expect( fieldStyles ).toEqual( {} );
+	} );
+
+	test( 'getFontRulesFromPage returns font rules from allowed font providers', () => {
+		const mockStyleSheets = {
+			length: 3,
+			0: {
+				href:
+					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
+			},
+			1: { href: null },
+			2: {
+				href:
+					// eslint-disable-next-line max-len
+					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
+			},
+		};
+		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
+			mockStyleSheets
+		);
+
+		const fontRules = getFontRulesFromPage();
+		expect( fontRules ).toEqual( [
+			{
+				cssSrc:
+					// eslint-disable-next-line max-len
+					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
+			},
+		] );
+	} );
+
+	test( 'getFontRulesFromPage returns empty array if there are no fonts from allowed providers', () => {
+		const mockStyleSheets = {
+			length: 2,
+			0: {
+				href:
+					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
+			},
+			1: { href: null },
+		};
+		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
+			mockStyleSheets
+		);
+
+		const fontRules = getFontRulesFromPage();
+		expect( fontRules ).toEqual( [] );
 	} );
 } );

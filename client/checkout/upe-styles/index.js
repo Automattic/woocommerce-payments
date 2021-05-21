@@ -33,3 +33,27 @@ export const getFieldStyles = ( selector, upeElement ) => {
 
 	return filteredStyles;
 };
+
+export const getFontRulesFromPage = () => {
+	const fontRules = [],
+		sheets = document.styleSheets,
+		fontDomains = [
+			'fonts.googleapis.com',
+			'fonts.gstatic.com',
+			'fast.fonts.com',
+			'use.typekit.net',
+		];
+	for ( let i = 0; i < sheets.length; i++ ) {
+		if ( ! sheets[ i ].href ) {
+			continue;
+		}
+		const url = new URL( sheets[ i ].href );
+		if ( -1 !== fontDomains.indexOf( url.hostname ) ) {
+			fontRules.push( {
+				cssSrc: sheets[ i ].href,
+			} );
+		}
+	}
+
+	return fontRules;
+};
