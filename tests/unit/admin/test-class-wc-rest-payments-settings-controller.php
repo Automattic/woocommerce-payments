@@ -34,11 +34,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $gateway;
 
 	/**
-	 * @var MockObject|WC_Payment_Gateways
-	 */
-	private $payment_gateways_mock;
-
-	/**
 	 * @var WC_Payments_API_Client
 	 */
 	private $mock_api_client;
@@ -54,8 +49,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
+		update_option( '_wcpay_feature_grouped_settings', '1' );
 
-		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -65,11 +60,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 
-		$this->gateway               = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
-		$this->payment_gateways_mock = $this->getMockBuilder( WC_Payment_Gateways::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$this->controller            = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->payment_gateways_mock );
+		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+		$this->set_available_gateways( [ 'woocommerce_payments' ] );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -81,49 +74,27 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_enabled_payment_method_ids() {
-		$enabled_gateway_mock_one = $this->create_wcpay_gateway_mock( 'enabled 1' );
-		$enabled_gateway_mock_one->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
-
-		$enabled_gateway_mock_two = $this->create_wcpay_gateway_mock( 'enabled 2' );
-		$enabled_gateway_mock_two->expects( $this->once() )->method( 'is_enabled' )->willReturn( true );
-
-		$disabled_gateway_mock = $this->create_wcpay_gateway_mock( 'disabled' );
-		$disabled_gateway_mock->expects( $this->once() )->method( 'is_enabled' )->willReturn( false );
-
-		$this->payment_gateways_mock
-			->expects( $this->once() )
-			->method( 'payment_gateways' )
-			->willReturn( [ $enabled_gateway_mock_one, $enabled_gateway_mock_two, $disabled_gateway_mock ] );
-
 		$response           = $this->controller->get_settings();
 		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'enabled 1', 'enabled 2' ],
+			[ 'woocommerce_payments' ],
 			$enabled_method_ids
 		);
 	}
 
-	public function test_enabled_methods_include_only_subclasses_of_wcpay() {
-		$wcpay_subclass_gateway_mock = $this->create_wcpay_gateway_mock( 'foo' );
-		$wcpay_subclass_gateway_mock->method( 'is_enabled' )->willReturn( true );
-
-		$non_wcpay_subclass_gateway_mock = $this->create_non_wcpay_gateway_mock( 'bar' );
-
-		$this->set_available_gateways( [ $wcpay_subclass_gateway_mock, $non_wcpay_subclass_gateway_mock ] );
-
+	public function test_get_settings_returns_available_payment_method_ids() {
+		$this->set_available_gateways( [ 'foo', 'bar' ] );
 		$response           = $this->controller->get_settings();
-		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
+		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'foo' ],
+			[ 'foo', 'bar' ],
 			$enabled_method_ids
 		);
 	}
 
 	public function test_get_settings_returns_if_wcpay_is_enabled() {
-		$this->set_available_gateways( [] );
-
 		$this->gateway->enable();
 		$response = $this->controller->get_settings();
 		$this->assertTrue( $response->get_data()['is_wcpay_enabled'] );
@@ -197,55 +168,21 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_enabled_payment_methods() {
-		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-		$bar_gateway = $this->create_wcpay_gateway_mock( 'bar' );
-
-		$this->set_available_gateways( [ $foo_gateway, $bar_gateway ] );
+		$this->set_available_gateways( [ 'foo', 'bar' ] );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ $bar_gateway->id ] );
-
-		$foo_gateway->expects( $this->once() )->method( 'disable' );
-		$bar_gateway->expects( $this->once() )->method( 'enable' );
+		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
 
 		$this->controller->update_settings( $request );
-	}
 
-	public function test_update_settings_saves_enabled_payment_method_order() {
-		$this->gateway->update_option( 'payment_method_order', [] );
-		$this->assertEmpty( $this->gateway->get_option( 'payment_method_order' ) );
-
-		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-		$bar_gateway = $this->create_wcpay_gateway_mock( 'bar' );
-		$this->set_available_gateways( [ $foo_gateway, $bar_gateway ] );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ $foo_gateway->id, $bar_gateway->id ] );
-
-		$this->controller->update_settings( $request );
-		$this->assertEquals( [ 'foo', 'bar' ], $this->gateway->get_option( 'payment_method_order' ) );
+		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
-		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-
-		$this->set_available_gateways( [ $foo_gateway ] );
+		$this->set_available_gateways( [ 'foo', 'bar' ] );
 
 		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
-		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
-
-		$response = rest_do_request( $request );
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_update_settings_validation_fails_if_non_wcpay_gateway_id_supplied() {
-		$foo_gateway = $this->create_wcpay_gateway_mock( 'foo' );
-		$bar_gateway = $this->create_non_wcpay_gateway_mock( 'bar' );
-
-		$this->set_available_gateways( [ $foo_gateway, $bar_gateway ] );
-
-		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
-		$request->set_param( 'enabled_payment_method_ids', [ 'bar' ] );
+		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
 
 		$response = rest_do_request( $request );
 		$this->assertEquals( 400, $response->get_status() );
@@ -326,31 +263,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 	}
-
-	/**
-	 * @return MockObject|WC_Payment_Gateway_WCPay
-	 */
-	private function create_wcpay_gateway_mock( string $id ) {
-		$gateway_mock     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$gateway_mock->id = $id;
-
-		return $gateway_mock;
-	}
-
-	/**
-	 * @return MockObject|WC_Payment_Gateway
-	 */
-	private function create_non_wcpay_gateway_mock( string $id ) {
-		$gateway_mock     = $this->getMockBuilder( WC_Payment_Gateway::class )
-			->disableOriginalConstructor()
-			->getMock();
-		$gateway_mock->id = $id;
-
-		return $gateway_mock;
-	}
-
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *
@@ -365,12 +277,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * @param WC_Payment_Gateway[] $gateways Available gateways.
+	 * @param string[] $gateways Available gateways.
 	 */
 	private function set_available_gateways( array $gateways ) {
-		$this->payment_gateways_mock
-			->method( 'payment_gateways' )
-			->willReturn( $gateways );
+		add_filter(
+			'wcpay_upe_available_payment_methods',
+			function () use ( $gateways ) {
+				return $gateways;
+			}
+		);
 	}
 
 	/**

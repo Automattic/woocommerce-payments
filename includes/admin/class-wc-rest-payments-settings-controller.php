@@ -27,23 +27,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
-	 * Payment gateways.
-	 *
-	 * @var WC_Payment_Gateways
-	 */
-	private $payment_gateways;
-
-	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payment_Gateways      $payment_gateways WC_Payment_Gateways instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payment_Gateways $payment_gateways ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
 		parent::__construct( $api_client );
-		$this->wcpay_gateway    = $wcpay_gateway;
-		$this->payment_gateways = $payment_gateways;
+
+		$this->wcpay_gateway = $wcpay_gateway;
 	}
 
 	/**
@@ -73,11 +65,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'enabled_payment_method_ids'   => [
-						'description'       => __( 'Payment method IDs that should be enabled, in the order they should appear in during checkout. Other methods will be disabled.', 'woocommerce-payments' ),
+						'description'       => __( 'Payment method IDs that should be enabled. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => wp_list_pluck( $this->get_available_wcpay_payment_methods(), 'id' ),
+							'enum' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -102,18 +94,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$enabled_payment_methods = array_filter(
-			$this->get_available_wcpay_payment_methods(),
-			function ( WC_Payment_Gateway_WCPay $gateway ) {
-				return $gateway->is_enabled();
-			}
-		);
-
-		$enabled_payment_method_ids = wp_list_pluck( $enabled_payment_methods, 'id' );
-
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'   => array_values( $enabled_payment_method_ids ),
+				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'    => $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
@@ -133,20 +117,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_account_statement_descriptor( $request );
 
 		return new WP_REST_Response( [], 200 );
-	}
-
-	/**
-	 * Get available payment methods.
-	 *
-	 * @return WC_Payment_Gateway_WCPay[]
-	 */
-	private function get_available_wcpay_payment_methods(): array {
-		return array_filter(
-			$this->payment_gateways->payment_gateways(),
-			function ( $gateway ) {
-				return is_subclass_of( $gateway, WC_Payment_Gateway_WCPay::class );
-			}
-		);
 	}
 
 	/**
@@ -179,18 +149,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
+		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
-		foreach ( $this->get_available_wcpay_payment_methods() as $payment_method ) {
-			$should_be_enabled = in_array( $payment_method->id, $payment_method_ids_to_enable, true );
+		$payment_method_ids_to_enable = array_values(
+			array_filter(
+				$payment_method_ids_to_enable,
+				function ( $payment_method ) use ( $available_payment_methods ) {
+					return in_array( $payment_method, $available_payment_methods, true );
+				}
+			)
+		);
 
-			if ( $should_be_enabled ) {
-				$payment_method->enable();
-			} else {
-				$payment_method->disable();
-			}
-		}
-
-		$this->wcpay_gateway->update_option( 'payment_method_order', $payment_method_ids_to_enable );
+		$this->wcpay_gateway->update_option( 'enabled_payment_method_ids', $payment_method_ids_to_enable );
 	}
 
 	/**

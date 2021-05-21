@@ -2,11 +2,11 @@
  * Internal dependencies
  */
 import {
-	getAccountStatementDescriptor,
+	getSettings,
+	getIsWCPayEnabled,
 	getEnabledPaymentMethodIds,
 	getIsManualCaptureEnabled,
-	getIsWCPayEnabled,
-	getSettings,
+	getAccountStatementDescriptor,
 	isSavingSettings,
 } from '../selectors';
 

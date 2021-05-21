@@ -62,6 +62,26 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_status' )
 			->willReturn( 'requires_capture' );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_id' )
+			->willReturn( 'pi_mock' );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_payment_method_id' )
+			->willReturn( 'pm_mock' );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_customer_id' )
+			->willReturn( 'cus_mock' );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_charge_id' )
+			->willReturn( 'ch_mock' );
+		$mock_intent
+			->expects( $this->any() )
+			->method( 'get_currency' )
+			->willReturn( 'mok' );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -81,7 +101,16 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 
 		$this->mock_gateway
 			->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' );
+			->method( 'attach_intent_info_to_order' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				'pi_mock',
+				'requires_capture',
+				'pm_mock',
+				'cus_mock',
+				'ch_mock',
+				'mok'
+			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(

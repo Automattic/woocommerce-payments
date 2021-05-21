@@ -79,7 +79,6 @@ describe( 'Settings hooks tests', () => {
 				updateIsManualCaptureEnabled,
 				updateIsWCPayEnabled,
 			} = useGeneralSettings();
-
 			updateIsWCPayEnabled( 'bar' );
 
 			expect( isWCPayEnabled ).toEqual( 'foo' );

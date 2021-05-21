@@ -1,15 +1,34 @@
 /** @format */
 
+const EMPTY_OBJ = {};
+const EMPTY_ARR = [];
+
 const getSettingsState = ( state ) => {
 	if ( ! state ) {
-		return {};
+		return EMPTY_OBJ;
 	}
 
-	return state.settings || {};
+	return state.settings || EMPTY_OBJ;
 };
 
 export const getSettings = ( state ) => {
-	return getSettingsState( state ).data || {};
+	return getSettingsState( state ).data || EMPTY_OBJ;
+};
+
+export const getIsWCPayEnabled = ( state ) => {
+	return getSettings( state ).is_wcpay_enabled || false;
+};
+
+export const getEnabledPaymentMethodIds = ( state ) => {
+	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
+};
+
+export const getAvailablePaymentMethodIds = ( state ) => {
+	return getSettings( state ).available_payment_method_ids || EMPTY_ARR;
+};
+
+export const isSavingSettings = ( state ) => {
+	return getSettingsState( state ).isSaving || false;
 };
 
 export const getAccountStatementDescriptor = ( state ) => {
@@ -18,16 +37,4 @@ export const getAccountStatementDescriptor = ( state ) => {
 
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
-};
-
-export const getIsWCPayEnabled = ( state ) => {
-	return getSettings( state ).is_wcpay_enabled || false;
-};
-
-export const getEnabledPaymentMethodIds = ( state ) => {
-	return getSettings( state ).enabled_payment_method_ids || [];
-};
-
-export const isSavingSettings = ( state ) => {
-	return getSettingsState( state ).isSaving || false;
 };

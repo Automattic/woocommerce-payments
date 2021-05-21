@@ -219,6 +219,7 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
+		$this->add_update_business_details_task();
 	}
 
 	/**
@@ -256,6 +257,8 @@ class WC_Payments_Admin {
 				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
+				'accountStatus'         => $this->account->get_account_status_data(),
+				'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			]
 		);
 
@@ -368,7 +371,9 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $tos_agreement_declined || $tos_agreement_required ) {
+		$track_stripe_connected = get_option( '_wcpay_oauth_stripe_connected' );
+
+		if ( $tos_agreement_declined || $tos_agreement_required || $track_stripe_connected ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			wp_localize_script(
 				'WCPAY_TOS',
@@ -377,6 +382,7 @@ class WC_Payments_Admin {
 					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
+					'trackStripeConnected' => $track_stripe_connected,
 				]
 			);
 
@@ -472,6 +478,24 @@ class WC_Payments_Admin {
 				$menu[ $index ][0] .= ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
+		}
+	}
+
+	/**
+	 * Attempts to add a setup task to remind the user to update
+	 * their business details when the account is facing restriction.
+	 */
+	public function add_update_business_details_task() {
+		if ( 'yes' === get_option( 'wcpay_show_update_business_details_task', 'no' ) ) {
+			return;
+		}
+
+		$account  = $this->account->get_account_status_data();
+		$status   = $account['status'] ?? '';
+		$past_due = $account['has_overdue_requirements'] ?? false;
+
+		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
+			update_option( 'wcpay_show_update_business_details_task', 'yes' );
 		}
 	}
 }
