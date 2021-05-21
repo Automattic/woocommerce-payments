@@ -105,9 +105,17 @@ class Frontend_Prices {
 	 * @return array Shipping rates with converted costs.
 	 */
 	public function get_shipping_rates_prices( $rates ) {
-		foreach ( $rates as $key => $rate ) {
+		foreach ( $rates as $rate ) {
 			if ( $rate->cost ) {
-				$rates[ $key ]->cost = $this->multi_currency->get_price( $rate->cost, false );
+				$rate->cost = $this->multi_currency->get_price( $rate->cost, false );
+			}
+			if ( $rate->taxes ) {
+				$rate->taxes = array_map(
+					function ( $tax ) {
+						return $this->multi_currency->get_price( $tax, false );
+					},
+					$rate->taxes
+				);
 			}
 		}
 		return $rates;

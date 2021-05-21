@@ -103,20 +103,30 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_shipping_rates_prices_converts_rates() {
-		$shipping_zone_1       = new WC_Shipping_Zone();
-		$shipping_zone_2       = new WC_Shipping_Zone();
-		$shipping_zone_1->cost = '10.0';
-		$shipping_zone_2->cost = '0.0';
+		$flat_rate_method       = new WC_Shipping_Rate();
+		$free_method            = new WC_Shipping_Rate();
+		$flat_rate_method->cost = '10.0';
+		$free_method->cost      = '0.0';
 
 		$base_shipping_rates = [
-			'shipping_rate_1' => $shipping_zone_1,
-			'shipping_rate_2' => $shipping_zone_2,
+			'shipping_rate_1' => $flat_rate_method,
+			'shipping_rate_2' => $free_method,
 		];
 
 		$shipping_rates = $this->frontend_prices->get_shipping_rates_prices( $base_shipping_rates );
 
 		$this->assertSame( 25.0, $shipping_rates['shipping_rate_1']->cost );
 		$this->assertSame( 0.0, $shipping_rates['shipping_rate_2']->cost );
+	}
+
+	public function test_get_shipping_rates_prices_converts_taxes() {
+		$flat_rate_method        = new WC_Shipping_Rate();
+		$flat_rate_method->cost  = '10.0';
+		$flat_rate_method->taxes = [ '1.0', '2.0' ];
+
+		$shipping_rates = $this->frontend_prices->get_shipping_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
+
+		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {
