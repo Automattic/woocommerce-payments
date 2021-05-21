@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload release
         run: |
-          TAG="i18n-$(date +%y%m%d)"
+          TAG="i18n-$(date +%Y%m%d)"
           NAME="Version for internationalization testing $TAG. Not for production."
           BODY='This version is intended to test the internationalization strings. It should NOT be used for production.'
 
