@@ -65,7 +65,7 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_flag() {
 		// Maybe add param img/emoji to return which you want?
-		return '';
+		return Country_Flags::get_by_currency( $this->code );
 	}
 
 	/**
