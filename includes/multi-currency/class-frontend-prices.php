@@ -63,7 +63,7 @@ class Frontend_Prices {
 			return $price;
 		}
 
-		return $this->multi_currency->get_price( $price );
+		return $this->multi_currency->get_price( $price, 'product' );
 	}
 
 	/**
@@ -107,12 +107,12 @@ class Frontend_Prices {
 	public function get_shipping_rates_prices( $rates ) {
 		foreach ( $rates as $rate ) {
 			if ( $rate->cost ) {
-				$rate->cost = $this->multi_currency->get_price( $rate->cost, false );
+				$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
 			}
 			if ( $rate->taxes ) {
 				$rate->taxes = array_map(
 					function ( $tax ) {
-						return $this->multi_currency->get_price( $tax, false );
+						return $this->multi_currency->get_price( $tax, 'tax' );
 					},
 					$rate->taxes
 				);
@@ -136,7 +136,7 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount, false );
+		return $this->multi_currency->get_price( $amount, 'coupon' );
 	}
 
 	/**
@@ -151,6 +151,6 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount, false );
+		return $this->multi_currency->get_price( $amount, 'coupon' );
 	}
 }

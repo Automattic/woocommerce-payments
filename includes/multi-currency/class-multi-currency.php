@@ -263,20 +263,29 @@ class Multi_Currency {
 	/**
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
-	 * @param mixed $price      The price to be converted.
-	 * @param bool  $is_product True if converting the price for a product.
+	 * @param mixed $price The price to be converted.
+	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', or 'coupon'.
 	 *
 	 * @return float The converted price.
 	 */
-	public function get_price( $price, $is_product = true ): float {
+	public function get_price( $price, $type ): float {
+		$supported_types  = [ 'product', 'shipping', 'tax', 'coupon' ];
 		$current_currency = $this->get_selected_currency();
 
-		if ( $current_currency->get_code() === $this->get_default_currency()->get_code() ) {
+		if (
+			! in_array( $type, $supported_types, true ) ||
+			$current_currency->get_code() === $this->get_default_currency()->get_code()
+		) {
 			return (float) $price;
 		}
 
-		$converted_price     = ( (float) $price ) * $current_currency->get_rate();
-		$apply_charm_pricing = $this->get_apply_charm_only_to_products() ? $is_product : true;
+		$converted_price = ( (float) $price ) * $current_currency->get_rate();
+
+		if ( 'tax' === $type ) {
+			return $converted_price;
+		}
+
+		$apply_charm_pricing = $this->get_apply_charm_only_to_products() ? 'product' === $type : true;
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
 	}
