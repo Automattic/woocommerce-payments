@@ -45,7 +45,7 @@ const getColumns = ( includeDeposit, includeSubscription ) =>
 	[
 		{
 			key: 'transaction_id',
-			label: 'Transaction Id',
+			label: __( 'Transaction Id', 'woocommerce-payments' ),
 			visible: false,
 		},
 		{

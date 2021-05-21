@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -368,20 +368,31 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
-			render( <TransactionsList /> );
-			const downloadButton = screen.getByRole( 'button', {
-				name: 'Download',
-			} );
+			const { getByRole } = render( <TransactionsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
 
-			// simulate click on the download CSV button
-			fireEvent.click( downloadButton );
-			const expected =
-				'Transaction Id","Date / Time",Type,Amount,Fees,Net,"Order #",Source,Customer,Email,Country,"Risk level",Deposit';
+			const expected = [
+				'"Transaction Id"',
+				'"Date / Time"',
+				'Type',
+				'Amount',
+				'Fees',
+				'Net',
+				'"Order #"',
+				'Source',
+				'Customer',
+				'Email',
+				'Country',
+				'"Risk level"',
+				'Deposit',
+			];
 
 			// checking if columns in CSV are rendered correctly
-			expect( downloadCSVFile.mock.calls[ 0 ][ 1 ] ).toContain(
-				expected
-			);
+			expect(
+				downloadCSVFile.mock.calls[ 0 ][ 1 ]
+					.split( '\n' )[ 0 ]
+					.split( ',' )
+			).toEqual( expected );
 		} );
 	} );
 } );
