@@ -26,7 +26,7 @@ export const enableGatewayAfterTosDecline = async () =>
 export const maybeTrackStripeConnected = async () => {
 	// eslint-disable-next-line camelcase
 	const trackStripeConnected = wcpay_tos_settings.trackStripeConnected;
-	if ( ! wcpayTracks.isEnabled || ! trackStripeConnected ) {
+	if ( ! wcpayTracks.isEnabled() || ! trackStripeConnected ) {
 		return;
 	}
 

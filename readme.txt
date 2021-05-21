@@ -109,6 +109,8 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 * Update - Deposit overview details.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
+* Fix - Added CSV column heading for transaction id column.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
