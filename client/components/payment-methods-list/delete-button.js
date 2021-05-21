@@ -54,7 +54,10 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 							<Icon
 								className={ classNames(
 									'payment-method-delete-modal__payment-icon',
-									{ 'has-border': 'cc' !== id }
+									{
+										'has-border':
+											'woocommerce_payments' !== id,
+									}
 								) }
 							/>
 							<Gridicon

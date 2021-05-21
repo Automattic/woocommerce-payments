@@ -87,4 +87,39 @@ describe( 'Deposits list', () => {
 		const { container } = render( <DepositsList /> );
 		expect( container ).toMatchSnapshot();
 	} );
+
+	test( 'renders table summary only when the deposits summary data is available', () => {
+		useDeposits.mockReturnValue( {
+			deposits: mockDeposits,
+			depositsCount: 2,
+			isLoading: false,
+		} );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {},
+			isLoading: true,
+		} );
+
+		let { container } = render( <DepositsList /> );
+		let tableSummary = container.querySelectorAll(
+			'.woocommerce-table__summary'
+		);
+
+		expect( tableSummary ).toHaveLength( 0 );
+
+		useDepositsSummary.mockReturnValue( {
+			depositsSummary: {
+				count: 2,
+				total: 100,
+			},
+			isLoading: false,
+		} );
+
+		( { container } = render( <DepositsList /> ) );
+		tableSummary = container.querySelectorAll(
+			'.woocommerce-table__summary'
+		);
+
+		expect( tableSummary ).toHaveLength( 1 );
+	} );
 } );

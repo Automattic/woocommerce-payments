@@ -10,11 +10,15 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import PaymentMethods from '../';
-import { useEnabledPaymentMethodIds } from 'data';
+import PaymentMethods from '..';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn(),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -23,9 +27,29 @@ describe( 'PaymentMethods', () => {
 			enabledPaymentMethodIds: [],
 			updateEnabledPaymentMethodIds: jest.fn(),
 		} );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'woocommerce_payments',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+			'woocommerce_payments_sepa',
+		] );
 	} );
 
-	test( 'renders the "Add payment method" button', () => {
+	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'woocommerce_payments',
+		] );
+
+		render( <PaymentMethods /> );
+
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		expect( addPaymentMethodButton ).not.toBeInTheDocument();
+	} );
+
+	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
 		render( <PaymentMethods /> );
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
@@ -43,6 +67,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		fireEvent.click( addPaymentMethodButton );
+
 		expect(
 			screen.queryByText( 'Add payment methods' )
 		).toBeInTheDocument();
