@@ -127,11 +127,6 @@ class Currency_Switcher_Widget extends WP_Widget {
 	 * @return array Updated safe values to be saved.
 	 */
 	public function update( $new_instance, $old_instance ) {
-		$new_instance = wp_parse_args(
-			$new_instance,
-			self::DEFAULT_SETTINGS
-		);
-
 		$instance = [
 			'title'  => sanitize_text_field( $new_instance['title'] ),
 			'symbol' => $new_instance['symbol'] ? 1 : 0,
