@@ -72,6 +72,7 @@ class Multi_Currency {
 	public function init() {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 
 		$this->id = 'wcpay_multi_currency';
 		$this->get_available_currencies();

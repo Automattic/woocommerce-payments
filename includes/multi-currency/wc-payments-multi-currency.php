@@ -12,11 +12,6 @@ if ( ! class_exists( 'WCPay\Multi_Currency\Multi_Currency', false ) ) {
 	include_once WCPAY_ABSPATH . 'includes/multi-currency/class-multi-currency.php';
 }
 
-// Include widget.
-if ( ! class_exists( 'WCPay\Multi_Currency\Currency_Switcher_Widget', false ) ) {
-	include_once __DIR__ . '/class-currency-switcher-widget.php';
-}
-
 /**
  * Returns the main instance of Multi_Currency.
  *
