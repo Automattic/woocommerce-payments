@@ -28,9 +28,6 @@ class Frontend_Prices {
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		// Currency hooks.
-		add_filter( 'woocommerce_currency', [ $this, 'get_current_currency_code' ] );
-
 		// Simple product price hooks.
 		add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ] );
 		add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ] );
@@ -52,15 +49,6 @@ class Frontend_Prices {
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 20, 2 );
 		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ] );
 		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ] );
-	}
-
-	/**
-	 * Returns the currency code to be used by WooCommerce.
-	 *
-	 * @return string The code of the currency to be used.
-	 */
-	public function get_current_currency_code() {
-		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
 	/**

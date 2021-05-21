@@ -31,6 +31,13 @@ class Multi_Currency {
 	protected $frontend_prices;
 
 	/**
+	 * Frontend_Currencies instance.
+	 *
+	 * @var Frontend_Currencies
+	 */
+	protected $frontend_currencies;
+
+	/**
 	 * The available currencies.
 	 *
 	 * @var array
@@ -80,6 +87,7 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
 		$this->id = 'wcpay_multi_currency';
 		$this->get_available_currencies();
@@ -89,9 +97,12 @@ class Multi_Currency {
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 
 		$is_frontend_request = ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
-			$this->frontend_prices = new Frontend_Prices( $this );
+
+			$this->frontend_prices     = new Frontend_Prices( $this );
+			$this->frontend_currencies = new Frontend_Currencies( $this );
 		}
 	}
 

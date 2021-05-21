@@ -41,13 +41,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
 	}
 
-	public function test_get_currency_code() {
-		$current_currency = new WCPay\Multi_Currency\Currency( 'USD' );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-
-		$this->assertSame( 'USD', $this->frontend_prices->get_current_currency_code() );
-	}
-
 	public function test_get_product_price_returns_empty_price() {
 		$this->assertSame( '', $this->frontend_prices->get_product_price( '' ) );
 	}
