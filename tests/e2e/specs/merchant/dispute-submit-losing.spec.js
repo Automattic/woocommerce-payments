@@ -45,26 +45,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchant.goToOrder( orderId );
 		await merchantWCP.viewDisputeFromOrder();
 
-		// Verify the heading for two component cards
-		await page.waitForSelector(
-			'div.components-card > .components-card__header',
-			{
-				visible: true,
-			}
-		);
-		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
-			{
-				text: 'Dispute overview',
-			}
-		);
-		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
-			{
-				text: 'Dispute: Product not received',
-			}
-		);
-
 		// Accept the dispute
 		await page.removeAllListeners( 'dialog' );
 		const disputeDialog = await expect( page ).toDisplayDialog(
