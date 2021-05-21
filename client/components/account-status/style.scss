@@ -9,6 +9,20 @@
 		flex-shrink: 1;
 		flex-basis: auto;
 	}
+
+	// on a smaller viewports controls section should move in front of the
+	// status chip
+	@media only screen and ( max-width: 400px ) {
+		div:first-child {
+			flex-grow: 1;
+			order: -2;
+			margin-bottom: 8px;
+		}
+		div:last-child {
+			order: -1;
+			margin-bottom: 8px;
+		}
+	}
 }
 .woocommerce-account-status-item {
 	line-height: 16px;
@@ -22,11 +36,13 @@
 		flex-basis: min-content;
 	}
 
+	// label
 	div:first-child {
 		color: $gray-900;
 		flex-basis: 130px;
 	}
 
+	// value
 	div:last-child {
 		color: $gray-700;
 
@@ -40,6 +56,14 @@
 			flex-direction: row;
 			align-items: center;
 			height: 24px;
+		}
+	}
+
+	@media only screen and ( max-width: 400px ) {
+		div:first-child {
+			flex-basis: 80px;
+			overflow: normal;
+			white-space: nowrap;
 		}
 	}
 }
