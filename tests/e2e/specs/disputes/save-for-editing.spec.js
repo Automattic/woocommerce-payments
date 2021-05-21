@@ -50,17 +50,15 @@ describe( 'Disputes > Save dispute for editing', () => {
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
 
-		await Promise.all( [
-			merchantWCP.openPaymentDetails( paymentDetailsLink ),
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-			// Verify we have a dispute for this purchase
-			await expect( page ).toMatchElement(
-				'div.woocommerce-timeline-item__body a',
-				{
-					text: 'View dispute',
-				}
-			),
-		] );
+		// Verify we have a dispute for this purchase
+		await expect( page ).toMatchElement(
+			'div.woocommerce-timeline-item__body a',
+			{
+				text: 'View dispute',
+			}
+		);
 
 		// Get the link to the dispute details
 		const disputeDetailsLink = await page.$eval(
@@ -90,25 +88,17 @@ describe( 'Disputes > Save dispute for editing', () => {
 			}
 		);
 
-		// Verify the save button has loaded
-		await expect( page ).toMatchElement(
-			'div.components-flex.components-card__header.is-size-large',
-			{
-				text: 'Save for later',
-			}
-		);
-
-		// Select the product type
+		// // Select the product type
 		await expect( page ).toSelect(
 			'.components-select-control__input',
 			'Offline service'
 		);
 
 		await Promise.all( [
-			expect( page ).toClick( 'Save for later', {
+			expect( page ).toClick( 'button.components-button.is-secondary', {
 				text: 'Save for later',
 			} ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
 		] );
 
 		// Re-open the dispute to view the details
