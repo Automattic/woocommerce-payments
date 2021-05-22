@@ -41,6 +41,33 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
 	}
 
+	/**
+	 * @dataProvider woocommerce_filter_provider
+	 */
+	public function test_registers_woocommerce_filter( $filter, $function_name ) {
+		$this->assertNotFalse(
+			has_filter( $filter, [ $this->frontend_prices, $function_name ] ),
+			"Filter '$filter' was not registered with '$function_name'"
+		);
+	}
+
+	public function woocommerce_filter_provider() {
+		return [
+			[ 'woocommerce_product_get_price', 'get_product_price' ],
+			[ 'woocommerce_product_get_regular_price', 'get_product_price' ],
+			[ 'woocommerce_product_get_sale_price', 'get_product_price' ],
+			[ 'woocommerce_product_variation_get_price', 'get_product_price' ],
+			[ 'woocommerce_product_variation_get_regular_price', 'get_product_price' ],
+			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price' ],
+			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
+			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
+			[ 'woocommerce_package_rates', 'get_shipping_rates_prices' ],
+			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
+			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+		];
+	}
+
 	public function test_get_product_price_returns_empty_price() {
 		$this->assertSame( '', $this->frontend_prices->get_product_price( '' ) );
 	}

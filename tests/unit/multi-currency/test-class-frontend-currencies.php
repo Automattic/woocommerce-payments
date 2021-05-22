@@ -37,6 +37,26 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
+	/**
+	 * @dataProvider woocommerce_filter_provider
+	 */
+	public function test_registers_woocommerce_filter( $filter, $function_name ) {
+		$this->assertNotFalse(
+			has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
+			"Filter '$filter' was not registered with '$function_name'"
+		);
+	}
+
+	public function woocommerce_filter_provider() {
+		return [
+			[ 'woocommerce_currency', 'get_current_currency_code' ],
+			[ 'wc_get_price_decimals', 'get_current_currency_decimals' ],
+			[ 'wc_get_price_decimal_separator', 'get_current_currency_decimal_separator' ],
+			[ 'wc_get_price_thousand_separator', 'get_current_currency_thousand_separator' ],
+			[ 'woocommerce_price_format', 'get_current_currency_format' ],
+		];
+	}
+
 	public function test_get_currency_code() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'USD' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
