@@ -55,7 +55,7 @@ export const receiveSettings = (
 					is_manual_capture_enabled: action.isEnabled,
 				},
 			};
-		case ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR_ENABLED:
+		case ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR:
 			return {
 				...state,
 				data: {

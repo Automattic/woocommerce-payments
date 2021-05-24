@@ -50,7 +50,7 @@ export function updateIsManualCaptureEnabled( isEnabled ) {
 
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return {
-		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR_ENABLED,
+		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR,
 		accountStatementDescriptor,
 	};
 }

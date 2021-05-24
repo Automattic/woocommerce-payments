@@ -217,7 +217,7 @@ describe( 'Settings reducer tests', () => {
 		} );
 	} );
 
-	describe( 'SET_ACCOUNT_STATEMENT_DESCRIPTOR_ENABLED', () => {
+	describe( 'SET_ACCOUNT_STATEMENT_DESCRIPTOR', () => {
 		test( 'toggles `data.account_statement_descriptor`', () => {
 			const oldState = {
 				data: {

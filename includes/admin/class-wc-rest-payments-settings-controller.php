@@ -99,7 +99,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'    => $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_manual_capture_enabled'    => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ) ? true : false,
 				'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 			]
 		);

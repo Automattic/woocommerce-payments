@@ -208,7 +208,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 
-		$this->assertTrue( $this->gateway->get_option( 'manual_capture' ) );
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'manual_capture' ) );
 	}
 
 	public function test_update_settings_disables_manual_capture() {
@@ -217,7 +217,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 
-		$this->assertFalse( $this->gateway->get_option( 'manual_capture' ) );
+		$this->assertEquals( 'no', $this->gateway->get_option( 'manual_capture' ) );
 	}
 
 	public function test_update_settings_does_not_toggle_is_manual_capture_enabled_if_not_supplied() {
