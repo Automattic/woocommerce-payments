@@ -30,13 +30,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		parent::setUp();
 
 		$this->mock_multi_currency = $this->createMock( WCPay\Multi_Currency\Multi_Currency::class );
-		$this->mock_multi_currency
-			->method( 'get_price' )
-			->willReturnCallback(
-				function ( $price ) {
-					return (float) $price * 2.5;
-				}
-			);
 
 		$this->frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
 	}
@@ -74,10 +67,16 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_product_price_converts_prices() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
 		$this->assertSame( 25.0, $this->frontend_prices->get_product_price( 10.0 ) );
 	}
 
 	public function test_get_variation_price_range_converts_non_empty_prices() {
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->withConsecutive( [ 10.0, 'product' ], [ 12.0, 'product' ], [ 6.0, 'product' ], [ 8.0, 'product' ] )
+			->willReturnOnConsecutiveCalls( 25.0, 30.0, 15.0, 20.0 );
+
 		$base_variation_prices = [
 			'price'      => [
 				1 => '10.0',
@@ -124,6 +123,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_exchange_rate_is_added_to_prices_hash() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 1.0, 'product' )->willReturn( 2.5 );
+
 		$this->assertSame(
 			[ 'existing_item', 2.5 ],
 			$this->frontend_prices->add_exchange_rate_to_variation_prices_hash( [ 'existing_item' ] )
@@ -131,6 +132,11 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_shipping_rates_prices_converts_rates() {
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->withConsecutive( [ 10.0, 'shipping' ], [ 0.0, 'shipping' ] )
+			->willReturnOnConsecutiveCalls( 25.0, 0.0 );
+
 		$flat_rate_method       = new WC_Shipping_Rate();
 		$free_method            = new WC_Shipping_Rate();
 		$flat_rate_method->cost = '10.0';
@@ -148,8 +154,12 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_shipping_rates_prices_converts_taxes() {
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->withConsecutive( [ 1.0, 'tax' ], [ 2.0, 'tax' ] )
+			->willReturnOnConsecutiveCalls( 2.5, 5.0 );
+
 		$flat_rate_method        = new WC_Shipping_Rate();
-		$flat_rate_method->cost  = '10.0';
 		$flat_rate_method->taxes = [ '1.0', '2.0' ];
 
 		$shipping_rates = $this->frontend_prices->get_shipping_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
@@ -169,17 +179,21 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_coupon_amount_converts_fixed_cart_amount() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'coupon' )->willReturn( 25.0 );
+
 		$fixed_cart_coupon = new WC_Coupon();
 		$fixed_cart_coupon->set_discount_type( 'fixed_cart' );
 
 		$this->assertSame( 25.0, $this->frontend_prices->get_coupon_amount( '10', $fixed_cart_coupon ) );
 	}
 
-	public function test_get_coupon_mix_max_amount_returns_empty_amount() {
+	public function test_get_coupon_min_max_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_min_max_amount( '' ) );
 	}
 
-	public function test_get_coupon_mix_max_amount_converts_amount() {
+	public function test_get_coupon_min_max_amount_converts_amount() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'coupon' )->willReturn( 12.5 );
+
 		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
 	}
 }
