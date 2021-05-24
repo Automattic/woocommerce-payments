@@ -235,7 +235,6 @@ class WC_Payments {
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
-		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
 
@@ -650,7 +649,7 @@ class WC_Payments {
 		$tos_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway, WC()->payment_gateways() );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 		$settings_controller->register_routes();
 	}
 

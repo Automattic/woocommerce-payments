@@ -371,7 +371,9 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $tos_agreement_declined || $tos_agreement_required ) {
+		$track_stripe_connected = get_option( '_wcpay_oauth_stripe_connected' );
+
+		if ( $tos_agreement_declined || $tos_agreement_required || $track_stripe_connected ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			wp_localize_script(
 				'WCPAY_TOS',
@@ -380,6 +382,7 @@ class WC_Payments_Admin {
 					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
+					'trackStripeConnected' => $track_stripe_connected,
 				]
 			);
 
@@ -488,8 +491,8 @@ class WC_Payments_Admin {
 		}
 
 		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'];
-		$past_due = isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false;
+		$status   = $account['status'] ?? '';
+		$past_due = $account['has_overdue_requirements'] ?? false;
 
 		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
 			update_option( 'wcpay_show_update_business_details_task', 'yes' );
