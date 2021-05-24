@@ -9,15 +9,18 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import GeneralSettings from '..';
 import { useGeneralSettings } from 'data';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'data', () => ( {
 	useGeneralSettings: jest.fn(),
 } ) );
 
 describe( 'GeneralSettings', () => {
 	beforeEach( () => {
 		useGeneralSettings.mockReturnValue( {
+			accountStatementDescriptor: '',
 			isWCPayEnabled: false,
 			updateIsWCPayEnabled: jest.fn(),
+			isManualCaptureEnabled: false,
+			updateIsManualCaptureEnabled: jest.fn(),
 		} );
 	} );
 
@@ -37,22 +40,31 @@ describe( 'GeneralSettings', () => {
 	} );
 
 	it( 'displays the length of the bank statement input', async () => {
+		const updateAccountStatementDescriptor = jest.fn();
+		useGeneralSettings.mockReturnValue( {
+			accountStatementDescriptor: 'Statement Name',
+			updateAccountStatementDescriptor,
+		} );
+
 		render( <GeneralSettings accountLink="/account-link" /> );
 
-		const manageLink = screen.getByText( '0 / 22' );
+		const manageLink = screen.getByText( '14 / 22' );
 		expect( manageLink ).toBeInTheDocument();
 
 		fireEvent.change( screen.getByLabelText( 'Customer bank statement' ), {
-			target: { value: 'Statement Name' },
+			target: { value: 'New Statement Name' },
 		} );
 
-		expect( manageLink ).toHaveTextContent( '14 / 22' );
+		expect( updateAccountStatementDescriptor ).toHaveBeenCalledWith(
+			'New Statement Name'
+		);
 	} );
 
 	it.each( [ [ true ], [ false ] ] )(
 		'displays WCPay enabled = %s state from data store',
 		( isEnabled ) => {
 			useGeneralSettings.mockReturnValue( {
+				accountStatementDescriptor: '',
 				isWCPayEnabled: isEnabled,
 			} );
 
@@ -74,6 +86,7 @@ describe( 'GeneralSettings', () => {
 		'updates WCPay enabled state to %s when toggling checkbox',
 		( isEnabled ) => {
 			useGeneralSettings.mockReturnValue( {
+				accountStatementDescriptor: '',
 				isWCPayEnabled: isEnabled,
 				updateIsWCPayEnabled: jest.fn(),
 			} );
