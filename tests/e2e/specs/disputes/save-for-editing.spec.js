@@ -35,8 +35,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		// Login and open the order
-		await merchant.login();
-		await merchant.goToOrder( orderId );
+		await Promise.all( [
+			await merchant.login(),
+			await merchant.goToOrder( orderId ),
+			await expect( page.title() ).resolves.toMatch( 'Edit order' ),
+		] );
 	} );
 
 	afterAll( async () => {
@@ -69,14 +72,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 		// Open the dispute details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
-		// Click the Challenge dispute button
-		await Promise.all( [
-			expect( page ).toClick( 'a.components-button.is-primary', {
-				text: 'Challenge dispute',
-			} ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
+		await expect( page ).toClick( 'a.components-button.is-primary', {
+			text: 'Challenge dispute',
+		} );
+
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 		await uiLoaded();
 
