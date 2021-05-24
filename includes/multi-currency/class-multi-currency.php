@@ -81,6 +81,12 @@ class Multi_Currency {
 
 		add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action(
+			'widgets_init',
+			function() {
+				register_widget( new Currency_Switcher_Widget( $this ) );
+			}
+		);
 	}
 
 	/**

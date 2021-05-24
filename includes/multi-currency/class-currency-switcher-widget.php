@@ -23,9 +23,20 @@ class Currency_Switcher_Widget extends WP_Widget {
 	];
 
 	/**
-	 * Register widget with WordPress.
+	 * Multi-Currency instance.
+	 *
+	 * @var Multi_Currency
 	 */
-	public function __construct() {
+	protected $multi_currency;
+
+	/**
+	 * Register widget with WordPress.
+	 *
+	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 */
+	public function __construct( Multi_Currency $multi_currency ) {
+		$this->multi_currency = $multi_currency;
+
 		parent::__construct(
 			'currency_switcher_widget',
 			__( 'Currency Switcher', 'woocommerce-payments' ),
@@ -60,7 +71,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 				onchange="this.form.submit()"
 			>
 				<?php
-				foreach ( Multi_Currency::instance()->get_enabled_currencies() as $currency ) {
+				foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
 					$this->display_currency_option( $currency, $instance['symbol'], $instance['flag'] );
 				}
 				?>
@@ -147,7 +158,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 	private function display_currency_option( Currency $currency, bool $with_symbol, bool $with_flag ) {
 		$code     = $currency->get_code();
 		$text     = $code;
-		$selected = Multi_Currency::instance()->get_selected_currency()->code === $code ? 'selected' : '';
+		$selected = $this->multi_currency->get_selected_currency()->code === $code ? 'selected' : '';
 
 		if ( $with_symbol ) {
 			$text = $currency->get_symbol() . ' ' . $text;
@@ -159,14 +170,3 @@ class Currency_Switcher_Widget extends WP_Widget {
 		echo "<option value='$code' $selected>$text</option>"; // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 }
-
-/**
- * Widget registration
- *
- * @return void
- */
-function currency_switcher_register_widget() {
-	register_widget( 'WCPay\Multi_Currency\Currency_Switcher_Widget' );
-}
-
-add_action( 'widgets_init', 'WCPay\Multi_Currency\currency_switcher_register_widget' );
