@@ -96,7 +96,7 @@ class Multi_Currency {
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 
-		$is_frontend_request = ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
