@@ -57,3 +57,28 @@ export const getFontRulesFromPage = () => {
 
 	return fontRules;
 };
+
+export const getAppearance = () => {
+	const upeThemeInputSelector = '.woocommerce-checkout .form-row input';
+	const upeThemeLabelSelector = '.woocommerce-checkout .form-row label';
+	const upeThemeSelectedPaymentSelector =
+		'.woocommerce-checkout .place-order .button.alt';
+
+	const inputRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+	const labelRules = getFieldStyles( upeThemeLabelSelector, '.Label' );
+	const selectedTabRules = getFieldStyles(
+		upeThemeSelectedPaymentSelector,
+		'.Tab--selected'
+	);
+
+	const appearance = {
+		rules: {
+			'.Input': inputRules,
+			'.Label': labelRules,
+			'.Tab': inputRules,
+			'.Tab--selected': selectedTabRules,
+		},
+	};
+
+	return appearance;
+};

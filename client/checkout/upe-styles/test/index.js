@@ -1,37 +1,37 @@
 /**
  * Internal dependencies
  */
-import { getFontRulesFromPage } from '..';
-import { getFieldStyles } from '../index';
+import * as upeStyles from '../index';
 
 describe( 'Getting styles for automated theming', () => {
+	const mockElement = document.createElement( 'input' );
+	const mockCSStyleDeclaration = {
+		length: 4,
+		0: 'color',
+		1: 'backgroundColor',
+		2: 'fontFamily',
+		3: 'unsuportedProperty',
+		getPropertyValue: ( propertyName ) => {
+			const cssProperties = {
+				fontFamily:
+					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				color: 'rgb(109, 109, 109)',
+				backgroundColor: 'rgba(0, 0, 0, 0)',
+				unsuportedProperty: 'some value',
+			};
+			return cssProperties[ propertyName ];
+		},
+	};
+
 	test( 'getFieldStyles returns correct styles for inputs', () => {
-		const mockInput = document.createElement( 'input' );
-		const mockCSSStyleDeclaration = {
-			length: 4,
-			0: 'color',
-			1: 'backgroundColor',
-			2: 'fontFamily',
-			3: 'unsuportedProperty',
-			getPropertyValue: ( propertyName ) => {
-				const cssProperties = {
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					color: 'rgb(109, 109, 109)',
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					unsuportedProperty: 'some value',
-				};
-				return cssProperties[ propertyName ];
-			},
-		};
 		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return mockInput;
+			return mockElement;
 		} );
 		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
-			return mockCSSStyleDeclaration;
+			return mockCSStyleDeclaration;
 		} );
 
-		const fieldStyles = getFieldStyles(
+		const fieldStyles = upeStyles.getFieldStyles(
 			'.woocommerce-checkout .form-row input',
 			'.Input'
 		);
@@ -48,7 +48,10 @@ describe( 'Getting styles for automated theming', () => {
 			return undefined;
 		} );
 
-		const fieldStyles = getFieldStyles( '.i-do-not-exist', '.Input' );
+		const fieldStyles = upeStyles.getFieldStyles(
+			'.i-do-not-exist',
+			'.Input'
+		);
 		expect( fieldStyles ).toEqual( {} );
 	} );
 
@@ -70,7 +73,7 @@ describe( 'Getting styles for automated theming', () => {
 			mockStyleSheets
 		);
 
-		const fontRules = getFontRulesFromPage();
+		const fontRules = upeStyles.getFontRulesFromPage();
 		expect( fontRules ).toEqual( [
 			{
 				cssSrc:
@@ -93,7 +96,43 @@ describe( 'Getting styles for automated theming', () => {
 			mockStyleSheets
 		);
 
-		const fontRules = getFontRulesFromPage();
+		const fontRules = upeStyles.getFontRulesFromPage();
 		expect( fontRules ).toEqual( [] );
+	} );
+
+	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
+		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
+			return mockElement;
+		} );
+		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
+			return mockCSStyleDeclaration;
+		} );
+
+		const appearance = upeStyles.getAppearance();
+		expect( appearance ).toEqual( {
+			rules: {
+				'.Input': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				},
+				'.Label': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				},
+				'.Tab': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				},
+				'.Tab--selected': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					color: 'rgb(109, 109, 109)',
+				},
+			},
+		} );
 	} );
 } );
