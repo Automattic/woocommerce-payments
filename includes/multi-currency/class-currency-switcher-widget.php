@@ -113,7 +113,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 				type="checkbox"<?php checked( $instance['symbol'] ); ?>
 			/>
 			<label for="<?php echo esc_attr( $this->get_field_id( 'symbol' ) ); ?>">
-				<?php esc_html_e( 'Display curency symbols', 'woocommerce-payments' ); ?>
+				<?php esc_html_e( 'Display currency symbols', 'woocommerce-payments' ); ?>
 			</label>
 			<br/>
 			<input
