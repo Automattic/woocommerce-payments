@@ -48,4 +48,13 @@ class WC_Payments_Features {
 	public static function is_sofort_enabled() {
 		return '1' === get_option( '_wcpay_feature_sofort', '0' );
 	}
+
+	/**
+	 * Checks whether the customer multi-currency feature is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_customer_multi_currency_enabled() {
+		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '0' );
+	}
 }
