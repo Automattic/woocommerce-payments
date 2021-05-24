@@ -303,24 +303,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Creates an intent based on a payment method.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	createIntent() {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			action: 'create_payment_intent',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-			return response.data;
-		} );
-	}
-
-	/**
 	 * Process checkout and update payment intent via AJAX.
 	 *
 	 * @param {string} paymentIntentId ID of payment intent to be updated.
