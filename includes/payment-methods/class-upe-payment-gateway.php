@@ -47,40 +47,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->title              = __( 'UPE', 'woocommerce-payments' );
 		$this->description        = __( 'You will be redirected to Stripe.', 'woocommerce-payments' );
 
-		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
-	}
-
-	/**
-	 * Handle AJAX request for creating a payment intent for Stripe UPE.
-	 *
-	 * @throws Exception - If nonce or setup intent is invalid.
-	 */
-	public function create_payment_intent_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Exception(
-					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
-					'wcpay_upe_intent_error'
-				);
-			}
-
-			wp_send_json_success(
-				$this->create_payment_intent(),
-				200
-			);
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => $e->getMessage(),
-					],
-				]
-			);
-		}
 	}
 
 	/**
