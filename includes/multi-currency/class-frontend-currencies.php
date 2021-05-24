@@ -38,11 +38,11 @@ class Frontend_Currencies {
 		$this->load_locale_data();
 
 		// Currency hooks.
-		add_filter( 'woocommerce_currency', [ $this, 'get_current_currency_code' ] );
-		add_filter( 'wc_get_price_decimals', [ $this, 'get_current_currency_decimals' ] );
-		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_current_currency_decimal_separator' ] );
-		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_current_currency_thousand_separator' ] );
-		add_filter( 'woocommerce_price_format', [ $this, 'get_current_currency_format' ] );
+		add_filter( 'woocommerce_currency', [ $this, 'get_current_currency_code' ], 50 );
+		add_filter( 'wc_get_price_decimals', [ $this, 'get_current_currency_decimals' ], 50 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_current_currency_decimal_separator' ], 50 );
+		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_current_currency_thousand_separator' ], 50 );
+		add_filter( 'woocommerce_price_format', [ $this, 'get_current_currency_format' ], 50 );
 	}
 
 	/**
