@@ -56,7 +56,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 			self::DEFAULT_SETTINGS
 		);
 
-		$title = apply_filters( 'widget_title', $instance['title'] );
+		$title = apply_filters( 'widget_title', $instance['title'], $instance, $this->id_base );
 
 		echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput
 		if ( ! empty( $title ) ) {
