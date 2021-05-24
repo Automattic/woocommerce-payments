@@ -78,6 +78,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_test_mode_enabled'         => [
+						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'account_statement_descriptor' => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
@@ -99,7 +104,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'    => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ) ? true : false,
+				'is_manual_capture_enabled'    => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_test_mode_enabled'         => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
+				'is_dev_mode_enabled'          => $this->wcpay_gateway->is_in_dev_mode(),
 				'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 			]
 		);
@@ -114,6 +121,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
 		$this->update_is_manual_capture_enabled( $request );
+		$this->update_is_test_mode_enabled( $request );
 		$this->update_account_statement_descriptor( $request );
 
 		return new WP_REST_Response( [], 200 );
@@ -176,6 +184,26 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_manual_capture_enabled = $request->get_param( 'is_manual_capture_enabled' );
 
 		$this->wcpay_gateway->update_option( 'manual_capture', $is_manual_capture_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates WooCommerce Payments test mode.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
+		// avoiding updating test mode when dev mode is enabled.
+		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'is_test_mode_enabled' ) ) {
+			return;
+		}
+
+		$is_test_mode_enabled = $request->get_param( 'is_test_mode_enabled' );
+
+		$this->wcpay_gateway->update_option( 'test_mode', $is_test_mode_enabled ? 'yes' : 'no' );
 	}
 
 	/**

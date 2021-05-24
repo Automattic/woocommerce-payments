@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
@@ -10,21 +10,32 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import './style.scss';
+import { useTestMode, useDevMode } from '../../data';
 
 const TestModeSettings = () => {
-	const [ isEnabled, setIsEnabled ] = useState( false );
+	const { isEnabled, updateIsTestModeEnabled } = useTestMode();
+	const { isEnabled: isDevModeEnabled } = useDevMode();
 
 	return (
 		<Card className="test-mode-settings">
 			<CardBody size="large">
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
 				<CheckboxControl
-					checked={ isEnabled }
-					onChange={ setIsEnabled }
-					label={ __(
-						'Enable test mode for payments on the store',
-						'woocommerce-payments'
-					) }
+					checked={ isDevModeEnabled || isEnabled }
+					disabled={ isDevModeEnabled }
+					onChange={ updateIsTestModeEnabled }
+					label={
+						isDevModeEnabled
+							? __(
+									'Dev mode is active so all transactions will be in test mode. ' +
+										'This setting is only available to live accounts.',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Enable test mode for payments on the store',
+									'woocommerce-payments'
+							  )
+					}
 					help={ interpolateComponents( {
 						mixedString: __(
 							"When enabled, you'll be able to test how your customers pay for orders on your store. " +
