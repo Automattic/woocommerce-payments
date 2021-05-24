@@ -140,8 +140,8 @@ class Currency_Switcher_Widget extends WP_Widget {
 	public function update( $new_instance, $old_instance ) {
 		$instance = [
 			'title'  => sanitize_text_field( $new_instance['title'] ),
-			'symbol' => ( $new_instance['symbol'] ?? null ) ? 1 : 0,
-			'flag'   => ( $new_instance['flag'] ?? null ) ? 1 : 0,
+			'symbol' => isset( $new_instance['symbol'] ) ? 1 : 0,
+			'flag'   => isset( $new_instance['flag'] ) ? 1 : 0,
 		];
 
 		return $instance;
