@@ -243,9 +243,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			/* translators: localized exception message */
-			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getLocalizedMessage() ) );
+			$order->update_status( 'failed', sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() ) );
 
-			wc_add_notice( $e->getLocalizedMessage(), 'error' );
+			wc_add_notice( $e->getMessage(), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
