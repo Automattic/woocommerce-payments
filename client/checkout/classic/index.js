@@ -87,9 +87,11 @@ jQuery( function ( $ ) {
 				clientSecret: paymentIntent.client_secret,
 		  } )
 		: null;
-	upeElement.on( 'change', ( event ) => {
-		isUPEComplete = event.complete;
-	} );
+	if ( null !== upeElement ) {
+		upeElement.on( 'change', ( event ) => {
+			isUPEComplete = event.complete;
+		} );
+	}
 
 	/**
 	 * Check if Card payment is being used.
