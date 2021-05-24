@@ -1,10 +1,19 @@
 .payment-method {
+	display: flex;
+	margin: 0;
+	padding: 16px 24px 14px 24px;
+	background: #fff;
 	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: center;
 
 	@include breakpoint( '>660px' ) {
+		padding: 24px 33px 24px 24px;
 		flex-wrap: nowrap;
+	}
+
+	&:not( :last-child ) {
+		box-shadow: inset 0 -1px 0 #e8eaeb;
 	}
 
 	&__text {
@@ -23,14 +32,8 @@
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 20px;
-
-		&#{&} {
-			&#{&} {
-				color: var( --wp-admin-theme-color );
-				margin-bottom: 4px;
-				text-decoration: none;
-			}
-		}
+		color: $gray-900;
+		margin-bottom: 4px;
 	}
 
 	&__description {
@@ -56,24 +59,9 @@
 	}
 
 	&__action {
-		&#{&} {
-			&#{&} {
-				margin-right: 25px;
-
-				& + & {
-					margin-right: 0;
-				}
-			}
-		}
-
-		&.manage {
-			&#{&} {
-				color: var( --wp-admin-theme-color );
-				text-decoration: none;
-			}
-		}
-
 		&.delete {
+			margin-right: 25px;
+
 			svg {
 				fill: #a2aab2;
 			}
@@ -95,15 +83,5 @@
 
 	&.has-icon-border &__icon {
 		box-shadow: 0 0 0 1px #ddd;
-	}
-
-	.orderable-list__drag-handle {
-		margin-left: -10px;
-		order: 2;
-
-		@include breakpoint( '>660px' ) {
-			margin-left: 0;
-			order: 1;
-		}
 	}
 }

@@ -265,6 +265,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 		];
 
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			$this->form_fields['enabled_payment_method_ids'] = [
+				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'woocommerce_payments' ],
+				'options' => [],
+			];
+		}
+
 		// Giropay option hidden behind feature flag.
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
 			$this->form_fields['giropay_enabled'] = [
@@ -1239,7 +1248,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  string $key Option key.
 	 * @param  mixed  $empty_value Value when empty.
-	 * @return string The value specified for the option or a default value for the option.
+	 * @return mixed The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
@@ -2141,5 +2150,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function enable() {
 		$this->update_option( 'enabled', 'yes' );
+	}
+
+	/**
+	 * Returns the list of enabled payment method types for UPE.
+	 *
+	 * @return string[]
+	 */
+	public function get_upe_enabled_payment_method_ids() {
+		return $this->get_option( 'enabled_payment_method_ids', [] );
+	}
+
+	/**
+	 * Returns the list of available payment method types for UPE.
+	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
+	 *
+	 * @return string[]
+	 */
+	public function get_upe_available_payment_methods() {
+		return apply_filters(
+			'wcpay_upe_available_payment_methods',
+			[
+				// TODO: at this point, with UPE, we could just get rid of the prefixes on the payment method names.
+				'woocommerce_payments',
+			]
+		);
 	}
 }
