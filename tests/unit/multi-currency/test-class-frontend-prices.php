@@ -62,6 +62,21 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		];
 	}
 
+	public function test_registers_woocommerce_filters_for_free_shipping_methods() {
+		// Add a free shipping method to the default zone.
+		$default_zone_free_method = \WC_Shipping_Zones::get_zone( 0 )->add_shipping_method( 'free_shipping' );
+
+		// Create a new shipping zone and shipping method.
+		$new_zone             = new WC_Shipping_Zone();
+		$new_zone_free_method = $new_zone->add_shipping_method( 'free_shipping' );
+
+		// Instantiate a new WCPay\Multi_Currency\Frontend_Prices to read the new zones.
+		$frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
+
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $frontend_prices, 'get_free_shipping_min_amount' ] ) );
+	}
+
 	public function test_get_product_price_returns_empty_price() {
 		$this->assertSame( '', $this->frontend_prices->get_product_price( '' ) );
 	}
@@ -195,5 +210,19 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'coupon_min_max' )->willReturn( 12.5 );
 
 		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
+	}
+
+	public function test_get_free_shipping_min_amount_returns_empty_amount() {
+		$this->assertSame( [ 'key' => 'value' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'key' => 'value' ] ) );
+	}
+
+	public function test_get_free_shipping_min_amount_returns_zero_amount() {
+		$this->assertSame( [ 'min_amount' => '0' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '0' ] ) );
+	}
+
+	public function test_get_free_shipping_min_amount_converts_amount_as_product() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
+
+		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '5.0' ] ) );
 	}
 }

@@ -44,6 +44,7 @@ class Frontend_Prices {
 
 		// Shipping methods hooks.
 		add_filter( 'woocommerce_package_rates', [ $this, 'get_shipping_rates_prices' ], 50 );
+		$this->register_free_shipping_filters();
 
 		// Coupon hooks.
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
@@ -152,5 +153,44 @@ class Frontend_Prices {
 		}
 
 		return $this->multi_currency->get_price( $amount, 'coupon_min_max' );
+	}
+
+	/**
+	 * Returns the free shipping zone settings with converted min_amount.
+	 *
+	 * @param array $data The shipping zone settings.
+	 *
+	 * @return array The shipping zone settings with converted min_amount.
+	 */
+	public function get_free_shipping_min_amount( $data ) {
+		if ( ! isset( $data['min_amount'] ) || ! $data['min_amount'] ) {
+			return $data;
+		}
+
+		// Free shipping min amount is treated as products to avoid inconsistencies with charm pricing
+		// making a method invalid when its min amount is the same as the product's price.
+		$data['min_amount'] = $this->multi_currency->get_price( $data['min_amount'], 'product' );
+		return $data;
+	}
+
+	/**
+	 * Register the hooks to set the min amount for free shipping methods.
+	 */
+	private function register_free_shipping_filters() {
+		$shipping_zones = \WC_Shipping_Zones::get_zones();
+
+		$default_zone = \WC_Shipping_Zones::get_zone( 0 );
+		if ( $default_zone ) {
+			$shipping_zones[] = [ 'shipping_methods' => $default_zone->get_shipping_methods() ];
+		}
+
+		foreach ( $shipping_zones as $shipping_zone ) {
+			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
+				if ( 'free_shipping' === $shipping_method->id ) {
+					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . intval( $shipping_method->instance_id ) . '_settings';
+					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 50 );
+				}
+			}
+		}
 	}
 }
