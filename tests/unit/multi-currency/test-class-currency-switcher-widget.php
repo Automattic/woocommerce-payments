@@ -45,38 +45,57 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$this->currency_switcher_widget = new WCPay\Multi_Currency\Currency_Switcher_Widget( $this->mock_multi_currency );
 	}
 
-	public function test_widget_output() {
-		$args = [
-			'before_title'  => '<h2>',
-			'after_title'   => "</h2>\n",
-			'before_widget' => '<section>',
-			'after_widget'  => "</section>\n",
-		];
 
+	public function test_widget_renders_title_with_args() {
 		$instance = [
 			'title' => 'Test Title',
 		];
+		$this->render_widget( $instance );
+		$this->expectOutputRegex( '/<h2>Test Title<\/h2>/' );
+		$this->expectOutputRegex( '/<section>/' );
+		$this->expectOutputRegex( '/<\/section>/' );
+		$this->expectOutputRegex( '/aria-label="Test Title"/' );
+	}
 
-		ob_start();
+	public function test_widget_renders_enabled_currencies_with_symbol() {
+		$this->render_widget();
+		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CAD">&#36; CAD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="EUR">&euro; EUR<\/option>/' );
+	}
+
+	public function test_widget_renders_enabled_currencies_without_symbol() {
+		$instance = [
+			'symbol' => 0,
+		];
+		$this->render_widget( $instance );
+		$this->expectOutputRegex( '/<option value="USD">USD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CAD">CAD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="EUR">EUR<\/option>/' );
+	}
+
+	public function test_widget_renders_enabled_currencies_with_symbol_and_flag() {
+		$instance = [
+			'symbol' => 1,
+			'flag'   => 1,
+		];
+		$this->render_widget( $instance );
+		$this->expectOutputRegex( '/<option value="USD">🇺🇸 &#36; USD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CAD">🇨🇦 &#36; CAD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="EUR">🇪🇺 &euro; EUR<\/option>/' );
+	}
+
+	public function test_widget_selects_selected_currency() {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'CAD' ) );
-		$this->currency_switcher_widget->widget( $args, $instance );
-		$output = ob_get_clean();
-		$this->assertContains( '<h2>Test Title</h2>', $output );
-		$this->assertContains( '<section>', $output );
-		$this->assertContains( '</section>', $output );
-		$this->assertContains( 'aria-label="Test Title"', $output );
-		$this->assertContains( 'onchange="this.form.submit()"', $output );
-		$this->assertContains( '<option value="USD">&#36; USD</option>', $output );
-		$this->assertContains( '<option value="CAD" selected>&#36; CAD</option>', $output );
-		$this->assertContains( '<option value="EUR">&euro; EUR</option>', $output );
+		$this->render_widget();
+		$this->expectOutputRegex( '/<option value="USD">&#36; USD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="CAD" selected>&#36; CAD<\/option>/' );
+		$this->expectOutputRegex( '/<option value="EUR">&euro; EUR<\/option>/' );
+	}
 
-		// Show flag and hide symbol.
-		ob_start();
-		$instance['flag']   = true;
-		$instance['symbol'] = false;
-		$this->currency_switcher_widget->widget( $args, $instance );
-		$output = ob_get_clean();
-		$this->assertContains( '<option value="USD">🇺🇸 USD</option>', $output );
+	public function test_widget_submits_form_on_change() {
+		$this->render_widget();
+		$this->expectOutputRegex( '/onchange="this.form.submit\(\)"/' );
 	}
 
 	public function test_update_method() {
@@ -100,18 +119,30 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 	public function test_form_output() {
 		$instance = [
 			'title'  => 'Custom title',
-			'symbol' => 0,
+			'symbol' => 1,
 			'flag'   => 0,
 		];
-
-		ob_start();
 		$this->currency_switcher_widget->form( $instance );
-		$output = ob_get_clean();
+		$this->expectOutputRegex( '/name="widget-currency_switcher_widget\[\]\[title\]""/' );
+		$this->expectOutputRegex( '/value="Custom title"/' );
+		$this->expectOutputRegex( '/name="widget-currency_switcher_widget\[\]\[symbol\]".+checked/s' );
+		$this->expectOutputRegex( '/name="widget-currency_switcher_widget\[\]\[flag\]"(?!.+checked).+\/>/s' );
+	}
 
-		$this->assertContains( 'name="widget-currency_switcher_widget[][title]"', $output );
-		$this->assertContains( 'value="Custom title"', $output );
-		$this->assertContains( 'name="widget-currency_switcher_widget[][symbol]"', $output );
-		$this->assertContains( 'name="widget-currency_switcher_widget[][flag]"', $output );
-		$this->assertNotContains( 'checked=\'checked\'', $output );
+	/**
+	 * Helper fuction to call widget method with default args.
+	 *
+	 * @param array $instance Saved values from database.
+	 */
+	private function render_widget( array $instance = [] ) {
+		$this->currency_switcher_widget->widget(
+			[
+				'before_title'  => '<h2>',
+				'after_title'   => '</h2>',
+				'before_widget' => '<section>',
+				'after_widget'  => '</section>',
+			],
+			$instance
+		);
 	}
 }
