@@ -10,9 +10,10 @@
 	<testsuites>
 		<testsuite name="WCPay">
 			<directory suffix=".php">./tests/unit</directory>
+			<exclude>./tests/unit/multi-currency</exclude>
 		</testsuite>
 		<testsuite name="WCPayMultiCurrency">
-			<directory suffix=".php">./includes/multi-currency/tests/unit</directory>
+			<directory suffix=".php">./tests/unit/multi-currency</directory>
 		</testsuite>
 	</testsuites>
 
