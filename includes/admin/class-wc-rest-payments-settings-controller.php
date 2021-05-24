@@ -175,7 +175,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_manual_capture_enabled = $request->get_param( 'is_manual_capture_enabled' );
 
-		$this->wcpay_gateway->update_option( 'manual_capture', $is_manual_capture_enabled );
+		$this->wcpay_gateway->update_option( 'manual_capture', $is_manual_capture_enabled ? 'yes' : 'no' );
 	}
 
 	/**
