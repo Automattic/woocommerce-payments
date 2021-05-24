@@ -152,7 +152,9 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount, 'coupon_min_max' );
+		// Coupon mix/max prices are treated as products to avoid inconsistencies with charm pricing
+		// making a coupon invalid when the coupon min/max amount is the same as the product's price.
+		return $this->multi_currency->get_price( $amount, 'product' );
 	}
 
 	/**

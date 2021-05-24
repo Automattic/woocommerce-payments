@@ -206,8 +206,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_min_max_amount( '' ) );
 	}
 
-	public function test_get_coupon_min_max_amount_converts_amount() {
-		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'coupon_min_max' )->willReturn( 12.5 );
+	public function test_get_coupon_min_max_amount_converts_amount_as_product() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
 
 		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
 	}
