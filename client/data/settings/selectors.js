@@ -38,3 +38,11 @@ export const getAccountStatementDescriptor = ( state ) => {
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };
+
+export const getIsTestModeEnabled = ( state ) => {
+	return getSettings( state ).is_test_mode_enabled || false;
+};
+
+export const getIsDevModeEnabled = ( state ) => {
+	return getSettings( state ).is_dev_mode_enabled || false;
+};
