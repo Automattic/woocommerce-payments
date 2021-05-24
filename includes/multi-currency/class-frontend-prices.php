@@ -151,6 +151,6 @@ class Frontend_Prices {
 			return $amount;
 		}
 
-		return $this->multi_currency->get_price( $amount, 'coupon' );
+		return $this->multi_currency->get_price( $amount, 'coupon_min_max' );
 	}
 }

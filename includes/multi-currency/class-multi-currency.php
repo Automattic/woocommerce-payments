@@ -264,12 +264,12 @@ class Multi_Currency {
 	 * Gets the converted price using the current currency with the rounding and charm pricing settings.
 	 *
 	 * @param mixed $price The price to be converted.
-	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', or 'coupon'.
+	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', 'coupon', or 'coupon_min_max'.
 	 *
 	 * @return float The converted price.
 	 */
 	public function get_price( $price, $type ): float {
-		$supported_types  = [ 'product', 'shipping', 'tax', 'coupon' ];
+		$supported_types  = [ 'product', 'shipping', 'tax', 'coupon', 'coupon_min_max' ];
 		$current_currency = $this->get_selected_currency();
 
 		if (
@@ -285,9 +285,11 @@ class Multi_Currency {
 			return $converted_price;
 		}
 
-		$charm_compatible_types = [ 'product', 'shipping' ];
+		$charm_compatible_types = [ 'product', 'shipping', 'coupon_min_max' ];
 		$apply_charm_pricing    = $this->get_apply_charm_only_to_products()
-			? 'product' === $type
+			// Coupon mix/max prices are treated as products to avoid inconsistencies with charm pricing
+			// making a coupon invalid when the coupon min/max amount is the same as the product's price.
+			? 'product' === $type || 'coupon_min_max' === $type
 			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
