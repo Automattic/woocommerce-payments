@@ -192,6 +192,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
+		// avoiding updating test mode when dev mode is enabled.
+		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+			return;
+		}
+
 		if ( ! $request->has_param( 'is_test_mode_enabled' ) ) {
 			return;
 		}
