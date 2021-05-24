@@ -6,11 +6,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import {
-	useEnabledPaymentMethodIds,
-	useGeneralSettings,
-	useSettings,
-} from '../hooks';
+import { useEnabledPaymentMethodIds, useSettings } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
 jest.mock( '@wordpress/data' );
@@ -44,61 +40,16 @@ describe( 'Settings hooks tests', () => {
 				getEnabledPaymentMethodIds: jest.fn( () => [ 'foo', 'bar' ] ),
 			};
 
-			const {
+			const [
 				enabledPaymentMethodIds,
 				updateEnabledPaymentMethodIds,
-			} = useEnabledPaymentMethodIds();
+			] = useEnabledPaymentMethodIds();
 			updateEnabledPaymentMethodIds( [ 'baz', 'quux' ] );
 
 			expect( enabledPaymentMethodIds ).toEqual( [ 'foo', 'bar' ] );
 			expect(
 				actions.updateEnabledPaymentMethodIds
 			).toHaveBeenCalledWith( [ 'baz', 'quux' ] );
-		} );
-	} );
-
-	describe( 'useGeneralSettings()', () => {
-		test( 'returns general settings from selector', () => {
-			actions = {
-				updateIsWCPayEnabled: jest.fn(),
-				updateAccountStatementDescriptor: jest.fn(),
-				updateIsManualCaptureEnabled: jest.fn(),
-			};
-
-			selectors = {
-				getIsWCPayEnabled: jest.fn( () => 'foo' ),
-				getIsManualCaptureEnabled: jest.fn( () => 'bar' ),
-				getAccountStatementDescriptor: jest.fn( () => 'zxy' ),
-			};
-
-			const {
-				accountStatementDescriptor,
-				isManualCaptureEnabled,
-				isWCPayEnabled,
-				updateAccountStatementDescriptor,
-				updateIsManualCaptureEnabled,
-				updateIsWCPayEnabled,
-			} = useGeneralSettings();
-			updateIsWCPayEnabled( 'bar' );
-
-			expect( isWCPayEnabled ).toEqual( 'foo' );
-			expect( actions.updateIsWCPayEnabled ).toHaveBeenCalledWith(
-				'bar'
-			);
-
-			updateAccountStatementDescriptor( 'foo' );
-
-			expect( accountStatementDescriptor ).toEqual( 'zxy' );
-			expect(
-				actions.updateAccountStatementDescriptor
-			).toHaveBeenCalledWith( 'foo' );
-
-			updateIsManualCaptureEnabled( 'zxy' );
-
-			expect( isManualCaptureEnabled ).toEqual( 'bar' );
-			expect( actions.updateIsManualCaptureEnabled ).toHaveBeenCalledWith(
-				'zxy'
-			);
 		} );
 	} );
 

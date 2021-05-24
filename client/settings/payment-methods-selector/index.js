@@ -21,10 +21,10 @@ import './style.scss';
 const PaymentMethodsSelector = ( { className } ) => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	const {
-		enabledPaymentMethodIds: enabledMethodIds,
-		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
-	} = useEnabledPaymentMethodIds();
+	const [
+		enabledMethodIds,
+		updateEnabledMethodIds,
+	] = useEnabledPaymentMethodIds();
 
 	const [
 		isPaymentMethodsSelectorModalOpen,
