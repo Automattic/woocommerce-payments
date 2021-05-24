@@ -123,7 +123,7 @@ class Frontend_Currencies {
 			'num_decimals' => 2,
 		];
 
-		return apply_filters( 'wcpay_multi_currency_currency_settings', $currency_settings, $currency_code );
+		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_settings', $currency_settings );
 	}
 
 	/**
