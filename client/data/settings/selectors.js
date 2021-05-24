@@ -30,3 +30,11 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
+
+export const getAccountStatementDescriptor = ( state ) => {
+	return getSettings( state ).account_statement_descriptor || '';
+};
+
+export const getIsManualCaptureEnabled = ( state ) => {
+	return getSettings( state ).is_manual_capture_enabled || false;
+};
