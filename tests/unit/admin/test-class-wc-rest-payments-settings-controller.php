@@ -239,6 +239,36 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
+	public function test_update_settings_saves_test_mode() {
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_test_mode_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'test_mode' ) );
+	}
+
+	public function test_update_settings_does_not_save_test_mode_when_dev_mode_enabled() {
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return true;
+			}
+		);
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_test_mode_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+	}
+
 	public function test_update_settings_saves_account_statement_descriptor() {
 		$new_account_descriptor = 'new account descriptor';
 
