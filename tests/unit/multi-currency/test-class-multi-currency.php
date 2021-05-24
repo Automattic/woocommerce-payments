@@ -98,12 +98,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 8.0, $this->multi_currency->get_price( '10.0', 'shipping' ) );
 	}
 
-	public function test_get_price_returns_converted_coupon_price_without_charm() {
+	public function test_get_price_returns_converted_coupon_price_without_adjustments() {
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099 -> ceiled to 8 -> 8 + 0.0 = 8.0
-		$this->assertSame( 8.0, $this->multi_currency->get_price( '10.0', 'coupon' ) );
+		// 0.708099 * 10 = 7,08099
+		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'coupon' ) );
 	}
 
 

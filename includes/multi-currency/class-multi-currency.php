@@ -281,7 +281,7 @@ class Multi_Currency {
 
 		$converted_price = ( (float) $price ) * $current_currency->get_rate();
 
-		if ( 'tax' === $type ) {
+		if ( 'tax' === $type || 'coupon' === $type ) {
 			return $converted_price;
 		}
 
