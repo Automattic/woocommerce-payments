@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -20,11 +19,14 @@ import { useGeneralSettings } from 'data';
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
 const GeneralSettings = ( { accountLink } ) => {
-	const { isWCPayEnabled, updateIsWCPayEnabled } = useGeneralSettings();
-	const [ isManualCaptureEnabled, setIsManualCaptureEnabled ] = useState(
-		false
-	);
-	const [ accountStatement, setAccountStatement ] = useState( '' );
+	const {
+		accountStatementDescriptor,
+		isManualCaptureEnabled,
+		isWCPayEnabled,
+		updateAccountStatementDescriptor,
+		updateIsManualCaptureEnabled,
+		updateIsWCPayEnabled,
+	} = useGeneralSettings();
 
 	return (
 		<Card className="general-settings">
@@ -42,7 +44,7 @@ const GeneralSettings = ( { accountLink } ) => {
 				</h4>
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
-					onChange={ setIsManualCaptureEnabled }
+					onChange={ updateIsManualCaptureEnabled }
 					label={ __(
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
@@ -66,36 +68,31 @@ const GeneralSettings = ( { accountLink } ) => {
 							'Customer bank statement',
 							'woocommerce-payments'
 						) }
-						value={ accountStatement }
-						onChange={ setAccountStatement }
+						value={ accountStatementDescriptor }
+						onChange={ updateAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						hideLabelFromVision
 					/>
 					<span className="input-help-text" aria-hidden="true">
-						{ `${ accountStatement.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
+						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 				</div>
 				<div className="general-settings__bank-information">
-					<div>
-						<h4>
-							{ __(
-								'Bank account information',
-								'woocommerce-payments'
-							) }
-						</h4>
-						<p className="general-settings__bank-information-help">
-							{ __(
-								'Manage and update your bank account information to receive payments and payouts.',
-								'woocommerce-payments'
-							) }{ ' ' }
-							<ExternalLink href={ accountLink }>
-								{ __(
-									'Manage in Stripe',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						</p>
-					</div>
+					<h4>
+						{ __(
+							'Bank account information',
+							'woocommerce-payments'
+						) }
+					</h4>
+					<p className="general-settings__bank-information-help">
+						{ __(
+							'Manage and update your bank account information to receive payments and payouts.',
+							'woocommerce-payments'
+						) }{ ' ' }
+						<ExternalLink href={ accountLink }>
+							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
+						</ExternalLink>
+					</p>
 				</div>
 			</CardBody>
 		</Card>

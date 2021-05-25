@@ -1,0 +1,11 @@
+.advanced-settings {
+	&__theme-notice {
+		&#{&} {
+			margin: 0 0 1em 0;
+		}
+	}
+
+	&__custom-font-url-wrapper {
+		margin-bottom: 1em;
+	}
+}
