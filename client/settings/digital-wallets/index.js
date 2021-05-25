@@ -17,17 +17,20 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 /**
  * Internal dependencies
  */
-import { useDigitalWalletsSettings, useDigitalWalletsLocations } from 'data';
+import {
+	useDigitalWalletsEnabledSettings,
+	useDigitalWalletsLocations,
+} from 'data';
 
 const DigitalWallets = () => {
-	const {
+	const [
 		isDigitalWalletsEnabled,
 		updateIsDigitalWalletsEnabled,
-	} = useDigitalWalletsSettings();
-	const {
+	] = useDigitalWalletsEnabledSettings();
+	const [
 		digitalWalletsLocations,
 		updateDigitalWalletsLocations,
-	} = useDigitalWalletsLocations();
+	] = useDigitalWalletsLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( status ) => {
 		updateDigitalWalletsLocations( {

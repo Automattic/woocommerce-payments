@@ -17,10 +17,10 @@ export const useEnabledPaymentMethodIds = () => {
 		( select ) => {
 			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
 
-			return {
-				enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
+			return [
+				getEnabledPaymentMethodIds(),
 				updateEnabledPaymentMethodIds,
-			};
+			];
 		},
 		[ updateEnabledPaymentMethodIds ]
 	);
@@ -33,10 +33,7 @@ export const useTestMode = () => {
 		( select ) => {
 			const { getIsTestModeEnabled } = select( STORE_NAME );
 
-			return {
-				isEnabled: getIsTestModeEnabled(),
-				updateIsTestModeEnabled,
-			};
+			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
 		},
 		[ updateIsTestModeEnabled ]
 	);
@@ -46,37 +43,52 @@ export const useDevMode = () => {
 	return useSelect( ( select ) => {
 		const { getIsDevModeEnabled } = select( STORE_NAME );
 
-		return {
-			isEnabled: getIsDevModeEnabled(),
-		};
+		return getIsDevModeEnabled();
 	}, [] );
 };
 
-export const useGeneralSettings = () => {
+export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
-	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
-	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
 			const { getAccountStatementDescriptor } = select( STORE_NAME );
-			const { getIsWCPayEnabled } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptor(),
+				updateAccountStatementDescriptor,
+			];
+		},
+		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useManualCapture = () => {
+	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
 			const { getIsManualCaptureEnabled } = select( STORE_NAME );
 
-			return {
-				accountStatementDescriptor: getAccountStatementDescriptor(),
-				isManualCaptureEnabled: getIsManualCaptureEnabled(),
-				isWCPayEnabled: getIsWCPayEnabled(),
-				updateAccountStatementDescriptor,
+			return [
+				getIsManualCaptureEnabled(),
 				updateIsManualCaptureEnabled,
-				updateIsWCPayEnabled,
-			};
+			];
 		},
-		[
-			updateAccountStatementDescriptor,
-			updateIsManualCaptureEnabled,
-			updateIsWCPayEnabled,
-		]
+		[ updateIsManualCaptureEnabled ]
+	);
+};
+
+export const useIsWCPayEnabled = () => {
+	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsWCPayEnabled } = select( STORE_NAME );
+
+			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
+		},
+		[ updateIsWCPayEnabled ]
 	);
 };
 
@@ -114,16 +126,13 @@ export const useSettings = () => {
 	);
 };
 
-export const useDigitalWalletsSettings = () => {
+export const useDigitalWalletsEnabledSettings = () => {
 	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
 		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
 
-		return {
-			isDigitalWalletsEnabled: getIsDigitalWalletsEnabled(),
-			updateIsDigitalWalletsEnabled,
-		};
+		return [ getIsDigitalWalletsEnabled(), updateIsDigitalWalletsEnabled ];
 	} );
 };
 
@@ -133,9 +142,6 @@ export const useDigitalWalletsLocations = () => {
 	return useSelect( ( select ) => {
 		const { getDigitalWalletsLocations } = select( STORE_NAME );
 
-		return {
-			digitalWalletsLocations: getDigitalWalletsLocations(),
-			updateDigitalWalletsLocations,
-		};
+		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
 	} );
 };
