@@ -1,0 +1,33 @@
+.woocommerce-deposits-information-row {
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	border-color: $gray-200;
+}
+.woocommerce-deposits-information-row:last-child {
+	border-width: 0 0 0 0;
+}
+.woocommerce-deposits-information-block {
+	height: 125px;
+	flex-basis: 340px;
+	border-width: 0 1px 0 0;
+	border-style: solid;
+	border-color: $gray-200;
+	padding: 16px;
+
+	div {
+		margin-bottom: 8px;
+	}
+
+	&__title {
+		color: $gray-700;
+		line-height: 16px;
+	}
+
+	&__value {
+		color: $gray-900;
+		font-size: 20px;
+	}
+}
+.woocommerce-deposits-information-block:last-child {
+	border-width: 0 0 0 0;
+}

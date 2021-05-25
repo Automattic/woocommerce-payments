@@ -20,8 +20,8 @@ const OverviewPage = () => {
 	return (
 		<Page className="overview">
 			<TestModeNotice topic={ topics.overview } />
-			{ 0 < tasks.length && <TaskList tasks={ tasks } /> }
 			<DepositsInformation />
+			{ 0 < tasks.length && <TaskList tasks={ tasks } /> }
 		</Page>
 	);
 };

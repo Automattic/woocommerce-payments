@@ -50,8 +50,6 @@ declare module 'data' {
 
 declare module 'components/loadable';
 
-declare module '@wordpress/components' {
-	const Card: any;
-	const CardHeader: any;
-	const CardBody: any;
-}
+declare module '@wordpress/components';
+
+declare module '@wordpress/i18n';
