@@ -17,6 +17,8 @@ use WC_Payments_Token_Service;
 use WC_Payments;
 use WC_Payments_Utils;
 use Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+
 
 /**
  * UPE Payment method extended from WCPay generic Gateway.
@@ -53,7 +55,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart and store details.
 	 *
-	 * @return WC_Payments_API_Intention
+	 * @return array
 	 */
 	public function create_payment_intent() {
 		$amount         = WC()->cart->get_cart_contents_total();

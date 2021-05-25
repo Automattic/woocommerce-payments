@@ -10,6 +10,7 @@ namespace WCPay\Payment_Methods;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
 
 use WCPay\Logger;
 use WC_Payment_Gateway_WCPay;
