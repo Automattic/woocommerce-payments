@@ -12,7 +12,7 @@
 
 	// on a smaller viewports controls section should move in front of the
 	// status chip
-	@media only screen and ( max-width: 400px ) {
+	@media only screen and ( max-width: 390px ) {
 		div:first-child {
 			flex-grow: 1;
 			order: -2;
@@ -21,6 +21,11 @@
 		div:last-child {
 			order: -1;
 			margin-bottom: 8px;
+		}
+	}
+	@media only screen and ( max-width: 390px ) {
+		div:last-child {
+			order: 1;
 		}
 	}
 }
@@ -33,13 +38,14 @@
 
 	div {
 		flex-shrink: 1;
-		flex-basis: min-content;
+		flex-basis: auto;
+		width: min-content;
 	}
 
 	// label
 	div:first-child {
 		color: $gray-900;
-		flex-basis: 130px;
+		min-width: 130px;
 	}
 
 	// value
@@ -59,11 +65,11 @@
 		}
 	}
 
-	@media only screen and ( max-width: 400px ) {
+	@media only screen and ( max-width: 390px ) {
 		div:first-child {
-			flex-basis: 80px;
-			overflow: normal;
+			overflow: visible;
 			white-space: nowrap;
+			min-width: 80px;
 		}
 	}
 }
