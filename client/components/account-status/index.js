@@ -67,7 +67,7 @@ const AccountStatusDetails = ( props ) => {
 				<StatusChip accountStatus={ accountStatus.status } />
 			</FlexBlock>
 			<FlexItem className={ 'woocommerce-account-status__controls' }>
-				<Button disabled isLink>
+				<Button isLink href={ accountStatus.accountLink }>
 					{ __( 'Edit details', 'woocommerce-payments' ) }
 				</Button>
 			</FlexItem>
