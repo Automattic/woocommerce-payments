@@ -73,6 +73,10 @@ export const getAppearance = () => {
 	);
 	const tabHoverRules = generateHoverRules( inputRules );
 	const selectedTabHoverRules = generateHoverRules( selectedTabRules );
+	const selectedTabIconRules = getFieldStyles(
+		upeThemeSelectedPaymentSelector,
+		'.TabIcon--selected'
+	);
 
 	const appearance = {
 		rules: {
@@ -82,6 +86,7 @@ export const getAppearance = () => {
 			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
 			'.Tab--selected:hover': selectedTabHoverRules,
+			'.TabIcon--selected': selectedTabIconRules,
 		},
 	};
 

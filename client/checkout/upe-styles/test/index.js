@@ -142,6 +142,9 @@ describe( 'Getting styles for automated theming', () => {
 					backgroundColor: 'rgba(18, 18, 18, 0)',
 					color: 'rgb(255, 255, 255)',
 				},
+				'.TabIcon--selected': {
+					color: 'rgb(109, 109, 109)',
+				},
 			},
 		} );
 	} );
