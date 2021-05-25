@@ -48,6 +48,13 @@ export function updateIsManualCaptureEnabled( isEnabled ) {
 	};
 }
 
+export function updateIsTestModeEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_TEST_MODE_ENABLED,
+		isEnabled,
+	};
+}
+
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return {
 		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR,
