@@ -99,7 +99,9 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection>
-					<TestModeSettings />
+					<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
+						<TestModeSettings />
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection className="settings-manager__buttons">
 					<Button

@@ -76,10 +76,8 @@ export const DepositsList = () => {
 		getQuery()
 	);
 
-	const columnsArgs = [
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
-	const columns = useMemo( () => getColumns( ...columnsArgs ), columnsArgs );
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children ) => (
@@ -131,17 +129,26 @@ export const DepositsList = () => {
 		return columns.map( ( { key } ) => data[ key ] || { display: null } );
 	} );
 
-	const summary = [
-		{
-			label: __( 'deposits', 'woocommerce-payments' ),
-			value: `${ depositsSummary.count }`,
-		},
-	];
-
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	if ( ! isSummaryLoading ) {
-		const isSingleCurrency =
-			2 > ( depositsSummary.store_currencies || [] ).length;
+	const isSingleCurrency =
+		2 > ( depositsSummary.store_currencies || [] ).length;
+
+	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
+	let summary;
+	const isDespositsSummaryDataLoaded =
+		depositsSummary.count !== undefined &&
+		depositsSummary.total !== undefined &&
+		false === isSummaryLoading;
+
+	// Generate summary only if the data has been loaded
+	if ( isDespositsSummaryDataLoaded ) {
+		summary = [
+			{
+				label: __( 'deposits', 'woocommerce-payments' ),
+				value: `${ depositsSummary.count }`,
+			},
+		];
+
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push( {
 				label: __( 'total', 'woocommerce-payments' ),

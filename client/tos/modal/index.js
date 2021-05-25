@@ -12,7 +12,10 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { getPaymentMethodsUrl } from 'utils';
-import { makeTosAcceptanceRequest } from '../request.js';
+import {
+	makeTosAcceptanceRequest,
+	maybeTrackStripeConnected,
+} from '../request.js';
 import './style.scss';
 
 const TosLink = ( props ) => (
@@ -150,6 +153,7 @@ const TosModal = () => {
 			setAcceptanceError( false );
 			setIsBusy( true );
 			await makeTosAcceptanceRequest( { accept: true } );
+			maybeTrackStripeConnected();
 			closeTosModal();
 		} catch ( err ) {
 			setAcceptanceError( true );

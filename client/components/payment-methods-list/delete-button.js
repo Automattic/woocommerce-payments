@@ -3,18 +3,16 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Modal, Button } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { Icon as IconComponent, trash } from '@wordpress/icons';
 import interpolateComponents from 'interpolate-components';
-import Gridicon from 'gridicons';
-import { HorizontalRule } from '@wordpress/primitives';
 import { useCallback, useState } from '@wordpress/element';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import './delete-button.scss';
+import PaymentDeleteIllustration from '../payment-delete-illustration';
+import ConfirmationModal from '../confirmation-modal';
 
 const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
@@ -37,7 +35,7 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 	return (
 		<>
 			{ isConfirmationModalOpen && (
-				<Modal
+				<ConfirmationModal
 					title={ sprintf(
 						__(
 							/* translators: %1: Name of the payment method being removed */
@@ -47,22 +45,28 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 						label
 					) }
 					onRequestClose={ handleDeleteCancelClick }
-					className="payment-method-delete-modal"
+					actions={
+						<>
+							<Button
+								onClick={ handleDeleteConfirmationClick }
+								isPrimary
+								isDestructive
+							>
+								{ __( 'Remove', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								onClick={ handleDeleteCancelClick }
+								isSecondary
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+						</>
+					}
 				>
-					<div className="payment-method-delete-modal__illustrations-wrapper">
-						<div className="payment-method-delete-modal__illustrations">
-							<Icon
-								className={ classNames(
-									'payment-method-delete-modal__payment-icon',
-									{ 'has-border': 'cc' !== id }
-								) }
-							/>
-							<Gridicon
-								icon="cross-circle"
-								className="payment-method-delete-modal__payment-cross-icon"
-							/>
-						</div>
-					</div>
+					<PaymentDeleteIllustration
+						Icon={ Icon }
+						hasBorder={ 'woocommerce_payments' !== id }
+					/>
 					<p>
 						{ interpolateComponents( {
 							mixedString: __(
@@ -95,20 +99,7 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 							},
 						} ) }
 					</p>
-					<HorizontalRule className="payment-method-delete-modal__separator" />
-					<div className="payment-method-delete-modal__footer">
-						<Button
-							onClick={ handleDeleteConfirmationClick }
-							isPrimary
-							isDestructive
-						>
-							{ __( 'Remove', 'woocommerce-payments' ) }
-						</Button>
-						<Button onClick={ handleDeleteCancelClick } isSecondary>
-							{ __( 'Cancel', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</Modal>
+				</ConfirmationModal>
 			) }
 			<Button
 				isLink

@@ -5,6 +5,8 @@ import {
 	getSettings,
 	getIsWCPayEnabled,
 	getEnabledPaymentMethodIds,
+	getIsManualCaptureEnabled,
+	getAccountStatementDescriptor,
 	isSavingSettings,
 } from '../selectors';
 
@@ -98,5 +100,55 @@ describe( 'Settings selectors tests', () => {
 				expect( isSavingSettings( state ) ).toBeFalsy();
 			}
 		);
+	} );
+
+	describe( 'getIsManualCaptureEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_manual_capture_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						is_manual_capture_enabled: true,
+					},
+				},
+			};
+
+			expect( getIsManualCaptureEnabled( state ) ).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getIsManualCaptureEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getAccountStatementDescriptor()', () => {
+		test( 'returns the value of state.settings.data.account_statement_descriptor', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						account_statement_descriptor: 'my account statement',
+					},
+				},
+			};
+
+			expect( getAccountStatementDescriptor( state ) ).toEqual(
+				'my account statement'
+			);
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getAccountStatementDescriptor( state ) ).toEqual( '' );
+		} );
 	} );
 } );
