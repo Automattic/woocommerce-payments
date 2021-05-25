@@ -55,6 +55,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
+		// View dispute check timeout
+		await page.waitForSelector( 'div.woocommerce-timeline-item__body a', {
+			timeout: 10000,
+		} );
+
 		// Verify we have a dispute for this purchase
 		await expect( page ).toMatchElement(
 			'div.woocommerce-timeline-item__body a',
@@ -72,6 +77,10 @@ describe( 'Disputes > Save dispute for editing', () => {
 		// Open the dispute details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
+		await page.waitForSelector( 'a.components-button.is-primary', {
+			timeout: 10000,
+		} );
+
 		await expect( page ).toClick( 'a.components-button.is-primary', {
 			text: 'Challenge dispute',
 		} );
@@ -88,7 +97,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 			}
 		);
 
-		// // Select the product type
+		await page.waitForSelector( '.components-select-control__input', {
+			timeout: 10000,
+		} );
+
+		// Select the product type
 		await expect( page ).toSelect(
 			'.components-select-control__input',
 			'Offline service'
