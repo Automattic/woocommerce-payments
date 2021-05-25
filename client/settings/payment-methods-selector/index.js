@@ -3,9 +3,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Modal } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
-import { HorizontalRule } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
@@ -16,7 +15,7 @@ import {
 } from 'data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
-import './style.scss';
+import ConfirmationModal from '../../components/confirmation-modal';
 
 const PaymentMethodsSelector = ( { className } ) => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -77,12 +76,28 @@ const PaymentMethodsSelector = ( { className } ) => {
 	return (
 		<>
 			{ isPaymentMethodsSelectorModalOpen && (
-				<Modal
+				<ConfirmationModal
 					title={ __(
 						'Add payment methods',
 						'woocommerce-payments'
 					) }
 					onRequestClose={ handleAddSelectedCancelClick }
+					actions={
+						<>
+							<Button
+								isSecondary
+								onClick={ handleAddSelectedCancelClick }
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								isPrimary
+								onClick={ handleAddSelectedClick }
+							>
+								{ __( 'Add selected', 'woocommerce-payments' ) }
+							</Button>
+						</>
+					}
 				>
 					<p>
 						{ __(
@@ -103,19 +118,7 @@ const PaymentMethodsSelector = ( { className } ) => {
 							)
 						) }
 					</PaymentMethodCheckboxes>
-					<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
-					<div className="woocommerce-payments__payment-method-selector__footer">
-						<Button
-							isSecondary
-							onClick={ handleAddSelectedCancelClick }
-						>
-							{ __( 'Cancel', 'woocommerce-payments' ) }
-						</Button>
-						<Button isPrimary onClick={ handleAddSelectedClick }>
-							{ __( 'Add selected', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</Modal>
+				</ConfirmationModal>
 			) }
 			<Button
 				isSecondary
