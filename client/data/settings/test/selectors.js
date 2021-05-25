@@ -8,6 +8,8 @@ import {
 	getIsManualCaptureEnabled,
 	getAccountStatementDescriptor,
 	isSavingSettings,
+	getDigitalWalletsLocations,
+	getIsDigitalWalletsEnabled,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -149,6 +151,64 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getAccountStatementDescriptor( state ) ).toEqual( '' );
+		} );
+	} );
+
+	describe( 'getIsDigitalWalletsEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_digital_wallets_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						is_digital_wallets_enabled: true,
+					},
+				},
+			};
+
+			expect( getIsDigitalWalletsEnabled( state ) ).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getIsDigitalWalletsEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getDigitalWalletsLocations()', () => {
+		test( 'returns the value of state.settings.data.digital_wallets_enabled_locations', () => {
+			const state = {
+				settings: {
+					data: {
+						// eslint-disable-next-line camelcase
+						digital_wallets_enabled_locations: {
+							// eslint-disable-next-line camelcase
+							product_page: true,
+							checkout: false,
+							cart: true,
+						},
+					},
+				},
+			};
+
+			expect( getDigitalWalletsLocations( state ) ).toEqual( {
+				// eslint-disable-next-line camelcase
+				product_page: true,
+				checkout: false,
+				cart: true,
+			} );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns {} if missing (tested state: %j)', ( state ) => {
+			expect( getDigitalWalletsLocations( state ) ).toEqual( {} );
 		} );
 	} );
 } );
