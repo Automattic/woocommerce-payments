@@ -48,7 +48,29 @@ export function updateIsSavingSettings( isSaving ) {
 	};
 }
 
+export function updateIsManualCaptureEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_MANUAL_CAPTURE_ENABLED,
+		isEnabled,
+	};
+}
+
+export function updateIsTestModeEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_TEST_MODE_ENABLED,
+		isEnabled,
+	};
+}
+
+export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
+	return {
+		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR,
+		accountStatementDescriptor,
+	};
+}
+
 export function* saveSettings() {
+	let isSuccess = false;
 	try {
 		const settings = select( STORE_NAME ).getSettings();
 
@@ -63,6 +85,8 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Settings saved.', 'woocommerce-payments' )
 		);
+
+		isSuccess = true;
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
@@ -70,6 +94,8 @@ export function* saveSettings() {
 	} finally {
 		yield updateIsSavingSettings( false );
 	}
+
+	return isSuccess;
 }
 
 export function updateDigitalWalletsLocations( locations ) {

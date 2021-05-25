@@ -47,6 +47,37 @@ export const receiveSettings = (
 				},
 			};
 
+		case ACTION_TYPES.SET_IS_MANUAL_CAPTURE_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_manual_capture_enabled: action.isEnabled,
+				},
+			};
+
+		case ACTION_TYPES.SET_IS_TEST_MODE_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_test_mode_enabled: action.isEnabled,
+				},
+			};
+
+		case ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					account_statement_descriptor:
+						action.accountStatementDescriptor,
+				},
+			};
+
 		case ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED:
 			return {
 				...state,

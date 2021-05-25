@@ -2,24 +2,25 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { Button, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import React from 'react';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
-import { LoadableBlock } from 'components/loadable';
 import { useSettings } from 'data';
-import Banner from 'banner';
-import PaymentMethods from 'payment-methods';
-import SettingsSection from 'settings/settings-section';
-import DigitalWallets from 'settings/digital-wallets';
-import GeneralSettings from 'settings/general-settings';
-import TestModeSettings from 'settings/test-mode-settings';
-import ApplePayIcon from 'gateway-icons/apple-pay';
-import GooglePayIcon from 'gateway-icons/google-pay';
+import Banner from '../../banner';
+import { LoadableBlock } from '../../components/loadable';
+import AdvancedSettings from '../advanced-settings';
+import PaymentMethods from '../../payment-methods';
+import DigitalWallets from '../digital-wallets';
+import SettingsSection from '../settings-section';
+import GeneralSettings from '../general-settings';
+import TestModeSettings from '../test-mode-settings';
+import ApplePayIcon from '../../gateway-icons/apple-pay';
+import GooglePayIcon from '../../gateway-icons/google-pay';
+import './style.scss';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -101,8 +102,11 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection>
-					<TestModeSettings />
+					<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
+						<TestModeSettings />
+					</LoadableBlock>
 				</SettingsSection>
+				<AdvancedSettings />
 				<SettingsSection className="settings-manager__buttons">
 					<Button
 						isPrimary

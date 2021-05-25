@@ -30,6 +30,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
+	 * Instance of WC_Payment_Gateway_WCPay.
+	 *
+	 * @var Digital_Wallets_Payment_Gateway
+	 */
+	private $digital_wallets_gateway;
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client          $api_client WC_Payments_API_Client instance.
@@ -78,6 +85,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_manual_capture_enabled'         => [
+						'description'       => __( 'If WooCommerce Payments manual capture of charges should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_test_mode_enabled'              => [
+						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'account_statement_descriptor'      => [
+						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'is_digital_wallets_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments 1-click checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
@@ -103,6 +125,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 			'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
 			'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
+			'is_manual_capture_enabled'    => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+			'is_test_mode_enabled'         => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
+			'is_dev_mode_enabled'          => $this->wcpay_gateway->is_in_dev_mode(),
+			'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 		];
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
@@ -110,7 +136,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			$response['digital_wallets_enabled_locations'] = $this->digital_wallets_gateway->get_digital_wallets_enabled_locations();
 		}
 
-		return new WP_REST_Response( $response );
+		return new WP_REST_Response(
+			$response
+		);
 	}
 
 	/**
@@ -121,32 +149,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function update_settings( WP_REST_Request $request ) {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
+		$this->update_is_manual_capture_enabled( $request );
+		$this->update_is_test_mode_enabled( $request );
+		$this->update_account_statement_descriptor( $request );
 		$this->update_is_digital_wallets_enabled( $request );
 		$this->update_digital_wallets_enabled_locations( $request );
 
 		return new WP_REST_Response( [], 200 );
-	}
-
-	/**
-	 * Validate the digital wallets enabled locations are supported and their values
-	 * are boolean.
-	 *
-	 * @param object          $value Value to check.
-	 * @param WP_REST_Request $request The request sent to the WP REST API.
-	 * @param string          $param Name of the parameter passed to endpoint holding $value.
-	 * @return bool
-	 */
-	public static function validate_digital_wallets_enabled_locations( $value, $request, $param ) {
-		foreach ( $value as $checkbox => $is_checked ) {
-			if ( ! Digital_Wallets_Locations::isValid( $checkbox ) ) {
-				return false;
-			}
-
-			if ( ! is_bool( $is_checked ) ) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
@@ -191,6 +200,78 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->wcpay_gateway->update_option( 'enabled_payment_method_ids', $payment_method_ids_to_enable );
+	}
+
+	/**
+	 * Updates WooCommerce Payments manual capture.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_manual_capture_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_manual_capture_enabled' ) ) {
+			return;
+		}
+
+		$is_manual_capture_enabled = $request->get_param( 'is_manual_capture_enabled' );
+
+		$this->wcpay_gateway->update_option( 'manual_capture', $is_manual_capture_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates WooCommerce Payments test mode.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
+		// avoiding updating test mode when dev mode is enabled.
+		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'is_test_mode_enabled' ) ) {
+			return;
+		}
+
+		$is_test_mode_enabled = $request->get_param( 'is_test_mode_enabled' );
+
+		$this->wcpay_gateway->update_option( 'test_mode', $is_test_mode_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates WooCommerce Payments account statement descriptor.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_account_statement_descriptor( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'account_statement_descriptor' ) ) {
+			return;
+		}
+
+		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
+
+		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
+	}
+
+	/**
+	 * Validate the digital wallets enabled locations are supported and their values
+	 * are boolean.
+	 *
+	 * @param object $value Value to check.
+	 *
+	 * @return bool
+	 */
+	public static function validate_digital_wallets_enabled_locations( $value ) {
+		foreach ( $value as $checkbox => $is_checked ) {
+			if ( ! Digital_Wallets_Locations::isValid( $checkbox ) ) {
+				return false;
+			}
+
+			if ( ! is_bool( $is_checked ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
