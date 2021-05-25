@@ -70,6 +70,10 @@ export const getAppearance = () => {
 		upeThemeSelectedPaymentSelector,
 		'.Tab--selected'
 	);
+	const selectedTabIconRules = getFieldStyles(
+		upeThemeSelectedPaymentSelector,
+		'.TabIcon--selected'
+	);
 
 	const appearance = {
 		rules: {
@@ -77,6 +81,7 @@ export const getAppearance = () => {
 			'.Label': labelRules,
 			'.Tab': inputRules,
 			'.Tab--selected': selectedTabRules,
+			'.TabIcon--selected': selectedTabIconRules,
 		},
 	};
 
