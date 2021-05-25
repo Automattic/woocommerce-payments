@@ -186,6 +186,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
+		include_once __DIR__ . '/constants/class-digital-wallets-locations.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -225,7 +226,7 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+		if ( WC_Payments_Features::is_grouped_settings_enabled() || ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) ) {
 			self::$digital_wallets_gateway = new $digital_wallets_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
@@ -649,7 +650,7 @@ class WC_Payments {
 		$tos_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway, self::$digital_wallets_gateway );
 		$settings_controller->register_routes();
 	}
 

@@ -27,6 +27,13 @@ export function updateIsWCPayEnabled( isEnabled ) {
 	};
 }
 
+export function updateIsDigitalWalletsEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED,
+		isEnabled,
+	};
+}
+
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return {
 		type: ACTION_TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
@@ -89,4 +96,11 @@ export function* saveSettings() {
 	}
 
 	return isSuccess;
+}
+
+export function updateDigitalWalletsLocations( locations ) {
+	return {
+		type: ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS,
+		locations,
+	};
 }

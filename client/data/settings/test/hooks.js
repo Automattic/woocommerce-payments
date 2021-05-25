@@ -10,6 +10,8 @@ import {
 	useEnabledPaymentMethodIds,
 	useGeneralSettings,
 	useSettings,
+	useDigitalWalletsSettings,
+	useDigitalWalletsLocations,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -150,5 +152,69 @@ describe( 'Settings hooks tests', () => {
 				expect( isLoading ).toBeTruthy();
 			}
 		);
+	} );
+
+	describe( 'useDigitalWalletsSettings()', () => {
+		test( 'returns digital wallets settings from selector', () => {
+			actions = {
+				updateIsDigitalWalletsEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsDigitalWalletsEnabled: jest.fn( () => true ),
+			};
+
+			const {
+				isDigitalWalletsEnabled,
+				updateIsDigitalWalletsEnabled,
+			} = useDigitalWalletsSettings();
+
+			updateIsDigitalWalletsEnabled( false );
+
+			expect( isDigitalWalletsEnabled ).toEqual( true );
+			expect(
+				actions.updateIsDigitalWalletsEnabled
+			).toHaveBeenCalledWith( false );
+		} );
+	} );
+
+	describe( 'useDigitalWalletsLocations()', () => {
+		test( 'returns digital wallets locations to shown on if digital wallets is enabled', () => {
+			const locationsBeforeUpdated = {
+				checkout: false,
+				// eslint-disable-next-line camelcase
+				product_page: false,
+				cart: false,
+			};
+
+			const locationsAfterUpdated = {
+				checkout: false,
+				// eslint-disable-next-line camelcase
+				product_page: false,
+				cart: false,
+			};
+
+			actions = {
+				updateDigitalWalletsLocations: jest.fn(),
+			};
+
+			selectors = {
+				getDigitalWalletsLocations: jest.fn(
+					() => locationsBeforeUpdated
+				),
+			};
+
+			const {
+				digitalWalletsLocations,
+				updateDigitalWalletsLocations,
+			} = useDigitalWalletsLocations();
+
+			updateDigitalWalletsLocations( locationsAfterUpdated );
+
+			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdated );
+			expect(
+				actions.updateDigitalWalletsLocations
+			).toHaveBeenCalledWith( locationsAfterUpdated );
+		} );
 	} );
 } );
