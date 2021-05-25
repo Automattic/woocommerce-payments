@@ -2,6 +2,9 @@ name: I18N Weekly Release
 on:
   schedule:
     - cron: '0 20 * * 0'
+  push:
+    branches:
+      - add/weekly-release-workflow
 
 jobs:
   i18n-release:
@@ -39,7 +42,7 @@ jobs:
 
       - name: Upload release
         run: |
-          TAG="i18n-$(date +%Y%m%d)"
+          TAG="i18n-dev-trial-run-$(date +%Y%m%d)"
           NAME="Version for internationalization testing $TAG. Not for production."
           BODY='This version is intended to test the internationalization strings. It should NOT be used for production.'
 
