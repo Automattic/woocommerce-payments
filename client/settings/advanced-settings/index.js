@@ -3,7 +3,7 @@
  */
 import { useState, useCallback, useEffect, useRef } from '@wordpress/element';
 import { Icon, chevronDown, chevronUp } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Card,
 	CardBody,
@@ -145,6 +145,15 @@ const AdvancedSettings = () => {
 										value={ customFontValue }
 										onChange={ setCustomFontValue }
 										autoComplete="off"
+										placeholder={ sprintf(
+											/* translators: %s - example of URL for custom font - text is used as placeholder */
+											__(
+												'Example: %1$s',
+												'woocommerce-payments'
+											),
+											'https://fonts.googleapis.com/css?family=Source+Sans+Pro'
+										) }
+										type="url"
 										hideLabelFromVision
 									/>
 								</CheckboxToggle>
