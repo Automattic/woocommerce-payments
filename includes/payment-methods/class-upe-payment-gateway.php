@@ -257,9 +257,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
 						/* translators: link to Stripe testing page */
-						__( '<strong>Test mode:</strong> you will be redirected to a Stripe test page to authorize payment.', 'woocommerce-payments' ),
+						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' ),
 						[
 							'strong' => '<strong>',
+							'a'      => '<a href="https://docs.woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 						]
 					);
 				?>
