@@ -82,7 +82,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	public function test_get_price_decimals_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'JPY' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_currency_settings( 'jpy', [ 'num_decimals' => 1 ] );
+		$this->mock_currency_format( 'jpy', [ 'num_decimals' => 1 ] );
 
 		$this->assertEquals( 1, $this->frontend_currencies->get_price_decimals() );
 	}
@@ -104,7 +104,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	public function test_get_price_decimal_separator_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_currency_settings( 'brl', [ 'decimal_sep' => '/' ] );
+		$this->mock_currency_format( 'brl', [ 'decimal_sep' => '/' ] );
 
 		$this->assertEquals( '/', $this->frontend_currencies->get_price_decimal_separator() );
 	}
@@ -126,7 +126,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	public function test_get_price_thousand_separator_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'BRL' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_currency_settings( 'brl', [ 'thousand_sep' => '/' ] );
+		$this->mock_currency_format( 'brl', [ 'thousand_sep' => '/' ] );
 
 		$this->assertEquals( '/', $this->frontend_currencies->get_price_thousand_separator() );
 	}
@@ -148,7 +148,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 	public function test_get_woocommerce_price_format_returns_filtered_settings() {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'HUF' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
-		$this->mock_currency_settings( 'huf', [ 'currency_pos' => 'left_space' ] );
+		$this->mock_currency_format( 'huf', [ 'currency_pos' => 'left_space' ] );
 
 		$this->assertEquals( '%1$s&nbsp;%2$s', $this->frontend_currencies->get_woocommerce_price_format() );
 	}
@@ -160,7 +160,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		$current_currency = new WCPay\Multi_Currency\Currency( 'USD' );
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
 
-		$this->mock_currency_settings( 'usd', [ 'currency_pos' => $currency_pos ] );
+		$this->mock_currency_format( 'usd', [ 'currency_pos' => $currency_pos ] );
 		$this->assertEquals( $expected_format, $this->frontend_currencies->get_woocommerce_price_format() );
 	}
 
@@ -175,9 +175,9 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 		];
 	}
 
-	private function mock_currency_settings( $currency_code, $currency_settings ) {
+	private function mock_currency_format( $currency_code, $currency_settings ) {
 		add_filter(
-			'wcpay_multi_currency_' . $currency_code . '_settings',
+			'wcpay_multi_currency_' . $currency_code . '_format',
 			function () use ( $currency_settings ) {
 				return $currency_settings;
 			}

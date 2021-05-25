@@ -25,7 +25,7 @@ class Frontend_Currencies {
 	 *
 	 * @var array
 	 */
-	protected $currency_settings = [];
+	protected $currency_format = [];
 
 	/**
 	 * Constructor.
@@ -61,7 +61,7 @@ class Frontend_Currencies {
 	 */
 	public function get_price_decimals() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_settings( $currency_code )['num_decimals'];
+		return $this->get_currency_format( $currency_code )['num_decimals'];
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Frontend_Currencies {
 	 */
 	public function get_price_decimal_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_settings( $currency_code )['decimal_sep'];
+		return $this->get_currency_format( $currency_code )['decimal_sep'];
 	}
 
 	/**
@@ -81,7 +81,7 @@ class Frontend_Currencies {
 	 */
 	public function get_price_thousand_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		return $this->get_currency_settings( $currency_code )['thousand_sep'];
+		return $this->get_currency_format( $currency_code )['thousand_sep'];
 	}
 
 	/**
@@ -91,7 +91,7 @@ class Frontend_Currencies {
 	 */
 	public function get_woocommerce_price_format() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
-		$currency_pos  = $this->get_currency_settings( $currency_code )['currency_pos'];
+		$currency_pos  = $this->get_currency_format( $currency_code )['currency_pos'];
 
 		switch ( $currency_pos ) {
 			case 'left':
@@ -108,22 +108,22 @@ class Frontend_Currencies {
 	}
 
 	/**
-	 * Retrieves the currency's settings from mapped data.
+	 * Retrieves the currency's format from mapped data.
 	 *
 	 * @param string $currency_code The currency code.
 	 *
-	 * @return array The currency's settings.
+	 * @return array The currency's format.
 	 */
-	private function get_currency_settings( $currency_code ) {
+	private function get_currency_format( $currency_code ) {
 		// Default to USD settings if mapping not found.
-		$currency_settings = $this->currency_settings[ $currency_code ] ?? [
+		$currency_format = $this->currency_format[ $currency_code ] ?? [
 			'currency_pos' => 'left',
 			'thousand_sep' => ',',
 			'decimal_sep'  => '.',
 			'num_decimals' => 2,
 		];
 
-		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_settings', $currency_settings );
+		return apply_filters( 'wcpay_multi_currency_' . strtolower( $currency_code ) . '_format', $currency_format );
 	}
 
 	/**
@@ -142,8 +142,8 @@ class Frontend_Currencies {
 				$currency_code = 'NOK';
 			}
 
-			if ( empty( $this->currency_settings[ $currency_code ] ) ) {
-				$this->currency_settings[ $currency_code ] = [
+			if ( empty( $this->currency_format[ $currency_code ] ) ) {
+				$this->currency_format[ $currency_code ] = [
 					'currency_pos' => $locale['currency_pos'],
 					'thousand_sep' => $locale['thousand_sep'],
 					'decimal_sep'  => $locale['decimal_sep'],
