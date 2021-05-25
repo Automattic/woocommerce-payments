@@ -25,7 +25,7 @@ import './style.scss';
 import './shared.scss';
 
 const AccountStatusCard = ( props ) => {
-	const { title, content, children, value } = props;
+	const { title, children, value } = props;
 	return (
 		<Card isMedium>
 			<CardHeader
@@ -38,7 +38,7 @@ const AccountStatusCard = ( props ) => {
 			>
 				{ title }
 			</CardHeader>
-			<CardBody>{ children || value || content }</CardBody>
+			<CardBody>{ children || value || null }</CardBody>
 		</Card>
 	);
 };
