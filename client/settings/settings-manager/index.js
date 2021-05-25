@@ -90,7 +90,9 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection Description={ DigitalWalletsDescription }>
-					<DigitalWallets />
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<DigitalWallets />
+					</LoadableBlock>
 				</SettingsSection>
 				<SettingsSection Description={ GeneralSettingsDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
