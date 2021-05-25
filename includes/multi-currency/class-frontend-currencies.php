@@ -38,11 +38,11 @@ class Frontend_Currencies {
 		$this->load_locale_data();
 
 		// Currency hooks.
-		add_filter( 'woocommerce_currency', [ $this, 'get_current_currency_code' ], 50 );
-		add_filter( 'wc_get_price_decimals', [ $this, 'get_current_currency_decimals' ], 50 );
-		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_current_currency_decimal_separator' ], 50 );
-		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_current_currency_thousand_separator' ], 50 );
-		add_filter( 'woocommerce_price_format', [ $this, 'get_current_currency_format' ], 50 );
+		add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
+		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
+		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
+		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class Frontend_Currencies {
 	 *
 	 * @return string The code of the currency to be used.
 	 */
-	public function get_current_currency_code() {
+	public function get_woocommerce_currency() {
 		return $this->multi_currency->get_selected_currency()->get_code();
 	}
 
@@ -59,7 +59,7 @@ class Frontend_Currencies {
 	 *
 	 * @return int The number of decimals.
 	 */
-	public function get_current_currency_decimals() {
+	public function get_price_decimals() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		return $this->get_currency_settings( $currency_code )['num_decimals'];
 	}
@@ -69,7 +69,7 @@ class Frontend_Currencies {
 	 *
 	 * @return int The decimal separator.
 	 */
-	public function get_current_currency_decimal_separator() {
+	public function get_price_decimal_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		return $this->get_currency_settings( $currency_code )['decimal_sep'];
 	}
@@ -79,7 +79,7 @@ class Frontend_Currencies {
 	 *
 	 * @return int The thousand separator.
 	 */
-	public function get_current_currency_thousand_separator() {
+	public function get_price_thousand_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		return $this->get_currency_settings( $currency_code )['thousand_sep'];
 	}
@@ -89,7 +89,7 @@ class Frontend_Currencies {
 	 *
 	 * @return int The currency format.
 	 */
-	public function get_current_currency_format() {
+	public function get_woocommerce_price_format() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
 		$currency_pos  = $this->get_currency_settings( $currency_code )['currency_pos'];
 

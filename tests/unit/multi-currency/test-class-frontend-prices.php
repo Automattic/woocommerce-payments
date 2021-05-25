@@ -55,7 +55,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price' ],
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
-			[ 'woocommerce_package_rates', 'get_shipping_rates_prices' ],
+			[ 'woocommerce_package_rates', 'convert_package_rates_prices' ],
 			[ 'init', 'register_free_shipping_filters' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
@@ -146,7 +146,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_get_shipping_rates_prices_converts_rates() {
+	public function test_convert_package_rates_prices_converts_rates() {
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->withConsecutive( [ 10.0, 'shipping' ], [ 0.0, 'shipping' ] )
@@ -162,13 +162,13 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			'shipping_rate_2' => $free_method,
 		];
 
-		$shipping_rates = $this->frontend_prices->get_shipping_rates_prices( $base_shipping_rates );
+		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
 
 		$this->assertSame( 25.0, $shipping_rates['shipping_rate_1']->cost );
 		$this->assertSame( 0.0, $shipping_rates['shipping_rate_2']->cost );
 	}
 
-	public function test_get_shipping_rates_prices_converts_taxes() {
+	public function test_convert_package_rates_prices_converts_taxes() {
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->withConsecutive( [ 1.0, 'tax' ], [ 2.0, 'tax' ] )
@@ -177,7 +177,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$flat_rate_method        = new WC_Shipping_Rate();
 		$flat_rate_method->taxes = [ '1.0', '2.0' ];
 
-		$shipping_rates = $this->frontend_prices->get_shipping_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
+		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
 
 		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
 	}

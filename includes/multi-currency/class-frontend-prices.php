@@ -43,7 +43,7 @@ class Frontend_Prices {
 		add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 50 );
 
 		// Shipping methods hooks.
-		add_filter( 'woocommerce_package_rates', [ $this, 'get_shipping_rates_prices' ], 50 );
+		add_filter( 'woocommerce_package_rates', [ $this, 'convert_package_rates_prices' ], 50 );
 		add_filter( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
 
 		// Coupon hooks.
@@ -105,7 +105,7 @@ class Frontend_Prices {
 	 *
 	 * @return array Shipping rates with converted costs.
 	 */
-	public function get_shipping_rates_prices( $rates ) {
+	public function convert_package_rates_prices( $rates ) {
 		foreach ( $rates as $rate ) {
 			if ( $rate->cost ) {
 				$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
