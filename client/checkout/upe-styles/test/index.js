@@ -128,9 +128,19 @@ describe( 'Getting styles for automated theming', () => {
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
+				'.Tab:hover': {
+					backgroundColor: 'rgba(18, 18, 18, 0)',
+					color: 'rgb(255, 255, 255)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+				},
 				'.Tab--selected': {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
+				},
+				'.Tab--selected:hover': {
+					backgroundColor: 'rgba(18, 18, 18, 0)',
+					color: 'rgb(255, 255, 255)',
 				},
 			},
 		} );

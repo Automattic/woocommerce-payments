@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
+import { generateHoverRules } from './utils.js';
 
 const dashedToCamelCase = ( string ) => {
 	return string.replace( /-([a-z])/g, function ( g ) {
@@ -70,13 +71,17 @@ export const getAppearance = () => {
 		upeThemeSelectedPaymentSelector,
 		'.Tab--selected'
 	);
+	const tabHoverRules = generateHoverRules( inputRules );
+	const selectedTabHoverRules = generateHoverRules( selectedTabRules );
 
 	const appearance = {
 		rules: {
 			'.Input': inputRules,
 			'.Label': labelRules,
 			'.Tab': inputRules,
+			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
+			'.Tab--selected:hover': selectedTabHoverRules,
 		},
 	};
 
