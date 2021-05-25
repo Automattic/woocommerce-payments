@@ -116,6 +116,7 @@ export const useSettings = () => {
 
 export const useDigitalWalletsSettings = () => {
 	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+
 	return useSelect( ( select ) => {
 		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
 

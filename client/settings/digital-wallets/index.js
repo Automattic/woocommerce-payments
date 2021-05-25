@@ -29,7 +29,7 @@ const DigitalWallets = () => {
 		updateDigitalWalletsLocations,
 	} = useDigitalWalletsLocations();
 
-	const locationChangeHandler = ( location ) => ( status ) => {
+	const makeLocationChangeHandler = ( location ) => ( status ) => {
 		updateDigitalWalletsLocations( {
 			[ location ]: status,
 		} );
@@ -100,7 +100,7 @@ const DigitalWallets = () => {
 								isDigitalWalletsEnabled &&
 								digitalWalletsLocations.checkout
 							}
-							onChange={ locationChangeHandler( 'checkout' ) }
+							onChange={ makeLocationChangeHandler( 'checkout' ) }
 							label={ __( 'Checkout', 'woocommerce-payments' ) }
 						/>
 					</li>
@@ -111,7 +111,9 @@ const DigitalWallets = () => {
 								isDigitalWalletsEnabled &&
 								digitalWalletsLocations.product_page
 							}
-							onChange={ locationChangeHandler( 'product_page' ) }
+							onChange={ makeLocationChangeHandler(
+								'product_page'
+							) }
 							label={ __(
 								'Product page',
 								'woocommerce-payments'
@@ -125,7 +127,7 @@ const DigitalWallets = () => {
 								isDigitalWalletsEnabled &&
 								digitalWalletsLocations.cart
 							}
-							onChange={ locationChangeHandler( 'cart' ) }
+							onChange={ makeLocationChangeHandler( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
 						/>
 					</li>
