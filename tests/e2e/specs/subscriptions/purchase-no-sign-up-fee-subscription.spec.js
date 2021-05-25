@@ -14,21 +14,21 @@ import {
 
 import { fillCardDetails, setupCheckout } from '../../utils/payments';
 
-const productName = 'Subscription signup fee product';
-const productSlug = 'subscription-signup-fee-product';
+const productName = 'Subscription free trial product';
+const productSlug = 'subscription-free-trial-product';
 
 const customerBilling = config.get( 'addresses.customer.billing' );
 
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
-	'Subscriptions > Purchase subscription with signup fee',
+	'Subscriptions > Purchase subscription without signup fee (free trial)',
 	() => {
 		beforeAll( async () => {
 			await merchant.login();
 
 			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct( productName, true );
+			await merchantWCP.createSubscriptionProduct( productName, false );
 
 			await merchant.logout();
 		} );
@@ -64,7 +64,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 		} );
 
-		it( 'should have a charge for subscription cost with fee', async () => {
+		it( 'should have a charge for subscription cost without fee', async () => {
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
@@ -86,7 +86,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement(
 				'li.woocommerce-timeline-item',
 				{
-					text: 'A payment of $11.98 was successfully charged.',
+					text: 'A payment of $9.99 was successfully charged.',
 				}
 			);
 		} );
