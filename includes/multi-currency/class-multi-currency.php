@@ -86,6 +86,7 @@ class Multi_Currency {
 	public function init() {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
@@ -95,6 +96,12 @@ class Multi_Currency {
 		$this->get_enabled_currencies();
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action(
+			'widgets_init',
+			function() {
+				register_widget( new Currency_Switcher_Widget( $this ) );
+			}
+		);
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
