@@ -16,7 +16,12 @@ import { getTasks } from './task-list/tasks';
 import './style.scss';
 
 const OverviewPage = () => {
-	const { accountStatus, showUpdateDetailsTask } = wcpaySettings;
+	const {
+		accountStatus,
+		showUpdateDetailsTask,
+		featureFlags: { accountOverviewTaskList },
+	} = wcpaySettings;
+
 	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
 	return (
 		<Page className="wcpay-overview">
@@ -26,7 +31,9 @@ const OverviewPage = () => {
 				accountStatus={ wcpaySettings.accountStatus }
 				accountFees={ wcpaySettings.accountFees }
 			/>
-			{ 0 < tasks.length && <TaskList tasks={ tasks } /> }
+			{ !! accountOverviewTaskList && 0 < tasks.length && (
+				<TaskList tasks={ tasks } />
+			) }
 		</Page>
 	);
 };

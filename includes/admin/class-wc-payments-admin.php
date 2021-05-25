@@ -68,7 +68,7 @@ class WC_Payments_Admin {
 			$should_render_full_menu = true;
 		}
 
-		$top_level_link = $should_render_full_menu ? '/payments/deposits' : '/payments/connect';
+		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
 
 		wc_admin_register_page(
 			[
@@ -94,6 +94,19 @@ class WC_Payments_Admin {
 			 * wc_admin_register_page to duplicate "Payments" menu item as a
 			 * first item in the sub-menu.
 			 */
+			wc_admin_register_page(
+				[
+					'id'       => 'wc-payments-overview',
+					'title'    => __( 'Overview', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/overview',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 5,
+					],
+				]
+			);
+
 			wc_admin_register_page(
 				[
 					'id'       => 'wc-payments-deposits',
@@ -132,26 +145,6 @@ class WC_Payments_Admin {
 					],
 				]
 			);
-
-			if ( self::is_account_overview_page_enabled() ) {
-				/**
-				 * Once page is fully implemented it should become the main
-				 * entry page and implement a proper adjustment of
-				 * $top_level_link if needed to avoid menu item duplication.
-				 */
-				wc_admin_register_page(
-					[
-						'id'       => 'wc-payments-overview',
-						'title'    => __( 'Overview', 'woocommerce-payments' ),
-						'parent'   => 'wc-payments',
-						'path'     => '/payments/overview',
-						'nav_args' => [
-							'parent' => 'wc-payments',
-							'order'  => 5,
-						],
-					]
-				);
-			}
 
 			wc_admin_connect_page(
 				[
@@ -418,10 +411,10 @@ class WC_Payments_Admin {
 	 */
 	private function get_frontend_feature_flags() {
 		return [
-			'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
-			'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-			'accountOverview' => self::is_account_overview_page_enabled(),
-			'groupedSettings' => WC_Payments_Features::is_grouped_settings_enabled(),
+			'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+			'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+			'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+			'groupedSettings'         => WC_Payments_Features::is_grouped_settings_enabled(),
 		];
 	}
 
@@ -474,8 +467,8 @@ class WC_Payments_Admin {
 	 *
 	 * @return bool
 	 */
-	private static function is_account_overview_page_enabled() {
-		return get_option( '_wcpay_feature_account_overview' );
+	private static function is_account_overview_task_list_enabled() {
+		return get_option( '_wcpay_feature_account_overview_task_list' );
 	}
 
 	/**

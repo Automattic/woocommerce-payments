@@ -340,18 +340,6 @@ class WC_Payments_Account {
 			return;
 		}
 
-		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			$account_status = $this->get_account_status_data();
-
-			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
-				$this->redirect_to_wc_admin_home();
-			} else {
-				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
-				$this->add_notice_to_settings_page( $message, 'notice-success' );
-			}
-			return;
-		}
-
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
@@ -475,8 +463,8 @@ class WC_Payments_Account {
 	 * @return string
 	 */
 	private function get_oauth_return_url( $wcpay_connect_from ) {
-		// Usually the return URL is the WCPay plugin settings page.
-		// But if connection originated on the WCADMIN payment task page, return there.
+		// If connection originated on the WCADMIN payment task page, return there.
+		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
 			? add_query_arg(
 				[
@@ -486,7 +474,13 @@ class WC_Payments_Account {
 				],
 				admin_url( 'admin.php' )
 			)
-			: WC_Payment_Gateway_WCPay::get_settings_url();
+			: add_query_arg(
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+				admin_url( 'admin.php' )
+			);
 	}
 
 	/**
