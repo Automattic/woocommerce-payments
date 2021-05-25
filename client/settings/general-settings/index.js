@@ -14,26 +14,31 @@ import {
  * Internal dependencies
  */
 import './style.scss';
-import { useGeneralSettings } from 'data';
+import {
+	useAccountStatementDescriptor,
+	useManualCapture,
+	useIsWCPayEnabled,
+} from 'data';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
 const GeneralSettings = ( { accountLink } ) => {
-	const {
+	const [
 		accountStatementDescriptor,
+		setAccountStatementDescriptor,
+	] = useAccountStatementDescriptor();
+	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
+	const [
 		isManualCaptureEnabled,
-		isWCPayEnabled,
-		updateAccountStatementDescriptor,
-		updateIsManualCaptureEnabled,
-		updateIsWCPayEnabled,
-	} = useGeneralSettings();
+		setIsManualCaptureEnabled,
+	] = useManualCapture();
 
 	return (
 		<Card className="general-settings">
 			<CardBody size="large">
 				<CheckboxControl
 					checked={ isWCPayEnabled }
-					onChange={ updateIsWCPayEnabled }
+					onChange={ setIsWCPayEnabled }
 					label={ __(
 						'Enable WooCommerce Payments',
 						'woocommerce-payments'
@@ -44,7 +49,7 @@ const GeneralSettings = ( { accountLink } ) => {
 				</h4>
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
-					onChange={ updateIsManualCaptureEnabled }
+					onChange={ setIsManualCaptureEnabled }
 					label={ __(
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
@@ -69,7 +74,7 @@ const GeneralSettings = ( { accountLink } ) => {
 							'woocommerce-payments'
 						) }
 						value={ accountStatementDescriptor }
-						onChange={ updateAccountStatementDescriptor }
+						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						hideLabelFromVision
 					/>

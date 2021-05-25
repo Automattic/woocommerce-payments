@@ -13,8 +13,8 @@ import './style.scss';
 import { useTestMode, useDevMode } from '../../data';
 
 const TestModeSettings = () => {
-	const { isEnabled, updateIsTestModeEnabled } = useTestMode();
-	const { isEnabled: isDevModeEnabled } = useDevMode();
+	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
+	const isDevModeEnabled = useDevMode();
 
 	return (
 		<Card className="test-mode-settings">

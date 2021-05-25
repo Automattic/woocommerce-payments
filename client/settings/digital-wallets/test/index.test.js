@@ -10,39 +10,39 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import DigitalWallets from '..';
-import { useDigitalWalletsSettings, useDigitalWalletsLocations } from 'data';
+import {
+	useDigitalWalletsEnabledSettings,
+	useDigitalWalletsLocations,
+} from 'data';
 
 jest.mock( 'data', () => ( {
-	useDigitalWalletsSettings: jest.fn(),
+	useDigitalWalletsEnabledSettings: jest.fn(),
 	useDigitalWalletsLocations: jest.fn(),
 } ) );
 
 const getMockDigitalWalletsSettings = (
 	isEnabled,
 	updateIsDigitalWalletsEnabledHandler
-) => ( {
-	isDigitalWalletsEnabled: isEnabled,
-	updateIsDigitalWalletsEnabled: updateIsDigitalWalletsEnabledHandler,
-} );
+) => [ isEnabled, updateIsDigitalWalletsEnabledHandler ];
 
 const getMockDigitalWalletsLocations = (
 	checkoutStatus,
 	productPageStatus,
 	cartStatus,
 	updateDigitalWalletsLocationsHandler
-) => ( {
-	digitalWalletsLocations: {
+) => [
+	{
 		checkout: checkoutStatus,
 		// eslint-disable-next-line camelcase
 		product_page: productPageStatus,
 		cart: cartStatus,
 	},
-	updateDigitalWalletsLocations: updateDigitalWalletsLocationsHandler,
-} );
+	updateDigitalWalletsLocationsHandler,
+];
 
 describe( 'DigitalWallets', () => {
 	beforeEach( () => {
-		useDigitalWalletsSettings.mockReturnValue(
+		useDigitalWalletsEnabledSettings.mockReturnValue(
 			getMockDigitalWalletsSettings( false, jest.fn() )
 		);
 		useDigitalWalletsLocations.mockReturnValue(
@@ -52,7 +52,7 @@ describe( 'DigitalWallets', () => {
 
 	it( 'should enable 1-click checkout locations if 1-click checkout is enabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
-		useDigitalWalletsSettings.mockReturnValue(
+		useDigitalWalletsEnabledSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
 				false,
 				updateIsDigitalWalletsEnabledHandler
@@ -83,7 +83,7 @@ describe( 'DigitalWallets', () => {
 
 	it( 'should disable 1-click checkout locations if 1-click checkout is disabled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
-		useDigitalWalletsSettings.mockReturnValue(
+		useDigitalWalletsEnabledSettings.mockReturnValue(
 			getMockDigitalWalletsSettings(
 				true,
 				updateIsDigitalWalletsEnabledHandler
@@ -114,7 +114,7 @@ describe( 'DigitalWallets', () => {
 
 	it( 'should trigger an action to save the checked locations when toggling the checkboxes', async () => {
 		const updateDigitalWalletsLocationsHandler = jest.fn();
-		useDigitalWalletsSettings.mockReturnValue(
+		useDigitalWalletsEnabledSettings.mockReturnValue(
 			getMockDigitalWalletsSettings( true, jest.fn() )
 		);
 		useDigitalWalletsLocations.mockReturnValue(
