@@ -63,6 +63,7 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 }
 
 export function* saveSettings() {
+	let isSuccess = false;
 	try {
 		const settings = select( STORE_NAME ).getSettings();
 
@@ -77,6 +78,8 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Settings saved.', 'woocommerce-payments' )
 		);
+
+		isSuccess = true;
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
@@ -84,4 +87,6 @@ export function* saveSettings() {
 	} finally {
 		yield updateIsSavingSettings( false );
 	}
+
+	return isSuccess;
 }

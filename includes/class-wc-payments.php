@@ -257,7 +257,7 @@ class WC_Payments {
 				new WC_Payments_Admin_Sections_Overwrite();
 
 				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
-				new WC_Payments_Admin_Additional_Methods_Setup();
+				new WC_Payments_Admin_Additional_Methods_Setup( self::$card_gateway );
 			}
 		}
 
