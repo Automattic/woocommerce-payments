@@ -27,7 +27,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		beforeAll( async () => {
 			await merchant.login();
 
-			// Create subscription product with signup fee
+			// Create subscription product without signup fee
 			await merchantWCP.createSubscriptionProduct( productName, false );
 
 			await merchant.logout();
