@@ -56,6 +56,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
 			[ 'woocommerce_package_rates', 'get_shipping_rates_prices' ],
+			[ 'init', 'register_free_shipping_filters' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
@@ -70,11 +71,10 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$new_zone             = new WC_Shipping_Zone();
 		$new_zone_free_method = $new_zone->add_shipping_method( 'free_shipping' );
 
-		// Instantiate a new WCPay\Multi_Currency\Frontend_Prices to read the new zones.
-		$frontend_prices = new WCPay\Multi_Currency\Frontend_Prices( $this->mock_multi_currency );
+		$this->frontend_prices->register_free_shipping_filters();
 
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $frontend_prices, 'get_free_shipping_min_amount' ] ) );
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
 	}
 
 	public function test_get_product_price_returns_empty_price() {

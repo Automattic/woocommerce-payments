@@ -44,7 +44,7 @@ class Frontend_Prices {
 
 		// Shipping methods hooks.
 		add_filter( 'woocommerce_package_rates', [ $this, 'get_shipping_rates_prices' ], 50 );
-		$this->register_free_shipping_filters();
+		add_filter( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
 
 		// Coupon hooks.
 		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
@@ -178,7 +178,7 @@ class Frontend_Prices {
 	/**
 	 * Register the hooks to set the min amount for free shipping methods.
 	 */
-	private function register_free_shipping_filters() {
+	public function register_free_shipping_filters() {
 		$shipping_zones = \WC_Shipping_Zones::get_zones();
 
 		$default_zone = \WC_Shipping_Zones::get_zone( 0 );
