@@ -32,10 +32,17 @@ const DigitalWallets = () => {
 		updateDigitalWalletsLocations,
 	] = useDigitalWalletsLocations();
 
-	const makeLocationChangeHandler = ( location ) => ( status ) => {
-		updateDigitalWalletsLocations( {
-			[ location ]: status,
-		} );
+	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
+		if ( isChecked ) {
+			updateDigitalWalletsLocations( [
+				...digitalWalletsLocations,
+				location,
+			] );
+		} else {
+			updateDigitalWalletsLocations(
+				digitalWalletsLocations.filter( ( name ) => name !== location )
+			);
+		}
 	};
 
 	return (
@@ -101,7 +108,7 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.checkout
+								digitalWalletsLocations.includes( 'checkout' )
 							}
 							onChange={ makeLocationChangeHandler( 'checkout' ) }
 							label={ __( 'Checkout', 'woocommerce-payments' ) }
@@ -112,11 +119,9 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.product_page
+								digitalWalletsLocations.includes( 'product' )
 							}
-							onChange={ makeLocationChangeHandler(
-								'product_page'
-							) }
+							onChange={ makeLocationChangeHandler( 'product' ) }
 							label={ __(
 								'Product page',
 								'woocommerce-payments'
@@ -128,7 +133,7 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.cart
+								digitalWalletsLocations.includes( 'cart' )
 							}
 							onChange={ makeLocationChangeHandler( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
