@@ -10,30 +10,10 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
 /**
  * Internal dependencies
  */
-import Chip from 'components/chip';
 import DepositsStatus from 'components/deposits-status';
 import PaymentsStatus from 'components/payments-status';
+import StatusChip from 'components/account-status/status-chip';
 import './style.scss';
-
-const renderStatusChip = ( status ) => {
-	let description = __( 'Unknown', 'woocommerce-payments' );
-	let type = 'light';
-	if ( 'complete' === status ) {
-		description = __( 'Complete', 'woocommerce-payments' );
-		type = 'primary';
-	} else if ( 'restricted_soon' === status ) {
-		description = __( 'Restricted soon', 'woocommerce-payments' );
-		type = 'warning';
-	} else if ( 'restricted' === status ) {
-		description = __( 'Restricted', 'woocommerce-payments' );
-		type = 'alert';
-	} else if ( status.startsWith( 'rejected' ) ) {
-		description = __( 'Rejected', 'woocommerce-payments' );
-		type = 'light';
-	}
-
-	return <Chip message={ description } type={ type } isCompact />;
-};
 
 const renderPaymentsStatus = ( paymentsEnabled ) => {
 	return (
@@ -134,7 +114,7 @@ const AccountStatus = ( props ) => {
 	return (
 		<div>
 			<div>
-				{ renderStatusChip( accountStatus.status ) }
+				<StatusChip accountStatus={ accountStatus.status } />
 				{ renderPaymentsStatus( accountStatus.paymentsEnabled ) }
 				{ renderDepositsStatus( accountStatus.depositsStatus ) }
 			</div>
