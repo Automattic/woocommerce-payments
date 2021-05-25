@@ -58,7 +58,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent() {
-		$amount         = WC()->cart->get_cart_contents_total();
+		$amount         = WC()->cart->get_total( false );
 		$currency       = get_woocommerce_currency();
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
@@ -185,7 +185,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					}
 				}
 
-				$response = $this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -290,6 +290,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php
 		} catch ( Exception $e ) {
 			// Output the error message.
+			Logger::log( 'Error: ' . $e->getMessage() );
 			?>
 			<div>
 				<?php
