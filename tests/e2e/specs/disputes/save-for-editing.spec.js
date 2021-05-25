@@ -87,6 +87,13 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
+		await page.waitForSelector(
+			'div.components-flex.components-card__header.is-size-large',
+			{
+				timeout: 10000,
+			}
+		);
+
 		await uiLoaded();
 
 		// Verify we're on the challenge dispute page
