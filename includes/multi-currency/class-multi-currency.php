@@ -87,6 +87,7 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
@@ -102,6 +103,7 @@ class Multi_Currency {
 				register_widget( new Currency_Switcher_Widget( $this ) );
 			}
 		);
+		new User_Settings( $this );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
@@ -223,6 +225,21 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Update the selected currency from a currency code.
+	 *
+	 * @param string $currency_code Three letter currency code.
+	 * @return void
+	 */
+	public function update_selected_currency( string $currency_code ) {
+		$code     = strtoupper( $currency_code );
+		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
+
+		if ( $currency && WC()->session ) {
+			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
+		}
+	}
+
+	/**
 	 * Update the selected currency from url param `currency`.
 	 *
 	 * @return void
@@ -232,12 +249,7 @@ class Multi_Currency {
 			return;
 		}
 
-		$code     = strtoupper( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
-
-		if ( $currency && WC()->session ) {
-			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
-		}
+		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	/**
