@@ -42,7 +42,7 @@ class WC_Payments_Admin_Additional_Methods_Setup {
 			return;
 		}
 
-		if ( count( $available_methods ) <= 1 ) {
+		if ( 1 >= count( $available_methods ) ) {
 			return;
 		}
 
