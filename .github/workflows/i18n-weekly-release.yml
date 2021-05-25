@@ -47,7 +47,7 @@ jobs:
           echo "Release created."
 
           echo "Uploading i18n assets to GitHub Release..."
-          upload_url=$(echo $response | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
+          upload_url=$(echo $response | grep 'upload_url' | sed 's|.*"upload_url": "\([^{]*\).*|\1|')
 
           curl --request POST \
               --header 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
