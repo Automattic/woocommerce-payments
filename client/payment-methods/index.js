@@ -73,7 +73,6 @@ const PaymentMethods = () => {
 	} = useEnabledPaymentMethodIds();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
-
 	const enabledMethods = availablePaymentMethodIds
 		.filter( ( method ) => enabledMethodIds.includes( method ) )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );

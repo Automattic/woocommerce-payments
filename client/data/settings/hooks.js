@@ -113,3 +113,29 @@ export const useSettings = () => {
 		[ saveSettings ]
 	);
 };
+
+export const useDigitalWalletsSettings = () => {
+	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
+
+		return {
+			isDigitalWalletsEnabled: getIsDigitalWalletsEnabled(),
+			updateIsDigitalWalletsEnabled,
+		};
+	} );
+};
+
+export const useDigitalWalletsLocations = () => {
+	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsLocations } = select( STORE_NAME );
+
+		return {
+			digitalWalletsLocations: getDigitalWalletsLocations(),
+			updateDigitalWalletsLocations,
+		};
+	} );
+};
