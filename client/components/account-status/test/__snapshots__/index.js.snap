@@ -48,7 +48,6 @@ exports[`AccountStatus renders normal status 1`] = `
       >
         <button
           class="components-button is-link"
-          disabled=""
           type="button"
         >
           Edit details
