@@ -43,7 +43,7 @@ jobs:
       - name: Upload release
         run: |
           TAG="i18n-dev-trial-run-$(date +%Y%m%d)"
-          NAME="Version for internationalization testing  $TAG. Not for production."
+          NAME="Version for internationalization testing $TAG. Not for production."
           BODY='This version is intended to test the internationalization strings. It should NOT be used for production.'
 
           CREATE_RELEASE_OUT=$(mktemp)
