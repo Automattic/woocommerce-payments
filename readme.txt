@@ -109,7 +109,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 * Update - Deposit overview details.
-* Add - Refresh cached account properties when Stripe external accounts are changing.
+* Add - Refresh cached account on deposit bank accounts changes.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
