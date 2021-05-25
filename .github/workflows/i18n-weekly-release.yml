@@ -31,6 +31,11 @@ jobs:
         run: |
           npm ci
           npm run build
+          
+          if [[ ! -f woocommerce-payments.zip ]]; then
+            echo "Failed to create release zip"
+            exit 1
+          fi
 
       - name: Upload release
         run: |
