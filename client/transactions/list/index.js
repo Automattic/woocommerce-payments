@@ -203,7 +203,10 @@ export const TransactionsList = ( props ) => {
 		// Map transaction into table row.
 		const data = {
 			// eslint-disable-next-line camelcase
-			transaction_id: { value: txn.transaction_id },
+			transaction_id: {
+				value: txn.transaction_id,
+				display: txn.transaction_id,
+			},
 			date: {
 				value: txn.date,
 				display: clickable(
