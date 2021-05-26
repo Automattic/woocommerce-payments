@@ -7,6 +7,10 @@ import {
 	updateIsWCPayEnabled,
 	updateEnabledPaymentMethodIds,
 	updateIsSavingSettings,
+	updateIsManualCaptureEnabled,
+	updateAccountStatementDescriptor,
+	updateDigitalWalletsLocations,
+	updateIsDigitalWalletsEnabled,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -169,6 +173,189 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					is_wcpay_enabled: true, // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_IS_MANUAL_CAPTURE_ENABLED', () => {
+		test( 'toggles `data.is_manual_capture_enabled`', () => {
+			const oldState = {
+				data: {
+					is_manual_capture_enabled: false, // eslint-disable-line
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsManualCaptureEnabled( true )
+			);
+
+			expect( state.data.is_manual_capture_enabled ).toBeTruthy();
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					is_manual_capture_enabled: false, // eslint-disable-line
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsManualCaptureEnabled( true )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					is_manual_capture_enabled: true, // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_ACCOUNT_STATEMENT_DESCRIPTOR', () => {
+		test( 'toggles `data.account_statement_descriptor`', () => {
+			const oldState = {
+				data: {
+					account_statement_descriptor: 'Statement', // eslint-disable-line
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateAccountStatementDescriptor( 'New Statement' )
+			);
+
+			expect( state.data.account_statement_descriptor ).toEqual(
+				'New Statement'
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					account_statement_descriptor: 'Statement', // eslint-disable-line
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateAccountStatementDescriptor( 'New Statement' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					account_statement_descriptor: 'New Statement', // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_IS_DIGITAL_WALLETS_ENABLED', () => {
+		test( 'toggles `data.is_digital_wallets_enabled`', () => {
+			const oldState = {
+				data: {
+					// eslint-disable-next-line camelcase
+					is_digital_wallets_enabled: false,
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsDigitalWalletsEnabled( true )
+			);
+
+			expect( state.data.is_digital_wallets_enabled ).toBeTruthy();
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					// eslint-disable-next-line camelcase
+					is_digital_wallets_enabled: false,
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsDigitalWalletsEnabled( true )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					// eslint-disable-next-line camelcase
+					is_digital_wallets_enabled: true,
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_DIGITAL_WALLETS_LOCATIONS', () => {
+		const initDigitalWalletsState = {
+			// eslint-disable-next-line camelcase
+			product_page: true,
+			checkout: false,
+			cart: false,
+		};
+		const enableAlldigitalWalletsState = {
+			// eslint-disable-next-line camelcase
+			product_page: true,
+			checkout: true,
+			cart: true,
+		};
+
+		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
+			const oldState = {
+				data: {
+					// eslint-disable-next-line camelcase
+					digital_wallets_enabled_locations: initDigitalWalletsState,
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
+			);
+
+			expect( state.data.digital_wallets_enabled_locations ).toEqual(
+				enableAlldigitalWalletsState
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					// eslint-disable-next-line camelcase
+					digital_wallets_enabled_locations: initDigitalWalletsState,
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateDigitalWalletsLocations( enableAlldigitalWalletsState )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					// eslint-disable-next-line camelcase
+					digital_wallets_enabled_locations: enableAlldigitalWalletsState,
 					baz: 'quux',
 				},
 			} );

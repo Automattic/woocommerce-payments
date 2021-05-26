@@ -52,6 +52,7 @@ class WC_Payments_Admin {
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
+		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 	}
 
 	/**
@@ -330,6 +331,24 @@ class WC_Payments_Admin {
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
+
+		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
+		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
+		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require_once $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			$payment_gateways_script_src_url,
+			$payment_gateways_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/payment-gateways.js' ),
+			true
+		);
+		wp_register_style(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/payment-gateways.css' )
+		);
 	}
 
 	/**
@@ -371,7 +390,9 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $tos_agreement_declined || $tos_agreement_required ) {
+		$track_stripe_connected = get_option( '_wcpay_oauth_stripe_connected' );
+
+		if ( $tos_agreement_declined || $tos_agreement_required || $track_stripe_connected ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			wp_localize_script(
 				'WCPAY_TOS',
@@ -380,11 +401,23 @@ class WC_Payments_Admin {
 					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
+					'trackStripeConnected' => $track_stripe_connected,
 				]
 			);
 
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
+		}
+
+		$is_payment_methods_page = (
+			is_admin() &&
+			$current_tab && ! $current_section
+			&& 'checkout' === $current_tab
+		);
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
+			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
+			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
 	}
 
@@ -488,11 +521,20 @@ class WC_Payments_Admin {
 		}
 
 		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'];
-		$past_due = isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false;
+		$status   = $account['status'] ?? '';
+		$past_due = $account['has_overdue_requirements'] ?? false;
 
 		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
 			update_option( 'wcpay_show_update_business_details_task', 'yes' );
 		}
+	}
+
+	/**
+	 * Adds a container to the "payment gateways" page.
+	 * This is where the "Are you sure you want to disable WCPay?" confirmation dialog is rendered.
+	 */
+	public function payment_gateways_container() {
+		?><div id="wcpay-payment-gateways-container" />
+		<?php
 	}
 }

@@ -10,46 +10,138 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
-export const useEnabledPaymentMethodIds = () =>
-	useSelect( ( select ) => {
-		const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-		const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
+export const useEnabledPaymentMethodIds = () => {
+	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-		return {
-			enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
-			updateEnabledPaymentMethodIds,
-		};
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+
+			return [
+				getEnabledPaymentMethodIds(),
+				updateEnabledPaymentMethodIds,
+			];
+		},
+		[ updateEnabledPaymentMethodIds ]
+	);
+};
+
+export const useTestMode = () => {
+	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsTestModeEnabled } = select( STORE_NAME );
+
+			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
+		},
+		[ updateIsTestModeEnabled ]
+	);
+};
+
+export const useDevMode = () => {
+	return useSelect( ( select ) => {
+		const { getIsDevModeEnabled } = select( STORE_NAME );
+
+		return getIsDevModeEnabled();
+	}, [] );
+};
+
+export const useAccountStatementDescriptor = () => {
+	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptor } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptor(),
+				updateAccountStatementDescriptor,
+			];
+		},
+		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useManualCapture = () => {
+	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsManualCaptureEnabled } = select( STORE_NAME );
+
+			return [
+				getIsManualCaptureEnabled(),
+				updateIsManualCaptureEnabled,
+			];
+		},
+		[ updateIsManualCaptureEnabled ]
+	);
+};
+
+export const useIsWCPayEnabled = () => {
+	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsWCPayEnabled } = select( STORE_NAME );
+
+			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
+		},
+		[ updateIsWCPayEnabled ]
+	);
+};
+
+export const useGetAvailablePaymentMethodIds = () =>
+	useSelect( ( select ) => {
+		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
+
+		return getAvailablePaymentMethodIds();
 	} );
 
-export const useGeneralSettings = () =>
-	useSelect( ( select ) => {
-		const { getIsWCPayEnabled } = select( STORE_NAME );
-		const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+export const useSettings = () => {
+	const { saveSettings } = useDispatch( STORE_NAME );
 
-		return {
-			isWCPayEnabled: getIsWCPayEnabled(),
-			updateIsWCPayEnabled,
-		};
+	return useSelect(
+		( select ) => {
+			const {
+				getSettings,
+				hasFinishedResolution,
+				isResolving,
+				isSavingSettings,
+			} = select( STORE_NAME );
+
+			const isLoading =
+				isResolving( 'getSettings' ) ||
+				! hasFinishedResolution( 'getSettings' );
+
+			return {
+				settings: getSettings(),
+				isLoading,
+				saveSettings,
+				isSaving: isSavingSettings(),
+			};
+		},
+		[ saveSettings ]
+	);
+};
+
+export const useDigitalWalletsEnabledSettings = () => {
+	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
+
+		return [ getIsDigitalWalletsEnabled(), updateIsDigitalWalletsEnabled ];
 	} );
+};
 
-export const useSettings = () =>
-	useSelect( ( select ) => {
-		const {
-			getSettings,
-			hasFinishedResolution,
-			isResolving,
-			isSavingSettings,
-		} = select( STORE_NAME );
+export const useDigitalWalletsLocations = () => {
+	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
 
-		const isLoading =
-			isResolving( 'getSettings' ) ||
-			! hasFinishedResolution( 'getSettings' );
-		const { saveSettings } = useDispatch( STORE_NAME );
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsLocations } = select( STORE_NAME );
 
-		return {
-			settings: getSettings(),
-			isLoading,
-			saveSettings,
-			isSaving: isSavingSettings(),
-		};
+		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
 	} );
+};

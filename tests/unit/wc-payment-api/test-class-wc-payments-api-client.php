@@ -222,7 +222,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'mandate_data'         => $mandate_data,
 				]
 			),
-			true
+			true,
+			false
 		)
 		->will(
 			$this->returnValue(
@@ -426,7 +427,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'description' => 'Test Customer Description',
 					]
 				),
-				true
+				true,
+				false
 			)
 			->will(
 				$this->returnValue(
@@ -545,7 +547,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'f' => 6,
 						],
 					]
-				)
+				),
+				true,
+				true // get_oauth_data should use user token auth.
 			)
 			->willReturn(
 				[
@@ -577,6 +581,126 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Assert the response is correct.
 		$this->assertEquals( [ 'url' => false ], $result );
+	}
+
+	public function test_update_account() {
+		$test_data = [ 'mock' => true ];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts',
+					'method'          => 'POST',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					array_merge(
+						[ 'test_mode' => false ],
+						[ 'mock' => true ]
+					)
+				),
+				true,
+				true // update_account should use user token auth.
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'mock_account' => true ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->update_account( $test_data );
+
+		$this->assertEquals( [ 'mock_account' => true ], $result );
+	}
+
+	public function test_get_login_data() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/login_links',
+					'method'          => 'POST',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode'    => false,
+						'redirect_url' => 'mock_url',
+					]
+				),
+				true,
+				true // get_login_data should use user token auth.
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'url' => 'mock' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_login_data( 'mock_url' );
+
+		$this->assertEquals( [ 'url' => 'mock' ], $result );
+	}
+
+	public function test_add_tos_agreement() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/tos_agreements',
+					'method'          => 'POST',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				wp_json_encode(
+					[
+						'test_mode' => false,
+						'source'    => 'mock_source',
+						'user_name' => 'mock_name',
+					]
+				),
+				true,
+				true // add_tos_agreement should use user token auth.
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->add_tos_agreement( 'mock_source', 'mock_name' );
+
+		$this->assertEquals( [ 'result' => 'success' ], $result );
 	}
 
 	/**

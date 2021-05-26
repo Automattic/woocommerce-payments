@@ -3,26 +3,53 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, Modal } from '@wordpress/components';
-import { useState } from '@wordpress/element';
-import { HorizontalRule } from '@wordpress/primitives';
+import { Button } from '@wordpress/components';
+import { useState, useCallback, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-
-import { addSelectedPaymentMethods } from 'data';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
-import './style.scss';
+import ConfirmationModal from '../../components/confirmation-modal';
 
-const PaymentMethodsSelector = ( { onClose, enabledPaymentMethods = [] } ) => {
-	const [ paymentMethods, setPaymentMethods ] = useState(
-		enabledPaymentMethods.reduce( ( acc, value ) => {
-			acc[ value ] = true;
-			return acc;
-		}, {} )
-	);
+const PaymentMethodsSelector = ( { className } ) => {
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+
+	const [
+		enabledMethodIds,
+		updateEnabledMethodIds,
+	] = useEnabledPaymentMethodIds();
+
+	const [
+		isPaymentMethodsSelectorModalOpen,
+		setIsPaymentMethodsSelectorModalOpen,
+	] = useState( false );
+
+	const [ paymentMethods, setPaymentMethods ] = useState( {} );
+
+	useEffect( () => {
+		setPaymentMethods(
+			availablePaymentMethodIds
+				.filter(
+					( methodId ) => ! enabledMethodIds.includes( methodId )
+				)
+				.reduce( ( acc, value ) => {
+					acc[ value ] = false;
+					return acc;
+				}, {} )
+		);
+	}, [ availablePaymentMethodIds, enabledMethodIds ] );
+
+	const addSelectedPaymentMethods = ( itemIds ) => {
+		updateEnabledMethodIds( [
+			...new Set( [ ...enabledMethodIds, ...itemIds ] ),
+		] );
+	};
 
 	const handleChange = ( paymentMethod, enabled ) => {
 		setPaymentMethods( ( oldPaymentMethods ) => ( {
@@ -31,55 +58,79 @@ const PaymentMethodsSelector = ( { onClose, enabledPaymentMethods = [] } ) => {
 		} ) );
 	};
 
-	const handleAddSelected = () => {
+	const handlePaymentMethodAddButtonClick = useCallback( () => {
+		setIsPaymentMethodsSelectorModalOpen( true );
+	}, [ setIsPaymentMethodsSelectorModalOpen ] );
+
+	const handleAddSelectedCancelClick = useCallback( () => {
+		setIsPaymentMethodsSelectorModalOpen( false );
+	}, [ setIsPaymentMethodsSelectorModalOpen ] );
+
+	const handleAddSelectedClick = () => {
+		setIsPaymentMethodsSelectorModalOpen( false );
 		const selectedPaymentMethods = Object.entries( paymentMethods )
 			.filter( ( [ , enabled ] ) => enabled )
 			.map( ( [ method ] ) => method );
 		addSelectedPaymentMethods( selectedPaymentMethods );
-		onClose();
 	};
-
 	return (
-		<Modal
-			title={ __( 'Add payment methods', 'woocommerce-payments' ) }
-			onRequestClose={ onClose }
-		>
-			<p>
-				{ __(
-					"Increase your store's conversion by offering your customers preferred and convenient payment methods.",
-					'woocommerce-payments'
-				) }
-			</p>
-			<PaymentMethodCheckboxes>
-				<PaymentMethodCheckbox
-					checked={ paymentMethods.woocommerce_payments_giropay }
-					onChange={ handleChange }
-					fees="missing fees"
-					name="woocommerce_payments_giropay"
-				/>
-				<PaymentMethodCheckbox
-					checked={ paymentMethods.woocommerce_payments_sofort }
-					onChange={ handleChange }
-					fees="missing fees"
-					name="woocommerce_payments_sofort"
-				/>
-				<PaymentMethodCheckbox
-					checked={ paymentMethods.woocommerce_payments_sepa }
-					onChange={ handleChange }
-					fees="missing fees"
-					name="woocommerce_payments_sepa"
-				/>
-			</PaymentMethodCheckboxes>
-			<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
-			<div className="woocommerce-payments__payment-method-selector__footer">
-				<Button isPrimary onClick={ handleAddSelected }>
-					{ __( 'Add selected', 'woocommerce-payments' ) }
-				</Button>
-				<Button isSecondary onClick={ onClose }>
-					{ __( 'Cancel', 'woocommerce-payments' ) }
-				</Button>
-			</div>
-		</Modal>
+		<>
+			{ isPaymentMethodsSelectorModalOpen && (
+				<ConfirmationModal
+					title={ __(
+						'Add payment methods',
+						'woocommerce-payments'
+					) }
+					onRequestClose={ handleAddSelectedCancelClick }
+					actions={
+						<>
+							<Button
+								isSecondary
+								onClick={ handleAddSelectedCancelClick }
+							>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								isPrimary
+								onClick={ handleAddSelectedClick }
+							>
+								{ __( 'Add selected', 'woocommerce-payments' ) }
+							</Button>
+						</>
+					}
+				>
+					<p>
+						{ __(
+							"Increase your store's conversion by offering your customers preferred and convenient payment methods.",
+							'woocommerce-payments'
+						) }
+					</p>
+					<PaymentMethodCheckboxes>
+						{ Object.entries( paymentMethods ).map(
+							( [ key, enabled ] ) => (
+								<PaymentMethodCheckbox
+									key={ key }
+									checked={ enabled }
+									onChange={ handleChange }
+									fees="missing fees"
+									name={ key }
+								/>
+							)
+						) }
+					</PaymentMethodCheckboxes>
+				</ConfirmationModal>
+			) }
+			<Button
+				isSecondary
+				className={ className }
+				onClick={ handlePaymentMethodAddButtonClick }
+				disabled={
+					enabledMethodIds.length === availablePaymentMethodIds.length
+				}
+			>
+				{ __( 'Add payment method', 'woocommerce-payments' ) }
+			</Button>
+		</>
 	);
 };
 
