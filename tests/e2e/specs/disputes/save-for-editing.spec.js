@@ -11,7 +11,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
  */
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
-import { uiLoaded, merchantWCP } from '../../utils';
+import { merchantWCP } from '../../utils';
 
 let orderId;
 
@@ -78,13 +78,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 			timeout: 10000,
 		} );
 
-		await Promise.all( [
-			expect( page ).toClick( 'a.components-button.is-primary', {
-				text: 'Challenge dispute',
-			} ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
+		await merchantWCP.openChallengeDispute();
 
 		await page.waitForSelector(
 			'div.components-flex.components-card__header.is-size-large',
@@ -92,8 +86,6 @@ describe( 'Disputes > Save dispute for editing', () => {
 				timeout: 10000,
 			}
 		);
-
-		await uiLoaded();
 
 		// Verify we're on the challenge dispute page
 		await expect( page ).toMatchElement(
@@ -121,21 +113,11 @@ describe( 'Disputes > Save dispute for editing', () => {
 			text: 'Save for later',
 		} );
 
-		await uiLoaded();
-
 		// Re-open the dispute to view the details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
 		// View the saved challenge
-		await Promise.all( [
-			expect( page ).toClick( 'a.components-button.is-primary', {
-				text: 'Challenge dispute',
-			} ),
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			uiLoaded(),
-		] );
-
-		await uiLoaded();
+		await merchantWCP.openChallengeDispute();
 
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(

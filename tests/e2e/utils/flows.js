@@ -89,20 +89,14 @@ export const merchantWCP = {
 			uiLoaded(),
 		] );
 		await uiLoaded();
+	},
 
-		await page.waitForSelector(
-			'div.components-flex.components-card__header.is-size-large',
-			{
-				timeout: 10000,
-			}
-		);
-
-		await expect( page ).toMatchElement(
-			'div.components-flex.components-card__header.is-size-large',
-			{
-				text: 'Dispute overview',
-			}
-		);
+	openChallengeDispute: async () => {
+		await expect( page ).toClick( 'a.components-button.is-primary', {
+			text: 'Challenge dispute',
+		} );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await uiLoaded();
 	},
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {
