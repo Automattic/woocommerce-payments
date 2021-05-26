@@ -16,27 +16,30 @@ import GiropayDetails from './giropay';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 
+const detailsComponentMap = {
+	card: CardDetails,
+	card_present: CardPresentDetails, // eslint-disable-line camelcase
+	giropay: GiropayDetails,
+	sepa_debit: SepaDetails, // eslint-disable-line camelcase
+	sofort: SofortDetails,
+};
+
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
-	const DetailComponents = {
-		card: CardDetails,
-		card_present: CardPresentDetails, // eslint-disable-line camelcase
-		giropay: GiropayDetails,
-		sepa_debit: SepaDetails, // eslint-disable-line camelcase
-		sofort: SofortDetails,
-	};
-
-	let PaymentMethodDetails = null;
-	if ( charge.payment_method_details && charge.payment_method_details.type ) {
-		const type = charge.payment_method_details.type;
-		if ( type in DetailComponents ) {
-			PaymentMethodDetails = DetailComponents[ type ];
-		}
-	}
-
-	// Gracefully degrade for unrecognized payment method types
-	if ( null == PaymentMethodDetails ) {
+	if (
+		! charge.payment_method_details ||
+		! charge.payment_method_details.type
+	) {
+		// Gracefully degrade for malformed charge objects
 		return null;
 	}
+
+	const type = charge.payment_method_details.type;
+	if ( ! ( type in detailsComponentMap ) ) {
+		// Gracefully degrade for unrecognized payment method types
+		return null;
+	}
+
+	const PaymentMethodDetails = detailsComponentMap[ type ];
 
 	return (
 		<Card size="large">
