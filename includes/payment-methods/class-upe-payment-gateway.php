@@ -133,6 +133,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 							'order_id'            => $order_id,
 							'wc_payment_method'   => self::GATEWAY_ID,
 							'save_payment_method' => empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
 						],
 						$this->get_return_url( $order )
 					)
@@ -145,36 +146,42 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Check for a redirect payment method on order received page.
 	 */
 	public function maybe_process_redirect_order() {
-		if ( ! is_order_received_page() || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] || empty( $_GET['wc_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! is_order_received_page() ) {
 			return;
 		}
 
-		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
+		if ( ! $is_nonce_valid || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) || empty( $_GET['wc_payment_method'] ) ) {
+			return;
+		}
+
+		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : '';
 		if ( self::GATEWAY_ID !== $payment_method ) {
 			return;
 		}
 
-		$order_id = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$order_id            = isset( $_GET['order_id'] ) ? wc_clean( wp_unslash( $_GET['order_id'] ) ) : '';
+		$intent_id           = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : '';
+		$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false;
 
-		$this->process_redirect_payment( $order_id );
+		if ( empty( $intent_id ) || empty( $order_id ) ) {
+			return;
+		}
+
+		$this->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
 	}
 
 	/**
 	 * Processes redirect payments.
 	 *
-	 * @param int $order_id The order ID being processed.
+	 * @param int    $order_id The order ID being processed.
+	 * @param string $intent_id The Stripe payment intent ID for the order payment.
+	 * @param bool   $save_payment_method Boolean representing whether payment method for order should be saved.
 	 *
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
-	public function process_redirect_payment( $order_id ) {
+	public function process_redirect_payment( $order_id, $intent_id, $save_payment_method ) {
 		try {
-			$intent_id           = isset( $_GET['payment_intent'] ) ? wc_clean( wp_unslash( $_GET['payment_intent'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-			$save_payment_method = isset( $_GET['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_GET['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification
-
-			if ( empty( $intent_id ) || empty( $order_id ) ) {
-				return;
-			}
-
 			$order = wc_get_order( $order_id );
 
 			if ( ! is_object( $order ) ) {
