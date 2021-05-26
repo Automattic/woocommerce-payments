@@ -159,6 +159,11 @@ class Multi_Currency {
 		foreach ( $currencies as $currency ) {
 			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
 		}
+
+		// Add default store currency with a rate of 1.0.
+		$woocommerce_currency                                = get_woocommerce_currency();
+		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
+
 		return $this->available_currencies;
 	}
 

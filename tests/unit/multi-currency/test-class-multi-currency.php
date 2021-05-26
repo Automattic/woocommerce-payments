@@ -26,9 +26,29 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_round_precision' );
+		remove_all_filters( 'woocommerce_currency' );
 		$this->reset_multi_currency_instance();
 
 		parent::tearDown();
+	}
+
+	public function test_get_available_currencies_adds_store_currency() {
+		add_filter(
+			'woocommerce_currency',
+			function () {
+				return 'DEFAULT';
+			},
+			100
+		);
+
+		// Recreate Multi_Currency instance to use the recently set DEFAULT currency.
+		$this->reset_multi_currency_instance();
+		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
+
+		$default_currency = $this->multi_currency->get_available_currencies()['DEFAULT'];
+
+		$this->assertSame( 'DEFAULT', $default_currency->get_code() );
+		$this->assertSame( 1.0, $default_currency->get_rate() );
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session() {
