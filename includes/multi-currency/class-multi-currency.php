@@ -131,7 +131,6 @@ class Multi_Currency {
 	 */
 	public function get_mock_currencies() {
 		return [
-			[ 'USD', '1.00' ],
 			[ 'CAD', '1.206823' ],
 			[ 'GBP', '0.708099' ],
 			[ 'EUR', '0.826381' ],
