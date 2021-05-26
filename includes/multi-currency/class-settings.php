@@ -177,10 +177,11 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	/**
-	 * This docbloc still needs to be completed.
-	 * TODO: this ^
+	 * Returns the settings for the single currency.
 	 *
-	 * @param object $currency The currency object we're getting settings for.
+	 * @param Currency $currency The currency object we're getting settings for.
+	 *
+	 * @return array Array of settings.
 	 */
 	public function get_currency_setting( $currency ) {
 		$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
@@ -253,7 +254,7 @@ class Settings extends \WC_Settings_Page {
 					'type'    => 'radio',
 					'options' => $exchange_rate_options,
 				],
-
+				// TODO: Manual rate field needs to hide if manual isn't selected.
 				[
 					'title'    => __( 'Manual rate', 'woocommerce-payments' ),
 					'type'     => 'text',
@@ -338,31 +339,7 @@ class Settings extends \WC_Settings_Page {
 		// Save all settings through the settings API.
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
-		// Update the single currency in the enabled currencies.
-		if ( $current_section && 'store' !== $current_section ) {
-			$this->update_single_currency_settings();
-		}
-
-		do_action( 'woocommerce_update_options_' . $this->id . '_' . $current_section );
-	}
-
-	/**
-	 * New function.
-	 */
-	public function update_single_currency_settings() {
-		global $current_section;
-		$enabled  = WC_Payments_Multi_Currency()->get_enabled_currencies();
-		$code     = strtoupper( $current_section );
-		$charm    = get_option( $this->id . '_price_charm_' . $current_section, 0.00 );
-		$rounding = get_option( $this->id . '_price_rounding_' . $current_section, 'none' );
-
-		$currency = new Currency( $code, $enabled[ $code ]->get_rate() );
-		$currency->set_charm( $charm );
-		$currency->set_rounding( $rounding );
-
-		update_option( $this->id . '_enabled_currencies_previous', $enabled );
-		$enabled[ $code ] = $currency;
-		update_option( $this->id . '_enabled_currencies', $enabled );
+		do_action( 'woocommerce_update_options_' . $this->id );
 	}
 }
 

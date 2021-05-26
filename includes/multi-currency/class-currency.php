@@ -36,6 +36,13 @@ class Currency implements \JsonSerializable {
 	private $charm;
 
 	/**
+	 * Is currency default for store?
+	 *
+	 * @var bool|null
+	 */
+	private $is_default;
+
+	/**
 	 * Currency rounding rate after conversion.
 	 *
 	 * @var float|null
@@ -51,6 +58,10 @@ class Currency implements \JsonSerializable {
 	public function __construct( $code = '', $rate = 1.0 ) {
 		$this->code = $code;
 		$this->rate = $rate;
+
+		if ( get_woocommerce_currency() === $code ) {
+			$this->is_default = true;
+		}
 	}
 
 	/**
@@ -98,6 +109,15 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_id() {
 		return strtolower( $this->code );
+	}
+
+	/**
+	 * Retrieves if the currency is default for the store.
+	 *
+	 * @return bool
+	 */
+	public function get_is_default() {
+		return $this->is_default || false;
 	}
 
 	/**
@@ -162,12 +182,13 @@ class Currency implements \JsonSerializable {
 	 */
 	public function jsonSerialize() {
 		return [
-			'code'   => $this->code,
-			'rate'   => $this->get_rate(),
-			'name'   => $this->get_name(),
-			'id'     => $this->get_id(),
-			'flag'   => $this->get_flag(),
-			'symbol' => $this->get_symbol(),
+			'code'       => $this->code,
+			'rate'       => $this->get_rate(),
+			'name'       => $this->get_name(),
+			'id'         => $this->get_id(),
+			'is_default' => $this->get_is_default(),
+			'flag'       => $this->get_flag(),
+			'symbol'     => $this->get_symbol(),
 		];
 	}
 }

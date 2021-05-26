@@ -152,16 +152,6 @@ class Multi_Currency {
 			true
 		);
 
-		wp_localize_script(
-			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			'wcpayMultiCurrencySettings',
-			[
-				'enabledCurrencies'   => $this->get_enabled_currencies_for_settings(),
-				'availableCurrencies' => $this->get_available_currencies_for_settings(),
-				'defaultCurrency'     => $this->get_default_currency(),
-			]
-		);
-
 		/*
 		TODO: Add styling.
 		// @codingStandardsIgnoreStart
@@ -252,14 +242,15 @@ class Multi_Currency {
 			return $this->enabled_currencies;
 		}
 
-		$this->enabled_currencies = get_option( $this->id . '_enabled_currencies', false );
-		if ( ! $this->enabled_currencies ) {
+		$available_currencies = $this->get_available_currencies();
+		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', false );
+		if ( ! $enabled_currencies ) {
 
 			// TODO: Remove dev mode option here.
 			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
 				$count = 0;
-				foreach ( $this->available_currencies as $currency ) {
-					$this->enabled_currencies[ $currency->code ] = $currency;
+				foreach ( $available_currencies as $currency ) {
+					$enabled_currencies[] = $currency->code;
 					if ( $count >= 3 ) {
 						break;
 					}
@@ -268,9 +259,25 @@ class Multi_Currency {
 			} else {
 				$default = $this->get_default_currency();
 				// Need to set the default as an array.
-				$this->enabled_currencies[ $default->code ] = $default;
+				$enabled_currencies[] = $default->code;
 			}
 		}
+
+		// Get the charm and rounding for each enabled currency and add the currencies to the object property.
+		foreach ( $enabled_currencies as $code ) {
+			$currency = $available_currencies[ $code ];
+			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
+			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
+			$currency->set_charm( $charm );
+			$currency->set_rounding( $rounding );
+			$this->enabled_currencies[ $code ] = $currency;
+		}
+
+		// Set default currency to the top of the list.
+		$dc                         = $this->get_default_currency();
+		$default[ $dc->get_code() ] = $this->enabled_currencies[ $dc->get_code() ];
+		unset( $this->enabled_currencies[ $dc->get_code() ] );
+		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
 
 		return $this->enabled_currencies;
 	}
@@ -301,6 +308,17 @@ class Multi_Currency {
 
 		if ( $currency && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
+		}
+	}
+
+	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
 		}
 	}
 
@@ -410,63 +428,5 @@ class Multi_Currency {
 	protected function ceil_price( $price, $precision ) {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
-	}
-
-	/**
-	 * Gets currencies for settings pages.
-	 *
-	 * @param string $type The type of currencies to return.
-	 *
-	 * @return array Array of arrays of currencies, defaults to enabled.
-	 */
-	private function get_currencies_for_settings( $type = '' ) {
-		switch ( $type ) {
-			case 'available':
-				$currencies = $this->get_available_currencies();
-				break;
-			default:
-				$currencies = $this->get_enabled_currencies();
-		}
-
-		// Set the name to the main key for sorting purposes.
-		foreach ( $currencies as $currency ) {
-			$list[ $currency->get_name() ] = [
-				'code' => $currency->get_code(),
-				'name' => $currency->get_name(),
-				'flag' => $currency->get_flag(),
-			];
-		}
-		ksort( $list );
-
-		// Now that we are sorted, drop the name and use the code as the key.
-		foreach ( $list as $currency ) {
-			$return[ $currency['code'] ] = $currency;
-		}
-
-		// Set default currency to the top of the list.
-		$default_currency                         = $this->get_default_currency();
-		$default[ $default_currency->get_code() ] = $return[ $default_currency->get_code() ];
-		unset( $return[ $default_currency->get_code() ] );
-		$return = array_merge( $default, $return );
-
-		return $return;
-	}
-
-	/**
-	 * Gets the available currencies for the settings pages.
-	 *
-	 * @return array Array of arrays of available currencies.
-	 */
-	public function get_available_currencies_for_settings() {
-		return $this->get_currencies_for_settings( 'available' );
-	}
-
-	/**
-	 * Gets the enabled currencies for the settings pages.
-	 *
-	 * @return array Array of arrays of enabled currencies.
-	 */
-	public function get_enabled_currencies_for_settings() {
-		return $this->get_currencies_for_settings( 'enabled' );
 	}
 }

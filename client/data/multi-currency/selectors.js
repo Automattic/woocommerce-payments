@@ -1,10 +1,6 @@
 /** @format */
 
 /**
- * Internal dependencies
- */
-
-/**
  * Retrieves the multiCurrency state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
  *
@@ -20,12 +16,18 @@ const getMultiCurrencyState = ( state ) => {
 	return state.multiCurrency || {};
 };
 
+export const getCurrencies = ( state ) => {
+	return getMultiCurrencyState( state ).currencies || [];
+};
+
 export const getAvailableCurrencies = ( state ) => {
-	const available = getMultiCurrencyState( state ).available || [];
-	return available;
+	return getCurrencies( state ).available || {};
 };
 
 export const getEnabledCurrencies = ( state ) => {
-	const enabled = getMultiCurrencyState( state ).enabled || [];
-	return enabled;
+	return getCurrencies( state ).enabled || {};
+};
+
+export const getDefaultCurrency = ( state ) => {
+	return getCurrencies( state ).default || {};
 };
