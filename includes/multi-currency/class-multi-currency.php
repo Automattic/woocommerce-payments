@@ -82,17 +82,7 @@ class Multi_Currency {
 		try {
 			$this->init();
 		} catch ( Exceptions\Invalid_Default_Currency_Exception $e ) {
-			add_action(
-				'admin_notices',
-				function () use ( $e ) {
-					$error_message = sprintf(
-						/* translators: %1: The error message. */
-						__( 'WooCommerce Payments Multi-Currency could not be loaded: %1$s', 'woocommerce-payments' ),
-						$e->getMessage()
-					);
-					\WC_Payments::display_admin_error( $error_message );
-				}
-			);
+			add_action( 'admin_notices', [ $this, 'display_invalid_currency_error_notice' ] );
 		}
 	}
 
@@ -135,6 +125,22 @@ class Multi_Currency {
 	 */
 	public function init_widgets() {
 		register_widget( new Currency_Switcher_Widget( $this ) );
+	}
+
+	/**
+	 * Display error notice explaining that Multi-Currency cannot be loaded for the selected currency.
+	 */
+	public function display_invalid_currency_error_notice() {
+		$invalid_currency_exception = new Exceptions\Invalid_Default_Currency_Exception( get_woocommerce_currency() );
+
+		?>
+		<div class="notice notice-error wcpay-multi-currency-message">
+			<p>
+				<strong><?php echo esc_html_e( 'WooCommerce Payments Multi-Currency:', 'woocommerce-payments' ); ?></strong>
+				<?php echo esc_html( $invalid_currency_exception->getMessage() ); ?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**

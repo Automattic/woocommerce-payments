@@ -39,6 +39,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertFalse( has_action( 'widgets_init', [ $this->multi_currency, 'init_widgets' ] ) );
 	}
 
+	public function test_multi_currency_adds_admin_note_when_store_currency_is_invalid() {
+		$this->reload_multi_currency_with_invalid_store_currency();
+
+		$this->assertNotFalse( has_action( 'admin_notices', [ $this->multi_currency, 'display_invalid_currency_error_notice' ] ) );
+	}
+
 	public function test_get_default_currency_throws_exception_when_store_currency_is_invalid() {
 		$this->reload_multi_currency_with_invalid_store_currency();
 
