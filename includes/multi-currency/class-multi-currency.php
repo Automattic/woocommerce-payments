@@ -77,6 +77,7 @@ class Multi_Currency {
 	 * Constructor.
 	 */
 	private function __construct() {
+		$this->load_extension_files();
 		$this->init();
 	}
 
@@ -84,12 +85,6 @@ class Multi_Currency {
 	 * Init.
 	 */
 	public function init() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-
 		$this->id = 'wcpay_multi_currency';
 		$this->get_available_currencies();
 		$this->get_default_currency();
@@ -333,5 +328,16 @@ class Multi_Currency {
 	protected function ceil_price( $price, $precision ) {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	}
+
+	/**
+	 * Includes the required files for WooCommerce Payments Multi-Currency to work.
+	 */
+	protected function load_extension_files() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 	}
 }
