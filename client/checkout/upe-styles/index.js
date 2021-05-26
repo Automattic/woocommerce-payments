@@ -65,28 +65,38 @@ export const getAppearance = () => {
 	const upeThemeSelectedPaymentSelector =
 		'.woocommerce-checkout .place-order .button.alt';
 
-	const inputRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+	const inputTabRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+
 	const labelRules = getFieldStyles( upeThemeLabelSelector, '.Label' );
+
 	const selectedTabRules = getFieldStyles(
 		upeThemeSelectedPaymentSelector,
 		'.Tab--selected'
 	);
-	const tabHoverRules = generateHoverRules( inputRules );
+	const tabHoverRules = generateHoverRules( inputTabRules );
 	const selectedTabHoverRules = generateHoverRules( selectedTabRules );
-	const selectedTabIconRules = getFieldStyles(
-		upeThemeSelectedPaymentSelector,
-		'.TabIcon--selected'
-	);
+
+	const tabIconHoverRules = {
+		color: tabHoverRules.color,
+	};
+	const selectedTabIconRules = {
+		color: selectedTabRules.color,
+	};
+	const selectedTabIconHoverRules = {
+		color: selectedTabHoverRules.color,
+	};
 
 	const appearance = {
 		rules: {
-			'.Input': inputRules,
+			'.Input': inputTabRules,
 			'.Label': labelRules,
-			'.Tab': inputRules,
+			'.Tab': inputTabRules,
 			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
 			'.Tab--selected:hover': selectedTabHoverRules,
+			'.TabIcon:hover': tabIconHoverRules,
 			'.TabIcon--selected': selectedTabIconRules,
+			'.TabIcon--selected:hover': selectedTabIconHoverRules,
 		},
 	};
 
