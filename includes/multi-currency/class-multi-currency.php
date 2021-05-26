@@ -86,17 +86,13 @@ class Multi_Currency {
 	 */
 	public function init() {
 		$this->id = 'wcpay_multi_currency';
+
 		$this->get_available_currencies();
 		$this->get_default_currency();
 		$this->get_enabled_currencies();
 
-		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
-		add_action(
-			'widgets_init',
-			function() {
-				register_widget( new Currency_Switcher_Widget( $this ) );
-			}
-		);
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
@@ -111,10 +107,17 @@ class Multi_Currency {
 	/**
 	 * Initialize the REST API controller.
 	 */
-	public static function init_rest_api() {
+	public function init_rest_api() {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
+	}
+
+	/**
+	 * Initialize the Widgets.
+	 */
+	public function init_widgets() {
+		register_widget( new Currency_Switcher_Widget( $this ) );
 	}
 
 	/**
