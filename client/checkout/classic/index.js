@@ -19,7 +19,7 @@ jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
-	const paymentIntent = getConfig( 'paymentIntent' );
+	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -33,6 +33,7 @@ jQuery( function ( $ ) {
 			accountId: getConfig( 'accountId' ),
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
+			isUPEEnabled,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -81,20 +82,95 @@ jQuery( function ( $ ) {
 		type: 'sofort' /* eslint-disable camelcase */,
 	};
 
+	let upeElement = null;
+	let paymentIntentId = null;
 	let isUPEComplete = false;
-	const upeElement = paymentIntent
-		? elements.create( 'payment', {
-				clientSecret: paymentIntent.client_secret,
-		  } )
-		: null;
-	if ( null !== upeElement ) {
-		upeElement.on( 'change', ( event ) => {
-			isUPEComplete = event.complete;
-		} );
-	}
 
 	/**
-	 * Check if Card payment is being used.
+	 * Block UI to indicate processing and avoid duplicate submission.
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 */
+	const blockUI = ( $form ) => {
+		$form.addClass( 'processing' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6,
+			},
+		} );
+	};
+
+	// Show error notice at top of checkout form.
+	const showError = ( errorMessage ) => {
+		const messageWrapper =
+			'<ul class="woocommerce-error" role="alert">' +
+			errorMessage +
+			'</ul>';
+		const $container = $(
+			'.woocommerce-notices-wrapper, form.checkout'
+		).first();
+
+		if ( ! $container.length ) {
+			return;
+		}
+
+		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
+		$(
+			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
+		).remove();
+		$container.prepend(
+			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
+				messageWrapper +
+				'</div>'
+		);
+		$container
+			.find( '.input-text, select, input:checkbox' )
+			.trigger( 'validate' )
+			.blur();
+
+		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
+		if ( ! scrollElement.length ) {
+			scrollElement = $container;
+		}
+
+		$.scroll_to_notices( scrollElement );
+		$( document.body ).trigger( 'checkout_error' );
+	};
+
+	/**
+	 * Mounts Stripe UPE element if feature is enabled.
+	 */
+	const mountUPEElement = function () {
+		// Do not mount UPE twice.
+		if ( upeElement || paymentIntentId ) {
+			return;
+		}
+		api.createIntent()
+			.then( ( response ) => {
+				// I repeat, do NOT mount UPE twice.
+				if ( upeElement || paymentIntentId ) {
+					return;
+				}
+
+				const { client_secret: clientSecret, id: id } = response;
+				paymentIntentId = id;
+
+				upeElement = elements.create( 'payment', {
+					clientSecret,
+				} );
+				upeElement.mount( '#wcpay-upe-element' );
+				upeElement.on( 'change', ( event ) => {
+					isUPEComplete = event.complete;
+				} );
+			} )
+			.catch( ( error ) => {
+				showError( error.message );
+			} );
+	};
+
+	/**
+	 * Check if Card / UPE payment is being used.
 	 *
 	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
 	 */
@@ -152,9 +228,10 @@ jQuery( function ( $ ) {
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
-			upeElement
+			isUPEEnabled &&
+			! upeElement
 		) {
-			upeElement.mount( '#wcpay-upe-element' );
+			mountUPEElement();
 		}
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
@@ -180,9 +257,10 @@ jQuery( function ( $ ) {
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
-			upeElement
+			isUPEEnabled &&
+			! upeElement
 		) {
-			upeElement.mount( '#wcpay-upe-element' );
+			mountUPEElement();
 		}
 	}
 
@@ -210,58 +288,6 @@ jQuery( function ( $ ) {
 			displayError.empty();
 		}
 	} );
-
-	/**
-	 * Block UI to indicate processing and avoid duplicate submission.
-	 *
-	 * @param {Object} $form The jQuery object for the form.
-	 */
-	const blockUI = ( $form ) => {
-		$form.addClass( 'processing' ).block( {
-			message: null,
-			overlayCSS: {
-				background: '#fff',
-				opacity: 0.6,
-			},
-		} );
-	};
-
-	// Show error notice at top of checkout form.
-	const showError = ( errorMessage ) => {
-		const messageWrapper =
-			'<ul class="woocommerce-error" role="alert">' +
-			errorMessage +
-			'</ul>';
-		const $container = $(
-			'.woocommerce-notices-wrapper, form.checkout'
-		).first();
-
-		if ( ! $container.length ) {
-			return;
-		}
-
-		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
-		$(
-			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
-		).remove();
-		$container.prepend(
-			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
-				messageWrapper +
-				'</div>'
-		);
-		$container
-			.find( '.input-text, select, input:checkbox' )
-			.trigger( 'validate' )
-			.blur();
-
-		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
-		if ( ! scrollElement.length ) {
-			scrollElement = $container;
-		}
-
-		$.scroll_to_notices( scrollElement );
-		$( document.body ).trigger( 'checkout_error' );
-	};
 
 	// Create payment method on submission.
 	let paymentMethodGenerated;
@@ -394,7 +420,7 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPECheckout = async ( $form ) => {
-		if ( ! paymentIntent ) {
+		if ( ! paymentIntentId ) {
 			return;
 		}
 
@@ -420,7 +446,7 @@ jQuery( function ( $ ) {
 
 		try {
 			const response = await api.processCheckout(
-				paymentIntent.id,
+				paymentIntentId,
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
@@ -545,7 +571,7 @@ jQuery( function ( $ ) {
 					country: $( '#billing_country' ).val(),
 				};
 				paymentMethodDetails = sofortPayment;
-			} else if ( paymentIntent ) {
+			} else if ( isUPEEnabled && paymentIntentId ) {
 				handleUPECheckout( $( this ) );
 				return false;
 			}
