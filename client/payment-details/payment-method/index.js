@@ -17,27 +17,25 @@ import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
-	let PaymentMethodDetails = <></>;
+	const DetailComponents = {
+		card: CardDetails,
+		card_present: CardPresentDetails, // eslint-disable-line camelcase
+		giropay: GiropayDetails,
+		sepa_debit: SepaDetails, // eslint-disable-line camelcase
+		sofort: SofortDetails,
+	};
+
+	let PaymentMethodDetails = null;
 	if ( charge.payment_method_details && charge.payment_method_details.type ) {
-		switch ( charge.payment_method_details.type ) {
-			case 'card':
-				PaymentMethodDetails = CardDetails;
-				break;
-			case 'card_present':
-				PaymentMethodDetails = CardPresentDetails;
-				break;
-			case 'giropay':
-				PaymentMethodDetails = GiropayDetails;
-				break;
-			case 'sepa_debit':
-				PaymentMethodDetails = SepaDetails;
-				break;
-			case 'sofort':
-				PaymentMethodDetails = SofortDetails;
-				break;
+		const type = charge.payment_method_details.type;
+		if ( type in DetailComponents ) {
+			PaymentMethodDetails = DetailComponents[ type ];
 		}
-	} else {
-		return <></>;
+	}
+
+	// Gracefully degrade for unrecognized payment method types
+	if ( null == PaymentMethodDetails ) {
+		return null;
 	}
 
 	return (
