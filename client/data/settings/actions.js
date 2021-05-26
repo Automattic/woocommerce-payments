@@ -27,6 +27,13 @@ export function updateIsWCPayEnabled( isEnabled ) {
 	};
 }
 
+export function updateIsDigitalWalletsEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED,
+		isEnabled,
+	};
+}
+
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return {
 		type: ACTION_TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
@@ -63,6 +70,7 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 }
 
 export function* saveSettings() {
+	let isSuccess = false;
 	try {
 		const settings = select( STORE_NAME ).getSettings();
 
@@ -77,6 +85,8 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Settings saved.', 'woocommerce-payments' )
 		);
+
+		isSuccess = true;
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
@@ -84,4 +94,13 @@ export function* saveSettings() {
 	} finally {
 		yield updateIsSavingSettings( false );
 	}
+
+	return isSuccess;
+}
+
+export function updateDigitalWalletsLocations( locations ) {
+	return {
+		type: ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS,
+		locations,
+	};
 }

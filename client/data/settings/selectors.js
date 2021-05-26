@@ -46,3 +46,11 @@ export const getIsTestModeEnabled = ( state ) => {
 export const getIsDevModeEnabled = ( state ) => {
 	return getSettings( state ).is_dev_mode_enabled || false;
 };
+
+export const getIsDigitalWalletsEnabled = ( state ) => {
+	return getSettings( state ).is_digital_wallets_enabled || false;
+};
+
+export const getDigitalWalletsLocations = ( state ) => {
+	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_OBJ;
+};
