@@ -26,6 +26,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_round_precision' );
+		$this->reset_multi_currency_instance();
 
 		parent::tearDown();
 	}
@@ -146,5 +147,13 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			[ '141.0', -2, 100.0 ], // 99.841 after conversion
 			[ '142.0', -2, 200.0 ], // 100.550 after conversion
 		];
+	}
+
+	private function reset_multi_currency_instance() {
+		$multi_currency_reflection = new ReflectionClass( $this->multi_currency );
+		$instance_property         = $multi_currency_reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 }
