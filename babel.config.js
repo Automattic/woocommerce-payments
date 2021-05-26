@@ -2,10 +2,7 @@
 // :exploding_head: same case here: https://github.com/facebook/jest/issues/9292#issuecomment-625750534
 module.exports = {
 	ignore: [],
-	presets: [
-		'@wordpress/babel-preset-default',
-		[ '@babel/preset-typescript', { allowNamespaces: true } ],
-	],
+	presets: [ '@wordpress/babel-preset-default' ],
 	plugins: [
 		[ '@babel/transform-runtime', { corejs: 3 } ],
 		'@babel/plugin-proposal-optional-chaining',
