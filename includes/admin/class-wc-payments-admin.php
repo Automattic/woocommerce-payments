@@ -144,7 +144,7 @@ class WC_Payments_Admin {
 						'id'       => 'wc-payments-overview',
 						'title'    => __( 'Overview', 'woocommerce-payments' ),
 						'parent'   => 'wc-payments',
-						'path'     => '/payments/overview/',
+						'path'     => '/payments/overview',
 						'nav_args' => [
 							'parent' => 'wc-payments',
 							'order'  => 5,
@@ -259,6 +259,7 @@ class WC_Payments_Admin {
 				'fraudServices'         => $this->account->get_fraud_services_config(),
 				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
 				'accountStatus'         => $this->account->get_account_status_data(),
+				'accountFees'           => $this->account->get_fees(),
 				'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			]
 		);
