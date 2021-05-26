@@ -77,6 +77,29 @@ export const receiveSettings = (
 						action.accountStatementDescriptor,
 				},
 			};
+
+		case ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_digital_wallets_enabled: action.isEnabled,
+				},
+			};
+
+		case ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					digital_wallets_enabled_locations: {
+						...state.data.digital_wallets_enabled_locations,
+						...action.locations,
+					},
+				},
+			};
 	}
 
 	return state;

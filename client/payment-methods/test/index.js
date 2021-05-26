@@ -23,10 +23,7 @@ jest.mock( '../../data', () => ( {
 
 describe( 'PaymentMethods', () => {
 	beforeEach( () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [],
-			updateEnabledPaymentMethodIds: jest.fn(),
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'woocommerce_payments',
 			'woocommerce_payments_giropay',
@@ -74,12 +71,9 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-			],
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+		] );
 
 		render( <PaymentMethods /> );
 
@@ -101,12 +95,9 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'enabled methods are rendered with "Delete" buttons', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-			],
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+		] );
 
 		render( <PaymentMethods /> );
 
@@ -118,9 +109,9 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [ 'woocommerce_payments' ],
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments' ],
+		] );
 
 		render( <PaymentMethods /> );
 
@@ -132,15 +123,16 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
+		const updateEnabledMethodsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
 				'woocommerce_payments',
 				'woocommerce_payments_sepa',
 				'woocommerce_payments_giropay',
 				'woocommerce_payments_sofort',
 			],
-			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
-		} );
+			updateEnabledMethodsMock,
+		] );
 
 		render( <PaymentMethods /> );
 
@@ -154,9 +146,7 @@ describe( 'PaymentMethods', () => {
 			} )
 		);
 
-		expect(
-			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).toHaveBeenCalledWith( [
+		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
 			'woocommerce_payments_sepa',
 			'woocommerce_payments_giropay',
 			'woocommerce_payments_sofort',

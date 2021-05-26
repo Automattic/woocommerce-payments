@@ -7,3 +7,7 @@ export const uiLoaded = async () => {
 		() => ! Boolean( document.querySelector( '.is-loadable-placeholder' ) )
 	);
 };
+
+// Conditionally determine whether or not to skip a test suite
+export const describeif = ( condition ) =>
+	condition ? describe : describe.skip;

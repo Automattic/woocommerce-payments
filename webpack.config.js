@@ -17,6 +17,7 @@ const webpackConfig = {
 		tos: './client/tos/index.js',
 		'additional-methods-setup':
 			'./client/additional-methods-setup/index.js',
+		'payment-gateways': './client/payment-gateways/index.js',
 	},
 	output: {
 		filename: '[name].js',

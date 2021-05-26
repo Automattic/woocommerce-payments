@@ -67,13 +67,12 @@ const methodsConfiguration = {
 };
 
 const PaymentMethods = () => {
-	const {
-		enabledPaymentMethodIds: enabledMethodIds,
-		updateEnabledPaymentMethodIds: updateEnabledMethodIds,
-	} = useEnabledPaymentMethodIds();
+	const [
+		enabledMethodIds,
+		updateEnabledMethodIds,
+	] = useEnabledPaymentMethodIds();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
-
 	const enabledMethods = availablePaymentMethodIds
 		.filter( ( method ) => enabledMethodIds.includes( method ) )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );
