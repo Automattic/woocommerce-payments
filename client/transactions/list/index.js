@@ -205,7 +205,7 @@ export const TransactionsList = ( props ) => {
 			// eslint-disable-next-line camelcase
 			transaction_id: {
 				value: txn.transaction_id,
-				display: txn.transaction_id,
+				display: clickable( txn.transaction_id ),
 			},
 			date: {
 				value: txn.date,
