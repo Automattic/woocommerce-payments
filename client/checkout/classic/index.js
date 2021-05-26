@@ -103,10 +103,15 @@ jQuery( function ( $ ) {
 
 	// Show error notice at top of checkout form.
 	const showError = ( errorMessage ) => {
-		const messageWrapper =
-			'<ul class="woocommerce-error" role="alert">' +
-			errorMessage +
-			'</ul>';
+		let messageWrapper = '';
+		if ( errorMessage.includes( 'woocommerce-error' ) ) {
+			messageWrapper = errorMessage;
+		} else {
+			messageWrapper =
+				'<ul class="woocommerce-error" role="alert">' +
+				errorMessage +
+				'</ul>';
+		}
 		const $container = $(
 			'.woocommerce-notices-wrapper, form.checkout'
 		).first();
@@ -420,7 +425,8 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPECheckout = async ( $form ) => {
-		if ( ! paymentIntentId ) {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
 			return;
 		}
 
@@ -433,7 +439,6 @@ jQuery( function ( $ ) {
 				},
 			} );
 			showError( error.message );
-
 			return;
 		}
 

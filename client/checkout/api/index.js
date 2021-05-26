@@ -341,12 +341,16 @@ export default class WCPayAPI {
 			// eslint-disable-next-line camelcase
 			wc_payment_intent_id: paymentIntentId,
 			action: 'woocommerce_checkout',
-		} ).then( ( response ) => {
-			if ( 'failure' === response.result ) {
-				throw response.messages;
-			}
-			return response;
-		} );
+		} )
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw response.messages;
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				throw `Error submitting form! ${ error.status }: ${ error.statusText }.`;
+			} );
 	}
 
 	/**
