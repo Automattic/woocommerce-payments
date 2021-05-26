@@ -121,6 +121,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
 				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'is_digital_wallets_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'digital_wallets_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
 			]
 		);
@@ -136,6 +137,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_enabled_payment_methods( $request );
 		$this->update_is_manual_capture_enabled( $request );
 		$this->update_is_test_mode_enabled( $request );
+		$this->update_is_debug_log_enabled( $request );
 		$this->update_account_statement_descriptor( $request );
 		$this->update_is_digital_wallets_enabled( $request );
 		$this->update_digital_wallets_enabled_locations( $request );
@@ -220,6 +222,26 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_test_mode_enabled = $request->get_param( 'is_test_mode_enabled' );
 
 		$this->wcpay_gateway->update_option( 'test_mode', $is_test_mode_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates WooCommerce Payments test mode.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
+		// avoiding updating test mode when dev mode is enabled.
+		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'is_debug_log_enabled' ) ) {
+			return;
+		}
+
+		$is_debug_log_enabled = $request->get_param( 'is_debug_log_enabled' );
+
+		$this->wcpay_gateway->update_option( 'enable_logging', $is_debug_log_enabled ? 'yes' : 'no' );
 	}
 
 	/**
