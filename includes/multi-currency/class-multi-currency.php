@@ -339,5 +339,6 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/exceptions/class-invalid-default-currency-exception.php';
 	}
 }
