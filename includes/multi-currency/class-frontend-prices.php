@@ -58,6 +58,8 @@ class Frontend_Prices {
 	 * @param mixed $price The product's price.
 	 *
 	 * @return mixed The converted product's price.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_product_price( $price ) {
 		if ( ! $price ) {
@@ -73,6 +75,8 @@ class Frontend_Prices {
 	 * @param array $variation_prices The variation's prices.
 	 *
 	 * @return array The converted variation's prices.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_variation_price_range( $variation_prices ) {
 		foreach ( $variation_prices as $price_type => $prices ) {
@@ -92,6 +96,8 @@ class Frontend_Prices {
 	 * @param array $prices_hash The variation prices hash.
 	 *
 	 * @return array The variation prices hash with the current exchange rate.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function add_exchange_rate_to_variation_prices_hash( $prices_hash ) {
 		$prices_hash[] = $this->get_product_price( 1 );
@@ -104,6 +110,8 @@ class Frontend_Prices {
 	 * @param array $rates Shipping rates.
 	 *
 	 * @return array Shipping rates with converted costs.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function convert_package_rates_prices( $rates ) {
 		foreach ( $rates as $rate ) {
@@ -129,6 +137,8 @@ class Frontend_Prices {
 	 * @param object $coupon The coupon object.
 	 *
 	 * @return mixed The converted coupon's amount.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_coupon_amount( $amount, $coupon ) {
 		$percent_coupon_types = [ 'percent' ];
@@ -146,6 +156,8 @@ class Frontend_Prices {
 	 * @param mixed $amount The coupon's min or max amount.
 	 *
 	 * @return mixed The converted coupon's min or max amount.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_coupon_min_max_amount( $amount ) {
 		if ( ! $amount ) {
@@ -163,6 +175,8 @@ class Frontend_Prices {
 	 * @param array $data The shipping zone settings.
 	 *
 	 * @return array The shipping zone settings with converted min_amount.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_free_shipping_min_amount( $data ) {
 		if ( ! isset( $data['min_amount'] ) || ! $data['min_amount'] ) {

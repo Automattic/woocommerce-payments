@@ -49,6 +49,8 @@ class Frontend_Currencies {
 	 * Returns the currency code to be used by WooCommerce.
 	 *
 	 * @return string The code of the currency to be used.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_woocommerce_currency() {
 		return $this->multi_currency->get_selected_currency()->get_code();
@@ -58,6 +60,8 @@ class Frontend_Currencies {
 	 * Returns the number of decimals to be used by WooCommerce.
 	 *
 	 * @return int The number of decimals.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_price_decimals() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
@@ -68,6 +72,8 @@ class Frontend_Currencies {
 	 * Returns the decimal separator to be used by WooCommerce.
 	 *
 	 * @return int The decimal separator.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_price_decimal_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
@@ -78,6 +84,8 @@ class Frontend_Currencies {
 	 * Returns the thousand separator to be used by WooCommerce.
 	 *
 	 * @return int The thousand separator.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_price_thousand_separator() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();
@@ -88,6 +96,8 @@ class Frontend_Currencies {
 	 * Returns the currency format to be used by WooCommerce.
 	 *
 	 * @return int The currency format.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_woocommerce_price_format() {
 		$currency_code = $this->multi_currency->get_selected_currency()->get_code();

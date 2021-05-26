@@ -208,6 +208,8 @@ class Multi_Currency {
 	 * Gets the currently enabled currencies.
 	 *
 	 * @return array Array of Currency objects.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_enabled_currencies() {
 		if ( isset( $this->enabled_currencies ) ) {
@@ -241,6 +243,8 @@ class Multi_Currency {
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_selected_currency(): Currency {
 		if ( WC()->session ) {
@@ -303,6 +307,8 @@ class Multi_Currency {
 	 * @param bool  $type  The type of price being converted. One of 'product', 'shipping', 'tax', or 'coupon'.
 	 *
 	 * @return float The converted price.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_price( $price, $type ): float {
 		$supported_types  = [ 'product', 'shipping', 'tax', 'coupon' ];
