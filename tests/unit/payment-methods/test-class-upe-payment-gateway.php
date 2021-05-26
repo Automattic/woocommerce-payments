@@ -207,7 +207,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_process_redirect_payment_intent_processing() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
-		$save_payment_method = 'no';
+		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = 'processing';
 		$charge_id           = 'ch_mock';
@@ -215,9 +215,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
-
-		$_GET['payment_intent']      = $intent_id;
-		$_GET['save_payment_method'] = $save_payment_method;
 
 		$payment_intent = new WC_Payments_API_Intention(
 			$intent_id,
@@ -244,7 +241,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				$this->returnValue( $payment_intent )
 			);
 
-		$this->mock_upe_gateway->process_redirect_payment( $order_id );
+		$this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
@@ -266,7 +263,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_process_redirect_payment_intent_succeded() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
-		$save_payment_method = 'no';
+		$save_payment_method = false;
 		$user                = wp_get_current_user();
 		$intent_status       = 'succeeded';
 		$charge_id           = 'ch_mock';
@@ -274,9 +271,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
-
-		$_GET['payment_intent']      = $intent_id;
-		$_GET['save_payment_method'] = $save_payment_method;
 
 		$payment_intent = new WC_Payments_API_Intention(
 			$intent_id,
@@ -303,7 +297,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				$this->returnValue( $payment_intent )
 			);
 
-		$this->mock_upe_gateway->process_redirect_payment( $order_id );
+		$this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 
@@ -319,7 +313,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$order               = WC_Helper_Order::create_order();
 		$token               = WC_Helper_Token::create_token( 'pm_mock' );
 		$order_id            = $order->get_id();
-		$save_payment_method = 'yes';
+		$save_payment_method = true;
 		$user                = wp_get_current_user();
 		$intent_status       = 'processing';
 		$charge_id           = 'ch_mock';
@@ -327,9 +321,6 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$customer_id         = 'cus_mock';
 		$intent_id           = 'pi_mock';
 		$payment_method_id   = 'pm_mock';
-
-		$_GET['payment_intent']      = $intent_id;
-		$_GET['save_payment_method'] = $save_payment_method;
 
 		$payment_intent = new WC_Payments_API_Intention(
 			$intent_id,
@@ -362,7 +353,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 				$this->returnValue( $token )
 			);
 
-		$this->mock_upe_gateway->process_redirect_payment( $order_id );
+		$this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
 
 		$result_order = wc_get_order( $order_id );
 		$note         = wc_get_order_notes(
