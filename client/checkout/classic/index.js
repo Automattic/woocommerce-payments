@@ -171,6 +171,11 @@ jQuery( function ( $ ) {
 			} )
 			.catch( ( error ) => {
 				showError( error.message );
+				const gatewayErrorMessage =
+					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
+				$( '.payment_box.payment_method_woocommerce_payments' ).html(
+					gatewayErrorMessage
+				);
 			} );
 	};
 
