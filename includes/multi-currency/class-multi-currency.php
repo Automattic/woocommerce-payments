@@ -196,7 +196,7 @@ class Multi_Currency {
 		$woocommerce_currency = get_woocommerce_currency();
 
 		if ( ! array_key_exists( $woocommerce_currency, $this->available_currencies ) ) {
-			throw new Exceptions\Invalid_Default_Currency_Exception( $woocommerce_currency, array_keys( $this->available_currencies ) );
+			throw new Exceptions\Invalid_Default_Currency_Exception( $woocommerce_currency );
 		}
 
 		$this->default_currency = $this->available_currencies[ $woocommerce_currency ];
