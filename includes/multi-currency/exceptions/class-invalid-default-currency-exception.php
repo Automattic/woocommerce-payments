@@ -21,7 +21,11 @@ class Invalid_Default_Currency_Exception extends \Exception {
 	 */
 	public function __construct( string $currency ) {
 		parent::__construct(
-			"The store's default currency ($currency) cannot to be used with WooCommerce Payments Multi-Currency."
+			sprintf(
+				/* translators: %1 : The store's currency code */
+				__( 'The store\'s default currency (%1$s) cannot be used with WooCommerce Payments Multi-Currency.', 'woocommerce-payments' ),
+				$currency
+			)
 		);
 	}
 }

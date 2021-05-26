@@ -43,7 +43,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->reload_multi_currency_with_invalid_store_currency();
 
 		$this->expectException( WCPay\Multi_Currency\Exceptions\Invalid_Default_Currency_Exception::class );
-		$this->expectExceptionMessage( 'The store\'s default currency (INVALID_CURRENCY) cannot to be used with WooCommerce Payments Multi-Currency.' );
+		$this->expectExceptionMessage( 'The store\'s default currency (INVALID_CURRENCY) cannot be used with WooCommerce Payments Multi-Currency.' );
 
 		$this->multi_currency->get_default_currency();
 	}

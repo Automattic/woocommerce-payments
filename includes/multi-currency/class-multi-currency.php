@@ -85,7 +85,11 @@ class Multi_Currency {
 			add_action(
 				'admin_notices',
 				function () use ( $e ) {
-					$error_message = 'WooCommerce Payments Multi-Currency could not be loaded: ' . $e->getMessage();
+					$error_message = sprintf(
+						/* translators: %1: The error message. */
+						__( 'WooCommerce Payments Multi-Currency could not be loaded: %1$s', 'woocommerce-payments' ),
+						$e->getMessage()
+					);
 					\WC_Payments::display_admin_error( $error_message );
 				}
 			);
