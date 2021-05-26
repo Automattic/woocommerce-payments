@@ -34,12 +34,8 @@ describe( 'Disputes > Save dispute for editing', () => {
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
-		// Login and open the order
-		await Promise.all( [
-			merchant.login(),
-			merchant.goToOrder( orderId ),
-			expect( page.title() ).resolves.toMatch( 'Edit order' ),
-		] );
+		await merchant.login();
+		await merchant.goToOrder( orderId );
 	} );
 
 	afterAll( async () => {

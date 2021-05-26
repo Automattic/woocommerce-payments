@@ -85,7 +85,6 @@ export const merchantWCP = {
 		await Promise.all( [
 			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {
 				waitUntil: 'networkidle0',
-				timeout: 10000,
 			} ),
 			uiLoaded(),
 		] );
@@ -110,7 +109,6 @@ export const merchantWCP = {
 		await Promise.all( [
 			page.goto( paymentDetailsLink, {
 				waitUntil: 'networkidle0',
-				timeout: 10000,
 			} ),
 			uiLoaded(),
 		] );
