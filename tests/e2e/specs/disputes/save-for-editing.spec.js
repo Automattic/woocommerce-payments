@@ -36,9 +36,9 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		// Login and open the order
 		await Promise.all( [
-			await merchant.login(),
-			await merchant.goToOrder( orderId ),
-			await expect( page.title() ).resolves.toMatch( 'Edit order' ),
+			merchant.login(),
+			merchant.goToOrder( orderId ),
+			expect( page.title() ).resolves.toMatch( 'Edit order' ),
 		] );
 	} );
 
@@ -46,7 +46,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		await merchant.logout();
 	} );
 
-	it( 'should be able to save dispute for editing', async () => {
+	it( 'should show a dispute in payment details', async () => {
 		// Pull out and follow the link to avoid working in multiple tabs
 		const paymentDetailsLink = await page.$eval(
 			'p.order_number > a',
@@ -55,19 +55,20 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-		// View dispute check timeout
-		await page.waitForSelector( 'div.woocommerce-timeline-item__body a', {
-			timeout: 10000,
+		// Verify we have a dispute for this purchase
+		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
+			text: 'Payment disputed as Product not received.',
 		} );
 
-		// Verify we have a dispute for this purchase
 		await expect( page ).toMatchElement(
 			'div.woocommerce-timeline-item__body a',
 			{
 				text: 'View dispute',
 			}
 		);
+	} );
 
+	it( 'should be able to save dispute for editing', async () => {
 		// Get the link to the dispute details
 		const disputeDetailsLink = await page.$eval(
 			'div.woocommerce-timeline-item__body a',
@@ -81,11 +82,13 @@ describe( 'Disputes > Save dispute for editing', () => {
 			timeout: 10000,
 		} );
 
-		await expect( page ).toClick( 'a.components-button.is-primary', {
-			text: 'Challenge dispute',
-		} );
-
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await Promise.all( [
+			expect( page ).toClick( 'a.components-button.is-primary', {
+				text: 'Challenge dispute',
+			} ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
 
 		await page.waitForSelector(
 			'div.components-flex.components-card__header.is-size-large',
@@ -113,6 +116,10 @@ describe( 'Disputes > Save dispute for editing', () => {
 			'.components-select-control__input',
 			'Offline service'
 		);
+
+		await page.waitForSelector( 'button.components-button.is-secondary', {
+			timeout: 10000,
+		} );
 
 		await expect( page ).toClick( 'button.components-button.is-secondary', {
 			text: 'Save for later',
