@@ -26,9 +26,26 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_round_precision' );
+		remove_all_filters( 'woocommerce_currency' );
 		$this->reset_multi_currency_instance();
 
 		parent::tearDown();
+	}
+
+	public function test_multi_currency_stops_loading_when_store_currency_is_invalid() {
+		$this->reload_multi_currency_with_invalid_store_currency();
+
+		$this->assertFalse( has_action( 'rest_api_init', [ $this->multi_currency, 'init_rest_api' ] ) );
+		$this->assertFalse( has_action( 'widgets_init', [ $this->multi_currency, 'init_widgets' ] ) );
+	}
+
+	public function test_get_default_currency_throws_exception_when_store_currency_is_invalid() {
+		$this->reload_multi_currency_with_invalid_store_currency();
+
+		$this->expectException( WCPay\Multi_Currency\Exceptions\Invalid_Default_Currency_Exception::class );
+		$this->expectExceptionMessage( 'The store\'s default currency (INVALID_CURRENCY) cannot to be used with WooCommerce Payments Multi-Currency.' );
+
+		$this->multi_currency->get_default_currency();
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session() {
@@ -155,5 +172,19 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$instance_property->setAccessible( true );
 		$instance_property->setValue( null, null );
 		$instance_property->setAccessible( false );
+	}
+
+	private function reload_multi_currency_with_invalid_store_currency() {
+		add_filter(
+			'woocommerce_currency',
+			function () {
+				return 'INVALID_CURRENCY';
+			},
+			100
+		);
+
+		// Recreate Multi_Currency instance to use the recently set INVALID_CURRENCY.
+		$this->reset_multi_currency_instance();
+		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
 	}
 }

@@ -78,11 +78,24 @@ class Multi_Currency {
 	 */
 	private function __construct() {
 		$this->load_extension_files();
-		$this->init();
+
+		try {
+			$this->init();
+		} catch ( Exceptions\Invalid_Default_Currency_Exception $e ) {
+			add_action(
+				'admin_notices',
+				function () use ( $e ) {
+					$error_message = 'WooCommerce Payments Multi-Currency could not be loaded: ' . $e->getMessage();
+					\WC_Payments::display_admin_error( $error_message );
+				}
+			);
+		}
 	}
 
 	/**
 	 * Init.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function init() {
 		$this->id = 'wcpay_multi_currency';
@@ -162,13 +175,21 @@ class Multi_Currency {
 	 * Gets the store base currency.
 	 *
 	 * @return Currency The store base currency.
+	 *
+	 * @throws Exceptions\Invalid_Default_Currency_Exception If the store's default currency is not available.
 	 */
 	public function get_default_currency(): Currency {
 		if ( isset( $this->default_currency ) ) {
 			return $this->default_currency;
 		}
 
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ];
+		$woocommerce_currency = get_woocommerce_currency();
+
+		if ( ! array_key_exists( $woocommerce_currency, $this->available_currencies ) ) {
+			throw new Exceptions\Invalid_Default_Currency_Exception( $woocommerce_currency, array_keys( $this->available_currencies ) );
+		}
+
+		$this->default_currency = $this->available_currencies[ $woocommerce_currency ];
 
 		return $this->default_currency;
 	}
