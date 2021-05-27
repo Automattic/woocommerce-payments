@@ -237,7 +237,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useDigitalWalletsLocations()', () => {
-		test( 'returns digital wallets locations', () => {
+		test( 'returns and updates digital wallets locations', () => {
 			const locationsBeforeUpdate = [];
 			const locationsAfterUpdate = [ 'cart' ];
 
