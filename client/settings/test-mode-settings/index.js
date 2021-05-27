@@ -38,8 +38,7 @@ const TestModeSettings = () => {
 					}
 					help={ interpolateComponents( {
 						mixedString: __(
-							"When enabled, you'll be able to test how your customers pay for orders on your store. " +
-								'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate various transactions. ' +
+							'Use {{testCardHelpLink}}test card numbers{{/testCardHelpLink}} to simulate various transactions. ' +
 								'{{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 							'woocommerce-payments'
 						),
