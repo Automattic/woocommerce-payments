@@ -21,6 +21,11 @@ import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+	useSettings,
+} from '../../data';
 import './add-payment-methods-task.scss';
 
 const useGetCountryName = () => {
@@ -42,8 +47,10 @@ const useGetCountryName = () => {
 	return countries[ baseLocation.country ];
 };
 
-const usePaymentMethodsCheckboxState = () => {
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+const usePaymentMethodsCheckboxState = ( initialValue ) => {
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState(
+		initialValue
+	);
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
 			setPaymentMethodsState( ( oldValues ) => ( {
@@ -58,18 +65,69 @@ const usePaymentMethodsCheckboxState = () => {
 };
 
 const AddPaymentMethodsTask = () => {
-	const { setCompleted } = useContext( WizardTaskContext );
+	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
+	const {
+		enabledPaymentMethodIds,
+		updateEnabledPaymentMethodIds,
+	} = useEnabledPaymentMethodIds();
 
-	const handleContinueClick = useCallback( () => {
-		setCompleted( true, 'setup-complete' );
-	}, [ setCompleted ] );
+	const { saveSettings, isSaving } = useSettings();
 
-	const countryName = useGetCountryName();
-
+	// I am using internal state in this component
+	// and committing the changes on `enabledPaymentMethodIds` only when the "continue" button is clicked.
+	// Otherwise a user could navigate to another page via soft-routing and the settings would be in un-saved state,
+	// possibly causing errors.
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
-	] = usePaymentMethodsCheckboxState();
+	] = usePaymentMethodsCheckboxState(
+		enabledPaymentMethodIds.reduce(
+			( map, paymentMethod ) => ( { ...map, [ paymentMethod ]: true } ),
+			{}
+		)
+	);
+
+	const { setCompleted } = useContext( WizardTaskContext );
+
+	const handleContinueClick = useCallback( () => {
+		// creating a separate callback, so that the main thread isn't blocked on click of the button
+		const callback = async () => {
+			const checkedPaymentMethods = Object.entries( paymentMethodsState )
+				.filter( ( [ , enabled ] ) => enabled )
+				.map( ( [ method ] ) => method );
+
+			if ( 1 > checkedPaymentMethods.length ) {
+				alert(
+					__(
+						'Please select at least one method',
+						'woocommerce-payments'
+					)
+				);
+				return;
+			}
+
+			updateEnabledPaymentMethodIds( checkedPaymentMethods );
+
+			const isSuccess = await saveSettings();
+			if ( ! isSuccess ) {
+				// restoring the state, in case of soft route
+				updateEnabledPaymentMethodIds( enabledPaymentMethodIds );
+				return;
+			}
+
+			setCompleted( true, 'setup-complete' );
+		};
+
+		callback();
+	}, [
+		updateEnabledPaymentMethodIds,
+		paymentMethodsState,
+		saveSettings,
+		setCompleted,
+		enabledPaymentMethodIds,
+	] );
+
+	const countryName = useGetCountryName();
 
 	const [ isWalletsChecked, setWalletsChecked ] = useState( false );
 
@@ -113,22 +171,18 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							<PaymentMethodCheckbox
-								checked={
-									paymentMethodsState.woocommerce_payments_giropay
-								}
-								onChange={ handlePaymentMethodChange }
-								fees="missing fees"
-								name="woocommerce_payments_giropay"
-							/>
-							<PaymentMethodCheckbox
-								checked={
-									paymentMethodsState.woocommerce_payments_sofort
-								}
-								onChange={ handlePaymentMethodChange }
-								fees="missing fees"
-								name="woocommerce_payments_sofort"
-							/>
+							{ availablePaymentMethods.includes(
+								'woocommerce_payments'
+							) && (
+								<PaymentMethodCheckbox
+									checked={
+										paymentMethodsState.woocommerce_payments
+									}
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="woocommerce_payments"
+								/>
+							) }
 						</PaymentMethodCheckboxes>
 					</CardBody>
 					<CardDivider />
@@ -140,26 +194,42 @@ const AddPaymentMethodsTask = () => {
 							) }
 						</p>
 						<PaymentMethodCheckboxes>
-							<PaymentMethodCheckbox
-								checked={
-									paymentMethodsState.woocommerce_payments_sepa
-								}
-								onChange={ handlePaymentMethodChange }
-								fees="missing fees"
-								name="woocommerce_payments_sepa"
-							/>
-							<PaymentMethodCheckbox
-								checked={ paymentMethodsState[ 'apple-pay' ] }
-								onChange={ handlePaymentMethodChange }
-								fees="missing fees"
-								name="apple-pay"
-							/>
-							<PaymentMethodCheckbox
-								checked={ paymentMethodsState[ 'google-pay' ] }
-								onChange={ handlePaymentMethodChange }
-								fees="missing fees"
-								name="google-pay"
-							/>
+							{ availablePaymentMethods.includes(
+								'woocommerce_payments_giropay'
+							) && (
+								<PaymentMethodCheckbox
+									checked={
+										paymentMethodsState.woocommerce_payments_giropay
+									}
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="woocommerce_payments_giropay"
+								/>
+							) }
+							{ availablePaymentMethods.includes(
+								'woocommerce_payments_sofort'
+							) && (
+								<PaymentMethodCheckbox
+									checked={
+										paymentMethodsState.woocommerce_payments_sofort
+									}
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="woocommerce_payments_sofort"
+								/>
+							) }
+							{ availablePaymentMethods.includes(
+								'woocommerce_payments_sepa'
+							) && (
+								<PaymentMethodCheckbox
+									checked={
+										paymentMethodsState.woocommerce_payments_sepa
+									}
+									onChange={ handlePaymentMethodChange }
+									fees="missing fees"
+									name="woocommerce_payments_sepa"
+								/>
+							) }
 						</PaymentMethodCheckboxes>
 					</CardBody>
 				</Card>
@@ -230,7 +300,12 @@ const AddPaymentMethodsTask = () => {
 						} ) }
 					/>
 				</div>
-				<Button onClick={ handleContinueClick } isPrimary>
+				<Button
+					isBusy={ isSaving }
+					disabled={ isSaving }
+					onClick={ handleContinueClick }
+					isPrimary
+				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 			</CollapsibleBody>

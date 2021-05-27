@@ -1,0 +1,147 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DepositsStatus renders daily status 1`] = `
+<div>
+  <span
+    class="account-status__info__green"
+  >
+    <svg
+      class="gridicon gridicons-checkmark-circle"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+        />
+      </g>
+    </svg>
+    Daily
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders disabled status 1`] = `
+<div>
+  <span
+    class="account-status__info__red"
+  >
+    <svg
+      class="gridicon gridicons-notice"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2l-.5-6h3l-.5 6z"
+        />
+      </g>
+    </svg>
+    Disabled
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders manual status 1`] = `
+<div>
+  <span
+    class="account-status__info__yellow"
+  >
+    <svg
+      class="gridicon gridicons-notice"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 15h-2v-2h2v2zm0-4h-2l-.5-6h3l-.5 6z"
+        />
+      </g>
+    </svg>
+    Temporarily suspended (
+    <a
+      href="https://docs.woocommerce.com/document/payments/faq/deposits-suspended/"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      learn more
+    </a>
+    )
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders monthly status 1`] = `
+<div>
+  <span
+    class="account-status__info__green"
+  >
+    <svg
+      class="gridicon gridicons-checkmark-circle"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+        />
+      </g>
+    </svg>
+    Monthly
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders unknown status 1`] = `
+<div>
+  <span
+    class="account-status__info__green"
+  >
+    <svg
+      class="gridicon gridicons-checkmark-circle"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+        />
+      </g>
+    </svg>
+    Unknown
+  </span>
+</div>
+`;
+
+exports[`DepositsStatus renders weekly status 1`] = `
+<div>
+  <span
+    class="account-status__info__green"
+  >
+    <svg
+      class="gridicon gridicons-checkmark-circle"
+      height="20"
+      viewBox="0 0 24 24"
+      width="20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g>
+        <path
+          d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+        />
+      </g>
+    </svg>
+    Weekly
+  </span>
+</div>
+`;

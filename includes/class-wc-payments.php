@@ -15,6 +15,7 @@ use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
 use WCPay\Payment_Methods\Sofort_Payment_Gateway;
 use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -171,6 +172,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-sofort-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-digital-wallets-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
@@ -184,6 +186,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
+		include_once __DIR__ . '/constants/class-digital-wallets-locations.php';
 		include_once __DIR__ . '/class-payment-information.php';
 		require_once __DIR__ . '/notes/class-wc-payments-remote-note-service.php';
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
@@ -209,6 +212,8 @@ class WC_Payments {
 		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
 			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
 			$gateway_class = 'WC_Payment_Gateway_WCPay_Subscriptions_Compat';
+		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+			$gateway_class = UPE_Payment_Gateway::class;
 		}
 
 		self::$card_gateway = new $gateway_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
@@ -221,7 +226,7 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_sofort_enabled() ) {
 			self::$sofort_gateway = new $sofort_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+		if ( WC_Payments_Features::is_grouped_settings_enabled() || ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) ) {
 			self::$digital_wallets_gateway = new $digital_wallets_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service );
 		}
 
@@ -253,7 +258,7 @@ class WC_Payments {
 				new WC_Payments_Admin_Sections_Overwrite();
 
 				include_once __DIR__ . '/admin/class-wc-payments-admin-additional-methods-setup.php';
-				new WC_Payments_Admin_Additional_Methods_Setup();
+				new WC_Payments_Admin_Additional_Methods_Setup( self::$card_gateway );
 			}
 		}
 
@@ -645,7 +650,7 @@ class WC_Payments {
 		$tos_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway, self::$digital_wallets_gateway );
 		$settings_controller->register_routes();
 	}
 

@@ -10,9 +10,55 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import DigitalWallets from '..';
+import {
+	useDigitalWalletsEnabledSettings,
+	useDigitalWalletsLocations,
+} from 'data';
+
+jest.mock( 'data', () => ( {
+	useDigitalWalletsEnabledSettings: jest.fn(),
+	useDigitalWalletsLocations: jest.fn(),
+} ) );
+
+const getMockDigitalWalletsSettings = (
+	isEnabled,
+	updateIsDigitalWalletsEnabledHandler
+) => [ isEnabled, updateIsDigitalWalletsEnabledHandler ];
+
+const getMockDigitalWalletsLocations = (
+	checkoutStatus,
+	productPageStatus,
+	cartStatus,
+	updateDigitalWalletsLocationsHandler
+) => [
+	{
+		checkout: checkoutStatus,
+		// eslint-disable-next-line camelcase
+		product_page: productPageStatus,
+		cart: cartStatus,
+	},
+	updateDigitalWalletsLocationsHandler,
+];
 
 describe( 'DigitalWallets', () => {
-	it( 'toggles the payment method locations status', async () => {
+	beforeEach( () => {
+		useDigitalWalletsEnabledSettings.mockReturnValue(
+			getMockDigitalWalletsSettings( false, jest.fn() )
+		);
+		useDigitalWalletsLocations.mockReturnValue(
+			getMockDigitalWalletsLocations( true, true, true, jest.fn() )
+		);
+	} );
+
+	it( 'should enable 1-click checkout locations if 1-click checkout is enabled', async () => {
+		const updateIsDigitalWalletsEnabledHandler = jest.fn();
+		useDigitalWalletsEnabledSettings.mockReturnValue(
+			getMockDigitalWalletsSettings(
+				false,
+				updateIsDigitalWalletsEnabledHandler
+			)
+		);
+
 		render( <DigitalWallets /> );
 
 		const [
@@ -22,6 +68,8 @@ describe( 'DigitalWallets', () => {
 			cartCheckbox,
 		] = screen.getAllByRole( 'checkbox' );
 
+		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
+
 		// all "locations" checkboes are disabled and unchecked.
 		expect( checkoutCheckbox ).toBeDisabled();
 		expect( checkoutCheckbox ).not.toBeChecked();
@@ -29,6 +77,27 @@ describe( 'DigitalWallets', () => {
 		expect( productPageCheckbox ).not.toBeChecked();
 		expect( cartCheckbox ).toBeDisabled();
 		expect( cartCheckbox ).not.toBeChecked();
+
+		expect( updateIsDigitalWalletsEnabledHandler ).toBeCalledTimes( 1 );
+	} );
+
+	it( 'should disable 1-click checkout locations if 1-click checkout is disabled', async () => {
+		const updateIsDigitalWalletsEnabledHandler = jest.fn();
+		useDigitalWalletsEnabledSettings.mockReturnValue(
+			getMockDigitalWalletsSettings(
+				true,
+				updateIsDigitalWalletsEnabledHandler
+			)
+		);
+
+		render( <DigitalWallets /> );
+
+		const [
+			,
+			checkoutCheckbox,
+			productPageCheckbox,
+			cartCheckbox,
+		] = screen.getAllByRole( 'checkbox' );
 
 		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
 
@@ -40,32 +109,52 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).not.toBeDisabled();
 		expect( cartCheckbox ).toBeChecked();
 
-		// disabling the product page location.
+		expect( updateIsDigitalWalletsEnabledHandler ).toBeCalledTimes( 1 );
+	} );
+
+	it( 'should trigger an action to save the checked locations when toggling the checkboxes', async () => {
+		const updateDigitalWalletsLocationsHandler = jest.fn();
+		useDigitalWalletsEnabledSettings.mockReturnValue(
+			getMockDigitalWalletsSettings( true, jest.fn() )
+		);
+		useDigitalWalletsLocations.mockReturnValue(
+			getMockDigitalWalletsLocations(
+				true,
+				true,
+				true,
+				updateDigitalWalletsLocationsHandler
+			)
+		);
+
+		render( <DigitalWallets /> );
+
+		// Uncheck all three checkboxes, and verify them.
 		userEvent.click( screen.getByText( 'Product page' ) );
-		// disabling the checkout location.
 		userEvent.click( screen.getByText( 'Checkout' ) );
+		userEvent.click( screen.getByText( 'Cart' ) );
 
-		// disabling the feature again.
-		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
+			// eslint-disable-next-line camelcase
+			product_page: false,
+		} );
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
+			checkout: false,
+		} );
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
+			cart: false,
+		} );
 
-		// all checkboxes are disabled an not checked.
-		expect( checkoutCheckbox ).toBeDisabled();
-		expect( checkoutCheckbox ).not.toBeChecked();
-		expect( productPageCheckbox ).toBeDisabled();
-		expect( productPageCheckbox ).not.toBeChecked();
-		expect( cartCheckbox ).toBeDisabled();
-		expect( cartCheckbox ).not.toBeChecked();
+		// Check just cart and product_page, and verify them.
+		userEvent.click( screen.getByText( 'Cart' ) );
+		userEvent.click( screen.getByText( 'Product page' ) );
 
-		// enabling the feature again.
-		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
-
-		// only the cart checkbox is checked once the feature is enabled again.
-		expect( checkoutCheckbox ).not.toBeDisabled();
-		expect( checkoutCheckbox ).not.toBeChecked();
-		expect( productPageCheckbox ).not.toBeDisabled();
-		expect( productPageCheckbox ).not.toBeChecked();
-		expect( cartCheckbox ).not.toBeDisabled();
-		expect( cartCheckbox ).toBeChecked();
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
+			cart: false,
+		} );
+		expect( updateDigitalWalletsLocationsHandler ).toHaveBeenCalledWith( {
+			// eslint-disable-next-line camelcase
+			product_page: false,
+		} );
 	} );
 
 	it( 'has the correct href link to the digital wallets setting page', async () => {

@@ -42,7 +42,7 @@ export const formatCurrencyName = ( currencyCode ) => {
  *
  * @return {Currency|null} Currency object
  */
-const getCurrency = ( currencyCode ) => {
+export const getCurrency = ( currencyCode ) => {
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		return new Currency( currency );

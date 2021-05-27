@@ -25,7 +25,13 @@
 	min-height: 29px;
 }
 
+#wcpay-upe-element {
+	padding: 7px 7px;
+	margin-bottom: 0.5em;
+}
+
 .wcpay-card-mounted,
+.wcpay-upe-mounted,
 .wcpay-sepa-mounted {
 	background-color: #fff;
 }
