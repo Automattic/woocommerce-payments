@@ -17,10 +17,10 @@ import Banner from '../../banner';
 /* eslint-disable camelcase */
 const methods = {
 	woocommerce_payments_digital_wallets: {
-		title: '1-click checkouts',
+		title: 'Express checkouts',
 		description: () => (
 			<>
-				<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
+				<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 				<p>
 					{ __(
 						'Decide how buttons for digital wallets like Apple Pay and Google Pay are displayed in your store.',

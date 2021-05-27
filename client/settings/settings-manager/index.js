@@ -40,7 +40,7 @@ const PaymentMethodsDescription = () => (
 
 const DigitalWalletsDescription = () => (
 	<>
-		<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
 			<li>
 				<ApplePayIcon />
