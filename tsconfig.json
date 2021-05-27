@@ -11,6 +11,7 @@
     "baseUrl": "./client",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "noImplicitAny": true,
   },
   "include": [
     "./client/"
