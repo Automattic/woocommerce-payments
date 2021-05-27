@@ -21,7 +21,7 @@ describe( 'PaymentMethodSettings', () => {
 		);
 
 		const heading = screen.queryByRole( 'heading', {
-			name: '1-click checkouts',
+			name: 'Express checkouts',
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
@@ -45,7 +45,7 @@ describe( 'PaymentMethodSettings', () => {
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
 		const methodName = within( breadcrumbs ).getByText(
-			'1-click checkouts'
+			'Express checkouts'
 		);
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
@@ -65,7 +65,7 @@ describe( 'PaymentMethodSettings', () => {
 		);
 
 		const heading = screen.queryByRole( 'heading', {
-			name: '1-click checkouts',
+			name: 'Express checkouts',
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
