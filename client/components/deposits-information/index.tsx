@@ -35,17 +35,33 @@ import './style.scss';
 const DepositsInformationLoading = (): any => {
 	return (
 		<Card>
-			<CardHeader>
-				{ __( 'Deposits overview', 'woocommerce-payments' ) }
+			<CardHeader className="wcpay-deposits-information-header">
+				{ /* This div will be used for a proper layout next to the button. */ }
+				<div>
+					<h3 className="wcpay-deposits-information-header__title">
+						{ __( 'Deposits overview', 'woocommerce-payments' ) }
+					</h3>
+
+					<p className="wcpay-deposits-information-header__schedule">
+						<Gridicon
+							icon="calendar"
+							size="20"
+							className="wcpay-deposits-information-header__icon"
+						/>
+						<Loadable
+							isLoading={ true }
+							display="inline"
+							placeholder="Deposit schedule here"
+						/>
+					</p>
+				</div>
 			</CardHeader>
 			<CardBody>
 				<Loadable
 					isLoading={ true }
 					display="inline"
 					placeholder="Deposit information placeholder"
-				>
-					{ 'foo' }
-				</Loadable>
+				/>
 			</CardBody>
 		</Card>
 	);
@@ -63,14 +79,14 @@ const DepositsInformationBlock: React.FunctionComponent< DepositsInformationBloc
 	children,
 } ) => {
 	return (
-		<FlexBlock className={ 'woocommerce-deposits-information-block' }>
-			<div className={ 'woocommerce-deposits-information-block__title' }>
+		<FlexBlock className="wcpay-deposits-information-block">
+			<div className="wcpay-deposits-information-block__title">
 				{ title }
 			</div>
-			<div className={ 'woocommerce-deposits-information-block__value' }>
+			<div className="wcpay-deposits-information-block__value">
 				{ value }
 			</div>
-			<div className={ 'woocommerce-deposits-information-block__extra' }>
+			<div className="wcpay-deposits-information-block__extra">
 				{ children }
 			</div>
 		</FlexBlock>
@@ -124,25 +140,29 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	return (
 		<Card>
-			<CardHeader>
+			<CardHeader className="wcpay-deposits-information-header">
 				{ /* This div will be used for a proper layout next to the button. */ }
 				<div>
-					<h2>
+					<h3 className="wcpay-deposits-information-header__title">
 						{ sprintf(
 							__( '%s balance', 'woocommerce-payments' ),
 							formatCurrencyName( currency )
 						) }
-					</h2>
+					</h3>
 
-					<p className="wcpay-deposits-overview__schedule">
-						<Gridicon icon="calendar" />
-						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }
+					<p className="wcpay-deposits-information-header__schedule">
+						<Gridicon
+							icon="calendar"
+							size="20"
+							className="wcpay-deposits-information-header__icon"
+						/>
+						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }{ ' ' }
 						{ scheduleDescriptor }
 					</p>
 				</div>
 			</CardHeader>
 
-			<Flex className={ 'woocommerce-deposits-information-row' }>
+			<Flex className="wcpay-deposits-information-row" align="normal">
 				<DepositsInformationBlock
 					title={ __( 'Pending balance', 'woocommerce-payments' ) }
 					value={ formatCurrency( pendingAmount, currency ) }
@@ -154,7 +174,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 					children={ nextScheduledLink }
 				/>
 			</Flex>
-			<Flex className={ 'woocommerce-deposits-information-row' }>
+			<Flex className="wcpay-deposits-information-row" align="normal">
 				<DepositsInformationBlock
 					title={ __( 'Last deposit', 'woocommerce-payments' ) }
 					value={ formatCurrency( lastPaidAmount, currency ) }

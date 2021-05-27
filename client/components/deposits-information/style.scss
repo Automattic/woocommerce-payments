@@ -1,33 +1,53 @@
-.woocommerce-deposits-information-row {
-	border-width: 0 0 1px 0;
-	border-style: solid;
-	border-color: $gray-200;
-}
-.woocommerce-deposits-information-row:last-child {
-	border-width: 0 0 0 0;
-}
-.woocommerce-deposits-information-block {
-	height: 125px;
-	flex-basis: 340px;
-	border-width: 0 1px 0 0;
-	border-style: solid;
-	border-color: $gray-200;
-	padding: 16px;
+.wcpay-deposits-information-header {
+	/* needed in order to overwrite the default padding */
+	padding: 16px !important;
 
-	div {
-		margin-bottom: 8px;
+	&__title {
+		margin: 0 0 7px;
+		font-size: 16px;
+		color: $gray-900;
+	}
+
+	&__schedule {
+		margin: 0;
+		font-size: 13px;
+		color: $gray-600;
+	}
+
+	&__icon {
+		vertical-align: middle;
+		margin-right: 5px;
+
+		path {
+			fill: $gray-700;
+		}
+	}
+}
+
+.wcpay-deposits-information-row {
+	& + & {
+		border-top: 1px solid $gray-200;
+	}
+}
+
+.wcpay-deposits-information-block {
+	flex: 1;
+	padding: 24px 16px;
+
+	& + & {
+		border-left: 1px solid $gray-200;
 	}
 
 	&__title {
-		color: $gray-700;
+		font-size: 12px;
 		line-height: 16px;
+		color: $gray-600;
 	}
 
 	&__value {
 		color: $gray-900;
 		font-size: 20px;
+		line-height: 27px;
+		padding: 8px 0;
 	}
-}
-.woocommerce-deposits-information-block:last-child {
-	border-width: 0 0 0 0;
 }
