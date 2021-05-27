@@ -14,7 +14,7 @@ import { useCurrencies, useEnabledCurrencies } from 'data';
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesModal from './modal';
-// TODO: Styling still needed.
+
 // TODO: Loading placeholders needed?
 // TODO: useEnabledCurrencies only works if you do useCurrencies first.
 // TODO: Deleting works, but the list does not refresh.
@@ -49,15 +49,12 @@ const EnabledCurrencies = () => {
 				</CardBody>
 				<CardDivider />
 				<CardBody size={ null }>
-					<EnabledCurrenciesList
-						className={ `${ classBase }__enabled-currencies-list` }
-					>
+					<EnabledCurrenciesList className="enabled-currencies-list">
 						{ enabledCurrencies &&
 							enabledKeys.map( ( code ) => (
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
 									currency={ enabledCurrencies[ code ] }
-									classBase={ classBase }
 									onDeleteClick={
 										enabledCurrencies[ code ].is_default
 											? undefined

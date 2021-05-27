@@ -5,7 +5,6 @@
 import { __ } from '@wordpress/i18n';
 import { Button, Modal } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
-import { HorizontalRule } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
@@ -18,12 +17,10 @@ import {
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import './style.scss';
+
 // TODO: This works when saving, but list does not refresh.
 // TODO: Should we reset selected currencies on modal close?
 // TODO: Need to add a currency search. V2?
-// TODO: Update text and classes to reflect currencies.
-// TODO: Needs to have the same footer as other modals, like Instant Deposits.
-// TODO: Recommended currencies, like in the figma. V2?
 const EnabledCurrenciesModal = ( { className } ) => {
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
@@ -97,6 +94,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 						'woocommerce-payments'
 					) }
 					onRequestClose={ handleAddSelectedCancelClick }
+					className="add-enabled-currencies-modal"
 				>
 					<EnabledCurrenciesModalCheckboxList>
 						{ availableCurrencyCodes.map( ( code ) => (
@@ -104,14 +102,11 @@ const EnabledCurrenciesModal = ( { className } ) => {
 								key={ availableCurrencies[ code ].id }
 								checked={ selectedCurrencies[ code ] }
 								onChange={ handleChange }
-								name={ availableCurrencies[ code ].name }
-								code={ code }
-								flag={ availableCurrencies[ code ].flag }
+								currency={ availableCurrencies[ code ] }
 							/>
 						) ) }
 					</EnabledCurrenciesModalCheckboxList>
-					<HorizontalRule className="woocommerce-payments__payment-method-selector__separator" />
-					<div className="woocommerce-payments__payment-method-selector__footer">
+					<div className="add-enabled-currencies-modal__footer">
 						<Button
 							isSecondary
 							onClick={ handleAddSelectedCancelClick }

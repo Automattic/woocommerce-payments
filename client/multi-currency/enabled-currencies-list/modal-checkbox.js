@@ -5,13 +5,13 @@
 import React from 'react';
 import { CheckboxControl } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
+import interpolateComponents from 'interpolate-components';
 
+// TODO: The currency.symbol may be a HTML element, so that needs to be fixed.
 const EnabledCurrenciesModalCheckbox = ( {
-	code,
-	flag,
 	onChange,
-	name,
 	checked = false,
+	currency: { flag, symbol, code, name },
 } ) => {
 	const handleChange = useCallback(
 		( enabled ) => {
@@ -26,7 +26,22 @@ const EnabledCurrenciesModalCheckbox = ( {
 				code={ code }
 				checked={ checked }
 				onChange={ handleChange }
-				label={ `${ flag } ${ name }` }
+				label={ interpolateComponents( {
+					mixedString: '{{flag /}} {{name /}} {{code /}}',
+					components: {
+						flag: (
+							<span className="enabled-currency-checkbox__flag">
+								{ flag }
+							</span>
+						),
+						name: <span>{ name }</span>,
+						code: (
+							<span className="enabled-currency-checkbox__code">
+								({ symbol } { code })
+							</span>
+						),
+					},
+				} ) }
 			/>
 		</li>
 	);
