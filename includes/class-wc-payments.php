@@ -212,7 +212,6 @@ class WC_Payments {
 		self::$remote_note_service      = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service            = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$multi_currency           = new WC_Payments_Multi_Currency();
 
 		$gateway_class         = CC_Payment_Gateway::class;
 		$giropay_class         = Giropay_Payment_Gateway::class;
