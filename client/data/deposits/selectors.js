@@ -37,7 +37,18 @@ export const getDepositsOverviewError = ( state ) => {
 };
 
 /**
- * Returns all deposits' overviews from the state.
+ * Prepares and returns all deposits' overviews from the state.
+ *
+ * The API returns this in the form of separate arrays
+ * for each balance/deposit type, each of them containing
+ * a separate entry for each currency.
+ *
+ * This selector will return the account, as well as an
+ * array with all of the neccessary details grouped by currency.
+ *
+ * Check the `AccountOverview.OverviewsResponse` declaration
+ * for the shape of the returned object.
+ *
  *
  * ToDo: Add a reference to `declarations.d.ts`.
  *
@@ -46,7 +57,51 @@ export const getDepositsOverviewError = ( state ) => {
  */
 export const getAllDepositsOverviews = ( state ) => {
 	const DepositsOverview = getDepositsState( state ).overviews || {};
-	return DepositsOverview.data;
+
+	// Return an empty skeleton if data has not been loaded yet.
+	if ( ! DepositsOverview.data ) {
+		return {
+			account: null,
+			currencies: [],
+		};
+	}
+
+	const { deposit, balance, account } = DepositsOverview.data;
+	const groups = {
+		lastPaid: deposit.last_paid,
+		nextScheduled: deposit.next_scheduled,
+		pending: balance.pending,
+		available: balance.available,
+	};
+
+	const currencies = {};
+	for ( const [ key, values ] of Object.entries( groups ) ) {
+		values.forEach( ( value ) => {
+			const { currency } = value;
+
+			if ( ! currencies[ currency ] ) {
+				currencies[ currency ] = {
+					currency,
+					lastPaid: null,
+					nextScheduled: null,
+					pending: null,
+					available: null,
+				};
+			}
+
+			// There will be a single deposit/balance per currency, no arrays here.
+			currencies[ currency ][ key ] = value;
+		} );
+	}
+
+	return {
+		account,
+
+		// The default currency should appear at the top of the list.
+		currencies: Object.values( currencies ).sort( ( a, b ) => {
+			return account.default_currency === b.currency ? 1 : 0;
+		} ),
+	};
 };
 
 export const getAllDepositsOverviewsError = ( state ) => {

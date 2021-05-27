@@ -21,34 +21,40 @@ declare namespace AccountOverview {
 		id: string;
 		type: string;
 		amount: number;
+		automatic: boolean;
 		currency: string | null;
 		bankAccount: string | null;
 		created: number;
 		date: number;
+		fee: number;
+		fee_percentage: number;
 		status: string;
 	}
 
 	interface Overview {
-		account: Account;
-		balance: {
-			available: Balance;
-			pending: Balance;
-		};
-		last_deposit: Deposit | null;
-		next_deposit: Deposit | null;
+		currency: string;
+		lastPaid: Deposit;
+		nextScheduled: Deposit;
+		pending: Balance;
+		available: Balance;
 	}
 
-	interface OverviewResponse {
-		overview: Overview;
+	interface OverviewsResponse {
+		overviews: {
+			account: Account;
+			currencies: Array< Overview >;
+		};
 		isLoading: boolean;
 	}
 }
 
 declare module 'data' {
-	function useDepositsOverview(): AccountOverview.OverviewResponse;
+	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
 }
 
-declare module 'components/loadable';
+declare module 'gridicons';
+
+declare module '@wordpress/i18n';
 
 declare module '@wordpress/components';
 
