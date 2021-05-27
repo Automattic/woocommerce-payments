@@ -261,7 +261,7 @@ describe( 'Settings hooks tests', () => {
 			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdate );
 			expect(
 				actions.updateDigitalWalletsLocations
-			).toHaveBeenCalledWith( [ 'cart' ] );
+			).toHaveBeenCalledWith( locationsAfterUpdate );
 		} );
 	} );
 } );
