@@ -91,12 +91,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_digital_wallets_enabled'        => [
-						'description'       => __( 'If WooCommerce Payments 1-click checkouts should be enabled.', 'woocommerce-payments' ),
+						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'digital_wallets_enabled_locations' => [
-						'description'       => __( '1-click checkout locations that should be enabled.', 'woocommerce-payments' ),
+						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
