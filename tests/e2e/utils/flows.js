@@ -14,10 +14,6 @@ const baseUrl = config.get( 'url' );
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
-
-const WC_SUBSCRIPTIONS_PAGE =
-	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
-
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 
@@ -84,36 +80,6 @@ export const paymentsShopper = {
 		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
 			waitUntil: 'networkidle0',
 		} );
-	},
-};
-
-export const merchantWCP = {
-	openSubscriptions: async () => {
-		await page.goto( WC_SUBSCRIPTIONS_PAGE, {
-			waitUntil: 'networkidle0',
-		} );
-		await expect( page ).toMatchElement( 'h1', { text: 'Subscriptions' } );
-	},
-
-	// Create a subscription product with an optional signup fee
-	createSubscriptionProduct: async (
-		productName,
-		includeSignupFee = false
-	) => {
-		// Go to "add product" page
-		await merchant.openNewProduct();
-
-		// Make sure we're on the add product page
-		await expect( page.title() ).resolves.toMatch( 'Add new product' );
-		await expect( page ).toFill( '#title', productName );
-		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
-		await expect( page ).toFill( '#_subscription_price', '9.99' );
-
-		if ( includeSignupFee ) {
-			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
-		}
-
-		await verifyAndPublish();
 	},
 };
 
