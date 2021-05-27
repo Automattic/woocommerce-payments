@@ -13,10 +13,21 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data';
 
+import { downloadCSVFile } from '@woocommerce/csv-export';
+
 jest.mock( 'data', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );
+
+jest.mock( '@woocommerce/csv-export', () => {
+	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+
+	return {
+		...actualModule,
+		downloadCSVFile: jest.fn(),
+	};
+} );
 
 const getMockTransactions = () => [
 	{
@@ -325,5 +336,63 @@ describe( 'Transactions list', () => {
 
 		const { container } = render( <TransactionsList /> );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	describe( 'CSV download', () => {
+		beforeEach( () => {
+			useTransactions.mockReturnValue( {
+				transactions: getMockTransactions(),
+				isLoading: false,
+			} );
+
+			useTransactionsSummary.mockReturnValue( {
+				transactionsSummary: {
+					count: 10,
+					currency: 'usd',
+					// eslint-disable-next-line camelcase
+					store_currencies: [ 'eur', 'usd' ],
+					fees: 100,
+					total: 1000,
+					net: 900,
+				},
+				isLoading: false,
+			} );
+		} );
+
+		afterEach( () => {
+			jest.resetAllMocks();
+		} );
+
+		afterAll( () => {
+			jest.restoreAllMocks();
+		} );
+
+		test( 'should render expected columns in CSV when the download button is clicked', () => {
+			const { getByRole } = render( <TransactionsList /> );
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			const expected = [
+				'"Transaction Id"',
+				'"Date / Time"',
+				'Type',
+				'Amount',
+				'Fees',
+				'Net',
+				'"Order #"',
+				'Source',
+				'Customer',
+				'Email',
+				'Country',
+				'"Risk level"',
+				'Deposit',
+			];
+
+			// checking if columns in CSV are rendered correctly
+			expect(
+				downloadCSVFile.mock.calls[ 0 ][ 1 ]
+					.split( '\n' )[ 0 ]
+					.split( ',' )
+			).toEqual( expected );
+		} );
 	} );
 } );

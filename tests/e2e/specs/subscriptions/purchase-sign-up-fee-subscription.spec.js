@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
 
 import { RUN_SUBSCRIPTIONS_TESTS, describeif, merchantWCP } from '../../utils';
 
@@ -28,6 +28,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 		afterAll( async () => {
 			await merchant.logout();
+
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to purchase a subscription with signup fee', async () => {

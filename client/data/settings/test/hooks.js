@@ -7,9 +7,14 @@ import { useSelect, useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import {
+	useAccountStatementDescriptor,
 	useEnabledPaymentMethodIds,
-	useGeneralSettings,
+	useIsWCPayEnabled,
+	useManualCapture,
 	useSettings,
+	useTestMode,
+	useDigitalWalletsEnabledSettings,
+	useDigitalWalletsLocations,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -44,10 +49,10 @@ describe( 'Settings hooks tests', () => {
 				getEnabledPaymentMethodIds: jest.fn( () => [ 'foo', 'bar' ] ),
 			};
 
-			const {
+			const [
 				enabledPaymentMethodIds,
 				updateEnabledPaymentMethodIds,
-			} = useEnabledPaymentMethodIds();
+			] = useEnabledPaymentMethodIds();
 			updateEnabledPaymentMethodIds( [ 'baz', 'quux' ] );
 
 			expect( enabledPaymentMethodIds ).toEqual( [ 'foo', 'bar' ] );
@@ -57,25 +62,102 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useGeneralSettings()', () => {
-		test( 'returns general settings from selector', () => {
+	describe( 'useTestMode()', () => {
+		test( 'returns the test mode flag and a function', () => {
+			actions = {
+				updateIsTestModeEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsTestModeEnabled: jest.fn().mockReturnValue( true ),
+			};
+
+			const [ isTestModeEnabled, setTestMode ] = useTestMode();
+
+			expect( isTestModeEnabled ).toEqual( true );
+			expect( setTestMode ).toHaveBeenCalledTimes( 0 );
+
+			setTestMode( false );
+
+			expect( actions.updateIsTestModeEnabled ).toHaveBeenCalledWith(
+				false
+			);
+		} );
+	} );
+
+	describe( 'useIsWCPayEnabled()', () => {
+		test( 'returns the flag value and a function', () => {
 			actions = {
 				updateIsWCPayEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsWCPayEnabled: jest.fn( () => 'foo' ),
+				getIsWCPayEnabled: jest.fn().mockReturnValue( true ),
 			};
 
-			const {
-				isWCPayEnabled,
-				updateIsWCPayEnabled,
-			} = useGeneralSettings();
-			updateIsWCPayEnabled( 'bar' );
+			const [ isWCPayEnabled, setWCPayEnabled ] = useIsWCPayEnabled();
 
-			expect( isWCPayEnabled ).toEqual( 'foo' );
+			expect( isWCPayEnabled ).toEqual( true );
+			expect( setWCPayEnabled ).toHaveBeenCalledTimes( 0 );
+
+			setWCPayEnabled( false );
+
 			expect( actions.updateIsWCPayEnabled ).toHaveBeenCalledWith(
-				'bar'
+				false
+			);
+		} );
+	} );
+
+	describe( 'useAccountStatementDescriptor()', () => {
+		test( 'returns the statement description value and a function', () => {
+			actions = {
+				updateAccountStatementDescriptor: jest.fn(),
+			};
+
+			selectors = {
+				getAccountStatementDescriptor: jest
+					.fn()
+					.mockReturnValue( 'statement value' ),
+			};
+
+			const [
+				statementDescriptor,
+				setStatementDescriptor,
+			] = useAccountStatementDescriptor();
+
+			expect( statementDescriptor ).toEqual( 'statement value' );
+			expect( setStatementDescriptor ).toHaveBeenCalledTimes( 0 );
+
+			setStatementDescriptor( 'statement value update' );
+
+			expect(
+				actions.updateAccountStatementDescriptor
+			).toHaveBeenCalledWith( 'statement value update' );
+		} );
+	} );
+
+	describe( 'useManualCapture()', () => {
+		test( 'returns the manual capture flag and a function', () => {
+			actions = {
+				updateIsManualCaptureEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsManualCaptureEnabled: jest.fn().mockReturnValue( true ),
+			};
+
+			const [
+				isManualCaptureEnabled,
+				setManualCaptureValue,
+			] = useManualCapture();
+
+			expect( isManualCaptureEnabled ).toEqual( true );
+			expect( setManualCaptureValue ).toHaveBeenCalledTimes( 0 );
+
+			setManualCaptureValue( false );
+
+			expect( actions.updateIsManualCaptureEnabled ).toHaveBeenCalledWith(
+				false
 			);
 		} );
 	} );
@@ -128,5 +210,69 @@ describe( 'Settings hooks tests', () => {
 				expect( isLoading ).toBeTruthy();
 			}
 		);
+	} );
+
+	describe( 'useDigitalWalletsEnabledSettings()', () => {
+		test( 'returns digital wallets settings from selector', () => {
+			actions = {
+				updateIsDigitalWalletsEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsDigitalWalletsEnabled: jest.fn( () => true ),
+			};
+
+			const [
+				isDigitalWalletsEnabled,
+				updateIsDigitalWalletsEnabled,
+			] = useDigitalWalletsEnabledSettings();
+
+			updateIsDigitalWalletsEnabled( false );
+
+			expect( isDigitalWalletsEnabled ).toEqual( true );
+			expect(
+				actions.updateIsDigitalWalletsEnabled
+			).toHaveBeenCalledWith( false );
+		} );
+	} );
+
+	describe( 'useDigitalWalletsLocations()', () => {
+		test( 'returns digital wallets locations to shown on if digital wallets is enabled', () => {
+			const locationsBeforeUpdated = {
+				checkout: false,
+				// eslint-disable-next-line camelcase
+				product_page: false,
+				cart: false,
+			};
+
+			const locationsAfterUpdated = {
+				checkout: false,
+				// eslint-disable-next-line camelcase
+				product_page: false,
+				cart: false,
+			};
+
+			actions = {
+				updateDigitalWalletsLocations: jest.fn(),
+			};
+
+			selectors = {
+				getDigitalWalletsLocations: jest.fn(
+					() => locationsBeforeUpdated
+				),
+			};
+
+			const [
+				digitalWalletsLocations,
+				updateDigitalWalletsLocations,
+			] = useDigitalWalletsLocations();
+
+			updateDigitalWalletsLocations( locationsAfterUpdated );
+
+			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdated );
+			expect(
+				actions.updateDigitalWalletsLocations
+			).toHaveBeenCalledWith( locationsAfterUpdated );
+		} );
 	} );
 } );
