@@ -53,9 +53,10 @@ declare module 'data' {
 }
 
 declare module 'gridicons';
-
 declare module '@wordpress/i18n';
-
 declare module '@wordpress/components';
-
 declare module '@wordpress/i18n';
+declare module 'components/loadable';
+declare module 'components/details-link';
+declare module 'deposits/overview';
+declare module 'utils/currency';

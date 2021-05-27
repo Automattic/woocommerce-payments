@@ -49,9 +49,6 @@ export const getDepositsOverviewError = ( state ) => {
  * Check the `AccountOverview.OverviewsResponse` declaration
  * for the shape of the returned object.
  *
- *
- * ToDo: Add a reference to `declarations.d.ts`.
- *
  * @param {Object} state Current wp.data state.
  * @return {Object} A complex object, containing all neccessary overviews.
  */
