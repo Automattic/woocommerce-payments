@@ -12,7 +12,7 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
-import Banner from '../../banner';
+import SettingsLayout from '../settings-layout';
 
 /* eslint-disable camelcase */
 const methods = {
@@ -67,9 +67,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 	const { title, description: Description, controls: Controls } = method;
 
 	return (
-		<div className="payment-method-settings">
-			<Banner />
-
+		<SettingsLayout>
 			<h2 className="payment-method-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
 				&gt; <span>{ title }</span>
@@ -78,7 +76,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 			<SettingsSection Description={ Description }>
 				<Controls />
 			</SettingsSection>
-		</div>
+		</SettingsLayout>
 	);
 };
 
