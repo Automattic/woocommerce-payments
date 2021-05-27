@@ -365,6 +365,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get an overview of all deposits (for all currencies).
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_all_deposits_overviews() {
+		return $this->request( [], self::DEPOSITS_API . '/overview-all', self::GET );
+	}
+
+	/**
 	 * Get summary of deposits.
 	 *
 	 * @param array $filters The filters to be used in the query.
