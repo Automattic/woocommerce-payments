@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 
@@ -13,6 +14,9 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
 import SettingsLayout from '../settings-layout';
+import { useSettings } from '../../data';
+import { LoadableBlock } from '../../components/loadable';
+import SaveSettingsSection from '../save-settings-section';
 
 /* eslint-disable camelcase */
 const methods = {
@@ -52,6 +56,7 @@ const methods = {
 
 const PaymentMethodSettings = ( { methodId } ) => {
 	const method = methods[ methodId ];
+	const { isLoading } = useSettings();
 
 	if ( ! method ) {
 		return (
@@ -69,13 +74,19 @@ const PaymentMethodSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			<h2 className="payment-method-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
+				<a href={ getPaymentSettingsUrl() }>
+					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
+				</a>{ ' ' }
 				&gt; <span>{ title }</span>
 			</h2>
 
 			<SettingsSection Description={ Description }>
-				<Controls />
+				<LoadableBlock isLoading={ isLoading } numLines={ 30 }>
+					<Controls />
+				</LoadableBlock>
 			</SettingsSection>
+
+			<SaveSettingsSection />
 		</SettingsLayout>
 	);
 };
