@@ -19,27 +19,17 @@ if ( class_exists( 'Settings', false ) ) {
  * Settings.
  */
 class Settings extends \WC_Settings_Page {
-	// TODO: make all filters uniform.
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		$this->id    = 'wcpay_multi_currency';
-		$this->label = _x( 'WIP Multi-currency', 'Settings tab label', 'woocommerce-payments' );
+		$this->label = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		add_action( 'woocommerce_admin_field_wcpay_multi_currencies', [ $this, 'wcpay_multi_currencies_setting' ] );
 		parent::__construct();
 	}
-
-	/**
-	 * Default is going to be a currencies listing: https://d.pr/i/l17FlV
-	 * There will need to be a currency adding modal: https://d.pr/i/i91u9l
-	 * There will be a currency setting page: https://d.pr/i/56O81S
-	 * And then an overall setting page: https://d.pr/i/TXRvOX
-	 *
-	 * TODO: Make sure to fix any text domains for translations.
-	 */
 
 	/**
 	 * Get sections.
