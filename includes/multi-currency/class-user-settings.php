@@ -29,8 +29,8 @@ class User_Settings {
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		add_action( 'woocommerce_edit_account_form', [ $this, 'add_default_currency_switch' ] );
-		add_action( 'woocommerce_save_account_details', [ $this, 'save_default_currency' ] );
+		add_action( 'woocommerce_edit_account_form', [ $this, 'add_presentment_currency_switch' ] );
+		add_action( 'woocommerce_save_account_details', [ $this, 'save_presentment_currency' ] );
 	}
 
 	/**
@@ -38,7 +38,7 @@ class User_Settings {
 	 *
 	 * @return void
 	 */
-	public function add_default_currency_switch() {
+	public function add_presentment_currency_switch() {
 		?>
 		<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
 			<label for="wcpay_selected_currency"><?php esc_html_e( 'Default currency', 'woocommerce-payments' ); ?></label>
@@ -67,7 +67,7 @@ class User_Settings {
 	 *
 	 * @return void
 	 */
-	public function save_default_currency() {
+	public function save_presentment_currency() {
 		if ( isset( $_POST['wcpay_selected_currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$currency_code = wc_clean( wp_unslash( $_POST['wcpay_selected_currency'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 			$this->multi_currency->update_selected_currency( $currency_code );
