@@ -305,7 +305,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			<?php
 			if ( $display_tokenization ) {
 				$this->tokenization_script();
-				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				$this->saved_payment_methods();
 			}
 			?>
 
