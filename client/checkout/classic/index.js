@@ -14,6 +14,7 @@ import {
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
+import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -42,7 +43,12 @@ jQuery( function ( $ ) {
 			} );
 		}
 	);
-	const elements = api.getStripe().elements();
+
+	const elements = isUPEEnabled
+		? api.getStripe().elements( {
+				fonts: getFontRulesFromPage(),
+		  } )
+		: api.getStripe().elements();
 
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
@@ -163,6 +169,7 @@ jQuery( function ( $ ) {
 
 				upeElement = elements.create( 'payment', {
 					clientSecret,
+					appearance: getAppearance(),
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
