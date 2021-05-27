@@ -37,6 +37,24 @@ export const getDepositsOverviewError = ( state ) => {
 };
 
 /**
+ * Returns all deposits' overviews from the state.
+ *
+ * ToDo: Add a reference to `declarations.d.ts`.
+ *
+ * @param {Object} state Current wp.data state.
+ * @return {Object} A complex object, containing all neccessary overviews.
+ */
+export const getAllDepositsOverviews = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overviews || {};
+	return DepositsOverview.data;
+};
+
+export const getAllDepositsOverviewsError = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overviews || {};
+	return DepositsOverview.error;
+};
+
+/**
  * Retrieves the deposits corresponding to the provided query or a sane
  * default if they don't exist.
  *
