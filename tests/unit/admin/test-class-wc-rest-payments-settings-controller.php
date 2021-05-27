@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -39,6 +40,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Digital_Wallets_Payment_Gateway Gateway.
+	 *
+	 * @var Digital_Wallets_Payment_Gateway
+	 */
+	private $digital_wallets_gateway;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -60,8 +68,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
+		$this->gateway                 = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->digital_wallets_gateway = new Digital_Wallets_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->controller              = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->digital_wallets_gateway );
 		$this->set_available_gateways( [ 'woocommerce_payments' ] );
 	}
 

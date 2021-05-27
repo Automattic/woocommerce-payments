@@ -194,6 +194,9 @@ else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi
 
+echo "Installing basic auth plugin for interfacing with the API"
+cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
+
 echo "Setting redirection to local server"
 
 # host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.

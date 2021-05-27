@@ -22,10 +22,7 @@ jest.mock( 'data', () => ( {
 
 describe( 'PaymentMethodsSelector', () => {
 	beforeEach( () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [],
-			updateEnabledPaymentMethodIds: jest.fn(),
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'woocommerce_payments',
 			'woocommerce_payments_giropay',
@@ -56,10 +53,10 @@ describe( 'PaymentMethodsSelector', () => {
 	} );
 
 	test( 'Clicking "Add Payment Method" opens the Payment method selection', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [ 'woocommerce_payments' ],
-			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments' ],
+			jest.fn( () => {} ),
+		] );
 
 		render( <PaymentMethodsSelector /> );
 
@@ -114,9 +111,7 @@ describe( 'PaymentMethodsSelector', () => {
 			} )
 		);
 
-		expect(
-			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).not.toHaveBeenCalled();
+		expect( useEnabledPaymentMethodIds()[ 1 ] ).not.toHaveBeenCalled();
 
 		expect(
 			screen.queryByRole( 'button', {
@@ -126,13 +121,10 @@ describe( 'PaymentMethodsSelector', () => {
 	} );
 
 	test( 'Only payment methods that are not enabled are listed', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sofort',
-			],
-			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sofort' ],
+			jest.fn( () => {} ),
+		] );
 
 		render( <PaymentMethodsSelector /> );
 
@@ -149,13 +141,11 @@ describe( 'PaymentMethodsSelector', () => {
 	} );
 
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-			],
-			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
-		} );
+		const updateEnabledPaymentMethodIdsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			updateEnabledPaymentMethodIdsMock,
+		] );
 
 		render( <PaymentMethodsSelector /> );
 
@@ -171,19 +161,15 @@ describe( 'PaymentMethodsSelector', () => {
 		user.click( paymentMethodCheckbox );
 
 		expect( paymentMethodCheckbox ).toBeChecked();
-		expect(
-			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).not.toHaveBeenCalled();
+		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
 	} );
 
 	test( 'Selecting a payment method and clicking "Add selected" adds the method and closes the modal', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-			],
-			updateEnabledPaymentMethodIds: jest.fn( () => {} ),
-		} );
+		const updateEnabledPaymentMethodIdsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			updateEnabledPaymentMethodIdsMock,
+		] );
 
 		render( <PaymentMethodsSelector /> );
 
@@ -201,9 +187,7 @@ describe( 'PaymentMethodsSelector', () => {
 			name: 'Add selected',
 		} );
 		user.click( addSelectedButton );
-		expect(
-			useEnabledPaymentMethodIds().updateEnabledPaymentMethodIds
-		).toHaveBeenCalledWith( [
+		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'woocommerce_payments',
 			'woocommerce_payments_sepa',
 			'woocommerce_payments_giropay',
