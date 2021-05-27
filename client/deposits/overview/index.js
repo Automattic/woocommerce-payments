@@ -34,9 +34,9 @@ const getAmount = ( obj, defaultCurrency ) => {
 		obj && obj.currency ? obj.currency : defaultCurrency
 	);
 };
-const getDepositDate = ( deposit ) =>
+export const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
-const getBalanceDepositCount = ( balance ) =>
+export const getBalanceDepositCount = ( balance ) =>
 	sprintf(
 		_n(
 			'%d deposit',
@@ -46,7 +46,7 @@ const getBalanceDepositCount = ( balance ) =>
 		),
 		balance.deposits_count
 	);
-const getNextDepositLabelFormatted = ( deposit ) => {
+export const getNextDepositLabelFormatted = ( deposit ) => {
 	const baseLabel = deposit
 		? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate(
 				'M j, Y',
@@ -103,7 +103,7 @@ const formatDepositSchedule = ( schedule ) => {
 	}
 };
 
-const getDepositScheduleDescriptor = ( {
+export const getDepositScheduleDescriptor = ( {
 	account: { deposits_schedule: schedule, deposits_disabled: disabled },
 	last_deposit: last,
 } ) => {
