@@ -7,7 +7,6 @@ import { CheckboxControl } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
 
-// TODO: The currency.symbol may be a HTML element, so that needs to be fixed.
 const EnabledCurrenciesModalCheckbox = ( {
 	onChange,
 	checked = false,
@@ -19,6 +18,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 		},
 		[ code, onChange ]
 	);
+	const currencySymbol = { __html: symbol };
 
 	return (
 		<li className="enabled-currency-checkbox">
@@ -37,7 +37,11 @@ const EnabledCurrenciesModalCheckbox = ( {
 						name: <span>{ name }</span>,
 						code: (
 							<span className="enabled-currency-checkbox__code">
-								({ symbol } { code })
+								(
+								<span
+									dangerouslySetInnerHTML={ currencySymbol }
+								/>{ ' ' }
+								{ code })
 							</span>
 						),
 					},

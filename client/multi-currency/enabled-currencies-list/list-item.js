@@ -11,39 +11,46 @@ import { Button, Icon } from '@wordpress/components';
  */
 import DeleteButton from './delete-button';
 
-const defaultText = __( 'Default currency', 'woocommerce-payments' );
+const EnabledCurrenciesListItem = ( {
+	currency: {
+		code,
+		flag,
+		id,
+		is_default: { isDefault },
+		name,
+		symbol,
+	},
+	onDeleteClick,
+} ) => {
+	const defaultText = __( 'Default currency', 'woocommerce-payments' );
+	const currencyCode = isDefault ? `${ code } - ${ defaultText }` : code;
+	const currencySymbol = { __html: symbol };
 
-// TODO: The currency.symbol may be a HTML element, so that needs to be fixed.
-// TODO: currency can be deconstructed into its properties.
-const EnabledCurrenciesListItem = ( { currency, onDeleteClick } ) => {
-	const code = currency.is_default
-		? `${ currency.code } - ${ defaultText }`
-		: currency.code;
-
-	const getEditUrl = ( id ) => {
-		return `admin.php?page=wc-settings&tab=wcpay_multi_currency&section=${ id.toLowerCase() }`;
+	const getEditUrl = ( currencyId ) => {
+		return `admin.php?page=wc-settings&tab=wcpay_multi_currency&section=${ currencyId.toLowerCase() }`;
 	};
 
 	return (
-		<li className={ classNames( 'enabled-currency', currency.id ) }>
+		<li className={ classNames( 'enabled-currency', id ) }>
 			<div className="enabled-currency__container">
-				<div className="enabled-currency__flag">{ currency.flag }</div>
-				<div className="enabled-currency__label">{ currency.name }</div>
+				<div className="enabled-currency__flag">{ flag }</div>
+				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					({ currency.symbol } { code })
+					(<span dangerouslySetInnerHTML={ currencySymbol } />{ ' ' }
+					{ currencyCode })
 				</div>
 			</div>
 			<div className="enabled-currency__actions">
 				<Button
 					isLink
-					href={ getEditUrl( currency.id ) }
+					href={ getEditUrl( id ) }
 					aria-label={ sprintf(
 						__(
 							/* translators: %1: Currency to be edited. */
 							'Edit %1$s',
 							'woocommerce-payments'
 						),
-						currency.name
+						name
 					) }
 					className="enabled-currency__action edit"
 				>
@@ -53,8 +60,8 @@ const EnabledCurrenciesListItem = ( { currency, onDeleteClick } ) => {
 					<DeleteButton
 						className="enabled-currency__action delete"
 						onClick={ onDeleteClick }
-						label={ currency.name }
-						code={ currency.code }
+						label={ name }
+						code={ code }
 					/>
 				) }
 			</div>
