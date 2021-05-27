@@ -51,7 +51,7 @@ const DigitalWalletsDescription = () => (
 		</ul>
 		<p>
 			{ __(
-				'Let your customers use their favorite digital wallets ' +
+				'Let your customers use their favorite express payment methods and digital wallets ' +
 					'for faster, more secure checkouts across different parts of your store.',
 				'woocommerce-payments'
 			) }
