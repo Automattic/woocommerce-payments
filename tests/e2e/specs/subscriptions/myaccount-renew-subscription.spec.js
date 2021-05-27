@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
 
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
@@ -34,29 +34,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		} );
 
 		afterAll( async () => {
-			// Go and cancel a subscription
-			await paymentsShopper.goToSubscriptions();
-			await expect( page ).toClick(
-				'.woocommerce-orders-table__cell-subscription-id > a',
-				{
-					text: subscriptionId,
-				}
-			);
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-			await expect( page ).toClick( '.button.cancel' );
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-			await expect( page ).toMatchElement(
-				'.woocommerce > div.woocommerce-message',
-				{
-					text: 'Your subscription has been cancelled.',
-				}
-			);
-			await shopper.logout();
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to renew a subscription in my account', async () => {
-			await shopper.login();
-
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -91,15 +73,18 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toClick(
 				'a.button.subscription_renewal_early'
 			);
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Place an order to renew a subscription
+			await page.waitForSelector(
+				'.woocommerce > div.woocommerce-notices-wrapper > div.woocommerce-message'
+			);
 			await expect( page ).toMatchElement(
 				'.woocommerce > div.woocommerce-notices-wrapper > div.woocommerce-message',
 				{
 					text: 'Complete checkout to renew now.',
 				}
 			);
+			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 		} );
