@@ -57,8 +57,15 @@ export const getTasks = ( {
 		wpcomReconnectUrl && {
 			key: 'reconnect-wpcom-user',
 			level: 1,
-			title: __( 'Reconnect the WPCOM user', 'woocommerce-payments' ),
-			content: __( 'Or else.', 'woocommerce-payments' ),
+			title: __(
+				'Reconnect WooCommerce Payments',
+				'woocommerce-payments'
+			),
+			content: __(
+				'WooCommerce Payments is missing a connected WordPress.com account. ' +
+					'Some functionality will be limited without a connected account.',
+				'woocommerce-payments'
+			),
 			completed: false,
 			onClick: () => {
 				window.location.href = wpcomReconnectUrl;
