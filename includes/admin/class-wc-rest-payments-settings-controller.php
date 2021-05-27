@@ -98,7 +98,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					'digital_wallets_enabled_locations' => [
 						'description'       => __( '1-click checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
-						'validate_callback' => __CLASS__ . '::validate_digital_wallets_enabled_locations',
+						'items'             => [
+							'type' => 'string',
+							'enum' => Digital_Wallets_Locations::toArray(),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
 					],
 				],
 			]
@@ -235,28 +239,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$account_statement_descriptor = $request->get_param( 'account_statement_descriptor' );
 
 		$this->wcpay_gateway->update_option( 'account_statement_descriptor', $account_statement_descriptor );
-	}
-
-	/**
-	 * Validate the digital wallets enabled locations are supported and their values
-	 * are boolean.
-	 *
-	 * @param array $locations Value to check.
-	 *
-	 * @return bool
-	 */
-	public static function validate_digital_wallets_enabled_locations( $locations ) {
-		if ( ! is_array( $locations ) ) {
-			return false;
-		}
-
-		foreach ( $locations as $location ) {
-			if ( ! Digital_Wallets_Locations::isValid( $location ) ) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	/**
