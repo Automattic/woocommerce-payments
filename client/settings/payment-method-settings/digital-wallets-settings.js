@@ -11,11 +11,53 @@ import { Card, CardBody, RadioControl } from '@wordpress/components';
  */
 import './index.scss';
 
+const buttonSizeOptions = [
+	{
+		label: __( 'Default (40 px)', 'woocommerce-payments' ),
+		value: 'default',
+	},
+	{
+		label: __( 'Medium (48 px)', 'woocommerce-payments' ),
+		value: 'medium',
+	},
+	{
+		label: __( 'Large (56 px)', 'woocommerce-payments' ),
+		value: 'large',
+	},
+];
+const buttonActionOptions = [
+	{
+		label: __( 'Only icon', 'woocommerce-payments' ),
+		value: 'only-icon',
+	},
+	{
+		label: __( 'Buy', 'woocommerce-payments' ),
+		value: 'buy',
+	},
+	{
+		label: __( 'Donate', 'woocommerce-payments' ),
+		value: 'donate',
+	},
+	{
+		label: __( 'Book', 'woocommerce-payments' ),
+		value: 'book',
+	},
+];
+const buttonThemeOptions = [
+	{
+		label: __( 'Dark', 'woocommerce-payments' ),
+		value: 'dark',
+	},
+	{
+		label: __( 'Light', 'woocommerce-payments' ),
+		value: 'light',
+	},
+];
+
 const DigitalWalletsSettings = () => {
 	const [ cta, setCta ] = useState( 'buy' );
 	const [ size, setSize ] = useState( 'default' );
 	const [ theme, setTheme ] = useState( 'dark' );
-
 	return (
 		<Card>
 			<CardBody>
@@ -26,24 +68,7 @@ const DigitalWalletsSettings = () => {
 						'woocommerce-payments'
 					) }
 					selected={ cta }
-					options={ [
-						{
-							label: __( 'Only icon', 'woocommerce-payments' ),
-							value: 'only-icon',
-						},
-						{
-							label: __( 'Buy', 'woocommerce-payments' ),
-							value: 'buy',
-						},
-						{
-							label: __( 'Donate', 'woocommerce-payments' ),
-							value: 'donate',
-						},
-						{
-							label: __( 'Book', 'woocommerce-payments' ),
-							value: 'book',
-						},
-					] }
+					options={ buttonActionOptions }
 					onChange={ setCta }
 				/>
 				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
@@ -54,29 +79,7 @@ const DigitalWalletsSettings = () => {
 					) }
 					label={ __( 'Size', 'woocommerce-payments' ) }
 					selected={ size }
-					options={ [
-						{
-							label: __(
-								'Default (40 px)',
-								'woocommerce-payments'
-							),
-							value: 'default',
-						},
-						{
-							label: __(
-								'Medium (48 px)',
-								'woocommerce-payments'
-							),
-							value: 'medium',
-						},
-						{
-							label: __(
-								'Large (56 px)',
-								'woocommerce-payments'
-							),
-							value: 'large',
-						},
-					] }
+					options={ buttonSizeOptions }
 					onChange={ setSize }
 				/>
 				<RadioControl
@@ -87,16 +90,7 @@ const DigitalWalletsSettings = () => {
 					) }
 					label={ __( 'Theme', 'woocommerce-payments' ) }
 					selected={ theme }
-					options={ [
-						{
-							label: __( 'Dark', 'woocommerce-payments' ),
-							value: 'dark',
-						},
-						{
-							label: __( 'Light', 'woocommerce-payments' ),
-							value: 'light',
-						},
-					] }
+					options={ buttonThemeOptions }
 					onChange={ setTheme }
 				/>
 			</CardBody>
