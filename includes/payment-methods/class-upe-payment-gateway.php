@@ -203,7 +203,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$charge_id      = $intent->get_charge_id();
 			$currency       = $intent->get_currency();
 			$payment_method = $intent->get_payment_method_id();
-			$amount         = $order->get_total();
 
 			$error = $intent->get_last_payment_error();
 			if ( ! empty( $error ) ) {
