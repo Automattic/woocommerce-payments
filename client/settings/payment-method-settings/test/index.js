@@ -10,6 +10,10 @@ import { render, screen, within } from '@testing-library/react';
  */
 import PaymentMethodSettings from '..';
 
+jest.mock( '../../../data', () => ( {
+	useSettings: jest.fn().mockReturnValue( {} ),
+} ) );
+
 describe( 'PaymentMethodSettings', () => {
 	test( 'renders title and description', () => {
 		render(
