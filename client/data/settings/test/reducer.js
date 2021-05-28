@@ -305,18 +305,8 @@ describe( 'Settings reducer tests', () => {
 	} );
 
 	describe( 'SET_DIGITAL_WALLETS_LOCATIONS', () => {
-		const initDigitalWalletsState = {
-			// eslint-disable-next-line camelcase
-			product_page: true,
-			checkout: false,
-			cart: false,
-		};
-		const enableAlldigitalWalletsState = {
-			// eslint-disable-next-line camelcase
-			product_page: true,
-			checkout: true,
-			cart: true,
-		};
+		const initDigitalWalletsState = [ 'product' ];
+		const enableAlldigitalWalletsState = [ 'product', 'checkout', 'cart' ];
 
 		test( 'toggle `data.digital_wallets_enabled_locations`', () => {
 			const oldState = {

@@ -184,22 +184,18 @@ describe( 'Settings selectors tests', () => {
 				settings: {
 					data: {
 						// eslint-disable-next-line camelcase
-						digital_wallets_enabled_locations: {
-							// eslint-disable-next-line camelcase
-							product_page: true,
-							checkout: false,
-							cart: true,
-						},
+						digital_wallets_enabled_locations: [
+							'product',
+							'cart',
+						],
 					},
 				},
 			};
 
-			expect( getDigitalWalletsLocations( state ) ).toEqual( {
-				// eslint-disable-next-line camelcase
-				product_page: true,
-				checkout: false,
-				cart: true,
-			} );
+			expect( getDigitalWalletsLocations( state ) ).toEqual( [
+				'product',
+				'cart',
+			] );
 		} );
 
 		test.each( [
@@ -207,8 +203,8 @@ describe( 'Settings selectors tests', () => {
 			[ {} ],
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
-		] )( 'returns {} if missing (tested state: %j)', ( state ) => {
-			expect( getDigitalWalletsLocations( state ) ).toEqual( {} );
+		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
+			expect( getDigitalWalletsLocations( state ) ).toEqual( [] );
 		} );
 	} );
 } );
