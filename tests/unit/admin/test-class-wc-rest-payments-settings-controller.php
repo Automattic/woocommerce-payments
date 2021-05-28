@@ -265,8 +265,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
 	}
-
-
 	public function test_update_settings_saves_test_mode() {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
 
