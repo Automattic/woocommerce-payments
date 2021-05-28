@@ -44,6 +44,66 @@ jQuery( function ( $ ) {
 		}
 	);
 
+	// Object to add hidden elements to compute focus and invalid states for UPE.
+	const hiddenElementsForUPE = {
+		getHiddenContainer: function () {
+			const hiddenDiv = document.createElement( 'div' );
+			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
+			hiddenDiv.style.border = 0;
+			hiddenDiv.style.clip = 'rect(0 0 0 0)';
+			hiddenDiv.style.height = '1px';
+			hiddenDiv.style.margin = '-1px';
+			hiddenDiv.style.overflow = 'hidden';
+			hiddenDiv.style.padding = '0';
+			hiddenDiv.style.position = 'absolute';
+			hiddenDiv.style.width = '1px';
+			return hiddenDiv;
+		},
+		getHiddenInvalidRow: function () {
+			const hiddenInvalidRow = document.createElement( 'p' );
+			hiddenInvalidRow.classList.add(
+				'form-row',
+				'woocommerce-invalid',
+				'woocommerce-invalid-required-field'
+			);
+			return hiddenInvalidRow;
+		},
+		appendHiddenClone: function ( container, idToClone, hiddenCloneId ) {
+			const hiddenInput = jQuery( idToClone )
+				.clone()
+				.prop( 'id', hiddenCloneId );
+			container.appendChild( hiddenInput.get( 0 ) );
+			return hiddenInput;
+		},
+		init: function () {
+			const hiddenDiv = this.getHiddenContainer();
+
+			// // Hidden focusable element.
+			$( hiddenDiv ).insertAfter( '#billing_postcode' );
+			this.appendHiddenClone(
+				hiddenDiv,
+				'#billing_postcode',
+				'wcpay-hidden-input'
+			);
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
+
+			// Hidden invalid element.
+			const hiddenInvalidRow = this.getHiddenInvalidRow();
+			this.appendHiddenClone(
+				hiddenInvalidRow,
+				'#billing_postcode',
+				'wcpay-hidden-invalid-input'
+			);
+			hiddenDiv.appendChild( hiddenInvalidRow );
+
+			// Remove transitions.
+			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
+		},
+		cleanup: function () {
+			$( '#wcpay-hidden-div' ).remove();
+		},
+	};
+
 	const elements = isUPEEnabled
 		? api.getStripe().elements( {
 				fonts: getFontRulesFromPage(),
@@ -167,9 +227,13 @@ jQuery( function ( $ ) {
 				const { client_secret: clientSecret, id: id } = response;
 				paymentIntentId = id;
 
+				hiddenElementsForUPE.init();
+				const appearance = getAppearance();
+				hiddenElementsForUPE.cleanup();
+
 				upeElement = elements.create( 'payment', {
 					clientSecret,
-					appearance: getAppearance(),
+					appearance,
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
