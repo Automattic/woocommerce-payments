@@ -9,8 +9,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './style.scss';
-import AccountStatus from 'account-status';
-import AccountFees from 'account-fees';
+import AccountStatus from 'account-status-settings';
+import AccountFees from 'account-fees-settings';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';

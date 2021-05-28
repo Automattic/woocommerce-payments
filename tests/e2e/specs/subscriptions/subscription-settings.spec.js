@@ -5,9 +5,7 @@ import config from 'config';
 
 const { merchant } = require( '@woocommerce/e2e-utils' );
 
-import { RUN_SUBSCRIPTIONS_TESTS } from '../../utils';
-
-const describeif = ( condition ) => ( condition ? describe : describe.skip );
+import { RUN_SUBSCRIPTIONS_TESTS, describeif } from '../../utils';
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'WooCommerce > Settings > Subscriptions',

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, ExternalLink } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -20,7 +20,7 @@ import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
-import './style.scss';
+import SaveSettingsSection from '../save-settings-section';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -40,7 +40,7 @@ const PaymentMethodsDescription = () => (
 
 const DigitalWalletsDescription = () => (
 	<>
-		<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
 			<li>
 				<ApplePayIcon />
@@ -51,7 +51,7 @@ const DigitalWalletsDescription = () => (
 		</ul>
 		<p>
 			{ __(
-				'Let your customers use their favorite digital wallets ' +
+				'Let your customers use their favorite express payment methods and digital wallets ' +
 					'for faster, more secure checkouts across different parts of your store.',
 				'woocommerce-payments'
 			) }
@@ -78,7 +78,7 @@ const GeneralSettingsDescription = () => (
 );
 
 const SettingsManager = ( { accountStatus = {} } ) => {
-	const { saveSettings, isSaving, isLoading } = useSettings();
+	const { isLoading } = useSettings();
 
 	return (
 		<>
@@ -107,16 +107,7 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 					</LoadableBlock>
 				</SettingsSection>
 				<AdvancedSettings />
-				<SettingsSection className="settings-manager__buttons">
-					<Button
-						isPrimary
-						isBusy={ isSaving }
-						disabled={ isSaving || isLoading }
-						onClick={ saveSettings }
-					>
-						{ __( 'Save changes', 'woocommerce-payments' ) }
-					</Button>
-				</SettingsSection>
+				<SaveSettingsSection />
 			</div>
 		</>
 	);
