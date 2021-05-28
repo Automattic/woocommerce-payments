@@ -94,10 +94,7 @@ export const receiveSettings = (
 				data: {
 					...state.data,
 					// eslint-disable-next-line camelcase
-					digital_wallets_enabled_locations: {
-						...state.data.digital_wallets_enabled_locations,
-						...action.locations,
-					},
+					digital_wallets_enabled_locations: [ ...action.locations ],
 				},
 			};
 	}
