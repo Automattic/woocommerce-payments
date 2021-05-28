@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
-import { generateHoverRules } from './utils.js';
+import { generateHoverRules, generateOutlineStyle } from './utils.js';
 
 const dashedToCamelCase = ( string ) => {
 	return string.replace( /-([a-z])/g, function ( g ) {
@@ -30,6 +30,20 @@ export const getFieldStyles = ( selector, upeElement ) => {
 				styles[ i ]
 			);
 		}
+	}
+
+	if ( '.Input' === upeElement ) {
+		const outline = generateOutlineStyle(
+			filteredStyles.outlineWidth,
+			filteredStyles.outlineStyle,
+			filteredStyles.outlineColor
+		);
+		if ( '' !== outline ) {
+			filteredStyles.outline = outline;
+		}
+		delete filteredStyles.outlineWidth;
+		delete filteredStyles.outlineColor;
+		delete filteredStyles.outlineStyle;
 	}
 
 	return filteredStyles;
@@ -60,20 +74,31 @@ export const getFontRulesFromPage = () => {
 };
 
 export const getAppearance = () => {
-	const upeThemeInputSelector = '.woocommerce-checkout .form-row input';
+	const upeThemeInputSelector = '#billing_first_name';
 	const upeThemeLabelSelector = '.woocommerce-checkout .form-row label';
 	const upeThemeSelectedPaymentSelector =
 		'.woocommerce-checkout .place-order .button.alt';
+	const upeThemeInvalidInputSelector = '#wcpay-hidden-invalid-input';
+	const upeThemeFocusInputSelector = '#wcpay-hidden-input';
 
-	const inputTabRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+	const inputRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+	const inputFocusRules = getFieldStyles(
+		upeThemeFocusInputSelector,
+		'.Input'
+	);
+	const inputInvalidRules = getFieldStyles(
+		upeThemeInvalidInputSelector,
+		'.Input'
+	);
 
 	const labelRules = getFieldStyles( upeThemeLabelSelector, '.Label' );
 
+	const tabRules = getFieldStyles( upeThemeInputSelector, '.Tab' );
 	const selectedTabRules = getFieldStyles(
 		upeThemeSelectedPaymentSelector,
 		'.Tab--selected'
 	);
-	const tabHoverRules = generateHoverRules( inputTabRules );
+	const tabHoverRules = generateHoverRules( tabRules );
 	const selectedTabHoverRules = generateHoverRules( selectedTabRules );
 
 	const tabIconHoverRules = {
@@ -88,9 +113,11 @@ export const getAppearance = () => {
 
 	const appearance = {
 		rules: {
-			'.Input': inputTabRules,
+			'.Input': inputRules,
+			'.Input:focus': inputFocusRules,
+			'.Input--invalid': inputInvalidRules,
 			'.Label': labelRules,
-			'.Tab': inputTabRules,
+			'.Tab': tabRules,
 			'.Tab:hover': tabHoverRules,
 			'.Tab--selected': selectedTabRules,
 			'.Tab--selected:hover': selectedTabHoverRules,

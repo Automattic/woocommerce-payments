@@ -116,7 +116,12 @@ const restrictedTabIconSelectedProperties = [ 'color' ];
 
 export const upeRestrictedProperties = {
 	'.Label': upeSupportedProperties[ '.Label' ],
-	'.Input': upeSupportedProperties[ '.Input' ],
+	'.Input': [
+		...upeSupportedProperties[ '.Input' ],
+		'outlineColor',
+		'outlineWidth',
+		'outlineStyle',
+	],
 	'.Error': upeSupportedProperties[ '.Error' ],
 	'.Tab': [ ...restrictedTabProperties ],
 	'.Tab--selected': [ ...restrictedTabSelectedProperties ],
