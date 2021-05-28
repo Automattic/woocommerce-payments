@@ -31,12 +31,22 @@ declare namespace AccountOverview {
 		status: string;
 	}
 
+	interface InstantBalance {
+		currency: string;
+		amount: number;
+		fee: number;
+		net: number;
+		fee_percentage: number;
+		transaction_ids: Array< string >;
+	}
+
 	interface Overview {
 		currency: string;
 		lastPaid: Deposit;
 		nextScheduled: Deposit;
 		pending: Balance;
 		available: Balance;
+		instant: InstantBalance;
 	}
 
 	interface OverviewsResponse {

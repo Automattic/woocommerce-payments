@@ -64,11 +64,13 @@ export const getAllDepositsOverviews = ( state ) => {
 	}
 
 	const { deposit, balance, account } = DepositsOverview.data;
+
 	const groups = {
 		lastPaid: deposit.last_paid,
 		nextScheduled: deposit.next_scheduled,
 		pending: balance.pending,
 		available: balance.available,
+		instant: balance.instant,
 	};
 
 	const currencies = {};
@@ -83,6 +85,7 @@ export const getAllDepositsOverviews = ( state ) => {
 					nextScheduled: null,
 					pending: null,
 					available: null,
+					instant: null,
 				};
 			}
 

@@ -29,6 +29,7 @@ import {
 	getDepositDate,
 	getNextDepositLabelFormatted,
 } from 'deposits/overview';
+import InstantDepositButton from 'deposits/instant-deposits';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
 
 import './style.scss';
@@ -112,7 +113,14 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	props
 ) => {
 	const { overview, account }: OverviewProps = props;
-	const { currency, pending, nextScheduled, lastPaid, available } = overview;
+	const {
+		currency,
+		pending,
+		nextScheduled,
+		lastPaid,
+		available,
+		instant,
+	} = overview;
 
 	const pendingAmount = pending ? pending.amount : 0;
 	const pendingDepositsLink = pending?.deposits_count && (
@@ -167,6 +175,10 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 						{ scheduleDescriptor }
 					</p>
 				</div>
+
+				{ instant && (
+					<InstantDepositButton instantBalance={ instant } />
+				) }
 			</CardHeader>
 
 			<Flex className="wcpay-deposits-information-row" align="normal">
