@@ -95,7 +95,7 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).toBeChecked();
 	} );
 
-it( 'dispatch enabled status update if express checkout is being toggled', async () => {
+	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsEnabledSettings.mockReturnValue(
 			getMockDigitalWalletsEnabledSettings(
