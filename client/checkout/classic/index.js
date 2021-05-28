@@ -79,10 +79,10 @@ jQuery( function ( $ ) {
 			const hiddenDiv = this.getHiddenContainer();
 
 			// // Hidden focusable element.
-			$( hiddenDiv ).insertAfter( '#billing_postcode' );
+			$( hiddenDiv ).insertAfter( '#billing_first_name' );
 			this.appendHiddenClone(
 				hiddenDiv,
-				'#billing_postcode',
+				'#billing_first_name',
 				'wcpay-hidden-input'
 			);
 			$( '#wcpay-hidden-input' ).trigger( 'focus' );
@@ -91,7 +91,7 @@ jQuery( function ( $ ) {
 			const hiddenInvalidRow = this.getHiddenInvalidRow();
 			this.appendHiddenClone(
 				hiddenInvalidRow,
-				'#billing_postcode',
+				'#billing_first_name',
 				'wcpay-hidden-invalid-input'
 			);
 			hiddenDiv.appendChild( hiddenInvalidRow );

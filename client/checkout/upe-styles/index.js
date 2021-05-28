@@ -74,7 +74,7 @@ export const getFontRulesFromPage = () => {
 };
 
 export const getAppearance = () => {
-	const upeThemeInputSelector = '.woocommerce-checkout .form-row input';
+	const upeThemeInputSelector = '#billing_first_name';
 	const upeThemeLabelSelector = '.woocommerce-checkout .form-row label';
 	const upeThemeSelectedPaymentSelector =
 		'.woocommerce-checkout .place-order .button.alt';
