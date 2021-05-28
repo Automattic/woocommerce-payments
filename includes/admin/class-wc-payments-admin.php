@@ -102,7 +102,7 @@ class WC_Payments_Admin {
 					'path'     => '/payments/overview',
 					'nav_args' => [
 						'parent' => 'wc-payments',
-						'order'  => 5,
+						'order'  => 10,
 					],
 				]
 			);
@@ -115,7 +115,7 @@ class WC_Payments_Admin {
 					'path'     => '/payments/deposits',
 					'nav_args' => [
 						'parent' => 'wc-payments',
-						'order'  => 10,
+						'order'  => 20,
 					],
 				]
 			);
@@ -128,7 +128,7 @@ class WC_Payments_Admin {
 					'path'     => '/payments/transactions',
 					'nav_args' => [
 						'parent' => 'wc-payments',
-						'order'  => 20,
+						'order'  => 30,
 					],
 				]
 			);
@@ -141,7 +141,7 @@ class WC_Payments_Admin {
 					'path'     => '/payments/disputes',
 					'nav_args' => [
 						'parent' => 'wc-payments',
-						'order'  => 30,
+						'order'  => 40,
 					],
 				]
 			);
@@ -156,7 +156,7 @@ class WC_Payments_Admin {
 						'parent' => 'wc-payments',
 						'title'  => __( 'Settings', 'woocommerce-payments' ),
 						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
-						'order'  => 40,
+						'order'  => 50,
 					],
 				]
 			);

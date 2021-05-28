@@ -252,18 +252,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Immediately redirect to the WooCommerce Admin home page.
-	 */
-	private function redirect_to_wc_admin_home() {
-		$params = [
-			'page' => 'wc-admin',
-		];
-
-		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
-		exit();
-	}
-
-	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the redirection happened.
@@ -410,6 +398,37 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Payments task page url
+	 *
+	 * @return string payments task page url
+	 */
+	public static function get_payments_task_page_url() {
+		return add_query_arg(
+			[
+				'page'   => 'wc-admin',
+				'task'   => 'payments',
+				'method' => 'wcpay',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Get overview page url
+	 *
+	 * @return string overview page url
+	 */
+	public static function get_overview_url() {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/overview',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
 	 * Has on-boarding been disabled?
 	 *
 	 * @return boolean
@@ -466,21 +485,8 @@ class WC_Payments_Account {
 		// If connection originated on the WCADMIN payment task page, return there.
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
-			? add_query_arg(
-				[
-					'page'   => 'wc-admin',
-					'task'   => 'payments',
-					'method' => 'wcpay',
-				],
-				admin_url( 'admin.php' )
-			)
-			: add_query_arg(
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-				admin_url( 'admin.php' )
-			);
+			? $this->get_payments_task_page_url()
+			: $this->get_overview_url();
 	}
 
 	/**
