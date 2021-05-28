@@ -131,7 +131,6 @@ class Multi_Currency {
 	 */
 	public function get_mock_currencies() {
 		return [
-			[ 'USD', '1.00' ],
 			[ 'CAD', '1.206823' ],
 			[ 'GBP', '0.708099' ],
 			[ 'EUR', '0.826381' ],
@@ -154,11 +153,16 @@ class Multi_Currency {
 			return $this->available_currencies;
 		}
 
+		// Add default store currency with a rate of 1.0.
+		$woocommerce_currency                                = get_woocommerce_currency();
+		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
+
 		// TODO: This will need to get stored data, then build and return it accordingly.
 		$currencies = $this->get_mock_currencies();
 		foreach ( $currencies as $currency ) {
 			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
 		}
+
 		return $this->available_currencies;
 	}
 
