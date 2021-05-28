@@ -20,7 +20,7 @@ jest.mock( 'data', () => ( {
 	useDigitalWalletsLocations: jest.fn(),
 } ) );
 
-const getMockDigitalWalletsSettings = (
+const getMockDigitalWalletsEnabledSettings = (
 	isEnabled,
 	updateIsDigitalWalletsEnabledHandler
 ) => [ isEnabled, updateIsDigitalWalletsEnabledHandler ];
@@ -42,16 +42,16 @@ const getMockDigitalWalletsLocations = (
 describe( 'DigitalWallets', () => {
 	beforeEach( () => {
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings( false, jest.fn() )
+			getMockDigitalWalletsEnabledSettings( false, jest.fn() )
 		);
 		useDigitalWalletsLocations.mockReturnValue(
 			getMockDigitalWalletsLocations( true, true, true, jest.fn() )
 		);
 	} );
 
-	it( 'should enable 1-click checkout locations if 1-click checkout is enabled', async () => {
+	it( 'should enable express checkout locations if express checkout is enabled', async () => {
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings( false, jest.fn() )
+			getMockDigitalWalletsEnabledSettings( false, jest.fn() )
 		);
 
 		render( <DigitalWallets /> );
@@ -72,9 +72,9 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).not.toBeChecked();
 	} );
 
-	it( 'should disable 1-click checkout locations if 1-click checkout is disabled', async () => {
+	it( 'should disable express checkout locations if express checkout is disabled', async () => {
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings( true, jest.fn() )
+			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
 		);
 
 		render( <DigitalWallets /> );
@@ -95,10 +95,10 @@ describe( 'DigitalWallets', () => {
 		expect( cartCheckbox ).toBeChecked();
 	} );
 
-	it( 'should trigger an action if 1-click checkout is being toggled', async () => {
+	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
 		const updateIsDigitalWalletsEnabledHandler = jest.fn();
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings(
+			getMockDigitalWalletsEnabledSettings(
 				false,
 				updateIsDigitalWalletsEnabledHandler
 			)
@@ -106,7 +106,7 @@ describe( 'DigitalWallets', () => {
 
 		render( <DigitalWallets /> );
 
-		userEvent.click( screen.getByText( 'Enable 1-click checkouts' ) );
+		userEvent.click( screen.getByText( 'Enable express checkouts' ) );
 
 		expect( updateIsDigitalWalletsEnabledHandler ).toHaveBeenCalledWith(
 			true
@@ -116,7 +116,7 @@ describe( 'DigitalWallets', () => {
 	it( 'should trigger an action to save the checked locations when un-checking the location checkboxes', async () => {
 		const updateDigitalWalletsLocationsHandler = jest.fn();
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings( true, jest.fn() )
+			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
 		);
 		useDigitalWalletsLocations.mockReturnValue(
 			getMockDigitalWalletsLocations(
@@ -149,7 +149,7 @@ describe( 'DigitalWallets', () => {
 	it( 'should trigger an action to save the checked locations when checking the location checkboxes', async () => {
 		const updateDigitalWalletsLocationsHandler = jest.fn();
 		useDigitalWalletsEnabledSettings.mockReturnValue(
-			getMockDigitalWalletsSettings( true, jest.fn() )
+			getMockDigitalWalletsEnabledSettings( true, jest.fn() )
 		);
 		useDigitalWalletsLocations.mockReturnValue(
 			getMockDigitalWalletsLocations(

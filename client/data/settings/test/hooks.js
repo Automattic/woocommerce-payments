@@ -237,7 +237,7 @@ describe( 'Settings hooks tests', () => {
 	} );
 
 	describe( 'useDigitalWalletsLocations()', () => {
-		test( 'returns digital wallets locations', () => {
+		test( 'returns and updates digital wallets locations', () => {
 			const locationsBeforeUpdate = [];
 			const locationsAfterUpdate = [ 'cart' ];
 
@@ -261,7 +261,7 @@ describe( 'Settings hooks tests', () => {
 			expect( digitalWalletsLocations ).toEqual( locationsBeforeUpdate );
 			expect(
 				actions.updateDigitalWalletsLocations
-			).toHaveBeenCalledWith( [ 'cart' ] );
+			).toHaveBeenCalledWith( locationsAfterUpdate );
 		} );
 	} );
 } );
