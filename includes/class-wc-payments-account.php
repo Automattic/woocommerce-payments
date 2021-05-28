@@ -418,7 +418,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string overview page url
 	 */
-	public static function get_overview_url() {
+	public static function get_overview_page_url() {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
@@ -426,6 +426,15 @@ class WC_Payments_Account {
 			],
 			admin_url( 'admin.php' )
 		);
+	}
+
+	/**
+	 * Checks if the current page is overview page
+	 *
+	 * @return boolean
+	 */
+	public static function is_overview_page() {
+		return isset( $_GET['path'] ) && '/payments/overview' === $_GET['path'];
 	}
 
 	/**
@@ -469,8 +478,9 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
+		$redirect_url = $this->is_overview_page() ? $this->get_overview_page_url() : WC_Payment_Gateway_WCPay::get_settings_url();
 
-		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
+		$login_data = $this->payments_api_client->get_login_data( $redirect_url );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -486,7 +496,7 @@ class WC_Payments_Account {
 		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
 			? $this->get_payments_task_page_url()
-			: $this->get_overview_url();
+			: $this->get_overview_page_url();
 	}
 
 	/**
