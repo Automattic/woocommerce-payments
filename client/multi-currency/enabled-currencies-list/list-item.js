@@ -5,6 +5,7 @@
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
@@ -12,19 +13,13 @@ import { Button, Icon } from '@wordpress/components';
 import DeleteButton from './delete-button';
 
 const EnabledCurrenciesListItem = ( {
-	currency: {
-		code,
-		flag,
-		id,
-		is_default: { isDefault },
-		name,
-		symbol,
-	},
+	// eslint-disable-next-line camelcase
+	currency: { code, flag, id, is_default, name, symbol },
 	onDeleteClick,
 } ) => {
 	const defaultText = __( 'Default currency', 'woocommerce-payments' );
-	const currencyCode = isDefault ? `${ code } - ${ defaultText }` : code;
-	const currencySymbol = { __html: symbol };
+	// eslint-disable-next-line camelcase
+	const currencyCode = is_default ? `${ code } - ${ defaultText }` : code;
 
 	const getEditUrl = ( currencyId ) => {
 		return `admin.php?page=wc-settings&tab=wcpay_multi_currency&section=${ currencyId.toLowerCase() }`;
@@ -36,8 +31,7 @@ const EnabledCurrenciesListItem = ( {
 				<div className="enabled-currency__flag">{ flag }</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					(<span dangerouslySetInnerHTML={ currencySymbol } />{ ' ' }
-					{ currencyCode })
+					({ decodeEntities( symbol ) } { currencyCode })
 				</div>
 			</div>
 			<div className="enabled-currency__actions">

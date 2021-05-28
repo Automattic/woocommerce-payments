@@ -6,6 +6,7 @@ import React from 'react';
 import { CheckboxControl } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import interpolateComponents from 'interpolate-components';
+import { decodeEntities } from '@wordpress/html-entities';
 
 const EnabledCurrenciesModalCheckbox = ( {
 	onChange,
@@ -18,7 +19,6 @@ const EnabledCurrenciesModalCheckbox = ( {
 		},
 		[ code, onChange ]
 	);
-	const currencySymbol = { __html: symbol };
 
 	return (
 		<li className="enabled-currency-checkbox">
@@ -37,11 +37,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 						name: <span>{ name }</span>,
 						code: (
 							<span className="enabled-currency-checkbox__code">
-								(
-								<span
-									dangerouslySetInnerHTML={ currencySymbol }
-								/>{ ' ' }
-								{ code })
+								({ decodeEntities( symbol ) } { code })
 							</span>
 						),
 					},
