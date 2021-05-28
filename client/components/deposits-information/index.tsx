@@ -30,12 +30,16 @@ import {
 	getNextDepositLabelFormatted,
 } from 'deposits/overview';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
+
 import './style.scss';
 
 const DepositsInformationLoading = (): any => {
 	return (
 		<Card>
-			<CardHeader className="wcpay-deposits-information-header">
+			<CardHeader
+				size="small"
+				className="wcpay-deposits-information-header"
+			>
 				{ /* This div will be used for a proper layout next to the button. */ }
 				<div>
 					<h3 className="wcpay-deposits-information-header__title">
@@ -111,7 +115,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	const { currency, pending, nextScheduled, lastPaid, available } = overview;
 
 	const pendingAmount = pending ? pending.amount : 0;
-	const pendingDepositsLink = pending.deposits_count && (
+	const pendingDepositsLink = pending?.deposits_count && (
 		<a href={ getDetailsURL( nextScheduled.id, 'deposits' ) }>
 			{ getBalanceDepositCount( pending ) }
 		</a>
@@ -140,7 +144,10 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	return (
 		<Card>
-			<CardHeader className="wcpay-deposits-information-header">
+			<CardHeader
+				size="small"
+				className="wcpay-deposits-information-header"
+			>
 				{ /* This div will be used for a proper layout next to the button. */ }
 				<div>
 					<h3 className="wcpay-deposits-information-header__title">
