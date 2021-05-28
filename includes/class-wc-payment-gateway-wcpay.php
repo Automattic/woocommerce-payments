@@ -272,6 +272,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default' => [ 'woocommerce_payments' ],
 				'options' => [],
 			];
+
+			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
 		}
 
 		// Giropay option hidden behind feature flag.

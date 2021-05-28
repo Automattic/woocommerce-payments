@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Payment_Methods\Digital_Wallets_Payment_Gateway;
 use WCPay\Constants\Digital_Wallets_Locations;
 
 /**
@@ -30,24 +29,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private $wcpay_gateway;
 
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay.
-	 *
-	 * @var Digital_Wallets_Payment_Gateway
-	 */
-	private $digital_wallets_gateway;
-
-	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client          $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payment_Gateway_WCPay        $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param Digital_Wallets_Payment_Gateway $digital_wallets_gateway Digital_Wallets_Payment_Gateway instance.
+	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway, $digital_wallets_gateway ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway           = $wcpay_gateway;
-		$this->digital_wallets_gateway = $digital_wallets_gateway;
+		$this->wcpay_gateway = $wcpay_gateway;
 	}
 
 	/**
@@ -107,8 +97,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'digital_wallets_enabled_locations' => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
-						'type'              => 'object',
-						'validate_callback' => __CLASS__ . '::validate_digital_wallets_enabled_locations',
+						'type'              => 'array',
+						'items'             => [
+							'type' => 'string',
+							'enum' => Digital_Wallets_Locations::toArray(),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
 					],
 				],
 			]
@@ -121,23 +115,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$response = [
-			'enabled_payment_method_ids'   => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-			'available_payment_method_ids' => $this->wcpay_gateway->get_upe_available_payment_methods(),
-			'is_wcpay_enabled'             => $this->wcpay_gateway->is_enabled(),
-			'is_manual_capture_enabled'    => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-			'is_test_mode_enabled'         => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
-			'is_dev_mode_enabled'          => $this->wcpay_gateway->is_in_dev_mode(),
-			'account_statement_descriptor' => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
-		];
-
-		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			$response['is_digital_wallets_enabled']        = $this->digital_wallets_gateway->is_enabled();
-			$response['digital_wallets_enabled_locations'] = $this->digital_wallets_gateway->get_digital_wallets_enabled_locations();
-		}
-
 		return new WP_REST_Response(
-			$response
+			[
+				'enabled_payment_method_ids'        => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				'available_payment_method_ids'      => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'is_wcpay_enabled'                  => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_test_mode_enabled'              => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
+				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
+				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'is_digital_wallets_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'digital_wallets_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
+			]
 		);
 	}
 
@@ -253,28 +242,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Validate the digital wallets enabled locations are supported and their values
-	 * are boolean.
-	 *
-	 * @param object $value Value to check.
-	 *
-	 * @return bool
-	 */
-	public static function validate_digital_wallets_enabled_locations( $value ) {
-		foreach ( $value as $checkbox => $is_checked ) {
-			if ( ! Digital_Wallets_Locations::isValid( $checkbox ) ) {
-				return false;
-			}
-
-			if ( ! is_bool( $is_checked ) ) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * Updates the digital wallets enable/disable settings.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -286,11 +253,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_digital_wallets_enabled = $request->get_param( 'is_digital_wallets_enabled' );
 
-		if ( $is_digital_wallets_enabled ) {
-			$this->digital_wallets_gateway->enable();
-		} else {
-			$this->digital_wallets_gateway->disable();
-		}
+		$this->wcpay_gateway->update_option( 'payment_request', $is_digital_wallets_enabled ? 'yes' : 'no' );
 	}
 
 	/**
@@ -305,6 +268,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$digital_wallets_enabled_locations = $request->get_param( 'digital_wallets_enabled_locations' );
 
-		$this->digital_wallets_gateway->update_option( 'digital_wallets_enabled_locations', $digital_wallets_enabled_locations );
+		$this->wcpay_gateway->update_option( 'payment_request_button_locations', $digital_wallets_enabled_locations );
 	}
 }
