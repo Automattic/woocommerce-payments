@@ -14,11 +14,8 @@ import DeleteButton from './delete-button';
 const defaultText = __( 'Default currency', 'woocommerce-payments' );
 
 // TODO: The currency.symbol may be a HTML element, so that needs to be fixed.
-const EnabledCurrenciesListItem = ( {
-	currency,
-	classBase,
-	onDeleteClick,
-} ) => {
+// TODO: currency can be deconstructed into its properties.
+const EnabledCurrenciesListItem = ( { currency, onDeleteClick } ) => {
 	const code = currency.is_default
 		? `${ currency.code } - ${ defaultText }`
 		: currency.code;
@@ -28,12 +25,7 @@ const EnabledCurrenciesListItem = ( {
 	};
 
 	return (
-		<li
-			className={ classNames(
-				`${ classBase }__enabled-currency-list-item`,
-				currency.id
-			) }
-		>
+		<li className={ classNames( 'enabled-currency', currency.id ) }>
 			<div className="enabled-currency__container">
 				<div className="enabled-currency__flag">{ currency.flag }</div>
 				<div className="enabled-currency__label">{ currency.name }</div>
@@ -54,13 +46,12 @@ const EnabledCurrenciesListItem = ( {
 						currency.name
 					) }
 					className="enabled-currency__action edit"
-					onClick={ onDeleteClick }
 				>
-					<Icon icon="edit" size={ 24 } />
+					<Icon icon="edit" />
 				</Button>
 				{ onDeleteClick && (
 					<DeleteButton
-						className="payment-method__action delete"
+						className="enabled-currency__action delete"
 						onClick={ onDeleteClick }
 						label={ currency.name }
 						code={ currency.code }

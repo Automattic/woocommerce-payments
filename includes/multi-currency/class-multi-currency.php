@@ -152,17 +152,12 @@ class Multi_Currency {
 			true
 		);
 
-		/*
-		TODO: Add styling.
-		// @codingStandardsIgnoreStart
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
 			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
-			WC_Payments::get_file_version( 'dist/multi-currency.css' )
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
 		);
-		// @codingStandardsIgnoreEnd
-		*/
 	}
 
 	/**
