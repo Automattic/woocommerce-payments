@@ -45,7 +45,7 @@ const DepositsInformationLoading = (): any => {
 					<p className="wcpay-deposits-information-header__schedule">
 						<Gridicon
 							icon="calendar"
-							size="20"
+							size={ 24 }
 							className="wcpay-deposits-information-header__icon"
 						/>
 						<Loadable
@@ -153,7 +153,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 					<p className="wcpay-deposits-information-header__schedule">
 						<Gridicon
 							icon="calendar"
-							size="20"
+							size={ 24 }
 							className="wcpay-deposits-information-header__icon"
 						/>
 						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }{ ' ' }
