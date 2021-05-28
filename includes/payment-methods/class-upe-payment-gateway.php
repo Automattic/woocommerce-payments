@@ -218,7 +218,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$currency       = $intent->get_currency();
 			$payment_method = $intent->get_payment_method_id();
 
-
 			$error = $intent->get_last_payment_error();
 			if ( ! empty( $error ) ) {
 				throw new Process_Payment_Exception(
