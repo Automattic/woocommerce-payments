@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal Dependencies
  */
 import TYPES from './action-types';
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE } from '../constants';
 
 export function updateCurrencies( data ) {
 	return {
@@ -51,10 +51,6 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 			},
 		} );
 		yield updateCurrencies( result );
-		// Need to invalidate the resolution so that the components will render again.
-		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
-			'getCurrencies'
-		);
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Enabled currencies updated.', 'woocommerce-payments' )
