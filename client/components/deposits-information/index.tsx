@@ -28,7 +28,7 @@ import {
 	getDepositScheduleDescriptor,
 	getDepositDate,
 	getNextDepositLabelFormatted,
-} from 'deposits/overview';
+} from 'deposits/utils';
 import InstantDepositButton from 'deposits/instant-deposits';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
 

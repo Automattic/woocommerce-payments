@@ -68,5 +68,5 @@ declare module '@wordpress/components';
 declare module '@wordpress/i18n';
 declare module 'components/loadable';
 declare module 'components/details-link';
-declare module 'deposits/overview';
+declare module 'deposits/utils';
 declare module 'utils/currency';
