@@ -69,25 +69,27 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 					/>
 					<p>
 						{ interpolateComponents( {
-							mixedString: __(
-								"You're about to remove {{paymentMethodName /}} from your store's checkout. " +
-									'This payment method is popular with customers in your area.',
-								'woocommerce-payments'
+							mixedString: sprintf(
+								__(
+									'Are you sure you want to remove {{strong}}%s{{/strong}}? ' +
+										'Your customers will no longer be able to pay using %s.',
+									'woocommerce-payments'
+								),
+								label,
+								label
 							),
 							components: {
-								paymentMethodName: <strong>{ label }</strong>,
+								strong: <strong />,
 							},
 						} ) }
 					</p>
 					<p>
 						{ interpolateComponents( {
 							mixedString: __(
-								'Removing it {{strong}}may influence conversions and sales on your store{{/strong}}. ' +
-									'You can add it again at any time in {{wooCommercePaymentsLink /}}',
+								'You can add it again at any time in {{wooCommercePaymentsLink /}}',
 								'woocommerce-payments'
 							),
 							components: {
-								strong: <strong />,
 								wooCommercePaymentsLink: (
 									<a href="admin.php?page=wc-settings&tab=checkout">
 										{ __(
