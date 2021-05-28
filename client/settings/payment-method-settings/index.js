@@ -13,14 +13,18 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
 import Banner from '../../banner';
+import { useSettings } from '../../data';
+import { LoadableBlock } from '../../components/loadable';
+import React from 'react';
+import SaveSettingsSection from '../save-settings-section';
 
 /* eslint-disable camelcase */
 const methods = {
 	woocommerce_payments_digital_wallets: {
-		title: '1-click checkouts',
+		title: 'Express checkouts',
 		description: () => (
 			<>
-				<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
+				<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 				<p>
 					{ __(
 						'Decide how buttons for digital wallets like Apple Pay and Google Pay are displayed in your store.',
@@ -52,6 +56,7 @@ const methods = {
 
 const PaymentMethodSettings = ( { methodId } ) => {
 	const method = methods[ methodId ];
+	const { isLoading } = useSettings();
 
 	if ( ! method ) {
 		return (
@@ -71,13 +76,19 @@ const PaymentMethodSettings = ( { methodId } ) => {
 			<Banner />
 
 			<h2 className="payment-method-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>WooCommerce Payments</a>{ ' ' }
+				<a href={ getPaymentSettingsUrl() }>
+					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
+				</a>{ ' ' }
 				&gt; <span>{ title }</span>
 			</h2>
 
 			<SettingsSection Description={ Description }>
-				<Controls />
+				<LoadableBlock isLoading={ isLoading } numLines={ 30 }>
+					<Controls />
+				</LoadableBlock>
 			</SettingsSection>
+
+			<SaveSettingsSection />
 		</div>
 	);
 };

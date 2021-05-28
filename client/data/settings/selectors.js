@@ -52,5 +52,5 @@ export const getIsDigitalWalletsEnabled = ( state ) => {
 };
 
 export const getDigitalWalletsLocations = ( state ) => {
-	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_OBJ;
+	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_ARR;
 };
