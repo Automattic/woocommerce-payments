@@ -91,13 +91,19 @@ export const getAllDepositsOverviews = ( state ) => {
 		} );
 	}
 
+	const currenciesArray = Object.values( currencies );
 	return {
 		account,
 
 		// The default currency should appear at the top of the list.
-		currencies: Object.values( currencies ).sort( ( a, b ) => {
-			return account.default_currency === b.currency ? 1 : 0;
-		} ),
+		currencies: [
+			...currenciesArray.filter(
+				( currency ) => account.default_currency === currency.currency
+			),
+			...currenciesArray.filter(
+				( currency ) => account.default_currency !== currency.currency
+			),
+		],
 	};
 };
 
