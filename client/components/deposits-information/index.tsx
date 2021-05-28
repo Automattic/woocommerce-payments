@@ -42,7 +42,7 @@ const DepositsInformationLoading = (): any => {
 				className="wcpay-deposits-information-header"
 			>
 				{ /* This div will be used for a proper layout next to the button. */ }
-				<div>
+				<div className="wcpay-deposits-information-header__heading">
 					<h3 className="wcpay-deposits-information-header__title">
 						{ __( 'Deposits overview', 'woocommerce-payments' ) }
 					</h3>
@@ -157,7 +157,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 				className="wcpay-deposits-information-header"
 			>
 				{ /* This div will be used for a proper layout next to the button. */ }
-				<div>
+				<div className="wcpay-deposits-information-header__heading">
 					<h3 className="wcpay-deposits-information-header__title">
 						{ sprintf(
 							__( '%s balance', 'woocommerce-payments' ),

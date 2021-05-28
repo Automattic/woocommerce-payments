@@ -1,4 +1,15 @@
 .wcpay-deposits-information-header {
+	@media only screen and ( max-width: 390px ) {
+		flex-wrap: wrap;
+	}
+
+	&__heading {
+		@media only screen and ( max-width: 390px ) {
+			width: 100%;
+			margin-bottom: 10px;
+		}
+	}
+
 	&__title {
 		margin: 0 0 7px;
 		font-size: 16px;
