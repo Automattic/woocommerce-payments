@@ -13,12 +13,14 @@ import WizardTaskContext from '../../wizard/task/context';
 import AddPaymentMethodsTask from '../add-payment-methods-task';
 import {
 	useEnabledPaymentMethodIds,
+	useDigitalWalletsEnabledSettings,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
+	useDigitalWalletsEnabledSettings: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useSettings: jest.fn(),
 } ) );
@@ -29,13 +31,14 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'AddPaymentMethodsTask', () => {
 	beforeEach( () => {
 		useSelect.mockReturnValue( {} );
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [
-				'woocommerce_payments',
-				'woocommerce_payments_giropay',
-			],
-			updateEnabledPaymentMethodIds: jest.fn(),
-		} );
+		useDigitalWalletsEnabledSettings.mockReturnValue( [
+			false,
+			jest.fn(),
+		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_giropay' ],
+			jest.fn(),
+		] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'woocommerce_payments',
 			'woocommerce_payments_giropay',
@@ -71,6 +74,11 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect(
 			screen.getByRole( 'checkbox', { name: 'Direct Debit Payments' } )
 		).not.toBeChecked();
+		expect(
+			screen.getByRole( 'checkbox', {
+				name: 'Enable Apple Pay & Google Pay',
+			} )
+		).not.toBeChecked();
 	} );
 
 	it( 'should not render the checkboxes that are not available', () => {
@@ -102,11 +110,16 @@ describe( 'AddPaymentMethodsTask', () => {
 	} );
 
 	it( 'should save the checkboxes state on "continue" click', async () => {
+		const updateDigitalWalletsEnabledMock = jest.fn();
+		useDigitalWalletsEnabledSettings.mockReturnValue( [
+			false,
+			updateDigitalWalletsEnabledMock,
+		] );
 		const updateEnabledPaymentMethodIdsMock = jest.fn();
-		useEnabledPaymentMethodIds.mockReturnValue( {
-			enabledPaymentMethodIds: [ 'woocommerce_payments' ],
-			updateEnabledPaymentMethodIds: updateEnabledPaymentMethodIdsMock,
-		} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments' ],
+			updateEnabledPaymentMethodIdsMock,
+		] );
 		const setCompletedMock = jest.fn();
 		render(
 			<WizardTaskContext.Provider
@@ -129,8 +142,16 @@ describe( 'AddPaymentMethodsTask', () => {
 			} )
 		);
 
+		// enable 1-click checkouts
+		userEvent.click(
+			screen.getByRole( 'checkbox', {
+				name: 'Enable Apple Pay & Google Pay',
+			} )
+		);
+
 		expect( setCompletedMock ).not.toHaveBeenCalled();
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
+		expect( updateDigitalWalletsEnabledMock ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByText( 'Continue' ) );
 
@@ -143,5 +164,6 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
 			'woocommerce_payments_giropay',
 		] );
+		expect( updateDigitalWalletsEnabledMock ).toHaveBeenCalledWith( true );
 	} );
 } );
