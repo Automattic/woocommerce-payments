@@ -119,10 +119,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
-		// TODO: Need to update Payment Intent at this point...
-		// TODO: If save_payment_method below is true, must update Payment Intent and set 'setup_future_usage' = 'off_session'.
-		$payment_intent_id = isset( $_GET['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_intent_id'] ) ) : ''; // phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$order             = wc_get_order( $order_id );
+
+		$payment_intent_id   = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$order               = wc_get_order( $order_id );
+		$amount              = $order->get_total();
+		$currency            = $order->get_currency();
+		$save_payment_method = ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		if ( $payment_intent_id ) {
+			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+
+			$this->payments_api_client->update_intention(
+				$payment_intent_id,
+				WC_Payments_Utils::prepare_amount( $amount, $currency ),
+				strtolower( $currency ),
+				$save_payment_method,
+				$customer_id
+			);
+		}
 
 		return [
 			'result'       => 'success',
@@ -132,8 +146,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						[
 							'order_id'            => $order_id,
 							'wc_payment_method'   => self::GATEWAY_ID,
-							'save_payment_method' => empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 							'_wpnonce'            => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+							'save_payment_method' => $save_payment_method ? 'yes' : 'no',
 						],
 						$this->get_return_url( $order )
 					)
