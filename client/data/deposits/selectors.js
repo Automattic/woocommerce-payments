@@ -81,11 +81,11 @@ export const getAllDepositsOverviews = ( state ) => {
 			if ( ! currencies[ currency ] ) {
 				currencies[ currency ] = {
 					currency,
-					lastPaid: null,
-					nextScheduled: null,
-					pending: null,
-					available: null,
-					instant: null,
+					lastPaid: undefined,
+					nextScheduled: undefined,
+					pending: undefined,
+					available: undefined,
+					instant: undefined,
 				};
 			}
 
