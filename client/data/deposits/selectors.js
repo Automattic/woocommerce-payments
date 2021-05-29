@@ -75,7 +75,7 @@ export const getAllDepositsOverviews = ( state ) => {
 
 	const currencies = {};
 	for ( const [ key, values ] of Object.entries( groups ) ) {
-		values.forEach( ( value ) => {
+		values?.forEach( ( value ) => {
 			const { currency } = value;
 
 			if ( ! currencies[ currency ] ) {
