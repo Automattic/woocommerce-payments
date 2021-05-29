@@ -1,0 +1,858 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Deposits information renders correctly when loading 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          Deposits overview
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          <span
+            aria-busy="true"
+            class="is-loadable-placeholder is-inline"
+          >
+            Deposit schedule here
+          </span>
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-inline"
+      >
+        Deposit information placeholder
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposits information renders correctly with a single currency 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          United States (US) dollar balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every week on Thursday
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            2 deposits
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            Est. Jun 3, 2021
+          </a>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $31.60
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_..."
+          >
+            April 26, 2021
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $20.30
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposits information renders correctly with all possible missing details 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          United States (US) dollar balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every business day – your first deposit is held for seven days (
+          <a
+            href="https://docs.woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
+          </a>
+          )
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $0.00
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $0.00
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $0.00
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $0.00
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposits information renders correctly with multiple currencies 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          United States (US) dollar balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every week on Thursday
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            2 deposits
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            Est. Jun 3, 2021
+          </a>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $31.60
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_..."
+          >
+            April 26, 2021
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $20.30
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          Euro balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every week on Thursday
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €33,43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            2 deposits
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €33,43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            Est. Jun 3, 2021
+          </a>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €31,60
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_..."
+          >
+            April 26, 2021
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €20,30
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposits information renders instant deposit button only where applicable 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          United States (US) dollar balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every week on Thursday
+        </p>
+      </div>
+      <button
+        class="components-button is-secondary"
+        type="button"
+      >
+        Instant deposit
+      </button>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            2 deposits
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $33.43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            Est. Jun 3, 2021
+          </a>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $31.60
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_..."
+          >
+            April 26, 2021
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          $20.30
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small wcpay-deposits-information-header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      <div
+        class="wcpay-deposits-information-header__heading"
+      >
+        <h3
+          class="wcpay-deposits-information-header__title"
+        >
+          Euro balance
+        </h3>
+        <p
+          class="wcpay-deposits-information-header__schedule"
+        >
+          <svg
+            class="gridicon gridicons-calendar wcpay-deposits-information-header__icon"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.105 0-2 .896-2 2v13c0 1.104.895 2 2 2h14c1.104 0 2-.896 2-2V6c0-1.104-.896-2-2-2zm0 15H5V8h14v11z"
+              />
+            </g>
+          </svg>
+          Deposit schedule:
+           
+          Automatic, every week on Thursday
+        </p>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Pending balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €33,43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            2 deposits
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Next deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €33,43
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=wcpay_estimated_weekly_eur_1622678400"
+          >
+            Est. Jun 3, 2021
+          </a>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
+    >
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Last deposit
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €31,60
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        >
+          <a
+            href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_..."
+          >
+            April 26, 2021
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-flex__block wcpay-deposits-information-block css-yr442k-Item-Block eboqfv52"
+      >
+        <div
+          class="wcpay-deposits-information-block__title"
+        >
+          Available balance
+        </div>
+        <div
+          class="wcpay-deposits-information-block__value"
+        >
+          €20,30
+        </div>
+        <div
+          class="wcpay-deposits-information-block__extra"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;

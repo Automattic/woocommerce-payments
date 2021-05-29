@@ -208,7 +208,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	);
 };
 
-const DepositsInformation = (): JSX.Element | Array< JSX.Element > => {
+const DepositsInformation = (): JSX.Element => {
 	const { overviews, isLoading } = useAllDeposistsOverviews();
 
 	if ( isLoading ) {
@@ -216,13 +216,17 @@ const DepositsInformation = (): JSX.Element | Array< JSX.Element > => {
 	}
 
 	const { currencies, account } = overviews;
-	return currencies.map( ( overview: AccountOverview.Overview ) => (
-		<DepositsInformationOverview
-			key={ overview.currency }
-			account={ account }
-			overview={ overview }
-		/>
-	) );
+	return (
+		<React.Fragment>
+			{ currencies.map( ( overview: AccountOverview.Overview ) => (
+				<DepositsInformationOverview
+					key={ overview.currency }
+					account={ account }
+					overview={ overview }
+				/>
+			) ) }
+		</React.Fragment>
+	);
 };
 
 export default DepositsInformation;
