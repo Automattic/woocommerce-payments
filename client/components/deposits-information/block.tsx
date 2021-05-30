@@ -23,7 +23,10 @@ const DepositsInformationBlock: React.FunctionComponent< DepositsInformationBloc
 			<div className="wcpay-deposits-information-block__value">
 				{ value }
 			</div>
-			<div className="wcpay-deposits-information-block__extra">
+			<div
+				className="wcpay-deposits-information-block__extra"
+				data-testid="extra"
+			>
 				{ children }
 			</div>
 		</FlexBlock>

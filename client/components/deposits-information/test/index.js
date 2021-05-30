@@ -97,7 +97,7 @@ describe( 'Deposits information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders correctly with all possible missing details', () => {
+	test( 'renders correctly with all possible missing details', async () => {
 		// Everything should be zeros, without extra details or errors.
 		mockOverviews(
 			[
@@ -111,8 +111,14 @@ describe( 'Deposits information', () => {
 			createMockAccount()
 		);
 
-		const { container } = render( <DepositsInformation /> );
-		expect( container ).toMatchSnapshot();
+		const { findAllByText, findAllByTestId } = render(
+			<DepositsInformation />
+		);
+
+		expect( await findAllByText( '$0.00' ) ).toHaveLength( 4 );
+		( await findAllByTestId( 'extra' ) ).forEach( ( extra ) => {
+			expect( extra ).toBeEmptyDOMElement();
+		} );
 	} );
 
 	test( 'renders instant deposit button only where applicable', async () => {
