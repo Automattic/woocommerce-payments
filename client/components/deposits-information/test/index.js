@@ -115,7 +115,7 @@ describe( 'Deposits information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders instant deposit button only where applicable', () => {
+	test( 'renders instant deposit button only where applicable', async () => {
 		const currencyWithInstantDeposit = createMockCurrency( 'usd', {
 			instant: {
 				amount: 12345,
@@ -130,7 +130,8 @@ describe( 'Deposits information', () => {
 			createMockAccount()
 		);
 
-		const { container } = render( <DepositsInformation /> );
+		const { container, findByText } = render( <DepositsInformation /> );
+		expect( await findByText( 'Instant deposit' ) ).toBeVisible();
 		expect( container ).toMatchSnapshot();
 	} );
 } );
