@@ -61,7 +61,6 @@ declare namespace AccountOverview {
 declare module 'data' {
 	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
 }
-
 declare module 'gridicons';
 declare module '@wordpress/i18n';
 declare module '@wordpress/components';

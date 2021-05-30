@@ -10,10 +10,10 @@
 import Page from 'components/page';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
+import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
 import './style.scss';
-import DepositsInformation from 'components/deposits-information';
 
 const OverviewPage = () => {
 	const { accountStatus, showUpdateDetailsTask } = wcpaySettings;

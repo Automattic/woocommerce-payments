@@ -73,6 +73,10 @@ export const getAllDepositsOverviews = ( state ) => {
 		instant: balance.instant,
 	};
 
+	/**
+	 * Note: The computations in this selector should be simple enough
+	 * not to require memorization, but it can be added if required.
+	 */
 	const currencies = {};
 	for ( const [ key, values ] of Object.entries( groups ) ) {
 		values?.forEach( ( value ) => {

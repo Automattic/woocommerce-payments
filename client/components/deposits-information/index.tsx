@@ -1,27 +1,15 @@
-/* eslint-disable wpcalypso/jsx-classname-namespace */
-/* eslint-disable no-unused-vars */
-/* eslint-disable camelcase */
-/** @format **/
-
 /**
  * External dependencies
  */
 import * as React from 'react';
-import {
-	Card,
-	CardHeader,
-	CardBody,
-	Flex,
-	FlexBlock,
-} from '@wordpress/components';
+import { Card, CardHeader, Flex } from '@wordpress/components';
 import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import { useAllDeposistsOverviews } from 'data';
-import Loadable from 'components/loadable';
+import DepositsInformationLoading from './loading';
 import { getDetailsURL } from 'components/details-link';
 import {
 	getBalanceDepositCount,
@@ -30,73 +18,11 @@ import {
 	getNextDepositLabelFormatted,
 } from 'deposits/utils';
 import InstantDepositButton from 'deposits/instant-deposits';
+import DepositsInformationBlock from './block';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
+import { useAllDeposistsOverviews } from 'data';
 
 import './style.scss';
-
-const DepositsInformationLoading = (): any => {
-	return (
-		<Card>
-			<CardHeader
-				size="small"
-				className="wcpay-deposits-information-header"
-			>
-				{ /* This div will be used for a proper layout next to the button. */ }
-				<div className="wcpay-deposits-information-header__heading">
-					<h3 className="wcpay-deposits-information-header__title">
-						{ __( 'Deposits overview', 'woocommerce-payments' ) }
-					</h3>
-
-					<p className="wcpay-deposits-information-header__schedule">
-						<Gridicon
-							icon="calendar"
-							size={ 24 }
-							className="wcpay-deposits-information-header__icon"
-						/>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder="Deposit schedule here"
-						/>
-					</p>
-				</div>
-			</CardHeader>
-			<CardBody>
-				<Loadable
-					isLoading={ true }
-					display="inline"
-					placeholder="Deposit information placeholder"
-				/>
-			</CardBody>
-		</Card>
-	);
-};
-
-type DepositsInformationBlockProps = {
-	title: string;
-	value: string;
-	children?: any;
-};
-
-const DepositsInformationBlock: React.FunctionComponent< DepositsInformationBlockProps > = ( {
-	title,
-	value,
-	children,
-} ) => {
-	return (
-		<FlexBlock className="wcpay-deposits-information-block">
-			<div className="wcpay-deposits-information-block__title">
-				{ title }
-			</div>
-			<div className="wcpay-deposits-information-block__value">
-				{ value }
-			</div>
-			<div className="wcpay-deposits-information-block__extra">
-				{ children }
-			</div>
-		</FlexBlock>
-	);
-};
 
 type OverviewProps = {
 	overview: AccountOverview.Overview;
@@ -147,6 +73,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 
 	const scheduleDescriptor = getDepositScheduleDescriptor( {
 		account,
+		// eslint-disable-next-line camelcase
 		last_deposit: lastPaid,
 	} );
 
