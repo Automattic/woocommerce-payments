@@ -36,6 +36,14 @@
 	min-height: 2em;
 	margin-bottom: 8px;
 
+	.progressbar {
+		width: 100%;
+
+		&__outer-progress-label {
+			color: $gray-700;
+		}
+	}
+
 	div {
 		flex-shrink: 1;
 		flex-basis: auto;
