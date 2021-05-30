@@ -87,13 +87,6 @@ describe( 'Deposits information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders correctly with a single currency', () => {
-		mockOverviews( [ createMockCurrency( 'usd' ) ], createMockAccount() );
-
-		const { container } = render( <DepositsInformation /> );
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'renders correctly with multiple currencies', () => {
 		mockOverviews(
 			[ createMockCurrency( 'usd' ), createMockCurrency( 'eur' ) ],
