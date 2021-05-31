@@ -19,7 +19,7 @@ const OverviewPage = () => {
 	const { accountStatus, showUpdateDetailsTask } = wcpaySettings;
 	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
 	return (
-		<Page className="overview">
+		<Page className="wcpay-overview">
 			<TestModeNotice topic={ topics.overview } />
 			<DepositsInformation />
 			<AccountStatus
