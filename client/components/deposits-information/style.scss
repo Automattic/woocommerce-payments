@@ -1,10 +1,10 @@
 .wcpay-deposits-information-header {
-	@media only screen and ( max-width: 390px ) {
+	@include breakpoint( '<480px' ) {
 		flex-wrap: wrap;
 	}
 
 	&__heading {
-		@media only screen and ( max-width: 390px ) {
+		@include breakpoint( '<480px' ) {
 			width: 100%;
 			margin-bottom: 10px;
 		}

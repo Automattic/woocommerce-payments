@@ -12,7 +12,7 @@
 
 	// on a smaller viewports controls section should move in front of the
 	// status chip
-	@media only screen and ( max-width: 390px ) {
+	@include breakpoint( '<480px' ) {
 		div:first-child {
 			flex-grow: 1;
 			order: -2;
@@ -23,7 +23,7 @@
 			margin-bottom: 8px;
 		}
 	}
-	@media only screen and ( max-width: 390px ) {
+	@include breakpoint( '<480px' ) {
 		div:last-child {
 			order: 1;
 		}
