@@ -27,7 +27,7 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 
 	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
-	const searchQuery = parse( window?.location?.search );
+	const searchQuery = parse( window.location.search );
 	const showKycSuccessNotice =
 		'1' === searchQuery[ 'wcpay-connection-success' ];
 
