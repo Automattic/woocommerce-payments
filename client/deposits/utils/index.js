@@ -15,6 +15,7 @@ const formatDate = ( format, date ) =>
 
 export const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
+
 export const getBalanceDepositCount = ( balance ) =>
 	sprintf(
 		_n(
@@ -25,6 +26,7 @@ export const getBalanceDepositCount = ( balance ) =>
 		),
 		balance.deposits_count
 	);
+
 export const getNextDepositLabelFormatted = ( deposit ) => {
 	const baseLabel = deposit
 		? `${ __( 'Est.', 'woocommerce-payments' ) } ${ formatDate(

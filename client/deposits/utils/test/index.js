@@ -7,7 +7,12 @@ import momentLib from 'moment';
 /**
  * Internal dependencies
  */
-import { getDepositScheduleDescriptor } from './..';
+import {
+	getDepositDate,
+	getBalanceDepositCount,
+	getNextDepositLabelFormatted,
+	getDepositScheduleDescriptor,
+} from './..';
 
 function getDepositSchedule(
 	schedule,
@@ -38,7 +43,7 @@ function getDepositSchedule(
 	return container.textContent;
 }
 
-describe( 'Deposits overview utils', () => {
+describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule(
 			{ interval: 'daily' },
@@ -101,6 +106,61 @@ describe( 'Deposits overview utils', () => {
 		const depositSchedule = getDepositSchedule( {}, false );
 		expect( depositSchedule ).toEqual(
 			'Automatic, every business day – your first deposit is held for seven days (learn more)'
+		);
+	} );
+} );
+
+describe( 'Deposits Overview Utils / getDepositDate', () => {
+	test( 'returns a display value without a deposit', () => {
+		expect( getDepositDate() ).toEqual( '—' );
+	} );
+
+	test( 'Returns a well-formated date', () => {
+		const deposit = {
+			date: new Date( '2019-04-18' ).getTime(),
+		};
+
+		expect( getDepositDate( deposit ) ).toEqual( 'April 18, 2019' );
+	} );
+} );
+
+describe( 'Deposits Overview Utils / getBalanceDepositCount', () => {
+	test( 'formats the count with a single deposit', () => {
+		// eslint-disable-next-line camelcase
+		const balance = { deposits_count: 1 };
+		expect( getBalanceDepositCount( balance ) ).toEqual( '1 deposit' );
+	} );
+
+	test( 'formats the count with multiple deposits', () => {
+		// eslint-disable-next-line camelcase
+		const balance = { deposits_count: 3 };
+		expect( getBalanceDepositCount( balance ) ).toEqual( '3 deposits' );
+	} );
+} );
+
+describe( 'Deposits Overview Utils / getNextDepositLabelFormatted', () => {
+	test( 'returns a display value without a deposit', () => {
+		expect( getNextDepositLabelFormatted() ).toEqual( '—' );
+	} );
+
+	test( 'returns a well-formated estimation string', () => {
+		const deposit = {
+			date: new Date( '2019-04-18' ).getTime(),
+		};
+
+		expect( getNextDepositLabelFormatted( deposit ) ).toEqual(
+			'Est. Apr 18, 2019'
+		);
+	} );
+
+	test( 'includes the in-transit status', () => {
+		const deposit = {
+			date: new Date( '2019-04-18' ).getTime(),
+			status: 'in_transit',
+		};
+
+		expect( getNextDepositLabelFormatted( deposit ) ).toEqual(
+			'Est. Apr 18, 2019 - In transit'
 		);
 	} );
 } );
