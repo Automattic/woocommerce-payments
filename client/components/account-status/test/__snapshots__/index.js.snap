@@ -128,7 +128,7 @@ exports[`AccountStatus renders normal status 1`] = `
         <div
           class="components-flex__item css-1s295sp-Item eboqfv51"
         >
-          BaseFee:
+          Base Fee:
         </div>
         <div
           class="components-flex__block css-yr442k-Item-Block eboqfv52"
@@ -136,6 +136,15 @@ exports[`AccountStatus renders normal status 1`] = `
           Euro 
           (EUR) 
           2.9% + €0,00 per transaction
+          <p>
+            <a
+              href="https://docs.woocommerce.com/document/payments/faq/fees/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Learn more
+            </a>
+          </p>
         </div>
       </div>
     </div>
