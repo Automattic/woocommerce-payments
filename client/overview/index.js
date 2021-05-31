@@ -5,8 +5,8 @@
  */
 
 import { Notice } from '@wordpress/components';
+import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { parse } from 'qs';
 
 /**
  * Internal dependencies.
@@ -17,6 +17,7 @@ import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
+
 import './style.scss';
 
 const OverviewPage = () => {
@@ -27,9 +28,10 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 
 	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
-	const searchQuery = parse( window.location.search );
+	const queryParams = getQuery();
+
 	const showKycSuccessNotice =
-		'1' === searchQuery[ 'wcpay-connection-success' ];
+		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	return (
 		<Page className="wcpay-overview">
