@@ -245,23 +245,27 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
+		$wcpay_settings = [
+			'connectUrl'            => WC_Payments_Account::get_connect_url(),
+			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
+			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'          => $error_message,
+			'featureFlags'          => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			// used in the settings page by the AccountFees component.
+			'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'         => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
+			'accountStatus'         => $this->account->get_account_status_data(),
+			'accountFees'           => $this->account->get_fees(),
+			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+		];
+
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
-			[
-				'connectUrl'            => WC_Payments_Account::get_connect_url(),
-				'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
-				'onBoardingDisabled'    => $on_boarding_disabled,
-				'errorMessage'          => $error_message,
-				'featureFlags'          => $this->get_frontend_feature_flags(),
-				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
-				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-				'fraudServices'         => $this->account->get_fraud_services_config(),
-				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
-				'accountStatus'         => $this->account->get_account_status_data(),
-				'accountFees'           => $this->account->get_fees(),
-				'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
-			]
+			$wcpay_settings
 		);
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
@@ -306,23 +310,8 @@ class WC_Payments_Admin {
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
-			'wcpayAdminSettings',
-			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
-			]
-		);
-
-		// wcpaySettings.zeroDecimalCurrencies must be included as part of the WCPAY_ADMIN_SETTINGS as
-		// it's used in the settings page by the AccountFees component.
-		wp_localize_script(
-			'WCPAY_ADMIN_SETTINGS',
 			'wcpaySettings',
-			[
-				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-				'featureFlags'          => $this->get_frontend_feature_flags(),
-			]
+			$wcpay_settings
 		);
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
