@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Loadable from 'components/loadable';
 
-const DepositsInformationLoading = (): any => {
+const DepositsInformationLoading = (): JSX.Element => {
 	return (
 		<Card>
 			<CardHeader

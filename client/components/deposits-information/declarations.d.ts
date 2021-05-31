@@ -62,9 +62,6 @@ declare module 'data' {
 	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
 }
 declare module 'gridicons';
-declare module '@wordpress/i18n';
-declare module '@wordpress/components';
-declare module '@wordpress/i18n';
 declare module 'components/loadable';
 declare module 'components/details-link';
 declare module 'deposits/instant-deposits';
