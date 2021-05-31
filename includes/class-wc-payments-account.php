@@ -146,7 +146,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
-	 * @return array An array containing the status data.
+	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
 	 */
 	public function get_account_status_data() {
 		$account = $this->get_cached_account_data();
@@ -168,6 +168,7 @@ class WC_Payments_Account {
 		}
 
 		return [
+			'email'           => $account['email'] ?? '',
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
@@ -245,6 +246,18 @@ class WC_Payments_Account {
 			// We are already in the onboarding page, do nothing.
 			return;
 		}
+
+		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+		exit();
+	}
+
+	/**
+	 * Immediately redirect to the WooCommerce Admin home page.
+	 */
+	private function redirect_to_wc_admin_home() {
+		$params = [
+			'page' => 'wc-admin',
+		];
 
 		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
 		exit();
@@ -329,12 +342,13 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connection-success'] ) ) {
 			$account_status = $this->get_account_status_data();
+
 			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
-				$message = __( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' );
+				$this->redirect_to_wc_admin_home();
 			} else {
 				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
+				$this->add_notice_to_settings_page( $message, 'notice-success' );
 			}
-			$this->add_notice_to_settings_page( $message, 'notice-success' );
 			return;
 		}
 
@@ -503,6 +517,7 @@ class WC_Payments_Account {
 		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+			update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 			wp_safe_redirect(
 				add_query_arg(
 					[ 'wcpay-connection-success' => '1' ],
@@ -537,6 +552,10 @@ class WC_Payments_Account {
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+
+		// Store a state after completing KYC for tracks. This is stored temporarily in option because
+		// user might not have agreed to TOS yet.
+		update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
 		wp_safe_redirect(
 			add_query_arg(

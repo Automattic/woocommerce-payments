@@ -213,6 +213,67 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Create an intention, without confirming it.
+	 *
+	 * @param int    $amount          - Amount to charge.
+	 * @param string $currency_code   - Currency to charge in.
+	 * @param array  $payment_methods - Payment methods to include.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_intention(
+		$amount,
+		$currency_code,
+		$payment_methods
+	) {
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['payment_method_types'] = $payment_methods;
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Updates an intention, without confirming it.
+	 *
+	 * @param string $intention_id  - The ID of the intention to update.
+	 * @param int    $amount        - Amount to charge.
+	 * @param string $currency_code - Currency to charge in.
+	 * @param bool   $save_payment_method - Whether to setup payment intent for future usage.
+	 * @param string $customer_id - Stripe customer to associate payment intent with.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention(
+		$intention_id,
+		$amount,
+		$currency_code,
+		$save_payment_method = false,
+		$customer_id = ''
+	) {
+		$request = [
+			'amount'   => $amount,
+			'currency' => $currency_code,
+		];
+
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
+		if ( $save_payment_method ) {
+			$request['setup_future_usage'] = 'off_session';
+		}
+
+		$response_array = $this->request( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Refund a charge
 	 *
 	 * @param string $charge_id - The charge to refund.
@@ -728,7 +789,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$stripe_account_settings,
 			self::ACCOUNTS_API,
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -756,7 +819,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST );
+		return $this->request( $request_args, self::OAUTH_API . '/init', self::POST, true, true );
 	}
 
 	/**
@@ -773,7 +836,9 @@ class WC_Payments_API_Client {
 				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -912,7 +977,9 @@ class WC_Payments_API_Client {
 				'user_name' => $user_name,
 			],
 			self::ACCOUNTS_API . '/tos_agreements',
-			self::POST
+			self::POST,
+			true,
+			true
 		);
 	}
 
@@ -1006,12 +1073,13 @@ class WC_Payments_API_Client {
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -1065,7 +1133,8 @@ class WC_Payments_API_Client {
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			],
 			$body,
-			$is_site_specific
+			$is_site_specific,
+			$use_user_token
 		);
 
 		$response_body = $this->extract_response_body( $response );

@@ -3,24 +3,51 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import React from 'react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
-import PaymentMethods from '../';
+import PaymentMethods from '..';
+import {
+	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
+} from 'data';
 
-jest.mock( 'data', () => ( { addSelectedPaymentMethods: jest.fn() } ) );
+jest.mock( '../../data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn(),
+} ) );
 
 describe( 'PaymentMethods', () => {
-	test( 'renders the "Add payment method" button', () => {
-		render(
-			<PaymentMethods
-				enabledMethodIds={ [] }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
+	beforeEach( () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'woocommerce_payments',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+			'woocommerce_payments_sepa',
+		] );
+	} );
+
+	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'woocommerce_payments',
+		] );
+
+		render( <PaymentMethods /> );
+
+		const addPaymentMethodButton = screen.queryByRole( 'button', {
+			name: 'Add payment method',
+		} );
+
+		expect( addPaymentMethodButton ).not.toBeInTheDocument();
+	} );
+
+	test( 'renders the "Add payment method" button when there are at least 2 payment methods', () => {
+		render( <PaymentMethods /> );
 
 		const addPaymentMethodButton = screen.queryByRole( 'button', {
 			name: 'Add payment method',
@@ -30,32 +57,25 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( '"Add payment method" button opens the payment methods selector modal', () => {
-		render(
-			<PaymentMethods
-				enabledMethodIds={ [] }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
+		render( <PaymentMethods /> );
 
 		const addPaymentMethodButton = screen.getByRole( 'button', {
 			name: 'Add payment method',
 		} );
 
 		fireEvent.click( addPaymentMethodButton );
+
 		expect(
 			screen.queryByText( 'Add payment methods' )
 		).toBeInTheDocument();
 	} );
 
 	test( 'payment methods are rendered in expected lists', () => {
-		const enabledMethodIds = [ 'cc', 'sepa' ];
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+		] );
 
-		render(
-			<PaymentMethods
-				enabledMethodIds={ enabledMethodIds }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
+		render( <PaymentMethods /> );
 
 		const cc = screen.getByText( 'Credit card / debit card' );
 		const sepa = screen.getByText( 'Direct debit payment' );
@@ -74,71 +94,62 @@ describe( 'PaymentMethods', () => {
 		} );
 	} );
 
-	test( 'enabled methods are rendered with "Manage" and "Delete" buttons', () => {
-		const enabledMethodIds = [ 'cc', 'sepa' ];
+	test( 'enabled methods are rendered with "Delete" buttons', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+		] );
 
-		render(
-			<PaymentMethods
-				enabledMethodIds={ enabledMethodIds }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
-
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const listItem = cc.closest( 'li' );
+		render( <PaymentMethods /> );
 
 		expect(
-			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
-		).toBeInTheDocument();
-		expect(
-			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+			screen.queryByRole( 'button', {
+				name: 'Delete Credit card / debit card from checkout',
+			} )
 		).toBeInTheDocument();
 	} );
 
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		const enabledMethodIds = [ 'cc' ];
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'woocommerce_payments' ],
+		] );
 
-		render(
-			<PaymentMethods
-				enabledMethodIds={ enabledMethodIds }
-				onEnabledMethodIdsChange={ () => {} }
-			/>
-		);
-
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const listItem = cc.closest( 'li' );
+		render( <PaymentMethods /> );
 
 		expect(
-			within( listItem ).queryByRole( 'link', { name: 'Manage' } )
-		).toBeInTheDocument();
-		expect(
-			within( listItem ).queryByRole( 'button', { name: 'Delete' } )
+			screen.queryByRole( 'button', {
+				name: 'Delete Credit card / debit card from checkout',
+			} )
 		).not.toBeInTheDocument();
 	} );
 
 	test( 'clicking delete updates enabled method IDs', () => {
-		const enabledMethodIds = [ 'cc', 'sepa', 'giropay', 'sofort' ];
-		const onEnabledMethodIdsChange = jest.fn();
+		const updateEnabledMethodsMock = jest.fn( () => {} );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'woocommerce_payments',
+				'woocommerce_payments_sepa',
+				'woocommerce_payments_giropay',
+				'woocommerce_payments_sofort',
+			],
+			updateEnabledMethodsMock,
+		] );
 
-		render(
-			<PaymentMethods
-				enabledMethodIds={ enabledMethodIds }
-				onEnabledMethodIdsChange={ onEnabledMethodIdsChange }
-			/>
-		);
+		render( <PaymentMethods /> );
 
-		const cc = screen.getByText( 'Credit card / debit card' );
-		const ccListItem = cc.closest( 'li' );
-		const ccDeleteButton = within( ccListItem ).getByRole( 'button', {
-			name: 'Delete',
+		const ccDeleteButton = screen.getByRole( 'button', {
+			name: 'Delete Credit card / debit card from checkout',
 		} );
 		user.click( ccDeleteButton );
+		user.click(
+			screen.getByRole( 'button', {
+				name: 'Remove',
+			} )
+		);
 
-		const expectedUpdatedMethodIds = enabledMethodIds.filter(
-			( id ) => 'cc' !== id
-		);
-		expect( onEnabledMethodIdsChange ).toHaveBeenCalledWith(
-			expectedUpdatedMethodIds
-		);
+		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
+			'woocommerce_payments_sepa',
+			'woocommerce_payments_giropay',
+			'woocommerce_payments_sofort',
+		] );
 	} );
 } );
