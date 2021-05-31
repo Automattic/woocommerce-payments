@@ -111,6 +111,9 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Deposit overview details.
 * Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
 * Fix - Added CSV column heading for transaction id column.
+* Add - Deposit overviews have been added to the overview page.
+* Update - Account overview page is now GA and default page for woocommerce payments.
+* Update - Base fee and account status has been moved to overview page from WCPay settings.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
