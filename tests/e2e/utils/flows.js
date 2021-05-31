@@ -13,14 +13,12 @@ const baseUrl = config.get( 'url' );
 
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
-
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
-
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 
@@ -92,6 +90,34 @@ export const shopperWCP = {
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
+	openSubscriptions: async () => {
+		await page.goto( WC_SUBSCRIPTIONS_PAGE, {
+			waitUntil: 'networkidle0',
+		} );
+		await expect( page ).toMatchElement( 'h1', { text: 'Subscriptions' } );
+	},
+
+	// Create a subscription product with an optional signup fee
+	createSubscriptionProduct: async (
+		productName,
+		includeSignupFee = false
+	) => {
+		// Go to "add product" page
+		await merchant.openNewProduct();
+
+		// Make sure we're on the add product page
+		await expect( page.title() ).resolves.toMatch( 'Add new product' );
+		await expect( page ).toFill( '#title', productName );
+		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
+		await expect( page ).toFill( '#_subscription_price', '9.99' );
+
+		if ( includeSignupFee ) {
+			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
+		}
+
+		await verifyAndPublish();
+	},
+
 	openDisputes: async () => {
 		await page.goto( WCPAY_DISPUTES, {
 			waitUntil: 'networkidle0',
@@ -135,35 +161,5 @@ export const merchantWCP = {
 		);
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await uiLoaded();
-	},
-};
-
-export const merchantWCP = {
-	openSubscriptions: async () => {
-		await page.goto( WC_SUBSCRIPTIONS_PAGE, {
-			waitUntil: 'networkidle0',
-		} );
-		await expect( page ).toMatchElement( 'h1', { text: 'Subscriptions' } );
-	},
-
-	// Create a subscription product with an optional signup fee
-	createSubscriptionProduct: async (
-		productName,
-		includeSignupFee = false
-	) => {
-		// Go to "add product" page
-		await merchant.openNewProduct();
-
-		// Make sure we're on the add product page
-		await expect( page.title() ).resolves.toMatch( 'Add new product' );
-		await expect( page ).toFill( '#title', productName );
-		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
-		await expect( page ).toFill( '#_subscription_price', '9.99' );
-
-		if ( includeSignupFee ) {
-			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
-		}
-
-		await verifyAndPublish();
 	},
 };
