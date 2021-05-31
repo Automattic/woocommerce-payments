@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button, Modal } from '@wordpress/components';
 import { useState, useCallback, useEffect } from '@wordpress/element';
 
@@ -40,7 +40,20 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		1
 	);
 
+	const [ searchText, setSearchText ] = useState( '' );
 	const [ selectedCurrencies, setSelectedCurrencies ] = useState( {} );
+
+	const filteredCurrencyCodes = ! searchText
+		? availableCurrencyCodes
+		: availableCurrencyCodes.filter( ( code ) => {
+				const currency = availableCurrencies[ code ];
+				return (
+					-1 <
+					`${ currency.symbol } ${ currency.code } ${ currency.name }`
+						.toLocaleLowerCase()
+						.indexOf( searchText.toLocaleLowerCase() )
+				);
+		  } );
 
 	useEffect( () => {
 		setSelectedCurrencies(
@@ -96,8 +109,27 @@ const EnabledCurrenciesModal = ( { className } ) => {
 					onRequestClose={ handleAddSelectedCancelClick }
 					className="add-enabled-currencies-modal"
 				>
+					<input
+						type="text"
+						onChange={ ( { target } ) =>
+							setSearchText( target.value )
+						}
+						value={ searchText }
+					/>
+					<h3>
+						{ searchText
+							? /* translators: %1: filtered currencies count */
+							  sprintf(
+									__(
+										'Search results ( %1$d currencies)',
+										'woocommerce-payments'
+									),
+									filteredCurrencyCodes.length
+							  )
+							: __( 'All currencies', 'woocommerce-payments' ) }
+					</h3>
 					<EnabledCurrenciesModalCheckboxList>
-						{ availableCurrencyCodes.map( ( code ) => (
+						{ filteredCurrencyCodes.map( ( code ) => (
 							<EnabledCurrenciesModalCheckbox
 								key={ availableCurrencies[ code ].id }
 								checked={ selectedCurrencies[ code ] }
