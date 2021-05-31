@@ -11,25 +11,36 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
  */
 import Loadable from 'components/loadable';
 import CardDetails from './card';
+import CardPresentDetails from './card-present';
 import GiropayDetails from './giropay';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 
+const detailsComponentMap = {
+	card: CardDetails,
+	card_present: CardPresentDetails, // eslint-disable-line camelcase
+	giropay: GiropayDetails,
+	sepa_debit: SepaDetails, // eslint-disable-line camelcase
+	sofort: SofortDetails,
+};
+
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
-	let PaymentMethodDetails = CardDetails;
-	if ( charge.payment_method_details && charge.payment_method_details.type ) {
-		switch ( charge.payment_method_details.type ) {
-			case 'giropay':
-				PaymentMethodDetails = GiropayDetails;
-				break;
-			case 'sepa_debit':
-				PaymentMethodDetails = SepaDetails;
-				break;
-			case 'sofort':
-				PaymentMethodDetails = SofortDetails;
-				break;
-		}
+	if (
+		! charge.payment_method_details ||
+		! charge.payment_method_details.type
+	) {
+		// Gracefully degrade for malformed charge objects
+		return null;
 	}
+
+	const type = charge.payment_method_details.type;
+	if ( ! ( type in detailsComponentMap ) ) {
+		// Gracefully degrade for unrecognized payment method types
+		return null;
+	}
+
+	const PaymentMethodDetails = detailsComponentMap[ type ];
+
 	return (
 		<Card size="large">
 			<CardHeader>

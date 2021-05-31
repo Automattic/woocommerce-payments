@@ -12,10 +12,21 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Payments_Admin_Additional_Methods_Setup {
 	/**
-	 * WC_Payments_Admin_Additional_Methods_Setup constructor.
+	 * The WC Pay payment gateway, holding the settings.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
 	 */
-	public function __construct() {
+	protected $gateway;
+
+	/**
+	 * WC_Payments_Admin_Additional_Methods_Setup constructor.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway the WC Pay payment gateway, holding the settings.
+	 */
+	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+		$this->gateway = $gateway;
 	}
 
 	/**
@@ -23,6 +34,15 @@ class WC_Payments_Admin_Additional_Methods_Setup {
 	 */
 	public function enqueue_scripts() {
 		if ( ! wc_admin_is_registered_page() ) {
+			return;
+		}
+
+		$available_methods = $this->gateway->get_upe_available_payment_methods();
+		if ( empty( $available_methods ) ) {
+			return;
+		}
+
+		if ( 1 >= count( $available_methods ) ) {
 			return;
 		}
 

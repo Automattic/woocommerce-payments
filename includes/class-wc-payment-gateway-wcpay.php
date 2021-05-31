@@ -75,7 +75,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Token_Service
 	 */
-	private $token_service;
+	protected $token_service;
 
 	/**
 	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
@@ -264,6 +264,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				],
 			],
 		];
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			$this->form_fields['enabled_payment_method_ids'] = [
+				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
+				'type'    => 'multiselect',
+				'default' => [ 'woocommerce_payments' ],
+				'options' => [],
+			];
+
+			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
+		}
 
 		// Giropay option hidden behind feature flag.
 		if ( WC_Payments_Features::is_giropay_enabled() ) {
@@ -476,22 +487,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
-	 * Isolated as a separate method in order to be avaiable both
+	 * Isolated as a separate method in order to be available both
 	 * during the classic checkout, as well as the checkout block.
 	 *
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
 		return [
-			'publishableKey'         => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'accountId'              => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
-			'createSetupIntentNonce' => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'genericErrorMessage'    => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'          => $this->account->get_fraud_services_config(),
-			'features'               => $this->supports,
-			'forceNetworkSavedCards' => WC_Payments::is_network_saved_cards_enabled(),
-			'locale'                 => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'publishableKey'           => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'accountId'                => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'createSetupIntentNonce'   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce' => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'genericErrorMessage'      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'            => $this->account->get_fraud_services_config(),
+			'features'                 => $this->supports,
+			'forceNetworkSavedCards'   => WC_Payments::is_network_saved_cards_enabled(),
+			'locale'                   => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isUPEEnabled'             => WC_Payments_Features::is_upe_enabled(),
 		];
 	}
 
@@ -738,6 +751,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param WC_Order $order WC Order object.
+	 *
+	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
+	 */
+	protected function manage_customer_details_for_order( $order ) {
+		$user = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+
+		if ( null === $customer_id ) {
+			// Create a new customer.
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		} else {
+			// Update the existing customer with the current details. In the event the old customer can't be
+			// found a new one is created, so we update the customer ID here as well.
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+		}
+
+		return [ $user, $customer_id ];
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart                   $cart Cart.
@@ -755,10 +797,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$user     = $order->get_user();
-		if ( false === $user ) {
-			$user = wp_get_current_user();
-		}
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
@@ -770,18 +808,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'payment_type'   => $payment_information->get_payment_type(),
 		];
 
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-
-		if ( null === $customer_id ) {
-			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
-			// Update the existing customer with the current details. In the event the old customer can't be
-			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
-		}
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1224,7 +1251,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  string $key Option key.
 	 * @param  mixed  $empty_value Value when empty.
-	 * @return string The value specified for the option or a default value for the option.
+	 * @return mixed The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
@@ -2126,5 +2153,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function enable() {
 		$this->update_option( 'enabled', 'yes' );
+	}
+
+	/**
+	 * Returns the list of enabled payment method types for UPE.
+	 *
+	 * @return string[]
+	 */
+	public function get_upe_enabled_payment_method_ids() {
+		return $this->get_option( 'enabled_payment_method_ids', [] );
+	}
+
+	/**
+	 * Returns the list of available payment method types for UPE.
+	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
+	 *
+	 * @return string[]
+	 */
+	public function get_upe_available_payment_methods() {
+		return apply_filters(
+			'wcpay_upe_available_payment_methods',
+			[
+				// TODO: at this point, with UPE, we could just get rid of the prefixes on the payment method names.
+				'woocommerce_payments',
+			]
+		);
 	}
 }

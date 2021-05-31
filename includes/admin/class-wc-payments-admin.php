@@ -52,6 +52,7 @@ class WC_Payments_Admin {
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
+		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 	}
 
 	/**
@@ -143,7 +144,7 @@ class WC_Payments_Admin {
 						'id'       => 'wc-payments-overview',
 						'title'    => __( 'Overview', 'woocommerce-payments' ),
 						'parent'   => 'wc-payments',
-						'path'     => '/payments/overview/',
+						'path'     => '/payments/overview',
 						'nav_args' => [
 							'parent' => 'wc-payments',
 							'order'  => 5,
@@ -244,22 +245,27 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
+		$wcpay_settings = [
+			'connectUrl'            => WC_Payments_Account::get_connect_url(),
+			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
+			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
+			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'          => $error_message,
+			'featureFlags'          => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
+			// used in the settings page by the AccountFees component.
+			'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'         => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
+			'accountStatus'         => $this->account->get_account_status_data(),
+			'accountFees'           => $this->account->get_fees(),
+			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+		];
+
 		wp_localize_script(
 			'WCPAY_DASH_APP',
 			'wcpaySettings',
-			[
-				'connectUrl'            => WC_Payments_Account::get_connect_url(),
-				'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
-				'onBoardingDisabled'    => $on_boarding_disabled,
-				'errorMessage'          => $error_message,
-				'featureFlags'          => $this->get_frontend_feature_flags(),
-				'isSubscriptionsActive' => class_exists( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' ),
-				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-				'fraudServices'         => $this->account->get_fraud_services_config(),
-				'isJetpackConnected'    => $this->payments_api_client->is_server_connected(),
-				'accountStatus'         => $this->account->get_account_status_data(),
-				'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
-			]
+			$wcpay_settings
 		);
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
@@ -304,23 +310,8 @@ class WC_Payments_Admin {
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
-			'wcpayAdminSettings',
-			[
-				'accountStatus' => $this->account->get_account_status_data(),
-				'accountFees'   => $this->account->get_fees(),
-				'fraudServices' => $this->account->get_fraud_services_config(),
-			]
-		);
-
-		// wcpaySettings.zeroDecimalCurrencies must be included as part of the WCPAY_ADMIN_SETTINGS as
-		// it's used in the settings page by the AccountFees component.
-		wp_localize_script(
-			'WCPAY_ADMIN_SETTINGS',
 			'wcpaySettings',
-			[
-				'zeroDecimalCurrencies' => WC_Payments_Utils::zero_decimal_currencies(),
-				'featureFlags'          => $this->get_frontend_feature_flags(),
-			]
+			$wcpay_settings
 		);
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
@@ -329,6 +320,24 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
 			[ 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/settings.css' )
+		);
+
+		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
+		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
+		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require_once $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			$payment_gateways_script_src_url,
+			$payment_gateways_script_asset['dependencies'],
+			WC_Payments::get_file_version( 'dist/payment-gateways.js' ),
+			true
+		);
+		wp_register_style(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/payment-gateways.css' )
 		);
 	}
 
@@ -371,7 +380,9 @@ class WC_Payments_Admin {
 			)
 		);
 
-		if ( $tos_agreement_declined || $tos_agreement_required ) {
+		$track_stripe_connected = get_option( '_wcpay_oauth_stripe_connected' );
+
+		if ( $tos_agreement_declined || $tos_agreement_required || $track_stripe_connected ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			wp_localize_script(
 				'WCPAY_TOS',
@@ -380,11 +391,23 @@ class WC_Payments_Admin {
 					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
+					'trackStripeConnected' => $track_stripe_connected,
 				]
 			);
 
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
+		}
+
+		$is_payment_methods_page = (
+			is_admin() &&
+			$current_tab && ! $current_section
+			&& 'checkout' === $current_tab
+		);
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() && $is_payment_methods_page ) {
+			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
+			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
 	}
 
@@ -488,11 +511,20 @@ class WC_Payments_Admin {
 		}
 
 		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'];
-		$past_due = isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false;
+		$status   = $account['status'] ?? '';
+		$past_due = $account['has_overdue_requirements'] ?? false;
 
 		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
 			update_option( 'wcpay_show_update_business_details_task', 'yes' );
 		}
+	}
+
+	/**
+	 * Adds a container to the "payment gateways" page.
+	 * This is where the "Are you sure you want to disable WCPay?" confirmation dialog is rendered.
+	 */
+	public function payment_gateways_container() {
+		?><div id="wcpay-payment-gateways-container" />
+		<?php
 	}
 }

@@ -367,7 +367,7 @@ export default ( { query } ) => {
 			}
 		);
 
-	useConfirmNavigation( () => {
+	const confirmationNavigationCallback = useConfirmNavigation( () => {
 		if ( pristine ) {
 			return;
 		}
@@ -376,19 +376,25 @@ export default ( { query } ) => {
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
 		);
-	}, [ pristine ] );
+	} );
 
-	const fetchDispute = async () => {
-		setLoading( true );
-		try {
-			setDispute( await apiFetch( { path } ) );
-		} finally {
-			setLoading( false );
-		}
-	};
+	useEffect( confirmationNavigationCallback, [
+		pristine,
+		confirmationNavigationCallback,
+	] );
+
 	useEffect( () => {
+		const fetchDispute = async () => {
+			setLoading( true );
+			try {
+				setDispute( await apiFetch( { path } ) );
+			} finally {
+				setLoading( false );
+			}
+		};
+
 		fetchDispute();
-	}, [] );
+	}, [ setLoading, setDispute, path ] );
 
 	const updateEvidence = ( key, value ) =>
 		setEvidence( ( e ) => ( { ...e, [ key ]: value } ) );
@@ -551,9 +557,10 @@ export default ( { query } ) => {
 		} );
 	};
 
+	const disputeReason = dispute && dispute.reason;
 	const fieldsToDisplay = useMemo(
-		() => evidenceFields( dispute && dispute.reason, productType ),
-		[ dispute && dispute.reason, productType ]
+		() => evidenceFields( disputeReason, productType ),
+		[ disputeReason, productType ]
 	);
 
 	return (

@@ -44,7 +44,9 @@ const PaymentDetails = ( props ) => {
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			{ testModeNotice }
 			<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
-			<PaymentDetailsTimeline chargeId={ chargeId } />
+			{ wcpaySettings.featureFlags.paymentTimeline && (
+				<PaymentDetailsTimeline chargeId={ chargeId } />
+			) }
 			{
 				// Hidden for the beta.
 				false && <PaymentDetailsPayment charge={ charge } />

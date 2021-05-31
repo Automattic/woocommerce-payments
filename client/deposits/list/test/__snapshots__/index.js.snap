@@ -46,7 +46,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
       </div>
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card deposits-list woocommerce-report-table has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu"
     >
       <div
         class="woocommerce-card__header"
@@ -478,7 +478,7 @@ exports[`Deposits list renders correctly with single currency 1`] = `
       />
     </div>
     <div
-      class="woocommerce-card woocommerce-table woocommerce-analytics__card deposits-list woocommerce-report-table has-menu"
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card wcpay-deposits-list woocommerce-report-table has-menu"
     >
       <div
         class="woocommerce-card__header"

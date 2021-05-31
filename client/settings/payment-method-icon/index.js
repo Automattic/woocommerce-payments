@@ -8,14 +8,17 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './style.scss';
+import CreditCardIcon from '../../gateway-icons/credit-card';
 import GiropayIcon from '../../gateway-icons/giropay';
 import SepaIcon from '../../gateway-icons/sepa';
 import SofortIcon from '../../gateway-icons/sofort';
-import ApplePayIcon from '../../gateway-icons/apple-pay';
-import GooglePayIcon from '../../gateway-icons/google-pay';
 
 const paymentMethods = {
 	/* eslint-disable camelcase */
+	woocommerce_payments: {
+		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
+		Icon: CreditCardIcon,
+	},
 	woocommerce_payments_giropay: {
 		label: __( 'GiroPay', 'woocommerce-payments' ),
 		Icon: GiropayIcon,
@@ -29,14 +32,6 @@ const paymentMethods = {
 		Icon: SofortIcon,
 	},
 	/* eslint-enable camelcase */
-	'apple-pay': {
-		label: __( 'Apple Pay', 'woocommerce-payments' ),
-		Icon: ApplePayIcon,
-	},
-	'google-pay': {
-		label: __( 'Google Pay', 'woocommerce-payments' ),
-		Icon: GooglePayIcon,
-	},
 };
 
 const PaymentMethodIcon = ( props ) => {

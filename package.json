@@ -61,7 +61,7 @@
       "eslint"
     ],
     "*.{ts,tsx}": [
-      "tsc --noEmit"
+      "tsc --noEmit --jsx react"
     ],
     "*.{scss,css}": [
       "npm run format:provided",
@@ -71,8 +71,6 @@
     "composer.json": "composer validate --strict --no-check-all"
   },
   "dependencies": {
-    "@dnd-kit/modifiers": "^1.0.5",
-    "@dnd-kit/sortable": "^2.0.1",
     "@stripe/react-stripe-js": "1.1.2",
     "@stripe/stripe-js": "1.12.1",
     "@woocommerce/explat": "^1.0.0",
@@ -92,11 +90,11 @@
     "@types/react": "16.14.5",
     "@typescript-eslint/eslint-plugin": "4.15.2",
     "@typescript-eslint/parser": "4.15.2",
-    "@woocommerce/api": "^0.1.2",
+    "@woocommerce/api": "^0.2.0",
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
-    "@woocommerce/e2e-utils": "^0.1.4",
+    "@woocommerce/e2e-utils": "^0.1.5",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "1.2.0",
     "@wordpress/api-fetch": "3.3.0",
@@ -151,7 +149,7 @@
     "stylelint-config-prettier": "8.0.2",
     "stylelint-config-wordpress": "17.0.0",
     "ts-jest": "26.5.1",
-    "ts-loader": "8.0.17",
+    "ts-loader": "^8.0.17",
     "typescript": "4.1.5",
     "webpack": "^4.46.0",
     "webpack-cli": "4.5.0",
