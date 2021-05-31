@@ -62,8 +62,3 @@ declare module 'data' {
 	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
 }
 declare module 'gridicons';
-declare module 'components/loadable';
-declare module 'components/details-link';
-declare module 'deposits/instant-deposits';
-declare module 'deposits/utils';
-declare module 'utils/currency';
