@@ -61,4 +61,12 @@ declare namespace AccountOverview {
 declare module 'data' {
 	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
 }
-declare module 'gridicons';
+declare module 'gridicons' {
+	type GridiconParams = {
+		icon: string;
+		size: number;
+		className?: string;
+	};
+	const Gridicon: ( props: GridiconParams ) => JSX.Element;
+	export = Gridicon;
+}
