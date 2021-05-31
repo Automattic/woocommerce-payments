@@ -20,14 +20,17 @@ const statusContainer = document.getElementById(
 );
 if ( statusContainer ) {
 	ReactDOM.render(
-		<AccountStatus { ...wcpayAdminSettings } />,
+		<AccountStatus accountStatus={ wcpaySettings.accountStatus } />,
 		statusContainer
 	);
 }
 
 const feesContainer = document.getElementById( 'wcpay-account-fees-container' );
 if ( feesContainer ) {
-	ReactDOM.render( <AccountFees { ...wcpayAdminSettings } />, feesContainer );
+	ReactDOM.render(
+		<AccountFees accountFees={ wcpaySettings.accountFees } />,
+		feesContainer
+	);
 }
 
 const settingsForm = document.querySelector( 'form#mainform' );
@@ -57,7 +60,7 @@ authorization and order will be canceled. Are you sure you want to enable it?',
 }
 
 window.addEventListener( 'load', () => {
-	enqueueFraudScripts( wcpayAdminSettings.fraudServices );
+	enqueueFraudScripts( wcpaySettings.fraudServices );
 } );
 
 const settingsContainer = document.getElementById(
@@ -65,7 +68,7 @@ const settingsContainer = document.getElementById(
 );
 if ( settingsContainer ) {
 	ReactDOM.render(
-		<SettingsManager { ...wcpayAdminSettings } />,
+		<SettingsManager { ...wcpaySettings } />,
 		settingsContainer
 	);
 }
