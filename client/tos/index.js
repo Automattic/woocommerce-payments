@@ -8,10 +8,13 @@ import ReactDOM from 'react-dom';
 
 import TosModal from './modal';
 import showTosNotice from './disabled-notice';
+import { maybeTrackStripeConnected } from './request.js';
 
 // eslint-disable-next-line camelcase
 if ( wcpay_tos_settings.tosAgreementRequired ) {
 	renderTosModal();
+} else {
+	maybeTrackStripeConnected();
 }
 
 // eslint-disable-next-line camelcase

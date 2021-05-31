@@ -185,7 +185,7 @@ const DepositsOverview = () => {
 				</p>
 				{ overview && overview.instant_balance && (
 					<InstantDepositButton
-						balance={ overview.instant_balance }
+						instantBalance={ overview.instant_balance }
 					/>
 				) }
 			</div>
@@ -215,7 +215,7 @@ const DepositsOverview = () => {
 										  )
 										: '',
 									children: (
-										<span className="wcpay-deposits-summary__item-detail">
+										<span className="wcpay-summary__item-detail">
 											{ getDepositDate(
 												overview.last_deposit
 											) }
@@ -241,7 +241,7 @@ const DepositsOverview = () => {
 										  )
 										: '',
 									children: (
-										<span className="wcpay-deposits-summary__item-detail">
+										<span className="wcpay-summary__item-detail">
 											{ getNextDepositLabelFormatted(
 												overview.next_deposit
 											) }
@@ -261,7 +261,7 @@ const DepositsOverview = () => {
 										overview.account.default_currency
 									),
 									children: (
-										<span className="wcpay-deposits-summary__item-detail">
+										<span className="wcpay-summary__item-detail">
 											{ getBalanceDepositCount(
 												overview.balance.pending
 											) }

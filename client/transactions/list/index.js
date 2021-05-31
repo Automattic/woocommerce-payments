@@ -27,9 +27,9 @@ import Gridicon from 'gridicons';
  */
 import { useTransactions, useTransactionsSummary } from 'data';
 import OrderLink from 'components/order-link';
-import RiskLevel from 'components/risk-level';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink, { getDetailsURL } from 'components/details-link';
+import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency } from 'utils/currency';
@@ -41,14 +41,12 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 
-const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
+const getColumns = ( includeDeposit, includeSubscription ) =>
 	[
 		{
-			key: 'details',
-			label: '',
-			required: true,
-			// Match background of details and date when sorting.
-			cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
+			key: 'transaction_id',
+			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			visible: false,
 		},
 		{
 			key: 'date',
@@ -149,14 +147,15 @@ export const TransactionsList = ( props ) => {
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId );
 
-	const columnsArgs = [
-		! props.depositId,
-		wcpaySettings.isSubscriptionsActive,
-		! getQuery().orderby || 'date' === getQuery().orderby,
-	];
+	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columnsToDisplay = useMemo(
-		() => getColumns( ...columnsArgs ),
-		columnsArgs
+		() =>
+			getColumns(
+				! props.depositId,
+				wcpaySettings.isSubscriptionsActive,
+				sortByDate
+			),
+		[ props.depositId, sortByDate ]
 	);
 
 	const rows = transactions.map( ( txn ) => {
@@ -164,9 +163,7 @@ export const TransactionsList = ( props ) => {
 		const clickable = ( children ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
-		const detailsLink = (
-			<DetailsLink id={ txn.charge_id } parentSegment="transactions" />
-		);
+
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const orderSubscriptions = txn.order && txn.order.subscriptions;
 		const subscriptionsValue =
@@ -205,7 +202,11 @@ export const TransactionsList = ( props ) => {
 
 		// Map transaction into table row.
 		const data = {
-			details: { value: txn.transaction_id, display: detailsLink },
+			// eslint-disable-next-line camelcase
+			transaction_id: {
+				value: txn.transaction_id,
+				display: clickable( txn.transaction_id ),
+			},
 			date: {
 				value: txn.date,
 				display: clickable(
@@ -274,7 +275,7 @@ export const TransactionsList = ( props ) => {
 			},
 			// eslint-disable-next-line camelcase
 			risk_level: {
-				value: txn.risk_level,
+				value: calculateRiskMapping( txn.risk_level ),
 				display: clickable( riskLevel ),
 			},
 			deposit: { value: txn.deposit_id, display: deposit },
@@ -339,17 +340,27 @@ export const TransactionsList = ( props ) => {
 		);
 	}
 
-	// Generate summary based on loading state and available currencies information
-	const summary = [
-		{
-			label: __( 'transactions', 'woocommerce-payments' ),
-			value: `${ transactionsSummary.count }`,
-		},
-	];
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
-	if ( ! isSummaryLoading ) {
-		const isSingleCurrency =
-			2 > ( transactionsSummary.store_currencies || [] ).length;
+
+	const isSingleCurrency =
+		2 > ( transactionsSummary.store_currencies || [] ).length;
+
+	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
+	let summary;
+	const isTransactionsSummaryDataLoaded =
+		transactionsSummary.count !== undefined &&
+		transactionsSummary.total !== undefined &&
+		false === isSummaryLoading;
+
+	// Generate summary only if the data has been loaded
+	if ( isTransactionsSummaryDataLoaded ) {
+		summary = [
+			{
+				label: __( 'transactions', 'woocommerce-payments' ),
+				value: `${ transactionsSummary.count }`,
+			},
+		];
+
 		if ( isSingleCurrency || isCurrencyFiltered ) {
 			summary.push(
 				{

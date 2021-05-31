@@ -18,14 +18,30 @@ useInstantDeposit.mockReturnValue( {
 	submit: () => {},
 } );
 
-const instantDepositBalance = {
-	balance: {
-		amount: 12345,
-		fee: 123.45,
-		net: 12221.55,
-		// eslint-disable-next-line camelcase
-		transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
-	},
+// eslint-disable-next-line no-unused-vars
+const isButtonDisabled = jest
+	.fn()
+	.mockReturnValue( false ) // Default response to show enabled button.
+	.mockReturnValueOnce( true ); // Response for first test that should have button disabled.
+
+const mockInstantBalance = {
+	amount: 12345,
+	fee: 123.45,
+	net: 12221.55,
+	// eslint-disable-next-line camelcase
+	fee_percentage: 1.5,
+	// eslint-disable-next-line camelcase
+	transaction_ids: [ 'txn_ABC123', 'txn_DEF456' ],
+};
+
+const mockZeroInstantBalance = {
+	amount: 0,
+	fee: 0,
+	net: 0,
+	// eslint-disable-next-line camelcase
+	fee_percentage: 1.5,
+	// eslint-disable-next-line camelcase
+	transaction_ids: [],
 };
 
 describe( 'Instant deposit button and modal', () => {
@@ -34,15 +50,24 @@ describe( 'Instant deposit button and modal', () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'button renders correctly', () => {
+	test( 'button renders correctly with zero balance', () => {
 		const { container } = render(
-			<InstantDepositButton { ...instantDepositBalance } />
+			<InstantDepositButton instantBalance={ mockZeroInstantBalance } />
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'button renders correctly with balance', () => {
+		const { container } = render(
+			<InstantDepositButton instantBalance={ mockInstantBalance } />
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'modal renders correctly', () => {
-		render( <InstantDepositButton { ...instantDepositBalance } /> );
+		render(
+			<InstantDepositButton instantBalance={ mockInstantBalance } />
+		);
 		expect(
 			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
 		).not.toBeInTheDocument();

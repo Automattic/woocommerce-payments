@@ -1,11 +1,30 @@
 *** WooCommerce Payments Changelog ***
 
-= 2.4.0 - 2021-xx-xx =
+= 2.5.0 - 2021-xx-xx =
+* Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
+* Update - Use Site Language when rendering Stripe elements.
+* Update - Use blog ID for authenticating most of the requests.
+* Fix: Misaligned columns on Deposits page.
+* Add - Tracking for returning from OAuth connection.
+* Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
+* Update - Deposit overview details.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
+* Fix - Added CSV column heading for transaction id column.
+
+= 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
 * Add - REST endpoint to capture payments by order ID
+* Add - Payment request button support for checkout and cart blocks.
+* Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
+* Update - Implement expirement on Connect Page.
+* Fix - Columns are misaligned on Payments->Transactions/Disputes page.
+* Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+
+= 2.3.3 - 2021-05-06 =
+* Update - Additional logic and styling for instant deposits.
 
 = 2.3.2 - 2021-04-27 =
 * Fix - Error when purchasing free trial subscriptions.

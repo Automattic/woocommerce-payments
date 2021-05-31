@@ -1,0 +1,11 @@
+.wcpay-confirmation-modal {
+	max-width: 500px;
+
+	&__separator {
+		margin: 24px -24px;
+	}
+
+	&__footer {
+		@include modal-footer-buttons;
+	}
+}
