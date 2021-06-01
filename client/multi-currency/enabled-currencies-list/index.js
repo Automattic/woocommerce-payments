@@ -46,6 +46,7 @@ const EnabledCurrencies = () => {
 					<div>
 						{ __( 'Enabled Currencies', 'woocommerce-payments' ) }
 					</div>
+					<div>{ __( 'Exchange rate', 'woocommerce-payments' ) }</div>
 				</CardBody>
 				<CardDivider />
 				<CardBody size={ null }>
