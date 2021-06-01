@@ -129,7 +129,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 							? /* translators: %1: filtered currencies count */
 							  sprintf(
 									__(
-										'Search results ( %1$d currencies)',
+										'Search results (%1$d currencies)',
 										'woocommerce-payments'
 									),
 									filteredCurrencyCodes.length
