@@ -12,6 +12,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import DeleteButton from './delete-button';
 
+
 const EnabledCurrenciesListItem = ( {
 	// eslint-disable-next-line camelcase
 	currency: { code, flag, id, is_default, name, symbol },
