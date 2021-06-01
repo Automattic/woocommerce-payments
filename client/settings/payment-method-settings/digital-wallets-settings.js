@@ -58,6 +58,17 @@ const DigitalWalletsSettings = () => {
 	const [ cta, setCta ] = useState( 'buy' );
 	const [ size, setSize ] = useState( 'default' );
 	const [ theme, setTheme ] = useState( 'dark' );
+
+	const availableButtonTypes = useMapValuesToOptions(
+		useDigitalWalletsAvailableButtonTypes
+	);
+	const availableButtonThemes = useMapValuesToOptions(
+		useDigitalWalletsAvailableButtonThemes
+	);
+	const availableBrandedTypes = useMapValuesToOptions(
+		useDigitalWalletsAvailableBrandedTypes
+	);
+
 	return (
 		<Card>
 			<CardBody>
@@ -68,7 +79,7 @@ const DigitalWalletsSettings = () => {
 						'woocommerce-payments'
 					) }
 					selected={ cta }
-					options={ buttonActionOptions }
+					options={ availableButtonTypes }
 					onChange={ setCta }
 				/>
 				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
@@ -90,7 +101,7 @@ const DigitalWalletsSettings = () => {
 					) }
 					label={ __( 'Theme', 'woocommerce-payments' ) }
 					selected={ theme }
-					options={ buttonThemeOptions }
+					options={ availableButtonThemes }
 					onChange={ setTheme }
 				/>
 			</CardBody>

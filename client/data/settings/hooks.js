@@ -158,3 +158,27 @@ export const useDigitalWalletsLocations = () => {
 		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
 	} );
 };
+
+export const useDigitalWalletsAvailableButtonTypes = () => {
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsAvailableButtonTypes } = select( STORE_NAME );
+
+		return getDigitalWalletsAvailableButtonTypes();
+	} );
+};
+
+export const useDigitalWalletsAvailableButtonThemes = () => {
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsAvailableButtonThemes } = select( STORE_NAME );
+
+		return getDigitalWalletsAvailableButtonThemes();
+	} );
+};
+
+export const useDigitalWalletsAvailableBrandedTypes = () => {
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsAvailableBrandedTypes } = select( STORE_NAME );
+
+		return getDigitalWalletsAvailableBrandedTypes();
+	} );
+};
