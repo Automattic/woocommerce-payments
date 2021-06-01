@@ -114,6 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Deposit overviews have been added to the overview page.
 * Update - Account overview page is now GA and default page for woocommerce payments.
 * Update - Base fee and account status has been moved to overview page from WCPay settings.
+* Fix - Express payment method being displayed on blocks checkout when Payment Request is not supported.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
