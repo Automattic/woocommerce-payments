@@ -57,6 +57,16 @@ export const receiveSettings = (
 				},
 			};
 
+		case ACTION_TYPES.SET_IS_DEBUG_LOG_ENABLED:
+			return {
+				...state,
+				data: {
+					...state.data,
+					// eslint-disable-next-line camelcase
+					is_debug_log_enabled: action.isEnabled,
+				},
+			};
+
 		case ACTION_TYPES.SET_IS_TEST_MODE_ENABLED:
 			return {
 				...state,
