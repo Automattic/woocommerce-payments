@@ -16,6 +16,7 @@ import {
 } from 'data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
+import Search from 'components/search';
 import './style.scss';
 
 // TODO: This works when saving, but list does not refresh.
@@ -46,10 +47,10 @@ const EnabledCurrenciesModal = ( { className } ) => {
 	const filteredCurrencyCodes = ! searchText
 		? availableCurrencyCodes
 		: availableCurrencyCodes.filter( ( code ) => {
-				const currency = availableCurrencies[ code ];
+				const { symbol, name } = availableCurrencies[ code ];
 				return (
 					-1 <
-					`${ currency.symbol } ${ currency.code } ${ currency.name }`
+					`${ symbol } ${ code } ${ name }`
 						.toLocaleLowerCase()
 						.indexOf( searchText.toLocaleLowerCase() )
 				);
@@ -68,6 +69,10 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		JSON.stringify( enabledCurrencyCodes ),
 	] );
 	/* eslint-enable react-hooks/exhaustive-deps */
+
+	const handleSearchChange = ( event ) => {
+		setSearchText( event.target.value );
+	};
 
 	const handleChange = ( currencyCode, enabled ) => {
 		setSelectedCurrencies( ( previouslyEnabled ) => ( {
@@ -109,12 +114,13 @@ const EnabledCurrenciesModal = ( { className } ) => {
 					onRequestClose={ handleAddSelectedCancelClick }
 					className="add-enabled-currencies-modal"
 				>
-					<input
-						type="text"
-						onChange={ ( { target } ) =>
-							setSearchText( target.value )
-						}
+					<Search
 						value={ searchText }
+						placeholder={ __(
+							'Search currencies',
+							'woocommerce-payments'
+						) }
+						onChange={ handleSearchChange }
 					/>
 					<h3>
 						{ searchText
