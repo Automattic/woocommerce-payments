@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, RadioControl } from '@wordpress/components';
 
@@ -10,6 +10,11 @@ import { Card, CardBody, RadioControl } from '@wordpress/components';
  * Internal dependencies
  */
 import './index.scss';
+import {
+	useDigitalWalletsAvailableBrandedTypes,
+	useDigitalWalletsAvailableButtonThemes,
+	useDigitalWalletsAvailableButtonTypes,
+} from '../../data';
 
 const buttonSizeOptions = [
 	{
@@ -53,6 +58,18 @@ const buttonThemeOptions = [
 		value: 'light',
 	},
 ];
+
+const useMapValuesToOptions = ( selectorHook ) => {
+	const options = selectorHook();
+	return useMemo(
+		() =>
+			Object.entries( options ).map( ( [ value, label ] ) => ( {
+				value,
+				label,
+			} ) ),
+		[ options ]
+	);
+};
 
 const DigitalWalletsSettings = () => {
 	const [ cta, setCta ] = useState( 'buy' );
