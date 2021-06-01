@@ -114,14 +114,16 @@ const EnabledCurrenciesModal = ( { className } ) => {
 					onRequestClose={ handleAddSelectedCancelClick }
 					className="add-enabled-currencies-modal"
 				>
-					<Search
-						value={ searchText }
-						placeholder={ __(
-							'Search currencies',
-							'woocommerce-payments'
-						) }
-						onChange={ handleSearchChange }
-					/>
+					<div className="add-enabled-currencies-modal__search">
+						<Search
+							value={ searchText }
+							placeholder={ __(
+								'Search currencies',
+								'woocommerce-payments'
+							) }
+							onChange={ handleSearchChange }
+						/>
+					</div>
 					<h3>
 						{ searchText
 							? /* translators: %1: filtered currencies count */
