@@ -258,13 +258,21 @@ class Multi_Currency {
 			}
 		}
 
-		// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 		foreach ( $enabled_currencies as $code ) {
-			$currency = $available_currencies[ $code ];
+			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
+			$currency = clone $available_currencies[ $code ];
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
 			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
 			$currency->set_charm( $charm );
 			$currency->set_rounding( $rounding );
+
+			// If the currency is set to be manual, set the rate to the stored manual rate.
+			$type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), 'automatic' );
+			if ( 'manual' === $type ) {
+				$manual_rate = get_option( $this->id . '_manual_rate_' . $currency->get_id(), $currency->get_rate() );
+				$currency->set_rate( $manual_rate );
+			}
+
 			$this->enabled_currencies[ $code ] = $currency;
 		}
 
