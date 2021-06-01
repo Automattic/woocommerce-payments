@@ -28,16 +28,10 @@ const triggerHideShow = ( value, checked ) => {
 	hideShowManualField( 'manual' === value && true === checked );
 };
 
-window.onload = () => {
-	const exchangeRadio = document.querySelectorAll(
-		'.exchange-rate-selector'
-	);
-	for ( let i = 0; i < exchangeRadio.length; i++ ) {
-		const element = exchangeRadio[ i ];
-		triggerHideShow( element.value, element.checked );
+document.querySelectorAll( '.exchange-rate-selector' ).forEach( ( radio ) => {
+	triggerHideShow( radio.value, radio.checked );
 
-		element.addEventListener( 'change', ( event ) => {
-			triggerHideShow( event.target.value, event.target.checked );
-		} );
-	}
-};
+	radio.addEventListener( 'change', ( event ) => {
+		triggerHideShow( event.target.value, event.target.checked );
+	} );
+} );
