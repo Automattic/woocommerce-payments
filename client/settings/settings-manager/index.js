@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSettings } from 'data';
-import Banner from '../../banner';
 import { LoadableBlock } from '../../components/loadable';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
@@ -20,6 +19,7 @@ import GeneralSettings from '../general-settings';
 import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
+import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 
 const PaymentMethodsDescription = () => (
@@ -81,35 +81,32 @@ const SettingsManager = ( { accountStatus = {} } ) => {
 	const { isLoading } = useSettings();
 
 	return (
-		<>
-			<Banner />
-			<div className="settings-manager">
-				<SettingsSection Description={ PaymentMethodsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<PaymentMethods />
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection Description={ DigitalWalletsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<DigitalWallets />
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection Description={ GeneralSettingsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<GeneralSettings
-							accountLink={ accountStatus.accountLink }
-						/>
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection>
-					<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
-						<TestModeSettings />
-					</LoadableBlock>
-				</SettingsSection>
-				<AdvancedSettings />
-				<SaveSettingsSection />
-			</div>
-		</>
+		<SettingsLayout>
+			<SettingsSection Description={ PaymentMethodsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<PaymentMethods />
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ DigitalWalletsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<DigitalWallets />
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ GeneralSettingsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<GeneralSettings
+						accountLink={ accountStatus.accountLink }
+					/>
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection>
+				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
+					<TestModeSettings />
+				</LoadableBlock>
+			</SettingsSection>
+			<AdvancedSettings />
+			<SaveSettingsSection />
+		</SettingsLayout>
 	);
 };
 
