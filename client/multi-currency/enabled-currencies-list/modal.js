@@ -21,7 +21,6 @@ import './style.scss';
 
 // TODO: This works when saving, but list does not refresh.
 // TODO: Should we reset selected currencies on modal close?
-// TODO: Need to add a currency search. V2?
 const EnabledCurrenciesModal = ( { className } ) => {
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
