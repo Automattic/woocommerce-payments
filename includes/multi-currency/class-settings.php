@@ -240,11 +240,12 @@ class Settings extends \WC_Settings_Page {
 				[
 					'title'   => __( 'Exchange rate', 'woocommerce-payments' ),
 					'id'      => $this->id . '_exchange_rate_' . $currency->get_id(),
+					'class'   => 'exchange-rate-selector',
 					'default' => 'automatic',
 					'type'    => 'radio',
 					'options' => $exchange_rate_options,
 				],
-				// TODO: Manual rate field needs to hide if manual isn't selected.
+
 				[
 					'title'    => __( 'Manual rate', 'woocommerce-payments' ),
 					'type'     => 'text',
