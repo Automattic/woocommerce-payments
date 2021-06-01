@@ -37,6 +37,89 @@ export const getDepositsOverviewError = ( state ) => {
 };
 
 /**
+ * Prepares and returns all deposits' overviews from the state.
+ *
+ * The API returns this in the form of separate arrays
+ * for each balance/deposit type, each of them containing
+ * a separate entry for each currency.
+ *
+ * This selector will return the account, as well as an
+ * array with all of the neccessary details grouped by currency.
+ *
+ * Check the `AccountOverview.OverviewsResponse` declaration
+ * for the shape of the returned object.
+ *
+ * @param {Object} state Current wp.data state.
+ * @return {Object} A complex object, containing all neccessary overviews.
+ */
+export const getAllDepositsOverviews = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overviews || {};
+
+	// Return an empty skeleton if data has not been loaded yet.
+	if ( ! DepositsOverview.data ) {
+		return {
+			account: null,
+			currencies: [],
+		};
+	}
+
+	const { deposit, balance, account } = DepositsOverview.data;
+
+	const groups = {
+		lastPaid: deposit.last_paid,
+		nextScheduled: deposit.next_scheduled,
+		pending: balance.pending,
+		available: balance.available,
+		instant: balance.instant,
+	};
+
+	/**
+	 * Note: The computations in this selector should be simple enough
+	 * not to require memorization, but it can be added if required.
+	 */
+	const currencies = {};
+	for ( const [ key, values ] of Object.entries( groups ) ) {
+		values?.forEach( ( value ) => {
+			const { currency } = value;
+
+			if ( ! currencies[ currency ] ) {
+				currencies[ currency ] = {
+					currency,
+					lastPaid: undefined,
+					nextScheduled: undefined,
+					pending: undefined,
+					available: undefined,
+					instant: undefined,
+				};
+			}
+
+			// There will be a single deposit/balance per currency, no arrays here.
+			currencies[ currency ][ key ] = value;
+		} );
+	}
+
+	const currenciesArray = Object.values( currencies );
+	return {
+		account,
+
+		// The default currency should appear at the top of the list.
+		currencies: [
+			...currenciesArray.filter(
+				( currency ) => account.default_currency === currency.currency
+			),
+			...currenciesArray.filter(
+				( currency ) => account.default_currency !== currency.currency
+			),
+		],
+	};
+};
+
+export const getAllDepositsOverviewsError = ( state ) => {
+	const DepositsOverview = getDepositsState( state ).overviews || {};
+	return DepositsOverview.error;
+};
+
+/**
  * Retrieves the deposits corresponding to the provided query or a sane
  * default if they don't exist.
  *

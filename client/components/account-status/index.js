@@ -99,7 +99,7 @@ const AccountStatusDetails = ( props ) => {
 			</AccountStatusItem>
 			<AccountStatusItem
 				align={ 'flex-start' }
-				label={ __( 'BaseFee:', 'woocommerce-payments' ) }
+				label={ __( 'Base Fee:', 'woocommerce-payments' ) }
 			>
 				<AccountFees accountFees={ accountFees } />
 			</AccountStatusItem>

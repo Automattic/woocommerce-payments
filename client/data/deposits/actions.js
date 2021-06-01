@@ -36,6 +36,20 @@ export function updateErrorForDepositsOverview( data, error ) {
 	};
 }
 
+export function updateAllDepositsOverviews( data ) {
+	return {
+		type: TYPES.SET_ALL_DEPOSITS_OVERVIEWS,
+		data,
+	};
+}
+
+export function updateErrorForAllDepositsOverviews( data, error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_ALL_DEPOSITS_OVERVIEWS,
+		error,
+	};
+}
+
 export function updateDeposits( query, data ) {
 	return {
 		type: TYPES.SET_DEPOSITS,
