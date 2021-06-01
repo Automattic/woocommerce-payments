@@ -34,6 +34,21 @@ export const useDepositsOverview = () =>
 		};
 	} );
 
+export const useAllDeposistsOverviews = () =>
+	useSelect( ( select ) => {
+		const {
+			getAllDepositsOverviews,
+			getAllDepositsOverviewsError,
+			isResolving,
+		} = select( STORE_NAME );
+
+		return {
+			overviews: getAllDepositsOverviews(),
+			overviewError: getAllDepositsOverviewsError(),
+			isLoading: isResolving( 'getAllDepositsOverviews' ),
+		};
+	} );
+
 // eslint-disable-next-line camelcase
 export const useDeposits = ( {
 	paged,
