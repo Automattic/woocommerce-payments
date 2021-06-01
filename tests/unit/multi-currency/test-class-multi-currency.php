@@ -86,6 +86,34 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
+	public function test_update_selected_currency_does_not_set_invalid_session_currency() {
+		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
+
+		$this->assertNull( WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_does_not_set_invalid_user_currency() {
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+
+		$this->multi_currency->update_selected_currency( 'UNSUPPORTED_CURRENCY' );
+
+		$this->assertEmpty( get_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, true ) );
+	}
+
+	public function test_update_selected_currency_sets_session_currency() {
+		$this->multi_currency->update_selected_currency( 'GBP' );
+
+		$this->assertSame( 'GBP', WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_sets_user_currency() {
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+
+		$this->multi_currency->update_selected_currency( 'GBP' );
+
+		$this->assertSame( 'GBP', get_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, true ) );
+	}
+
 	public function test_update_selected_currency_by_url_does_not_set_session_when_parameter_not_set() {
 		$this->multi_currency->update_selected_currency_by_url();
 

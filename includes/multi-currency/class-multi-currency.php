@@ -241,10 +241,17 @@ class Multi_Currency {
 	 */
 	public function update_selected_currency( string $currency_code ) {
 		$code     = strtoupper( $currency_code );
+		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
-		if ( $currency && WC()->session ) {
-			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
+		if ( null === $currency ) {
+			return;
+		}
+
+		if ( 0 === $user_id && WC()->session ) {
+			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
+		} elseif ( $user_id ) {
+			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
 	}
 
