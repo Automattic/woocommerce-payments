@@ -174,8 +174,9 @@ class Settings extends \WC_Settings_Page {
 	 * @return array Array of settings.
 	 */
 	public function get_currency_setting( $currency ) {
-		$default_currency = WC_Payments_Multi_Currency()->get_default_currency();
-		$page_id          = $this->id . '_single_currency';
+		$available_currencies = WC_Payments_Multi_Currency()->get_available_currencies();
+		$default_currency     = WC_Payments_Multi_Currency()->get_default_currency();
+		$page_id              = $this->id . '_single_currency';
 
 		$page_title = sprintf( '%1$s (%2$s)', $currency->get_name(), $currency->get_code() );
 
@@ -184,7 +185,7 @@ class Settings extends \WC_Settings_Page {
 				/* translators: %1$s: default currency rate, %2$s: new currency exchange rate, %3$s: time rates were last updated. */
 				__( 'Fetch rate automatically. Current rate: %1$s = %2$s (Last updated %3$s)', 'woocommerce-payments' ),
 				'1 ' . $default_currency->get_code(),
-				$currency->get_rate() . ' ' . $currency->get_code(),
+				$available_currencies[ $currency->get_code() ]->get_rate() . ' ' . $currency->get_code(),
 				// TODO: Proper timestamp needed from API data.
 				'12:00 UTC'
 			),

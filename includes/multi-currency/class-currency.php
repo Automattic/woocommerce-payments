@@ -167,6 +167,15 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Sets the currency's conversion rate.
+	 *
+	 * @param float $rate Conversion rate.
+	 */
+	public function set_rate( $rate ) {
+		$this->rate = $rate;
+	}
+
+	/**
 	 * Sets the currency's rounding rate.
 	 *
 	 * @param string $rounding Rounding rate.
