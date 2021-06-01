@@ -34,7 +34,7 @@ const OverviewPage = () => {
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	return (
-		<Page className="wcpay-overview">
+		<Page isNarrow className="wcpay-overview">
 			{ showKycSuccessNotice && (
 				<Notice status="success" isDismissible={ false }>
 					{ __(

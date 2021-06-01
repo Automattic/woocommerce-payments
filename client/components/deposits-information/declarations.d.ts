@@ -68,5 +68,6 @@ declare module 'gridicons' {
 		className?: string;
 	};
 	const Gridicon: ( props: GridiconParams ) => JSX.Element;
+
 	export = Gridicon;
 }
