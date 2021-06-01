@@ -15,7 +15,6 @@
 		"wpApiSettings": true,
 		"wcSettings": true,
 		"wcpaySettings": true,
-		"wcpayAdminSettings": true,
 		"page": true,
 		"browser": true,
 		"context": true,
