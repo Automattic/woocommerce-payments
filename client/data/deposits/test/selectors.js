@@ -2,6 +2,11 @@
 /* eslint-disable camelcase */
 
 /**
+ * External dependencies
+ */
+import { get } from 'lodash';
+
+/**
  * Internal dependencies
  */
 import { getResourceId } from 'utils/data';
@@ -12,7 +17,10 @@ import {
 	getDepositsOverview,
 	getDepositsOverviewError,
 	getInstantDeposit,
+	getAllDepositsOverviews,
+	getAllDepositsOverviewsError,
 } from '../selectors';
+import overviewsFixture from './overviews.fixture.json';
 
 // Sections in initial state are empty.
 const emptyState = {
@@ -156,6 +164,74 @@ describe( 'Deposits overview selectors', () => {
 		expect( getDepositsOverviewError( filledErrorState ) ).toStrictEqual(
 			filledErrorState.deposits.overview.error
 		);
+	} );
+} );
+
+describe( 'Deposits overviews selectors', () => {
+	const filledErrorState = {
+		deposits: {
+			overviews: {
+				error: {
+					code: 'error',
+				},
+			},
+		},
+	};
+
+	const checkResult = ( result, path, currency ) => {
+		expect( result ).toStrictEqual(
+			get( overviewsFixture, path ).find(
+				( element ) => element.currency === currency.currency
+			)
+		);
+	};
+
+	test( 'Returns deposits overviews errors from state', () => {
+		expect(
+			getAllDepositsOverviewsError( filledErrorState )
+		).toStrictEqual( filledErrorState.deposits.overviews.error );
+	} );
+
+	test( 'Returns an empty object when overviews are not present', () => {
+		expect( getAllDepositsOverviews( filledErrorState ) ).toStrictEqual( {
+			account: null,
+			currencies: [],
+		} );
+	} );
+
+	test( 'Properly groups by currency', () => {
+		const computed = getAllDepositsOverviews( {
+			deposits: {
+				overviews: {
+					data: overviewsFixture,
+				},
+			},
+		} );
+
+		expect( computed.account ).toStrictEqual( overviewsFixture.account );
+		expect( computed.currencies.length ).toEqual( 2 );
+
+		const first = computed.currencies[ 0 ];
+		const second = computed.currencies[ 1 ];
+
+		// Verify that the default currency is always first.
+		// eslint-disable-next-line prettier/prettier
+		expect( first.currency ).toEqual(
+			overviewsFixture.account.default_currency
+		);
+
+		// Check the grouping
+		checkResult( first.lastPaid, 'deposit.last_paid', first );
+		checkResult( first.nextScheduled, 'deposit.next_scheduled', first );
+		checkResult( first.pending, 'balance.pending', first );
+		checkResult( first.available, 'balance.available', first );
+		checkResult( first.instant, 'balance.instant', first );
+
+		checkResult( second.lastPaid, 'deposit.last_paid', second );
+		checkResult( second.nextScheduled, 'deposit.next_scheduled', second );
+		checkResult( second.pending, 'balance.pending', second );
+		checkResult( second.available, 'balance.available', second );
+		checkResult( second.instant, 'balance.instant', second );
 	} );
 } );
 

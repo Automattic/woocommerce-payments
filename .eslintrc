@@ -15,7 +15,6 @@
 		"wpApiSettings": true,
 		"wcSettings": true,
 		"wcpaySettings": true,
-		"wcpayAdminSettings": true,
 		"page": true,
 		"browser": true,
 		"context": true,
@@ -101,6 +100,7 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"no-use-before-define": "off",
 				"@typescript-eslint/no-use-before-define": [ "error" ],
+				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error"
 			}
 		}
