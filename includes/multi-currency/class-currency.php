@@ -188,7 +188,7 @@ class Currency implements \JsonSerializable {
 			'id'         => $this->get_id(),
 			'is_default' => $this->get_is_default(),
 			'flag'       => $this->get_flag(),
-			'symbol'     => $this->get_symbol(),
+			'symbol'     => html_entity_decode( $this->get_symbol() ),
 		];
 	}
 }
