@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 class Multi_Currency {
 
 	const CURRENCY_SESSION_KEY = 'wcpay_currency';
+	const CURRENCY_META_KEY    = 'wcpay_currency';
 
 	/**
 	 * The single instance of the class.
@@ -220,12 +221,16 @@ class Multi_Currency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		if ( WC()->session ) {
+		$user_id = get_current_user_id();
+		$code    = null;
+
+		if ( 0 === $user_id && WC()->session ) {
 			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-			return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		} elseif ( $user_id ) {
+			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
 
-		return $this->default_currency;
+		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
 	}
 
 	/**

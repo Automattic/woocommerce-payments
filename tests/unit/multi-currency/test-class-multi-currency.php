@@ -9,6 +9,8 @@
  * WCPay\Multi_Currency\Multi_Currency unit tests.
  */
 class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
+	const LOGGED_IN_USER_ID = 1;
+
 	/**
 	 * WCPay\Multi_Currency\Multi_Currency instance.
 	 *
@@ -28,6 +30,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		remove_all_filters( 'wcpay_multi_currency_round_precision' );
 		remove_all_filters( 'woocommerce_currency' );
 		$this->reset_multi_currency_instance();
+
+		delete_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY );
+		wp_set_current_user( 0 );
 
 		parent::tearDown();
 	}
@@ -51,12 +56,32 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 1.0, $default_currency->get_rate() );
 	}
 
-	public function test_get_selected_currency_returns_default_currency_for_empty_session() {
+	public function test_get_selected_currency_returns_default_currency_for_empty_session_and_user() {
+		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_get_selected_currency_returns_default_currency_for_invalid_session_currency() {
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'UNSUPPORTED_CURRENCY' );
+
+		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_get_selected_currency_returns_default_currency_for_invalid_user_currency() {
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, 'UNSUPPORTED_CURRENCY' );
+
 		$this->assertSame( get_woocommerce_currency(), $this->multi_currency->get_selected_currency()->get_code() );
 	}
 
 	public function test_get_selected_currency_returns_currency_from_session() {
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
+
+		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
+	}
+
+	public function test_get_selected_currency_returns_currency_from_user() {
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+		update_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, 'GBP' );
 
 		$this->assertSame( 'GBP', $this->multi_currency->get_selected_currency()->get_code() );
 	}
