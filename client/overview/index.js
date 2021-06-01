@@ -36,7 +36,7 @@ const OverviewPage = () => {
 	return (
 		<Page className="wcpay-overview">
 			{ showKycSuccessNotice && (
-				<Notice status="success">
+				<Notice status="success" isDismissible={ false }>
 					{ __(
 						"Thanks for verifying your business details. You're ready to start taking payments!",
 						'woocommerce-payments'
