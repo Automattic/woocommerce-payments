@@ -111,6 +111,8 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Deposit overview details.
 * Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
 * Fix - Added CSV column heading for transaction id column.
+* Update - Bump minimum supported version of WordPress from 5.4 to 5.5.
+* Update - Bump minimum supported version of WooCommerce from 4.5 to 4.8.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
