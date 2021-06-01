@@ -198,10 +198,6 @@ jQuery( ( $ ) => {
 					paymentRequest
 				);
 				wcpayPaymentRequest.showPaymentRequestButton( prButton );
-
-				if ( wcpayPaymentRequestParams.should_auto_init ) {
-					paymentRequest.show();
-				}
 			} );
 
 			paymentRequest.on( 'shippingaddresschange', ( event ) =>
@@ -589,13 +585,7 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			// When initiating automatically after a redirect, the payment
-			// request should always be based on the cart details, not
-			// the product page.
-			if (
-				wcpayPaymentRequestParams.is_product_page &&
-				! wcpayPaymentRequestParams.should_auto_init
-			) {
+			if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
 					total: wcpayPaymentRequestParams.product.total.amount,

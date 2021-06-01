@@ -96,6 +96,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
 		// This option does not get stored in the database at all, and this function
@@ -623,12 +624,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
 
-		// If the cart is not empty, flash a 5 second cookie to initiate the
-		// Payment Request flow automatically after the redirect.
-		if ( WC()->cart->total ) {
-			wc_setcookie( 'wcpay_payment_request_auto_init', true, time() + 5 );
-		}
-
 		return $url;
 	}
 
@@ -667,7 +662,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'            => $this->get_button_settings(),
 			'is_login_required' => ! is_user_logged_in() && $this->is_authentication_required(),
 			'is_product_page'   => $this->is_product(),
-			'should_auto_init'  => wp_unslash( $_COOKIE['wcpay_payment_request_auto_init'] ?? false ), // @codingStandardsIgnoreLine
 			'site_url'          => get_site_url(),
 			'has_block'         => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'           => $this->get_product_data(),
