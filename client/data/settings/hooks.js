@@ -159,26 +159,41 @@ export const useDigitalWalletsLocations = () => {
 	} );
 };
 
-export const useDigitalWalletsAvailableButtonTypes = () => {
-	return useSelect( ( select ) => {
-		const { getDigitalWalletsAvailableButtonTypes } = select( STORE_NAME );
+export const useDigitalWalletsActionType = () => {
+	const { updateDigitalWalletsActionType } = useDispatch( STORE_NAME );
 
-		return getDigitalWalletsAvailableButtonTypes();
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsActionType } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsActionType(),
+			updateDigitalWalletsActionType,
+		];
 	} );
 };
 
-export const useDigitalWalletsAvailableButtonThemes = () => {
-	return useSelect( ( select ) => {
-		const { getDigitalWalletsAvailableButtonThemes } = select( STORE_NAME );
+export const useDigitalWalletsButtonSize = () => {
+	const { updateDigitalWalletsButtonSize } = useDispatch( STORE_NAME );
 
-		return getDigitalWalletsAvailableButtonThemes();
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonSize } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonSize(),
+			updateDigitalWalletsButtonSize,
+		];
 	} );
 };
 
-export const useDigitalWalletsAvailableBrandedTypes = () => {
-	return useSelect( ( select ) => {
-		const { getDigitalWalletsAvailableBrandedTypes } = select( STORE_NAME );
+export const useDigitalWalletsButtonTheme = () => {
+	const { updateDigitalWalletsButtonTheme } = useDispatch( STORE_NAME );
 
-		return getDigitalWalletsAvailableBrandedTypes();
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonTheme } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonTheme(),
+			updateDigitalWalletsButtonTheme,
+		];
 	} );
 };

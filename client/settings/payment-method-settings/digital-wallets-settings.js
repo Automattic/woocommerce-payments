@@ -2,31 +2,61 @@
 /**
  * External dependencies
  */
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, RadioControl } from '@wordpress/components';
+import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
  */
-import './index.scss';
 import {
-	useDigitalWalletsAvailableBrandedTypes,
-	useDigitalWalletsAvailableButtonThemes,
-	useDigitalWalletsAvailableButtonTypes,
+	useDigitalWalletsActionType,
+	useDigitalWalletsButtonSize,
+	useDigitalWalletsButtonTheme,
 } from '../../data';
 
 const buttonSizeOptions = [
 	{
-		label: __( 'Default (40 px)', 'woocommerce-payments' ),
+		label: interpolateComponents( {
+			mixedString: __(
+				'Default {{helpText}}(40 px){{/helpText}}',
+				'woocommerce-payments'
+			),
+			components: {
+				helpText: (
+					<span className="payment-method-settings__option-muted-text" />
+				),
+			},
+		} ),
 		value: 'default',
 	},
 	{
-		label: __( 'Medium (48 px)', 'woocommerce-payments' ),
+		label: interpolateComponents( {
+			mixedString: __(
+				'Medium {{helpText}}(48 px){{/helpText}}',
+				'woocommerce-payments'
+			),
+			components: {
+				helpText: (
+					<span className="payment-method-settings__option-muted-text" />
+				),
+			},
+		} ),
 		value: 'medium',
 	},
 	{
-		label: __( 'Large (56 px)', 'woocommerce-payments' ),
+		label: interpolateComponents( {
+			mixedString: __(
+				'Large {{helpText}}(56 px){{/helpText}}',
+				'woocommerce-payments'
+			),
+			components: {
+				helpText: (
+					<span className="payment-method-settings__option-muted-text" />
+				),
+			},
+		} ),
 		value: 'large',
 	},
 ];
@@ -50,53 +80,55 @@ const buttonActionOptions = [
 ];
 const buttonThemeOptions = [
 	{
-		label: __( 'Dark', 'woocommerce-payments' ),
+		label: interpolateComponents( {
+			mixedString: __(
+				'Dark {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with high contrast.{{/helpText}}',
+				'woocommerce-payments'
+			),
+			components: {
+				br: <br />,
+				helpText: (
+					<span className="payment-method-settings__option-help-text" />
+				),
+			},
+		} ),
 		value: 'dark',
 	},
 	{
-		label: __( 'Light', 'woocommerce-payments' ),
+		label: interpolateComponents( {
+			mixedString: __(
+				'Light {{br/}}{{helpText}}Recommended for dark or colored backgrounds with high contrast.{{/helpText}}',
+				'woocommerce-payments'
+			),
+			components: {
+				br: <br />,
+				helpText: (
+					<span className="payment-method-settings__option-help-text" />
+				),
+			},
+		} ),
 		value: 'light',
 	},
 ];
 
-const useMapValuesToOptions = ( selectorHook ) => {
-	const options = selectorHook();
-	return useMemo(
-		() =>
-			Object.entries( options ).map( ( [ value, label ] ) => ( {
-				value,
-				label,
-			} ) ),
-		[ options ]
-	);
-};
-
 const DigitalWalletsSettings = () => {
-	const [ cta, setCta ] = useState( 'buy' );
-	const [ size, setSize ] = useState( 'default' );
-	const [ theme, setTheme ] = useState( 'dark' );
-
-	const availableButtonTypes = useMapValuesToOptions(
-		useDigitalWalletsAvailableButtonTypes
-	);
-	const availableButtonThemes = useMapValuesToOptions(
-		useDigitalWalletsAvailableButtonThemes
-	);
-	const availableBrandedTypes = useMapValuesToOptions(
-		useDigitalWalletsAvailableBrandedTypes
-	);
+	const [ cta, setCta ] = useDigitalWalletsActionType();
+	const [ size, setSize ] = useDigitalWalletsButtonSize();
+	const [ theme, setTheme ] = useDigitalWalletsButtonTheme();
 
 	return (
 		<Card>
 			<CardBody>
 				<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 				<RadioControl
+					label={ __( 'Call to action', 'woocommerce-payments' ) }
+					hideLabelFromVision
 					help={ __(
 						'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 						'woocommerce-payments'
 					) }
 					selected={ cta }
-					options={ availableButtonTypes }
+					options={ buttonActionOptions }
 					onChange={ setCta }
 				/>
 				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
@@ -111,14 +143,9 @@ const DigitalWalletsSettings = () => {
 					onChange={ setSize }
 				/>
 				<RadioControl
-					help={ __(
-						// eslint-disable-next-line max-len
-						'Dark is recommended for white or light-colored backgrounds and light is recommended for dark or colored backgrounds.',
-						'woocommerce-payments'
-					) }
 					label={ __( 'Theme', 'woocommerce-payments' ) }
 					selected={ theme }
-					options={ availableButtonThemes }
+					options={ buttonThemeOptions }
 					onChange={ setTheme }
 				/>
 			</CardBody>

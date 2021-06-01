@@ -63,12 +63,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'update_settings' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'is_wcpay_enabled'                  => [
+					'is_wcpay_enabled'                    => [
 						'description'       => __( 'If WooCommerce Payments should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'enabled_payment_method_ids'        => [
+					'enabled_payment_method_ids'          => [
 						'description'       => __( 'Payment method IDs that should be enabled. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
@@ -77,50 +77,50 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_manual_capture_enabled'         => [
+					'is_manual_capture_enabled'           => [
 						'description'       => __( 'If WooCommerce Payments manual capture of charges should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_test_mode_enabled'              => [
+					'is_test_mode_enabled'                => [
 						'description'       => __( 'WooCommerce Payments test mode setting.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'account_statement_descriptor'      => [
+					'account_statement_descriptor'        => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_digital_wallets_enabled'        => [
+					'is_digital_wallets_enabled'          => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'digital_wallets_enabled_locations' => [
+					'digital_wallets_enabled_locations'   => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys($wcpay_form_fields['payment_request_button_locations']['options']),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'digital_wallets_button_types' => [
+					'digital_wallets_button_types'        => [
 						'description'       => __( '1-click checkout button types.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys($wcpay_form_fields['payment_request_button_type']['options']),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_type']['options'] ),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'digital_wallets_button_themes' => [
+					'digital_wallets_button_themes'       => [
 						'description'       => __( '1-click checkout button themes.', 'woocommerce-payments' ),
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys($wcpay_form_fields['payment_request_button_theme']['options']),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_theme']['options'] ),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -129,7 +129,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => array_keys($wcpay_form_fields['payment_request_button_branded_type']['options']),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_branded_type']['options'] ),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -144,26 +144,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
-		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
-
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'        => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				'available_payment_method_ids'      => $this->wcpay_gateway->get_upe_available_payment_methods(),
-				'is_wcpay_enabled'                  => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'              => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
-				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
-				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
-				'is_digital_wallets_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
-				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
-				'digital_wallets_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
-				'digital_wallets_button_types' => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
-				'digital_wallets_available_button_types' => $wcpay_form_fields['payment_request_button_type']['options'],
-				'digital_wallets_button_themes' => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
-				'digital_wallets_available_button_themes' => $wcpay_form_fields['payment_request_button_theme']['options'],
+				'enabled_payment_method_ids'          => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				'available_payment_method_ids'        => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_test_mode_enabled'                => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
+				'is_dev_mode_enabled'                 => $this->wcpay_gateway->is_in_dev_mode(),
+				'account_statement_descriptor'        => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'is_digital_wallets_enabled'          => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_debug_log_enabled'                => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
+				'digital_wallets_enabled_locations'   => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
+				'digital_wallets_button_types'        => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
+				'digital_wallets_button_themes'       => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 				'digital_wallets_button_branded_type' => $this->wcpay_gateway->get_option( 'payment_request_button_branded_type' ),
-				'digital_wallets_available_branded_types' => $wcpay_form_fields['payment_request_button_branded_type']['options'],
 			]
 		);
 	}
