@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-2.0-or-later",
