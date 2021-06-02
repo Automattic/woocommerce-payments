@@ -106,7 +106,6 @@ export const useInitialization = ( {
 			}
 		},
 		[
-			api,
 			onClick,
 			paymentRequest,
 			setExpressPaymentError,
