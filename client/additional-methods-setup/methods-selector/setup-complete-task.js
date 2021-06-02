@@ -95,7 +95,7 @@ const SetupComplete = () => {
 						) }
 					</Button>
 					<Button
-						href="admin.php?page=wc-settings&tab=checkout"
+						href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
 						isTertiary
 					>
 						{ __(
