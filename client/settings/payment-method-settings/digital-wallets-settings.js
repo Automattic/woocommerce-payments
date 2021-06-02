@@ -112,7 +112,7 @@ const buttonThemeOptions = [
 ];
 
 const DigitalWalletsSettings = () => {
-	const [ cta, setCta ] = useDigitalWalletsButtonActionType();
+	const [ actionType, setActionType ] = useDigitalWalletsButtonActionType();
 	const [ size, setSize ] = useDigitalWalletsButtonSize();
 	const [ theme, setTheme ] = useDigitalWalletsButtonTheme();
 
@@ -127,9 +127,9 @@ const DigitalWalletsSettings = () => {
 						'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 						'woocommerce-payments'
 					) }
-					selected={ cta }
+					selected={ actionType }
 					options={ buttonActionOptions }
-					onChange={ setCta }
+					onChange={ setActionType }
 				/>
 				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
 				<RadioControl
