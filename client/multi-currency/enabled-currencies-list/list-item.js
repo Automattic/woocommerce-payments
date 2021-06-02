@@ -5,7 +5,6 @@
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
-import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
@@ -31,7 +30,7 @@ const EnabledCurrenciesListItem = ( {
 				<div className="enabled-currency__flag">{ flag }</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					({ decodeEntities( symbol ) } { currencyCode })
+					({ symbol } { currencyCode })
 				</div>
 			</div>
 			<div className="enabled-currency__actions">

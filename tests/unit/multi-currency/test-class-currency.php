@@ -29,7 +29,7 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 		$json = wp_json_encode( $this->currency );
 
 		$this->assertSame(
-			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"&#36;"}',
+			'{"code":"USD","rate":1,"name":"United States (US) dollar","id":"usd","is_default":true,"flag":"\ud83c\uddfa\ud83c\uddf8","symbol":"$"}',
 			$json
 		);
 	}
