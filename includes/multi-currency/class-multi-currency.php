@@ -93,8 +93,8 @@ class Multi_Currency {
 
 		$this->id = 'wcpay_multi_currency';
 		$this->initialize_available_currencies();
-		$this->get_default_currency();
-		$this->get_enabled_currencies();
+		$this->set_default_currency();
+		$this->initialize_enabled_currencies();
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action(
@@ -197,7 +197,7 @@ class Multi_Currency {
 	/**
 	 * Sets up the available currencies.
 	 */
-	public function initialize_available_currencies() {
+	private function initialize_available_currencies() {
 		// TODO: This will need to get stored data, then build and return it accordingly.
 		$currencies = $this->get_mock_currencies();
 		foreach ( $currencies as $currency ) {
@@ -206,62 +206,26 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the currencies available.
-	 *
-	 * @return array Array of Currency objects.
+	 * Sets up the enabled currencies.
 	 */
-	public function get_available_currencies() {
-		if ( isset( $this->available_currencies ) ) {
-			return $this->available_currencies;
-		}
-
-		$this->initialize_available_currencies();
-		return $this->available_currencies;
-	}
-
-	/**
-	 * Gets the store base currency.
-	 *
-	 * @return Currency The store base currency.
-	 */
-	public function get_default_currency(): Currency {
-		if ( isset( $this->default_currency ) ) {
-			return $this->default_currency;
-		}
-
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ];
-
-		return $this->default_currency;
-	}
-
-	/**
-	 * Gets the currently enabled currencies.
-	 *
-	 * @return array Array of Currency objects.
-	 */
-	public function get_enabled_currencies() {
-		if ( isset( $this->enabled_currencies ) ) {
-			return $this->enabled_currencies;
-		}
-
+	private function initialize_enabled_currencies() {
 		$available_currencies = $this->get_available_currencies();
 		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', false );
-		if ( ! $enabled_currencies ) {
+		$default_code         = $this->get_default_currency()->get_code();
 
+		if ( ! $enabled_currencies ) {
 			// TODO: Remove dev mode option here.
 			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
 				$count = 0;
 				foreach ( $available_currencies as $currency ) {
-					$enabled_currencies[] = $currency->code;
+					$enabled_currencies[] = $currency->get_code();
 					if ( $count >= 3 ) {
 						break;
 					}
 					$count++;
 				}
 			} else {
-				$default = $this->get_default_currency();
-				// Need to set the default as an array.
-				$enabled_currencies[] = $default->code;
+				$enabled_currencies[] = $default_code;
 			}
 		}
 
@@ -284,11 +248,42 @@ class Multi_Currency {
 		}
 
 		// Set default currency to the top of the list.
-		$dc                         = $this->get_default_currency();
-		$default[ $dc->get_code() ] = $this->enabled_currencies[ $dc->get_code() ];
-		unset( $this->enabled_currencies[ $dc->get_code() ] );
+		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
+		unset( $this->enabled_currencies[ $default_code ] );
 		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
+	}
 
+	/**
+	 * Sets the default currency.
+	 */
+	private function set_default_currency() {
+		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ];
+	}
+
+	/**
+	 * Gets the currencies available.
+	 *
+	 * @return array Array of Currency objects.
+	 */
+	public function get_available_currencies(): array {
+		return $this->available_currencies;
+	}
+
+	/**
+	 * Gets the store base currency.
+	 *
+	 * @return Currency The store base currency.
+	 */
+	public function get_default_currency(): Currency {
+		return $this->default_currency;
+	}
+
+	/**
+	 * Gets the currently enabled currencies.
+	 *
+	 * @return array Array of Currency objects.
+	 */
+	public function get_enabled_currencies(): array {
 		return $this->enabled_currencies;
 	}
 
