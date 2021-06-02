@@ -92,21 +92,16 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$amount = $order->get_total();
 
 			if ( 'succeeded' === $status ) {
-				$transaction_url = $this->compose_transaction_url( $intent->get_charge_id() );
-				$note            = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-						__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-						]
-					),
-					wc_price( $amount ),
-					$intent_id
+				$this->attach_intent_info_to_order(
+					$order,
+					$intent->get_id(),
+					$intent->get_status(),
+					$intent->get_payment_method_id(),
+					$intent->get_customer_id(),
+					$intent->get_charge_id(),
+					$intent->get_currency()
 				);
-				$order->add_order_note( $note );
-				$order->payment_complete( $intent_id );
+
 				return;
 			} else {
 				$error = $intent->get_last_payment_error();
@@ -163,7 +158,7 @@ class Giropay_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_enqueue_script( 'wcpay-giropay-checkout' );
 
 			wp_enqueue_style(
-				'wcpay-checkout',
+				'WCPAY_CHECKOUT',
 				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/checkout.css' )

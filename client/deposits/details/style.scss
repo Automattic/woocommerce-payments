@@ -1,62 +1,43 @@
 .wcpay-deposit-overview {
-	.components-card__body {
-		display: flex;
-		flex-direction: row;
+	.woocommerce-order-status {
+		margin-bottom: 4px;
 	}
 
-	.wcpay-deposit-detail {
-		flex-grow: 1;
-	}
-	.wcpay-deposit-date {
-		font-size: 14px;
-		line-height: 20px;
-		color: $gray-700;
-		margin-bottom: 12px;
-	}
-	.wcpay-deposit-bank-account {
-		font-size: 14px;
-		line-height: 20px;
-		color: $gray-700;
-		margin-top: 12px;
-		text-transform: uppercase;
-	}
+	.woocommerce-order-status__indicator {
+		width: 0.85em;
+		height: 0.85em;
 
-	.wcpay-deposit-status {
-		font-size: 20px;
-		line-height: 18px;
-		color: $gray-900;
-
-		.woocommerce-order-status__indicator {
-			width: 0.85em;
-			height: 0.85em;
-
-			&.is-paid {
-				background: $studio-green-50;
-				border-color: $studio-green-5;
-			}
-			&.is-pending,
-			&.is-in_transit {
-				background: $studio-yellow-30;
-				border-color: $studio-yellow-5;
-			}
-			&.is-failed {
-				background: $studio-red-50;
-				border-color: $studio-red-5;
-			}
+		&.is-paid {
+			background: $studio-green-50;
+			border-color: $studio-green-5;
+		}
+		&.is-pending,
+		&.is-in_transit {
+			background: $studio-yellow-30;
+			border-color: $studio-yellow-5;
+		}
+		&.is-failed {
+			background: $studio-red-50;
+			border-color: $studio-red-5;
 		}
 	}
 
-	.wcpay-deposit-hero {
-		flex-grow: 5;
-		border-left: 1px solid $light-gray-500;
-		margin: -16px 0;
-		padding: 16px 0;
+	.woocommerce-summary__item {
+		.woocommerce-summary__item-label {
+			font-size: 14px;
+			line-height: 20px;
+		}
+		.woocommerce-summary__item-value {
+			font-size: 20px;
+			line-height: 28px;
+		}
 	}
-	.wcpay-deposit-amount {
-		text-align: right;
-		font-size: 36px;
-		line-height: 82px;
-		color: $gray-900;
-		padding-right: 18px;
+
+	.wcpay-deposit-fee {
+		color: $studio-red-50;
+	}
+
+	.wcpay-deposit-net {
+		color: $studio-green-30;
 	}
 }

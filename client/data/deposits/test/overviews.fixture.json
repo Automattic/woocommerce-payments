@@ -1,0 +1,114 @@
+{
+	"deposit": {
+			"last_paid": [
+				{
+					"id": "po_...",
+					"date": 1619395200000,
+					"type": "deposit",
+					"amount": 3160,
+					"status": "paid",
+					"bankAccount": " ••••  (USD)",
+					"currency": "usd",
+					"automatic": true,
+					"fee": 0,
+					"fee_percentage": 0,
+					"created": 1619395200
+				},
+				{
+					"id": "po_...",
+					"date": 1619395200000,
+					"type": "deposit",
+					"amount": 1000,
+					"status": "paid",
+					"bankAccount": " ••••  (EUR)",
+					"currency": "eur",
+					"automatic": true,
+					"fee": 0,
+					"fee_percentage": 0,
+					"created": 1619395200
+				}
+			],
+			"next_scheduled": [
+					{
+							"id": "wcpay_estimated_weekly_eur_1622678400",
+							"date": 1622678400000,
+							"type": "deposit",
+							"amount": 3343,
+							"status": "estimated",
+							"bankAccount": null,
+							"currency": "eur",
+							"automatic": true,
+							"fee": 0,
+							"fee_percentage": 0,
+							"created": 1622678400
+					},
+					{
+							"id": "wcpay_estimated_weekly_usd_1622678400",
+							"date": 1622678400000,
+							"type": "deposit",
+							"amount": 1656,
+							"status": "estimated",
+							"bankAccount": null,
+							"currency": "usd",
+							"automatic": true,
+							"fee": 0,
+							"fee_percentage": 0,
+							"created": 1622678400
+					}
+			]
+	},
+	"balance": {
+			"pending": [
+					{
+							"amount": 3343,
+							"currency": "eur",
+							"source_types": {
+									"card": 3343
+							}
+					},
+					{
+							"amount": 1656,
+							"currency": "usd",
+							"deposits_count": 2,
+							"source_types": {
+									"card": 1656
+							}
+					}
+			],
+			"available": [
+					{
+							"amount": 2030,
+							"currency": "eur",
+							"source_types": {
+									"card": 0
+							}
+					},
+					{
+							"amount": 0,
+							"currency": "usd",
+							"source_types": {
+									"card": 0
+							}
+					}
+			],
+			"instant": [
+				{
+					"currency": "usd",
+					"amount": 12345,
+					"fee": 185.175,
+					"net": 12159.83,
+					"fee_percentage": 1.5,
+					"transaction_ids": [ "txn_XYZ", "txn_ZXY" ]
+				}
+			]
+	},
+	"account": {
+			"deposits_enabled": true,
+			"deposits_schedule": {
+					"delay_days": 7,
+					"interval": "weekly",
+					"weekly_anchor": "thursday"
+			},
+			"default_currency": "usd"
+	}
+}

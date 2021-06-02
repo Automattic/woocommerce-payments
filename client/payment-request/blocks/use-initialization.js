@@ -16,7 +16,6 @@ import {
 import {
 	getPaymentRequest,
 	updatePaymentRequest,
-	canDoPaymentRequest,
 	normalizeLineItems,
 } from '../utils';
 
@@ -32,8 +31,6 @@ export const useInitialization = ( {
 
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
 	const [ isFinished, setIsFinished ] = useState( false );
-	const [ isProcessing, setIsProcessing ] = useState( false );
-	const [ canMakePayment, setCanMakePayment ] = useState( false );
 	const [ paymentRequestType, setPaymentRequestType ] = useState( '' );
 
 	// Create the initial paymentRequest object. Note, we can't do anything if stripe isn't available yet or we have zero total.
@@ -42,7 +39,6 @@ export const useInitialization = ( {
 			! stripe ||
 			! billing?.cartTotal?.value ||
 			isFinished ||
-			isProcessing ||
 			paymentRequest
 		) {
 			return;
@@ -55,12 +51,26 @@ export const useInitialization = ( {
 			displayItems: normalizeLineItems( billing?.cartTotalItems ),
 		} );
 
-		canDoPaymentRequest( pr ).then( ( result ) => {
-			setPaymentRequest( pr );
-			setPaymentRequestType( result.requestType || '' );
-			setCanMakePayment( result.canPay );
+		pr.canMakePayment().then( ( result ) => {
+			if ( result ) {
+				setPaymentRequest( pr );
+				if ( result.applePay ) {
+					setPaymentRequestType( 'apple_pay' );
+				} else if ( result.googlePay ) {
+					setPaymentRequestType( 'google_pay' );
+				} else {
+					setPaymentRequestType( 'payment_request_api' );
+				}
+			}
 		} );
-	}, [ stripe, paymentRequest ] );
+	}, [
+		stripe,
+		paymentRequest,
+		billing?.cartTotal?.value,
+		isFinished,
+		shippingData?.needsShipping,
+		billing?.cartTotalItems,
+	] );
 
 	// It's not possible to update the `requestShipping` property in the `paymentRequest`
 	// object, so when `needsShipping` changes, we need to reset the `paymentRequest` object.
@@ -70,7 +80,6 @@ export const useInitialization = ( {
 
 	// When the payment button is clicked, update the request and show it.
 	const onButtonClick = useCallback( () => {
-		setIsProcessing( true );
 		setIsFinished( false );
 		setExpressPaymentError( '' );
 		updatePaymentRequest( {
@@ -87,26 +96,23 @@ export const useInitialization = ( {
 		billing.cartTotalItems,
 	] );
 
-	const abortPayment = ( paymentMethod, message ) => {
-		paymentMethod.complete( 'fail' );
-		setIsFinished( true );
-		setIsProcessing( false );
-		setExpressPaymentError( message );
-	};
-
-	const completePayment = ( redirectUrl ) => {
-		setIsFinished( true );
-		setIsProcessing( false );
-		window.location = redirectUrl;
-	};
-
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
 		const cancelHandler = () => {
 			setIsFinished( false );
-			setIsProcessing( false );
 			setPaymentRequest( null );
 			onClose();
+		};
+
+		const completePayment = ( redirectUrl ) => {
+			setIsFinished( true );
+			window.location = redirectUrl;
+		};
+
+		const abortPayment = ( paymentMethod, message ) => {
+			paymentMethod.complete( 'fail' );
+			setIsFinished( true );
+			setExpressPaymentError( message );
 		};
 
 		paymentRequest?.on( 'shippingaddresschange', ( event ) =>
@@ -126,12 +132,17 @@ export const useInitialization = ( {
 		return () => {
 			paymentRequest?.removeAllListeners();
 		};
-	}, [ paymentRequest ] );
+	}, [
+		setExpressPaymentError,
+		paymentRequest,
+		api,
+		setIsFinished,
+		setPaymentRequest,
+		onClose,
+	] );
 
 	return {
 		paymentRequest,
-		isProcessing,
-		canMakePayment,
 		onButtonClick,
 		paymentRequestType,
 	};

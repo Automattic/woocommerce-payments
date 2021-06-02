@@ -10,7 +10,7 @@
  * Domain Path: /languages
  * WC requires at least: 4.0
  * WC tested up to: 5.1
- * Requires WP: 5.4
+ * Requires WP: 5.5
  * Version: 2.4.0
  *
  * @package WooCommerce\Payments

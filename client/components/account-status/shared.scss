@@ -1,0 +1,16 @@
+.account-status__info {
+	&__green {
+		fill: $alert-green;
+		color: $alert-green;
+	}
+
+	&__red {
+		fill: $alert-red;
+		color: $alert-red;
+	}
+
+	&__yellow {
+		fill: $alert-yellow;
+		color: $alert-yellow;
+	}
+}

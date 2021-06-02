@@ -146,7 +146,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the account status data for rendering on the settings page.
 	 *
-	 * @return array An array containing the status data.
+	 * @return array An array containing the status data, or [ 'error' => true ] on error or no connected account.
 	 */
 	public function get_account_status_data() {
 		$account = $this->get_cached_account_data();
@@ -168,6 +168,7 @@ class WC_Payments_Account {
 		}
 
 		return [
+			'email'           => $account['email'] ?? '',
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
@@ -327,17 +328,6 @@ class WC_Payments_Account {
 			return;
 		}
 
-		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			$account_status = $this->get_account_status_data();
-			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
-				$message = __( 'Thanks for verifying your business details. You\'re ready to start taking payments!', 'woocommerce-payments' );
-			} else {
-				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
-			}
-			$this->add_notice_to_settings_page( $message, 'notice-success' );
-			return;
-		}
-
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
@@ -408,6 +398,46 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Payments task page url
+	 *
+	 * @return string payments task page url
+	 */
+	public static function get_payments_task_page_url() {
+		return add_query_arg(
+			[
+				'page'   => 'wc-admin',
+				'task'   => 'payments',
+				'method' => 'wcpay',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Get overview page url
+	 *
+	 * @return string overview page url
+	 */
+	public static function get_overview_page_url() {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/overview',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Checks if the current page is overview page
+	 *
+	 * @return boolean
+	 */
+	public static function is_overview_page() {
+		return isset( $_GET['path'] ) && '/payments/overview' === $_GET['path'];
+	}
+
+	/**
 	 * Has on-boarding been disabled?
 	 *
 	 * @return boolean
@@ -448,8 +478,9 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
+		$redirect_url = $this->is_overview_page() ? $this->get_overview_page_url() : WC_Payment_Gateway_WCPay::get_settings_url();
 
-		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
+		$login_data = $this->payments_api_client->get_login_data( $redirect_url );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -461,18 +492,11 @@ class WC_Payments_Account {
 	 * @return string
 	 */
 	private function get_oauth_return_url( $wcpay_connect_from ) {
-		// Usually the return URL is the WCPay plugin settings page.
-		// But if connection originated on the WCADMIN payment task page, return there.
+		// If connection originated on the WCADMIN payment task page, return there.
+		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
-			? add_query_arg(
-				[
-					'page'   => 'wc-admin',
-					'task'   => 'payments',
-					'method' => 'wcpay',
-				],
-				admin_url( 'admin.php' )
-			)
-			: WC_Payment_Gateway_WCPay::get_settings_url();
+			? $this->get_payments_task_page_url()
+			: $this->get_overview_page_url();
 	}
 
 	/**
@@ -503,6 +527,7 @@ class WC_Payments_Account {
 		// If an account already exists for this site, we're done.
 		if ( false === $oauth_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+			update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 			wp_safe_redirect(
 				add_query_arg(
 					[ 'wcpay-connection-success' => '1' ],
@@ -537,6 +562,10 @@ class WC_Payments_Account {
 
 		WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+
+		// Store a state after completing KYC for tracks. This is stored temporarily in option because
+		// user might not have agreed to TOS yet.
+		update_option( '_wcpay_oauth_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
 		wp_safe_redirect(
 			add_query_arg(

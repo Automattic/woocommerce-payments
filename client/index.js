@@ -46,20 +46,16 @@ addFilter(
 			},
 		} );
 
-		if ( wcpaySettings.featureFlags.accountOverview ) {
-			pages.push( {
-				container: OverviewPage,
-				path: '/payments/overview',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					__( 'Overview', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-payments-overview',
-				},
-			} );
-		}
+		pages.push( {
+			container: OverviewPage,
+			path: '/payments/overview',
+			wpOpenMenu: menuID,
+			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
+			navArgs: {
+				id: 'wc-payments-overview',
+			},
+		} );
+
 		pages.push( {
 			container: DepositsPage,
 			path: '/payments/deposits',
@@ -147,7 +143,7 @@ addFilter(
 );
 
 /**
- * Get menu settings based on the top level link being connect or deposits
+ * Get menu settings based on the top level link being connect or overview
  *
  * @return { { menuID, rootLink } }  Object containing menuID and rootLink
  */
@@ -155,7 +151,7 @@ function getMenuSettings() {
 	const connectPage = document.querySelector(
 		'#toplevel_page_wc-admin-path--payments-connect'
 	);
-	const topLevelPage = connectPage ? 'connect' : 'deposits';
+	const topLevelPage = connectPage ? 'connect' : 'overview';
 
 	return {
 		menuID: `toplevel_page_wc-admin-path--payments-${ topLevelPage }`,

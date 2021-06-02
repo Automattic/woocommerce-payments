@@ -12,11 +12,7 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import {
-	shouldUseGooglePayBrand,
-	getPaymentRequest,
-	canDoPaymentRequest,
-} from './utils';
+import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -35,6 +31,7 @@ jQuery( ( $ ) => {
 		{
 			publishableKey,
 			accountId: wcpayPaymentRequestParams.stripe.accountId,
+			locale: wcpayPaymentRequestParams.stripe.locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -184,8 +181,8 @@ jQuery( ( $ ) => {
 			);
 
 			// Check the availability of the Payment Request API first.
-			canDoPaymentRequest( paymentRequest ).then( ( result ) => {
-				if ( ! result || ! result.canPay ) {
+			paymentRequest.canMakePayment().then( ( result ) => {
+				if ( ! result ) {
 					return;
 				}
 
