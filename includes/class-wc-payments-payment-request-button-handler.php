@@ -611,7 +611,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'          => [
-				// TODO: migrate values
+				// TODO: migrate values.
 				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
 				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 				'height'       => $this->get_button_height(),
