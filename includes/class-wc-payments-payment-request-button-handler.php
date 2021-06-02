@@ -1,7 +1,7 @@
 <?php
 /**
  * Class WC_Payments_Payment_Request_Button_Handler
- * Adds support for Apple Pay and Chrome Payment Request API buttons.
+ * Adds support for Apple Pay, Google Pay and Payment Request API buttons.
  * Utilizes the Stripe Payment Request Button to support checkout from the product detail and cart pages.
  *
  * Adapted from WooCommerce Stripe Gateway extension.
@@ -212,6 +212,22 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Gets the product total price.
+	 *
+	 * @param object $product WC_Product_* object.
+	 * @return mixed Total price.
+	 */
+	public function get_product_price( $product ) {
+		$product_price = $product->get_price();
+		// Add subscription sign-up fees to product price.
+		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
+			$product_price = $product->get_price() + WC_Subscriptions_Product::get_sign_up_fee( $product );
+		}
+
+		return $product_price;
+	}
+
+	/**
 	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
@@ -249,7 +265,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $product->get_price() ),
+			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
 		];
 
 		if ( wc_tax_enabled() ) {
@@ -278,7 +294,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $product->get_price() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
 			'pending' => true,
 		];
 
@@ -318,12 +334,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$order        = wc_get_order( $post->ID );
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Apple Pay (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
-		}
-
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Payment Request (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
+			if (
+				'Apple Pay (WooCommerce Payments)' === $method_title
+				|| 'Google Pay (WooCommerce Payments)' === $method_title
+				|| 'Payment Request (WooCommerce Payments)' === $method_title
+			) {
+				return $method_title;
+			}
 		}
 
 		return $title;
@@ -907,7 +925,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$total = $qty * $product->get_price() + $addon_value;
+			$total = $qty * $this->get_product_price( $product ) + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
 

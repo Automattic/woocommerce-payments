@@ -31,10 +31,27 @@ describe( 'Overview page', () => {
 				},
 				discount: [],
 			},
+			featureFlags: {
+				accountOverviewTaskList: true,
+			},
 		};
 	} );
 
 	it( 'Skips rendering task list when there are no tasks', () => {
+		getTasks.mockReturnValue( [] );
+		const { container } = render( <OverviewPage /> );
+
+		expect(
+			container.querySelector( '.woocommerce-experimental-list' )
+		).toBeNull();
+	} );
+
+	it( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			featureFlags: {},
+		};
+
 		getTasks.mockReturnValue( [] );
 		const { container } = render( <OverviewPage /> );
 

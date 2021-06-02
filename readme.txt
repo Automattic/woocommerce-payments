@@ -1,7 +1,7 @@
 === WooCommerce Payments ===
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.4
+Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
 Stable tag: 2.4.0
@@ -39,8 +39,8 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * United States-based business.
-* WordPress 5.4 or newer.
-* WooCommerce 4.5 or newer.
+* WordPress 5.5 or newer.
+* WooCommerce 4.8 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -111,19 +111,27 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Deposit overview details.
 * Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC (Know Your Customer).
 * Fix - Added CSV column heading for transaction id column.
+* Update - Bump minimum supported version of WordPress from 5.4 to 5.5.
+* Update - Bump minimum supported version of WooCommerce from 4.5 to 4.8.
+* Add - Deposit overviews have been added to the overview page.
+* Update - Account overview page is now GA and default page for woocommerce payments.
+* Update - Base fee and account status has been moved to overview page from WCPay settings.
+* Fix - Express payment method being displayed on blocks checkout when Payment Request is not supported.
+* Fix - Subscription sign-up fees not included in total for Payment Request Button.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
-* Add - REST endpoint to capture payments by order ID
+* Add - REST endpoint to capture payments by order ID.
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
 * Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

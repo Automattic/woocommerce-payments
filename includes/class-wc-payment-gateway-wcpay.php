@@ -130,12 +130,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_details'                     => [
 				'type' => 'account_actions',
 			],
-			'account_status'                      => [
-				'type' => 'account_status',
-			],
-			'account_fees'                        => [
-				'type' => 'account_fees',
-			],
 			'account_statement_descriptor'        => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
@@ -189,7 +183,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
 				),
 				'type'        => 'checkbox',
-				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
+				'description' => __( 'If enabled, users will be able to pay using Apple Pay, Google Pay or the Payment Request API if supported by the browser.', 'woocommerce-payments' ),
 				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
 				'desc_tip'    => true,
 			],
@@ -1178,54 +1172,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return parent::generate_checkbox_html( $key, $data );
-	}
-
-	/**
-	 * Outputs the container for account status information.
-	 *
-	 * @return string Container markup or empty if the account is not connected.
-	 */
-	public function generate_account_status_html() {
-		if ( ! $this->is_connected() ) {
-			return '';
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Account status', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<div id="wcpay-account-status-container"></div>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Generates markup for the fees information section.
-	 *
-	 * @return string Markup or empty if the account is not connected.
-	 */
-	public function generate_account_fees_html() {
-		if ( ! $this->is_connected() || empty( $this->account->get_fees() ) ) {
-			return '';
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Base fee', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<div id="wcpay-account-fees-container"></div>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**

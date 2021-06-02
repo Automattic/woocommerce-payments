@@ -62,6 +62,13 @@ export function updateIsTestModeEnabled( isEnabled ) {
 	};
 }
 
+export function updateIsDebugLogEnabled( isEnabled ) {
+	return {
+		type: ACTION_TYPES.SET_IS_DEBUG_LOG_ENABLED,
+		isEnabled,
+	};
+}
+
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	return {
 		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR,
