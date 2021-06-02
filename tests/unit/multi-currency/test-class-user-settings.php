@@ -50,7 +50,7 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WP_UnitTestCase {
 		$this->expectOutputRegex( '/<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">/' );
 		$this->expectOutputRegex( '/<label for="wcpay_selected_currency">Default currency<\/label>/' );
 		$this->expectOutputRegex( '/<select.+name="wcpay_selected_currency"/s' );
-		$this->expectOutputRegex( '/<span><em>Select your prefered currency for shopping and payments.<\/em><\/span>/' );
+		$this->expectOutputRegex( '/<span><em>Select your preferred currency for shopping and payments.<\/em><\/span>/' );
 		$this->expectOutputRegex( '/<div class="clear"><\/div>/' );
 	}
 
