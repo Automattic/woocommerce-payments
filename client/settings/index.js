@@ -12,8 +12,6 @@ import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
 
-import './style.scss';
-
 const settingsForm = document.querySelector( 'form#mainform' );
 const manualCaptureCheckbox = document.getElementById(
 	'woocommerce_woocommerce_payments_manual_capture'

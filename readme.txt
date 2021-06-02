@@ -115,19 +115,21 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Account overview page is now GA and default page for woocommerce payments.
 * Update - Base fee and account status has been moved to overview page from WCPay settings.
 * Fix - Express payment method being displayed on blocks checkout when Payment Request is not supported.
+* Fix - Subscription sign-up fees not included in total for Payment Request Button.
 
 = 2.4.0 - 2021-05-12 =
 * Update - Improve the Connect Account page.
 * Update - Base UI components and their styling.
 * Fix - Deposits overview details not displayed.
 * Fix - WooCommerce Payments disappeared from WooCommerce Settings if WooCommerce Subscriptions is activated.
-* Add - REST endpoint to capture payments by order ID
+* Add - REST endpoint to capture payments by order ID.
 * Add - Explat package for A/B tests.
 * Add - Payment request button support for checkout and cart blocks.
 * Update - Bump minimum supported WooCommerce version from 4.0 to 4.5.
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
+* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

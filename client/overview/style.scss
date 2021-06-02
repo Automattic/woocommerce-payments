@@ -1,10 +1,5 @@
 @import 'node_modules/@woocommerce/experimental/src/style.scss';
 
-.wcpay-overview {
-	max-width: 680px;
-	margin: 0 auto;
-}
-
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .components-card.woocommerce-task-card {
 	.components-card__header.is-size-large,
