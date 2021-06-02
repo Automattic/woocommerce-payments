@@ -13,17 +13,18 @@
 		}
 	}
 
-	&__top-border {
+	&__top-border,
+	&__body {
 		min-height: 16px;
 		border-left: 1px solid #c3c4c7;
-		margin: 0 12px;
+		margin: 0 11px;
 	}
 
 	&__headline {
 		display: flex;
 		align-items: center;
 		flex-direction: row;
-		margin-bottom: 4px;
+		margin: 4px 0;
 		font-weight: 600;
 		font-size: 16px;
 		color: #2c3338;
@@ -84,9 +85,7 @@
 	&__body {
 		display: flex;
 		flex-direction: column;
-		margin: 0 12px;
 		padding: 0 30px;
-		border-left: 1px solid #c3c4c7;
 		font-size: 14px;
 	}
 
