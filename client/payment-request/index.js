@@ -43,6 +43,8 @@ jQuery( ( $ ) => {
 		}
 	);
 
+	let paymentRequestType;
+
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
@@ -190,8 +192,15 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				// TODO: Don't display custom button when result.requestType
+				// TODO: Don't display custom button when paymentRequestType
 				// is `apple_pay` or `google_pay`.
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				} else {
+					paymentRequestType = 'payment_request_api';
+				}
 
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
@@ -436,7 +445,7 @@ jQuery( ( $ ) => {
 
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					evt.preventDefault();
-					displayRedirectDialog();
+					displayRedirectDialog( paymentRequestType );
 					return;
 				}
 
@@ -514,7 +523,7 @@ jQuery( ( $ ) => {
 			prButton.on( 'click', ( evt ) => {
 				if ( wcpayPaymentRequestParams.is_login_required ) {
 					evt.preventDefault();
-					displayRedirectDialog();
+					displayRedirectDialog( paymentRequestType );
 					return;
 				}
 

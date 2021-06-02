@@ -752,7 +752,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		global $wp;
 		add_thickbox();
 		$redirect_url = add_query_arg(
 			[
@@ -765,7 +764,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		<div id="payment-request-redirect-dialog" style="display:none;">
 			<div style="padding: 1.5rem 0">
 				<?php
-					echo esc_attr( __( 'To complete your transaction, you must log in or create an account with our site.', 'woocommerce-payments' ) );
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: The text between `<span>` and `</span>` can be replaced with "Apple Pay" or "Google Pay". */
+						__( 'To complete your transaction with <span>the selected payment method</span>, you must log in or create an account with our site.', 'woocommerce-payments' ),
+						[ 'span' => '<span class="payment-request-type">' ]
+					);
 				?>
 			</div>
 			<div style="text-align: right">

@@ -87,7 +87,7 @@ export const useInitialization = ( {
 			// If login is required, display redirect confirmation dialog.
 			if ( getPaymentRequestData( 'is_login_required' ) ) {
 				evt.preventDefault();
-				displayRedirectDialog();
+				displayRedirectDialog( paymentRequestType );
 				return;
 			}
 
@@ -108,6 +108,7 @@ export const useInitialization = ( {
 		[
 			onClick,
 			paymentRequest,
+			paymentRequestType,
 			setExpressPaymentError,
 			billing.cartTotal,
 			billing.cartTotalItems,
