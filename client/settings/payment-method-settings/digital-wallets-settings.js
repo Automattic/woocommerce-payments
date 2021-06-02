@@ -11,7 +11,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import {
-	useDigitalWalletsActionType,
+	useDigitalWalletsButtonActionType,
 	useDigitalWalletsButtonSize,
 	useDigitalWalletsButtonTheme,
 } from '../../data';
@@ -112,7 +112,7 @@ const buttonThemeOptions = [
 ];
 
 const DigitalWalletsSettings = () => {
-	const [ cta, setCta ] = useDigitalWalletsActionType();
+	const [ cta, setCta ] = useDigitalWalletsButtonActionType();
 	const [ size, setSize ] = useDigitalWalletsButtonSize();
 	const [ theme, setTheme ] = useDigitalWalletsButtonTheme();
 

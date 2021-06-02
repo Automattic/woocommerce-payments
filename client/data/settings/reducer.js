@@ -21,6 +21,15 @@ export const receiveSettings = (
 				data: action.data,
 			};
 
+		case ACTION_TYPES.SET_SETTINGS_VALUE:
+			return {
+				...state,
+				data: {
+					...state.data,
+					...action.payload,
+				},
+			};
+
 		case ACTION_TYPES.SET_IS_SAVING_SETTINGS:
 			return {
 				...state,

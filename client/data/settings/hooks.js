@@ -159,15 +159,15 @@ export const useDigitalWalletsLocations = () => {
 	} );
 };
 
-export const useDigitalWalletsActionType = () => {
-	const { updateDigitalWalletsActionType } = useDispatch( STORE_NAME );
+export const useDigitalWalletsButtonActionType = () => {
+	const { updateDigitalWalletsButtonActionType } = useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
-		const { getDigitalWalletsActionType } = select( STORE_NAME );
+		const { getDigitalWalletsButtonActionType } = select( STORE_NAME );
 
 		return [
-			getDigitalWalletsActionType(),
-			updateDigitalWalletsActionType,
+			getDigitalWalletsButtonActionType(),
+			updateDigitalWalletsButtonActionType,
 		];
 	} );
 };

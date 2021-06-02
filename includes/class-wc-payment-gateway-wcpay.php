@@ -267,7 +267,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'options' => [],
 			];
 
+			$this->form_fields['payment_request_button_size'] = [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'medium'  => __( 'Medium', 'woocommerce-payments' ),
+					'large'   => __( 'Large', 'woocommerce-payments' ),
+				],
+			];
+
 			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
+
+			unset($this->form_fields['payment_request_button_branded_type']);
+			unset($this->form_fields['payment_request_button_theme']['options']['light-outline']);
+			$this->form_fields['payment_request_button_type']['options']['only-icon'] = __('Only icon', 'woocommerce-payments');
+			$this->form_fields['payment_request_button_type']['options']['book'] = __('Book', 'woocommerce-payments');
+			unset($this->form_fields['payment_request_button_type']['options']['default']);
+			unset($this->form_fields['payment_request_button_type']['options']['branded']);
+			unset($this->form_fields['payment_request_button_type']['options']['custom']);
 		}
 
 		// Giropay option hidden behind feature flag.
