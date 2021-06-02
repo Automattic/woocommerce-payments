@@ -92,7 +92,7 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
 		$this->id = 'wcpay_multi_currency';
-		$this->get_available_currencies();
+		$this->initialize_available_currencies();
 		$this->get_default_currency();
 		$this->get_enabled_currencies();
 
@@ -195,6 +195,17 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Sets up the available currencies.
+	 */
+	public function initialize_available_currencies() {
+		// TODO: This will need to get stored data, then build and return it accordingly.
+		$currencies = $this->get_mock_currencies();
+		foreach ( $currencies as $currency ) {
+			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
+		}
+	}
+
+	/**
 	 * Gets the currencies available.
 	 *
 	 * @return array Array of Currency objects.
@@ -204,11 +215,7 @@ class Multi_Currency {
 			return $this->available_currencies;
 		}
 
-		// TODO: This will need to get stored data, then build and return it accordingly.
-		$currencies = $this->get_mock_currencies();
-		foreach ( $currencies as $currency ) {
-			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
-		}
+		$this->initialize_available_currencies();
 		return $this->available_currencies;
 	}
 
