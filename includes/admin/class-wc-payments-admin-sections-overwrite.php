@@ -22,49 +22,15 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * WC_Payments_Admin_Sections_Overwrite constructor.
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_settings_page_init', [ $this, 'page_init' ] );
 		add_filter( 'woocommerce_get_sections_checkout', [ $this, 'add_checkout_sections' ] );
 		add_action( 'woocommerce_sections_checkout', [ $this, 'overwrite_current_section_global' ], 5 );
 		add_action( 'woocommerce_sections_checkout', [ $this, 'restore_current_section_global' ], 15 );
-	}
 
-	/**
-	 * Checks the current page in wp-admin to ensure we're looking at the payment gateways settings page.
-	 *
-	 * @return bool
-	 */
-	private function is_default_payments_settings_section_request() {
-		global $current_tab, $plugin_page;
+		// Before rendering the "Settings" page.
+		add_action( 'woocommerce_settings_start', [ $this, 'add_overwrite_payments_tab_url_filter' ] );
 
-		if ( 'wc-settings' !== $plugin_page ) {
-			return false;
-		}
-
-		if ( 'checkout' !== $current_tab ) {
-			return false;
-		}
-
-		// $_REQUEST['section'] can be not set at all or an empty string
-		// in the case of empty string, the current section requested would be the one with the list of all the gateways
-		if ( isset( $_REQUEST['section'] ) ) { // phpcs:ignore
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Overwrites the current section on init so our plugins page is loaded by default.
-	 */
-	public function page_init() {
-		global $current_section;
-
-		// no need to make any changes to the global variables if we're not in the correct WC page.
-		if ( ! $this->is_default_payments_settings_section_request() ) {
-			return;
-		}
-
-		$current_section = 'woocommerce_payments';
+		// After outputting tabs on the "Settings" page.
+		add_action( 'woocommerce_settings_tabs', [ $this, 'remove_overwrite_payments_tab_url_filter' ] );
 	}
 
 	/**
@@ -106,5 +72,35 @@ class WC_Payments_Admin_Sections_Overwrite {
 		global $current_section;
 
 		$current_section = $this->previous_current_section;
+	}
+
+	/**
+	 * Add the callback to overwrite the Payments tab URL to the `admin_url` filter.
+	 */
+	public function add_overwrite_payments_tab_url_filter() {
+		add_filter( 'admin_url', [ $this, 'overwrite_payments_tab_url' ], 100, 2 );
+	}
+
+	/**
+	 * Remove the callback to overwrite the Payments tab URL from the `admin_url` filter.
+	 */
+	public function remove_overwrite_payments_tab_url_filter() {
+		remove_filter( 'admin_url', [ $this, 'overwrite_payments_tab_url' ], 100 );
+	}
+
+	/**
+	 * Overwrite the Payments tab URL.
+	 *
+	 * @param string $url The URL to overwrite.
+	 * @param string $path Path relative to the admin area URL.
+	 *
+	 * @return string
+	 */
+	public function overwrite_payments_tab_url( $url, $path ): string {
+		if ( 'admin.php?page=wc-settings&tab=checkout' === $path ) {
+			return add_query_arg( [ 'section' => 'woocommerce_payments' ], $url );
+		}
+
+		return $url;
 	}
 }
