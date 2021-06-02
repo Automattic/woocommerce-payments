@@ -13,38 +13,61 @@ use PHPUnit\Framework\MockObject\MockObject;
 class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 
 	/**
+	 * @var string
+	 */
+	const PAYMENTS_TAB_PATH = 'admin.php?page=wc-settings&tab=checkout';
+
+	/**
 	 * @var stdClass|MockObject
 	 */
 	private $current_section_validator;
 
-	public function test_current_section_defaults_to_woocommerce_payments_if_null_on_page_init() {
-		global $current_section, $current_tab, $plugin_page;
+	public function test_payments_tab_url_is_overwritten() {
+		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
 
-		$current_tab         = 'checkout';
-		$plugin_page         = 'wc-settings';
-		$_REQUEST['section'] = null;
+		do_action( 'woocommerce_settings_start' );
+		$url = admin_url( self::PAYMENTS_TAB_PATH );
+		do_action( 'woocommerce_settings_tabs' );
 
-		$overwrite = new WC_Payments_Admin_Sections_Overwrite();
-		$overwrite->page_init();
+		$this->assertEquals(
+			'http://example.org/wp-admin/' . self::PAYMENTS_TAB_PATH . '&section=woocommerce_payments',
+			$url
+		);
+	}
 
-		$this->assertEquals( 'woocommerce_payments', $current_section );
+	public function test_payments_tab_url_is_not_overwritten_outside_expected_scope() {
+		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
+
+		$url_before = admin_url( self::PAYMENTS_TAB_PATH );
+		do_action( 'woocommerce_settings_start' );
+		$url_during = admin_url( self::PAYMENTS_TAB_PATH );
+		do_action( 'woocommerce_settings_tabs' );
+		$url_after = admin_url( self::PAYMENTS_TAB_PATH );
+
+		$expected_unchanged_url   = 'http://example.org/wp-admin/' . self::PAYMENTS_TAB_PATH;
+		$expected_overwritten_url = 'http://example.org/wp-admin/' . self::PAYMENTS_TAB_PATH . '&section=woocommerce_payments';
+
+		$this->assertEquals( $expected_unchanged_url, $url_before );
+		$this->assertEquals( $expected_overwritten_url, $url_during );
+		$this->assertEquals( $expected_unchanged_url, $url_after );
 	}
 
 	/**
-	 * @dataProvider params_not_causing_current_section_overwriting_on_page_init_provider
+	 * @dataProvider urls_left_intact_provider
+	 *
+	 * @param string $path Path that should not be overwritten.
 	 */
-	public function test_current_section_is_not_modified_on_page_init( string $section = null, string $tab, string $page ) {
-		global $current_section, $current_tab, $plugin_page;
+	public function test_url_other_than_payments_tab_is_not_overwritten( $path ) {
+		new WC_Payments_Admin_Sections_Overwrite(); // Instantiate to add hook callbacks.
 
-		$current_tab         = $tab;
-		$plugin_page         = $page;
-		$_REQUEST['section'] = $section;
-		$current_section     = $section;
+		do_action( 'woocommerce_settings_start' );
+		$url = admin_url( $path );
+		do_action( 'woocommerce_settings_tabs' );
 
-		$overwrite = new WC_Payments_Admin_Sections_Overwrite();
-		$overwrite->page_init();
-
-		$this->assertEquals( $section, $current_section );
+		$this->assertEquals(
+			'http://example.org/wp-admin/' . $path,
+			$url
+		);
 	}
 
 	public function test_checkout_sections_are_modified() {
@@ -150,12 +173,15 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 		);
 	}
 
-	public function params_not_causing_current_section_overwriting_on_page_init_provider() {
+	/**
+	 * URLs that should not be overwritten by the callback to the `admin_url` filter.
+	 *
+	 * @return string[][]
+	 */
+	public function urls_left_intact_provider() {
 		return [
-			'section is empty string' => [ '', 'checkout', 'wc-settings' ],
-			'section is string'       => [ 'foo', 'checkout', 'wc-settings' ],
-			'tab is not checkout'     => [ null, 'shipping', 'wc-settings' ],
-			'page is not wc-settings' => [ null, 'checkout', 'foo' ],
+			'tab is not "checkout"' => [ 'admin.php?page=wc-settings&tab=not-checkout' ],
+			'section is not empty'  => [ 'admin.php?page=wc-settings&tab=checkout&section=foo' ],
 		];
 	}
 
