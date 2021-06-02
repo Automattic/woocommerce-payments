@@ -12,7 +12,8 @@
 	pointer-events: none;
 	// Allow pointer events in inner window only, so the overlay
 	// is still clickable and allows for closing the dialog.
-	div {
+	/* stylelint-disable-next-line */
+	#TB_window {
 		pointer-events: all;
 	}
 }
