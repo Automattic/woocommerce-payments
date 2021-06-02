@@ -56,7 +56,7 @@ class User_Settings {
 				}
 				?>
 			</select>
-			<span><em><?php esc_html_e( 'Select your prefered currency for shopping and payments.', 'woocommerce-payments' ); ?></em></span>
+			<span><em><?php esc_html_e( 'Select your preferred currency for shopping and payments.', 'woocommerce-payments' ); ?></em></span>
 		</p>
 		<div class="clear"></div>
 		<?php
