@@ -46,6 +46,7 @@ class Frontend_Currencies {
 			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+			add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
 		}
 	}
 
@@ -109,6 +110,18 @@ class Frontend_Currencies {
 			default:
 				return '%1$s%2$s';
 		}
+	}
+
+	/**
+	 * Adds the currency and exchange rate to the cart hash so it's recalculated properly.
+	 *
+	 * @param string $hash The cart hash.
+	 *
+	 * @return string The adjusted cart hash.
+	 */
+	public function add_currency_to_cart_hash( $hash ) {
+		$currency = $this->multi_currency->get_selected_currency();
+		return md5( $hash . $currency->get_code() . $currency->get_rate() );
 	}
 
 	/**
