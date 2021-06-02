@@ -26,6 +26,19 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useDebugLog = () => {
+	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsDebugLogEnabled } = select( STORE_NAME );
+
+			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
+		},
+		[ updateIsDebugLogEnabled ]
+	);
+};
+
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 

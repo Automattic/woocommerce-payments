@@ -20,6 +20,7 @@ import {
  */
 import SettingsSection from '../settings-section';
 import './style.scss';
+import { useDebugLog, useDevMode } from '../../data';
 
 const useToggle = ( initialValue = false ) => {
 	const [ value, setValue ] = useState( initialValue );
@@ -58,9 +59,10 @@ const CheckboxToggle = ( { label, defaultIsChecked, children } ) => {
 };
 
 const AdvancedSettings = () => {
+	const isDevModeEnabled = useDevMode();
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
 	const firstHeadingElementRef = useRef( null );
-	const [ isLoggingChecked, setIsLoggingChecked ] = useState( false );
+	const [ isLoggingChecked, setIsLoggingChecked ] = useDebugLog();
 	const [ customFontValue, setCustomFontValue ] = useState( '' );
 	const [ cssStylingValue, setCssStylingValue ] = useState( '' );
 
@@ -89,15 +91,23 @@ const AdvancedSettings = () => {
 								Debug mode
 							</h4>
 							<CheckboxControl
-								label={ __(
-									'Log error messages',
-									'woocommerce-payments'
-								) }
+								label={
+									isDevModeEnabled
+										? __(
+												'Dev mode is active so logging is on by default.',
+												'woocommerce-payments'
+										  )
+										: __(
+												'Log error messages',
+												'woocommerce-payments'
+										  )
+								}
 								help={ __(
 									'When enabled, payment error logs will be saved to WooCommerce > Status > Logs.',
 									'woocommerce-payments'
 								) }
-								checked={ isLoggingChecked }
+								disabled={ isDevModeEnabled }
+								checked={ isDevModeEnabled || isLoggingChecked }
 								onChange={ setIsLoggingChecked }
 							/>
 							<h4>
