@@ -11,7 +11,7 @@ use WCPay\Multi_Currency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 
-if ( class_exists( 'Settings', false ) ) {
+if ( class_exists( Settings::class, false ) ) {
 	return new Settings();
 }
 
@@ -21,11 +21,33 @@ if ( class_exists( 'Settings', false ) ) {
 class Settings extends \WC_Settings_Page {
 
 	/**
+	 * The id of the plugin.
+	 *
+	 * @var string
+	 */
+	public $id;
+
+	/**
+	 * The tab label.
+	 *
+	 * @var string
+	 */
+	public $label;
+
+	/**
+	 * Instance of Multi_Currency class.
+	 *
+	 * @var Multi_Currency
+	 */
+	protected $multi_currency;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->id    = 'wcpay_multi_currency';
-		$this->label = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
+		$this->multi_currency = Multi_Currency::instance();
+		$this->id             = $this->multi_currency->id;
+		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		add_action( 'woocommerce_admin_field_wcpay_multi_currencies', [ $this, 'wcpay_multi_currencies_setting' ] );
 		parent::__construct();
@@ -131,7 +153,7 @@ class Settings extends \WC_Settings_Page {
 				]
 			);
 		} else {
-			foreach ( WC_Payments_Multi_Currency()->get_enabled_currencies() as $currency ) {
+			foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
 				if ( $currency->get_id() === $current_section ) {
 					$settings = $this->get_currency_setting( $currency );
 				}
@@ -174,8 +196,8 @@ class Settings extends \WC_Settings_Page {
 	 * @return array Array of settings.
 	 */
 	public function get_currency_setting( $currency ) {
-		$available_currencies = WC_Payments_Multi_Currency()->get_available_currencies();
-		$default_currency     = WC_Payments_Multi_Currency()->get_default_currency();
+		$available_currencies = $this->multi_currency->get_available_currencies();
+		$default_currency     = $this->multi_currency->get_default_currency();
 		$page_id              = $this->id . '_single_currency';
 
 		$page_title = sprintf( '%1$s (%2$s)', $currency->get_name(), $currency->get_code() );
@@ -300,7 +322,7 @@ class Settings extends \WC_Settings_Page {
 				],
 
 				[
-					'name'        => WC_Payments_Multi_Currency()->get_default_currency()->get_name(),
+					'name'        => $this->multi_currency->get_default_currency()->get_name(),
 					'id'          => $this->id . '_preview_default_' . $currency->get_id(),
 					'default'     => '$20.00',
 					'type'        => 'text',
