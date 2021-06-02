@@ -6,7 +6,11 @@
  * External dependencies
  */
 
-const { merchant, verifyAndPublish } = require( '@woocommerce/e2e-utils' );
+const {
+	merchant,
+	verifyAndPublish,
+	evalAndClick,
+} = require( '@woocommerce/e2e-utils' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
@@ -92,11 +96,11 @@ export const merchantWCP = {
 	},
 
 	openChallengeDispute: async () => {
-		await expect( page ).toClick( 'a.components-button.is-primary', {
-			text: 'Challenge dispute',
-		} );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
+		await Promise.all( [
+			evalAndClick( 'a.components-button.is-primary' ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
 	},
 
 	openPaymentDetails: async ( paymentDetailsLink ) => {

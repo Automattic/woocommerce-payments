@@ -74,10 +74,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		// Open the dispute details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
-		await page.waitForSelector( 'a.components-button.is-primary', {
-			timeout: 10000,
-		} );
-
+		// Click to challenge the dispute
 		await merchantWCP.openChallengeDispute();
 
 		await page.waitForSelector(
