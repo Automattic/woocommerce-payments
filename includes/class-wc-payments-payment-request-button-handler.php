@@ -131,10 +131,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return bool
 	 */
 	public function is_authentication_required() {
-		// If guest checkout is disabled, authentication might be required.
-		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) ) {
-			// If account creation is not possible, authentication is required.
-			return ! $this->is_account_creation_possible();
+		// If guest checkout is disabled and account creation is not possible, authentication is required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+		// If cart contains subscription and account creation is not posible, authentication is required.
+		if ( $this->has_subscription_product() && ! $this->is_account_creation_possible() ) {
+			return true;
 		}
 
 		return false;
@@ -530,11 +533,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
-			// Not supported for subscription products when user is not authenticated and account creation is not possible.
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
-				return false;
-			}
-
 			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
@@ -542,6 +540,33 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		} elseif ( $this->is_checkout() || $this->is_cart() ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+				$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+				if ( WC_Subscriptions_Product::is_subscription( $_product ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -759,11 +784,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product = $this->get_product();
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
-		}
-
-		// Not supported for subscription products when user is not authenticated and account creation is not possible.
-		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 			return false;
 		}
 
