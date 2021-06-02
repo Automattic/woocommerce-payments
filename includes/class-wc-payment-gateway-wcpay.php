@@ -2125,4 +2125,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			]
 		);
 	}
+
+	/**
+	 * Text provided to users during onboarding setup.
+	 *
+	 * @return string
+	 */
+	public function get_setup_help_text() {
+		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get the oAuth connection URL.
+	 *
+	 * @return string Connection URL.
+	 */
+	public function get_oauth_connection_url() {
+		return html_entity_decode( WC_Payments_Account::get_connect_url() );
+	}
 }

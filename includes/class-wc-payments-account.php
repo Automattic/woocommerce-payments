@@ -394,7 +394,15 @@ class WC_Payments_Account {
 	 * @return string Stripe account login url.
 	 */
 	public static function get_connect_url() {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ] ), 'wcpay-connect' );
+		$connect_url = add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/connect',
+			],
+			admin_url( 'admin.php' )
+		);
+
+		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => '1' ], $connect_url ), 'wcpay-connect' );
 	}
 
 	/**
