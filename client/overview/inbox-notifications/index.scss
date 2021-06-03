@@ -1,0 +1,29 @@
+.wcpay-overview-screen-notes-wrapper {
+	padding-top: $gap-large;
+}
+
+.wcpay-inbox-message-enter {
+	opacity: 0;
+	max-height: 0;
+	transform: translateX( 50% );
+}
+
+.wcpay-inbox-message-enter-active {
+	opacity: 1;
+	max-height: 100vh;
+	transform: translateX( 0% );
+	transition: opacity 500ms, transform 500ms, max-height 500ms;
+}
+
+.wcpay-inbox-message-exit {
+	opacity: 1;
+	max-height: 100vh;
+	transform: translateX( 0% );
+}
+
+.wcpay-inbox-message-exit-active {
+	opacity: 0;
+	max-height: 0;
+	transform: translateX( 50% );
+	transition: opacity 500ms, transform 500ms, max-height 500ms;
+}
