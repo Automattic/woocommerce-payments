@@ -85,6 +85,7 @@ class Multi_Currency {
 	 * Constructor.
 	 */
 	private function __construct() {
+		$this->includes();
 		$this->init();
 	}
 
@@ -92,13 +93,6 @@ class Multi_Currency {
 	 * Init.
 	 */
 	public function init() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
@@ -486,5 +480,17 @@ class Multi_Currency {
 	protected function ceil_price( $price, $precision ) {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	}
+
+	/**
+	 * Include required core files used in admin and on the frontend.
+	 */
+	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
 	}
 }
