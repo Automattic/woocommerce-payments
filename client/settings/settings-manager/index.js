@@ -21,6 +21,7 @@ import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import TransactionsAndDeposits from '../transactions-and-deposits';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -56,9 +57,6 @@ const DigitalWalletsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://docs.woocommerce.com/document/payments/apple-pay/">
-			{ __( 'How it works?', 'woocommerce-payments' ) }
-		</ExternalLink>
 	</>
 );
 
@@ -68,6 +66,21 @@ const GeneralSettingsDescription = () => (
 		<p>
 			{ __(
 				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
+				'woocommerce-payments'
+			) }
+		</p>
+		<ExternalLink href="https://docs.woocommerce.com/document/payments/faq/">
+			{ __( 'View Frequently Asked Questions', 'woocommerce-payments' ) }
+		</ExternalLink>
+	</>
+);
+
+const TransactionsAndDepositsDescription = () => (
+	<>
+		<h2>{ __( 'Transactions and deposits', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				"Update your store's configuration to ensure smooth transactions.",
 				'woocommerce-payments'
 			) }
 		</p>
@@ -98,6 +111,11 @@ const SettingsManager = () => {
 			<SettingsSection Description={ DigitalWalletsDescription }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 					<DigitalWallets />
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ TransactionsAndDepositsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<TransactionsAndDeposits />
 				</LoadableBlock>
 			</SettingsSection>
 			<AdvancedSettings />
