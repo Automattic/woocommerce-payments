@@ -18,6 +18,13 @@ class Multi_Currency {
 	const CURRENCY_META_KEY    = 'wcpay_currency';
 
 	/**
+	 * The plugin's ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'wcpay_multi_currency';
+
+	/**
 	 * The single instance of the class.
 	 *
 	 * @var Multi_Currency
@@ -92,7 +99,6 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
-		$this->id = 'wcpay_multi_currency';
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
