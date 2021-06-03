@@ -98,7 +98,7 @@ const DigitalWallets = () => {
 				/>
 				<h4>
 					{ __(
-						'Show express checkouts on:',
+						'Show express checkouts on',
 						'woocommerce-payments'
 					) }
 				</h4>
