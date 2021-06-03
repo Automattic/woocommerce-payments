@@ -280,12 +280,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				],
 			];
 
+			// in the new settings, "checkout" is going to be enabled by default (if it is a new WCPay installation).
 			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
 
+			// no longer needed in the new settings.
 			unset( $this->form_fields['payment_request_button_branded_type'] );
+			// `light-outline` is no longer a valid option.
 			unset( $this->form_fields['payment_request_button_theme']['options']['light-outline'] );
+			// injecting some of the new options.
 			$this->form_fields['payment_request_button_type']['options']['only-icon'] = __( 'Only icon', 'woocommerce-payments' );
 			$this->form_fields['payment_request_button_type']['options']['book']      = __( 'Book', 'woocommerce-payments' );
+			// no longer valid options.
 			unset( $this->form_fields['payment_request_button_type']['options']['default'] );
 			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
 			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
