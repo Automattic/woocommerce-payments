@@ -59,11 +59,12 @@ class Settings extends \WC_Settings_Page {
 	 * @return array
 	 */
 	public function get_sections() {
-		$sections = [
-			''      => __( 'Currencies', 'woocommerce-payments' ),
-			'store' => __( 'Store settings', 'woocommerce-payments' ),
-		];
-		return apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
+		return apply_filters(
+			'woocommerce_get_sections_' . $this->id,
+			[
+				'' => __( 'Currencies', 'woocommerce-payments' ),
+			]
+		);
 	}
 
 	/**
@@ -102,6 +103,7 @@ class Settings extends \WC_Settings_Page {
 				]
 			);
 		} elseif ( 'store' === $current_section ) {
+			// TODO: Store settings are not available at the moment.
 			$settings = apply_filters(
 				$this->id . 'store_settings',
 				[
@@ -251,6 +253,36 @@ class Settings extends \WC_Settings_Page {
 			$currency->get_code()
 		);
 
+		// TODO: These settings are not presently used, but will be applied in a future update.
+		$preview_settings = [
+			[
+				'name' => __( 'Preview', 'woocommerce-payments' ),
+				'type' => 'title',
+				'desc' => $preview_desc,
+				'id'   => $page_id . '_preview',
+			],
+
+			[
+				'name'        => $this->multi_currency->get_default_currency()->get_name(),
+				'id'          => $this->id . '_preview_default_' . $currency->get_id(),
+				'default'     => '$20.00',
+				'type'        => 'text',
+				'placeholder' => '$20.00',
+			],
+
+			[
+				'name'    => $currency->get_name(),
+				'id'      => $this->id . '_preview_converted_' . $currency->get_id(),
+				'default' => '',
+				'type'    => 'text',
+			],
+
+			[
+				'type' => 'sectionend',
+				'id'   => $page_id . '_preview',
+			],
+		];
+
 		return apply_filters(
 			$this->id . '_single_settings',
 			[
@@ -312,33 +344,6 @@ class Settings extends \WC_Settings_Page {
 				[
 					'type' => 'sectionend',
 					'id'   => $page_id . '_formatting_rules',
-				],
-
-				[
-					'name' => __( 'Preview', 'woocommerce-payments' ),
-					'type' => 'title',
-					'desc' => $preview_desc,
-					'id'   => $page_id . '_preview',
-				],
-
-				[
-					'name'        => $this->multi_currency->get_default_currency()->get_name(),
-					'id'          => $this->id . '_preview_default_' . $currency->get_id(),
-					'default'     => '$20.00',
-					'type'        => 'text',
-					'placeholder' => '$20.00',
-				],
-
-				[
-					'name'    => $currency->get_name(),
-					'id'      => $this->id . '_preview_converted_' . $currency->get_id(),
-					'default' => '',
-					'type'    => 'text',
-				],
-
-				[
-					'type' => 'sectionend',
-					'id'   => $page_id . '_preview',
 				],
 			]
 		);
