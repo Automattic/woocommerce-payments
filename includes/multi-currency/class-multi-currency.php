@@ -288,6 +288,9 @@ class Multi_Currency {
 		}
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		// Recalculate cart when currency changes.
+		add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 	}
 
 	/**
@@ -348,6 +351,13 @@ class Multi_Currency {
 			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
+	}
+
+	/**
+	 * Recalculates WooCommerce cart totals.
+	 */
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
