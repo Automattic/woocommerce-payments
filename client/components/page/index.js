@@ -16,9 +16,13 @@ const Page = ( { children, maxWidth, isNarrow, className = '' } ) => {
 		classNames.push( 'is-narrow' );
 	}
 
-	const fraudScriptsConfig =
-		'undefined' !== typeof wcpaySettings ? wcpaySettings.fraudServices : [];
-	useEffect( () => enqueueFraudScripts( fraudScriptsConfig ), [] );
+	useEffect( () => {
+		const fraudScriptsConfig =
+			'undefined' !== typeof wcpaySettings
+				? wcpaySettings.fraudServices
+				: [];
+		enqueueFraudScripts( fraudScriptsConfig );
+	}, [] );
 
 	return (
 		<div className={ classNames.join( ' ' ) } style={ customStyle }>

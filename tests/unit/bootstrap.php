@@ -61,6 +61,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 }
 

@@ -11,6 +11,10 @@ import { isInTestMode, getPaymentSettingsUrl } from 'utils';
 
 // The topics (i.e. pages) that have test mode notices.
 export const topics = {
+	overview: __(
+		'WooCommerce Payments is in test mode.',
+		'woocommerce-payments'
+	),
 	transactions: __(
 		'Viewing test transactions. To view live transactions, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
@@ -47,7 +51,7 @@ export const getPaymentsSettingsUrlComponent = () => {
 	return (
 		<a href={ getPaymentSettingsUrl() }>
 			{ __(
-				'View WooCommerce Payments settings.',
+				'View WooCommerce Payments settings',
 				'woocommerce-payments'
 			) }
 		</a>

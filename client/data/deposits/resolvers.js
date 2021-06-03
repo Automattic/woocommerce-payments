@@ -20,6 +20,8 @@ import {
 	updateErrorForDepositsOverview,
 	updateDepositsSummary,
 	updateErrorForDepositsSummary,
+	updateAllDepositsOverviews,
+	updateErrorForAllDepositsOverviews,
 } from './actions';
 
 /**
@@ -58,6 +60,28 @@ export function* getDepositsOverview() {
 			__( 'Error retrieving deposits overview.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositsOverview( e );
+	}
+}
+
+/**
+ * Retrieve all deposits' overviews from the deposits API.
+ */
+export function* getAllDepositsOverviews() {
+	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview-all` );
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateAllDepositsOverviews( result );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				"Error retrieving all deposits' overviews.",
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForAllDepositsOverviews( e );
 	}
 }
 
