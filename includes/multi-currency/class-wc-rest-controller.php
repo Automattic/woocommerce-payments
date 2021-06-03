@@ -34,6 +34,16 @@ class WC_REST_Controller extends \WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/update-enabled-currencies',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'update_enabled_currencies' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -45,5 +55,16 @@ class WC_REST_Controller extends \WC_Payments_REST_Controller {
 			'enabled'   => WC_Payments_Multi_Currency()->get_enabled_currencies(),
 			'default'   => WC_Payments_Multi_Currency()->get_default_currency(),
 		];
+	}
+
+	/**
+	 * Update enabled currencies based on posted data.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function update_enabled_currencies( $request ) {
+		$params = $request->get_params();
+		WC_Payments_Multi_Currency()->set_enabled_currencies( $params['enabled'] );
+		return $this->get_store_currencies();
 	}
 }
