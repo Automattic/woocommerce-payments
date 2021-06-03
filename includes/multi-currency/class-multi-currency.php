@@ -98,12 +98,7 @@ class Multi_Currency {
 		$this->initialize_enabled_currencies();
 
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
-		add_action(
-			'widgets_init',
-			function() {
-				register_widget( new Currency_Switcher_Widget( $this ) );
-			}
-		);
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 		new User_Settings( $this );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
@@ -137,6 +132,13 @@ class Multi_Currency {
 
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
+	}
+
+	/**
+	 * Initialize the Widgets.
+	 */
+	public function init_widgets() {
+		register_widget( new Currency_Switcher_Widget( $this ) );
 	}
 
 	/**
