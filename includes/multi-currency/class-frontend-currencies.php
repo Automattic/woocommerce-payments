@@ -37,12 +37,16 @@ class Frontend_Currencies {
 
 		$this->load_locale_data();
 
-		// Currency hooks.
-		add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
-		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
-		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
-		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
-		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+		$frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+
+		if ( $frontend_request ) {
+			// Currency hooks.
+			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
+			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
+			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
+			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
+			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+		}
 	}
 
 	/**

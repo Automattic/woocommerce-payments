@@ -108,11 +108,11 @@ class Multi_Currency {
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
+		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this );
+
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
-
-			$this->frontend_prices     = new Frontend_Prices( $this );
-			$this->frontend_currencies = new Frontend_Currencies( $this );
 		}
 	}
 
@@ -142,6 +142,24 @@ class Multi_Currency {
 			[ 'BIF', '1974' ], // Zero dollar currency.
 			[ 'CLP', '706.8' ], // Zero dollar currency.
 		];
+	}
+
+	/**
+	 * Returns the Frontend_Prices instance.
+	 *
+	 * @return Frontend_Prices
+	 */
+	public function get_frontend_prices() {
+		return $this->frontend_prices;
+	}
+
+	/**
+	 * Returns the Frontend_Currencies instance.
+	 *
+	 * @return Frontend_Currencies
+	 */
+	public function get_frontend_currencies() {
+		return $this->frontend_currencies;
 	}
 
 	/**
