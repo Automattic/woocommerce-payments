@@ -2140,7 +2140,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Connection URL.
 	 */
-	public function get_oauth_connection_url() {
+	public function get_connection_url() {
 		return html_entity_decode( WC_Payments_Account::get_connect_url() );
 	}
 }
