@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { useEffect, useRef } from '@wordpress/element';
 import { Icon, chevronDown, chevronUp } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -15,10 +15,14 @@ import BlockAppearance from './block-appearance';
 import DebugMode from './debug-mode';
 import useToggle from './use-toggle';
 import './style.scss';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
 	const firstHeadingElementRef = useRef( null );
+	const {
+		featureFlags: { upe: isUpeEnabled },
+	} = useContext( WCPaySettingsContext );
 
 	useEffect( () => {
 		if ( ! isSectionExpanded ) return;
@@ -43,7 +47,7 @@ const AdvancedSettings = () => {
 						<CardBody size="large">
 							<div ref={ firstHeadingElementRef } tabIndex="-1">
 								<DebugMode />
-								<BlockAppearance />
+								{ isUpeEnabled && <BlockAppearance /> }
 							</div>
 						</CardBody>
 					</Card>
