@@ -216,6 +216,10 @@ class Multi_Currency {
 	 * Sets up the available currencies.
 	 */
 	private function initialize_available_currencies() {
+		// Add default store currency with a rate of 1.0.
+		$woocommerce_currency                                = get_woocommerce_currency();
+		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
+
 		// TODO: This will need to get stored data, then build and return it accordingly.
 		$currencies = $this->get_mock_currencies();
 		foreach ( $currencies as $currency ) {
