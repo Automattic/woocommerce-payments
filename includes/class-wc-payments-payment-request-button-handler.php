@@ -1420,20 +1420,17 @@ class WC_Payments_Payment_Request_Button_Handler {
 	protected function get_button_settings() {
 		// it would be DRYer to use `array_merge`,
 		// but I thought that this approach might be more straightforward to clean up when we remove the feature flag code.
+		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
 			return [
-				// TODO: check "book" and "only-icon" options.
-				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
-				// ok - "light-outline" can be removed later from the JS code once the `is_grouped_settings_enabled` flag is switched.
+				'type'         => $button_type,
 				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
-				// ok?
 				'height'       => $this->get_button_height(),
 				// Default format is en_US.
 				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 				'css_selector' => $this->custom_button_selector(),
-				// TODO: check.
-				'branded_type' => $this->gateway->get_option( 'payment_request_button_type' ) === 'only-icon' ? 'short' : 'long',
-				// no longer applicable.
+				'branded_type' => 'default' === $button_type ? 'short' : 'long',
+				// these values are no longer applicable.
 				'label'        => '',
 				'is_custom'    => false,
 				'is_branded'   => false,
@@ -1441,7 +1438,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return [
-			'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
+			'type'         => $button_type,
 			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height'       => $this->get_button_height(),
 			'label'        => $this->gateway->get_option( 'payment_request_button_label' ),

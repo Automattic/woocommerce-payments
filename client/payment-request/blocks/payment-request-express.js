@@ -59,6 +59,7 @@ const PaymentRequestExpressComponent = ( {
 		return null;
 	}
 
+	// This can be removed once the `is_grouped_settings` flag returns `true` and the code is cleaned up.
 	if ( isCustom ) {
 		return (
 			<CustomButton
@@ -72,6 +73,7 @@ const PaymentRequestExpressComponent = ( {
 		);
 	}
 
+	// This can be removed once the `is_grouped_settings` flag returns `true` and the code is cleaned up.
 	if ( isBranded && shouldUseGooglePayBrand() ) {
 		return (
 			<GooglePayButton
@@ -85,6 +87,7 @@ const PaymentRequestExpressComponent = ( {
 		);
 	}
 
+	// This can be removed once the `is_grouped_settings` flag returns `true` and the code is cleaned up.
 	if ( isBranded ) {
 		// Not implemented branded buttons default to Stripe's button.
 		// Apple Pay buttons can also fall back to Stripe's button, as it's already branded.

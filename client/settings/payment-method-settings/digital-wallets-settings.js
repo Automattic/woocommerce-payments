@@ -57,7 +57,7 @@ const buttonSizeOptions = [
 const buttonActionOptions = [
 	{
 		label: __( 'Only icon', 'woocommerce-payments' ),
-		value: 'only-icon',
+		value: 'default',
 	},
 	{
 		label: __( 'Buy', 'woocommerce-payments' ),
