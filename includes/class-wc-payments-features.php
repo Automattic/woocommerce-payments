@@ -57,4 +57,21 @@ class WC_Payments_Features {
 	public static function is_upe_enabled() {
 		return '1' === get_option( '_wcpay_feature_upe', '0' );
 	}
+
+	/**
+	 * Returns feature flags as an array suitable for display on the front-end.
+	 *
+	 * @return bool[]
+	 */
+	public static function to_array() {
+		$flags = [
+			'groupedSettings' => self::is_grouped_settings_enabled(),
+			'giropay'         => self::is_giropay_enabled(),
+			'sepa'            => self::is_sepa_enabled(),
+			'sofort'          => self::is_sofort_enabled(),
+			'upe'             => self::is_upe_enabled(),
+		];
+
+		return array_filter( $flags );
+	}
 }
