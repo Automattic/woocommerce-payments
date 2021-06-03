@@ -65,10 +65,10 @@ const DigitalWalletsDescription = () => (
 
 const GeneralSettingsDescription = () => (
 	<>
-		<h2>{ __( 'General settings', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
-				"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
+				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
 				'woocommerce-payments'
 			) }
 		</p>
