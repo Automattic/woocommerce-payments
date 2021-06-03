@@ -67,10 +67,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		it( 'should be able to renew a subscription as a merchant', async () => {
 			// Open the specific subscription detail page
 			await merchantWCP.openSubscriptions();
-			await expect( page ).toClick(
-				'div.tips > a',
-				{ text: subscriptionId }
-			);
+			await expect( page ).toClick( 'div.tips > a', {
+				text: subscriptionId,
+			} );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			await expect( page ).toMatchElement( 'h1', {
 				text: 'Edit Subscription',
