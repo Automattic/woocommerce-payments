@@ -3,7 +3,12 @@
  */
 import config from 'config';
 
-const { merchant, shopper, evalAndClick, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const {
+	merchant,
+	shopper,
+	evalAndClick,
+	uiUnblocked
+} = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -123,7 +128,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement(
 			'div.components-snackbar > .components-snackbar__content',
 			{
-				text:
+				text: 
 					'Evidence submitted!',
 			}
 		);
