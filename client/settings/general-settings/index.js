@@ -44,10 +44,7 @@ const GeneralSettings = () => {
 										'This setting is only available to live accounts.',
 									'woocommerce-payments'
 							  )
-							: __(
-									'Enable test mode for payments on the store',
-									'woocommerce-payments'
-							  )
+							: __( 'Enable test mode', 'woocommerce-payments' )
 					}
 					help={ interpolateComponents( {
 						mixedString: __(
