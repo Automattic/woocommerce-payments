@@ -45,6 +45,7 @@ export const getTasks = ( {
 				'Update WooCommerce Payments business details',
 				'woocommerce-payments'
 			),
+			action: __( 'Update business details', 'woocommerce-payments' ),
 			additionalInfo: accountDetailsTaskDescription,
 			completed: 'complete' === status,
 			onClick:
