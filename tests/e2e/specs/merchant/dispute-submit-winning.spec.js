@@ -7,7 +7,7 @@ const {
 	merchant,
 	shopper,
 	evalAndClick,
-	uiUnblocked
+	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
 
 /**
@@ -128,8 +128,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement(
 			'div.components-snackbar > .components-snackbar__content',
 			{
-				text: 
-					'Evidence submitted!',
+				text: 'Evidence submitted!',
 			}
 		);
 	} );
