@@ -250,7 +250,10 @@ class Multi_Currency {
 
 		if ( 0 === $user_id && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
-			WC()->session->set_customer_session_cookie( true );
+			// Set the session cookie if is not yet to persist the selected currency.
+			if ( ! WC()->session->has_session() ) {
+				WC()->session->set_customer_session_cookie( true );
+			}
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
