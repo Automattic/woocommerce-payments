@@ -3,12 +3,12 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
  */
-import { merchantWCP, uiLoaded } from '../../utils';
+import { merchantWCP } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;

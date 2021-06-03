@@ -6,7 +6,7 @@
  * External dependencies
  */
 
- const {
+const {
 	merchant,
 	verifyAndPublish,
 	evalAndClick,
@@ -115,7 +115,7 @@ export const merchantWCP = {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
 			evalAndClick( 'button.components-button.is-secondary' ),
-			page.on( 'dialog' , async dialog => {
+			page.on( 'dialog', async ( dialog) => {
 				await dialog.accept();
 			} ),
 			uiUnblocked(),
