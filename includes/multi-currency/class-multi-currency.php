@@ -93,9 +93,9 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 
 		$this->id = 'wcpay_multi_currency';
-		$this->get_available_currencies();
-		$this->get_default_currency();
-		$this->get_enabled_currencies();
+		$this->initialize_available_currencies();
+		$this->set_default_currency();
+		$this->initialize_enabled_currencies();
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action(
@@ -114,6 +114,19 @@ class Multi_Currency {
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
 		}
+
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+
+		if ( is_admin() ) {
+			// Multi-currency settings page.
+			add_filter(
+				'woocommerce_get_settings_pages',
+				function( $settings_pages ) {
+					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+					return $settings_pages;
+				}
+			);
+		}
 	}
 
 	/**
@@ -123,6 +136,43 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
+	}
+
+	/**
+	 * Register the CSS and JS scripts.
+	 */
+	public function register_scripts() {
+		$script_src_url    = plugins_url( 'dist/multi-currency.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/multi-currency.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		wp_register_script(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/multi-currency.js' ),
+			true
+		);
+
+		wp_register_style(
+			'WCPAY_MULTI_CURRENCY_SETTINGS',
+			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			[ 'wc-components' ],
+			\WC_Payments::get_file_version( 'dist/multi-currency.css' )
+		);
+	}
+
+	/**
+	 * Load the assets.
+	 */
+	public function enqueue_scripts() {
+		global $current_tab, $current_section;
+
+		$this->register_scripts();
+
+		// TODO: Set this to only display when needed.
+		// Output the settings JS and CSS only on the settings page.
+		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -163,15 +213,9 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the currencies available.
-	 *
-	 * @return array Array of Currency objects.
+	 * Sets up the available currencies.
 	 */
-	public function get_available_currencies() {
-		if ( isset( $this->available_currencies ) ) {
-			return $this->available_currencies;
-		}
-
+	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
 		$woocommerce_currency                                = get_woocommerce_currency();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
@@ -181,7 +225,69 @@ class Multi_Currency {
 		foreach ( $currencies as $currency ) {
 			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
 		}
+	}
 
+	/**
+	 * Sets up the enabled currencies.
+	 */
+	private function initialize_enabled_currencies() {
+		$available_currencies = $this->get_available_currencies();
+		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', false );
+		$default_code         = $this->get_default_currency()->get_code();
+
+		if ( ! $enabled_currencies ) {
+			// TODO: Remove dev mode option here.
+			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
+				$count = 0;
+				foreach ( $available_currencies as $currency ) {
+					$enabled_currencies[] = $currency->get_code();
+					if ( $count >= 3 ) {
+						break;
+					}
+					$count++;
+				}
+			} else {
+				$enabled_currencies[] = $default_code;
+			}
+		}
+
+		foreach ( $enabled_currencies as $code ) {
+			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
+			$currency = clone $available_currencies[ $code ];
+			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
+			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
+			$currency->set_charm( $charm );
+			$currency->set_rounding( $rounding );
+
+			// If the currency is set to be manual, set the rate to the stored manual rate.
+			$type = get_option( $this->id . '_exchange_rate_' . $currency->get_id(), 'automatic' );
+			if ( 'manual' === $type ) {
+				$manual_rate = get_option( $this->id . '_manual_rate_' . $currency->get_id(), $currency->get_rate() );
+				$currency->set_rate( $manual_rate );
+			}
+
+			$this->enabled_currencies[ $code ] = $currency;
+		}
+
+		// Set default currency to the top of the list.
+		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
+		unset( $this->enabled_currencies[ $default_code ] );
+		$this->enabled_currencies = array_merge( $default, $this->enabled_currencies );
+	}
+
+	/**
+	 * Sets the default currency.
+	 */
+	private function set_default_currency() {
+		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
+	}
+
+	/**
+	 * Gets the currencies available.
+	 *
+	 * @return array Array of Currency objects.
+	 */
+	public function get_available_currencies(): array {
 		return $this->available_currencies;
 	}
 
@@ -191,12 +297,6 @@ class Multi_Currency {
 	 * @return Currency The store base currency.
 	 */
 	public function get_default_currency(): Currency {
-		if ( isset( $this->default_currency ) ) {
-			return $this->default_currency;
-		}
-
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ];
-
 		return $this->default_currency;
 	}
 
@@ -205,31 +305,7 @@ class Multi_Currency {
 	 *
 	 * @return array Array of Currency objects.
 	 */
-	public function get_enabled_currencies() {
-		if ( isset( $this->enabled_currencies ) ) {
-			return $this->enabled_currencies;
-		}
-
-		$this->enabled_currencies = get_option( $this->id . '_enabled_currencies', false );
-		if ( ! $this->enabled_currencies ) {
-
-			// TODO: Remove dev mode option here.
-			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
-				$count = 0;
-				foreach ( $this->available_currencies as $currency ) {
-					$this->enabled_currencies[ $currency->code ] = $currency;
-					if ( $count >= 3 ) {
-						break;
-					}
-					$count++;
-				}
-			} else {
-				$default = $this->get_default_currency();
-				// Need to set the default as an array.
-				$this->enabled_currencies[ $default->code ] = $default;
-			}
-		}
-
+	public function get_enabled_currencies(): array {
 		return $this->enabled_currencies;
 	}
 
@@ -274,6 +350,17 @@ class Multi_Currency {
 			}
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
+		}
+	}
+
+	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
 		}
 	}
 
