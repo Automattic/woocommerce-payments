@@ -257,7 +257,7 @@ class Multi_Currency {
 	 * Sets the default currency.
 	 */
 	private function set_default_currency() {
-		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ];
+		$this->default_currency = $this->available_currencies[ get_woocommerce_currency() ] ?? null;
 	}
 
 	/**
