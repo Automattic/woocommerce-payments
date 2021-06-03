@@ -15,7 +15,7 @@ const DebugMode = () => {
 
 	return (
 		<>
-			<h4>Debug mode</h4>
+			<h4>{ __( 'Debug mode', 'woocommerce-payments' ) }</h4>
 			<CheckboxControl
 				label={
 					isDevModeEnabled
