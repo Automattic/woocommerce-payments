@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WCPay\Logger;
+use WCPay\Payment_Information;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -119,12 +120,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
-
 		$payment_intent_id   = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$order               = wc_get_order( $order_id );
 		$amount              = $order->get_total();
 		$currency            = $order->get_currency();
 		$save_payment_method = ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$token               = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -136,6 +137,22 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$save_payment_method,
 				$customer_id
 			);
+		} elseif ( $token ) {
+			$result       = parent::process_payment( $order_id );
+			$redirect_url = wp_sanitize_redirect(
+				esc_url_raw(
+					add_query_arg(
+						[
+							'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+						],
+						$result['redirect']
+					)
+				)
+			);
+			return [
+				'result'   => $result['result'],
+				'redirect' => $redirect_url,
+			];
 		}
 
 		return [
