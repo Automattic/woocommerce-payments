@@ -309,6 +309,39 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->controller->update_settings( $request );
 	}
 
+	public function test_update_settings_saves_digital_wallets_button_theme() {
+		$this->assertEquals( 'dark', $this->gateway->get_option( 'payment_request_button_theme' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_theme', 'light' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'light', $this->gateway->get_option( 'payment_request_button_theme' ) );
+	}
+
+	public function test_update_settings_saves_digital_wallets_button_size() {
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_size', 'medium' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
+	}
+
+	public function test_update_settings_saves_digital_wallets_button_action_type() {
+		$this->assertEquals( 'buy', $this->gateway->get_option( 'payment_request_button_type' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_action_type', 'book' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
+	}
+
 	public function test_update_settings_does_not_save_account_statement_descriptor_if_not_supplied() {
 		$status_before_request = $this->gateway->get_option( 'account_statement_descriptor' );
 
