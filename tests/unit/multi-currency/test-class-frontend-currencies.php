@@ -55,6 +55,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			[ 'wc_get_price_decimal_separator', 'get_price_decimal_separator' ],
 			[ 'wc_get_price_thousand_separator', 'get_price_thousand_separator' ],
 			[ 'woocommerce_price_format', 'get_woocommerce_price_format' ],
+			[ 'woocommerce_cart_hash', 'add_currency_to_cart_hash' ],
 		];
 	}
 
@@ -173,6 +174,16 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WP_UnitTestCase {
 			[ 'left_space', '%1$s&nbsp;%2$s' ],
 			[ 'right_space', '%2$s&nbsp;%1$s' ],
 		];
+	}
+
+	public function test_add_currency_to_cart_hash_adds_currency_and_rate() {
+		$current_currency = new WCPay\Multi_Currency\Currency( 'GBP', 0.71 );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( $current_currency );
+
+		$this->assertSame(
+			md5( 'cart_hashGBP0.71' ),
+			$this->frontend_currencies->add_currency_to_cart_hash( 'cart_hash' )
+		);
 	}
 
 	private function mock_currency_format( $currency_code, $currency_settings ) {
