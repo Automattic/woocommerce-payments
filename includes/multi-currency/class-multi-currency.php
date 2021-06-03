@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 class Multi_Currency {
 
 	const CURRENCY_SESSION_KEY = 'wcpay_currency';
+	const CURRENCY_META_KEY    = 'wcpay_currency';
 
 	/**
 	 * The single instance of the class.
@@ -107,11 +108,11 @@ class Multi_Currency {
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
+		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this );
+
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
-
-			$this->frontend_prices     = new Frontend_Prices( $this );
-			$this->frontend_currencies = new Frontend_Currencies( $this );
 		}
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -181,7 +182,6 @@ class Multi_Currency {
 	 */
 	public function get_mock_currencies() {
 		return [
-			[ 'USD', '1.00' ],
 			[ 'CAD', '1.206823' ],
 			[ 'GBP', '0.708099' ],
 			[ 'EUR', '0.826381' ],
@@ -192,6 +192,24 @@ class Multi_Currency {
 			[ 'BIF', '1974' ], // Zero dollar currency.
 			[ 'CLP', '706.8' ], // Zero dollar currency.
 		];
+	}
+
+	/**
+	 * Returns the Frontend_Prices instance.
+	 *
+	 * @return Frontend_Prices
+	 */
+	public function get_frontend_prices() {
+		return $this->frontend_prices;
+	}
+
+	/**
+	 * Returns the Frontend_Currencies instance.
+	 *
+	 * @return Frontend_Currencies
+	 */
+	public function get_frontend_currencies() {
+		return $this->frontend_currencies;
 	}
 
 	/**
@@ -293,12 +311,16 @@ class Multi_Currency {
 	 * @return Currency
 	 */
 	public function get_selected_currency(): Currency {
-		if ( WC()->session ) {
+		$user_id = get_current_user_id();
+		$code    = null;
+
+		if ( 0 === $user_id && WC()->session ) {
 			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
-			return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
+		} elseif ( $user_id ) {
+			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
 
-		return $this->default_currency;
+		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
 	}
 
 	/**
@@ -309,10 +331,17 @@ class Multi_Currency {
 	 */
 	public function update_selected_currency( string $currency_code ) {
 		$code     = strtoupper( $currency_code );
+		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
-		if ( $currency && WC()->session ) {
-			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->code );
+		if ( null === $currency ) {
+			return;
+		}
+
+		if ( 0 === $user_id && WC()->session ) {
+			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
+		} elseif ( $user_id ) {
+			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
 	}
 

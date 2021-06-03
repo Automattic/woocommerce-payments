@@ -28,28 +28,32 @@ class Frontend_Prices {
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		// Simple product price hooks.
-		add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50 );
-		add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50 );
-		add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50 );
+		$frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
-		// Variation price hooks.
-		add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50 );
-		add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50 );
-		add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50 );
+		if ( $frontend_request ) {
+			// Simple product price hooks.
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50 );
 
-		// Variation price range hooks.
-		add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
-		add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 50 );
+			// Variation price hooks.
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50 );
 
-		// Shipping methods hooks.
-		add_filter( 'woocommerce_package_rates', [ $this, 'convert_package_rates_prices' ], 50 );
-		add_action( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
+			// Variation price range hooks.
+			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
+			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 50 );
 
-		// Coupon hooks.
-		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
-		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
-		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+			// Shipping methods hooks.
+			add_filter( 'woocommerce_package_rates', [ $this, 'convert_package_rates_prices' ], 50 );
+			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
+
+			// Coupon hooks.
+			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
+			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+		}
 	}
 
 	/**
