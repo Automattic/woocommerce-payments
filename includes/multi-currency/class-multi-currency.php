@@ -143,7 +143,9 @@ class Multi_Currency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ) {
-		$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+
+		$settings_pages[] = new Settings( $this );
 		return $settings_pages;
 	}
 
