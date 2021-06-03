@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.0
-Stable tag: 2.4.0
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 2.5.0 - 2021-xx-xx =
+= 2.6.0 - 2021-xx-xx =
+* Add - Notify the admin if WordPress.com user connection is broken.
+
+= 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Use Site Language when rendering Stripe elements.
 * Update - Use blog ID for authenticating most of the requests.
@@ -131,7 +134,6 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Implement expirement on Connect Page.
 * Fix - Columns are misaligned on Payments->Transactions/Disputes page.
 * Fix - Risk level is displayed as a "Numeric" value in transactions CSV.
-* Add - Redirect to WooCommerce home page after successful WooCommerce Payments KYC.
 
 = 2.3.3 - 2021-05-06 =
 * Update - Additional logic and styling for instant deposits.

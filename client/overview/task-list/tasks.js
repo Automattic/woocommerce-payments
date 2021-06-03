@@ -7,7 +7,11 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
-export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
+export const getTasks = ( {
+	accountStatus,
+	showUpdateDetailsTask,
+	wpcomReconnectUrl,
+} ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -49,6 +53,23 @@ export const getTasks = ( { accountStatus, showUpdateDetailsTask } ) => {
 					: () => {
 							window.open( accountLink, '_blank' );
 					  },
+		},
+		wpcomReconnectUrl && {
+			key: 'reconnect-wpcom-user',
+			level: 1,
+			title: __(
+				'Reconnect WooCommerce Payments',
+				'woocommerce-payments'
+			),
+			content: __(
+				'WooCommerce Payments is missing a connected WordPress.com account. ' +
+					'Some functionality will be limited without a connected account.',
+				'woocommerce-payments'
+			),
+			completed: false,
+			onClick: () => {
+				window.location.href = wpcomReconnectUrl;
+			},
 		},
 	].filter( Boolean );
 };
