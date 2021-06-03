@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -15,10 +15,14 @@ import {
  * Internal dependencies
  */
 import { useAccountStatementDescriptor, useManualCapture } from 'data';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
-const TransactionsAndDeposits = ( { accountLink } ) => {
+const TransactionsAndDeposits = () => {
+	const {
+		accountStatus: { accountLink },
+	} = useContext( WCPaySettingsContext );
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,

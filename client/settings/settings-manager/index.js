@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -20,7 +20,6 @@ import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import TransactionsAndDeposits from '../transactions-and-deposits';
 
 const PaymentMethodsDescription = () => (
@@ -92,15 +91,12 @@ const TransactionsAndDepositsDescription = () => (
 
 const SettingsManager = () => {
 	const { isLoading } = useSettings();
-	const {
-		accountStatus: { accountLink },
-	} = useContext( WCPaySettingsContext );
 
 	return (
 		<SettingsLayout>
 			<SettingsSection Description={ GeneralSettingsDescription }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<GeneralSettings accountLink={ accountLink } />
+					<GeneralSettings />
 				</LoadableBlock>
 			</SettingsSection>
 			<SettingsSection Description={ PaymentMethodsDescription }>
