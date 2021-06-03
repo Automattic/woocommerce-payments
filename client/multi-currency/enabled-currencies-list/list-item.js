@@ -13,16 +13,15 @@ import DeleteButton from './delete-button';
 
 const EnabledCurrenciesListItem = ( {
 	// eslint-disable-next-line camelcase
-	currency: { code, flag, id, is_default, name, symbol },
+	currency: { code, flag, id, is_default, name, symbol, rate },
+	defaultCurrencyCode,
 	onDeleteClick,
 } ) => {
-	const defaultText = __( 'Default currency', 'woocommerce-payments' );
-	// eslint-disable-next-line camelcase
-	const currencyCode = is_default ? `${ code } - ${ defaultText }` : code;
-
 	const getEditUrl = ( currencyId ) => {
 		return `admin.php?page=wc-settings&tab=wcpay_multi_currency&section=${ currencyId.toLowerCase() }`;
 	};
+
+	const formattedRate = Number.parseFloat( rate ).toFixed( 2 );
 
 	return (
 		<li className={ classNames( 'enabled-currency', id ) }>
@@ -30,8 +29,16 @@ const EnabledCurrenciesListItem = ( {
 				<div className="enabled-currency__flag">{ flag }</div>
 				<div className="enabled-currency__label">{ name }</div>
 				<div className="enabled-currency__code">
-					({ symbol } { currencyCode })
+					({ symbol } { code })
 				</div>
+			</div>
+			<div className="enabled-currency__rate">
+				{
+					// eslint-disable-next-line camelcase
+					is_default
+						? __( 'Default currency', 'woocommerce-payments' )
+						: `1 ${ defaultCurrencyCode } → ${ formattedRate } ${ code }`
+				}
 			</div>
 			<div className="enabled-currency__actions">
 				<Button
