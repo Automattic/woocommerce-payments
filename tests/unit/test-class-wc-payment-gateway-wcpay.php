@@ -1379,7 +1379,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$form_fields = $this->wcpay_gateway->get_form_fields();
 
-		$this->assertEquals( [ 'buy', 'donate', 'default', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
+		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
 		$this->assertEquals( [ 'dark', 'light' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 }
