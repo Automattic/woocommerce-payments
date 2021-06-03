@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper, evalAndClick, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -26,13 +26,14 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 
-		// Get the order ID so we can verify it in the disputes listing
+		// Get the order ID
 		const orderIdField = await page.$(
 			'.woocommerce-order-overview__order.order > strong'
 		);
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		await merchant.login();
+		await merchant.goToOrder( orderId );
 	} );
 
 	afterAll( async () => {
@@ -40,40 +41,49 @@ describe( 'Disputes > Submit winning dispute', () => {
 	} );
 
 	it( 'should process a winning dispute', async () => {
-		await merchantWCP.openDisputes();
-		await uiLoaded();
+		// Pull out and follow the link to avoid working in multiple tabs
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-		// Verify a dispute is present with a proper ID and open it
-		await page.waitForSelector( '.woocommerce-table__item > a', {
-			text: orderId,
+		// Verify we have a dispute for this purchase
+		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
+			text: 'Payment disputed as Fraudulent.',
 		} );
-		await expect( page ).toMatchElement( '.woocommerce-table__item > a', {
-			text: orderId,
-		} );
+		await expect( page ).toMatchElement(
+			'div.woocommerce-timeline-item__body a',
+			{
+				text: 'View dispute',
+			}
+		);
 
-		await uiLoaded();
-		await page.waitForSelector( '.woocommerce-table__clickable-cell', {
-			visible: true,
-		} );
-		await expect( page ).toClick( '.woocommerce-table__clickable-cell' );
+		// Get the link to the dispute details
+		const disputeDetailsLink = await page.$eval(
+			'div.woocommerce-timeline-item__body a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
 
-		// Verify the heading for two component cards
-		await page.waitForSelector( '.components-card__header', {
-			visible: true,
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute overview',
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Dispute: Fraudulent',
-		} );
+		// Open the dispute details
+		await merchantWCP.openDisputeDetails( disputeDetailsLink );
 
-		// Challenge the dispute
-		await expect( page ).toClick( 'a.components-button', {
-			text: 'Challenge dispute',
-		} );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
+		// Verify we're on the view dispute page
+		await expect( page ).toMatchElement(
+			'div.components-card > .components-card__header',
+			{
+				text: 'Dispute overview',
+			}
+		);
+		await expect( page ).toMatchElement(
+			'div.components-card > .components-card__header',
+			{
+				text: 'Dispute: Fraudulent',
+			}
+		);
+
+		// Click to accept the dispute
+		await merchantWCP.openChallengeDispute();
 
 		// Select product type
 		await expect( page ).toSelect(
@@ -91,22 +101,66 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await expect( page ).toMatchElement( '.components-card__header', {
 			text: 'Additional details',
 		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'General evidence',
-		} );
 
 		// Submit the evidence and accept the dialog
-		await page.removeAllListeners( 'dialog' );
-		const disputeDialog = await expect( page ).toDisplayDialog(
-			async () => {
-				await expect( page ).toClick( 'button.components-button', {
-					text: 'Submit evidence',
-				} );
+		await Promise.all( [
+			page.removeAllListeners( 'dialog' ),
+			evalAndClick(
+				'div.components-card__footer > div > button.components-button.is-primary'
+			),
+			page.on( 'dialog', async ( dialog ) => {
+				await dialog.accept();
+			} ),
+			uiUnblocked(),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
+		await page.waitForSelector(
+			'div.components-snackbar > .components-snackbar__content'
+		);
+
+		// Verify the dispute has been challenged properly
+		await expect( page ).toMatchElement(
+			'div.components-snackbar > .components-snackbar__content',
+			{
+				text:
+					'Evidence submitted!',
 			}
 		);
-		await disputeDialog.accept();
-		await uiUnblocked();
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
+	} );
+
+	it( 'should verify a dispute has been challenged properly', async () => {
+		// Re-open the dispute to view the details
+		await merchant.goToOrder( orderId );
+
+		// Pull out and follow the link to avoid working in multiple tabs
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
+
+		// Get the link to the dispute details
+		const disputeDetailsLink = await page.$eval(
+			'div.woocommerce-timeline-item__body a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the dispute details
+		await merchantWCP.openDisputeDetails( disputeDetailsLink );
+
+		// Check if buttons are not present anymore since a dispute has been challenged
+		await expect( page ).not.toMatchElement(
+			'div.components-card > .components-card__footer > a',
+			{
+				text: 'Challenge dispute',
+			}
+		);
+		await expect( page ).not.toMatchElement(
+			'div.components-card > .components-card__footer > button',
+			{
+				text: 'Accept dispute',
+			}
+		);
 	} );
 } );

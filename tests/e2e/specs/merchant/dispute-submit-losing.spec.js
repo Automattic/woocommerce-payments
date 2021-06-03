@@ -15,7 +15,7 @@ let orderId;
 
 describe( 'Disputes > Submit losing dispute', () => {
 	beforeAll( async () => {
-		await shopper.login();
+		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
 		// Place an order to dispute later
 		await setupProductCheckout(
