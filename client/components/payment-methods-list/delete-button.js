@@ -91,7 +91,7 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 							),
 							components: {
 								wooCommercePaymentsLink: (
-									<a href="admin.php?page=wc-settings&tab=checkout">
+									<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
 										{ __(
 											'WooCommerce Payments',
 											'woocommerce-payments'

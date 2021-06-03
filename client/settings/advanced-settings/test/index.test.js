@@ -10,8 +10,18 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AdvancedSettings from '..';
+import { useDebugLog, useDevMode } from '../../../data';
+
+jest.mock( '../../../data', () => ( {
+	useDevMode: jest.fn().mockReturnValue( false ),
+	useDebugLog: jest.fn().mockReturnValue( [ false, jest.fn() ] ),
+} ) );
 
 describe( 'AdvancedSettings', () => {
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	it( 'toggles the advanced settings section', () => {
 		render( <AdvancedSettings /> );
 
@@ -21,6 +31,49 @@ describe( 'AdvancedSettings', () => {
 
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Debug mode' ) ).toHaveFocus();
+	} );
+
+	it( 'toggles the logging checkbox', () => {
+		const setDebugLogMock = jest.fn();
+		useDebugLog.mockReturnValue( [ false, setDebugLogMock ] );
+
+		render( <AdvancedSettings /> );
+
+		userEvent.click( screen.getByText( 'Advanced settings' ) );
+
+		const loggingCheckbox = screen.queryByRole( 'checkbox', {
+			name: 'Log error messages',
+		} );
+
+		expect(
+			screen.queryByText(
+				'Dev mode is active so logging is on by default.'
+			)
+		).not.toBeInTheDocument();
+		expect( loggingCheckbox ).not.toBeChecked();
+		expect( setDebugLogMock ).not.toHaveBeenCalled();
+
+		userEvent.click( loggingCheckbox );
+
+		expect( setDebugLogMock ).toHaveBeenCalledWith( true );
+	} );
+
+	it( 'prevents toggling the logging checkbox when dev mode is active', () => {
+		useDevMode.mockReturnValue( true );
+
+		render( <AdvancedSettings /> );
+
+		userEvent.click( screen.getByText( 'Advanced settings' ) );
+
+		const loggingCheckbox = screen.queryByRole( 'checkbox', {
+			name: 'Dev mode is active so logging is on by default.',
+		} );
+
+		expect(
+			screen.queryByText( 'Log error messages' )
+		).not.toBeInTheDocument();
+		expect( loggingCheckbox ).toBeChecked();
+		expect( loggingCheckbox ).toBeDisabled();
 	} );
 
 	it( 'focuses on the "custom font" input when the checkbox is checked', () => {

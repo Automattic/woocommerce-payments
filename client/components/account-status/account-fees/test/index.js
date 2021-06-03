@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AccountFees from '../';
+import AccountFees from '../index';
 
 describe( 'AccountFees', () => {
 	const renderAccountFees = ( accountFees ) => {
@@ -24,6 +24,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [],
 		} );
@@ -47,6 +48,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{
@@ -84,6 +86,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{
@@ -99,6 +102,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{
@@ -116,6 +120,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{
@@ -132,6 +137,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{
@@ -151,6 +157,7 @@ describe( 'AccountFees', () => {
 			base: {
 				percentage_rate: 0.029,
 				fixed_rate: 30,
+				currency: 'usd',
 			},
 			discount: [
 				{

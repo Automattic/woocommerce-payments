@@ -8,30 +8,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './style.scss';
-import AccountStatus from 'account-status-settings';
-import AccountFees from 'account-fees-settings';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
-
-const statusContainer = document.getElementById(
-	'wcpay-account-status-container'
-);
-if ( statusContainer ) {
-	ReactDOM.render(
-		<AccountStatus accountStatus={ wcpaySettings.accountStatus } />,
-		statusContainer
-	);
-}
-
-const feesContainer = document.getElementById( 'wcpay-account-fees-container' );
-if ( feesContainer ) {
-	ReactDOM.render(
-		<AccountFees accountFees={ wcpaySettings.accountFees } />,
-		feesContainer
-	);
-}
 
 const settingsForm = document.querySelector( 'form#mainform' );
 const manualCaptureCheckbox = document.getElementById(
