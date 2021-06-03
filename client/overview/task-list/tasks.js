@@ -45,7 +45,6 @@ export const getTasks = ( {
 				'Update WooCommerce Payments business details',
 				'woocommerce-payments'
 			),
-			action: __( 'Update business details', 'woocommerce-payments' ),
 			additionalInfo: accountDetailsTaskDescription,
 			completed: 'complete' === status,
 			onClick:
@@ -55,7 +54,7 @@ export const getTasks = ( {
 							window.open( accountLink, '_blank' );
 					  },
 			visible: true,
-			type: 'setup',
+			type: 'extension',
 		},
 		wpcomReconnectUrl && {
 			key: 'reconnect-wpcom-user',
