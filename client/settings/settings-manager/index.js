@@ -16,7 +16,6 @@ import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
@@ -86,6 +85,11 @@ const SettingsManager = () => {
 
 	return (
 		<SettingsLayout>
+			<SettingsSection Description={ GeneralSettingsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<GeneralSettings accountLink={ accountLink } />
+				</LoadableBlock>
+			</SettingsSection>
 			<SettingsSection Description={ PaymentMethodsDescription }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 					<PaymentMethods />
@@ -94,16 +98,6 @@ const SettingsManager = () => {
 			<SettingsSection Description={ DigitalWalletsDescription }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 					<DigitalWallets />
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection Description={ GeneralSettingsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<GeneralSettings accountLink={ accountLink } />
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection>
-				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
-					<TestModeSettings />
 				</LoadableBlock>
 			</SettingsSection>
 			<AdvancedSettings />
