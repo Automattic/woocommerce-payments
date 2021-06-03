@@ -16,47 +16,41 @@ import {
 	useDigitalWalletsButtonTheme,
 } from '../../data';
 
+const makeButtonSizeText = ( string ) =>
+	interpolateComponents( {
+		mixedString: string,
+		components: {
+			helpText: (
+				<span className="payment-method-settings__option-muted-text" />
+			),
+		},
+	} );
 const buttonSizeOptions = [
 	{
-		label: interpolateComponents( {
-			mixedString: __(
+		label: makeButtonSizeText(
+			__(
 				'Default {{helpText}}(40 px){{/helpText}}',
 				'woocommerce-payments'
-			),
-			components: {
-				helpText: (
-					<span className="payment-method-settings__option-muted-text" />
-				),
-			},
-		} ),
+			)
+		),
 		value: 'default',
 	},
 	{
-		label: interpolateComponents( {
-			mixedString: __(
+		label: makeButtonSizeText(
+			__(
 				'Medium {{helpText}}(48 px){{/helpText}}',
 				'woocommerce-payments'
-			),
-			components: {
-				helpText: (
-					<span className="payment-method-settings__option-muted-text" />
-				),
-			},
-		} ),
+			)
+		),
 		value: 'medium',
 	},
 	{
-		label: interpolateComponents( {
-			mixedString: __(
+		label: makeButtonSizeText(
+			__(
 				'Large {{helpText}}(56 px){{/helpText}}',
 				'woocommerce-payments'
-			),
-			components: {
-				helpText: (
-					<span className="payment-method-settings__option-muted-text" />
-				),
-			},
-		} ),
+			)
+		),
 		value: 'large',
 	},
 ];
@@ -78,35 +72,34 @@ const buttonActionOptions = [
 		value: 'book',
 	},
 ];
+
+const makeButtonThemeText = ( string ) =>
+	interpolateComponents( {
+		mixedString: string,
+		components: {
+			br: <br />,
+			helpText: (
+				<span className="payment-method-settings__option-help-text" />
+			),
+		},
+	} );
 const buttonThemeOptions = [
 	{
-		label: interpolateComponents( {
-			mixedString: __(
+		label: makeButtonThemeText(
+			__(
 				'Dark {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with high contrast.{{/helpText}}',
 				'woocommerce-payments'
-			),
-			components: {
-				br: <br />,
-				helpText: (
-					<span className="payment-method-settings__option-help-text" />
-				),
-			},
-		} ),
+			)
+		),
 		value: 'dark',
 	},
 	{
-		label: interpolateComponents( {
-			mixedString: __(
+		label: makeButtonThemeText(
+			__(
 				'Light {{br/}}{{helpText}}Recommended for dark or colored backgrounds with high contrast.{{/helpText}}',
 				'woocommerce-payments'
-			),
-			components: {
-				br: <br />,
-				helpText: (
-					<span className="payment-method-settings__option-help-text" />
-				),
-			},
-		} ),
+			)
+		),
 		value: 'light',
 	},
 ];
