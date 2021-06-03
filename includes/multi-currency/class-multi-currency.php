@@ -18,6 +18,13 @@ class Multi_Currency {
 	const CURRENCY_META_KEY    = 'wcpay_currency';
 
 	/**
+	 * The plugin's ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'wcpay_multi_currency';
+
+	/**
 	 * The single instance of the class.
 	 *
 	 * @var Multi_Currency
@@ -78,6 +85,7 @@ class Multi_Currency {
 	 * Constructor.
 	 */
 	private function __construct() {
+		$this->includes();
 		$this->init();
 	}
 
@@ -85,31 +93,19 @@ class Multi_Currency {
 	 * Init.
 	 */
 	public function init() {
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
-		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
-
-		$this->id = 'wcpay_multi_currency';
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
-		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
-		add_action(
-			'widgets_init',
-			function() {
-				register_widget( new Currency_Switcher_Widget( $this ) );
-			}
-		);
-		new User_Settings( $this );
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+		new User_Settings( $this );
 
 		$this->frontend_prices     = new Frontend_Prices( $this );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
+
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
 		if ( $is_frontend_request ) {
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
@@ -118,24 +114,39 @@ class Multi_Currency {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		if ( is_admin() ) {
-			// Multi-currency settings page.
-			add_filter(
-				'woocommerce_get_settings_pages',
-				function( $settings_pages ) {
-					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
-					return $settings_pages;
-				}
-			);
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 		}
 	}
 
 	/**
 	 * Initialize the REST API controller.
 	 */
-	public static function init_rest_api() {
+	public function init_rest_api() {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
+
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
+	}
+
+	/**
+	 * Initialize the Widgets.
+	 */
+	public function init_widgets() {
+		register_widget( new Currency_Switcher_Widget( $this ) );
+	}
+
+	/**
+	 * Initialize the Settings Pages.
+	 *
+	 * @param array $settings_pages The settings pages.
+	 *
+	 * @return array The new settings pages.
+	 */
+	public function init_settings_pages( $settings_pages ) {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+
+		$settings_pages[] = new Settings( $this );
+		return $settings_pages;
 	}
 
 	/**
@@ -480,5 +491,17 @@ class Multi_Currency {
 	protected function ceil_price( $price, $precision ) {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
+	}
+
+	/**
+	 * Include required core files used in admin and on the frontend.
+	 */
+	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
 	}
 }

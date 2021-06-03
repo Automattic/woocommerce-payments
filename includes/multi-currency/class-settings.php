@@ -11,10 +11,6 @@ use WCPay\Multi_Currency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 
-if ( class_exists( Settings::class, false ) ) {
-	return new Settings();
-}
-
 /**
  * Settings.
  */
@@ -43,9 +39,11 @@ class Settings extends \WC_Settings_Page {
 
 	/**
 	 * Constructor.
+	 *
+	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
 	 */
-	public function __construct() {
-		$this->multi_currency = Multi_Currency::instance();
+	public function __construct( Multi_Currency $multi_currency ) {
+		$this->multi_currency = $multi_currency;
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
@@ -361,5 +359,3 @@ class Settings extends \WC_Settings_Page {
 		do_action( 'woocommerce_update_options_' . $this->id );
 	}
 }
-
-new Settings();
