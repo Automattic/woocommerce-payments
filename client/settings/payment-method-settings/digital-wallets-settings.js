@@ -57,7 +57,7 @@ const buttonSizeOptions = [
 const buttonActionOptions = [
 	{
 		label: __( 'Only icon', 'woocommerce-payments' ),
-		value: 'only-icon',
+		value: 'default',
 	},
 	{
 		label: __( 'Buy', 'woocommerce-payments' ),
@@ -114,6 +114,7 @@ const DigitalWalletsSettings = () => {
 			<CardBody>
 				<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 				<RadioControl
+					className="payment-method-settings__cta-selection"
 					label={ __( 'Call to action', 'woocommerce-payments' ) }
 					hideLabelFromVision
 					help={ __(

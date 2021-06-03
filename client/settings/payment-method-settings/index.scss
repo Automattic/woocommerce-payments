@@ -15,6 +15,13 @@
 			padding-left: 26px;
 		}
 	}
+
+	&__cta-selection {
+		.components-base-control__label {
+			// hack until the `hideLabelFromVision` is fixed for radio controls in Gutenberg
+			display: none;
+		}
+	}
 }
 
 .components-radio-control__input[type='radio']:checked::before {
