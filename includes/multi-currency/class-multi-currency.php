@@ -97,7 +97,7 @@ class Multi_Currency {
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
-		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action(
 			'widgets_init',
 			function() {
@@ -132,8 +132,9 @@ class Multi_Currency {
 	/**
 	 * Initialize the REST API controller.
 	 */
-	public static function init_rest_api() {
+	public function init_rest_api() {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-wc-rest-controller.php';
+
 		$api_controller = new WC_REST_Controller( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
