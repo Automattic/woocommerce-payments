@@ -4,6 +4,7 @@
 import { getPaymentRequestData } from '../utils';
 
 export const CustomButton = ( { onClick } ) => {
+	// TODO: migrate button data
 	const { theme, height, label } = getPaymentRequestData( 'button' );
 	return (
 		<button

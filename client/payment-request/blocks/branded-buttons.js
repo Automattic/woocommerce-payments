@@ -31,6 +31,7 @@ const useLocalizedGoogleSvg = ( type, theme, locale ) => {
 };
 
 export const GooglePayButton = ( { onClick } ) => {
+	// TODO: migrate button data
 	const {
 		height,
 		locale,
@@ -38,6 +39,7 @@ export const GooglePayButton = ( { onClick } ) => {
 		branded_type,
 	} = getPaymentRequestData( 'button' );
 	// Allowed themes for Google Pay button image are 'dark' and 'light'.
+	// TODO: migrate button data
 	const theme =
 		'dark' === getPaymentRequestData( 'button' )?.theme ? 'dark' : 'light';
 

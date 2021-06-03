@@ -41,6 +41,7 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
+	// TODO: migrate button data
 	const { type, theme, height } = getPaymentRequestData( 'button' );
 	const isBranded = getPaymentRequestData( 'button' )?.is_branded;
 	const brandedType = getPaymentRequestData( 'button' )?.branded_type;

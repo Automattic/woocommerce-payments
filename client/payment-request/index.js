@@ -287,6 +287,7 @@ jQuery( ( $ ) => {
 		 */
 		createPaymentRequestButton: ( elements, paymentRequest ) => {
 			let button;
+			// TODO: migrate button data
 			if ( wcpayPaymentRequestParams.button.is_custom ) {
 				button = $( wcpayPaymentRequestParams.button.css_selector );
 				if ( button.length ) {
@@ -297,6 +298,7 @@ jQuery( ( $ ) => {
 				}
 			}
 
+			// TODO: migrate button data
 			if ( wcpayPaymentRequestParams.button.is_branded ) {
 				if ( shouldUseGooglePayBrand() ) {
 					button = wcpayPaymentRequest.createGooglePayButton();
@@ -318,6 +320,7 @@ jQuery( ( $ ) => {
 				paymentRequest: paymentRequest,
 				style: {
 					paymentRequestButton: {
+						// TODO: migrate button data
 						type: wcpayPaymentRequestParams.button.type,
 						theme: wcpayPaymentRequestParams.button.theme,
 						height: wcpayPaymentRequestParams.button.height + 'px',
@@ -344,6 +347,7 @@ jQuery( ( $ ) => {
 			prButton.data( 'isBranded' ),
 
 		createGooglePayButton: () => {
+			// TODO: migrate button data
 			const type = wcpayPaymentRequestParams.button.branded_type;
 			const locale = wcpayPaymentRequestParams.button.locale;
 			const height = wcpayPaymentRequestParams.button.height;
@@ -501,6 +505,7 @@ jQuery( ( $ ) => {
 		},
 
 		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
+			// TODO: migrate button data
 			if (
 				( ! wcpayPaymentRequestParams.button.is_custom ||
 					! wcpayPaymentRequest.isCustomPaymentRequestButton(
