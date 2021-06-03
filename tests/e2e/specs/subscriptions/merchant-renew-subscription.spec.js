@@ -21,7 +21,6 @@ const productSlug = 'subscription-for-merchant-renewal';
 const customerBilling = config.get( 'addresses.customer.billing' );
 
 let subscriptionId;
-let newSubscriptionId = subscriptionId + 1;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription as a merchant',
@@ -90,14 +89,13 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			] );
 
-			// Verify that you see the order number in the related orders
+			// Check if a new order is present in related orders
 			await expect(
 				page
 			).toMatchElement(
-				'div.woocommerce_subscriptions_related_orders > table > tbody > tr > td > a',
-				{ text: newSubscriptionId }
+				'div.woocommerce_subscriptions_related_orders > table > tbody > tr > td',
+				{ text: 'Renewal Order' }
 			);
-			console.log(newSubscriptionId);
 		} );
 	}
 );
