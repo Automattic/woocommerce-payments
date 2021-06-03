@@ -114,14 +114,7 @@ class Multi_Currency {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
 		if ( is_admin() ) {
-			// Multi-currency settings page.
-			add_filter(
-				'woocommerce_get_settings_pages',
-				function( $settings_pages ) {
-					$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
-					return $settings_pages;
-				}
-			);
+			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 		}
 	}
 
@@ -140,6 +133,18 @@ class Multi_Currency {
 	 */
 	public function init_widgets() {
 		register_widget( new Currency_Switcher_Widget( $this ) );
+	}
+
+	/**
+	 * Initialize the Settings Pages.
+	 *
+	 * @param array $settings_pages The settings pages.
+	 *
+	 * @return array The new settings pages.
+	 */
+	public function init_settings_pages( $settings_pages ) {
+		$settings_pages[] = include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
+		return $settings_pages;
 	}
 
 	/**
