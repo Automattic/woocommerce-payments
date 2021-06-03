@@ -43,6 +43,10 @@ const GeneralSettings = ( { accountLink } ) => {
 						'Enable WooCommerce Payments',
 						'woocommerce-payments'
 					) }
+					help={ __(
+						'When enabled, payment methods powered by WooCommerce Payments will appear on checkout.',
+						'woocommerce-payments'
+					) }
 				/>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
