@@ -33,6 +33,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 		orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 		await merchant.login();
+		await merchant.goToOrder( orderId );
 	} );
 
 	afterAll( async () => {
@@ -40,17 +41,34 @@ describe( 'Disputes > Submit losing dispute', () => {
 	} );
 
 	it( 'should process a losing dispute', async () => {
-		// Go to dispute page
-		await merchant.goToOrder( orderId );
-		await merchantWCP.viewDisputeFromOrder();
+		// Pull out and follow the link to avoid working in multiple tabs
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
-		// Verify the heading for two component cards
-		await page.waitForSelector(
-			'div.components-card > .components-card__header',
+		// Verify we have a dispute for this purchase
+		await expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
+			text: 'Payment disputed as Product not received.',
+		} );
+		await expect( page ).toMatchElement(
+			'div.woocommerce-timeline-item__body a',
 			{
-				visible: true,
+				text: 'View dispute',
 			}
 		);
+
+		// Get the link to the dispute details
+		const disputeDetailsLink = await page.$eval(
+			'div.woocommerce-timeline-item__body a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the dispute details
+		await merchantWCP.openDisputeDetails( disputeDetailsLink );
+
+		// Verify we're on the view dispute page
 		await expect( page ).toMatchElement(
 			'div.components-card > .components-card__header',
 			{
@@ -64,22 +82,11 @@ describe( 'Disputes > Submit losing dispute', () => {
 			}
 		);
 
-		// Accept the dispute
-		await page.removeAllListeners( 'dialog' );
-		const disputeDialog = await expect( page ).toDisplayDialog(
-			async () => {
-				await expect( page ).toClick(
-					'div.components-card > .components-card__footer > div > button',
-					{
-						text: 'Accept dispute',
-					}
-				);
-			}
+		// Click to accept the dispute
+		await merchantWCP.openAcceptDispute();
+		await page.waitForSelector(
+			'div.components-snackbar > .components-snackbar__content'
 		);
-		await disputeDialog.accept();
-		await uiUnblocked();
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await uiLoaded();
 
 		// Verify the dispute has been accepted properly
 		await expect( page ).toMatchElement(
@@ -89,8 +96,29 @@ describe( 'Disputes > Submit losing dispute', () => {
 					'You have accepted the dispute for order #' + orderId + '.',
 			}
 		);
+	} );
+
+	it( 'should verify a dispute has been accepted properly', async () => {
+		// Re-open the dispute to view the details
 		await merchant.goToOrder( orderId );
-		await merchantWCP.viewDisputeFromOrder();
+
+		// Pull out and follow the link to avoid working in multiple tabs
+		const paymentDetailsLink = await page.$eval(
+			'p.order_number > a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
+
+		// Get the link to the dispute details
+		const disputeDetailsLink = await page.$eval(
+			'div.woocommerce-timeline-item__body a',
+			( anchor ) => anchor.getAttribute( 'href' )
+		);
+
+		// Open the dispute details
+		await merchantWCP.openDisputeDetails( disputeDetailsLink );
+
+		// Check if buttons are not present anymore since a dispute has been accepted
 		await expect( page ).not.toMatchElement(
 			'div.components-card > .components-card__footer > a',
 			{
