@@ -1,10 +1,6 @@
 /** @format */
 
 /**
- * External dependencies
- */
-
-/**
  * Internal dependencies
  */
 import TYPES from './action-types';
@@ -16,15 +12,40 @@ const receiveMultiCurrencies = (
 	{ type, data = [] }
 ) => {
 	switch ( type ) {
+		case TYPES.SET_CURRENCIES:
+			return {
+				...state,
+				currencies: data,
+				available: data.available,
+				enabled: data.enabled,
+				default: data.default,
+			};
 		case TYPES.SET_AVAILABLE_CURRENCIES:
 			return {
 				...state,
-				available: data,
+				currencies: {
+					...state,
+					available: data.available,
+				},
+				available: data.available,
 			};
 		case TYPES.SET_ENABLED_CURRENCIES:
 			return {
 				...state,
-				enabled: data,
+				currencies: {
+					...state,
+					enabled: data.enabled,
+				},
+				enabled: data.enabled,
+			};
+		case TYPES.SET_DEFAULT_CURRENCY:
+			return {
+				...state,
+				currencies: {
+					...state,
+					default: data.default,
+				},
+				default: data.default,
 			};
 	}
 
