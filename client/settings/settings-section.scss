@@ -6,6 +6,12 @@
 		margin-bottom: 24px;
 	}
 
+	.components-card__body {
+		&.is-size-large {
+			padding: 24px;
+		}
+	}
+
 	@include breakpoint( '>800px' ) {
 		flex-flow: row;
 	}
