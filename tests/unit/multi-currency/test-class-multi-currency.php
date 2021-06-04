@@ -24,7 +24,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->mock_currency_settings(
 			'GBP',
 			[
-				'price_charm'    => '0.1',
+				'price_charm'    => '-0.1',
 				'price_rounding' => '0',
 			]
 		);

@@ -452,7 +452,7 @@ class Multi_Currency {
 		}
 
 		if ( $apply_charm_pricing ) {
-			$price -= floatval( $currency->get_charm() );
+			$price += floatval( $currency->get_charm() );
 		}
 
 		// Do not return negative prices (possible because of $currency->get_charm()).

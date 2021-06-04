@@ -336,7 +336,7 @@ class Settings extends \WC_Settings_Page {
 					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
 					'default'  => 0.00,
 					'type'     => 'text',
-					'desc_tip' => __( 'A value of 0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
+					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
 				],
 
 				[
