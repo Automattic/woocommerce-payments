@@ -19,7 +19,7 @@ import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
-import LoadableSettingsSection from '../loadable-settings-section-placeholder';
+import LoadableSettingsSection from '../loadable-settings-section';
 
 const PaymentMethodsDescription = () => (
 	<>

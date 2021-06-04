@@ -10,7 +10,7 @@ import React from 'react';
 import { useSettings } from '../data';
 import { LoadableBlock } from '../components/loadable';
 
-const LoadableSettingsSectionPlaceholder = ( { children, numLines } ) => {
+const LoadableSettingsSection = ( { children, numLines } ) => {
 	const { isLoading } = useSettings();
 
 	return (
@@ -20,4 +20,4 @@ const LoadableSettingsSectionPlaceholder = ( { children, numLines } ) => {
 	);
 };
 
-export default LoadableSettingsSectionPlaceholder;
+export default LoadableSettingsSection;

@@ -15,7 +15,7 @@ import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
-import LoadableSettingsSection from '../loadable-settings-section-placeholder';
+import LoadableSettingsSection from '../loadable-settings-section';
 
 /* eslint-disable camelcase */
 const methods = {
