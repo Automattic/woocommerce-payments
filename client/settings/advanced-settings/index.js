@@ -19,16 +19,16 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
-	const firstHeadingElementRef = useRef( null );
+	const advancedSectionContainerRef = useRef( null );
 	const {
 		featureFlags: { upe: isUpeEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	useEffect( () => {
 		if ( ! isSectionExpanded ) return;
-		if ( ! firstHeadingElementRef.current ) return;
+		if ( ! advancedSectionContainerRef.current ) return;
 
-		firstHeadingElementRef.current.focus();
+		advancedSectionContainerRef.current.focus();
 	}, [ isSectionExpanded ] );
 
 	return (
@@ -45,7 +45,10 @@ const AdvancedSettings = () => {
 				<SettingsSection>
 					<Card>
 						<CardBody size="large">
-							<div ref={ firstHeadingElementRef } tabIndex="-1">
+							<div
+								ref={ advancedSectionContainerRef }
+								tabIndex="-1"
+							>
 								<DebugMode />
 								{ isUpeEnabled && <BlockAppearance /> }
 							</div>
