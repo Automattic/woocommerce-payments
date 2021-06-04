@@ -113,6 +113,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Create and confirm payment intent. Saved payment methods do not follow UPE workflow.
+	 *
+	 * @param int $order_id Order ID to process the payment for.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
+	public function process_payment_using_saved_method( $order_id ) {
+		return parent::process_payment( $order_id );
+	}
+
+	/**
 	 * Update payment intent for completed checkout and return redirect URL for Stripe to confirm payment.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -138,21 +149,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$customer_id
 			);
 		} elseif ( $token ) {
-			$result       = parent::process_payment( $order_id );
-			$redirect_url = wp_sanitize_redirect(
-				esc_url_raw(
-					add_query_arg(
-						[
-							'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-						],
-						$result['redirect']
-					)
-				)
-			);
-			return [
-				'result'   => $result['result'],
-				'redirect' => $redirect_url,
-			];
+			return $this->process_payment_using_saved_method( $order_id );
 		}
 
 		return [
@@ -181,13 +178,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
-		if ( ! $is_nonce_valid || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) || empty( $_GET['wc_payment_method'] ) ) {
+		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : '';
+		if ( self::GATEWAY_ID !== $payment_method ) {
 			return;
 		}
 
-		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : '';
-		if ( self::GATEWAY_ID !== $payment_method ) {
+		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
+		if ( ! $is_nonce_valid || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) || empty( $_GET['wc_payment_method'] ) ) {
 			return;
 		}
 
