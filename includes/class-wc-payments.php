@@ -183,6 +183,11 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 
+		// Load customer multi-currency if feature is enabled.
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		}
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
