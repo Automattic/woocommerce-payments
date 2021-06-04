@@ -43,10 +43,18 @@ echo "Secrets created"
 
 step "Starting SERVER containers"
 
-# remove port definitions to allow the override ports to replace them
-sed -i '' -e '/ports:/{n;d;}' ./docker-compose.yml
-sed -i '' -e '/ports:/{d;}' ./docker-compose.yml
+# Remove port definitions to allow the override ports to replace them
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' -e '/ports:/{n;d;}' ./docker-compose.yml
+    sed -i '' -e '/ports:/{d;}' ./docker-compose.yml
+else
+    sed -i -e '/ports:/{n;d;}' ./docker-compose.yml
+    sed -i -e '/ports:/{d;}' ./docker-compose.yml
+fi
+
+# Copy the docker configuration override file to the server clone root
 redirect_output cp -f $E2E_ROOT/env/docker-compose.override.yml $SERVER_PATH/docker-compose.override.yml
+
 redirect_output docker-compose up --build --force-recreate -d
 
 if [[ -n $CI ]]; then
