@@ -164,6 +164,31 @@ describe( 'PaymentMethodsSelector', () => {
 		expect( updateEnabledPaymentMethodIdsMock ).not.toHaveBeenCalled();
 	} );
 
+	test( 'Disables the "Add selected" button until at least one payment method is checked', () => {
+		render( <PaymentMethodsSelector /> );
+
+		const addPaymentMethodButton = screen.getByRole( 'button', {
+			name: 'Add payment method',
+		} );
+		user.click( addPaymentMethodButton );
+
+		expect( screen.getByText( 'Add selected' ) ).toBeDisabled();
+
+		// checking one payment method
+		const paymentMethods = screen.getAllByRole( 'listitem' );
+		const paymentMethodCheckbox = within( paymentMethods[ 0 ] ).getByRole(
+			'checkbox'
+		);
+		user.click( paymentMethodCheckbox );
+
+		expect( screen.getByText( 'Add selected' ) ).not.toBeDisabled();
+
+		// un-checking the same payment method
+		user.click( paymentMethodCheckbox );
+
+		expect( screen.getByText( 'Add selected' ) ).toBeDisabled();
+	} );
+
 	test( 'Selecting a payment method and clicking "Add selected" adds the method and closes the modal', () => {
 		const updateEnabledPaymentMethodIdsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [

@@ -70,3 +70,23 @@ export const generateHoverRules = ( baseRules ) => {
 
 	return hoverRules;
 };
+
+/**
+ * Generates outline style for UPE using outline width, style and color.
+ * UPE does not accept the individual properties, we need to concat them.
+ *
+ * @param {string}  outlineWidth Outline width from computed styles.
+ * @param {string}  outlineStyle Outline width from computed styles.
+ * @param {string}  outlineColor Outline width from computed styles.
+ * @return {string} Object with generated hover rules.
+ */
+
+export const generateOutlineStyle = (
+	outlineWidth,
+	outlineStyle = 'solid',
+	outlineColor
+) => {
+	return outlineWidth && outlineColor
+		? [ outlineWidth, outlineStyle, outlineColor ].join( ' ' )
+		: '';
+};

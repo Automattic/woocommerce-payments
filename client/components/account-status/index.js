@@ -60,13 +60,13 @@ const AccountStatusDetails = ( props ) => {
 
 	const cardTitle = (
 		<>
-			<FlexItem>
+			<FlexItem className={ 'account-details' }>
 				{ __( 'Account details', 'woocommerce-payments' ) }
 			</FlexItem>
-			<FlexBlock>
+			<FlexBlock className={ 'account-status' }>
 				<StatusChip accountStatus={ accountStatus.status } />
 			</FlexBlock>
-			<FlexItem className={ 'woocommerce-account-status__controls' }>
+			<FlexItem className={ 'edit-details' }>
 				<Button isLink href={ accountStatus.accountLink }>
 					{ __( 'Edit details', 'woocommerce-payments' ) }
 				</Button>
@@ -99,7 +99,7 @@ const AccountStatusDetails = ( props ) => {
 			</AccountStatusItem>
 			<AccountStatusItem
 				align={ 'flex-start' }
-				label={ __( 'BaseFee:', 'woocommerce-payments' ) }
+				label={ __( 'Base Fee:', 'woocommerce-payments' ) }
 			>
 				<AccountFees accountFees={ accountFees } />
 			</AccountStatusItem>

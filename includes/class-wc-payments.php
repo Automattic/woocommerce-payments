@@ -192,6 +192,11 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-action-scheduler-service.php';
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 
+		// Load customer multi-currency if feature is enabled.
+		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		}
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -718,7 +723,7 @@ class WC_Payments {
 	 * Adds WCPay notes to the WC-Admin inbox.
 	 */
 	public static function add_woo_admin_notes() {
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
@@ -733,9 +738,8 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
-		self::$remote_note_service->delete_notes();
-
-		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			self::$remote_note_service->delete_notes();
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-refund-policy.php';
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
 			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
