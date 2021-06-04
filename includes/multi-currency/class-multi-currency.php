@@ -7,6 +7,9 @@
 
 namespace WCPay\Multi_Currency;
 
+use WC_Payments_API_Client;
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -14,8 +17,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class Multi_Currency {
 
-	const CURRENCY_SESSION_KEY = 'wcpay_currency';
-	const CURRENCY_META_KEY    = 'wcpay_currency';
+	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
+	const CURRENCY_META_KEY        = 'wcpay_currency';
+	const CURRENCY_CACHE_OPTION    = 'wcpay_currency_data';
+	const CURRENCY_RETRIEVAL_ERROR = 'error';
 
 	/**
 	 * The plugin's ID.
@@ -67,6 +72,13 @@ class Multi_Currency {
 	protected $enabled_currencies;
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
 	 * Main Multi_Currency Instance.
 	 *
 	 * Ensures only one instance of Multi_Currency is loaded or can be loaded.
@@ -82,9 +94,13 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Constructor.
+	 * Class constructor.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
-	private function __construct() {
+	private function __construct( WC_Payments_API_Client $payments_api_client ) {
+		$this->payments_api_client = $payments_api_client;
+
 		$this->includes();
 		$this->init();
 	}
@@ -187,21 +203,62 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the mock available.
+	 * Wipes the cached currency data option, forcing to re-fetch the data from WPCOM.
 	 *
-	 * @return array Array of currencies.
+	 * @return void
 	 */
-	public function get_mock_currencies() {
+	public function clear_cache() {
+		delete_option( self::CURRENCY_CACHE_OPTION );
+	}
+
+	/**
+	 * Gets and caches the data for the currency rates from the server.
+	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
+	 * and 'updated' (when this data was fetched from the API).
+	 *
+	 * @return bool|array
+	 */
+	public function get_cached_currencies() {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return false;
+		}
+
+		$currencies = $this->read_currencies_from_cache();
+
+		// If an array of currencies was returned from the cache, return it here.
+		if ( false !== $currencies ) {
+			return $currencies;
+		}
+
+		// If the option contains the error value, return false early and do not attempt another API call.
+		if ( self::CURRENCY_RETRIEVAL_ERROR === $currencies ) {
+			return false;
+		}
+
+		// If the cache was expired or something went wrong, make a call to the server to get the
+		// currency data.
+		try {
+			$currency_data = $this->payments_api_client->get_currency_rates(
+				get_woocommerce_currency(),
+				array_keys( get_woocommerce_currencies() )
+			);
+		} catch ( API_Exception $e ) {
+			// Failed to retrieve currencies from the server. Exception is logged in http client.
+			// Rate limit for a short amount of time by caching the failure.
+			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, 1 * MINUTE_IN_SECONDS );
+
+			// Return false to signal currency retrieval error.
+			return false;
+		}
+
+		$updated = time();
+
+		// Cache the currency data so we don't call the server every time.
+		$this->cache_currencies( $currency_data, $updated, 6 * HOUR_IN_SECONDS );
+
 		return [
-			[ 'CAD', '1.206823' ],
-			[ 'GBP', '0.708099' ],
-			[ 'EUR', '0.826381' ],
-			[ 'AED', '3.6732' ],
-			[ 'CDF', '2000' ],
-			[ 'NZD', '1.387163' ],
-			[ 'DKK', '6.144615' ],
-			[ 'BIF', '1974' ], // Zero dollar currency.
-			[ 'CLP', '706.8' ], // Zero dollar currency.
+			'currencies' => $currency_data,
+			'updated'    => $updated,
 		];
 	}
 
@@ -227,14 +284,9 @@ class Multi_Currency {
 	 * Sets up the available currencies.
 	 */
 	private function initialize_available_currencies() {
-		// Add default store currency with a rate of 1.0.
-		$woocommerce_currency                                = get_woocommerce_currency();
-		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
-
-		// TODO: This will need to get stored data, then build and return it accordingly.
-		$currencies = $this->get_mock_currencies();
-		foreach ( $currencies as $currency ) {
-			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
+		$currency_data = $this->get_cached_currencies();
+		foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
+			$this->available_currencies[ strtoupper( $currency_code ) ] = new Currency( strtoupper( $currency_code ), $currency_rate );
 		}
 	}
 
@@ -503,5 +555,64 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+	}
+
+	/**
+	 * Caches currency data for a period of time.
+	 *
+	 * @param string|array $currencies - Currency data to cache.
+	 * @param int|null     $updated    - The time the data was fetched from the server.
+	 * @param int|null     $expiration - The length of time to cache the currency data, in seconds.
+	 *
+	 * @return bool
+	 */
+	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ) {
+		// Default expiration to 6 hours if not set.
+		if ( null === $expiration ) {
+			$expiration = 6 * HOUR_IN_SECONDS;
+		}
+
+		// Default updated to the currenct time.
+		if ( null === $updated ) {
+			$updated = time();
+		}
+
+		// Add the currency data, expiry time, and time updated to the array we're caching.
+		$currency_cache = [
+			'currencies' => $currencies,
+			'expires'    => time() + $expiration,
+			'updated'    => $updated,
+		];
+
+		// Create or update the currency option cache.
+		if ( false === get_option( self::CURRENCY_CACHE_OPTION ) ) {
+			$result = add_option( self::CURRENCY_CACHE_OPTION, $currency_cache, '', 'no' );
+		} else {
+			$result = update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Read the currency data from the WP option we cache it in.
+	 *
+	 * @return array|bool
+	 */
+	private function read_currencies_from_cache() {
+		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
+
+		if ( false === $currency_cache || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
+			// No option found or the data isn't in the format we expect.
+			return false;
+		}
+
+		// Return false if the cache has expired, triggering another fetch.
+		if ( $currency_cache['expires'] < time() ) {
+			return false;
+		}
+
+		// We have fresh currency data in the cache, so return it.
+		return $currency_cache;
 	}
 }
