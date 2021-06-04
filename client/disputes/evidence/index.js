@@ -422,8 +422,8 @@ export default ( { query } ) => {
 			createInfoNotice(
 				__(
 					"The files you've attached to this dispute as evidence will exceed the limit for a " +
-					"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
-					'images, you might want to try providing them in lower resolutions.',
+						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+						'images, you might want to try providing them in lower resolutions.',
 					'woocommerce-payments'
 				)
 			);
@@ -436,7 +436,7 @@ export default ( { query } ) => {
 			return;
 		}
 
-		if (fileSizeExceeded(file.size)) {
+		if ( fileSizeExceeded( file.size ) ) {
 			return true;
 		}
 
