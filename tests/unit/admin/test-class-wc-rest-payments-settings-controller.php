@@ -331,11 +331,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
 	}
 
-	public function test_update_settings_saves_digital_wallets_button_action_type() {
+	public function test_update_settings_saves_digital_wallets_button_type() {
 		$this->assertEquals( 'buy', $this->gateway->get_option( 'payment_request_button_type' ) );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'digital_wallets_button_action_type', 'book' );
+		$request->set_param( 'digital_wallets_button_type', 'book' );
 
 		$this->controller->update_settings( $request );
 

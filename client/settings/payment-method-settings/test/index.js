@@ -12,7 +12,7 @@ import PaymentMethodSettings from '..';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
-	useDigitalWalletsButtonActionType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	useDigitalWalletsButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	useDigitalWalletsButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	useDigitalWalletsButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 } ) );

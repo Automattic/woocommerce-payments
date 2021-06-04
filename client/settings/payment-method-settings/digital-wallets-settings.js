@@ -11,7 +11,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import {
-	useDigitalWalletsButtonActionType,
+	useDigitalWalletsButtonType,
 	useDigitalWalletsButtonSize,
 	useDigitalWalletsButtonTheme,
 } from '../../data';
@@ -105,7 +105,7 @@ const buttonThemeOptions = [
 ];
 
 const DigitalWalletsSettings = () => {
-	const [ actionType, setActionType ] = useDigitalWalletsButtonActionType();
+	const [ buttonType, setButtonType ] = useDigitalWalletsButtonType();
 	const [ size, setSize ] = useDigitalWalletsButtonSize();
 	const [ theme, setTheme ] = useDigitalWalletsButtonTheme();
 
@@ -121,9 +121,9 @@ const DigitalWalletsSettings = () => {
 						'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 						'woocommerce-payments'
 					) }
-					selected={ actionType }
+					selected={ buttonType }
 					options={ buttonActionOptions }
-					onChange={ setActionType }
+					onChange={ setButtonType }
 				/>
 				<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
 				<RadioControl
