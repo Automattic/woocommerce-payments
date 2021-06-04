@@ -50,7 +50,7 @@ const SetupComplete = () => {
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						"You're ready to begin accepting payments with the new methods!.",
+						"You're ready to begin accepting payments with the new methods!",
 						'woocommerce-payments'
 					) }
 				</p>
@@ -95,7 +95,7 @@ const SetupComplete = () => {
 						) }
 					</Button>
 					<Button
-						href="admin.php?page=wc-settings&tab=checkout"
+						href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
 						isTertiary
 					>
 						{ __(
