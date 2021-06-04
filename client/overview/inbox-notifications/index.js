@@ -18,7 +18,7 @@ import {
  * Internal dependencies
  */
 import wcpayTracks from 'tracks';
-import { updateUserWoocommerceMeta } from 'utils/update-user-woocommerce-meta';
+import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
 import './index.scss';
 
 const INBOX_QUERY = {
@@ -60,7 +60,7 @@ function hasValidNotes( notes ) {
 	const validNotes = notes.filter( ( { is_deleted } ) => {
 		return ! is_deleted;
 	} );
-	return 0 <= validNotes.length;
+	return 0 !== validNotes.length;
 }
 
 const onBodyLinkClick = ( note, innerLink ) => {
@@ -178,7 +178,7 @@ const InboxPanel = () => {
 		const userDataFields = {
 			wc_payments_overview_inbox_last_read: mountTime,
 		};
-		updateUserWoocommerceMeta( userDataFields );
+		updateWoocommerceUserMeta( userDataFields );
 	}, [] );
 
 	if ( isError ) {

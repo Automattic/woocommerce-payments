@@ -4,7 +4,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 
-export async function updateUserWoocommerceMeta( newMetaData ) {
+export async function updateWoocommerceUserMeta( newMetaData ) {
 	if ( ! newMetaData || 0 === Object.keys( newMetaData ).length ) {
 		return;
 	}

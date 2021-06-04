@@ -7,14 +7,14 @@ import { dispatch, select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { updateUserWoocommerceMeta } from '../update-user-woocommerce-meta';
+import { updateWoocommerceUserMeta } from '../update-woocommerce-user-meta';
 
 jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn(),
 	select: jest.fn(),
 } ) );
 
-describe( 'updateUserWoocommerceMeta', () => {
+describe( 'updateWoocommerceUserMeta', () => {
 	let getCurrentUser, saveUser, getLastEntitySaveError;
 	beforeEach( () => {
 		getCurrentUser = jest
@@ -31,17 +31,17 @@ describe( 'updateUserWoocommerceMeta', () => {
 		} );
 	} );
 	test( 'it should do nothing when passed in meta data is empty', async () => {
-		const data = await updateUserWoocommerceMeta( {} );
+		const data = await updateWoocommerceUserMeta( {} );
 		expect( data ).toBeUndefined();
 	} );
 
 	test( 'it retrieve the current user first', async () => {
-		await updateUserWoocommerceMeta( { newvalue: '' } );
+		await updateWoocommerceUserMeta( { newvalue: '' } );
 		expect( getCurrentUser ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	test( 'it call saveUser with user id and new and old meta data', async () => {
-		await updateUserWoocommerceMeta( { newvalue: 'test' } );
+		await updateWoocommerceUserMeta( { newvalue: 'test' } );
 		expect( saveUser ).toHaveBeenCalledWith( {
 			id: 2,
 			woocommerce_meta: {
@@ -52,7 +52,7 @@ describe( 'updateUserWoocommerceMeta', () => {
 	} );
 
 	test( 'it should stringify non string values', async () => {
-		await updateUserWoocommerceMeta( {
+		await updateWoocommerceUserMeta( {
 			newvalue: 'test',
 			anumber: 123,
 		} );
@@ -69,7 +69,7 @@ describe( 'updateUserWoocommerceMeta', () => {
 	test( 'it call getLastEntitySAveError and return the error if saveUser return undefined', async () => {
 		saveUser.mockReturnValue( Promise.resolve( undefined ) );
 		getLastEntitySaveError.mockReturnValue( Promise.resolve( 'a error' ) );
-		const data = await updateUserWoocommerceMeta( {
+		const data = await updateWoocommerceUserMeta( {
 			newvalue: 'test',
 		} );
 		expect( getLastEntitySaveError ).toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe( 'updateUserWoocommerceMeta', () => {
 				},
 			} )
 		);
-		const data = await updateUserWoocommerceMeta( {
+		const data = await updateWoocommerceUserMeta( {
 			newvalue: 'test',
 		} );
 		expect( data.updated ).toEqual( 'updated' );
