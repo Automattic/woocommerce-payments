@@ -47,9 +47,11 @@ step "Starting SERVER containers"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' -e '/ports:/{n;d;}' ./docker-compose.yml
     sed -i '' -e '/ports:/{d;}' ./docker-compose.yml
+	sed -i '' -e 's/8086/8088/g' ./local/bin/docker-setup.sh
 else
     sed -i -e '/ports:/{n;d;}' ./docker-compose.yml
     sed -i -e '/ports:/{d;}' ./docker-compose.yml
+	sed -i -e 's/8086/8088/g' ./local/bin/docker-setup.sh
 fi
 
 # Copy the docker configuration override file to the server clone root
@@ -216,7 +218,7 @@ echo "Setting redirection to local server"
 if [[ -n $CI ]]; then
 	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 fi
-cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8086/wp-json/"
+cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8088/wp-json/"
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
