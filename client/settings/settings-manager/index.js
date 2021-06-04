@@ -9,8 +9,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useSettings } from 'data';
-import { LoadableBlock } from '../../components/loadable';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
@@ -21,6 +19,7 @@ import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
+import LoadableSettingsSection from '../loadable-settings-section-placeholder';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -77,37 +76,31 @@ const GeneralSettingsDescription = () => (
 	</>
 );
 
-const SettingsManager = ( { accountStatus = {} } ) => {
-	const { isLoading } = useSettings();
-
-	return (
-		<SettingsLayout>
-			<SettingsSection Description={ PaymentMethodsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<PaymentMethods />
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection Description={ DigitalWalletsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<DigitalWallets />
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection Description={ GeneralSettingsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<GeneralSettings
-						accountLink={ accountStatus.accountLink }
-					/>
-				</LoadableBlock>
-			</SettingsSection>
-			<SettingsSection>
-				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
-					<TestModeSettings />
-				</LoadableBlock>
-			</SettingsSection>
-			<AdvancedSettings />
-			<SaveSettingsSection />
-		</SettingsLayout>
-	);
-};
+const SettingsManager = ( { accountStatus = {} } ) => (
+	<SettingsLayout>
+		<SettingsSection Description={ PaymentMethodsDescription }>
+			<LoadableSettingsSection numLines={ 20 }>
+				<PaymentMethods />
+			</LoadableSettingsSection>
+		</SettingsSection>
+		<SettingsSection Description={ DigitalWalletsDescription }>
+			<LoadableSettingsSection numLines={ 20 }>
+				<DigitalWallets />
+			</LoadableSettingsSection>
+		</SettingsSection>
+		<SettingsSection Description={ GeneralSettingsDescription }>
+			<LoadableSettingsSection numLines={ 20 }>
+				<GeneralSettings accountLink={ accountStatus.accountLink } />
+			</LoadableSettingsSection>
+		</SettingsSection>
+		<SettingsSection>
+			<LoadableSettingsSection numLines={ 10 }>
+				<TestModeSettings />
+			</LoadableSettingsSection>
+		</SettingsSection>
+		<AdvancedSettings />
+		<SaveSettingsSection />
+	</SettingsLayout>
+);
 
 export default SettingsManager;
