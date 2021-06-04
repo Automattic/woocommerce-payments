@@ -427,17 +427,14 @@ class Multi_Currency {
 	 * @return float The converted price.
 	 */
 	public function get_price( $price, $type ): float {
-		$supported_types  = [ 'product', 'shipping', 'tax', 'coupon' ];
-		$current_currency = $this->get_selected_currency();
+		$supported_types = [ 'product', 'shipping', 'tax', 'coupon' ];
+		$currency        = $this->get_selected_currency();
 
-		if (
-			! in_array( $type, $supported_types, true ) ||
-			$current_currency->get_code() === $this->get_default_currency()->get_code()
-		) {
+		if ( ! in_array( $type, $supported_types, true ) || $currency->get_is_default() ) {
 			return (float) $price;
 		}
 
-		$converted_price = ( (float) $price ) * $current_currency->get_rate();
+		$converted_price = ( (float) $price ) * $currency->get_rate();
 
 		if ( 'tax' === $type || 'coupon' === $type ) {
 			return $converted_price;
@@ -448,7 +445,7 @@ class Multi_Currency {
 			? 'product' === $type
 			: in_array( $type, $charm_compatible_types, true );
 
-		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing );
+		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
 	}
 
 	/**
@@ -461,23 +458,23 @@ class Multi_Currency {
 	/**
 	 * Gets the price after adjusting it with the rounding and charm settings.
 	 *
-	 * @param float $price               The price to be adjusted.
-	 * @param bool  $apply_charm_pricing Whether charm pricing should be applied.
+	 * @param float    $price               The price to be adjusted.
+	 * @param bool     $apply_charm_pricing Whether charm pricing should be applied.
+	 * @param Currency $currency The currency to be used when adjusting.
 	 *
 	 * @return float The adjusted price.
 	 */
-	protected function get_adjusted_price( $price, $apply_charm_pricing ): float {
-		$precision = $this->get_round_precision();
-		$charm     = $this->get_charm_pricing();
-
-		$adjusted_price = $this->ceil_price( $price, $precision );
-
-		if ( $apply_charm_pricing ) {
-			$adjusted_price += $charm;
+	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
+		if ( 'none' !== $currency->get_rounding() ) {
+			$price = $this->ceil_price( $price, intval( $currency->get_rounding() ) );
 		}
 
-		// Do not return negative prices (possible because of $charm).
-		return max( 0, $adjusted_price );
+		if ( $apply_charm_pricing ) {
+			$price += floatval( $currency->get_charm() );
+		}
+
+		// Do not return negative prices (possible because of $currency->get_charm()).
+		return max( 0, $price );
 	}
 
 	/**
