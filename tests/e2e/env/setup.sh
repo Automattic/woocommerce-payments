@@ -42,6 +42,11 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting SERVER containers"
+
+# remove port definitions to allow the override ports to replace them
+sed -i '' -e '/ports:/{n;d;}' ./docker-compose.yml
+sed -i '' -e '/ports:/{d;}' ./docker-compose.yml
+redirect_output cp -f $E2E_ROOT/env/docker-compose.override.yml $SERVER_PATH/docker-compose.override.yml
 redirect_output docker-compose up --build --force-recreate -d
 
 if [[ -n $CI ]]; then
@@ -86,7 +91,7 @@ SITE_TITLE="WooCommerce Payments E2E site"
 
 set +e
 # Wait for containers to be started up before the setup.
-# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
