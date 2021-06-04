@@ -166,9 +166,12 @@ const defaultCurrency = {
 };
 
 useCurrencies.mockReturnValue( {
-	available: availableCurrencies,
-	enabled: enabledCurrencies,
-	default: defaultCurrency,
+	currencies: {
+		available: availableCurrencies,
+		enabled: enabledCurrencies,
+		default: defaultCurrency,
+	},
+	isLoading: false,
 } );
 
 useAvailableCurrencies.mockReturnValue( availableCurrencies );

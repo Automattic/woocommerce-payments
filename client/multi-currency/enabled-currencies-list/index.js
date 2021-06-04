@@ -16,7 +16,7 @@ import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesModal from './modal';
 
 const EnabledCurrencies = () => {
-	const { currencies } = useCurrencies();
+	const { isLoading } = useCurrencies();
 	const defaultCurrency = useDefaultCurrency();
 	const {
 		enabledCurrencies,
@@ -30,7 +30,7 @@ const EnabledCurrencies = () => {
 		submitEnabledCurrenciesUpdate( newCurrencies );
 	};
 
-	const enabledKeys = currencies.enabled
+	const enabledKeys = enabledCurrencies
 		? Object.keys( enabledCurrencies )
 		: [];
 
@@ -48,7 +48,8 @@ const EnabledCurrencies = () => {
 				<CardDivider />
 				<CardBody size={ null }>
 					<EnabledCurrenciesList className="enabled-currencies-list">
-						{ enabledCurrencies &&
+						{ ! isLoading &&
+							enabledCurrencies &&
 							enabledKeys.map( ( code ) => (
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
