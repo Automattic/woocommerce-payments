@@ -71,9 +71,6 @@ const GeneralSettingsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://docs.woocommerce.com/document/payments/faq/">
-			{ __( 'View Frequently Asked Questions', 'woocommerce-payments' ) }
-		</ExternalLink>
 	</>
 );
 
