@@ -21,18 +21,27 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		$this->mock_currency_settings(
+			'GBP',
+			[
+				'price_charm'    => '-0.1',
+				'price_rounding' => '0',
+			]
+		);
+
 		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
 	}
 
 	public function tearDown() {
 		WC()->session->__unset( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
-		remove_all_filters( 'wcpay_multi_currency_round_precision' );
 		remove_all_filters( 'woocommerce_currency' );
 		$this->reset_multi_currency_instance();
 
 		delete_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY );
 		wp_set_current_user( 0 );
+
+		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding' ] );
 
 		parent::tearDown();
 	}
@@ -205,33 +214,33 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	 * @dataProvider get_price_provider
 	 */
 	public function test_get_price_converts_using_ceil_and_precision( $price, $precision, $expected ) {
-		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_true' );
-		add_filter(
-			'wcpay_multi_currency_round_precision',
-			function () use ( $precision ) {
-				return $precision;
-			}
-		);
+		$this->mock_currency_settings( 'GBP', [ 'price_rounding' => $precision ] );
+
+		// Recreate Multi_Currency instance to use the recently set price_rounding.
+		$this->reset_multi_currency_instance();
+		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
+
+		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 
 		$this->assertSame( $expected, $this->multi_currency->get_price( $price, 'shipping' ) );
 	}
 
 	public function get_price_provider() {
 		return [
-			[ '7.07', 2, 5.01 ], // 5.006 after conversion
-			[ '7.06', 2, 5.0 ], // 4.999 after conversion
-			[ '7.04', 2, 4.99 ], // 4.985 after conversion
-			[ '7.07', 1, 5.1 ], // 5.006 after conversion
-			[ '7.06', 1, 5.0 ], // 4.999 after conversion
-			[ '6.90', 1, 4.9 ], // 4.885 after conversion
-			[ '7.07', 0, 6.0 ], // 5.006 after conversion
-			[ '7.06', 0, 5.0 ], // 4.999 after conversion
-			[ '5.80', 0, 5.0 ], // 4.106 after conversion
-			[ '14.26', -1, 20.0 ], // 10.097 after conversion
-			[ '14.02', -1, 10.0 ], // 9.927 after conversion
-			[ '141.0', -2, 100.0 ], // 99.841 after conversion
-			[ '142.0', -2, 200.0 ], // 100.550 after conversion
+			[ '7.07', '2', 5.01 ], // 5.006 after conversion
+			[ '7.06', '2', 5.0 ], // 4.999 after conversion
+			[ '7.04', '2', 4.99 ], // 4.985 after conversion
+			[ '7.07', '1', 5.1 ], // 5.006 after conversion
+			[ '7.06', '1', 5.0 ], // 4.999 after conversion
+			[ '6.90', '1', 4.9 ], // 4.885 after conversion
+			[ '7.07', '0', 6.0 ], // 5.006 after conversion
+			[ '7.06', '0', 5.0 ], // 4.999 after conversion
+			[ '5.80', '0', 5.0 ], // 4.106 after conversion
+			[ '14.26', '-1', 20.0 ], // 10.097 after conversion
+			[ '14.02', '-1', 10.0 ], // 9.927 after conversion
+			[ '141.0', '-2', 100.0 ], // 99.841 after conversion
+			[ '142.0', '-2', 200.0 ], // 100.550 after conversion
 		];
 	}
 
@@ -241,5 +250,17 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$instance_property->setAccessible( true );
 		$instance_property->setValue( null, null );
 		$instance_property->setAccessible( false );
+	}
+
+	private function mock_currency_settings( $currency_code, $settings ) {
+		foreach ( $settings as $setting => $value ) {
+			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
+		}
+	}
+
+	private function remove_currency_settings_mock( $currency_code, $settings ) {
+		foreach ( $settings as $setting ) {
+			delete_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ) );
+		}
 	}
 }
