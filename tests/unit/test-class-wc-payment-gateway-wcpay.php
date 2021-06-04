@@ -1307,6 +1307,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_payment_request_button_locations_defaults() {
+		$this->markTestSkipped( 'Grouped settings is enabled. Feel free to delete this test when cleaning up the feature flag.' );
+
 		// when the "grouped settings" flag is disabled, the default values for the `payment_request_button_locations` option should not include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '0' );
 
