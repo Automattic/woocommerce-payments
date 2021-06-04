@@ -24,19 +24,24 @@ const OverviewPage = () => {
 	const {
 		accountStatus,
 		showUpdateDetailsTask,
+		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 	} = wcpaySettings;
 
-	const tasks = getTasks( { accountStatus, showUpdateDetailsTask } );
+	const tasks = getTasks( {
+		accountStatus,
+		showUpdateDetailsTask,
+		wpcomReconnectUrl,
+	} );
 	const queryParams = getQuery();
 
 	const showKycSuccessNotice =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	return (
-		<Page className="wcpay-overview">
+		<Page isNarrow className="wcpay-overview">
 			{ showKycSuccessNotice && (
-				<Notice status="success">
+				<Notice status="success" isDismissible={ false }>
 					{ __(
 						"Thanks for verifying your business details. You're ready to start taking payments!",
 						'woocommerce-payments'
