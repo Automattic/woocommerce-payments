@@ -5,7 +5,6 @@
  */
 
 import { dateI18n } from '@wordpress/date';
-import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
@@ -26,13 +25,14 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 		);
 
-	return depositId ? (
+	const estimated = depositId.includes( 'wcpay_estimated_' )
+		? 'Estimated'
+		: '';
+
+	return (
 		<Link href={ depositUrl }>
-			{ formattedDateAvailable ||
-				__( 'Deposit details', 'woocommerce-payments' ) }
+			{ estimated } { formattedDateAvailable }
 		</Link>
-	) : (
-		formattedDateAvailable || __( 'Pending', 'woocommerce-payments' )
 	);
 };
 
