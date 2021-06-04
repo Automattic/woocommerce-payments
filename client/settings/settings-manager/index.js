@@ -56,6 +56,9 @@ const DigitalWalletsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
+		<ExternalLink href="https://docs.woocommerce.com/document/payments/apple-pay/">
+			{ __( 'How it works?', 'woocommerce-payments' ) }
+		</ExternalLink>
 	</>
 );
 
