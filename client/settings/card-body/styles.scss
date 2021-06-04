@@ -1,0 +1,9 @@
+.wcpay-card-body {
+	> :first-child {
+		margin-top: 0;
+	}
+
+	.components-radio-control__option:not( :last-child ) {
+		margin-bottom: 8px;
+	}
+}

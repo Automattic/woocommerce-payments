@@ -6,7 +6,6 @@ import { Icon, chevronDown, chevronUp } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Card,
-	CardBody,
 	CheckboxControl,
 	TextControl,
 	TextareaControl,
@@ -21,6 +20,7 @@ import {
 import SettingsSection from '../settings-section';
 import './style.scss';
 import { useDebugLog, useDevMode } from '../../data';
+import CardBody from '../card-body';
 
 const useToggle = ( initialValue = false ) => {
 	const [ value, setValue ] = useState( initialValue );

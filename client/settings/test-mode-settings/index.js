@@ -3,21 +3,21 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
 import { useTestMode, useDevMode } from '../../data';
+import CardBody from '../card-body';
 
 const TestModeSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const isDevModeEnabled = useDevMode();
 
 	return (
-		<Card className="test-mode-settings">
+		<Card>
 			<CardBody>
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
 				<CheckboxControl
