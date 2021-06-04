@@ -3,13 +3,9 @@
  * External dependencies
  */
 import { __, _n } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useRef } from '@wordpress/element';
 import { EmptyContent, Section } from '@woocommerce/components';
-import {
-	NOTES_STORE_NAME,
-	useUserPreferences,
-	QUERY_DEFAULTS,
-} from '@woocommerce/data';
+import { NOTES_STORE_NAME, QUERY_DEFAULTS } from '@woocommerce/data';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import {
@@ -22,6 +18,7 @@ import {
  * Internal dependencies
  */
 import wcpayTracks from 'tracks';
+import { updateUserWoocommerceMeta } from 'utils/update-user-woocommerce-meta';
 import './index.scss';
 
 const INBOX_QUERY = {
@@ -131,7 +128,6 @@ const renderNotes = ( {
 };
 
 const InboxPanel = () => {
-	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
 	const { createNotice } = useDispatch( 'core/notices' );
 	const {
 		batchUpdateNotes,
@@ -140,29 +136,41 @@ const InboxPanel = () => {
 		updateNote,
 		triggerNoteAction,
 	} = useDispatch( NOTES_STORE_NAME );
-	const { isError, resolving, batchUpdating, notes } = useSelect(
-		( select ) => {
-			const {
-				getNotes,
-				getNotesError,
-				isResolving,
-				isNotesRequesting,
-			} = select( NOTES_STORE_NAME );
+	const {
+		isError,
+		resolving,
+		batchUpdating,
+		notes,
+		overviewInboxLastRead,
+	} = useSelect( ( select ) => {
+		const {
+			getNotes,
+			getNotesError,
+			isResolving,
+			isNotesRequesting,
+		} = select( NOTES_STORE_NAME );
+		const { getCurrentUser } = select( 'core' );
+		const currentUser = getCurrentUser();
+		const woocommerceMeta = currentUser ? currentUser.woocommerce_meta : {};
 
-			return {
-				notes: getNotes( INBOX_QUERY ),
-				isError: Boolean(
-					getNotesError( 'getNotes', [ INBOX_QUERY ] )
-				),
-				resolving: isResolving( 'getNotes', [ INBOX_QUERY ] ),
-				batchUpdating: isNotesRequesting( 'batchUpdateNotes' ),
-			};
-		}
-	);
+		return {
+			notes: getNotes( INBOX_QUERY ),
+			isError: Boolean( getNotesError( 'getNotes', [ INBOX_QUERY ] ) ),
+			resolving: isResolving( 'getNotes', [ INBOX_QUERY ] ),
+			batchUpdating: isNotesRequesting( 'batchUpdateNotes' ),
+			overviewInboxLastRead: woocommerceMeta.wc_payments_overview_inbox_last_read
+				? JSON.parse(
+						woocommerceMeta.wc_payments_overview_inbox_last_read
+				  )
+				: undefined,
+		};
+	} );
 	const [ dismiss, setDismiss ] = useState();
-	const [ lastRead ] = useState(
-		userPrefs.wc_payments_overview_inbox_last_read
-	);
+	// Make sure we only set lastRead at component mount.
+	const lastRead = useRef( overviewInboxLastRead );
+	if ( ! lastRead.current && overviewInboxLastRead ) {
+		lastRead.current = overviewInboxLastRead;
+	}
 
 	useEffect( () => {
 		const mountTime = Date.now();
@@ -170,8 +178,8 @@ const InboxPanel = () => {
 		const userDataFields = {
 			wc_payments_overview_inbox_last_read: mountTime,
 		};
-		updateUserPreferences( userDataFields );
-	} );
+		updateUserWoocommerceMeta( userDataFields );
+	}, [] );
 
 	if ( isError ) {
 		const title = __(
@@ -287,7 +295,7 @@ const InboxPanel = () => {
 						renderNotes( {
 							hasNotes,
 							batchUpdating,
-							lastRead,
+							lastRead: lastRead.current,
 							notes,
 							onDismiss,
 							onNoteActionClick,

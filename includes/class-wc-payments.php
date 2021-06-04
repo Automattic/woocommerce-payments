@@ -230,10 +230,11 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
 		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
-		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause'], 10, 2);
+		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
 
 		// Priority 5 so we can manipulate the registered gateways before they are shown.
 		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
@@ -553,8 +554,23 @@ class WC_Payments {
 	}
 
 	/**
+	 * Adds fields so that we can store inbox notifications last read and open times.
+	 *
+	 * @param array $user_data_fields User data fields.
+	 * @return array
+	 */
+	public static function add_user_data_fields( $user_data_fields ) {
+		return array_merge(
+			$user_data_fields,
+			[ 'wc_payments_overview_inbox_last_read' ]
+		);
+	}
+
+	/**
 	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
 	 * For visibility, we want WooCommerce Payments to be at the top of the list.
+	 * NOTE: this can be removed after WC version 5.6, when the api supports the use of source.
+	 * https://github.com/woocommerce/woocommerce-admin/pull/6979
 	 *
 	 * @param array           $args Existing ordering of the payment gateways.
 	 * @param WP_REST_Request $request Full details about the request.
@@ -562,19 +578,22 @@ class WC_Payments {
 	 * @return array Modified ordering.
 	 */
 	public static function possibly_add_source_to_notes_query( $args, $request ) {
-		if ( isset( $request['source'] ) ) {
-			$args['source'] = 'woocommerce-payments'; // $request['source'];
+		if ( isset( $request['source'] ) && ! isset( $args['source'] ) ) {
+			$args['source'] = 'woocommerce-payments';
 			return array_merge(
 				$args,
-				array(
-					'source' => $request['source']
-				)
+				[
+					'source' => $request['source'],
+				]
 			);
 		}
 		return $args;
 	}
 
 	/**
+	 * Adds source where clause to note query.
+	 * NOTE: this can be removed after WC version 5.6, when the api supports the use of source.
+	 * https://github.com/woocommerce/woocommerce-admin/pull/6979
 	 *
 	 * @param string $where_clauses Existing ordering of the payment gateways.
 	 * @param array  $args Full details about the request.
@@ -582,9 +601,9 @@ class WC_Payments {
 	 * @return string Modified where clause.
 	 */
 	public static function possibly_add_note_source_where_clause( $where_clauses, $args ) {
-		if ( isset( $args['source'] ) ) {
-			$escaped_where_source  = sprintf( "'%s'", esc_sql( $args['source'] ));
-			$where_clauses .= " AND source IN ($escaped_where_source)";
+		if ( isset( $args['source'] ) && false === strpos( $where_clauses, 'AND source IN' ) ) {
+			$escaped_where_source = sprintf( "'%s'", esc_sql( $args['source'] ) );
+			$where_clauses       .= " AND source IN ($escaped_where_source)";
 		}
 		return $where_clauses;
 	}
