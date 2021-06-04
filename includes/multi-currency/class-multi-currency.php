@@ -392,24 +392,6 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the rounding precision in the format used by round().
-	 *
-	 * @return int The rounding precision.
-	 */
-	public function get_round_precision(): float {
-		return apply_filters( 'wcpay_multi_currency_round_precision', 0 );
-	}
-
-	/**
-	 * Gets the charm pricing to be added to the converted price after rounding.
-	 *
-	 * @return float The charm pricing.
-	 */
-	public function get_charm_pricing(): float {
-		return apply_filters( 'wcpay_multi_currency_charm_pricing', -0.1 );
-	}
-
-	/**
 	 * Gets the configured value for apply charm pricing only to products.
 	 *
 	 * @return bool The configured value.
