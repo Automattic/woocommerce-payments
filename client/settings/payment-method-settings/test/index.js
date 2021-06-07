@@ -12,6 +12,9 @@ import PaymentMethodSettings from '..';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
+	useDigitalWalletsButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	useDigitalWalletsButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	useDigitalWalletsButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 } ) );
 
 describe( 'PaymentMethodSettings', () => {
@@ -27,7 +30,9 @@ describe( 'PaymentMethodSettings', () => {
 	test( 'renders settings', () => {
 		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
-		expect( screen.queryByText( 'Call to action' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'heading', { name: 'Call to action' } )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders breadcrumbs', () => {

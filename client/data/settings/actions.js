@@ -13,6 +13,28 @@ import { __ } from '@wordpress/i18n';
 import ACTION_TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from '../constants';
 
+function updateSettingsValues( payload ) {
+	return {
+		type: ACTION_TYPES.SET_SETTINGS_VALUES,
+		payload,
+	};
+}
+
+export function updateDigitalWalletsButtonType( type ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_type: type } );
+}
+
+export function updateDigitalWalletsButtonSize( size ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_size: size } );
+}
+
+export function updateDigitalWalletsButtonTheme( theme ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_theme: theme } );
+}
+
 export function updateSettings( data ) {
 	return {
 		type: ACTION_TYPES.SET_SETTINGS,

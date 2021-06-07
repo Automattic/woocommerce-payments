@@ -59,8 +59,7 @@ const DigitalWallets = () => {
 					help={ interpolateComponents( {
 						mixedString: __(
 							'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
-								'{{appleLink}}Apple{{/appleLink}}, {{googleLink}}Google{{/googleLink}} ' +
-								"and {{microsoftLink}}Microsoft{{/microsoftLink}}'s terms of use.",
+								"{{appleLink}}Apple{{/appleLink}}, and {{googleLink}}Google{{/googleLink}}'s terms of use.",
 							'woocommerce-payments'
 						),
 						components: {
@@ -85,20 +84,13 @@ const DigitalWallets = () => {
 									href="https://androidpay.developers.google.com/terms/sellertos"
 								/>
 							),
-							microsoftLink: (
-								<a
-									target="_blank"
-									rel="noreferrer"
-									href="https://www.microsoft.com/en/servicesagreement/"
-								/>
-							),
 						},
 					} ) }
 					/* eslint-enable jsx-a11y/anchor-has-content */
 				/>
 				<h4>
 					{ __(
-						'Show express checkouts on:',
+						'Show express checkouts on',
 						'woocommerce-payments'
 					) }
 				</h4>

@@ -7,59 +7,28 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import {
-	useAccountStatementDescriptor,
-	useManualCapture,
-	useIsWCPayEnabled,
-} from 'data';
+import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
 
 jest.mock( 'data', () => ( {
-	useAccountStatementDescriptor: jest.fn(),
-	useManualCapture: jest.fn(),
+	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
+	useTestMode: jest.fn(),
 } ) );
 
 describe( 'GeneralSettings', () => {
 	beforeEach( () => {
-		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
+		useDevMode.mockReturnValue( false );
 		useIsWCPayEnabled.mockReturnValue( [ false, jest.fn() ] );
-		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
 	} );
 
 	it( 'renders', () => {
-		render( <GeneralSettings accountLink="/account-link" /> );
-
-		const manageLink = screen.queryByText( 'Manage in Stripe' );
-		expect( manageLink ).toBeInTheDocument();
-		expect( manageLink ).toHaveTextContent(
-			'Manage in Stripe(opens in a new tab)'
-		);
-		expect( manageLink.href ).toContain( '/account-link' );
+		render( <GeneralSettings /> );
 
 		expect(
 			screen.queryByText( 'Enable WooCommerce Payments' )
 		).toBeInTheDocument();
-	} );
-
-	it( 'displays the length of the bank statement input', async () => {
-		const updateAccountStatementDescriptor = jest.fn();
-		useAccountStatementDescriptor.mockReturnValue( [
-			'Statement Name',
-			updateAccountStatementDescriptor,
-		] );
-
-		render( <GeneralSettings accountLink="/account-link" /> );
-
-		const manageLink = screen.getByText( '14 / 22' );
-		expect( manageLink ).toBeInTheDocument();
-
-		fireEvent.change( screen.getByLabelText( 'Customer bank statement' ), {
-			target: { value: 'New Statement Name' },
-		} );
-
-		expect( updateAccountStatementDescriptor ).toHaveBeenCalledWith(
-			'New Statement Name'
-		);
+		expect( screen.queryByText( 'Enable test mode' ) ).toBeInTheDocument();
 	} );
 
 	it.each( [ [ true ], [ false ] ] )(
@@ -67,7 +36,7 @@ describe( 'GeneralSettings', () => {
 		( isEnabled ) => {
 			useIsWCPayEnabled.mockReturnValue( [ isEnabled ] );
 
-			render( <GeneralSettings accountLink="/account-link" /> );
+			render( <GeneralSettings /> );
 
 			const enableWCPayCheckbox = screen.getByLabelText(
 				'Enable WooCommerce Payments'
@@ -90,7 +59,7 @@ describe( 'GeneralSettings', () => {
 				updateIsWCPayEnabledMock,
 			] );
 
-			render( <GeneralSettings accountLink="/account-link" /> );
+			render( <GeneralSettings /> );
 
 			const enableWCPayCheckbox = screen.getByLabelText(
 				'Enable WooCommerce Payments'
