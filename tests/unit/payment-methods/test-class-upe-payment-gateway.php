@@ -94,6 +94,16 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	];
 
 	/**
+	 * Mocked object to be used as response from process_payment_using_saved_method()
+	 *
+	 * @var array
+	 */
+	private $mock_payment_result = [
+		'result'   => 'success',
+		'redirect' => 'testURL/key=mock_order_key',
+	];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
@@ -143,6 +153,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'create_payment_intent',
 					'get_return_url',
 					'manage_customer_details_for_order',
+					'process_payment_using_saved_method',
 				]
 			)
 			->getMock();
@@ -159,6 +170,12 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->method( 'create_payment_intent' )
 			->will(
 				$this->returnValue( $this->mock_payment_intent )
+			);
+		$this->mock_upe_gateway
+			->expects( $this->any() )
+			->method( 'process_payment_using_saved_method' )
+			->will(
+				$this->returnValue( $this->mock_payment_result )
 			);
 
 		// Arrange: Define a $_POST array which includes the payment method,
@@ -202,6 +219,15 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertRegExp( "/order_id=$order_id/", $result['redirect_url'] );
 		$this->assertRegExp( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
 		$this->assertRegExp( '/save_payment_method=yes/', $result['redirect_url'] );
+	}
+
+	public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
+		$order = WC_Helper_Order::create_order();
+		$_POST = $this->setup_saved_payment_method();
+
+		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertRegExp( '/key=mock_order_key/', $result['redirect'] );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -371,6 +397,15 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( $result_order->get_meta( '_stripe_customer_id', true ), $customer_id );
 		$this->assertEquals( $result_order->get_status(), 'on-hold' );
 		$this->assertEquals( count( $result_order->get_payment_tokens() ), 1 );
+	}
+
+	private function setup_saved_payment_method() {
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+
+		return [
+			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token' => (string) $token->get_id(),
+		];
 	}
 
 }
