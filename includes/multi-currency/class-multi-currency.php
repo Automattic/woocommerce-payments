@@ -193,15 +193,15 @@ class Multi_Currency {
 	 */
 	public function get_mock_currencies() {
 		return [
-			[ 'CAD', '1.206823' ],
-			[ 'GBP', '0.708099' ],
-			[ 'EUR', '0.826381' ],
-			[ 'AED', '3.6732' ],
-			[ 'CDF', '2000' ],
-			[ 'NZD', '1.387163' ],
-			[ 'DKK', '6.144615' ],
-			[ 'BIF', '1974' ], // Zero dollar currency.
-			[ 'CLP', '706.8' ], // Zero dollar currency.
+			[ 'CAD', 1.206823 ],
+			[ 'GBP', 0.708099 ],
+			[ 'EUR', 0.826381 ],
+			[ 'AED', 3.6732 ],
+			[ 'CDF', 2000 ],
+			[ 'NZD', 1.387163 ],
+			[ 'DKK', 6.144615 ],
+			[ 'BIF', 1974 ], // Zero decimal currency.
+			[ 'CLP', 706.8 ], // Zero decimal currency.
 		];
 	}
 
@@ -279,6 +279,8 @@ class Multi_Currency {
 
 			$this->enabled_currencies[ $code ] = $currency;
 		}
+
+		ksort( $this->enabled_currencies );
 
 		// Set default currency to the top of the list.
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
