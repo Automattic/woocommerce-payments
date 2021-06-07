@@ -163,7 +163,7 @@ const AddPaymentMethodsTask = () => {
 					),
 					components: {
 						settingsLink: (
-							<a href="admin.php?page=wc-settings">
+							<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
 								{ __( 'settings', 'woocommerce-payments' ) }
 							</a>
 						),

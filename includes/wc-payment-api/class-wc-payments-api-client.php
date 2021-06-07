@@ -104,6 +104,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Checks if the site has an admin who is also a connection owner.
+	 *
+	 * @return bool True if Jetpack connection has an owner.
+	 */
+	public function has_server_connection_owner() {
+		return $this->http_client->has_connection_owner();
+	}
+
+	/**
 	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
 	 *
 	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.

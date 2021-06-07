@@ -47,7 +47,7 @@ const DigitalWallets = () => {
 
 	return (
 		<Card className="digital-wallets">
-			<CardBody size="large">
+			<CardBody>
 				<CheckboxControl
 					checked={ isDigitalWalletsEnabled }
 					onChange={ updateIsDigitalWalletsEnabled }
