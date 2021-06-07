@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -11,6 +11,7 @@ import interpolateComponents from 'interpolate-components';
  */
 import './style.scss';
 import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import CardBody from '../card-body';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
