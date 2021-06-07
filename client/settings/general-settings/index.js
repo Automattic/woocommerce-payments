@@ -19,7 +19,7 @@ const GeneralSettings = () => {
 
 	return (
 		<Card className="general-settings">
-			<CardBody size="large">
+			<CardBody>
 				<CheckboxControl
 					checked={ isWCPayEnabled }
 					onChange={ setIsWCPayEnabled }

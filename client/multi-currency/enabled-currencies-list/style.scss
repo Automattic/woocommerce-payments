@@ -1,0 +1,100 @@
+.wcpay-multi-currency__enabled-currencies-header {
+	display: flex;
+	margin-right: 60px;
+
+	div {
+		flex: 1;
+	}
+}
+
+.enabled-currencies-list {
+	margin: 0;
+
+	.enabled-currency {
+		display: flex;
+		padding: 7px 24px;
+		margin: 0;
+		border-top: 1px solid #e2e4e7;
+		line-height: 45px;
+
+		&__container {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
+		&__container,
+		&__rate {
+			flex: 1;
+		}
+
+		&__flag {
+			font-size: 45px;
+			padding: 0 10px 0 0;
+		}
+
+		&__label {
+			padding: 0 5px 0 0;
+		}
+
+		&__code,
+		&__rate {
+			color: $studio-gray-30;
+		}
+
+		&__actions {
+			line-height: 35px;
+			padding: 10px 0 0;
+			width: 60px;
+			text-align: right;
+
+			.components-button {
+				text-decoration: none;
+			}
+
+			.delete {
+				margin: 0 0 0 5px;
+				padding: 0 0 0 5px;
+				border-left: 1px solid $studio-gray-5;
+			}
+		}
+	}
+}
+
+.add-enabled-currencies-modal {
+	max-width: 500px;
+
+	.enabled-currency-checkbox {
+		&__flag {
+			font-size: 20px;
+			padding: 0 5px 0 0;
+		}
+
+		&__code {
+			color: $studio-gray-30;
+		}
+	}
+	.components-checkbox-control__label {
+		font-size: 15px;
+	}
+
+	&__search {
+		border-bottom: 1px solid $studio-gray-5;
+		margin: -24px -24px 0;
+		padding: 16px;
+	}
+
+	&__footer {
+		@include modal-footer-buttons;
+		border-top: 1px solid $studio-gray-5;
+		margin: 0 -24px -24px;
+		padding: 16px;
+	}
+}
+
+.enabled-currency-delete-modal {
+	&__footer {
+		@include modal-footer-buttons;
+		border-top: 1px solid $studio-gray-5;
+		padding: 15px 0 0;
+	}
+}

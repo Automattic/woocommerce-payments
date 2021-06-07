@@ -44,7 +44,7 @@ const AdvancedSettings = () => {
 			{ isSectionExpanded && (
 				<SettingsSection>
 					<Card>
-						<CardBody size="large">
+						<CardBody>
 							<div
 								ref={ advancedSectionContainerRef }
 								tabIndex="-1"
