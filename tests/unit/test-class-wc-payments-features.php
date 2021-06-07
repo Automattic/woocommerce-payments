@@ -11,11 +11,12 @@
 class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_grouped_settings' => 'groupedSettings',
-		'_wcpay_feature_giropay'          => 'giropay',
-		'_wcpay_feature_sepa'             => 'sepa',
-		'_wcpay_feature_sofort'           => 'sofort',
-		'_wcpay_feature_upe'              => 'upe',
+		'_wcpay_feature_customer_multi_currency' => 'customerMultiCurrency',
+		'_wcpay_feature_grouped_settings'        => 'groupedSettings',
+		'_wcpay_feature_giropay'                 => 'giropay',
+		'_wcpay_feature_sepa'                    => 'sepa',
+		'_wcpay_feature_sofort'                  => 'sofort',
+		'_wcpay_feature_upe'                     => 'upe',
 	];
 
 	/**
@@ -42,11 +43,11 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {
-		foreach ( $enabled_flags as $flag ) {
+		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(
 				'pre_option_' . $flag,
-				function () {
-					return '1';
+				function () use ( $flag, $enabled_flags ) {
+					return in_array( $flag, $enabled_flags, true ) ? '1' : '0';
 				}
 			);
 		}
