@@ -344,12 +344,12 @@ export default class WCPayAPI {
 		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
-					throw response.messages;
+					throw { message: response.messages };
 				}
 				return response;
 			} )
 			.catch( ( error ) => {
-				throw `Error submitting form! ${ error.status }: ${ error.statusText }.`;
+				throw error;
 			} );
 	}
 
