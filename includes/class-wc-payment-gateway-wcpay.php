@@ -61,7 +61,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $account;
+	protected $account;
 
 	/**
 	 * WC_Payments_Customer instance for working with customer information
