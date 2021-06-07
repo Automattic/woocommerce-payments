@@ -76,9 +76,6 @@ class WC_Payments_Features {
 		$flags = [
 			'customerMultiCurrency' => self::is_customer_multi_currency_enabled(),
 			'groupedSettings'       => self::is_grouped_settings_enabled(),
-			'giropay'               => self::is_giropay_enabled(),
-			'sepa'                  => self::is_sepa_enabled(),
-			'sofort'                => self::is_sofort_enabled(),
 			'upe'                   => self::is_upe_enabled(),
 		];
 
