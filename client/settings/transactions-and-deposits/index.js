@@ -51,9 +51,6 @@ const TransactionsAndDeposits = () => {
 						'woocommerce-payments'
 					) }
 				/>
-				<h4>
-					{ __( 'Customer bank statement', 'woocommerce-payments' ) }
-				</h4>
 				<div className="general-settings__account-statement-wrapper">
 					<TextControl
 						className="general-settings__account-statement-input"
@@ -68,14 +65,18 @@ const TransactionsAndDeposits = () => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
-						hideLabelFromVision
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 				</div>
 				<div className="general-settings__bank-information">
-					<h4>{ __( 'Deposit account', 'woocommerce-payments' ) }</h4>
+					<h4>
+						{ __(
+							'Bank account information',
+							'woocommerce-payments'
+						) }
+					</h4>
 					<p className="general-settings__bank-information-help">
 						{ __(
 							'Manage and update your deposit account information to receive payments and payouts.',
