@@ -59,8 +59,8 @@ export const getDigitalWalletsLocations = ( state ) => {
 	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_ARR;
 };
 
-export const getDigitalWalletsButtonActionType = ( state ) => {
-	return getSettings( state ).digital_wallets_button_action_type || '';
+export const getDigitalWalletsButtonType = ( state ) => {
+	return getSettings( state ).digital_wallets_button_type || '';
 };
 
 export const getDigitalWalletsButtonSize = ( state ) => {

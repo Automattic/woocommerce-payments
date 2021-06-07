@@ -11,13 +11,13 @@ import userEvent from '@testing-library/user-event';
  */
 import DigitalWalletsSettings from '../digital-wallets-settings';
 import {
-	useDigitalWalletsButtonActionType,
+	useDigitalWalletsButtonType,
 	useDigitalWalletsButtonSize,
 	useDigitalWalletsButtonTheme,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
-	useDigitalWalletsButtonActionType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	useDigitalWalletsButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	useDigitalWalletsButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	useDigitalWalletsButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 } ) );
@@ -50,12 +50,12 @@ describe( 'DigitalWalletsSettings', () => {
 	} );
 
 	it( 'triggers the hooks when the settings are being interacted with', () => {
-		const setButtonActionTypeMock = jest.fn();
+		const setButtonTypeMock = jest.fn();
 		const setButtonSizeMock = jest.fn();
 		const setButtonThemeMock = jest.fn();
-		useDigitalWalletsButtonActionType.mockReturnValue( [
+		useDigitalWalletsButtonType.mockReturnValue( [
 			'buy',
-			setButtonActionTypeMock,
+			setButtonTypeMock,
 		] );
 		useDigitalWalletsButtonSize.mockReturnValue( [
 			'default',
@@ -68,7 +68,7 @@ describe( 'DigitalWalletsSettings', () => {
 
 		render( <DigitalWalletsSettings /> );
 
-		expect( setButtonActionTypeMock ).not.toHaveBeenCalled();
+		expect( setButtonTypeMock ).not.toHaveBeenCalled();
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
 		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
@@ -76,7 +76,7 @@ describe( 'DigitalWalletsSettings', () => {
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
 		userEvent.click( screen.getByLabelText( 'Book' ) );
-		expect( setButtonActionTypeMock ).toHaveBeenCalledWith( 'book' );
+		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
