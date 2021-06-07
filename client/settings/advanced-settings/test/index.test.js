@@ -33,9 +33,7 @@ describe( 'AdvancedSettings', () => {
 
 		expect( screen.queryByText( 'Debug mode' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Block appearance' ) ).toBeInTheDocument();
-		expect(
-			screen.getByText( 'Debug mode' ).closest( 'div' )
-		).toHaveFocus();
+		expect( screen.getByText( 'Debug mode' ) ).toHaveFocus();
 	} );
 
 	it( 'BlockAppearance is not displayed if UPE feature flag is disabled', () => {
