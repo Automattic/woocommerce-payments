@@ -134,7 +134,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				strtolower( $currency ),
 				$save_payment_method,
-				$customer_id
+				$customer_id,
+				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
 			);
 		}
 
