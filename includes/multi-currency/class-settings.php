@@ -321,7 +321,7 @@ class Settings extends \WC_Settings_Page {
 					'title'    => __( 'Charm pricing', 'woocommerce-payments' ),
 					'desc'     => $charm_desc,
 					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
-					'default'  => 'none',
+					'default'  => '0.00',
 					'type'     => 'select',
 					'options'  => $charm_options,
 					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
