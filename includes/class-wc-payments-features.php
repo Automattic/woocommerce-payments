@@ -66,4 +66,17 @@ class WC_Payments_Features {
 	public static function is_customer_multi_currency_enabled() {
 		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '0' );
 	}
+
+	/**
+	 * Returns feature flags as an array suitable for display on the front-end.
+	 *
+	 * @return bool[]
+	 */
+	public static function to_array() {
+		$flags = [
+			'upe' => self::is_upe_enabled(),
+		];
+
+		return array_filter( $flags );
+	}
 }

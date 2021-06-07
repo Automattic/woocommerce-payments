@@ -223,7 +223,7 @@ class WC_Payments {
 		}
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
 		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -638,9 +638,11 @@ class WC_Payments {
 		$tos_controller = new WC_REST_Payments_Tos_Controller( self::$api_client, self::$card_gateway, self::$account );
 		$tos_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
-		$settings_controller->register_routes();
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
+			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
+			$settings_controller->register_routes();
+		}
 	}
 
 	/**

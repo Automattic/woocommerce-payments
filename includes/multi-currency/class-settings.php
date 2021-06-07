@@ -225,14 +225,14 @@ class Settings extends \WC_Settings_Page {
 		$rounding_options = apply_filters(
 			$this->id . '_price_rounding_options',
 			[
-				'1000' => $default_currency->get_symbol() . '10.00',
-				'100'  => sprintf(
+				'-1'   => $default_currency->get_symbol() . '10.00',
+				'0'    => sprintf(
 					/* translators: %s: Default currency symbol */
 					__( '%s1.00 (recommended)', 'woocommerce-payments' ),
 					$default_currency->get_symbol()
 				),
-				'10'   => $default_currency->get_symbol() . '0.10',
-				'1'    => $default_currency->get_symbol() . '0.01',
+				'1'    => $default_currency->get_symbol() . '0.10',
+				'2'    => $default_currency->get_symbol() . '0.01',
 				'none' => __( 'None', 'woocommerce-payments' ),
 			]
 		);
@@ -336,7 +336,7 @@ class Settings extends \WC_Settings_Page {
 					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
 					'default'  => 0.00,
 					'type'     => 'text',
-					'desc_tip' => __( 'A value of .01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
+					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
 				],
 
 				[

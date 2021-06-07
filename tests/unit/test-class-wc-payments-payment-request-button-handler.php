@@ -19,11 +19,25 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	];
 
 	/**
+	 * Mock WC_Payments_API_Client.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $mock_api_client;
+
+	/**
 	 * Payment request instance.
 	 *
 	 * @var WC_Payments_Payment_Request_Button_Handler
 	 */
 	private $pr;
+
+	/**
+	 * WC_Payments_Account instance.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $mock_wcpay_account;
 
 	/**
 	 * Test product to add to the cart
@@ -53,18 +67,40 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	private $local_pickup_id;
 
 	/**
+	 * Used to get the settings.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $mock_wcpay_gateway;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function setUp() {
 		parent::setUp();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->getMock();
+									->disableOriginalConstructor()
+									->setMethods(
+										[
+											'get_account_data',
+											'is_server_connected',
+											'capture_intention',
+											'cancel_intention',
+											'get_intent',
+											'create_and_confirm_setup_intent',
+											'get_setup_intent',
+											'get_payment_method',
+											'refund_charge',
+										]
+									)
+									->getMock();
+		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
+		$this->mock_wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 
-		$account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $account );
+		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
 
 		$this->simple_product = WC_Helper_Product::create_simple_product();
 
@@ -93,13 +129,31 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+	}
+
+	/**
+	 * @return WC_Payment_Gateway_WCPay
+	 */
+	private function make_wcpay_gateway() {
+		$mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
+		$mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
+		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+
+		return new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$mock_customer_service,
+			$mock_token_service,
+			$mock_action_scheduler_service
+		);
 	}
 
 	/**
 	 * Sets shipping method cost
 	 *
 	 * @param string $instance_id Shipping method instance id
-	 * @param string $cost        Shipping method cost in USD
+	 * @param string $cost Shipping method cost in USD
 	 */
 	private static function set_shipping_method_cost( $instance_id, $cost ) {
 		$method          = WC_Shipping_Zones::get_shipping_method( $instance_id );
@@ -118,6 +172,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	 */
 	private static function get_shipping_option( $instance_id ) {
 		$method = WC_Shipping_Zones::get_shipping_method( $instance_id );
+
 		return [
 			'id'     => $method->get_rate_id(),
 			'label'  => $method->title,
@@ -135,6 +190,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	 */
 	private static function get_shipping_option_rate_id( $instance_id ) {
 		$method = WC_Shipping_Zones::get_shipping_method( $instance_id );
+
 		return $method->get_rate_id();
 	}
 
@@ -179,5 +235,55 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'success', $data['result'] );
 		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
+	}
+
+	public function test_get_button_settings_grouped_settings_disabled() {
+		$this->markTestSkipped( 'Grouped settings is enabled. Feel free to delete this test when cleaning up the feature flag.' );
+
+		update_option( '_wcpay_feature_grouped_settings', '0' );
+
+		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+
+		$this->assertEquals(
+			[
+				'type'         => 'buy',
+				'theme'        => 'dark',
+				'height'       => '44',
+				'locale'       => 'en',
+				'branded_type' => 'long',
+				'css_selector' => '',
+				'label'        => 'Buy now',
+				'is_custom'    => false,
+				'is_branded'   => false,
+			],
+			$this->pr->get_button_settings()
+		);
+
+		delete_option( '_wcpay_feature_grouped_settings' );
+	}
+
+	public function test_get_button_settings_grouped_settings_enabled() {
+		// with grouped settings enabled, some settings are just set to "false".
+		update_option( '_wcpay_feature_grouped_settings', '1' );
+		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
+		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+
+		$this->assertEquals(
+			[
+				'type'         => 'buy',
+				'theme'        => 'dark',
+				'height'       => '40',
+				'locale'       => 'en',
+				'branded_type' => 'long',
+				'css_selector' => '',
+				'label'        => '',
+				'is_custom'    => false,
+				'is_branded'   => false,
+			],
+			$this->pr->get_button_settings()
+		);
+
+		delete_option( '_wcpay_feature_grouped_settings' );
 	}
 }
