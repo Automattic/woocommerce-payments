@@ -19,9 +19,7 @@ jest.mock( '../../../data', () => ( {
 
 describe( 'PaymentMethodSettings', () => {
 	test( 'renders title and description', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Express checkouts',
@@ -30,9 +28,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders settings', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		expect(
 			screen.queryByRole( 'heading', { name: 'Call to action' } )
@@ -40,9 +36,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders breadcrumbs', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooCommerce Payments',
@@ -65,9 +59,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders digital wallets settings and confirm its h2 copy', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Express checkouts',
@@ -76,9 +68,7 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders banner at the top', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const banner = screen.queryByTitle( 'WooCommerce Payments' );
 		expect( banner ).toBeInTheDocument();

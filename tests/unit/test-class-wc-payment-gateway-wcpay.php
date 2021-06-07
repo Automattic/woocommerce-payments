@@ -1259,14 +1259,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
-		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->setMethods( null )
-			->getMock();
-		$gateway->id = 'foo';
-
+		$_GET['method'] = 'foo';
 		ob_start();
-		$gateway->output_payments_settings_screen();
+		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
