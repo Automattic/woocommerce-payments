@@ -34,7 +34,7 @@ const TransactionsAndDeposits = () => {
 
 	return (
 		<Card className="transactions-and-deposits">
-			<CardBody size="large">
+			<CardBody>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
