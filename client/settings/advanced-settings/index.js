@@ -86,7 +86,7 @@ const AdvancedSettings = () => {
 			{ isSectionExpanded && (
 				<SettingsSection>
 					<Card>
-						<CardBody size="large">
+						<CardBody>
 							<h4 ref={ firstHeadingElementRef } tabIndex="-1">
 								Debug mode
 							</h4>

@@ -18,7 +18,7 @@ const TestModeSettings = () => {
 
 	return (
 		<Card className="test-mode-settings">
-			<CardBody size="large">
+			<CardBody>
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
 				<CheckboxControl
 					checked={ isDevModeEnabled || isEnabled }
