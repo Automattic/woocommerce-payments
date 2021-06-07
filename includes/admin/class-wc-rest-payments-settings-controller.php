@@ -178,9 +178,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_account_statement_descriptor( $request );
 		$this->update_is_digital_wallets_enabled( $request );
 		$this->update_digital_wallets_enabled_locations( $request );
-		$this->update_digital_wallets_button_type( $request );
-		$this->update_digital_wallets_button_size( $request );
-		$this->update_digital_wallets_button_theme( $request );
+		$this->update_digital_wallets_appearance( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -330,44 +328,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the action type that will show on the digital wallets button.
+	 * Updates appearance attributes of the digital wallets button.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_digital_wallets_button_type( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'digital_wallets_button_type' ) ) {
-			return;
+	private function update_digital_wallets_appearance( WP_REST_Request $request ) {
+		$attributes = [
+			'digital_wallets_button_type'  => 'payment_request_button_type',
+			'digital_wallets_button_size'  => 'payment_request_button_size',
+			'digital_wallets_button_theme' => 'payment_request_button_theme',
+		];
+		foreach ( $attributes as $request_key => $attribute ) {
+			if ( ! $request->has_param( $request_key ) ) {
+				continue;
+			}
+
+			$value = $request->get_param( $request_key );
+			$this->wcpay_gateway->update_option( $attribute, $value );
 		}
-
-		$value = $request->get_param( 'digital_wallets_button_type' );
-		$this->wcpay_gateway->update_option( 'payment_request_button_type', $value );
-	}
-
-	/**
-	 * Updates the size of the digital wallets button.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_digital_wallets_button_size( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'digital_wallets_button_size' ) ) {
-			return;
-		}
-
-		$value = $request->get_param( 'digital_wallets_button_size' );
-		$this->wcpay_gateway->update_option( 'payment_request_button_size', $value );
-	}
-
-	/**
-	 * Updates the theme that will be used on the digital wallets button.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_digital_wallets_button_theme( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'digital_wallets_button_theme' ) ) {
-			return;
-		}
-
-		$value = $request->get_param( 'digital_wallets_button_theme' );
-		$this->wcpay_gateway->update_option( 'payment_request_button_theme', $value );
 	}
 }

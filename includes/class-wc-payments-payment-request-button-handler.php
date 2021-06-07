@@ -53,6 +53,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
+		$this->gateway = WC_Payments::get_gateway();
+
 		// Add Track event on settings change.
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
 
