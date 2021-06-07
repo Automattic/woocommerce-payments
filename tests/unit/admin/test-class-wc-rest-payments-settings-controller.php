@@ -7,7 +7,6 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
-use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -34,29 +33,34 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $gateway;
 
 	/**
+	 * @var WC_Payments_API_Client
+	 */
+	private $mock_api_client;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
 		add_action( 'rest_api_init', [ $this, 'deregister_wc_blocks_rest_api' ], 5 );
+		remove_filter( 'woocommerce_settings_api_sanitized_fields_woocommerce_payments', [ WC_Payments::get_gateway(), 'sanitize_plugin_settings' ] );
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 		update_option( '_wcpay_feature_grouped_settings', '1' );
 
-		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
-		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
+		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $account );
-		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
+		$account                  = new WC_Payments_Account( $this->mock_api_client );
+		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $account );
+		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay( $mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
-		$this->controller = new WC_REST_Payments_Settings_Controller( $mock_api_client, $this->gateway );
+		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 		$this->set_available_gateways( [ 'woocommerce_payments' ] );
 	}
 
@@ -197,6 +201,125 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		remove_filter( 'user_has_cap', $cb );
 	}
 
+	public function test_update_settings_enables_manual_capture() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_disables_manual_capture() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_does_not_toggle_is_manual_capture_enabled_if_not_supplied() {
+		$status_before_request = $this->gateway->get_option( 'manual_capture' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_returns_error_on_non_bool_is_manual_capture_enabled_value() {
+		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request->set_param( 'is_manual_capture_enabled', 'foo' );
+
+		$response = rest_do_request( $request );
+
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_update_settings_saves_debug_log() {
+		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_debug_log_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'enable_logging' ) );
+	}
+
+	public function test_update_settings_does_not_save_debug_log_when_dev_mode_enabled() {
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return true;
+			}
+		);
+		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_debug_log_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'enable_logging' ) );
+	}
+
+	public function test_update_settings_saves_test_mode() {
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_test_mode_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'test_mode' ) );
+	}
+
+	public function test_update_settings_does_not_save_test_mode_when_dev_mode_enabled() {
+		add_filter(
+			'wcpay_dev_mode',
+			function () {
+				return true;
+			}
+		);
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_test_mode_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
+		$this->assertEquals( true, $this->gateway->is_in_test_mode() );
+	}
+
+	public function test_update_settings_saves_account_statement_descriptor() {
+		$new_account_descriptor = 'new account descriptor';
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'update_account' )
+			->with( $this->equalTo( [ 'statement_descriptor' => $new_account_descriptor ] ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_statement_descriptor', $new_account_descriptor );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_save_account_statement_descriptor_if_not_supplied() {
+		$status_before_request = $this->gateway->get_option( 'account_statement_descriptor' );
+
+		$request = new WP_REST_Request();
+
+		$this->mock_api_client->expects( $this->never() )
+			->method( 'update_account' )
+			->with( $this->anything() );
+
+		$this->controller->update_settings( $request );
+	}
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *

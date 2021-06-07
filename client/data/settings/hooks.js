@@ -17,26 +17,89 @@ export const useEnabledPaymentMethodIds = () => {
 		( select ) => {
 			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
 
-			return {
-				enabledPaymentMethodIds: getEnabledPaymentMethodIds(),
+			return [
+				getEnabledPaymentMethodIds(),
 				updateEnabledPaymentMethodIds,
-			};
+			];
 		},
 		[ updateEnabledPaymentMethodIds ]
 	);
 };
 
-export const useGeneralSettings = () => {
+export const useDebugLog = () => {
+	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsDebugLogEnabled } = select( STORE_NAME );
+
+			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
+		},
+		[ updateIsDebugLogEnabled ]
+	);
+};
+
+export const useTestMode = () => {
+	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsTestModeEnabled } = select( STORE_NAME );
+
+			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
+		},
+		[ updateIsTestModeEnabled ]
+	);
+};
+
+export const useDevMode = () => {
+	return useSelect( ( select ) => {
+		const { getIsDevModeEnabled } = select( STORE_NAME );
+
+		return getIsDevModeEnabled();
+	}, [] );
+};
+
+export const useAccountStatementDescriptor = () => {
+	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getAccountStatementDescriptor } = select( STORE_NAME );
+
+			return [
+				getAccountStatementDescriptor(),
+				updateAccountStatementDescriptor,
+			];
+		},
+		[ updateAccountStatementDescriptor ]
+	);
+};
+
+export const useManualCapture = () => {
+	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsManualCaptureEnabled } = select( STORE_NAME );
+
+			return [
+				getIsManualCaptureEnabled(),
+				updateIsManualCaptureEnabled,
+			];
+		},
+		[ updateIsManualCaptureEnabled ]
+	);
+};
+
+export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
 	return useSelect(
 		( select ) => {
 			const { getIsWCPayEnabled } = select( STORE_NAME );
 
-			return {
-				isWCPayEnabled: getIsWCPayEnabled(),
-				updateIsWCPayEnabled,
-			};
+			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
 		},
 		[ updateIsWCPayEnabled ]
 	);
@@ -74,4 +137,24 @@ export const useSettings = () => {
 		},
 		[ saveSettings ]
 	);
+};
+
+export const useDigitalWalletsEnabledSettings = () => {
+	const { updateIsDigitalWalletsEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsDigitalWalletsEnabled } = select( STORE_NAME );
+
+		return [ getIsDigitalWalletsEnabled(), updateIsDigitalWalletsEnabled ];
+	} );
+};
+
+export const useDigitalWalletsLocations = () => {
+	const { updateDigitalWalletsLocations } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsLocations } = select( STORE_NAME );
+
+		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
+	} );
 };

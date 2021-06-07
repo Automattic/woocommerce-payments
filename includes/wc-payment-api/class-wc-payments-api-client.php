@@ -104,6 +104,15 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Checks if the site has an admin who is also a connection owner.
+	 *
+	 * @return bool True if Jetpack connection has an owner.
+	 */
+	public function has_server_connection_owner() {
+		return $this->http_client->has_connection_owner();
+	}
+
+	/**
 	 * Gets the current WP.com blog ID, if the Jetpack connection has been set up.
 	 *
 	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
@@ -208,6 +217,67 @@ class WC_Payments_API_Client {
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Create an intention, without confirming it.
+	 *
+	 * @param int    $amount          - Amount to charge.
+	 * @param string $currency_code   - Currency to charge in.
+	 * @param array  $payment_methods - Payment methods to include.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_intention(
+		$amount,
+		$currency_code,
+		$payment_methods
+	) {
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['payment_method_types'] = $payment_methods;
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Updates an intention, without confirming it.
+	 *
+	 * @param string $intention_id  - The ID of the intention to update.
+	 * @param int    $amount        - Amount to charge.
+	 * @param string $currency_code - Currency to charge in.
+	 * @param bool   $save_payment_method - Whether to setup payment intent for future usage.
+	 * @param string $customer_id - Stripe customer to associate payment intent with.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention(
+		$intention_id,
+		$amount,
+		$currency_code,
+		$save_payment_method = false,
+		$customer_id = ''
+	) {
+		$request = [
+			'amount'   => $amount,
+			'currency' => $currency_code,
+		];
+
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
+		if ( $save_payment_method ) {
+			$request['setup_future_usage'] = 'off_session';
+		}
+
+		$response_array = $this->request( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
@@ -362,6 +432,16 @@ class WC_Payments_API_Client {
 	 */
 	public function get_deposits_overview() {
 		return $this->request( [], self::DEPOSITS_API . '/overview', self::GET );
+	}
+
+	/**
+	 * Get an overview of all deposits (for all currencies).
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_all_deposits_overviews() {
+		return $this->request( [], self::DEPOSITS_API . '/overview-all', self::GET );
 	}
 
 	/**

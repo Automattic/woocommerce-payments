@@ -2,24 +2,25 @@
 /**
  * External dependencies
  */
-import { Button, ExternalLink } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 import React from 'react';
+import { ExternalLink } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
-import { LoadableBlock } from 'components/loadable';
 import { useSettings } from 'data';
-import Banner from 'banner';
-import PaymentMethods from 'payment-methods';
-import SettingsSection from 'settings/settings-section';
-import DigitalWallets from 'settings/digital-wallets';
-import GeneralSettings from 'settings/general-settings';
-import TestModeSettings from 'settings/test-mode-settings';
-import ApplePayIcon from 'gateway-icons/apple-pay';
-import GooglePayIcon from 'gateway-icons/google-pay';
+import { LoadableBlock } from '../../components/loadable';
+import AdvancedSettings from '../advanced-settings';
+import PaymentMethods from '../../payment-methods';
+import DigitalWallets from '../digital-wallets';
+import SettingsSection from '../settings-section';
+import GeneralSettings from '../general-settings';
+import TestModeSettings from '../test-mode-settings';
+import ApplePayIcon from '../../gateway-icons/apple-pay';
+import GooglePayIcon from '../../gateway-icons/google-pay';
+import SettingsLayout from '../settings-layout';
+import SaveSettingsSection from '../save-settings-section';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -39,7 +40,7 @@ const PaymentMethodsDescription = () => (
 
 const DigitalWalletsDescription = () => (
 	<>
-		<h2>{ __( '1-click checkouts', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'Express checkouts', 'woocommerce-payments' ) }</h2>
 		<ul className="settings-section__icons">
 			<li>
 				<ApplePayIcon />
@@ -50,7 +51,7 @@ const DigitalWalletsDescription = () => (
 		</ul>
 		<p>
 			{ __(
-				'Let your customers use their favorite digital wallets ' +
+				'Let your customers use their favorite express payment methods and digital wallets ' +
 					'for faster, more secure checkouts across different parts of your store.',
 				'woocommerce-payments'
 			) }
@@ -77,42 +78,35 @@ const GeneralSettingsDescription = () => (
 );
 
 const SettingsManager = ( { accountStatus = {} } ) => {
-	const { saveSettings, isSaving, isLoading } = useSettings();
+	const { isLoading } = useSettings();
 
 	return (
-		<>
-			<Banner />
-			<div className="settings-manager">
-				<SettingsSection Description={ PaymentMethodsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<PaymentMethods />
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection Description={ DigitalWalletsDescription }>
+		<SettingsLayout>
+			<SettingsSection Description={ PaymentMethodsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<PaymentMethods />
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ DigitalWalletsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 					<DigitalWallets />
-				</SettingsSection>
-				<SettingsSection Description={ GeneralSettingsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<GeneralSettings
-							accountLink={ accountStatus.accountLink }
-						/>
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection>
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ GeneralSettingsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<GeneralSettings
+						accountLink={ accountStatus.accountLink }
+					/>
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection>
+				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
 					<TestModeSettings />
-				</SettingsSection>
-				<SettingsSection className="settings-manager__buttons">
-					<Button
-						isPrimary
-						isBusy={ isSaving }
-						disabled={ isSaving || isLoading }
-						onClick={ saveSettings }
-					>
-						{ __( 'Save changes', 'woocommerce-payments' ) }
-					</Button>
-				</SettingsSection>
-			</div>
-		</>
+				</LoadableBlock>
+			</SettingsSection>
+			<AdvancedSettings />
+			<SaveSettingsSection />
+		</SettingsLayout>
 	);
 };
 

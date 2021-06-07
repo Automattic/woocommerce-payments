@@ -29,7 +29,7 @@ import { useTransactions, useTransactionsSummary } from 'data';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
-import DetailsLink, { getDetailsURL } from 'components/details-link';
+import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency } from 'utils/currency';
@@ -41,14 +41,12 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 
-const getColumns = ( includeDeposit, includeSubscription, sortByDate ) =>
+const getColumns = ( includeDeposit, includeSubscription ) =>
 	[
 		{
-			key: 'details',
-			label: '',
-			required: true,
-			// Match background of details and date when sorting.
-			cellClassName: 'info-button ' + ( sortByDate ? 'is-sorted' : '' ),
+			key: 'transaction_id',
+			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			visible: false,
 		},
 		{
 			key: 'date',
@@ -165,9 +163,7 @@ export const TransactionsList = ( props ) => {
 		const clickable = ( children ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
-		const detailsLink = (
-			<DetailsLink id={ txn.charge_id } parentSegment="transactions" />
-		);
+
 		const orderUrl = <OrderLink order={ txn.order } />;
 		const orderSubscriptions = txn.order && txn.order.subscriptions;
 		const subscriptionsValue =
@@ -206,7 +202,11 @@ export const TransactionsList = ( props ) => {
 
 		// Map transaction into table row.
 		const data = {
-			details: { value: txn.transaction_id, display: detailsLink },
+			// eslint-disable-next-line camelcase
+			transaction_id: {
+				value: txn.transaction_id,
+				display: clickable( txn.transaction_id ),
+			},
 			date: {
 				value: txn.date,
 				display: clickable(
