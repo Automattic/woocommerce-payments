@@ -21,7 +21,7 @@ export const receiveSettings = (
 				data: action.data,
 			};
 
-		case ACTION_TYPES.SET_SETTINGS_VALUE:
+		case ACTION_TYPES.SET_SETTINGS_VALUES:
 			return {
 				...state,
 				data: {

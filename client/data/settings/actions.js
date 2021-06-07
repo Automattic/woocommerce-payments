@@ -15,7 +15,7 @@ import { NAMESPACE, STORE_NAME } from '../constants';
 
 function updateSettingsValues( payload ) {
 	return {
-		type: ACTION_TYPES.SET_SETTINGS_VALUE,
+		type: ACTION_TYPES.SET_SETTINGS_VALUES,
 		payload,
 	};
 }
