@@ -25,15 +25,18 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 		);
 
-	const estimated = ( depositId && depositId.includes( 'wcpay_estimated_' ) )
-		? 'Estimated'
-		: '';
+	const estimated =
+		depositId && depositId.includes( 'wcpay_estimated_' )
+			? 'Estimated'
+			: '';
 
-	return ( depositId && dateAvailable ) ?
-		(<Link href={depositUrl}>
-			{ estimated} { formattedDateAvailable}
-		</Link>) : '';
-	
+	return depositId && dateAvailable ? (
+		<Link href={ depositUrl }>
+			{ estimated } { formattedDateAvailable }
+		</Link>
+	) : (
+		''
+	);
 };
 
 export default Deposit;

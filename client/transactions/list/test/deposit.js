@@ -20,7 +20,10 @@ describe( 'Deposit', () => {
 
 	test( 'renders with estimated date and deposit available', () => {
 		const { container: link } = render(
-			<Deposit dateAvailable="2020-01-07 00:00:00" depositId="wcpay_estimated_mock" />
+			<Deposit
+				dateAvailable="2020-01-07 00:00:00"
+				depositId="wcpay_estimated_mock"
+			/>
 		);
 		expect( link ).toMatchSnapshot();
 	} );
