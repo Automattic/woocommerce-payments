@@ -437,7 +437,7 @@ export default ( { query } ) => {
 		}
 
 		if ( fileSizeExceeded( file.size ) ) {
-			return true;
+			return;
 		}
 
 		wcpayTracks.recordEvent( 'wcpay_dispute_file_upload_started', {
