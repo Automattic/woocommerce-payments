@@ -11,9 +11,7 @@
 class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_customer_multi_currency' => 'customerMultiCurrency',
-		'_wcpay_feature_grouped_settings'        => 'groupedSettings',
-		'_wcpay_feature_upe'                     => 'upe',
+		'_wcpay_feature_upe' => 'upe',
 	];
 
 	/**
@@ -33,9 +31,8 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 	public function enabled_flags_provider() {
 		return [
-			'no flags'              => [ [] ],
-			'only grouped settings' => [ [ '_wcpay_feature_grouped_settings' ] ],
-			'all flags'             => [ array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) ],
+			'no flags'  => [ [] ],
+			'all flags' => [ array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) ],
 		];
 	}
 

@@ -74,9 +74,7 @@ class WC_Payments_Features {
 	 */
 	public static function to_array() {
 		$flags = [
-			'customerMultiCurrency' => self::is_customer_multi_currency_enabled(),
-			'groupedSettings'       => self::is_grouped_settings_enabled(),
-			'upe'                   => self::is_upe_enabled(),
+			'upe' => self::is_upe_enabled(),
 		];
 
 		return array_filter( $flags );
