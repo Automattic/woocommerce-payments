@@ -14,6 +14,7 @@ import {
 /**
  * Internal dependencies
  */
+import './style.scss';
 import { useAccountStatementDescriptor, useManualCapture } from 'data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 
