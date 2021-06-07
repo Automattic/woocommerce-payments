@@ -158,3 +158,42 @@ export const useDigitalWalletsLocations = () => {
 		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
 	} );
 };
+
+export const useDigitalWalletsButtonType = () => {
+	const { updateDigitalWalletsButtonType } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonType } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonType(),
+			updateDigitalWalletsButtonType,
+		];
+	} );
+};
+
+export const useDigitalWalletsButtonSize = () => {
+	const { updateDigitalWalletsButtonSize } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonSize } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonSize(),
+			updateDigitalWalletsButtonSize,
+		];
+	} );
+};
+
+export const useDigitalWalletsButtonTheme = () => {
+	const { updateDigitalWalletsButtonTheme } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonTheme } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonTheme(),
+			updateDigitalWalletsButtonTheme,
+		];
+	} );
+};
