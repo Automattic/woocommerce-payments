@@ -1311,7 +1311,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 	}
 
-	public function test_form_fields_grouped_settings_disabled() {
+	public function test_digital_wallets_form_field_defaults_with_grouped_settings_disabled() {
 		// when the "grouped settings" flag is disabled, the default values for the `payment_request_button_locations` option should not include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '0' );
 
