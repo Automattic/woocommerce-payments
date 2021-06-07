@@ -81,8 +81,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				uiLoaded(),
 			] );
 
-			await uiLoaded();
-
 			await expect( page ).toMatchElement(
 				'li.woocommerce-timeline-item',
 				{
