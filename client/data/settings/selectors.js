@@ -58,3 +58,15 @@ export const getIsDebugLogEnabled = ( state ) => {
 export const getDigitalWalletsLocations = ( state ) => {
 	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_ARR;
 };
+
+export const getDigitalWalletsButtonType = ( state ) => {
+	return getSettings( state ).digital_wallets_button_type || '';
+};
+
+export const getDigitalWalletsButtonSize = ( state ) => {
+	return getSettings( state ).digital_wallets_button_size || '';
+};
+
+export const getDigitalWalletsButtonTheme = ( state ) => {
+	return getSettings( state ).digital_wallets_button_theme || '';
+};

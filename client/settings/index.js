@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
+import WCPaySettingsContext from './wcpay-settings-context';
 
 const settingsForm = document.querySelector( 'form#mainform' );
 const manualCaptureCheckbox = document.getElementById(
@@ -47,7 +48,9 @@ const settingsContainer = document.getElementById(
 );
 if ( settingsContainer ) {
 	ReactDOM.render(
-		<SettingsManager { ...wcpaySettings } />,
+		<WCPaySettingsContext.Provider value={ wcpaySettings }>
+			<SettingsManager />
+		</WCPaySettingsContext.Provider>,
 		settingsContainer
 	);
 }
