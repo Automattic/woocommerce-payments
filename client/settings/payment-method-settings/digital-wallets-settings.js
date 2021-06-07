@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, RadioControl } from '@wordpress/components';
+import { Card, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
@@ -15,6 +15,7 @@ import {
 	useDigitalWalletsButtonSize,
 	useDigitalWalletsButtonTheme,
 } from '../../data';
+import CardBody from '../card-body';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {

@@ -5,7 +5,6 @@ import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
-	CardBody,
 	CheckboxControl,
 	ExternalLink,
 	TextControl,
@@ -14,9 +13,9 @@ import {
 /**
  * Internal dependencies
  */
-import './style.scss';
 import { useAccountStatementDescriptor, useManualCapture } from 'data';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import CardBody from '../card-body';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
@@ -34,7 +33,7 @@ const TransactionsAndDeposits = () => {
 	] = useAccountStatementDescriptor();
 
 	return (
-		<Card className="transactions-and-deposits">
+		<Card>
 			<CardBody>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
