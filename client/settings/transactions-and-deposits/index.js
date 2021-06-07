@@ -76,15 +76,10 @@ const TransactionsAndDeposits = () => {
 					</span>
 				</div>
 				<div className="general-settings__bank-information">
-					<h4>
-						{ __(
-							'Bank account information',
-							'woocommerce-payments'
-						) }
-					</h4>
+					<h4>{ __( 'Deposit account', 'woocommerce-payments' ) }</h4>
 					<p className="general-settings__bank-information-help">
 						{ __(
-							'Manage and update your bank account information to receive payments and payouts.',
+							'Manage and update your deposit account information to receive payments and payouts.',
 							'woocommerce-payments'
 						) }{ ' ' }
 						<ExternalLink href={ accountLink }>
