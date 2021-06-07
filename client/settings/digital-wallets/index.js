@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardBody,
 	CardDivider,
 	CheckboxControl,
 } from '@wordpress/components';
@@ -21,6 +20,7 @@ import {
 	useDigitalWalletsEnabledSettings,
 	useDigitalWalletsLocations,
 } from 'data';
+import CardBody from '../card-body';
 
 const DigitalWallets = () => {
 	const [
