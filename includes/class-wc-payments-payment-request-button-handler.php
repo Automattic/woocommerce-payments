@@ -37,10 +37,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account $account Account information.
+	 * @param WC_Payments_Account      $account Account information.
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
+		$this->gateway = $gateway;
 
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -51,8 +53,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		$this->gateway = WC_Payments::get_gateway();
-
 		// Add Track event on settings change.
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
 
@@ -181,7 +181,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return string
 	 */
 	public function get_button_height() {
-		return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
+		if ( ! WC_Payments_Features::is_grouped_settings_enabled() ) {
+			return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
+		}
+
+		$height = $this->gateway->get_option( 'payment_request_button_size' );
+		if ( 'medium' === $height ) {
+			return '48';
+		}
+
+		if ( 'large' === $height ) {
+			return '56';
+		}
+
+		// for the "default" and "catch-all" scenarios.
+		return '40';
 	}
 
 	/**
@@ -610,18 +624,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
-			'button'          => [
-				// TODO: migrate values.
-				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
-				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
-				'height'       => $this->get_button_height(),
-				'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
-				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
-				'is_custom'    => $this->is_custom_button(),
-				'is_branded'   => $this->is_branded_button(),
-				'css_selector' => $this->custom_button_selector(),
-				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
-			],
+			'button'          => $this->get_button_settings(),
 			'is_product_page' => $this->is_product(),
 			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
@@ -1407,5 +1410,44 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
+	 *
+	 * @return array
+	 */
+	public function get_button_settings() {
+		// it would be DRYer to use `array_merge`,
+		// but I thought that this approach might be more straightforward to clean up when we remove the feature flag code.
+		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			return [
+				'type'         => $button_type,
+				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
+				'height'       => $this->get_button_height(),
+				// Default format is en_US.
+				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
+				'branded_type' => 'default' === $button_type ? 'short' : 'long',
+				// these values are no longer applicable.
+				'css_selector' => '',
+				'label'        => '',
+				'is_custom'    => false,
+				'is_branded'   => false,
+			];
+		}
+
+		return [
+			'type'         => $button_type,
+			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
+			'height'       => $this->get_button_height(),
+			'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
+			// Default format is en_US.
+			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
+			'is_custom'    => $this->is_custom_button(),
+			'is_branded'   => $this->is_branded_button(),
+			'css_selector' => $this->custom_button_selector(),
+			'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
+		];
 	}
 }
