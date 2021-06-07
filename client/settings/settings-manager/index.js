@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -21,6 +21,7 @@ import GooglePayIcon from '../../gateway-icons/google-pay';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -90,6 +91,9 @@ const TransactionsAndDepositsDescription = () => (
 );
 
 const SettingsManager = () => {
+	const {
+		featureFlags: { upe: isUPEEnabled },
+	} = useContext( WCPaySettingsContext );
 	const { isLoading } = useSettings();
 
 	return (
@@ -99,11 +103,13 @@ const SettingsManager = () => {
 					<GeneralSettings />
 				</LoadableBlock>
 			</SettingsSection>
-			<SettingsSection Description={ PaymentMethodsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-					<PaymentMethods />
-				</LoadableBlock>
-			</SettingsSection>
+			{ isUPEEnabled && (
+				<SettingsSection Description={ PaymentMethodsDescription }>
+					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+						<PaymentMethods />
+					</LoadableBlock>
+				</SettingsSection>
+			) }
 			<SettingsSection Description={ DigitalWalletsDescription }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 					<DigitalWallets />

@@ -21,7 +21,7 @@ const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
 	const advancedSectionContainerRef = useRef( null );
 	const {
-		featureFlags: { upe: isUpeEnabled },
+		featureFlags: { upe: isUPEEnabled },
 	} = useContext( WCPaySettingsContext );
 
 	useEffect( () => {
@@ -50,7 +50,7 @@ const AdvancedSettings = () => {
 								tabIndex="-1"
 							>
 								<DebugMode />
-								{ isUpeEnabled && <BlockAppearance /> }
+								{ isUPEEnabled && <BlockAppearance /> }
 							</div>
 						</CardBody>
 					</Card>
