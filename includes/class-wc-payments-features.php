@@ -64,13 +64,15 @@ class WC_Payments_Features {
 	 * @return bool[]
 	 */
 	public static function to_array() {
-		return [
+		$flags = [
 			'groupedSettings' => self::is_grouped_settings_enabled(),
 			'giropay'         => self::is_giropay_enabled(),
 			'sepa'            => self::is_sepa_enabled(),
 			'sofort'          => self::is_sofort_enabled(),
 			'upe'             => self::is_upe_enabled(),
 		];
+
+		return array_filter( $flags );
 	}
 
 	/**
