@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for multi-currency.
  */
-class WC_REST_Controller extends \WC_Payments_REST_Controller {
+class REST_Controller extends \WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
