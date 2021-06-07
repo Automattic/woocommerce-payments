@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { useEffect, useRef } from '@wordpress/element';
 import { Icon, chevronDown, chevronUp } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody, Button } from '@wordpress/components';
@@ -19,17 +18,9 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
-	const advancedSectionContainerRef = useRef( null );
 	const {
 		featureFlags: { upe: isUPEEnabled },
 	} = useContext( WCPaySettingsContext );
-
-	useEffect( () => {
-		if ( ! isSectionExpanded ) return;
-		if ( ! advancedSectionContainerRef.current ) return;
-
-		advancedSectionContainerRef.current.focus();
-	}, [ isSectionExpanded ] );
 
 	return (
 		<>
@@ -45,13 +36,8 @@ const AdvancedSettings = () => {
 				<SettingsSection>
 					<Card>
 						<CardBody>
-							<div
-								ref={ advancedSectionContainerRef }
-								tabIndex="-1"
-							>
-								<DebugMode />
-								{ isUPEEnabled && <BlockAppearance /> }
-							</div>
+							<DebugMode />
+							{ isUPEEnabled && <BlockAppearance /> }
 						</CardBody>
 					</Card>
 				</SettingsSection>

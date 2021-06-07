@@ -3,6 +3,7 @@
  */
 import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -12,10 +13,19 @@ import { useDebugLog, useDevMode } from 'data';
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();
 	const [ isLoggingChecked, setIsLoggingChecked ] = useDebugLog();
+	const headingRef = useRef( null );
+
+	useEffect( () => {
+		if ( ! headingRef.current ) return;
+
+		headingRef.current.focus();
+	}, [] );
 
 	return (
 		<>
-			<h4>{ __( 'Debug mode', 'woocommerce-payments' ) }</h4>
+			<h4 ref={ headingRef } tabIndex="-1">
+				{ __( 'Debug mode', 'woocommerce-payments' ) }
+			</h4>
 			<CheckboxControl
 				label={
 					isDevModeEnabled
