@@ -236,7 +236,7 @@ class WC_Payments {
 		}
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account );
+		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
 		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
