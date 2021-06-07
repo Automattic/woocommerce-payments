@@ -208,4 +208,19 @@ describe( 'Multi Currency enabled currencies list', () => {
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
 	} );
+
+	test( 'Remove currency modal renders correctly', () => {
+		render( <EnabledCurrencies /> );
+		expect(
+			screen.queryByRole( 'dialog', { name: /remove euro/i } )
+		).not.toBeInTheDocument();
+		fireEvent.click(
+			screen.getByRole( 'button', {
+				name: /remove euro as an enabled currency/i,
+			} )
+		);
+		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
+		expect( modal ).toBeInTheDocument();
+		expect( modal ).toMatchSnapshot();
+	} );
 } );
