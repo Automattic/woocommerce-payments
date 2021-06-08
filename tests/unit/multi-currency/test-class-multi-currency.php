@@ -92,46 +92,28 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_enabled_currencies_returns_correctly() {
-		$expected = (object) [
-			'USD' => (object) [
-				'code'       => 'USD',
-				'rate'       => 1,
-				'name'       => 'United States (US) dollar',
-				'id'         => 'usd',
-				'is_default' => true,
-				'flag'       => '🇺🇸',
-				'symbol'     => '$',
-			],
-			'BIF' => (object) [
-				'code'       => 'BIF',
-				'rate'       => 1974,
-				'name'       => 'Burundian franc',
-				'id'         => 'bif',
-				'is_default' => false,
-				'flag'       => '🇧🇮',
-				'symbol'     => 'Fr',
-			],
-			'CAD' => (object) [
-				'code'       => 'CAD',
-				'rate'       => 1.206823,
-				'name'       => 'Canadian dollar',
-				'id'         => 'cad',
-				'is_default' => false,
-				'flag'       => '🇨🇦',
-				'symbol'     => '$',
-			],
-			'GBP' => (object) [
-				'code'       => 'GBP',
-				'rate'       => 0.708099,
-				'name'       => 'Pound sterling',
-				'id'         => 'gbp',
-				'is_default' => false,
-				'flag'       => '🇬🇧',
-				'symbol'     => '£',
-			],
+		$mock_currencies = [
+			'USD' => 1,
+			'CAD' => 1.206823,
+			'GBP' => 0.708099,
+			'BIF' => 1974,
 		];
 
-		$this->assertSame( $expected, $this->multi_currency->get_enabled_currencies() );
+		foreach ( $mock_currencies as $k => $v ) {
+			$currency = new WCPay\Multi_Currency\Currency( $k, $v );
+			$currency->set_charm( 0.00 );
+			$currency->set_rounding( 'none' );
+			$expected[ $currency->get_code() ] = $currency;
+		}
+		$expected['GBP']->set_charm( '-0.1' );
+		$expected['GBP']->set_rounding( '0' );
+
+		$this->assertEquals( $expected, $this->multi_currency->get_enabled_currencies() );
+	}
+
+	public function test_get_enabled_currencies_returns_sorted_currencies() {
+		$expected = [ 'USD', 'BIF', 'CAD', 'GBP' ];
+		$this->assertSame( $expected, array_keys( $this->multi_currency->get_enabled_currencies() ) );
 	}
 
 	public function test_set_enabled_currencies() {

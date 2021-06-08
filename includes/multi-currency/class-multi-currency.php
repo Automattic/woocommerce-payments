@@ -237,7 +237,7 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Sets up the available currencies.
+	 * Sets up the available currencies, which are alphabetical by name.
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
@@ -266,6 +266,7 @@ class Multi_Currency {
 		$default_code             = $this->get_default_currency()->get_code();
 		$enabled_currency_codes[] = $default_code;
 
+		// This allows to keep the alphabetical sorting by name.
 		$enabled_currencies = array_filter(
 			$available_currencies,
 			function( $currency ) use ( $enabled_currency_codes ) {
