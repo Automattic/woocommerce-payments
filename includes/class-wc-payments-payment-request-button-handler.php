@@ -537,6 +537,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
+		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
+		$packages = WC()->cart->get_shipping_packages();
+		if ( 1 < count( $packages ) ) {
+			return false;
+		}
+
 		return true;
 	}
 
