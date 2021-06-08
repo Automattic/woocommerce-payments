@@ -31,6 +31,9 @@ class CC_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_Customer_Service $customer_service, WC_Payments_Token_Service $token_service, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 
+		/**
+		 * Add a list of payment method logos to WooCommerce Payment in the logo column.
+		 */
 		add_action(
 			'woocommerce_payment_gateways_setting_column_logos',
 			function( $gateway ) {

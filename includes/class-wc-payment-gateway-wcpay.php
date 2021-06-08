@@ -111,7 +111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit Card / debit card', 'woocommerce-payments' );
+		$this->title              = __( 'Popular payment methods', 'woocommerce-payments' );
 		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = [
 			'products',
@@ -355,6 +355,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
+		/**
+		 * Add a new logo column on the right of "method" in the payment methods table.
+		 */
 		add_filter(
 			'woocommerce_payment_gateways_setting_columns',
 			function( $columns ) {
