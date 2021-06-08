@@ -52,7 +52,11 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		userEvent.click( giropay.getByRole( 'checkbox' ) );
 
 		expect( handleChange ).toHaveBeenCalledTimes( 2 );
-		expect( handleChange ).toHaveBeenNthCalledWith( 1, 'sepa', false );
+		expect( handleChange ).toHaveBeenNthCalledWith(
+			1,
+			'sepa_debit',
+			false
+		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
 	} );
 } );
