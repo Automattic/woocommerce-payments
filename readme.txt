@@ -107,6 +107,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Update - Set a description when creating payment intents.
 * Add - Use date picker for applicable dispute evidence fields.
+* Fix - Disabled Payment Request Buttons when order has to be split into multiple packages because Payment Requests do not support that use case.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
