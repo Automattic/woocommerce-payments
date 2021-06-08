@@ -42,7 +42,7 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting SERVER containers"
-redirect_output docker-compose -f docker-compose-e2e.yml up --build --force-recreate -d
+redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
@@ -51,7 +51,7 @@ if [[ -n $CI ]]; then
 fi
 
 step "Setting up SERVER containers"
-WCPAY_E2E_TEST_RUN=1 $SERVER_PATH/local/bin/docker-setup.sh
+$SERVER_PATH/local/bin/docker-setup.sh
 
 step "Configuring server with stripe account"
 $SERVER_PATH/local/bin/link-account.sh $BLOG_ID $E2E_WCPAY_STRIPE_ACCOUNT_ID test 1
