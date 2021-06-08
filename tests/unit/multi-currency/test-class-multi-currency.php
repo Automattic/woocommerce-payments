@@ -92,48 +92,46 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_enabled_currencies_returns_correctly() {
-		$expected = wp_json_encode(
-			(object) [
-				'USD' => (object) [
-					'code'       => 'USD',
-					'rate'       => 1,
-					'name'       => 'United States (US) dollar',
-					'id'         => 'usd',
-					'is_default' => true,
-					'flag'       => '🇺🇸',
-					'symbol'     => '$',
-				],
-				'BIF' => (object) [
-					'code'       => 'BIF',
-					'rate'       => 1974,
-					'name'       => 'Burundian franc',
-					'id'         => 'bif',
-					'is_default' => false,
-					'flag'       => '🇧🇮',
-					'symbol'     => 'Fr',
-				],
-				'CAD' => (object) [
-					'code'       => 'CAD',
-					'rate'       => 1.206823,
-					'name'       => 'Canadian dollar',
-					'id'         => 'cad',
-					'is_default' => false,
-					'flag'       => '🇨🇦',
-					'symbol'     => '$',
-				],
-				'GBP' => (object) [
-					'code'       => 'GBP',
-					'rate'       => 0.708099,
-					'name'       => 'Pound sterling',
-					'id'         => 'gbp',
-					'is_default' => false,
-					'flag'       => '🇬🇧',
-					'symbol'     => '£',
-				],
-			]
-		);
+		$expected = (object) [
+			'USD' => (object) [
+				'code'       => 'USD',
+				'rate'       => 1,
+				'name'       => 'United States (US) dollar',
+				'id'         => 'usd',
+				'is_default' => true,
+				'flag'       => '🇺🇸',
+				'symbol'     => '$',
+			],
+			'BIF' => (object) [
+				'code'       => 'BIF',
+				'rate'       => 1974,
+				'name'       => 'Burundian franc',
+				'id'         => 'bif',
+				'is_default' => false,
+				'flag'       => '🇧🇮',
+				'symbol'     => 'Fr',
+			],
+			'CAD' => (object) [
+				'code'       => 'CAD',
+				'rate'       => 1.206823,
+				'name'       => 'Canadian dollar',
+				'id'         => 'cad',
+				'is_default' => false,
+				'flag'       => '🇨🇦',
+				'symbol'     => '$',
+			],
+			'GBP' => (object) [
+				'code'       => 'GBP',
+				'rate'       => 0.708099,
+				'name'       => 'Pound sterling',
+				'id'         => 'gbp',
+				'is_default' => false,
+				'flag'       => '🇬🇧',
+				'symbol'     => '£',
+			],
+		];
 
-		$this->assertSame( $expected, wp_json_encode( $this->multi_currency->get_enabled_currencies() ) );
+		$this->assertSame( $expected, $this->multi_currency->get_enabled_currencies() );
 	}
 
 	public function test_set_enabled_currencies() {
