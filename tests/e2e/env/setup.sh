@@ -204,7 +204,7 @@ if [[ -n $CI ]]; then
 	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 fi
 
-WP_LISTEN_PORT=$(docker port woocommerce_payments_server_wordpress_e2e 80 | grep -Eom 1 "\d+$")
+WP_LISTEN_PORT=$(docker-compose port woocommerce_payments_server_wordpress_e2e 80 | grep -Eom 1 "\d+$")
 cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 echo
