@@ -250,11 +250,12 @@ class WC_Payments_API_Client {
 	/**
 	 * Updates an intention, without confirming it.
 	 *
-	 * @param string $intention_id  - The ID of the intention to update.
-	 * @param int    $amount        - Amount to charge.
-	 * @param string $currency_code - Currency to charge in.
+	 * @param string $intention_id        - The ID of the intention to update.
+	 * @param int    $amount              - Amount to charge.
+	 * @param string $currency_code       - Currency to charge in.
 	 * @param bool   $save_payment_method - Whether to setup payment intent for future usage.
-	 * @param string $customer_id - Stripe customer to associate payment intent with.
+	 * @param string $customer_id         - Stripe customer to associate payment intent with.
+	 * @param array  $level3              - Level 3 data.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -264,11 +265,13 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$save_payment_method = false,
-		$customer_id = ''
+		$customer_id = '',
+		$level3 = []
 	) {
 		$request = [
 			'amount'   => $amount,
 			'currency' => $currency_code,
+			'level3'   => $level3,
 		];
 
 		if ( $customer_id ) {
@@ -278,7 +281,7 @@ class WC_Payments_API_Client {
 			$request['setup_future_usage'] = 'off_session';
 		}
 
-		$response_array = $this->request( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}
