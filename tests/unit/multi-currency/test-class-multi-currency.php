@@ -12,21 +12,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	const LOGGED_IN_USER_ID = 1;
 
 	/**
-	 * Mock available currencies.
-	 *
-	 * @var array
-	 */
-	public $mock_available_currencies = [
-		[ 'USD', 1 ],
-		[ 'CAD', 1.206823 ],
-		[ 'GBP', 0.708099 ],
-		[ 'EUR', 0.826381 ],
-		[ 'CDF', 2000 ],
-		[ 'BIF', 1974 ], // Zero decimal currency.
-		[ 'CLP', 706.8 ], // Zero decimal currency.
-	];
-
-	/**
 	 * Mock enabled currencies.
 	 *
 	 * @var array
@@ -50,6 +35,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 				'price_rounding' => '0',
 			]
 		);
+
+		$currency = new Currency();
 		update_option( 'wcpay_multi_currency_stored_currencies', $this->mock_available_currencies );
 		update_option( 'wcpay_multi_currency_enabled_currencies', $this->mock_enabled_currencies );
 
@@ -349,5 +336,21 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		foreach ( $settings as $setting ) {
 			delete_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ) );
 		}
+	}
+
+	private static function get_mock_cached_currencies() {
+		return [
+			'currencies' => [
+				'USD' => 1,
+				'CAD' => 1.206823,
+				'GBP' => 0.708099,
+				'EUR' => 0.826381,
+				'CDF' => 2000,
+				'BIF' => 1974, // Zero decimal currency.
+				'CLP' => 706.8, // Zero decimal currency.
+			],
+			'updated'    => time(),
+			'expires'    => time() + DAY_IN_SECONDS,
+		];
 	}
 }

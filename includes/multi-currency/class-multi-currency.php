@@ -238,9 +238,13 @@ class Multi_Currency {
 		// If the cache was expired or something went wrong, make a call to the server to get the
 		// currency data.
 		try {
+			$currency_from = get_woocommerce_currency();
+			$currencies_to = get_woocommerce_currencies();
+			unset( $currencies_to[ $currency_from ] );
+
 			$currency_data = $this->payments_api_client->get_currency_rates(
-				get_woocommerce_currency(),
-				array_keys( get_woocommerce_currencies() )
+				$currency_from,
+				array_keys( $currencies_to )
 			);
 		} catch ( API_Exception $e ) {
 			// Failed to retrieve currencies from the server. Exception is logged in http client.
@@ -297,6 +301,10 @@ class Multi_Currency {
 	 * Sets up the available currencies.
 	 */
 	private function initialize_available_currencies() {
+		// Add default store currency with a rate of 1.0.
+		$woocommerce_currency                                = get_woocommerce_currency();
+		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
+
 		$currency_data = $this->get_cached_currencies();
 		if ( isset( $currency_data['currencies'] ) && is_array( $currency_data['currencies'] ) ) {
 			foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
