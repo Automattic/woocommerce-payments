@@ -186,7 +186,7 @@ describe( 'DigitalWallets', () => {
 		);
 		expect( customizeAppearanceButton ).toHaveAttribute(
 			'href',
-			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_digital_wallets'
+			'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=digital_wallets'
 		);
 	} );
 } );
