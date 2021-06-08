@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Multi_Currency\Multi_Currency;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
@@ -678,6 +679,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_API_Client
+	 *
+	 * @return WC_Payments_API_Client API Client instance
+	 */
+	public static function get_payments_api_client() {
+		return self::$api_client;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -750,5 +760,4 @@ class WC_Payments {
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
-
 }

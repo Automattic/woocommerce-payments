@@ -7,6 +7,7 @@
 
 namespace WCPay\Multi_Currency;
 
+use WC_Payments;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 
@@ -88,7 +89,7 @@ class Multi_Currency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self();
+			self::$instance = new self( WC_Payments::get_payments_api_client() );
 		}
 		return self::$instance;
 	}
@@ -98,9 +99,8 @@ class Multi_Currency {
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
-	private function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
-
 		$this->includes();
 		$this->init();
 	}
@@ -285,8 +285,10 @@ class Multi_Currency {
 	 */
 	private function initialize_available_currencies() {
 		$currency_data = $this->get_cached_currencies();
-		foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
-			$this->available_currencies[ strtoupper( $currency_code ) ] = new Currency( strtoupper( $currency_code ), $currency_rate );
+		if ( isset( $currency_data['currencies'] ) && is_array( $currency_data['currencies'] ) ) {
+			foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
+				$this->available_currencies[ strtoupper( $currency_code ) ] = new Currency( strtoupper( $currency_code ), $currency_rate );
+			}
 		}
 	}
 
