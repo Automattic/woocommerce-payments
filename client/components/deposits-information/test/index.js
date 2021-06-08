@@ -9,9 +9,9 @@ import { merge } from 'lodash';
  * Internal dependencies
  */
 import DepositsInformation from '..';
-import { useAllDeposistsOverviews, useInstantDeposit } from 'data';
+import { useAllDeposistsOverviews, useInstantDeposit } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useAllDeposistsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );

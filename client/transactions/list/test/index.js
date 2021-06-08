@@ -11,11 +11,11 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data';
+import { useTransactions, useTransactionsSummary } from 'wcpay/data';
 
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 } ) );

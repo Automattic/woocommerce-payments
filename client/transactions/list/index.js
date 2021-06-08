@@ -25,7 +25,7 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data';
+import { useTransactions, useTransactionsSummary } from 'wcpay/data';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';

@@ -10,7 +10,7 @@ import { render, fireEvent } from '@testing-library/react';
  */
 import { DisputeEvidenceForm, DisputeEvidencePage } from '../';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 

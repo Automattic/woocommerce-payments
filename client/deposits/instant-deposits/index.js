@@ -12,7 +12,7 @@ import { useState } from '@wordpress/element';
  */
 import './style.scss';
 import InstantDepositModal from './modal';
-import { useInstantDeposit } from 'data';
+import { useInstantDeposit } from 'wcpay/data';
 
 const isButtonDisabled = ( instantBalance ) => {
 	let buttonDisabled = false;
