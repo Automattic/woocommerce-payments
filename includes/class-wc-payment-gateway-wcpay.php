@@ -61,7 +61,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $account;
+	protected $account;
 
 	/**
 	 * WC_Payments_Customer instance for working with customer information
@@ -267,7 +267,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'options' => [],
 			];
 
+			$this->form_fields['payment_request_button_size'] = [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'medium'  => __( 'Medium', 'woocommerce-payments' ),
+					'large'   => __( 'Large', 'woocommerce-payments' ),
+				],
+			];
+
+			// in the new settings, "checkout" is going to be enabled by default (if it is a new WCPay installation).
 			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
+
+			// no longer needed in the new settings.
+			unset( $this->form_fields['payment_request_button_branded_type'] );
+			// `light-outline` is no longer a valid option.
+			unset( $this->form_fields['payment_request_button_theme']['options']['light-outline'] );
+			// injecting some of the new options.
+			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
+			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
+			// no longer valid options.
+			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
+			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
 		}
 
 		// Giropay option hidden behind feature flag.
@@ -463,14 +488,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function output_payments_settings_screen() {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
-		$hide_save_button                  = true;
-		$is_payment_method_settings_screen = self::GATEWAY_ID !== $this->id;
+		$hide_save_button = true;
 
-		if ( $is_payment_method_settings_screen ) :
+		if ( ! empty( $_GET['method'] ) ) :
 			?>
 			<div
 				id="wcpay-payment-method-settings-container"
-				data-method-id="<?php echo esc_attr( $this->id ); ?>"
+				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); ?>"
 			></div>
 		<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>

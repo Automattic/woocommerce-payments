@@ -21,7 +21,7 @@ services:
       - ${E2E_ROOT}/deps/woocommerce-subscriptions:/var/www/html/wp-content/plugins/woocommerce-subscriptions
   db:
     container_name: wcp_e2e_mysql
-    image: mysql:5.7
+    image: mariadb:10.5.8
     ports:
       - "5698:3306"
     env_file:
