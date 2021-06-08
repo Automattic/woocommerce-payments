@@ -260,6 +260,12 @@ class Multi_Currency {
 		$enabled_currencies[] = $default_code;
 
 		foreach ( $enabled_currencies as $code ) {
+			// If the currency code is not found in the available currencies we skip it.
+			// This is due to merchants can use filters to add more currencies, then remove them at any time.
+			if ( ! isset( $available_currencies[ $code ] ) ) {
+				continue;
+			}
+
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $available_currencies[ $code ];
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
