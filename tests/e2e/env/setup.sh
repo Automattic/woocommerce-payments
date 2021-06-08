@@ -44,10 +44,8 @@ echo "Secrets created"
 step "Starting SERVER containers"
 redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
-WP_LISTEN_PORT=8088
-docker ps
 # Get WordPress instance port number from running containers, and print a debug line to show if it works.
-# WP_LISTEN_PORT=$(docker-compose port woocommerce_payments_server_wordpress_e2e 80 | head -n 1 | grep -Eo "\d+$")
+WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | grep -oE ":\d+" | head -n 1 | grep -Eo "\d+$")
 echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
 
 if [[ -n $CI ]]; then
