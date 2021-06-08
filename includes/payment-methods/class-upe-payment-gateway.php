@@ -94,22 +94,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
 			strtolower( $currency ),
-			$this->get_enabled_payment_gateways()
+			$this->get_upe_enabled_payment_method_ids()
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
 		];
-	}
-
-	/**
-	 * Returns enabled payment gateways.
-	 *
-	 * @return array
-	 */
-	public function get_enabled_payment_gateways() {
-		$enabled_gateways = [ 'card' ];
-		return $enabled_gateways;
 	}
 
 	/**

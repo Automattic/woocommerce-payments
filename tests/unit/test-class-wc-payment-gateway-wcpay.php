@@ -1186,7 +1186,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_schedule_order_tracking_with_no_payment_method_id() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method( 'card' );
 		$order->delete_meta_data( '_new_order_tracking_complete' );
 
 		$this->mock_action_scheduler_service
@@ -1208,7 +1208,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_schedule_order_tracking() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method( 'card' );
 		$order->update_meta_data( '_payment_method_id', 'pm_123' );
 		$order->delete_meta_data( '_new_order_tracking_complete' );
 
@@ -1231,7 +1231,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_schedule_order_tracking_on_already_created_order() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method( 'card' );
 		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
 
 		$this->mock_action_scheduler_service

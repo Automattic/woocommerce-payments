@@ -49,7 +49,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 		update_option( '_wcpay_feature_grouped_settings', '1' );
-		$this->set_available_gateways( [ 'woocommerce_payments' ] );
+		$this->set_available_gateways( [ 'card' ] );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -77,7 +77,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'woocommerce_payments' ],
+			[ 'card' ],
 			$enabled_method_ids
 		);
 	}
@@ -122,7 +122,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_update_settings_request_returns_status_code_200() {
 		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
 		$request->set_param( 'is_wcpay_enabled', true );
-		$request->set_param( 'enabled_payment_method_ids', [ 'woocommerce_payments' ] );
+		$request->set_param( 'enabled_payment_method_ids', [ 'card' ] );
 
 		$response = rest_do_request( $request );
 
