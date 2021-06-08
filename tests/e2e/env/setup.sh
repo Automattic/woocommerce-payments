@@ -45,9 +45,8 @@ step "Starting SERVER containers"
 redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 # Get WordPress instance port number from running containers, and print a debug line to show if it works.
-WP_LISTEN_PORT=$(docker port woocommerce_payments_server_wordpress_e2e | head -n 1 | grep -oE "\d+$")
+WP_LISTEN_PORT=$(docker-compose port woocommerce_payments_server_wordpress_e2e 80 | head -n 1 | grep -Eo "\d+$")
 echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
-exit
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
