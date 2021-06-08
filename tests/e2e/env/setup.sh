@@ -44,6 +44,10 @@ echo "Secrets created"
 step "Starting SERVER containers"
 redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
+# Get WordPress instance port number from running containers, and print a debug line to show if it works.
+WP_LISTEN_PORT=$(docker port woocommerce_payments_server_wordpress_e2e 80 | grep -Eom 1 "\d+$")
+echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
+
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
 	redirect_output sudo chown www-data:www-data -R ./docker/wordpress
@@ -204,7 +208,6 @@ if [[ -n $CI ]]; then
 	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 fi
 
-WP_LISTEN_PORT=$(docker-compose port woocommerce_payments_server_wordpress_e2e 80 | grep -Eom 1 "\d+$")
 cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 echo
