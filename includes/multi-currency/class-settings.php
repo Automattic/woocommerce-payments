@@ -292,7 +292,7 @@ class Settings extends \WC_Settings_Page {
 					'desc'              => __( 'Enter the manual rate you would like to use. Must be a positive number.', 'woocommerce-payments' ),
 					'desc_tip'          => true,
 					'custom_attributes' => [
-						'pattern' => '[0-9]*.[0-9]*',
+						'pattern' => '[0-9]*\.[0-9]*',
 					],
 				],
 
