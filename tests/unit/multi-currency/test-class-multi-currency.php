@@ -12,6 +12,28 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	const LOGGED_IN_USER_ID = 1;
 
 	/**
+	 * Mock available currencies.
+	 *
+	 * @var array
+	 */
+	public $mock_available_currencies = [
+		[ 'USD', 1 ],
+		[ 'CAD', 1.206823 ],
+		[ 'GBP', 0.708099 ],
+		[ 'EUR', 0.826381 ],
+		[ 'CDF', 2000 ],
+		[ 'BIF', 1974 ], // Zero decimal currency.
+		[ 'CLP', 706.8 ], // Zero decimal currency.
+	];
+
+	/**
+	 * Mock enabled currencies.
+	 *
+	 * @var array
+	 */
+	public $mock_enabled_currencies = [ 'USD', 'CAD', 'GBP', 'BIF' ];
+
+	/**
 	 * WCPay\Multi_Currency\Multi_Currency instance.
 	 *
 	 * @var WCPay\Multi_Currency\Multi_Currency
@@ -28,6 +50,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 				'price_rounding' => '0',
 			]
 		);
+		update_option( 'wcpay_multi_currency_stored_currencies', $this->mock_available_currencies );
+		update_option( 'wcpay_multi_currency_enabled_currencies', $this->mock_enabled_currencies );
 
 		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
 	}
@@ -42,6 +66,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding' ] );
+		delete_option( 'wcpay_multi_currency_stored_currencies' );
+		delete_option( 'wcpay_multi_currency_enabled_currencies' );
 
 		parent::tearDown();
 	}
@@ -63,6 +89,67 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		$this->assertSame( 'DEFAULT', $default_currency->get_code() );
 		$this->assertSame( 1.0, $default_currency->get_rate() );
+	}
+
+	public function test_get_enabled_currencies_returns_correctly() {
+		$expected = wp_json_encode(
+			(object) [
+				'USD' => (object) [
+					'code'       => 'USD',
+					'rate'       => 1,
+					'name'       => 'United States (US) dollar',
+					'id'         => 'usd',
+					'is_default' => true,
+					'flag'       => '🇺🇸',
+					'symbol'     => '$',
+				],
+				'BIF' => (object) [
+					'code'       => 'BIF',
+					'rate'       => 1974,
+					'name'       => 'Burundian franc',
+					'id'         => 'bif',
+					'is_default' => false,
+					'flag'       => '🇧🇮',
+					'symbol'     => 'Fr',
+				],
+				'CAD' => (object) [
+					'code'       => 'CAD',
+					'rate'       => 1.206823,
+					'name'       => 'Canadian dollar',
+					'id'         => 'cad',
+					'is_default' => false,
+					'flag'       => '🇨🇦',
+					'symbol'     => '$',
+				],
+				'GBP' => (object) [
+					'code'       => 'GBP',
+					'rate'       => 0.708099,
+					'name'       => 'Pound sterling',
+					'id'         => 'gbp',
+					'is_default' => false,
+					'flag'       => '🇬🇧',
+					'symbol'     => '£',
+				],
+			]
+		);
+
+		$this->assertSame( $expected, wp_json_encode( $this->multi_currency->get_enabled_currencies() ) );
+	}
+
+	public function test_set_enabled_currencies() {
+		$currencies = [ 'USD', 'EUR', 'GBP', 'CLP' ];
+		$this->multi_currency->set_enabled_currencies( $currencies );
+		$this->assertSame( $currencies, get_option( 'wcpay_multi_currency_enabled_currencies' ) );
+	}
+
+	public function test_enabled_but_unavailable_currencies_are_skipped() {
+		update_option( 'wcpay_multi_currency_enabled_currencies', [ 'RANDOM_CURRENCY', 'USD' ] );
+
+		// Recreate Multi_Currency instance to use the recently set currencies.
+		$this->reset_multi_currency_instance();
+		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
+
+		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session_and_user() {
@@ -130,7 +217,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_update_selected_currency_by_url_does_not_set_session_when_currency_not_enabled() {
-		$_GET['currency'] = 'BIF';
+		$_GET['currency'] = 'CLP';
 
 		$this->multi_currency->update_selected_currency_by_url();
 

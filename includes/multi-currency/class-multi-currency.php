@@ -281,6 +281,19 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Gets the currencies stored in the db.
+	 *
+	 * @return array Multi-dimensional array of currencies and rates.
+	 */
+	private function get_stored_currencies(): array {
+		$stored_currencies = get_option( $this->id . '_stored_currencies', false );
+		if ( ! $stored_currencies ) {
+			$stored_currencies = $this->get_mock_currencies();
+		}
+		return $stored_currencies;
+	}
+
+	/**
 	 * Sets up the available currencies.
 	 */
 	private function initialize_available_currencies() {
@@ -297,26 +310,17 @@ class Multi_Currency {
 	 */
 	private function initialize_enabled_currencies() {
 		$available_currencies = $this->get_available_currencies();
-		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', false );
+		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', [] );
 		$default_code         = $this->get_default_currency()->get_code();
-
-		if ( ! $enabled_currencies ) {
-			// TODO: Remove dev mode option here.
-			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
-				$count = 0;
-				foreach ( $available_currencies as $currency ) {
-					$enabled_currencies[] = $currency->get_code();
-					if ( $count >= 3 ) {
-						break;
-					}
-					$count++;
-				}
-			} else {
-				$enabled_currencies[] = $default_code;
-			}
-		}
+		$enabled_currencies[] = $default_code;
 
 		foreach ( $enabled_currencies as $code ) {
+			// If the currency code is not found in the available currencies we skip it.
+			// This is due to merchants can use filters to add more currencies, then remove them at any time.
+			if ( ! isset( $available_currencies[ $code ] ) ) {
+				continue;
+			}
+
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
 			$currency = clone $available_currencies[ $code ];
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
@@ -333,6 +337,8 @@ class Multi_Currency {
 
 			$this->enabled_currencies[ $code ] = $currency;
 		}
+
+		ksort( $this->enabled_currencies );
 
 		// Set default currency to the top of the list.
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
