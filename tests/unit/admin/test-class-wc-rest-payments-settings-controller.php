@@ -174,7 +174,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'enabled_payment_method_ids' ) );
+		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
