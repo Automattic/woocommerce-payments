@@ -99,8 +99,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			'BIF' => 1974,
 		];
 
-		foreach ( $mock_currencies as $k => $v ) {
-			$currency = new WCPay\Multi_Currency\Currency( $k, $v );
+		foreach ( $mock_currencies as $code => $rate ) {
+			$currency = new WCPay\Multi_Currency\Currency( $code, $rate );
 			$currency->set_charm( 0.00 );
 			$currency->set_rounding( 'none' );
 			$expected[ $currency->get_code() ] = $currency;
