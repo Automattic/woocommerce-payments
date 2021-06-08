@@ -20,7 +20,7 @@ use WC_Payments_Token_Service;
  */
 class CC_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
-	 * Digital Wallets Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
+	 * Constructor same parameters as WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client      - WooCommerce Payments API client.
 	 * @param WC_Payments_Account                  $account                  - Account class instance.
