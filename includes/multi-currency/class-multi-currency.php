@@ -20,7 +20,7 @@ class Multi_Currency {
 
 	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
 	const CURRENCY_META_KEY        = 'wcpay_currency';
-	const CURRENCY_CACHE_OPTION    = 'wcpay_currency_data';
+	const CURRENCY_CACHE_OPTION    = 'wcpay_multi_currency_cached_currencies';
 	const CURRENCY_RETRIEVAL_ERROR = 'error';
 
 	/**
