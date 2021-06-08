@@ -17,6 +17,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	 * @var array
 	 */
 	public $mock_available_currencies = [
+		[ 'USD', 1 ],
 		[ 'CAD', 1.206823 ],
 		[ 'GBP', 0.708099 ],
 		[ 'EUR', 0.826381 ],
@@ -49,6 +50,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 				'price_rounding' => '0',
 			]
 		);
+		update_option( 'wcpay_multi_currency_stored_currencies', $this->mock_available_currencies );
+		update_option( 'wcpay_multi_currency_enabled_currencies', $this->mock_enabled_currencies );
 
 		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
 	}
@@ -63,6 +66,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding' ] );
+		delete_option( 'wcpay_multi_currency_stored_currencies' );
+		delete_option( 'wcpay_multi_currency_enabled_currencies' );
 
 		parent::tearDown();
 	}
@@ -87,8 +92,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_enabled_currencies_returns_correctly() {
-		update_option( 'wcpay_multi_currency_enabled_currencies', $this->mock_enabled_currencies );
-
 		$expected = wp_json_encode(
 			(object) [
 				'USD' => (object) [
@@ -138,8 +141,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_set_enabled_currencies() {
-		$this->multi_currency->set_enabled_currencies( $this->mock_enabled_currencies );
-		$this->assertSame( $this->mock_enabled_currencies, get_option( 'wcpay_multi_currency_enabled_currencies' ) );
+		$currencies = [ 'USD', 'EUR', 'GBP', 'CLP' ];
+		$this->multi_currency->set_enabled_currencies( $currencies );
+		$this->assertSame( $currencies, get_option( 'wcpay_multi_currency_enabled_currencies' ) );
 	}
 
 	public function test_get_selected_currency_returns_default_currency_for_empty_session_and_user() {
@@ -207,7 +211,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_update_selected_currency_by_url_does_not_set_session_when_currency_not_enabled() {
-		$_GET['currency'] = 'BIF';
+		$_GET['currency'] = 'CLP';
 
 		$this->multi_currency->update_selected_currency_by_url();
 
