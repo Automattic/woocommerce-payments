@@ -29,6 +29,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
+		update_option( 'wcpay_multi_currency_enabled_currencies', [ 'GBP', 'GBP', 'EUR' ] );
+
 		$this->multi_currency = WCPay\Multi_Currency\Multi_Currency::instance();
 	}
 
@@ -42,6 +44,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding' ] );
+
+		delete_option( 'wcpay_multi_currency_enabled_currencies' );
 
 		parent::tearDown();
 	}

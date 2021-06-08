@@ -246,21 +246,7 @@ class Multi_Currency {
 		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', false );
 		$default_code         = $this->get_default_currency()->get_code();
 
-		if ( ! $enabled_currencies ) {
-			// TODO: Remove dev mode option here.
-			if ( get_option( 'wcpaydev_dev_mode', false ) ) {
-				$count = 0;
-				foreach ( $available_currencies as $currency ) {
-					$enabled_currencies[] = $currency->get_code();
-					if ( $count >= 3 ) {
-						break;
-					}
-					$count++;
-				}
-			} else {
-				$enabled_currencies[] = $default_code;
-			}
-		}
+		$enabled_currencies[] = $default_code;
 
 		foreach ( $enabled_currencies as $code ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
