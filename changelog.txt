@@ -2,6 +2,7 @@
 
 = 2.6.0 - 2021-xx-xx =
 * Add - Notify the admin if WordPress.com user connection is broken.
+* Add - Error message when total size of dispute evidence files uploaded goes over limit.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
