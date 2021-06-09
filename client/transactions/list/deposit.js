@@ -8,6 +8,7 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { addQueryArgs } from '@wordpress/url';
 import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 
 const Deposit = ( { depositId, dateAvailable } ) => {
 	const depositUrl = addQueryArgs( 'admin.php', {
