@@ -50,30 +50,21 @@ const SetupComplete = () => {
 			<CollapsibleBody>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ __(
-						"You're ready to begin accepting payments with the new methods!.",
+						"You're ready to begin accepting payments with the new methods!",
 						'woocommerce-payments'
 					) }
 				</p>
 				<p className="wcpay-wizard-task__description-element is-muted-color">
 					{ interpolateComponents( {
 						mixedString: __(
-							'{{vatInformationLink /}} and {{setupTaxesLink /}} ' +
-								'to ensure smooth transactions if you plan to sell to customers in Europe.',
+							'{{setupTaxesLink /}} to ensure smooth transactions if you plan to sell to customers in Europe.',
 							'woocommerce-payments'
 						),
 						components: {
-							vatInformationLink: (
-								<a href="admin.php?page=wc-settings">
-									{ __(
-										'Enter your VAT account information',
-										'woocommerce-payments'
-									) }
-								</a>
-							),
 							setupTaxesLink: (
 								<a href="admin.php?page=wc-settings&tab=tax">
 									{ __(
-										'set up taxes',
+										'Set up taxes',
 										'woocommerce-payments'
 									) }
 								</a>
