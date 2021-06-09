@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -36,11 +37,11 @@ const charm = document.querySelector(
 );
 
 const previewAmount = document.querySelector(
-	'[name^=wcpay_multi_currency_preview_default_]'
+	'#wcpay_multi_currency_preview_default'
 );
 
-const previewField = document.querySelector(
-	'[name^=wcpay_multi_currency_preview_converted_]'
+const previewDisplay = document.querySelector(
+	'#wcpay_multi_currency_preview_converted span'
 );
 
 function updatePreview() {
@@ -54,7 +55,11 @@ function updatePreview() {
 	}
 
 	total += parseFloat( charm.value );
-	previewField.value = total.toFixed( 2 );
+	total = total.toFixed( 2 );
+	total = isNaN( total )
+		? __( 'Please enter a valid number', 'woocommerce-payments' )
+		: total;
+	previewDisplay.innerHTML = total;
 }
 
 const hideShowManualField = ( show ) => {

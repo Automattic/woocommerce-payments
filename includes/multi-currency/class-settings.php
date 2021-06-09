@@ -189,12 +189,34 @@ class Settings extends \WC_Settings_Page {
 	public function single_currency_preview_helper() {
 		global $current_section;
 		$available_currencies = $this->multi_currency->get_available_currencies();
+		$currency             = $available_currencies[ strtoupper( $current_section ) ];
+		$default_currency     = $this->multi_currency->get_default_currency();
 
 		?>
-		<input type="hidden" 
-			name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>" 
-			value="<?php echo esc_attr( $available_currencies[ strtoupper( $current_section ) ]->get_rate() ); ?>" 
-		/>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="wcpay_multi_currency_preview_default"><?php echo esc_html( $default_currency->get_name() ); ?></label>
+			</th>
+			<td class="forminp forminp-text">
+				<span style="line-height:30px"><?php echo esc_html( $default_currency->get_symbol() ); ?></span>
+				<input name="wcpay_multi_currency_preview_default" id="wcpay_multi_currency_preview_default" type="text" value="20.00" placeholder="20.00">
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="wcpay_multi_currency_preview_converted"><?php echo esc_html( $currency->get_name() ); ?></label>
+			</th>
+			<td>
+				<div id="wcpay_multi_currency_preview_converted">
+					<?php echo esc_html( $currency->get_symbol() ); ?>
+					<span style="display:inline-block;"></span>
+				</div>
+				<input type="hidden" 
+					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>" 
+					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>" 
+				/>
+			</td>
+		</tr>
 		<?php
 	}
 
@@ -337,21 +359,6 @@ class Settings extends \WC_Settings_Page {
 					'type' => 'title',
 					'desc' => $preview_desc,
 					'id'   => $page_id . '_preview',
-				],
-
-				[
-					'name'        => $default_currency->get_name() . ' ' . $default_currency->get_symbol(),
-					'id'          => $this->id . '_preview_default_' . $currency->get_id(),
-					'default'     => '20.00',
-					'type'        => 'text',
-					'placeholder' => '20.00',
-				],
-
-				[
-					'name'    => $currency->get_name() . ' ' . $currency->get_symbol(),
-					'id'      => $this->id . '_preview_converted_' . $currency->get_id(),
-					'default' => '',
-					'type'    => 'text',
 				],
 
 				[
