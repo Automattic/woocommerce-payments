@@ -412,13 +412,14 @@ export default ( { query } ) => {
 	};
 
 	const fileSizeExceeded = ( latestFileSize ) => {
+		const fileSizeLimitInBytes = 4500000;
 		const fileSizes = dispute.fileSize
 			? Object.values( dispute.fileSize )
 			: [];
 		const totalFileSize =
 			fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
 			latestFileSize;
-		if ( 4500000 < totalFileSize ) {
+		if ( fileSizeLimitInBytes < totalFileSize ) {
 			createInfoNotice(
 				__(
 					"The files you've attached to this dispute as evidence will exceed the limit for a " +
