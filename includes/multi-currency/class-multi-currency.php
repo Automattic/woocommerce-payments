@@ -225,14 +225,14 @@ class Multi_Currency {
 
 		$currencies = $this->read_currencies_from_cache();
 
+		// If the option contains the error value, return false early and do not attempt another API call.
+		if ( isset( $currencies['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $currencies['currencies'] ) {
+			return false;
+		}
+
 		// If an array of currencies was returned from the cache, return it here.
 		if ( false !== $currencies ) {
 			return $currencies;
-		}
-
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( self::CURRENCY_RETRIEVAL_ERROR === $currencies ) {
-			return false;
 		}
 
 		// If the cache was expired or something went wrong, make a call to the server to get the
@@ -588,7 +588,7 @@ class Multi_Currency {
 	/**
 	 * Read the currency data from the WP option we cache it in.
 	 *
-	 * @return array|bool
+	 * @return array|bool|string
 	 */
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
