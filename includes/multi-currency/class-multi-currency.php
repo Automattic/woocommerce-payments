@@ -294,9 +294,9 @@ class Multi_Currency {
 
 		$available_currencies = [];
 
-		$currency_data = $this->get_cached_currencies();
-		if ( isset( $currency_data['currencies'] ) && is_array( $currency_data['currencies'] ) ) {
-			foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
+		$cache_data = $this->get_cached_currencies();
+		if ( isset( $cache_data['currencies'] ) && is_array( $cache_data['currencies'] ) ) {
+			foreach ( $cache_data['currencies'] as $currency_code => $currency_rate ) {
 				$new_currency                                      = new Currency( $currency_code, $currency_rate );
 				$available_currencies[ $new_currency->get_name() ] = $new_currency;
 			}
