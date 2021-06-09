@@ -10,17 +10,19 @@ import {
 	CardDivider,
 	CheckboxControl,
 } from '@wordpress/components';
+import classNames from 'classnames';
 import interpolateComponents from 'interpolate-components';
-import { getPaymentMethodSettingsUrl } from '../../utils';
 
 /**
  * Internal dependencies
  */
+import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	useDigitalWalletsEnabledSettings,
 	useDigitalWalletsLocations,
 } from 'data';
 import CardBody from '../card-body';
+import './style.scss';
 
 const DigitalWallets = () => {
 	const [
@@ -88,50 +90,68 @@ const DigitalWallets = () => {
 					} ) }
 					/* eslint-enable jsx-a11y/anchor-has-content */
 				/>
-				<h4>
-					{ __(
-						'Show express checkouts on',
-						'woocommerce-payments'
+				<div
+					className={ classNames(
+						'digital-wallets__additional-controls-wrapper',
+						{ 'is-enabled': isDigitalWalletsEnabled }
 					) }
-				</h4>
-				<ul>
-					<li>
-						<CheckboxControl
-							disabled={ ! isDigitalWalletsEnabled }
-							checked={
-								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.includes( 'checkout' )
-							}
-							onChange={ makeLocationChangeHandler( 'checkout' ) }
-							label={ __( 'Checkout', 'woocommerce-payments' ) }
-						/>
-					</li>
-					<li>
-						<CheckboxControl
-							disabled={ ! isDigitalWalletsEnabled }
-							checked={
-								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.includes( 'product' )
-							}
-							onChange={ makeLocationChangeHandler( 'product' ) }
-							label={ __(
-								'Product page',
-								'woocommerce-payments'
-							) }
-						/>
-					</li>
-					<li>
-						<CheckboxControl
-							disabled={ ! isDigitalWalletsEnabled }
-							checked={
-								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.includes( 'cart' )
-							}
-							onChange={ makeLocationChangeHandler( 'cart' ) }
-							label={ __( 'Cart', 'woocommerce-payments' ) }
-						/>
-					</li>
-				</ul>
+				>
+					<h4>
+						{ __(
+							'Show express checkouts on',
+							'woocommerce-payments'
+						) }
+					</h4>
+					<ul>
+						<li>
+							<CheckboxControl
+								disabled={ ! isDigitalWalletsEnabled }
+								checked={
+									isDigitalWalletsEnabled &&
+									digitalWalletsLocations.includes(
+										'checkout'
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'checkout'
+								) }
+								label={ __(
+									'Checkout',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isDigitalWalletsEnabled }
+								checked={
+									isDigitalWalletsEnabled &&
+									digitalWalletsLocations.includes(
+										'product'
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'product'
+								) }
+								label={ __(
+									'Product page',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isDigitalWalletsEnabled }
+								checked={
+									isDigitalWalletsEnabled &&
+									digitalWalletsLocations.includes( 'cart' )
+								}
+								onChange={ makeLocationChangeHandler( 'cart' ) }
+								label={ __( 'Cart', 'woocommerce-payments' ) }
+							/>
+						</li>
+					</ul>
+				</div>
 			</CardBody>
 			<CardDivider />
 			<CardBody>
