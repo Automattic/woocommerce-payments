@@ -103,12 +103,16 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tearDown() {
+		parent::tearDown();
+
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
 		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
+
+		delete_option( '_wcpay_feature_grouped_settings' );
 	}
 
 	public function test_process_refund() {
@@ -1255,14 +1259,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
-		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->setMethods( null )
-			->getMock();
-		$gateway->id = 'foo';
-
+		$_GET['method'] = 'foo';
 		ob_start();
-		$gateway->output_payments_settings_screen();
+		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
@@ -1305,5 +1304,77 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'req_letter'     => [ false, '123456' ],
 			'trim_too_short' => [ false, '  aaa    ' ],
 		];
+	}
+
+	public function test_digital_wallets_form_field_defaults_with_grouped_settings_disabled() {
+		// when the "grouped settings" flag is disabled, the default values for the `payment_request_button_locations` option should not include "checkout".
+		update_option( '_wcpay_feature_grouped_settings', '0' );
+
+		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
+		);
+
+		$this->assertEquals(
+			[
+				'product',
+				'cart',
+			],
+			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
+		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals(
+			[
+				'default',
+				'buy',
+				'donate',
+				'branded',
+				'custom',
+			],
+			array_keys( $form_fields['payment_request_button_type']['options'] )
+		);
+		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
+	}
+
+	public function test_digital_wallets_form_field_defaults_with_grouped_settings_enabled() {
+		// when the "grouped settings" flag is enabled, the default values for the `payment_request_button_locations` option should include "checkout".
+		update_option( '_wcpay_feature_grouped_settings', '1' );
+
+		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
+		delete_option( 'woocommerce_woocommerce_payments_settings' );
+
+		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service
+		);
+
+		$this->assertEquals(
+			[
+				'product',
+				'cart',
+				'checkout',
+			],
+			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
+		);
+		$this->assertEquals(
+			'default',
+			$this->wcpay_gateway->get_option( 'payment_request_button_size' )
+		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
+		$this->assertEquals( [ 'dark', 'light' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 }

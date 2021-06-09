@@ -93,6 +93,12 @@ const PaymentMethodsSelector = ( { className } ) => {
 							<Button
 								isPrimary
 								onClick={ handleAddSelectedClick }
+								disabled={
+									0 ===
+									Object.entries( paymentMethods ).filter(
+										( [ , enabled ] ) => enabled
+									).length
+								}
 							>
 								{ __( 'Add selected', 'woocommerce-payments' ) }
 							</Button>

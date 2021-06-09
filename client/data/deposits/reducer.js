@@ -41,6 +41,22 @@ const receiveDeposits = (
 					error,
 				},
 			};
+		case TYPES.SET_ALL_DEPOSITS_OVERVIEWS:
+			return {
+				...state,
+				overviews: {
+					...state.overviews,
+					data,
+				},
+			};
+		case TYPES.SET_ERROR_FOR_ALL_DEPOSITS_OVERVIEWS:
+			return {
+				...state,
+				overviews: {
+					...state.overviews,
+					error,
+				},
+			};
 		case TYPES.SET_DEPOSITS:
 			return {
 				...state,

@@ -51,6 +51,22 @@ export const getIsDigitalWalletsEnabled = ( state ) => {
 	return getSettings( state ).is_digital_wallets_enabled || false;
 };
 
+export const getIsDebugLogEnabled = ( state ) => {
+	return getSettings( state ).is_debug_log_enabled || false;
+};
+
 export const getDigitalWalletsLocations = ( state ) => {
-	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_OBJ;
+	return getSettings( state ).digital_wallets_enabled_locations || EMPTY_ARR;
+};
+
+export const getDigitalWalletsButtonType = ( state ) => {
+	return getSettings( state ).digital_wallets_button_type || '';
+};
+
+export const getDigitalWalletsButtonSize = ( state ) => {
+	return getSettings( state ).digital_wallets_button_size || '';
+};
+
+export const getDigitalWalletsButtonTheme = ( state ) => {
+	return getSettings( state ).digital_wallets_button_theme || '';
 };

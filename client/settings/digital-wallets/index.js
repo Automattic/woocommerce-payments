@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
-	CardBody,
 	CardDivider,
 	CheckboxControl,
 } from '@wordpress/components';
@@ -21,6 +20,7 @@ import {
 	useDigitalWalletsEnabledSettings,
 	useDigitalWalletsLocations,
 } from 'data';
+import CardBody from '../card-body';
 
 const DigitalWallets = () => {
 	const [
@@ -32,28 +32,34 @@ const DigitalWallets = () => {
 		updateDigitalWalletsLocations,
 	] = useDigitalWalletsLocations();
 
-	const makeLocationChangeHandler = ( location ) => ( status ) => {
-		updateDigitalWalletsLocations( {
-			[ location ]: status,
-		} );
+	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
+		if ( isChecked ) {
+			updateDigitalWalletsLocations( [
+				...digitalWalletsLocations,
+				location,
+			] );
+		} else {
+			updateDigitalWalletsLocations(
+				digitalWalletsLocations.filter( ( name ) => name !== location )
+			);
+		}
 	};
 
 	return (
 		<Card className="digital-wallets">
-			<CardBody size="large">
+			<CardBody>
 				<CheckboxControl
 					checked={ isDigitalWalletsEnabled }
 					onChange={ updateIsDigitalWalletsEnabled }
 					label={ __(
-						'Enable 1-click checkouts',
+						'Enable express checkouts',
 						'woocommerce-payments'
 					) }
 					/* eslint-disable jsx-a11y/anchor-has-content */
 					help={ interpolateComponents( {
 						mixedString: __(
 							'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
-								'{{appleLink}}Apple{{/appleLink}}, {{googleLink}}Google{{/googleLink}} ' +
-								"and {{microsoftLink}}Microsoft{{/microsoftLink}}'s terms of use.",
+								"{{appleLink}}Apple{{/appleLink}}, and {{googleLink}}Google{{/googleLink}}'s terms of use.",
 							'woocommerce-payments'
 						),
 						components: {
@@ -78,20 +84,13 @@ const DigitalWallets = () => {
 									href="https://androidpay.developers.google.com/terms/sellertos"
 								/>
 							),
-							microsoftLink: (
-								<a
-									target="_blank"
-									rel="noreferrer"
-									href="https://www.microsoft.com/en/servicesagreement/"
-								/>
-							),
 						},
 					} ) }
 					/* eslint-enable jsx-a11y/anchor-has-content */
 				/>
 				<h4>
 					{ __(
-						'Show 1-click checkouts on:',
+						'Show express checkouts on',
 						'woocommerce-payments'
 					) }
 				</h4>
@@ -101,7 +100,7 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.checkout
+								digitalWalletsLocations.includes( 'checkout' )
 							}
 							onChange={ makeLocationChangeHandler( 'checkout' ) }
 							label={ __( 'Checkout', 'woocommerce-payments' ) }
@@ -112,11 +111,9 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.product_page
+								digitalWalletsLocations.includes( 'product' )
 							}
-							onChange={ makeLocationChangeHandler(
-								'product_page'
-							) }
+							onChange={ makeLocationChangeHandler( 'product' ) }
 							label={ __(
 								'Product page',
 								'woocommerce-payments'
@@ -128,7 +125,7 @@ const DigitalWallets = () => {
 							disabled={ ! isDigitalWalletsEnabled }
 							checked={
 								isDigitalWalletsEnabled &&
-								digitalWalletsLocations.cart
+								digitalWalletsLocations.includes( 'cart' )
 							}
 							onChange={ makeLocationChangeHandler( 'cart' ) }
 							label={ __( 'Cart', 'woocommerce-payments' ) }
