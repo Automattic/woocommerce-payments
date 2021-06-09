@@ -76,6 +76,9 @@ jQuery( function ( $ ) {
 			return hiddenInput;
 		},
 		init: function () {
+			if ( ! $( ' #billing_first_name' ).length ) {
+				return;
+			}
 			const hiddenDiv = this.getHiddenContainer();
 
 			// // Hidden focusable element.
@@ -211,13 +214,19 @@ jQuery( function ( $ ) {
 
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
+	 *
+	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = function () {
+	const mountUPEElement = function ( isSetupIntent = false ) {
 		// Do not mount UPE twice.
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
-		api.createIntent()
+		const intentAction = isSetupIntent
+			? api.initSetupIntent()
+			: api.createIntent();
+
+		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
@@ -334,14 +343,14 @@ jQuery( function ( $ ) {
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
 		}
-
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
 			isUPEEnabled &&
 			! upeElement
 		) {
-			mountUPEElement();
+			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			mountUPEElement( useSetUpIntent );
 		}
 	}
 

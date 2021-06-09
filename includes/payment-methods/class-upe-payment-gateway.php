@@ -52,6 +52,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
+
+		add_action( 'wp_ajax_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+
 		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
 	}
 
@@ -99,6 +103,58 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return [
 			'id'            => $payment_intent->get_id(),
 			'client_secret' => $payment_intent->get_client_secret(),
+		];
+	}
+
+	/**
+	 * Handle AJAX request for creating a setup intent without confirmation for Stripe UPE.
+	 *
+	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
+	 */
+	public function init_setup_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'invalid_referrer'
+				);
+			}
+
+			wp_send_json_success( $this->init_setup_intent(), 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Creates setup intent without confirmation.
+	 *
+	 * @return array
+	 */
+	public function init_setup_intent() {
+		// Determine the customer managing the payment methods, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		$setup_intent = $this->payments_api_client->create_setup_intention(
+			$customer_id,
+			$this->get_enabled_payment_gateways()
+		);
+		return [
+			'id'            => $setup_intent['id'],
+			'client_secret' => $setup_intent['client_secret'],
 		];
 	}
 
