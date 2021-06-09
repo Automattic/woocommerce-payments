@@ -2,6 +2,7 @@
 
 = 2.6.0 - 2021-xx-xx =
 * Add - Notify the admin if WordPress.com user connection is broken.
+* Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
 * Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
 
 = 2.5.0 - 2021-06-02 =
