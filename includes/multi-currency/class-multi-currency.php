@@ -223,16 +223,16 @@ class Multi_Currency {
 			return false;
 		}
 
-		$currencies = $this->read_currencies_from_cache();
+		$cache_data = $this->read_currencies_from_cache();
 
 		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( isset( $currencies['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $currencies['currencies'] ) {
+		if ( isset( $cache_data['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $cache_data['currencies'] ) {
 			return false;
 		}
 
 		// If an array of currencies was returned from the cache, return it here.
-		if ( false !== $currencies ) {
-			return $currencies;
+		if ( false !== $cache_data ) {
+			return $cache_data;
 		}
 
 		// If the cache was expired or something went wrong, make a call to the server to get the
