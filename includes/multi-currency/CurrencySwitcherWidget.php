@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 use WP_Widget;
 
@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Currency Switcher Widget Class
  */
-class Currency_Switcher_Widget extends WP_Widget {
+class CurrencySwitcherWidget extends WP_Widget {
 
 	const DEFAULT_SETTINGS = [
 		'title'  => '',
@@ -32,17 +32,17 @@ class Currency_Switcher_Widget extends WP_Widget {
 	/**
 	 * Multi-Currency instance.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected $multi_currency;
 
 	/**
 	 * Register widget with WordPress.
 	 *
-	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
 	 * @param Compatibility  $compatibility The Compatibility instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency, Compatibility $compatibility ) {
+	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
 

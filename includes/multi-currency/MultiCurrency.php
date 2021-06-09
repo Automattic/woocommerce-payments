@@ -1,22 +1,23 @@
 <?php
 /**
- * Class Multi_Currency
+ * Class MultiCurrency
  *
- * @package WooCommerce\Payments\Multi_Currency
+ * @package WooCommerce\Payments\MultiCurrency
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
+use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that controls Multi Currency functionality.
  */
-class Multi_Currency {
+class MultiCurrency {
 
 	const CURRENCY_SESSION_KEY     = 'wcpay_currency';
 	const CURRENCY_META_KEY        = 'wcpay_currency';
@@ -33,7 +34,7 @@ class Multi_Currency {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected static $instance = null;
 
@@ -45,16 +46,16 @@ class Multi_Currency {
 	protected $compatibility;
 
 	/**
-	 * Frontend_Prices instance.
+	 * FrontendPrices instance.
 	 *
-	 * @var Frontend_Prices
+	 * @var FrontendPrices
 	 */
 	protected $frontend_prices;
 
 	/**
-	 * Frontend_Currencies instance.
+	 * FrontendCurrencies instance.
 	 *
-	 * @var Frontend_Currencies
+	 * @var FrontendCurrencies
 	 */
 	protected $frontend_currencies;
 
@@ -87,12 +88,12 @@ class Multi_Currency {
 	private $payments_api_client;
 
 	/**
-	 * Main Multi_Currency Instance.
+	 * Main MultiCurrency Instance.
 	 *
-	 * Ensures only one instance of Multi_Currency is loaded or can be loaded.
+	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
 	 *
 	 * @static
-	 * @return Multi_Currency - Main instance.
+	 * @return MultiCurrency - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -132,10 +133,10 @@ class Multi_Currency {
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
-		new User_Settings( $this );
+		new UserSettings( $this );
 
-		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
-		$this->frontend_currencies = new Frontend_Currencies( $this, $this->utils );
+		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
+		$this->frontend_currencies = new FrontendCurrencies( $this, $this->utils );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 
@@ -149,7 +150,7 @@ class Multi_Currency {
 	 * Initialize the REST API controller.
 	 */
 	public function init_rest_api() {
-		$api_controller = new REST_Controller( \WC_Payments::create_api_client() );
+		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
 
@@ -157,7 +158,7 @@ class Multi_Currency {
 	 * Initialize the Widgets.
 	 */
 	public function init_widgets() {
-		register_widget( new Currency_Switcher_Widget( $this, $this->compatibility ) );
+		register_widget( new CurrencySwitcherWidget( $this, $this->compatibility ) );
 	}
 
 	/**
@@ -276,20 +277,20 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Returns the Frontend_Prices instance.
+	 * Returns the FrontendPrices instance.
 	 *
-	 * @return Frontend_Prices
+	 * @return FrontendPrices
 	 */
-	public function get_frontend_prices(): Frontend_Prices {
+	public function get_frontend_prices(): FrontendPrices {
 		return $this->frontend_prices;
 	}
 
 	/**
-	 * Returns the Frontend_Currencies instance.
+	 * Returns the FrontendCurrencies instance.
 	 *
-	 * @return Frontend_Currencies
+	 * @return FrontendCurrencies
 	 */
-	public function get_frontend_currencies(): Frontend_Currencies {
+	public function get_frontend_currencies(): FrontendCurrencies {
 		return $this->frontend_currencies;
 	}
 
@@ -528,7 +529,7 @@ class Multi_Currency {
 	 */
 	public static function add_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			Note_Multi_Currency_Available::possibly_add_note();
+			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}
 
@@ -537,7 +538,7 @@ class Multi_Currency {
 	 */
 	public static function remove_woo_admin_notes() {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			Note_Multi_Currency_Available::possibly_delete_note();
+			NoteMultiCurrencyAvailable::possibly_delete_note();
 		}
 	}
 

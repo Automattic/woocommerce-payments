@@ -5,28 +5,28 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Multi_Currency;
+namespace WCPay\MultiCurrency;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class that add Multi Currency settings to user my account page.
  */
-class User_Settings {
+class UserSettings {
 
 	/**
 	 * Multi-Currency instance.
 	 *
-	 * @var Multi_Currency
+	 * @var MultiCurrency
 	 */
 	protected $multi_currency;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency ) {
+	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
 		add_action( 'woocommerce_edit_account_form', [ $this, 'add_presentment_currency_switch' ] );
