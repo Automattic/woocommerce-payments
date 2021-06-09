@@ -22,3 +22,14 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 }
 
 add_action( 'plugins_loaded', 'WC_Payments_Multi_Currency', 12 );
+
+$basename = explode( '/', plugin_basename( __FILE__ ) )[0] . '/woocommerce-payments.php';
+register_deactivation_hook( $basename, 'wcpay_multi_currency_deactivated' );
+
+/**
+ * Plugin deactivation hook.
+ */
+function wcpay_multi_currency_deactivated() {
+	require_once WCPAY_ABSPATH . '/includes/multi-currency/class-multi-currency.php';
+	WCPay\Multi_Currency\Multi_Currency::remove_woo_admin_notes();
+}
