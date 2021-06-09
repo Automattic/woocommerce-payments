@@ -285,19 +285,6 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Gets the currencies stored in the db.
-	 *
-	 * @return array Multi-dimensional array of currencies and rates.
-	 */
-	private function get_stored_currencies(): array {
-		$stored_currencies = get_option( $this->id . '_stored_currencies', false );
-		if ( ! $stored_currencies ) {
-			$stored_currencies = $this->get_mock_currencies();
-		}
-		return $stored_currencies;
-	}
-
-	/**
 	 * Sets up the available currencies, which are alphabetical by name.
 	 */
 	private function initialize_available_currencies() {
