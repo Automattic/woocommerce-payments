@@ -27,7 +27,7 @@ const Deposit = ( { depositId, dateAvailable } ) => {
 
 	const estimated =
 		depositId && depositId.includes( 'wcpay_estimated_' )
-			? 'Estimated'
+			? __( 'Estimated', 'woocommerce-payments' )
 			: '';
 
 	return depositId && dateAvailable ? (
