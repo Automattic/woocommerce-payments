@@ -298,18 +298,27 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Sets up the available currencies.
+	 * Sets up the available currencies, which are alphabetical by name.
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
 		$woocommerce_currency                                = get_woocommerce_currency();
 		$this->available_currencies[ $woocommerce_currency ] = new Currency( $woocommerce_currency, 1.0 );
 
+		$available_currencies = [];
+
 		$currency_data = $this->get_cached_currencies();
 		if ( isset( $currency_data['currencies'] ) && is_array( $currency_data['currencies'] ) ) {
 			foreach ( $currency_data['currencies'] as $currency_code => $currency_rate ) {
-				$this->available_currencies[ strtoupper( $currency_code ) ] = new Currency( strtoupper( $currency_code ), $currency_rate );
+				$new_currency                                      = new Currency( $currency_code, $currency_rate );
+				$available_currencies[ $new_currency->get_name() ] = $new_currency;
 			}
+		}
+
+		ksort( $available_currencies );
+
+		foreach ( $available_currencies as $currency ) {
+			$this->available_currencies[ $currency->get_code() ] = $currency;
 		}
 	}
 
@@ -317,20 +326,22 @@ class Multi_Currency {
 	 * Sets up the enabled currencies.
 	 */
 	private function initialize_enabled_currencies() {
-		$available_currencies = $this->get_available_currencies();
-		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', [] );
-		$default_code         = $this->get_default_currency()->get_code();
-		$enabled_currencies[] = $default_code;
+		$available_currencies     = $this->get_available_currencies();
+		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$default_code             = $this->get_default_currency()->get_code();
+		$enabled_currency_codes[] = $default_code;
 
-		foreach ( $enabled_currencies as $code ) {
-			// If the currency code is not found in the available currencies we skip it.
-			// This is due to merchants can use filters to add more currencies, then remove them at any time.
-			if ( ! isset( $available_currencies[ $code ] ) ) {
-				continue;
+		// This allows to keep the alphabetical sorting by name.
+		$enabled_currencies = array_filter(
+			$available_currencies,
+			function( $currency ) use ( $enabled_currency_codes ) {
+				return in_array( $currency->get_code(), $enabled_currency_codes, true );
 			}
+		);
 
+		foreach ( $enabled_currencies as $enabled_currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
-			$currency = clone $available_currencies[ $code ];
+			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
 			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
 			$currency->set_charm( $charm );
@@ -343,10 +354,8 @@ class Multi_Currency {
 				$currency->set_rate( $manual_rate );
 			}
 
-			$this->enabled_currencies[ $code ] = $currency;
+			$this->enabled_currencies[ $currency->get_code() ] = $currency;
 		}
-
-		ksort( $this->enabled_currencies );
 
 		// Set default currency to the top of the list.
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
