@@ -539,11 +539,11 @@ jQuery( function ( $ ) {
 				},
 			} );
 			if ( error ) {
-				throw error.message;
+				throw error;
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error );
+			showError( error.message );
 		}
 	};
 

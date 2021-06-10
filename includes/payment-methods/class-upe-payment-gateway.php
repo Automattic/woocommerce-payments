@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WCPay\Logger;
+use WCPay\Payment_Information;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -57,13 +58,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Handle AJAX request for creating a payment intent for Stripe UPE.
 	 *
-	 * @throws Exception - If nonce or setup intent is invalid.
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
 	 */
 	public function create_payment_intent_ajax() {
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
-				throw new Exception(
+				throw new Process_Payment_Exception(
 					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
 					'wcpay_upe_intent_error'
 				);
@@ -112,6 +113,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Create and confirm payment intent. Saved payment methods do not follow UPE workflow.
+	 *
+	 * @param int $order_id Order ID to process the payment for.
+	 *
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
+	 */
+	public function process_payment_using_saved_method( $order_id ) {
+		return parent::process_payment( $order_id );
+	}
+
+	/**
 	 * Update payment intent for completed checkout and return redirect URL for Stripe to confirm payment.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -119,12 +131,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 */
 	public function process_payment( $order_id ) {
-
 		$payment_intent_id   = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$order               = wc_get_order( $order_id );
 		$amount              = $order->get_total();
 		$currency            = $order->get_currency();
 		$save_payment_method = ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$token               = Payment_Information::get_token_from_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -134,8 +146,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				strtolower( $currency ),
 				$save_payment_method,
-				$customer_id
+				$customer_id,
+				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
 			);
+		} elseif ( $token ) {
+			return $this->process_payment_using_saved_method( $order_id );
 		}
 
 		return [
@@ -164,13 +179,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
-		if ( ! $is_nonce_valid || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) || empty( $_GET['wc_payment_method'] ) ) {
+		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : '';
+		if ( self::GATEWAY_ID !== $payment_method ) {
 			return;
 		}
 
-		$payment_method = isset( $_GET['wc_payment_method'] ) ? wc_clean( wp_unslash( $_GET['wc_payment_method'] ) ) : '';
-		if ( self::GATEWAY_ID !== $payment_method ) {
+		$is_nonce_valid = check_admin_referer( 'wcpay_process_redirect_order_nonce' );
+		if ( ! $is_nonce_valid || empty( $_GET['payment_intent_client_secret'] ) || empty( $_GET['payment_intent'] ) || empty( $_GET['wc_payment_method'] ) ) {
 			return;
 		}
 
