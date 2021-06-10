@@ -15,5 +15,6 @@ describe( 'Admin disputes', () => {
 
 	it( 'page should load without any errors', async () => {
 		await merchantWCP.openDisputes();
+		await expect( page ).toMatchElement( 'h2', { text: 'Disputes' } );
 	} );
 } );
