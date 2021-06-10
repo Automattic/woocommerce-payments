@@ -6,14 +6,28 @@
  * External dependencies
  */
 
-const { merchant, verifyAndPublish } = require( '@woocommerce/e2e-utils' );
+const {
+	merchant,
+	verifyAndPublish,
+	evalAndClick,
+	uiUnblocked,
+} = require( '@woocommerce/e2e-utils' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
 
+import { uiLoaded } from './helpers';
+
+const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
+const WCPAY_DISPUTES =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
+const WCPAY_DEPOSITS =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
+const WCPAY_TRANSACTIONS =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 
@@ -22,7 +36,7 @@ export const RUN_SUBSCRIPTIONS_TESTS =
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
-export const paymentsShopper = {
+export const shopperWCP = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
 			waitUntil: 'networkidle0',
@@ -83,7 +97,50 @@ export const paymentsShopper = {
 	},
 };
 
+// The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
+// keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
+	openDisputeDetails: async ( disputeDetailsLink ) => {
+		await Promise.all( [
+			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
+	},
+
+	openChallengeDispute: async () => {
+		await Promise.all( [
+			evalAndClick( 'a.components-button.is-primary' ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
+	},
+
+	openAcceptDispute: async () => {
+		await Promise.all( [
+			page.removeAllListeners( 'dialog' ),
+			evalAndClick( 'button.components-button.is-secondary' ),
+			page.on( 'dialog', async ( dialog ) => {
+				await dialog.accept();
+			} ),
+			uiUnblocked(),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
+	},
+
+	openPaymentDetails: async ( paymentDetailsLink ) => {
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+		await uiLoaded();
+	},
+
 	openSubscriptions: async () => {
 		await page.goto( WC_SUBSCRIPTIONS_PAGE, {
 			waitUntil: 'networkidle0',
@@ -110,5 +167,26 @@ export const merchantWCP = {
 		}
 
 		await verifyAndPublish();
+	},
+
+	openDisputes: async () => {
+		await page.goto( WCPAY_DISPUTES, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openDeposits: async () => {
+		await page.goto( WCPAY_DEPOSITS, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openTransactions: async () => {
+		await page.goto( WCPAY_TRANSACTIONS, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
 	},
 };
