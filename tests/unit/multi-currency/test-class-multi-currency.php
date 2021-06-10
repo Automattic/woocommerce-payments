@@ -339,7 +339,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->willReturn( false );
 
 		$this->multi_currency = new Multi_Currency( $mock_api_client );
-		$this->assertFalse( $this->multi_currency->get_cached_currencies() );
+		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
 
 	public function test_get_cached_currencies_with_server_retrieval_error() {
@@ -354,7 +354,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		// Create or update the currency option cache.
 		update_option( Multi_Currency::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
 
-		$this->assertFalse( $this->multi_currency->get_cached_currencies() );
+		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
 
 	public function test_get_cached_currencies_with_valid_cached_data() {
@@ -412,7 +412,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->method( 'get_currency_rates' )
 			->willThrowException( new API_Exception( 'Error connecting to server', 'API_ERROR', 500 ) );
 
-		$this->assertFalse( $this->multi_currency->get_cached_currencies() );
+		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 
 		// Assert that the cache was correctly set with the error string.
 		$cached_data = get_option( self::CACHED_CURRENCIES_OPTION );

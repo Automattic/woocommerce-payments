@@ -158,7 +158,7 @@ class Multi_Currency {
 	 *
 	 * @return array The new settings pages.
 	 */
-	public function init_settings_pages( $settings_pages ) {
+	public function init_settings_pages( $settings_pages ): array {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-settings.php';
 
 		$settings_pages[] = new Settings( $this );
@@ -216,22 +216,22 @@ class Multi_Currency {
 	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
 	 * and 'updated' (when this data was fetched from the API).
 	 *
-	 * @return bool|array
+	 * @return array
 	 */
-	public function get_cached_currencies() {
+	public function get_cached_currencies(): ?array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return false;
+			return null;
 		}
 
 		$cache_data = $this->read_currencies_from_cache();
 
 		// If the option contains the error value, return false early and do not attempt another API call.
 		if ( isset( $cache_data['currencies'] ) && self::CURRENCY_RETRIEVAL_ERROR === $cache_data['currencies'] ) {
-			return false;
+			return null;
 		}
 
 		// If an array of currencies was returned from the cache, return it here.
-		if ( false !== $cache_data ) {
+		if ( null !== $cache_data ) {
 			return $cache_data;
 		}
 
@@ -251,8 +251,8 @@ class Multi_Currency {
 			// Rate limit for a short amount of time by caching the failure.
 			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, time(), 1 * MINUTE_IN_SECONDS );
 
-			// Return false to signal currency retrieval error.
-			return false;
+			// Return null to signal currency retrieval error.
+			return null;
 		}
 
 		$updated = time();
@@ -271,7 +271,7 @@ class Multi_Currency {
 	 *
 	 * @return Frontend_Prices
 	 */
-	public function get_frontend_prices() {
+	public function get_frontend_prices(): Frontend_Prices {
 		return $this->frontend_prices;
 	}
 
@@ -280,7 +280,7 @@ class Multi_Currency {
 	 *
 	 * @return Frontend_Currencies
 	 */
-	public function get_frontend_currencies() {
+	public function get_frontend_currencies(): Frontend_Currencies {
 		return $this->frontend_currencies;
 	}
 
@@ -295,7 +295,7 @@ class Multi_Currency {
 		$available_currencies = [];
 
 		$cache_data = $this->get_cached_currencies();
-		if ( isset( $cache_data['currencies'] ) && is_array( $cache_data['currencies'] ) ) {
+		if ( ! is_null( $cache_data ) && isset( $cache_data['currencies'] ) && is_array( $cache_data['currencies'] ) ) {
 			foreach ( $cache_data['currencies'] as $currency_code => $currency_rate ) {
 				$new_currency                                      = new Currency( $currency_code, $currency_rate );
 				$available_currencies[ $new_currency->get_name() ] = $new_currency;
@@ -406,6 +406,7 @@ class Multi_Currency {
 	 * Update the selected currency from a currency code.
 	 *
 	 * @param string $currency_code Three letter currency code.
+	 *
 	 * @return void
 	 */
 	public function update_selected_currency( string $currency_code ) {
@@ -432,6 +433,8 @@ class Multi_Currency {
 	 * Sets the enabled currencies for the store.
 	 *
 	 * @param array $currencies Array of currency codes to be enabled.
+	 *
+	 * @return void
 	 */
 	public function set_enabled_currencies( $currencies = [] ) {
 		if ( 0 < count( $currencies ) ) {
@@ -458,7 +461,7 @@ class Multi_Currency {
 	/**
 	 * Gets the configured value for apply charm pricing only to products.
 	 *
-	 * @return bool The configured value.
+	 * @return mixed The configured value.
 	 */
 	public function get_apply_charm_only_to_products() {
 		return apply_filters( 'wcpay_multi_currency_apply_charm_only_to_products', true );
@@ -531,7 +534,7 @@ class Multi_Currency {
 	 *
 	 * @return float The ceiled price.
 	 */
-	protected function ceil_price( $price, $precision ) {
+	protected function ceil_price( $price, $precision ): float {
 		$precision_modifier = pow( 10, $precision );
 		return ceil( $price * $precision_modifier ) / $precision_modifier;
 	}
@@ -557,7 +560,7 @@ class Multi_Currency {
 	 *
 	 * @return bool
 	 */
-	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ) {
+	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ): bool {
 		// Default $expiration to 6 hours if not set.
 		if ( null === $expiration ) {
 			$expiration = 6 * HOUR_IN_SECONDS;
@@ -588,19 +591,19 @@ class Multi_Currency {
 	/**
 	 * Read the currency data from the WP option we cache it in.
 	 *
-	 * @return array|bool
+	 * @return array
 	 */
-	private function read_currencies_from_cache() {
+	private function read_currencies_from_cache(): ?array {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
 
 		if ( false === $currency_cache || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
 			// No option found or the data isn't in the format we expect.
-			return false;
+			return null;
 		}
 
 		// Return false if the cache has expired, triggering another fetch.
 		if ( $currency_cache['expires'] < time() ) {
-			return false;
+			return null;
 		}
 
 		// We have fresh currency data in the cache, so return it.
