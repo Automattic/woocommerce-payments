@@ -230,6 +230,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ '20 + [fee percent="10" min_fee="4" max_fee"10"]', 2, '40 + [fee percent="10" min_fee="8" max_fee"20"]' ],
 			[ '[fee percent="10" min_fee="4" max_fee"10"] + 20', 2, '[fee percent="10" min_fee="8" max_fee"20"] + 40' ],
 			[ '20 + 2 * [qty] + [fee percent="10" min_fee="4" max_fee"10"]', 2, '40 + 4 * [qty] + [fee percent="10" min_fee="8" max_fee"20"]' ],
+			[ '20 + [fee percent="10" min_fee="4" max_fee"10"] + [fee percent="20" min_fee="6" max_fee"12"]', 2, '40 + [fee percent="10" min_fee="8" max_fee"20"] + [fee percent="20" min_fee="12" max_fee"24"]' ],
 		];
 	}
 }

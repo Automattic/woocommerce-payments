@@ -182,9 +182,9 @@ class Frontend_Prices {
 	 * @return string The converted cost.
 	 */
 	private function convert_shipping_method_cost( $cost ) {
-		// Store the percentage value before converting all numbers in the cost string.
-		if ( preg_match( '/percent=[\"\'][\d.,]+[\"\']/', $cost, $matches ) ) {
-			$percentage = $matches[0];
+		// Store the percentage values before converting all numbers in the cost string.
+		if ( preg_match_all( '/percent=[\"\'][\d.,]+[\"\']/', $cost, $matches ) ) {
+			$percentages = $matches[0];
 		}
 
 		// Convert all numbers in cost to use the exchange rate.
@@ -197,12 +197,12 @@ class Frontend_Prices {
 			$cost
 		);
 
-		// Reset the percentage value after it's been converted.
-		if ( isset( $percentage ) ) {
+		// Restore the percentages values after they've been converted.
+		if ( isset( $percentages ) ) {
 			$cost = preg_replace_callback(
 				'/percent=[\"\'][\d.,]+[\"\']/',
-				function ( $matches ) use ( $percentage ) {
-					return $percentage;
+				function ( $matches ) use ( &$percentages ) {
+					return array_shift( $percentages );
 				},
 				$cost
 			);
