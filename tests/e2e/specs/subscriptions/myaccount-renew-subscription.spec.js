@@ -9,7 +9,7 @@ import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	merchantWCP,
-	paymentsShopper,
+	shopperWCP,
 } from '../../utils';
 
 import { fillCardDetails, setupCheckout } from '../../utils/payments';
@@ -62,7 +62,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			);
 
 			// Go to my account and click to renew a subscription
-			await paymentsShopper.goToSubscriptions();
+			await shopperWCP.goToSubscriptions();
 			await expect( page ).toClick(
 				'.woocommerce-orders-table__cell-subscription-id > a',
 				{
