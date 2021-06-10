@@ -407,11 +407,37 @@ export default ( { query } ) => {
 		updateDispute( {
 			metadata: { [ key ]: '' },
 			uploadingErrors: { [ key ]: '' },
+			fileSize: { [ key ]: 0 },
 		} );
+	};
+
+	const fileSizeExceeded = ( latestFileSize ) => {
+		const fileSizeLimitInBytes = 4500000;
+		const fileSizes = dispute.fileSize
+			? Object.values( dispute.fileSize )
+			: [];
+		const totalFileSize =
+			fileSizes.reduce( ( acc, fileSize ) => acc + fileSize, 0 ) +
+			latestFileSize;
+		if ( fileSizeLimitInBytes < totalFileSize ) {
+			createInfoNotice(
+				__(
+					"The files you've attached to this dispute as evidence will exceed the limit for a " +
+						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+						'images, you might want to try providing them in lower resolutions.',
+					'woocommerce-payments'
+				)
+			);
+			return true;
+		}
 	};
 
 	const doUploadFile = async ( key, file ) => {
 		if ( ! file ) {
+			return;
+		}
+
+		if ( fileSizeExceeded( file.size ) ) {
 			return;
 		}
 
@@ -443,6 +469,7 @@ export default ( { query } ) => {
 			updateDispute( {
 				metadata: { [ key ]: uploadedFile.filename },
 				isUploading: { [ key ]: false },
+				fileSize: { [ key ]: uploadedFile.size },
 			} );
 			updateEvidence( key, uploadedFile.id );
 
