@@ -5,6 +5,8 @@ import reducer from '../reducer';
 import {
 	updateSettings,
 	updateIsWCPayEnabled,
+	updateTitle,
+	updateDescription,
 	updateEnabledPaymentMethodIds,
 	updateIsSavingSettings,
 	updateIsManualCaptureEnabled,
@@ -173,6 +175,88 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					is_wcpay_enabled: true, // eslint-disable-line
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_TITLE', () => {
+		test( 'sets `data.title`', () => {
+			const oldState = {
+				data: {
+					title: 'Credit card',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateTitle( 'Credit card - update' )
+			);
+
+			expect( state.data.title ).toEqual( 'Credit card - update' );
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					title: 'Credit card',
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateTitle( 'Credit card - update' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					title: 'Credit card - update',
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_DESCRIPTION', () => {
+		test( 'sets `data.description`', () => {
+			const oldState = {
+				data: {
+					description: 'Enter your card details',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateDescription( 'Enter your card details - update' )
+			);
+
+			expect( state.data.description ).toEqual(
+				'Enter your card details - update'
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					description: 'Enter your card details',
+					baz: 'quux',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateDescription( 'Enter your card details - update' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					description: 'Enter your card details - update',
 					baz: 'quux',
 				},
 			} );

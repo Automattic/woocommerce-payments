@@ -10,6 +10,8 @@ import {
 	useAccountStatementDescriptor,
 	useEnabledPaymentMethodIds,
 	useIsWCPayEnabled,
+	useTitle,
+	useDescription,
 	useManualCapture,
 	useSettings,
 	useTestMode,
@@ -104,6 +106,54 @@ describe( 'Settings hooks tests', () => {
 
 			expect( actions.updateIsWCPayEnabled ).toHaveBeenCalledWith(
 				false
+			);
+		} );
+	} );
+
+	describe( 'useTitle()', () => {
+		test( 'returns the title value and a function', () => {
+			actions = {
+				updateTitle: jest.fn(),
+			};
+
+			selectors = {
+				getTitle: jest.fn().mockReturnValue( 'Credit card' ),
+			};
+
+			const [ title, updateTitle ] = useTitle();
+
+			expect( title ).toEqual( 'Credit card' );
+			expect( updateTitle ).toHaveBeenCalledTimes( 0 );
+
+			updateTitle( 'Credit card - update' );
+
+			expect( actions.updateTitle ).toHaveBeenCalledWith(
+				'Credit card - update'
+			);
+		} );
+	} );
+
+	describe( 'useDescription()', () => {
+		test( 'returns the description value and a function', () => {
+			actions = {
+				updateDescription: jest.fn(),
+			};
+
+			selectors = {
+				getDescription: jest
+					.fn()
+					.mockReturnValue( 'Enter your card details' ),
+			};
+
+			const [ description, updateDescription ] = useDescription();
+
+			expect( description ).toEqual( 'Enter your card details' );
+			expect( updateDescription ).toHaveBeenCalledTimes( 0 );
+
+			updateDescription( 'Enter your card details - update' );
+
+			expect( actions.updateDescription ).toHaveBeenCalledWith(
+				'Enter your card details - update'
 			);
 		} );
 	} );

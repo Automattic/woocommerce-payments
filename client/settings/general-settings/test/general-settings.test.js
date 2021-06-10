@@ -38,6 +38,8 @@ describe( 'GeneralSettings', () => {
 		expect(
 			screen.queryByText( 'Enable WooCommerce Payments' )
 		).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Title' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Description' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Enable test mode' ) ).toBeInTheDocument();
 	} );
 
@@ -81,4 +83,35 @@ describe( 'GeneralSettings', () => {
 			);
 		}
 	);
+
+	it( 'calls updateTitle() when the title field value changes', () => {
+		const updateTitle = jest.fn();
+		useTitle.mockReturnValue( [ 'Credit card', updateTitle ] );
+
+		render( <GeneralSettings /> );
+
+		fireEvent.change( screen.getByLabelText( 'Title' ), {
+			target: { value: 'Credit card - update' },
+		} );
+
+		expect( updateTitle ).toHaveBeenCalledWith( 'Credit card - update' );
+	} );
+
+	it( 'calls updateDescription() when the description field value changes', () => {
+		const updateDescription = jest.fn();
+		useDescription.mockReturnValue( [
+			'Enter your card details',
+			updateDescription,
+		] );
+
+		render( <GeneralSettings /> );
+
+		fireEvent.change( screen.getByLabelText( 'Description' ), {
+			target: { value: 'Enter your card details - update' },
+		} );
+
+		expect( updateDescription ).toHaveBeenCalledWith(
+			'Enter your card details - update'
+		);
+	} );
 } );

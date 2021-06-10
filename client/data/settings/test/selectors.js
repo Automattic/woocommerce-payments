@@ -4,6 +4,8 @@
 import {
 	getSettings,
 	getIsWCPayEnabled,
+	getTitle,
+	getDescription,
 	getEnabledPaymentMethodIds,
 	getIsManualCaptureEnabled,
 	getAccountStatementDescriptor,
@@ -56,6 +58,60 @@ describe( 'Settings selectors tests', () => {
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsWCPayEnabled( state ) ).toBeFalsy();
 		} );
+	} );
+
+	describe( 'getTitle()', () => {
+		test( 'returns the value of state.settings.data.title', () => {
+			const state = {
+				settings: {
+					data: {
+						title: 'Credit card',
+					},
+				},
+			};
+
+			expect( getTitle( state ) ).toEqual( 'Credit card' );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )(
+			'returns an empty string if missing (tested state: %j)',
+			( state ) => {
+				expect( getTitle( state ) ).toEqual( '' );
+			}
+		);
+	} );
+
+	describe( 'getDescription()', () => {
+		test( 'returns the value of state.settings.data.description', () => {
+			const state = {
+				settings: {
+					data: {
+						description: 'Enter your card details',
+					},
+				},
+			};
+
+			expect( getDescription( state ) ).toEqual(
+				'Enter your card details'
+			);
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )(
+			'returns an empty string if missing (tested state: %j)',
+			( state ) => {
+				expect( getDescription( state ) ).toEqual( '' );
+			}
+		);
 	} );
 
 	describe( 'getEnabledPaymentMethodIds()', () => {
