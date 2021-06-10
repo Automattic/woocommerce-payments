@@ -320,12 +320,21 @@ export default class WCPayAPI {
 			action: 'create_payment_intent',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-			return response.data;
-		} );
+		} )
+			.then( ( response ) => {
+				if ( ! response.success ) {
+					throw response.data.error;
+				}
+				return response.data;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajax request.
+					throw new Error( error.statusText );
+				}
+			} );
 	}
 
 	/**
@@ -344,12 +353,17 @@ export default class WCPayAPI {
 		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
-					throw { message: response.messages };
+					throw new Error( response.messages );
 				}
 				return response;
 			} )
 			.catch( ( error ) => {
-				throw error;
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
 			} );
 	}
 
