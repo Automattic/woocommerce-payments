@@ -253,6 +253,7 @@ class WC_Payments_Admin {
 			'accountStatus'         => $this->account->get_account_status_data(),
 			'accountFees'           => $this->account->get_fees(),
 			'showUpdateDetailsTask' => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'wpcomReconnectUrl'     => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 		];
 
 		wp_localize_script(
@@ -410,12 +411,14 @@ class WC_Payments_Admin {
 	 * @return array An associative array containing the flags as booleans.
 	 */
 	private function get_frontend_feature_flags() {
-		return [
-			'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
-			'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
-			'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-			'groupedSettings'         => WC_Payments_Features::is_grouped_settings_enabled(),
-		];
+		return array_merge(
+			[
+				'paymentTimeline'         => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
+				'customSearch'            => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
+			],
+			WC_Payments_Features::to_array()
+		);
 	}
 
 	/**

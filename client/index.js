@@ -23,6 +23,7 @@ import DisputesPage from 'disputes';
 import DisputeDetailsPage from 'disputes/details';
 import DisputeEvidencePage from 'disputes/evidence';
 import OverviewPage from 'overview';
+import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -161,3 +162,26 @@ function getMenuSettings() {
 		],
 	};
 }
+
+addFilter(
+	'woocommerce_admin_onboarding_task_list',
+	'woocommerce-payments',
+	( tasks ) => {
+		const {
+			accountStatus,
+			showUpdateDetailsTask,
+			featureFlags: { accountOverviewTaskList },
+		} = wcpaySettings;
+
+		if ( ! Boolean( accountOverviewTaskList ) ) {
+			return tasks;
+		}
+
+		const wcPayTasks = getTasks( {
+			accountStatus,
+			showUpdateDetailsTask,
+		} );
+
+		return [ ...tasks, ...wcPayTasks ];
+	}
+);

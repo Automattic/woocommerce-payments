@@ -111,6 +111,15 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	}
 
 	/**
+	 * Checks if the site has an admin who is also a connection owner.
+	 *
+	 * @return bool True if Jetpack connection has an owner.
+	 */
+	public function has_connection_owner() {
+		return ! empty( $this->connection_manager->get_connection_owner_id() );
+	}
+
+	/**
 	 * Gets the current WP.com blog ID.
 	 *
 	 * @return integer Current WPCOM blog ID.
