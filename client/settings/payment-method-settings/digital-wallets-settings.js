@@ -112,9 +112,18 @@ const buttonThemeOptions = [
 	},
 ];
 
-const PaymentButton = () => {
+const PaymentButton = ( props ) => {
 	const stripe = useStripe();
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
+
+	const sizeToPx = ( size ) => {
+		const sizeToPxMappings = {
+			default: 40,
+			medium: 48,
+			large: 56,
+		};
+		return sizeToPxMappings[ size ] + 'px';
+	};
 
 	useEffect( () => {
 		if ( ! stripe ) {
@@ -141,7 +150,20 @@ const PaymentButton = () => {
 	}, [ stripe ] );
 
 	if ( paymentRequest ) {
-		return <PaymentRequestButtonElement options={ { paymentRequest } } />;
+		return (
+			<PaymentRequestButtonElement
+				options={ {
+					paymentRequest,
+					style: {
+						paymentRequestButton: {
+							type: props.buttonType,
+							theme: props.theme,
+							height: sizeToPx( props.size ),
+						},
+					},
+				} }
+			/>
+		);
 	}
 	return 'Your browser does not support express checkout.';
 };
@@ -192,7 +214,11 @@ const DigitalWalletsSettings = () => {
 				/>
 				<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
 				<Elements stripe={ stripePromise }>
-					<PaymentButton />
+					<PaymentButton
+						buttonType={ buttonType }
+						size={ size }
+						theme={ theme }
+					/>
 				</Elements>
 			</CardBody>
 		</Card>
