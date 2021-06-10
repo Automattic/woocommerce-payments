@@ -66,7 +66,7 @@ const getMockTransactions = () => [
 		transaction_id: 'txn_oa9kaKaa8',
 		date: '2020-01-05 04:22:59',
 		// eslint-disable-next-line camelcase
-		date_available: '2020-01-07 00:00:00',
+		available_on: '2020-01-07 00:00:00',
 		type: 'charge',
 		source: 'mastercard',
 		order: {
