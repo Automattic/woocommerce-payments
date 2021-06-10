@@ -137,22 +137,22 @@ class Frontend_Prices {
 	/**
 	 * Returns the shipping method settings with converted amounts.
 	 *
-	 * @param array $data The shipping zone settings.
+	 * @param array $settings The shipping zone settings.
 	 *
 	 * @return array The shipping zone settings with converted amounts.
 	 */
-	public function get_shipping_method_settings( $data ) {
-		if ( isset( $data['min_amount'] ) && $data['min_amount'] ) {
+	public function get_shipping_method_settings( $settings ) {
+		if ( isset( $settings['min_amount'] ) && $settings['min_amount'] ) {
 			// Free shipping min amount is treated as products to avoid inconsistencies with charm pricing
 			// making a method invalid when its min amount is the same as the product's price.
-			$data['min_amount'] = $this->multi_currency->get_price( $data['min_amount'], 'product' );
+			$settings['min_amount'] = $this->multi_currency->get_price( $settings['min_amount'], 'product' );
 		}
 
-		if ( isset( $data['cost'] ) && $data['cost'] ) {
-			$data['cost'] = $this->multi_currency->get_price( $data['cost'], 'shipping' );
+		if ( isset( $settings['cost'] ) && $settings['cost'] ) {
+			$settings['cost'] = $this->convert_shipping_method_cost( $settings['cost'] );
 		}
 
-		return $data;
+		return $settings;
 	}
 
 	/**
@@ -172,5 +172,42 @@ class Frontend_Prices {
 				add_filter( $option_name, [ $this, 'get_shipping_method_settings' ], 50 );
 			}
 		}
+	}
+
+	/**
+	 * Converts a shipping method cost taking formulas into account.
+	 *
+	 * @param string $cost The shipping method cost.
+	 *
+	 * @return string The converted cost.
+	 */
+	private function convert_shipping_method_cost( $cost ) {
+		// Store the percentage value before converting all numbers in the cost string.
+		if ( preg_match( '/percent=[\"\'][\d.,]+[\"\']/', $cost, $matches ) ) {
+			$percentage = $matches[0];
+		}
+
+		// Convert all numbers in cost to use the exchange rate.
+		$cost = preg_replace_callback(
+			'/[\d.,]+/',
+			function ( $matches ) {
+				$number = str_replace( ',', '.', $matches[0] );
+				return $this->multi_currency->get_price( $number, 'shipping' );
+			},
+			$cost
+		);
+
+		// Reset the percentage value after it's been converted.
+		if ( isset( $percentage ) ) {
+			$cost = preg_replace_callback(
+				'/percent=[\"\'][\d.,]+[\"\']/',
+				function ( $matches ) use ( $percentage ) {
+					return $percentage;
+				},
+				$cost
+			);
+		}
+
+		return $cost;
 	}
 }

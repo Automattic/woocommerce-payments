@@ -204,6 +204,32 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 	public function test_get_shipping_method_settings_converts_cost_as_shipping() {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'shipping' )->willReturn( 12.5 );
 
-		$this->assertSame( [ 'cost' => 12.5 ], $this->frontend_prices->get_shipping_method_settings( [ 'cost' => '5.0' ] ) );
+		$this->assertSame( [ 'cost' => '12.5' ], $this->frontend_prices->get_shipping_method_settings( [ 'cost' => '5.0' ] ) );
+	}
+
+	/**
+	 * @dataProvider shipping_method_cost_provider
+	 */
+	public function test_get_shipping_method_settings_converts_cost_values_and_formulas( $cost, $rate, $expected ) {
+		$this->mock_multi_currency->method( 'get_price' )->willReturnCallback(
+			function ( $price ) use ( $rate ) {
+				return $rate * $price;
+			}
+		);
+
+		$this->assertSame( [ 'cost' => $expected ], $this->frontend_prices->get_shipping_method_settings( [ 'cost' => $cost ] ) );
+	}
+
+	public function shipping_method_cost_provider() {
+		return [
+			[ '10', 2, '20' ],
+			[ '10.23', 2, '20.46' ],
+			[ '10,23', 2, '20.46' ],
+			[ '10 + ( 2 * [qty] )', 2, '20 + ( 4 * [qty] )' ],
+			[ '( 2 * [qty] ) + 10', 2, '( 4 * [qty] ) + 20' ],
+			[ '20 + [fee percent="10" min_fee="4" max_fee"10"]', 2, '40 + [fee percent="10" min_fee="8" max_fee"20"]' ],
+			[ '[fee percent="10" min_fee="4" max_fee"10"] + 20', 2, '[fee percent="10" min_fee="8" max_fee"20"] + 40' ],
+			[ '20 + 2 * [qty] + [fee percent="10" min_fee="4" max_fee"10"]', 2, '40 + 4 * [qty] + [fee percent="10" min_fee="8" max_fee"20"]' ],
+		];
 	}
 }
