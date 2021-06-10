@@ -68,6 +68,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'title'                             => [
+						'description'       => __( 'The title which the user sees during checkout.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'description'                       => [
+						'description'       => __( 'The description which the user sees during checkout.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'enabled_payment_method_ids'        => [
 						'description'       => __( 'Payment method IDs that should be enabled. Other methods will be disabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
@@ -150,6 +160,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'enabled_payment_method_ids'        => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
 				'available_payment_method_ids'      => $this->wcpay_gateway->get_upe_available_payment_methods(),
 				'is_wcpay_enabled'                  => $this->wcpay_gateway->is_enabled(),
+				'title'                             => $this->wcpay_gateway->get_option( 'title' ),
+				'description'                       => $this->wcpay_gateway->get_option( 'description' ),
 				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'              => 'yes' === $this->wcpay_gateway->is_in_test_mode(),
 				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
@@ -172,6 +184,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function update_settings( WP_REST_Request $request ) {
 		$this->update_is_wcpay_enabled( $request );
 		$this->update_enabled_payment_methods( $request );
+		$this->update_title( $request );
+		$this->update_description( $request );
 		$this->update_is_manual_capture_enabled( $request );
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
@@ -200,6 +214,36 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		} else {
 			$this->wcpay_gateway->disable();
 		}
+	}
+
+	/**
+	 * Updates WooCommerce Payments title setting.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_title( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'title' ) ) {
+			return;
+		}
+
+		$title = $request->get_param( 'title' );
+
+		$this->wcpay_gateway->update_option( 'title', $title );
+	}
+
+	/**
+	 * Updates WooCommerce Payments description setting.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_description( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'description' ) ) {
+			return;
+		}
+
+		$description = $request->get_param( 'description' );
+
+		$this->wcpay_gateway->update_option( 'description', $description );
 	}
 
 	/**

@@ -3,18 +3,26 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl, TextControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import {
+	useDevMode,
+	useIsWCPayEnabled,
+	useTitle,
+	useDescription,
+	useTestMode,
+} from 'data';
 import CardBody from '../card-body';
 
 const GeneralSettings = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
+	const [ title, updateTitle ] = useTitle();
+	const [ description, updateDescription ] = useDescription();
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const isDevModeEnabled = useDevMode();
 
@@ -32,6 +40,26 @@ const GeneralSettings = () => {
 						'When enabled, payment methods powered by WooCommerce Payments will appear on checkout.',
 						'woocommerce-payments'
 					) }
+				/>
+				<TextControl
+					className="general-settings__account-statement-input"
+					help={ __(
+						'This controls the title which the user sees during checkout.',
+						'woocommerce-payments'
+					) }
+					label={ __( 'Title', 'woocommerce-payments' ) }
+					onChange={ updateTitle }
+					value={ title }
+				/>
+				<TextControl
+					className="general-settings__account-statement-input"
+					help={ __(
+						'This controls the description which the user sees during checkout.',
+						'woocommerce-payments'
+					) }
+					label={ __( 'Description', 'woocommerce-payments' ) }
+					onChange={ updateDescription }
+					value={ description }
 				/>
 				<h4>{ __( 'Test mode', 'woocommerce-payments' ) }</h4>
 				<CheckboxControl

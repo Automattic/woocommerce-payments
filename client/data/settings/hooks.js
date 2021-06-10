@@ -105,6 +105,32 @@ export const useIsWCPayEnabled = () => {
 	);
 };
 
+export const useTitle = () => {
+	const { updateTitle } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getTitle } = select( STORE_NAME );
+
+			return [ getTitle(), updateTitle ];
+		},
+		[ updateTitle ]
+	);
+};
+
+export const useDescription = () => {
+	const { updateDescription } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getDescription } = select( STORE_NAME );
+
+			return [ getDescription(), updateDescription ];
+		},
+		[ updateDescription ]
+	);
+};
+
 export const useGetAvailablePaymentMethodIds = () =>
 	useSelect( ( select ) => {
 		const { getAvailablePaymentMethodIds } = select( STORE_NAME );

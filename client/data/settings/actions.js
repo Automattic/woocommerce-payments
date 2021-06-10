@@ -47,6 +47,14 @@ export function updateIsWCPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_wcpay_enabled: isEnabled } );
 }
 
+export function updateTitle( title ) {
+	return updateSettingsValues( { title } );
+}
+
+export function updateDescription( description ) {
+	return updateSettingsValues( { description } );
+}
+
 export function updateIsDigitalWalletsEnabled( isEnabled ) {
 	// eslint-disable-next-line camelcase
 	return updateSettingsValues( { is_digital_wallets_enabled: isEnabled } );

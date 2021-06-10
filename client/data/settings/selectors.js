@@ -19,6 +19,14 @@ export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
 
+export const getTitle = ( state ) => {
+	return getSettings( state ).title || '';
+};
+
+export const getDescription = ( state ) => {
+	return getSettings( state ).description || '';
+};
+
 export const getEnabledPaymentMethodIds = ( state ) => {
 	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
 };

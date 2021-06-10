@@ -201,6 +201,24 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		remove_filter( 'user_has_cap', $cb );
 	}
 
+	public function test_update_settings_title() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'title', 'Credit card (WooCommerce Payments)' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertSame( 'Credit card (WooCommerce Payments)', $this->gateway->get_option( 'title' ) );
+	}
+
+	public function test_update_settings_description() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'description', 'Pay with your credit card, please.' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertSame( 'Pay with your credit card, please.', $this->gateway->get_option( 'description' ) );
+	}
+
 	public function test_update_settings_enables_manual_capture() {
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_manual_capture_enabled', true );

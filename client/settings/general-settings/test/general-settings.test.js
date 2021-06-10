@@ -7,12 +7,20 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import {
+	useDevMode,
+	useIsWCPayEnabled,
+	useTestMode,
+	useTitle,
+	useDescription,
+} from 'data';
 
 jest.mock( 'data', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
+	useTitle: jest.fn(),
+	useDescription: jest.fn(),
 } ) );
 
 describe( 'GeneralSettings', () => {
@@ -20,6 +28,8 @@ describe( 'GeneralSettings', () => {
 		useDevMode.mockReturnValue( false );
 		useIsWCPayEnabled.mockReturnValue( [ false, jest.fn() ] );
 		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		useTitle.mockReturnValue( [ '', jest.fn() ] );
+		useDescription.mockReturnValue( [ '', jest.fn() ] );
 	} );
 
 	it( 'renders', () => {

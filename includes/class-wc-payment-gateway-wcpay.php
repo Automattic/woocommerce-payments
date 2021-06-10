@@ -100,6 +100,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service
 	) {
+		// Load the settings.
+		$this->init_settings();
+
 		$this->payments_api_client      = $payments_api_client;
 		$this->account                  = $account;
 		$this->customer_service         = $customer_service;
@@ -111,9 +114,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = [
+
+		/*
+		 * Set the title and description properties with fallbacks when
+		 * the respective keys are missing in the settings array.
+		 *
+		 * This prevents issues when users update from earlier versions where
+		 * these values were hardcoded.
+		 *
+		 * We use isset() rather than empty() as this allows the user to set
+		 * these values to empty strings by explicitly removing the values
+		 * from the UI and saving.
+		 */
+		$this->title       = $this->get_option( 'title', ! isset( $this->settings['title'] ) ? __( 'Credit card', 'woocommerce-payments' ) : null );
+		$this->description = $this->get_option( 'description', ! isset( $this->settings['description'] ) ? __( 'Enter your card details', 'woocommerce-payments' ) : null );
+		$this->supports    = [
 			'products',
 			'refunds',
 		];
@@ -126,6 +141,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'type'        => 'checkbox',
 				'description' => '',
 				'default'     => 'no',
+			],
+			'title'                               => [
+				'title'       => __( 'Title', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-payments' ),
+				'desc_tip'    => true,
+			],
+			'description'                         => [
+				'title'       => __( 'Description', 'woocommerce-payments' ),
+				'type'        => 'text',
+				'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce-payments' ),
+				'desc_tip'    => true,
 			],
 			'account_details'                     => [
 				'type' => 'account_actions',
@@ -327,9 +354,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default'     => 'no',
 			];
 		}
-
-		// Load the settings.
-		$this->init_settings();
 
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
 		if ( $this->is_saved_cards_enabled() ) {
