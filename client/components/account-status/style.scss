@@ -1,31 +1,32 @@
 /** @format */
-.woocommerce-account-status__controls .components-button.is-link {
-	text-decoration: none;
-}
 .woocommerce-account-status__header {
 	flex-wrap: wrap;
 
-	div {
-		flex-shrink: 1;
+	.edit-details .components-button.is-link {
+		text-decoration: none;
+	}
+
+	.edit-details,
+	.account-details,
+	.account-status {
 		flex-basis: auto;
+		min-width: max-content;
 	}
 
 	// on a smaller viewports controls section should move in front of the
 	// status chip
-	@media only screen and ( max-width: 390px ) {
-		div:first-child {
-			flex-grow: 1;
-			order: -2;
-			margin-bottom: 8px;
-		}
-		div:last-child {
-			order: -1;
-			margin-bottom: 8px;
-		}
-	}
-	@media only screen and ( max-width: 390px ) {
-		div:last-child {
+	@include breakpoint( '<480px' ) {
+		.account-details {
 			order: 1;
+			flex-grow: 1;
+			margin-bottom: 8px;
+		}
+		.edit-details {
+			order: 2;
+			margin-bottom: 8px;
+		}
+		.account-status {
+			order: 3;
 		}
 	}
 }
@@ -36,20 +37,34 @@
 	min-height: 2em;
 	margin-bottom: 8px;
 
-	div {
+	.progressbar {
+		width: 100%;
+
+		&__outer-progress-label {
+			color: $gray-700;
+		}
+	}
+
+	.item-label,
+	.item-value {
 		flex-shrink: 1;
 		flex-basis: auto;
 		width: min-content;
 	}
 
-	// label
-	div:first-child {
+	.item-label {
 		color: $gray-900;
 		min-width: 130px;
+		white-space: nowrap;
 	}
 
-	// value
-	div:last-child {
+	@include breakpoint( '<480px' ) {
+		.item-label {
+			min-width: 80px;
+		}
+	}
+
+	.item-value {
 		color: $gray-700;
 
 		svg {
@@ -62,14 +77,6 @@
 			flex-direction: row;
 			align-items: center;
 			height: 24px;
-		}
-	}
-
-	@media only screen and ( max-width: 390px ) {
-		div:first-child {
-			overflow: visible;
-			white-space: nowrap;
-			min-width: 80px;
 		}
 	}
 }

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -10,17 +10,18 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useSettings } from 'data';
-import Banner from '../../banner';
 import { LoadableBlock } from '../../components/loadable';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import TestModeSettings from '../test-mode-settings';
 import ApplePayIcon from '../../gateway-icons/apple-pay';
 import GooglePayIcon from '../../gateway-icons/google-pay';
+import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
+import TransactionsAndDeposits from '../transactions-and-deposits';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -64,10 +65,22 @@ const DigitalWalletsDescription = () => (
 
 const GeneralSettingsDescription = () => (
 	<>
-		<h2>{ __( 'General settings', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
-				"Change WooCommerce Payments settings and update your store's configuration to ensure smooth transactions.",
+				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</>
+);
+
+const TransactionsAndDepositsDescription = () => (
+	<>
+		<h2>{ __( 'Transactions and deposits', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				"Update your store's configuration to ensure smooth transactions.",
 				'woocommerce-payments'
 			) }
 		</p>
@@ -77,39 +90,39 @@ const GeneralSettingsDescription = () => (
 	</>
 );
 
-const SettingsManager = ( { accountStatus = {} } ) => {
+const SettingsManager = () => {
+	const {
+		featureFlags: { upe: isUPEEnabled },
+	} = useContext( WCPaySettingsContext );
 	const { isLoading } = useSettings();
 
 	return (
-		<>
-			<Banner />
-			<div className="settings-manager">
+		<SettingsLayout>
+			<SettingsSection Description={ GeneralSettingsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<GeneralSettings />
+				</LoadableBlock>
+			</SettingsSection>
+			{ isUPEEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 						<PaymentMethods />
 					</LoadableBlock>
 				</SettingsSection>
-				<SettingsSection Description={ DigitalWalletsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<DigitalWallets />
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection Description={ GeneralSettingsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<GeneralSettings
-							accountLink={ accountStatus.accountLink }
-						/>
-					</LoadableBlock>
-				</SettingsSection>
-				<SettingsSection>
-					<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
-						<TestModeSettings />
-					</LoadableBlock>
-				</SettingsSection>
-				<AdvancedSettings />
-				<SaveSettingsSection />
-			</div>
-		</>
+			) }
+			<SettingsSection Description={ DigitalWalletsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<DigitalWallets />
+				</LoadableBlock>
+			</SettingsSection>
+			<SettingsSection Description={ TransactionsAndDepositsDescription }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<TransactionsAndDeposits />
+				</LoadableBlock>
+			</SettingsSection>
+			<AdvancedSettings />
+			<SaveSettingsSection />
+		</SettingsLayout>
 	);
 };
 

@@ -2,6 +2,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 
@@ -12,15 +13,14 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
-import Banner from '../../banner';
+import SettingsLayout from '../settings-layout';
 import { useSettings } from '../../data';
 import { LoadableBlock } from '../../components/loadable';
-import React from 'react';
 import SaveSettingsSection from '../save-settings-section';
 
 /* eslint-disable camelcase */
 const methods = {
-	woocommerce_payments_digital_wallets: {
+	digital_wallets: {
 		title: 'Express checkouts',
 		description: () => (
 			<>
@@ -72,9 +72,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 	const { title, description: Description, controls: Controls } = method;
 
 	return (
-		<div className="payment-method-settings">
-			<Banner />
-
+		<SettingsLayout>
 			<h2 className="payment-method-settings__breadcrumbs">
 				<a href={ getPaymentSettingsUrl() }>
 					{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
@@ -89,7 +87,7 @@ const PaymentMethodSettings = ( { methodId } ) => {
 			</SettingsSection>
 
 			<SaveSettingsSection />
-		</div>
+		</SettingsLayout>
 	);
 };
 

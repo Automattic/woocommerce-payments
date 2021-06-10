@@ -61,7 +61,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $account;
+	protected $account;
 
 	/**
 	 * WC_Payments_Customer instance for working with customer information
@@ -130,12 +130,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'account_details'                     => [
 				'type' => 'account_actions',
 			],
-			'account_status'                      => [
-				'type' => 'account_status',
-			],
-			'account_fees'                        => [
-				'type' => 'account_fees',
-			],
 			'account_statement_descriptor'        => [
 				'type'        => 'account_statement_descriptor',
 				'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
@@ -189,7 +183,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
 				),
 				'type'        => 'checkbox',
-				'description' => __( 'If enabled, users will be able to pay using Apple Pay or Chrome Payment Request if supported by the browser.', 'woocommerce-payments' ),
+				'description' => __( 'If enabled, users will be able to pay using Apple Pay, Google Pay or the Payment Request API if supported by the browser.', 'woocommerce-payments' ),
 				'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
 				'desc_tip'    => true,
 			],
@@ -272,6 +266,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'default' => [ 'woocommerce_payments' ],
 				'options' => [],
 			];
+
+			$this->form_fields['payment_request_button_size'] = [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'medium'  => __( 'Medium', 'woocommerce-payments' ),
+					'large'   => __( 'Large', 'woocommerce-payments' ),
+				],
+			];
+
+			// in the new settings, "checkout" is going to be enabled by default (if it is a new WCPay installation).
+			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
+
+			// no longer needed in the new settings.
+			unset( $this->form_fields['payment_request_button_branded_type'] );
+			// `light-outline` is no longer a valid option.
+			unset( $this->form_fields['payment_request_button_theme']['options']['light-outline'] );
+			// injecting some of the new options.
+			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
+			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
+			// no longer valid options.
+			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
+			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
 		}
 
 		// Giropay option hidden behind feature flag.
@@ -467,14 +488,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function output_payments_settings_screen() {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
-		$hide_save_button                  = true;
-		$is_payment_method_settings_screen = self::GATEWAY_ID !== $this->id;
+		$hide_save_button = true;
 
-		if ( $is_payment_method_settings_screen ) :
+		if ( ! empty( $_GET['method'] ) ) :
 			?>
 			<div
 				id="wcpay-payment-method-settings-container"
-				data-method-id="<?php echo esc_attr( $this->id ); ?>"
+				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); ?>"
 			></div>
 		<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
@@ -1176,54 +1196,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return parent::generate_checkbox_html( $key, $data );
-	}
-
-	/**
-	 * Outputs the container for account status information.
-	 *
-	 * @return string Container markup or empty if the account is not connected.
-	 */
-	public function generate_account_status_html() {
-		if ( ! $this->is_connected() ) {
-			return '';
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Account status', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<div id="wcpay-account-status-container"></div>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Generates markup for the fees information section.
-	 *
-	 * @return string Markup or empty if the account is not connected.
-	 */
-	public function generate_account_fees_html() {
-		if ( ! $this->is_connected() || empty( $this->account->get_fees() ) ) {
-			return '';
-		}
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row">
-				<?php echo esc_html( __( 'Base fee', 'woocommerce-payments' ) ); ?>
-			</th>
-			<td>
-				<div id="wcpay-account-fees-container"></div>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**

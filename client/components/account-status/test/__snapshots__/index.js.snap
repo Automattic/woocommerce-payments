@@ -30,12 +30,12 @@ exports[`AccountStatus renders normal status 1`] = `
       direction="row"
     >
       <div
-        class="components-flex__item css-1s295sp-Item eboqfv51"
+        class="components-flex__item account-details css-1s295sp-Item eboqfv51"
       >
         Account details
       </div>
       <div
-        class="components-flex__block css-yr442k-Item-Block eboqfv52"
+        class="components-flex__block account-status css-yr442k-Item-Block eboqfv52"
       >
         <span
           class="chip chip-primary is-compact"
@@ -44,7 +44,7 @@ exports[`AccountStatus renders normal status 1`] = `
         </span>
       </div>
       <div
-        class="components-flex__item woocommerce-account-status__controls css-1s295sp-Item eboqfv51"
+        class="components-flex__item edit-details css-1s295sp-Item eboqfv51"
       >
         <button
           class="components-button is-link"
@@ -62,12 +62,12 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item css-1s295sp-Item eboqfv51"
+          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
         >
           Payments:
         </div>
         <div
-          class="components-flex__block css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -94,12 +94,12 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item css-1s295sp-Item eboqfv51"
+          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
         >
           Deposits:
         </div>
         <div
-          class="components-flex__block css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
         >
           <span
             class="account-status__info__green"
@@ -126,16 +126,25 @@ exports[`AccountStatus renders normal status 1`] = `
         direction="row"
       >
         <div
-          class="components-flex__item css-1s295sp-Item eboqfv51"
+          class="components-flex__item item-label css-1s295sp-Item eboqfv51"
         >
-          BaseFee:
+          Base Fee:
         </div>
         <div
-          class="components-flex__block css-yr442k-Item-Block eboqfv52"
+          class="components-flex__block item-value css-yr442k-Item-Block eboqfv52"
         >
           Euro 
           (EUR) 
           2.9% + €0,00 per transaction
+          <p>
+            <a
+              href="https://docs.woocommerce.com/document/payments/faq/fees/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Learn more
+            </a>
+          </p>
         </div>
       </div>
     </div>

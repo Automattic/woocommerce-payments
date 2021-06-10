@@ -10,9 +10,11 @@ initStore();
 
 export const WCPAY_STORE_NAME = STORE_NAME;
 
-export * from './deposits';
-export * from './transactions';
-export * from './charges';
-export * from './timeline';
-export * from './disputes';
+// We only ask for hooks when importing directly from 'data'.
+export * from './deposits/hooks';
+export * from './transactions/hooks';
+export * from './charges/hooks';
+export * from './timeline/hooks';
+export * from './disputes/hooks';
 export * from './settings/hooks';
+export * from './multi-currency';

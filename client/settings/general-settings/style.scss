@@ -1,5 +1,6 @@
 .general-settings {
 	&__account-statement-wrapper {
+		max-width: 500px;
 		position: relative;
 
 		.components-base-control__field .components-text-control__input {
@@ -10,12 +11,12 @@
 		.input-help-text {
 			position: absolute;
 			right: 10px;
-			top: 11px;
+			top: 38px;
 			font-size: 12px;
 			color: #757575;
 
 			@media ( min-width: 783px ) {
-				top: 6px;
+				top: 32px;
 			}
 		}
 	}

@@ -1,9 +1,27 @@
-.payment-method-settings__breadcrumbs {
-	margin-bottom: 40px;
-}
+.payment-method-settings {
+	&__breadcrumbs {
+		margin-bottom: 40px;
+	}
 
-#wcpay-payment-method-settings-container {
-	margin-top: 24px;
+	&__option-muted-text {
+		color: #757575;
+	}
+
+	&__option-help-text {
+		color: #757575;
+		padding-left: 30px;
+
+		@media ( min-width: 600px ) {
+			padding-left: 26px;
+		}
+	}
+
+	&__cta-selection {
+		.components-base-control__label {
+			// hack until the `hideLabelFromVision` is fixed for radio controls in Gutenberg
+			display: none;
+		}
+	}
 }
 
 .components-radio-control__input[type='radio']:checked::before {

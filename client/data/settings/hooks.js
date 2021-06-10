@@ -26,6 +26,19 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
+export const useDebugLog = () => {
+	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getIsDebugLogEnabled } = select( STORE_NAME );
+
+			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
+		},
+		[ updateIsDebugLogEnabled ]
+	);
+};
+
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 
@@ -143,5 +156,44 @@ export const useDigitalWalletsLocations = () => {
 		const { getDigitalWalletsLocations } = select( STORE_NAME );
 
 		return [ getDigitalWalletsLocations(), updateDigitalWalletsLocations ];
+	} );
+};
+
+export const useDigitalWalletsButtonType = () => {
+	const { updateDigitalWalletsButtonType } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonType } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonType(),
+			updateDigitalWalletsButtonType,
+		];
+	} );
+};
+
+export const useDigitalWalletsButtonSize = () => {
+	const { updateDigitalWalletsButtonSize } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonSize } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonSize(),
+			updateDigitalWalletsButtonSize,
+		];
+	} );
+};
+
+export const useDigitalWalletsButtonTheme = () => {
+	const { updateDigitalWalletsButtonTheme } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getDigitalWalletsButtonTheme } = select( STORE_NAME );
+
+		return [
+			getDigitalWalletsButtonTheme(),
+			updateDigitalWalletsButtonTheme,
+		];
 	} );
 };

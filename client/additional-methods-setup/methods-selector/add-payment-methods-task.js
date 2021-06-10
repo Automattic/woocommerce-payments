@@ -25,6 +25,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useSettings,
+	useDigitalWalletsEnabledSettings,
 } from '../../data';
 import './add-payment-methods-task.scss';
 
@@ -66,25 +67,34 @@ const usePaymentMethodsCheckboxState = ( initialValue ) => {
 
 const AddPaymentMethodsTask = () => {
 	const availablePaymentMethods = useGetAvailablePaymentMethodIds();
-	const {
-		enabledPaymentMethodIds,
+	const [
+		initialEnabledPaymentMethodIds,
 		updateEnabledPaymentMethodIds,
-	} = useEnabledPaymentMethodIds();
+	] = useEnabledPaymentMethodIds();
+
+	const [
+		initialIsDigitalWalletsEnabled,
+		setIsDigitalWalletsEnabled,
+	] = useDigitalWalletsEnabledSettings();
 
 	const { saveSettings, isSaving } = useSettings();
 
 	// I am using internal state in this component
-	// and committing the changes on `enabledPaymentMethodIds` only when the "continue" button is clicked.
+	// and committing the changes on `initialEnabledPaymentMethodIds` only when the "continue" button is clicked.
 	// Otherwise a user could navigate to another page via soft-routing and the settings would be in un-saved state,
 	// possibly causing errors.
 	const [
 		paymentMethodsState,
 		handlePaymentMethodChange,
 	] = usePaymentMethodsCheckboxState(
-		enabledPaymentMethodIds.reduce(
+		initialEnabledPaymentMethodIds.reduce(
 			( map, paymentMethod ) => ( { ...map, [ paymentMethod ]: true } ),
 			{}
 		)
+	);
+
+	const [ isWalletsChecked, setWalletsChecked ] = useState(
+		initialIsDigitalWalletsEnabled
 	);
 
 	const { setCompleted } = useContext( WizardTaskContext );
@@ -93,8 +103,8 @@ const AddPaymentMethodsTask = () => {
 		// creating a separate callback, so that the main thread isn't blocked on click of the button
 		const callback = async () => {
 			const checkedPaymentMethods = Object.entries( paymentMethodsState )
-				.filter( ( [ , enabled ] ) => enabled )
-				.map( ( [ method ] ) => method );
+				.map( ( [ method, enabled ] ) => enabled && method )
+				.filter( Boolean );
 
 			if ( 1 > checkedPaymentMethods.length ) {
 				alert(
@@ -106,12 +116,14 @@ const AddPaymentMethodsTask = () => {
 				return;
 			}
 
+			setIsDigitalWalletsEnabled( isWalletsChecked );
 			updateEnabledPaymentMethodIds( checkedPaymentMethods );
 
 			const isSuccess = await saveSettings();
 			if ( ! isSuccess ) {
 				// restoring the state, in case of soft route
-				updateEnabledPaymentMethodIds( enabledPaymentMethodIds );
+				setIsDigitalWalletsEnabled( initialIsDigitalWalletsEnabled );
+				updateEnabledPaymentMethodIds( initialEnabledPaymentMethodIds );
 				return;
 			}
 
@@ -124,12 +136,13 @@ const AddPaymentMethodsTask = () => {
 		paymentMethodsState,
 		saveSettings,
 		setCompleted,
-		enabledPaymentMethodIds,
+		initialEnabledPaymentMethodIds,
+		initialIsDigitalWalletsEnabled,
+		isWalletsChecked,
+		setIsDigitalWalletsEnabled,
 	] );
 
 	const countryName = useGetCountryName();
-
-	const [ isWalletsChecked, setWalletsChecked ] = useState( false );
 
 	return (
 		<WizardTaskItem
@@ -150,7 +163,7 @@ const AddPaymentMethodsTask = () => {
 					),
 					components: {
 						settingsLink: (
-							<a href="admin.php?page=wc-settings">
+							<a href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments">
 								{ __( 'settings', 'woocommerce-payments' ) }
 							</a>
 						),
