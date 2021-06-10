@@ -1185,16 +1185,16 @@ class WC_Payments_API_Client {
 			return $this->request( $params, $api, $method, $is_site_specific );
 		}
 
-		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement
-		if ( !isset( $params['level3']['line_items'] ) || !is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
+		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
+		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
 			$params['level3']['line_items'] = [
 				[
-					'discount_amount' 		=> 0,
-					'product_code' 			=> '0-00-fee',
-					'product_description' 	=> '$0.00 fee',
-					'quantity' 				=> 1,
-					'tax_amount' 			=> 0,
-					'unit_cost' 			=> 0,
+					'discount_amount'     => 0,
+					'product_code'        => '0-00-fee',
+					'product_description' => '$0.00 fee',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
 				],
 			];
 		}
