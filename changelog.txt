@@ -6,6 +6,7 @@
 * Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
 * Fix - Deposit date on Transactions list page.
 * Add - Error message when total size of dispute evidence files uploaded goes over limit.
+* Fix - Remove duplicate text from the list inside enable currency modal when the symbol and code is the same.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
