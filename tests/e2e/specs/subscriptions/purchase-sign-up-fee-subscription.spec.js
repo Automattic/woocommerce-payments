@@ -31,16 +31,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await merchantWCP.createSubscriptionProduct( productName, true );
 
 			await merchant.logout();
-		} );
 
-		afterAll( async () => {
-			await merchant.logout();
-
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-		} );
-
-		it( 'should be able to purchase a subscription with signup fee', async () => {
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -62,6 +53,13 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'.woocommerce-order-overview__order.order > strong'
 			);
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+		} );
+
+		afterAll( async () => {
+			await merchant.logout();
+
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should have a charge for subscription cost with fee', async () => {
