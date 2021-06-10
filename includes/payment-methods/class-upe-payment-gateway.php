@@ -304,9 +304,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$details       = $payment_method_details['card'];
 				$funding_types = [
 					'credit'  => __( 'credit', 'woocommerce-payments' ),
-					'debit'   => __( 'credit', 'woocommerce-payments' ),
-					'prepaid' => __( 'credit', 'woocommerce-payments' ),
-					'unknown' => __( 'credit', 'woocommerce-payments' ),
+					'debit'   => __( 'debit', 'woocommerce-payments' ),
+					'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
+					'unknown' => __( 'unknown', 'woocommerce-payments' ),
 				];
 
 				$payment_method_title = sprintf(
