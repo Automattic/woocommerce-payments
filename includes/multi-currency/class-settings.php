@@ -336,7 +336,7 @@ class Settings extends \WC_Settings_Page {
 					'default'  => 'none',
 					'type'     => 'select',
 					'options'  => $rounding_options,
-					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole dollar helps prevent losses on sales.', 'woocommerce-payments' ),
+					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole number helps prevent losses on sales.', 'woocommerce-payments' ),
 				],
 
 				[
