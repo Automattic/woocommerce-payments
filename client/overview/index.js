@@ -18,6 +18,7 @@ import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
+import { useDisputes } from 'data';
 
 import './style.scss';
 
@@ -31,6 +32,7 @@ const OverviewPage = () => {
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
+	const { disputes } = useDisputes( getQuery() );
 
 	const tasks = getTasks( {
 		accountStatus,
@@ -39,6 +41,7 @@ const OverviewPage = () => {
 		multiCurrencySetup,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
+		disputes,
 	} );
 	const queryParams = getQuery();
 
