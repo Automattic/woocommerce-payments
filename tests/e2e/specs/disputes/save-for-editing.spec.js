@@ -23,7 +23,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
-		const card = config.get( 'cards.disputed-unreceived"' );
+		const card = config.get( 'cards.disputed-unreceived' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
