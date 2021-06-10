@@ -55,26 +55,29 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price' ],
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
-			[ 'woocommerce_package_rates', 'convert_package_rates_prices' ],
-			[ 'init', 'register_free_shipping_filters' ],
+			[ 'init', 'register_shipping_filters' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
 		];
 	}
 
-	public function test_registers_woocommerce_filters_for_free_shipping_methods() {
-		// Add a free shipping method to the default zone.
+	public function test_registers_woocommerce_filters_for_shipping_methods() {
+		// Add a flat and free shipping method to the default zone.
 		$default_zone_free_method = \WC_Shipping_Zones::get_zone( 0 )->add_shipping_method( 'free_shipping' );
+		$default_zone_flat_method = \WC_Shipping_Zones::get_zone( 0 )->add_shipping_method( 'flat_rate' );
 
 		// Create a new shipping zone and shipping method.
 		$new_zone             = new WC_Shipping_Zone();
 		$new_zone_free_method = $new_zone->add_shipping_method( 'free_shipping' );
+		$new_zone_flat_method = $new_zone->add_shipping_method( 'flat_rate' );
 
-		$this->frontend_prices->register_free_shipping_filters();
+		$this->frontend_prices->register_shipping_filters();
 
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_shipping_method_settings' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_flat_rate_' . $default_zone_flat_method . '_settings', [ $this->frontend_prices, 'get_shipping_method_settings' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_shipping_method_settings' ] ) );
+		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_flat_rate_' . $new_zone_flat_method . '_settings', [ $this->frontend_prices, 'get_shipping_method_settings' ] ) );
 	}
 
 	public function test_get_product_price_returns_empty_price() {
@@ -146,42 +149,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_convert_package_rates_prices_converts_rates() {
-		$this->mock_multi_currency
-			->method( 'get_price' )
-			->withConsecutive( [ 10.0, 'shipping' ], [ 0.0, 'shipping' ] )
-			->willReturnOnConsecutiveCalls( 25.0, 0.0 );
-
-		$flat_rate_method       = new WC_Shipping_Rate();
-		$free_method            = new WC_Shipping_Rate();
-		$flat_rate_method->cost = '10.0';
-		$free_method->cost      = '0.0';
-
-		$base_shipping_rates = [
-			'shipping_rate_1' => $flat_rate_method,
-			'shipping_rate_2' => $free_method,
-		];
-
-		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
-
-		$this->assertSame( 25.0, $shipping_rates['shipping_rate_1']->cost );
-		$this->assertSame( 0.0, $shipping_rates['shipping_rate_2']->cost );
-	}
-
-	public function test_convert_package_rates_prices_converts_taxes() {
-		$this->mock_multi_currency
-			->method( 'get_price' )
-			->withConsecutive( [ 1.0, 'tax' ], [ 2.0, 'tax' ] )
-			->willReturnOnConsecutiveCalls( 2.5, 5.0 );
-
-		$flat_rate_method        = new WC_Shipping_Rate();
-		$flat_rate_method->taxes = [ '1.0', '2.0' ];
-
-		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
-
-		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
-	}
-
 	public function test_get_coupon_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_amount( '', null ) );
 	}
@@ -212,17 +179,31 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
 	}
 
-	public function test_get_free_shipping_min_amount_returns_empty_amount() {
-		$this->assertSame( [ 'key' => 'value' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'key' => 'value' ] ) );
+	public function test_get_shipping_method_settings_returns_empty_min_amount() {
+		$this->assertSame( [ 'key' => 'value' ], $this->frontend_prices->get_shipping_method_settings( [ 'key' => 'value' ] ) );
 	}
 
-	public function test_get_free_shipping_min_amount_returns_zero_amount() {
-		$this->assertSame( [ 'min_amount' => '0' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '0' ] ) );
+	public function test_get_shipping_method_settings_returns_zero_min_amount() {
+		$this->assertSame( [ 'min_amount' => '0' ], $this->frontend_prices->get_shipping_method_settings( [ 'min_amount' => '0' ] ) );
 	}
 
-	public function test_get_free_shipping_min_amount_converts_amount_as_product() {
+	public function test_get_shipping_method_settings_converts_min_amount_as_product() {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
 
-		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '5.0' ] ) );
+		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_shipping_method_settings( [ 'min_amount' => '5.0' ] ) );
+	}
+
+	public function test_get_shipping_method_settings_returns_empty_cost() {
+		$this->assertSame( [ 'key' => 'value' ], $this->frontend_prices->get_shipping_method_settings( [ 'key' => 'value' ] ) );
+	}
+
+	public function test_get_shipping_method_settings_returns_zero_cost() {
+		$this->assertSame( [ 'cost' => '0' ], $this->frontend_prices->get_shipping_method_settings( [ 'cost' => '0' ] ) );
+	}
+
+	public function test_get_shipping_method_settings_converts_cost_as_shipping() {
+		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'shipping' )->willReturn( 12.5 );
+
+		$this->assertSame( [ 'cost' => 12.5 ], $this->frontend_prices->get_shipping_method_settings( [ 'cost' => '5.0' ] ) );
 	}
 }
