@@ -8,6 +8,16 @@ import createAdditionalMethodsSetupTask from '../../../additional-methods-setup/
 
 jest.mock( '../../../additional-methods-setup/task', () => jest.fn() );
 
+jest.mock( 'utils/currency', () => {
+	return {
+		formatCurrency: jest
+			.fn()
+			.mockReturnValue(
+				( amount, currency ) => `${ amount } ${ currency }`
+			),
+	};
+} );
+
 describe( 'getTasks()', () => {
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
@@ -215,5 +225,78 @@ describe( 'getTasks()', () => {
 				] )
 			);
 		} );
+	} );
+	it( 'should include a dispute resolution task', () => {
+		/*eslint-disable camelcase*/
+		const disputes = [
+			{
+				id: 123,
+				amount: 10,
+				currency: 'USD',
+				evidence_details: { due_by: 1624147199 },
+			},
+		];
+		/*eslint-enable camelcase*/
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+			},
+			disputes,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-123',
+					completed: false,
+					level: 3,
+				} ),
+			] )
+		);
+	} );
+	it( 'should include two different dispute resolution tasks', () => {
+		/*eslint-disable camelcase*/
+		const disputes = [
+			{
+				id: 123,
+				amount: 10,
+				currency: 'USD',
+				evidence_details: { due_by: 1624147199 },
+			},
+			{
+				id: 456,
+				amount: 20,
+				currency: 'USD',
+				evidence_details: { due_by: 1624147199 },
+			},
+		];
+		/*eslint-enable camelcase*/
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+			},
+			disputes,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-123',
+					completed: false,
+					level: 3,
+				} ),
+				expect.objectContaining( {
+					key: 'dispute-resolution-456',
+					completed: false,
+					level: 3,
+				} ),
+			] )
+		);
 	} );
 } );
