@@ -7,15 +7,60 @@ import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
+/**
+ * Internal dependencies.
+ */
+import { formatCurrency } from 'utils/currency';
+import { getDetailsURL } from 'components/details-link';
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
+	disputes,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
+
+	const getDisputesTasks = () => {
+		if ( ! disputes ) {
+			return [];
+		}
+		return disputes.map(
+			( { amount, currency, evidence_details: evidenceDetails, id } ) => {
+				return {
+					key: `dispute-resolution-${ id }`,
+					level: 3,
+					title: sprintf(
+						/* translators: %s - amount referred to the dispute */
+						__(
+							'A disputed payment for %s needs your response',
+							'woocommerce-payments'
+						),
+						formatCurrency( amount || 0, currency || 'USD' )
+					),
+					content: sprintf(
+						/* translators: %s - deadline to respond (date) */
+						__( 'Respond by %s', 'woocommerce-payments' ),
+						dateI18n(
+							'M j, Y',
+							moment(
+								evidenceDetails.due_by * 1000
+							).toISOString()
+						)
+					),
+					completed: false,
+					onClick: () => {
+						window.location.href = getDetailsURL( id, 'disputes' );
+					},
+				};
+			}
+		);
+	};
+
+	const disputesToResolve = getDisputesTasks();
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -73,5 +118,6 @@ export const getTasks = ( {
 				window.location.href = wpcomReconnectUrl;
 			},
 		},
+		...disputesToResolve,
 	].filter( Boolean );
 };
