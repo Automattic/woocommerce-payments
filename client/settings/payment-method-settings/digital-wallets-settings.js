@@ -2,10 +2,17 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import { React, useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, RadioControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
+import { getPaymentRequestData } from '../../payment-request/utils';
+import {
+	Elements,
+	PaymentRequestButtonElement,
+	useStripe,
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 /**
  * Internal dependencies
@@ -105,6 +112,46 @@ const buttonThemeOptions = [
 	},
 ];
 
+const PaymentButton = () => {
+	const stripe = useStripe();
+	const [ paymentRequest, setPaymentRequest ] = useState( null );
+
+	useEffect( () => {
+		if ( ! stripe ) {
+			return;
+		}
+
+		const pr = stripe.paymentRequest( {
+			country: 'US',
+			currency: 'usd',
+			total: {
+				label: 'Demo total',
+				amount: 1099,
+			},
+			requestPayerName: true,
+			requestPayerEmail: true,
+		} );
+
+		// Check the availability of the Payment Request API.
+		pr.canMakePayment().then( ( result ) => {
+			if ( result ) {
+				setPaymentRequest( pr );
+			}
+		} );
+	}, [ stripe ] );
+
+	if ( paymentRequest ) {
+		return <PaymentRequestButtonElement options={ { paymentRequest } } />;
+	}
+	return 'Your browser does not support express checkout.';
+};
+
+const stripeSettings = getPaymentRequestData( 'stripe' );
+const stripePromise = loadStripe( stripeSettings.publishableKey, {
+	stripeAccount: stripeSettings.accountId,
+	locale: stripeSettings.locale,
+} );
+
 const DigitalWalletsSettings = () => {
 	const [ buttonType, setButtonType ] = useDigitalWalletsButtonType();
 	const [ size, setSize ] = useDigitalWalletsButtonSize();
@@ -143,6 +190,10 @@ const DigitalWalletsSettings = () => {
 					options={ buttonThemeOptions }
 					onChange={ setTheme }
 				/>
+				<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
+				<Elements stripe={ stripePromise }>
+					<PaymentButton />
+				</Elements>
 			</CardBody>
 		</Card>
 	);
