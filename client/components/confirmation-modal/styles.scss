@@ -1,5 +1,9 @@
 .wcpay-confirmation-modal {
-	max-width: 500px;
+	// increasing the specificity of the styles, to ensure it is honored
+	&#{&} {
+		max-width: 600px;
+		min-width: 400px;
+	}
 
 	&__separator {
 		margin: 24px -24px;

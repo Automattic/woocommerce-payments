@@ -13,6 +13,28 @@ import { __ } from '@wordpress/i18n';
 import ACTION_TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from '../constants';
 
+function updateSettingsValues( payload ) {
+	return {
+		type: ACTION_TYPES.SET_SETTINGS_VALUES,
+		payload,
+	};
+}
+
+export function updateDigitalWalletsButtonType( type ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_type: type } );
+}
+
+export function updateDigitalWalletsButtonSize( size ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_size: size } );
+}
+
+export function updateDigitalWalletsButtonTheme( theme ) {
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { digital_wallets_button_theme: theme } );
+}
+
 export function updateSettings( data ) {
 	return {
 		type: ACTION_TYPES.SET_SETTINGS,
@@ -21,24 +43,20 @@ export function updateSettings( data ) {
 }
 
 export function updateIsWCPayEnabled( isEnabled ) {
-	return {
-		type: ACTION_TYPES.SET_IS_WCPAY_ENABLED,
-		isEnabled,
-	};
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { is_wcpay_enabled: isEnabled } );
 }
 
 export function updateIsDigitalWalletsEnabled( isEnabled ) {
-	return {
-		type: ACTION_TYPES.SET_IS_DIGITAL_WALLETS_ENABLED,
-		isEnabled,
-	};
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { is_digital_wallets_enabled: isEnabled } );
 }
 
 export function updateEnabledPaymentMethodIds( methodIds ) {
-	return {
-		type: ACTION_TYPES.SET_ENABLED_PAYMENT_METHOD_IDS,
-		methodIds,
-	};
+	return updateSettingsValues( {
+		// eslint-disable-next-line camelcase
+		enabled_payment_method_ids: [ ...methodIds ],
+	} );
 }
 
 export function updateIsSavingSettings( isSaving ) {
@@ -49,31 +67,25 @@ export function updateIsSavingSettings( isSaving ) {
 }
 
 export function updateIsManualCaptureEnabled( isEnabled ) {
-	return {
-		type: ACTION_TYPES.SET_IS_MANUAL_CAPTURE_ENABLED,
-		isEnabled,
-	};
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { is_manual_capture_enabled: isEnabled } );
 }
 
 export function updateIsTestModeEnabled( isEnabled ) {
-	return {
-		type: ACTION_TYPES.SET_IS_TEST_MODE_ENABLED,
-		isEnabled,
-	};
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { is_test_mode_enabled: isEnabled } );
 }
 
 export function updateIsDebugLogEnabled( isEnabled ) {
-	return {
-		type: ACTION_TYPES.SET_IS_DEBUG_LOG_ENABLED,
-		isEnabled,
-	};
+	// eslint-disable-next-line camelcase
+	return updateSettingsValues( { is_debug_log_enabled: isEnabled } );
 }
 
 export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
-	return {
-		type: ACTION_TYPES.SET_ACCOUNT_STATEMENT_DESCRIPTOR,
-		accountStatementDescriptor,
-	};
+	return updateSettingsValues( {
+		// eslint-disable-next-line camelcase
+		account_statement_descriptor: accountStatementDescriptor,
+	} );
 }
 
 export function* saveSettings() {
@@ -106,8 +118,8 @@ export function* saveSettings() {
 }
 
 export function updateDigitalWalletsLocations( locations ) {
-	return {
-		type: ACTION_TYPES.SET_DIGITAL_WALLETS_LOCATIONS,
-		locations,
-	};
+	return updateSettingsValues( {
+		// eslint-disable-next-line camelcase
+		digital_wallets_enabled_locations: [ ...locations ],
+	} );
 }

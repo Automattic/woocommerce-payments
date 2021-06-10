@@ -18,6 +18,7 @@ const webpackConfig = {
 		'additional-methods-setup':
 			'./client/additional-methods-setup/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
+		'multi-currency': './client/multi-currency/index.js',
 	},
 	output: {
 		filename: '[name].js',

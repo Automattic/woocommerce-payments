@@ -18,8 +18,10 @@ const AccountStatusItem = ( { label, align, value, children } ) => {
 			gap={ 3 }
 			className={ 'woocommerce-account-status-item' }
 		>
-			<FlexItem>{ label }</FlexItem>
-			<FlexBlock>{ children || value || null }</FlexBlock>
+			<FlexItem className={ 'item-label' }>{ label }</FlexItem>
+			<FlexBlock className={ 'item-value' }>
+				{ children || value || null }
+			</FlexBlock>
 		</Flex>
 	);
 };

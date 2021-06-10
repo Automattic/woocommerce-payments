@@ -15,5 +15,6 @@ describe( 'Admin transactions', () => {
 
 	it( 'page should load without any errors', async () => {
 		await merchantWCP.openTransactions();
+		await expect( page ).toMatchElement( 'h2', { text: 'Transactions' } );
 	} );
 } );

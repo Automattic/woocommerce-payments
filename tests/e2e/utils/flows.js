@@ -166,22 +166,20 @@ export const merchantWCP = {
 		await page.goto( WCPAY_DISPUTES, {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatchElement( 'h2', { text: 'Disputes' } );
+		await uiLoaded();
 	},
 
 	openDeposits: async () => {
 		await page.goto( WCPAY_DEPOSITS, {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatchElement( 'h2', {
-			text: 'Deposit history',
-		} );
+		await uiLoaded();
 	},
 
 	openTransactions: async () => {
 		await page.goto( WCPAY_TRANSACTIONS, {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatchElement( 'h2', { text: 'Transactions' } );
+		await uiLoaded();
 	},
 };
