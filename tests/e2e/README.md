@@ -29,9 +29,14 @@ For local setup:
 
 1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
 
-1. If running server docker containers locally stop them to avoid naming and port conflicts.
-
 1. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+
+After you set the E2E environment up, you can access to the containers on:
+
+- WC E2E Client: http://localhost:8084
+- WC E2E Server: http://localhost:8088 
+
+**Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port woocommerce_payments_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
 
 Handy utility scripts for managing environment:
 
