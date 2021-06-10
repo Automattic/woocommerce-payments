@@ -61,7 +61,8 @@ class Settings extends \WC_Settings_Page {
 		return apply_filters(
 			'woocommerce_get_sections_' . $this->id,
 			[
-				'' => __( 'Currencies', 'woocommerce-payments' ),
+				''      => __( 'Currencies', 'woocommerce-payments' ),
+				'store' => __( 'Store settings', 'woocommerce-payments' ),
 			]
 		);
 	}
