@@ -216,9 +216,9 @@ class Multi_Currency {
 	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
 	 * and 'updated' (when this data was fetched from the API).
 	 *
-	 * @return array
+	 * @return ?array
 	 */
-	public function get_cached_currencies(): ?array {
+	public function get_cached_currencies() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return null;
 		}
@@ -591,9 +591,9 @@ class Multi_Currency {
 	/**
 	 * Read the currency data from the WP option we cache it in.
 	 *
-	 * @return array
+	 * @return ?array
 	 */
-	private function read_currencies_from_cache(): ?array {
+	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
 
 		if ( false === $currency_cache || ! isset( $currency_cache['currencies'] ) || ! isset( $currency_cache['expires'] ) || ! isset( $currency_cache['updated'] ) ) {
