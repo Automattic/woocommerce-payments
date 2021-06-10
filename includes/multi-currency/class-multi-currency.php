@@ -558,12 +558,12 @@ class Multi_Currency {
 	 * @return bool
 	 */
 	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ) {
-		// Default expiration to 6 hours if not set.
+		// Default $expiration to 6 hours if not set.
 		if ( null === $expiration ) {
 			$expiration = 6 * HOUR_IN_SECONDS;
 		}
 
-		// Default updated to the currenct time.
+		// Default $updated to the current time.
 		if ( null === $updated ) {
 			$updated = time();
 		}
@@ -588,7 +588,7 @@ class Multi_Currency {
 	/**
 	 * Read the currency data from the WP option we cache it in.
 	 *
-	 * @return array|bool|string
+	 * @return array|bool
 	 */
 	private function read_currencies_from_cache() {
 		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION );
