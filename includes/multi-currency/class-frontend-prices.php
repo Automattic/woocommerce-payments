@@ -28,9 +28,7 @@ class Frontend_Prices {
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		$frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
-
-		if ( $frontend_request ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Simple product price hooks.
 			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50 );
 			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50 );

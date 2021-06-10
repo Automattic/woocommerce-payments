@@ -47,7 +47,8 @@ class Settings extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
-		add_action( 'woocommerce_admin_field_wcpay_multi_currencies', [ $this, 'wcpay_multi_currencies_setting' ] );
+		add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
+		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
 		parent::__construct();
 	}
 
@@ -91,7 +92,7 @@ class Settings extends \WC_Settings_Page {
 					],
 
 					[
-						'type' => 'wcpay_multi_currencies',
+						'type' => 'wcpay_enabled_currencies_list',
 					],
 
 					[
@@ -153,11 +154,7 @@ class Settings extends \WC_Settings_Page {
 				]
 			);
 		} else {
-			foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
-				if ( $currency->get_id() === $current_section ) {
-					$settings = $this->get_currency_setting( $currency );
-				}
-			}
+			$settings = $this->get_currency_setting( $this->multi_currency->get_enabled_currencies()[ strtoupper( $current_section ) ] );
 		}
 
 		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings, $current_section );
@@ -174,15 +171,50 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	/**
-	 * Output payment gateway settings.
+	 * Output container for enabled currencies list.
 	 */
-	public function wcpay_multi_currencies_setting() {
-		$wc_currency = get_woocommerce_currency();
-
+	public function enabled_currencies_list() {
 		?>
 		<tr valign="top">
 			<td class="wcpay_enabled_currencies_wrapper">
 				<div id="wcpay_enabled_currencies_list" aria-describedby="wcpay_enabled_currencies-description"></div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Output hidden fields for preview.
+	 */
+	public function single_currency_preview_helper() {
+		global $current_section;
+		$available_currencies = $this->multi_currency->get_available_currencies();
+		$currency             = $available_currencies[ strtoupper( $current_section ) ];
+		$default_currency     = $this->multi_currency->get_default_currency();
+
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="wcpay_multi_currency_preview_default"><?php echo esc_html( $default_currency->get_name() ); ?></label>
+			</th>
+			<td class="forminp forminp-text">
+				<span style="line-height:30px"><?php echo esc_html( $default_currency->get_symbol() ); ?></span>
+				<input name="wcpay_multi_currency_preview_default" id="wcpay_multi_currency_preview_default" type="text" value="20.00" placeholder="20.00">
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="wcpay_multi_currency_preview_converted"><?php echo esc_html( $currency->get_name() ); ?></label>
+			</th>
+			<td>
+				<div id="wcpay_multi_currency_preview_converted">
+					<?php echo esc_html( $currency->get_symbol() ); ?>
+					<span style="display:inline-block;"></span>
+				</div>
+				<input type="hidden" 
+					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>" 
+					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>" 
+				/>
 			</td>
 		</tr>
 		<?php
@@ -221,19 +253,14 @@ class Settings extends \WC_Settings_Page {
 			// TODO: Url to documentation needed.
 			''
 		);
-		// TODO: Formatting of the default currency according to WC core settings.
+
 		$rounding_options = apply_filters(
 			$this->id . '_price_rounding_options',
 			[
-				'-1'   => $default_currency->get_symbol() . '10.00',
-				'0'    => sprintf(
-					/* translators: %s: Default currency symbol */
-					__( '%s1.00 (recommended)', 'woocommerce-payments' ),
-					$default_currency->get_symbol()
-				),
-				'1'    => $default_currency->get_symbol() . '0.10',
-				'2'    => $default_currency->get_symbol() . '0.01',
 				'none' => __( 'None', 'woocommerce-payments' ),
+				'-1'   => '10.00',
+				'0'    => '1.00 (recommended)',
+				'1'    => '0.10',
 			]
 		);
 
@@ -244,42 +271,21 @@ class Settings extends \WC_Settings_Page {
 			''
 		);
 
+		$charm_options = apply_filters(
+			$this->id . '_charm_options',
+			[
+				'0.00'  => __( 'None', 'woocommerce-payments' ),
+				'-0.01' => __( '-0.01 (recommended)', 'woocommerce-payments' ),
+				'-0.05' => '-0.05',
+			]
+		);
+
 		$preview_desc = sprintf(
 			/* translators: %1$s: default currency of the store, %2$s currency being converted to. */
 			__( 'Enter a price in your default currency of %1$s to see it converted into %2$s using the excange rate and formatting rules above.', 'woocommerce-payments' ),
 			$default_currency->get_code(),
 			$currency->get_code()
 		);
-
-		// TODO: These settings are not presently used, but will be applied in a future update.
-		$preview_settings = [
-			[
-				'name' => __( 'Preview', 'woocommerce-payments' ),
-				'type' => 'title',
-				'desc' => $preview_desc,
-				'id'   => $page_id . '_preview',
-			],
-
-			[
-				'name'        => $this->multi_currency->get_default_currency()->get_name(),
-				'id'          => $this->id . '_preview_default_' . $currency->get_id(),
-				'default'     => '$20.00',
-				'type'        => 'text',
-				'placeholder' => '$20.00',
-			],
-
-			[
-				'name'    => $currency->get_name(),
-				'id'      => $this->id . '_preview_converted_' . $currency->get_id(),
-				'default' => '',
-				'type'    => 'text',
-			],
-
-			[
-				'type' => 'sectionend',
-				'id'   => $page_id . '_preview',
-			],
-		];
 
 		return apply_filters(
 			$this->id . '_single_settings',
@@ -300,13 +306,16 @@ class Settings extends \WC_Settings_Page {
 				],
 
 				[
-					'title'    => __( 'Manual rate', 'woocommerce-payments' ),
-					'type'     => 'text',
-					'id'       => $this->id . '_manual_rate_' . $currency->get_id(),
-					'class'    => 'input-text regular-input',
-					'default'  => $currency->get_rate(),
-					'desc'     => __( 'Enter the manual rate you would like to use.', 'woocommerce-payments' ),
-					'desc_tip' => true,
+					'title'             => __( 'Manual rate', 'woocommerce-payments' ),
+					'type'              => 'text',
+					'id'                => $this->id . '_manual_rate_' . $currency->get_id(),
+					'class'             => 'input-text regular-input',
+					'default'           => $currency->get_rate(),
+					'desc'              => __( 'Enter the manual rate you would like to use. Must be a positive number.', 'woocommerce-payments' ),
+					'desc_tip'          => true,
+					'custom_attributes' => [
+						'pattern' => '[0-9]*(\.[0-9]+)?',
+					],
 				],
 
 				[
@@ -327,21 +336,38 @@ class Settings extends \WC_Settings_Page {
 					'default'  => 'none',
 					'type'     => 'select',
 					'options'  => $rounding_options,
-					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole dollar helps prevent losses on sales.', 'woocommerce-payments' ),
+					'desc_tip' => __( 'Conversion rates at the bank may differ from current conversion rates. Rounding up to the nearest whole number helps prevent losses on sales.', 'woocommerce-payments' ),
 				],
 
 				[
 					'title'    => __( 'Charm pricing', 'woocommerce-payments' ),
 					'desc'     => $charm_desc,
 					'id'       => $this->id . '_price_charm_' . $currency->get_id(),
-					'default'  => 0.00,
-					'type'     => 'text',
+					'default'  => '0.00',
+					'type'     => 'select',
+					'options'  => $charm_options,
 					'desc_tip' => __( 'A value of -0.01 would reduce 20.00 to 19.99.', 'woocommerce-payments' ),
 				],
 
 				[
 					'type' => 'sectionend',
 					'id'   => $page_id . '_formatting_rules',
+				],
+
+				[
+					'name' => __( 'Preview', 'woocommerce-payments' ),
+					'type' => 'title',
+					'desc' => $preview_desc,
+					'id'   => $page_id . '_preview',
+				],
+
+				[
+					'type' => 'wcpay_single_currency_preview_helper',
+				],
+
+				[
+					'type' => 'sectionend',
+					'id'   => $page_id . '_preview',
 				],
 			]
 		);
@@ -355,6 +381,13 @@ class Settings extends \WC_Settings_Page {
 
 		// Save all settings through the settings API.
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
+
+		// If the manual rate was blank, or zero, we set it to the automatic rate.
+		$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
+		if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
+			$available_currencies = $this->multi_currency->get_available_currencies();
+			update_option( $this->id . '_manual_rate_' . $current_section, $available_currencies[ strtoupper( $current_section ) ]->get_rate() );
+		}
 
 		do_action( 'woocommerce_update_options_' . $this->id );
 	}

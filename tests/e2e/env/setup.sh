@@ -42,7 +42,11 @@ printf "$SECRETS" > "local/secrets.php"
 echo "Secrets created"
 
 step "Starting SERVER containers"
-redirect_output docker-compose up --build --force-recreate -d
+redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+
+# Get WordPress instance port number from running containers, and print a debug line to show if it works.
+WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
+echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
@@ -86,7 +90,7 @@ SITE_TITLE="WooCommerce Payments E2E site"
 
 set +e
 # Wait for containers to be started up before the setup.
-# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
@@ -203,7 +207,8 @@ echo "Setting redirection to local server"
 if [[ -n $CI ]]; then
 	DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 fi
-cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:8086/wp-json/"
+
+cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 echo
 step "Client site is up and running at http://${WP_URL}/wp-admin/"
