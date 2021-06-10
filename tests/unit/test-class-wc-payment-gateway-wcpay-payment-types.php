@@ -99,9 +99,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->method( 'add_payment_method_to_user' )
 			->willReturn( $this->token );
 
-		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
-		// mocked, and their return values can be used for testing.
-		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay_Subscriptions_Compat' )
+		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
@@ -119,6 +117,10 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				]
 			)
 			->getMock();
+
+		$this->wcpay_gateway_subscriptions = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->mock_wcpay_gateway
+		);
 
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
@@ -233,6 +235,6 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			)
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
+		$this->wcpay_gateway_subscriptions->scheduled_subscription_payment( 100, $order );
 	}
 }

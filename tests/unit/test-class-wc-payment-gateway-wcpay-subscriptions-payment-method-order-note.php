@@ -83,12 +83,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service
+		);
+
+		$this->wcpay_subscriptions = new \WC_Payment_Gateway_WCPay_Subscriptions_Compat(
+			$this->wcpay_gateway
 		);
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );

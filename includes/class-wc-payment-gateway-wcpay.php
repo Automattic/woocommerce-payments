@@ -355,6 +355,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
+		if ( class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ) ) {
+			include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-compat.php';
+			$subscriptions = new WC_Payment_Gateway_WCPay_Subscriptions_Compat( $this );
+		}
 	}
 
 	/**
@@ -756,7 +762,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order The order whose payment will be processed.
 	 * @return Payment_Information An object, which describes the payment.
 	 */
-	protected function prepare_payment_information( $order ) {
+	public function prepare_payment_information( $order ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
 
@@ -1082,7 +1088,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return null|WC_Payment_Token Last token associated with order or subscription.
 	 */
-	protected function get_payment_token( $order ) {
+	public function get_payment_token( $order ) {
 		$order_tokens = $order->get_payment_tokens();
 		$token_id     = end( $order_tokens );
 		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
@@ -2078,7 +2084,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param int $user_id The user ID.
 	 */
-	protected function get_user_formatted_tokens_array( $user_id ) {
+	public function get_user_formatted_tokens_array( $user_id ) {
 		$tokens = WC_Payment_Tokens::get_tokens(
 			[
 				'user_id'    => $user_id,
@@ -2148,5 +2154,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'woocommerce_payments',
 			]
 		);
+	}
+
+	/**
+	 * Returns the gateway's API client
+	 *
+	 * @return WC_Payments_API_Client
+	 */
+	public function get_api_client() {
+		return $this->payments_api_client;
 	}
 }

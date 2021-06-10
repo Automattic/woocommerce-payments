@@ -19,21 +19,24 @@ use WCPay\Constants\Payment_Initiated_By;
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_WCPay {
+class WC_Payment_Gateway_WCPay_Subscriptions_Compat {
 
 	const PAYMENT_METHOD_META_TABLE = 'wc_order_tokens';
 	const PAYMENT_METHOD_META_KEY   = 'token';
+
+	public $gateway;
 
 	/**
 	 * WC_Payment_Gateway_WCPay_Subscriptions_Compat constructor.
 	 *
 	 * @param array ...$args Arguments passed to the main gateway's constructor.
 	 */
-	public function __construct( ...$args ) {
-		parent::__construct( ...$args );
+	public function __construct( $gateway ) {
+		//parent::__construct( ...$args );
+		$this->gateway = $gateway;
 
-		$this->supports = array_merge(
-			$this->supports,
+		$this->gateway->supports = array_merge(
+			$gateway->supports,
 			[
 				'subscriptions',
 				'subscription_cancellation',
@@ -48,8 +51,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			]
 		);
 
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->gateway->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
+		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->gateway->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
@@ -93,12 +96,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	protected function prepare_payment_information( $order ) {
 		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
 		if ( ! $is_changing_payment && ! wcs_order_contains_subscription( $order->get_id() ) ) {
-			return parent::prepare_payment_information( $order );
+			return $this->gateway->prepare_payment_information( $order );
 		}
 
 		// Subs-specific behavior starts here.
 
-		$payment_information = parent::prepare_payment_information( $order );
+		$payment_information = $this->gateway->prepare_payment_information( $order );
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 		// The payment method is always saved for subscriptions.
 		$payment_information->must_save_payment_method();
@@ -133,7 +136,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order $renewal_order A WC_Order object created to record the renewal payment.
 	 */
 	public function scheduled_subscription_payment( $amount, $renewal_order ) {
-		$token = $this->get_payment_token( $renewal_order );
+		$token = $this->gateway->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			$renewal_order->update_status( 'failed' );
@@ -142,7 +145,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information );
+			$this->gateway->process_payment_for_order( null, $payment_information );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 
@@ -176,7 +179,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Order        $renewal_order The failed renewal order.
 	 */
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
-		$renewal_token = $this->get_payment_token( $renewal_order );
+		$renewal_token = $this->gateway->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
@@ -193,9 +196,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @return array
 	 */
 	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
-		$active_token = $this->get_payment_token( $subscription );
+		$active_token = $this->gateway->get_payment_token( $subscription );
 
-		$payment_meta[ $this->id ] = [
+		$payment_meta[ $this->gateway->id ] = [
 			self::PAYMENT_METHOD_META_TABLE => [
 				self::PAYMENT_METHOD_META_KEY => [
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
@@ -231,7 +234,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @throws Invalid_Payment_Method_Exception When $payment_meta is not valid.
 	 */
 	public function validate_subscription_payment_meta( $payment_gateway_id, $payment_meta, $subscription ) {
-		if ( $this->id !== $payment_gateway_id ) {
+		if ( $this->gateway->id !== $payment_gateway_id ) {
 			return;
 		}
 
@@ -309,10 +312,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
 			'wcpaySubscriptionEdit',
 			[
-				'gateway'           => $this->id,
+				'gateway'           => $this->gateway->id,
 				'table'             => self::PAYMENT_METHOD_META_TABLE,
 				'metaKey'           => self::PAYMENT_METHOD_META_KEY,
-				'tokens'            => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
+				'tokens'            => $this->gateway->get_user_formatted_tokens_array( $order->get_user_id() ),
 				'defaultOptionText' => __( 'Please select a payment method', 'woocommerce-payments' ),
 			]
 		);
@@ -329,12 +332,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param WC_Payment_Token $token The token to save.
 	 */
 	public function add_token_to_order( $order, $token ) {
-		parent::add_token_to_order( $order, $token );
+		$this->gateway->add_token_to_order( $order, $token );
 
 		// Set payment token for subscriptions, so it can be used for renewals.
 		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
 		foreach ( $subscriptions as $subscription ) {
-			parent::add_token_to_order( $subscription, $token );
+			$this->gateway->add_token_to_order( $subscription, $token );
 		}
 	}
 
@@ -348,11 +351,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 */
 	public function maybe_render_subscription_payment_method( $payment_method_to_display, $subscription ) {
 		try {
-			if ( $subscription->get_payment_method() !== $this->id ) {
+			if ( $subscription->get_payment_method() !== $this->gateway->id ) {
 				return $payment_method_to_display;
 			}
 
-			$token = $this->get_payment_token( $subscription );
+			$token = $this->gateway->get_payment_token( $subscription );
 
 			if ( is_null( $token ) ) {
 				Logger::info( 'There is no saved payment token for subscription #' . $subscription->get_id() );
@@ -373,7 +376,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 	 * @param string          $field_value  The field_value to be selected by default.
 	 */
 	public function render_custom_payment_meta_input( $subscription, $field_id, $field_value ) {
-		$tokens         = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
+		$tokens         = $this->gateway->get_user_formatted_tokens_array( $subscription->get_user_id() );
 		$is_valid_value = false;
 
 		foreach ( $tokens as $token ) {
@@ -482,7 +485,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		} else {
 			try {
 				$payment_method_id = $payment_information->get_payment_method();
-				$payment_method    = $this->payments_api_client->get_payment_method( $payment_method_id );
+				$payment_method    = $this->gateway->get_api_client()->get_payment_method( $payment_method_id );
 				if ( ! empty( $payment_method['card']['last4'] ) ) {
 					// translators: 1: payment method likely credit card, 2: last 4 digit.
 					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
@@ -546,7 +549,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Compat extends WC_Payment_Gateway_W
 		}
 
 		// Call the parent logic to schedule the order tracking.
-		parent::schedule_order_tracking( $order_id, $order );
+		$this->gateway->schedule_order_tracking( $order_id, $order );
 	}
 
 	/**
