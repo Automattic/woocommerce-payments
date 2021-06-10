@@ -83,18 +83,6 @@ document.querySelectorAll( '.exchange-rate-selector' ).forEach( ( radio ) => {
 	} );
 } );
 
-manualRate.addEventListener( 'input', () => {
-	updatePreview();
-} );
-
-rounding.addEventListener( 'input', () => {
-	updatePreview();
-} );
-
-charm.addEventListener( 'input', () => {
-	updatePreview();
-} );
-
-previewAmount.addEventListener( 'input', () => {
-	updatePreview();
-} );
+[ manualRate, rounding, charm, previewAmount ].forEach( ( element ) =>
+	element.addEventListener( 'input', () => updatePreview() )
+);
