@@ -1190,8 +1190,8 @@ class WC_Payments_API_Client {
 			$params['level3']['line_items'] = [
 				[
 					'discount_amount'     => 0,
-					'product_code'        => '0-00-fee',
-					'product_description' => '$0.00 fee',
+					'product_code'        => 'zero-cost-fee',
+					'product_description' => 'Zero cost fee',
 					'quantity'            => 1,
 					'tax_amount'          => 0,
 					'unit_cost'           => 0,
