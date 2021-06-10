@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
+use WCPay\Migrations\Payment_Request_To_Digital_Wallets_Settings;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Payment_Methods\Giropay_Payment_Gateway;
 use WCPay\Payment_Methods\Sepa_Payment_Gateway;
@@ -142,6 +143,9 @@ class WC_Payments {
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'admin_init', [ __CLASS__, 'install_actions' ] );
+
+		require_once __DIR__ . '/migrations/class-payment-request-to-digital-wallets-settings.php';
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new Payment_Request_To_Digital_Wallets_Settings(), 'maybe_migrate' ] );
 
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
