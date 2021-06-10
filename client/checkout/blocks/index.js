@@ -32,22 +32,18 @@ const api = new WCPayAPI(
 	request
 );
 
-// Add the payment method to the blocks registry.
-registerPaymentMethod(
-	( PaymentMethodConfig ) =>
-		new PaymentMethodConfig( {
-			name: PAYMENT_METHOD_NAME_CARD,
-			content: <WCPayFields api={ api } />,
-			edit: <WCPayFields api={ api } />,
-			canMakePayment: () => !! api.getStripe(),
-			paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-			label: __( 'Credit Card', 'woocommerce-payments' ),
-			ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
-			supports: {
-				features: getConfig( 'features' ),
-			},
-		} )
-);
+registerPaymentMethod( {
+	name: PAYMENT_METHOD_NAME_CARD,
+	content: <WCPayFields api={ api } />,
+	edit: <WCPayFields api={ api } />,
+	canMakePayment: () => !! api.getStripe(),
+	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
+	label: __( 'Credit Card', 'woocommerce-payments' ),
+	ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
+	supports: {
+		features: getConfig( 'features' ),
+	},
+} );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
