@@ -249,7 +249,7 @@ class Multi_Currency {
 		} catch ( API_Exception $e ) {
 			// Failed to retrieve currencies from the server. Exception is logged in http client.
 			// Rate limit for a short amount of time by caching the failure.
-			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, 1 * MINUTE_IN_SECONDS );
+			$this->cache_currencies( self::CURRENCY_RETRIEVAL_ERROR, time(), 1 * MINUTE_IN_SECONDS );
 
 			// Return false to signal currency retrieval error.
 			return false;
