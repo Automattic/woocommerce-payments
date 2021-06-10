@@ -395,7 +395,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Assert that the cache was correctly set.
 		$cached_data = get_option( self::CACHED_CURRENCIES_OPTION );
-		$this->assertIsArray( $cached_data );
+		$this->assertTrue( is_array( $cached_data ) );
 		$this->assertArrayHasKey( 'currencies', $cached_data );
 		$this->assertArrayHasKey( 'updated', $cached_data );
 		$this->assertEquals(
