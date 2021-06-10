@@ -58,13 +58,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Handle AJAX request for creating a payment intent for Stripe UPE.
 	 *
-	 * @throws Exception - If nonce or setup intent is invalid.
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
 	 */
 	public function create_payment_intent_ajax() {
 		try {
 			$is_nonce_valid = check_ajax_referer( 'wcpay_create_payment_intent_nonce', false, false );
 			if ( ! $is_nonce_valid ) {
-				throw new Exception(
+				throw new Process_Payment_Exception(
 					__( 'Something terrible has happened. Please refresh the page and try again.', 'woocommerce-payments' ),
 					'wcpay_upe_intent_error'
 				);
