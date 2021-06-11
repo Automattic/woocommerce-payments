@@ -124,13 +124,13 @@ class Multi_Currency {
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
-		$this->frontend_prices     = new Frontend_Prices( $this );
-		$this->frontend_currencies = new Frontend_Currencies( $this );
-
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		new User_Settings( $this );
+
+		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this );
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
