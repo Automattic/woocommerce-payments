@@ -13,6 +13,9 @@ import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 
 jest.mock( '../task-list/tasks', () => ( { getTasks: jest.fn() } ) );
+jest.mock( '../inbox-notifications', () =>
+	jest.fn().mockImplementation( () => '[inbox-notifications]' )
+);
 
 describe( 'Overview page', () => {
 	beforeEach( () => {
