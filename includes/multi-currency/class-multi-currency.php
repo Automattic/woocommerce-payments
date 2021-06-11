@@ -334,6 +334,17 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
+		}
+	}
+
+	/**
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
@@ -379,17 +390,6 @@ class Multi_Currency {
 		// Recalculate cart when currency changes.
 		if ( WC()->cart ) {
 			WC()->cart->calculate_totals();
-		}
-	}
-
-	/**
-	 * Sets the enabled currencies for the store.
-	 *
-	 * @param array $currencies Array of currency codes to be enabled.
-	 */
-	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			update_option( $this->id . '_enabled_currencies', $currencies );
 		}
 	}
 
