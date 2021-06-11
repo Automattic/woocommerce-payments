@@ -243,14 +243,7 @@ class Multi_Currency {
 		// If the cache was expired or something went wrong, make a call to the server to get the
 		// currency data.
 		try {
-			$currency_from = get_woocommerce_currency();
-			$currencies_to = get_woocommerce_currencies();
-			unset( $currencies_to[ $currency_from ] );
-
-			$currency_data = $this->payments_api_client->get_currency_rates(
-				$currency_from,
-				array_keys( $currencies_to )
-			);
+			$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
 		} catch ( API_Exception $e ) {
 			// Failed to retrieve currencies from the server. Exception is logged in http client.
 			// Rate limit for a short amount of time by caching the failure.
@@ -299,12 +292,15 @@ class Multi_Currency {
 
 		$available_currencies = [];
 
-		$cache_data = $this->get_cached_currencies();
-		if ( ! is_null( $cache_data ) && isset( $cache_data['currencies'] ) && is_array( $cache_data['currencies'] ) ) {
-			foreach ( $cache_data['currencies'] as $currency_code => $currency_rate ) {
-				$new_currency                                      = new Currency( $currency_code, $currency_rate );
-				$available_currencies[ $new_currency->get_name() ] = $new_currency;
-			}
+		$wc_currencies = get_woocommerce_currencies();
+		$cache_data    = $this->get_cached_currencies();
+
+		foreach ( $wc_currencies as $currency_code => $currency_name ) {
+			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 0.0;
+			$new_currency  = new Currency( $currency_code, $currency_rate );
+
+			// Add this to our list of available currencies.
+			$available_currencies[ $new_currency->get_name() ] = $new_currency;
 		}
 
 		ksort( $available_currencies );

@@ -788,16 +788,19 @@ class WC_Payments_API_Client {
 	 * Get currency rates from the server.
 	 *
 	 * @param string $currency_from - The currency to convert from.
-	 * @param array  $currencies_to - An array of the currencies we want to convert into.
+	 * @param ?array $currencies_to - An array of the currencies we want to convert into. If left empty, will get all supported currencies.
 	 *
 	 * @return array
 	 */
-	public function get_currency_rates( $currency_from, $currencies_to ) {
+	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		$query_body = [ 'currency_from' => $currency_from ];
+
+		if ( null !== $currencies_to ) {
+			$query_body['currencies_to'] = $currencies_to;
+		}
+
 		return $this->request(
-			[
-				'currency_from' => $currency_from,
-				'currencies_to' => $currencies_to,
-			],
+			$query_body,
 			self::CURRENCY_API . '/rates',
 			self::GET
 		);
