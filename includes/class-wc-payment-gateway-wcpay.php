@@ -285,8 +285,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// no longer needed in the new settings.
 			unset( $this->form_fields['payment_request_button_branded_type'] );
-			// `light-outline` is no longer a valid option.
-			unset( $this->form_fields['payment_request_button_theme']['options']['light-outline'] );
 			// injecting some of the new options.
 			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
 			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
