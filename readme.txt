@@ -154,6 +154,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - WooCommerce Payments admin pages redirect to the onboarding page when the WooCommerce Payments account is disconnected.
 * Fix - Do not overwrite admin pages when account is disconnected.
 * Update - Set a description when creating payment intents.
+* Add - Add dispute resolution task.
 
 = 2.6.1 - 2021-07-01 =
 * Fix - Updates the notes query filters to prevent breaking the WooCommerce > Home inbox.
