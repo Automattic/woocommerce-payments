@@ -100,32 +100,37 @@ class Multi_Currency {
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
-		$this->payments_api_client = $payments_api_client;
+		// Load the include files.
 		$this->includes();
-		$this->init();
+
+		$this->payments_api_client = $payments_api_client;
+
+		add_action( 'init', [ $this, 'init' ] );
+
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+
+		if ( $is_frontend_request ) {
+			// Make sure that this runs after the main init function.
+			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+		}
 	}
 
 	/**
-	 * Init.
+	 * Called after the WooCommerce session has been initialized. Initialises the available currencies,
+	 * default currency and enabled currencies for the multi currency plugin.
 	 */
 	public function init() {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
 
+		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_currencies = new Frontend_Currencies( $this );
+
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		new User_Settings( $this );
-
-		$this->frontend_prices     = new Frontend_Prices( $this );
-		$this->frontend_currencies = new Frontend_Currencies( $this );
-
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
-
-		if ( $is_frontend_request ) {
-			add_action( 'init', [ $this, 'update_selected_currency_by_url' ] );
-		}
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 

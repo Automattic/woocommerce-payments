@@ -90,6 +90,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->willReturn( true );
 
 		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		$this->multi_currency->init();
 	}
 
 	public function tearDown() {
@@ -118,6 +119,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Recreate Multi_Currency instance to use the recently set DEFAULT currency.
 		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		$this->multi_currency->init();
 
 		$default_currency = $this->multi_currency->get_available_currencies()['DEFAULT'];
 
@@ -161,6 +163,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Recreate Multi_Currency instance to use the recently set currencies.
 		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		$this->multi_currency->init();
 
 		$this->assertSame( [ 'USD' ], array_keys( $this->multi_currency->get_enabled_currencies() ) );
 	}
@@ -319,6 +322,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 		// Recreate Multi_Currency instance to use the recently set price_rounding.
 		$this->multi_currency = new Multi_Currency( $this->mock_api_client );
+		$this->multi_currency->init();
 
 		WC()->session->set( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY, 'GBP' );
 
@@ -339,6 +343,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			->willReturn( false );
 
 		$this->multi_currency = new Multi_Currency( $mock_api_client );
+		$this->multi_currency->init();
 		$this->assertNull( $this->multi_currency->get_cached_currencies() );
 	}
 
