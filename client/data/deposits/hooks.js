@@ -56,6 +56,10 @@ export const useDeposits = ( {
 	orderby = 'date',
 	order = 'desc',
 	store_currency_is: storeCurrencyIs,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -74,6 +78,10 @@ export const useDeposits = ( {
 				orderby,
 				order,
 				storeCurrencyIs,
+				match,
+				dateBefore,
+				dateAfter,
+				dateBetween,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -82,12 +90,25 @@ export const useDeposits = ( {
 				isLoading: isResolving( 'getDeposits', [ query ] ),
 			};
 		},
-		[ paged, perPage, orderby, order, storeCurrencyIs ]
+		[
+			paged,
+			perPage,
+			orderby,
+			order,
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			dateBetween,
+		]
 	);
 
 export const useDepositsSummary = ( {
 	match,
 	store_currency_is: storeCurrencyIs,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -96,6 +117,9 @@ export const useDepositsSummary = ( {
 			const query = {
 				match,
 				storeCurrencyIs,
+				dateBefore,
+				dateAfter,
+				dateBetween,
 			};
 
 			return {
@@ -103,7 +127,7 @@ export const useDepositsSummary = ( {
 				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
 			};
 		},
-		[ storeCurrencyIs ]
+		[ storeCurrencyIs, match, dateBefore, dateAfter, dateBetween ]
 	);
 
 export const useInstantDeposit = ( transactionIds ) => {
