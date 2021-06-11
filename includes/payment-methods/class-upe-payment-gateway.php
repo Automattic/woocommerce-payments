@@ -342,6 +342,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Generates the configuration values, needed for UPE payment fields.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		$payment_fields                                = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']           = $this->get_account_statement_descriptor();
+		$payment_fields['confirmSetupIntentreturnURL'] = wc_get_account_endpoint_url( 'payment-methods' );
+
+		return $payment_fields;
+	}
+
+	/**
 	 * Renders the UPE input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.

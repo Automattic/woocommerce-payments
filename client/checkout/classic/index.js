@@ -239,10 +239,12 @@ jQuery( function ( $ ) {
 				hiddenElementsForUPE.init();
 				const appearance = getAppearance();
 				hiddenElementsForUPE.cleanup();
+				const businessName = getConfig( 'accountDescriptor' );
 
 				upeElement = elements.create( 'payment', {
 					clientSecret,
 					appearance,
+					business: { name: businessName },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
@@ -509,6 +511,82 @@ jQuery( function ( $ ) {
 	 * @param {Object} $form The jQuery object for the form.
 	 * @return {boolean} A flag for the event handler.
 	 */
+	const handleUPEAddPayment = async ( $form ) => {
+		if ( paymentMethodGenerated ) {
+			return;
+		}
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return;
+		}
+
+		const return_url = getConfig( 'confirmSetupIntentreturnURL' );
+
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm payment to trigger validation errors
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			showError( error.message );
+			return;
+		}
+
+		blockUI( $form );
+
+		try {
+			api.getStripe()
+				.confirmSetup( {
+					element: upeElement,
+					confirmParams: {
+						return_url: return_url,
+					},
+				} )
+				.then( ( confirmedSetupIntent ) => {
+					paymentMethodGenerated = true;
+					const { error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
+					// Populate form with the setup intent and re-submit.
+					$form.append(
+						$( '<input type="hidden" />' )
+							.attr( 'id', 'wcpay-setup-intent' )
+							.attr( 'name', 'wcpay-setup-intent' )
+							.val( confirmedSetupIntent.id )
+					);
+
+					// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
+					// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
+					const defaultIgnoreIfBlocked =
+						$.blockUI.defaults.ignoreIfBlocked;
+					$.blockUI.defaults.ignoreIfBlocked = true;
+
+					// Re-submit the form.
+					$form.removeClass( 'processing' ).submit();
+
+					// Restore default value for ignoreIfBlocked.
+					$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
+				} )
+				.catch( ( error ) => {
+					throw error;
+				} );
+		} catch ( error ) {
+			paymentMethodGenerated = null;
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
+
+	/**
+	 * Submits checkout form via AJAX to create order and uses custom
+	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
 	const handleUPECheckout = async ( $form ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
@@ -700,7 +778,11 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
 				paymentMethodDetails = sofortPayment;
+			} else if ( isUPEEnabled && paymentIntentId ) {
+				handleUPEAddPayment( $( this ) );
+				return false;
 			}
+
 			return handlePaymentMethodCreation(
 				$( 'form#add_payment_method' ),
 				handleAddCard,
