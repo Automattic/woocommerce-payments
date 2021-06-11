@@ -37,7 +37,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 						code: (
 							<span className="enabled-currency-checkbox__code">
 								({ symbol }
-								{ symbol === code ? null : ' ' + code })
+								{ symbol !== code && ' ' + code })
 							</span>
 						),
 					},
