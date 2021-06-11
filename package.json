@@ -105,7 +105,6 @@
     "@wordpress/base-styles": "^3.4.1",
     "@wordpress/browserslist-config": "3.0.1",
     "@wordpress/components": "11.1.5",
-    "@wordpress/core-data": "^3.1.4",
     "@wordpress/data": "4.22.1",
     "@wordpress/data-controls": "1.6.0",
     "@wordpress/date": "3.9.0",

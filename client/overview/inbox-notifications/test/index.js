@@ -20,10 +20,9 @@ jest.mock( '@woocommerce/components', () => {
 	};
 } );
 jest.mock( '@woocommerce/experimental', () => {
-	const originalModule = jest.requireActual( '@woocommerce/experimental' );
 	return {
 		__esModule: true,
-		InboxNoteCard: originalModule.InboxNoteCard,
+		InboxNoteCard: ( { note } ) => <div>{ note.title }</div>,
 		InboxDismissConfirmationModal: () => <div>confirmation_model</div>,
 		InboxNotePlaceholder: () => <div>placeholder</div>,
 	};
