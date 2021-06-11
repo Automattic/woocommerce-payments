@@ -104,6 +104,7 @@ Please note that our support for the checkout block is still experimental and th
 = 2.6.0 - 2021-xx-xx =
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
+* Update - Pass currency to wc_price when adding intent notes to orders.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.

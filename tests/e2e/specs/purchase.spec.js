@@ -9,7 +9,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 
-import { paymentsShopper } from '../utils';
+import { shopperWCP } from '../utils';
 
 import {
 	fillCardDetails,
@@ -37,7 +37,7 @@ describe( 'Successful purchase', () => {
 			...config.get( 'addresses.customer.billing' ),
 			...config.get( 'users.guest' ),
 		} );
-		await paymentsShopper.toggleCreateAccount();
+		await shopperWCP.toggleCreateAccount();
 		const card = config.get( 'cards.3ds' );
 		await fillCardDetails( page, card );
 		await expect( page ).toClick( '#place_order' );
