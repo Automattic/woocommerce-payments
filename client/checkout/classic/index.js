@@ -512,24 +512,21 @@ jQuery( function ( $ ) {
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handleUPEAddPayment = async ( $form ) => {
-		if ( paymentMethodGenerated ) {
-			return;
-		}
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
 			return;
 		}
 
 		const return_url = getConfig( 'confirmSetupIntentreturnURL' );
-
 		if ( ! isUPEComplete ) {
-			// If UPE fields are not filled, confirm payment to trigger validation errors
+			// If UPE fields are not filled, confirm setup to trigger validation errors
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
 					return_url: return_url,
 				},
 			} );
+			$form.removeClass( 'processing' ).unblock();
 			showError( error.message );
 			return;
 		}
@@ -537,44 +534,16 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			api.getStripe()
-				.confirmSetup( {
-					element: upeElement,
-					confirmParams: {
-						return_url: return_url,
-					},
-				} )
-				.then( ( confirmedSetupIntent ) => {
-					paymentMethodGenerated = true;
-					const { error } = confirmedSetupIntent;
-					if ( error ) {
-						throw error;
-					}
-					// Populate form with the setup intent and re-submit.
-					$form.append(
-						$( '<input type="hidden" />' )
-							.attr( 'id', 'wcpay-setup-intent' )
-							.attr( 'name', 'wcpay-setup-intent' )
-							.val( confirmedSetupIntent.id )
-					);
-
-					// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
-					// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-					const defaultIgnoreIfBlocked =
-						$.blockUI.defaults.ignoreIfBlocked;
-					$.blockUI.defaults.ignoreIfBlocked = true;
-
-					// Re-submit the form.
-					$form.removeClass( 'processing' ).submit();
-
-					// Restore default value for ignoreIfBlocked.
-					$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
-				} )
-				.catch( ( error ) => {
-					throw error;
-				} );
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
 		} catch ( error ) {
-			paymentMethodGenerated = null;
 			$form.removeClass( 'processing' ).unblock();
 			showError( error.message );
 		}

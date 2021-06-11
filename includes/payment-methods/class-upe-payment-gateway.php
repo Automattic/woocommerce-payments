@@ -56,7 +56,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wp_ajax_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 
-		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
+		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 	}
 
 	/**
@@ -228,9 +228,34 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Check for a redirect payment method on order received page.
+	 * Is_add_payment_method_page - Returns true when viewing the add payment method page.
+	 *
+	 * @return bool
 	 */
-	public function maybe_process_redirect_order() {
+	private function is_payment_methods_page() {
+		global $wp;
+
+		$page_id = wc_get_page_id( 'myaccount' );
+
+		return ( $page_id && is_page( $page_id ) && ( isset( $wp->query_vars['payment-methods'] ) ) );
+	}
+
+	/**
+	 * Check for a redirect payment method on order received page or setup intent on payment methods page.
+	 */
+	public function maybe_process_upe_redirect() {
+		if ( $this->is_payment_methods_page() ) {
+			// If a payment method was added using UPE, we need to clear the cache and notify the user.
+			if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) ) {
+				if ( 'succeeded' === $_GET['redirect_status'] ) {
+					wc_add_notice( __( 'Payment method successfully added.', 'woocommerce-payments' ) );
+					$user = wp_get_current_user();
+					$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+				}
+			}
+			return;
+		}
+
 		if ( ! is_order_received_page() ) {
 			return;
 		}
