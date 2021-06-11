@@ -193,7 +193,7 @@ class Currency implements \JsonSerializable {
 		return [
 			'code'       => $this->code,
 			'rate'       => $this->get_rate(),
-			'name'       => html_entity_decode( $this->get_name() ),
+			'name'       => $this->get_name(),
 			'id'         => $this->get_id(),
 			'is_default' => $this->get_is_default(),
 			'flag'       => $this->get_flag(),
