@@ -1000,7 +1000,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -1019,7 +1019,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 						]
 					),
-					wc_price( $amount ),
+					wc_price( $amount, [ 'currency' => $currency ] ),
 					$intent_id
 				);
 
@@ -1038,7 +1038,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'code'   => '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
