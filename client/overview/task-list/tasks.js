@@ -34,7 +34,7 @@ export const getTasks = ( {
 					key: `dispute-resolution-${ id }`,
 					level: 3,
 					title: sprintf(
-						/* translators: %s - amount referred to the dispute */
+						/* translators: %s - amount referred to in the dispute */
 						__(
 							'A disputed payment for %s needs your response',
 							'woocommerce-payments'
