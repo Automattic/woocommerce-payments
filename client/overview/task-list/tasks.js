@@ -45,7 +45,7 @@ export const getTasks = ( {
 						/* translators: %s - deadline to respond (date) */
 						__( 'Respond by %s', 'woocommerce-payments' ),
 						dateI18n(
-							'M j, Y',
+							'M j, Y - g:iA',
 							moment(
 								evidenceDetails.due_by * 1000
 							).toISOString()
