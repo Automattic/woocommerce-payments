@@ -228,7 +228,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Is_add_payment_method_page - Returns true when viewing the add payment method page.
+	 * Returns true when viewing payment methods page.
 	 *
 	 * @return bool
 	 */
