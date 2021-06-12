@@ -21,6 +21,7 @@ import { uiLoaded } from './helpers';
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
+const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
@@ -87,6 +88,12 @@ export const shopperWCP = {
 
 	toggleCreateAccount: async () => {
 		await expect( page ).toClick( '#createaccount' );
+	},
+
+	goToSubscriptions: async () => {
+		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
+			waitUntil: 'networkidle0',
+		} );
 	},
 };
 
