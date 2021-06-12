@@ -92,7 +92,7 @@ class WC_Payments_Admin {
 				],
 			]
 		);
-		$should_render_full_menu = true;
+
 		if ( $should_render_full_menu ) {
 
 			/**
