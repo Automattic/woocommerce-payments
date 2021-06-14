@@ -75,10 +75,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'total_count' => 1,
 					'data'        => [
 						[
-							'id'      => 'test_charge_id',
-							'amount'  => $expected_amount,
-							'created' => 1557224305,
-							'status'  => 'succeeded',
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
 						],
 					],
 				],
@@ -157,10 +158,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'total_count' => 1,
 					'data'        => [
 						[
-							'id'      => 'test_charge_id',
-							'amount'  => $expected_amount,
-							'created' => 1557224305,
-							'status'  => 'succeeded',
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
 						],
 					],
 				],
@@ -272,10 +274,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'total_count' => 1,
 					'data'        => [
 						[
-							'id'      => 'test_charge_id',
-							'amount'  => $expected_amount,
-							'created' => 1557224305,
-							'status'  => 'succeeded',
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
 						],
 					],
 				],
@@ -307,10 +310,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 					'total_count' => 1,
 					'data'        => [
 						[
-							'id'      => 'test_charge_id',
-							'amount'  => 123,
-							'created' => 1557224305,
-							'status'  => 'succeeded',
+							'id'                     => 'test_charge_id',
+							'amount'                 => 123,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
 						],
 					],
 				],

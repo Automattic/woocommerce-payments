@@ -399,6 +399,63 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->assertEquals( count( $result_order->get_payment_tokens() ), 1 );
 	}
 
+	public function test_correct_payment_method_title_for_order() {
+		$order = WC_Helper_Order::create_order();
+
+		$visa_credit_details       = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+		$visa_debit_details        = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+		$mastercard_credit_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'mastercard',
+				'funding' => 'credit',
+			],
+		];
+		$giropay_details           = [
+			'type' => 'giropay',
+		];
+		$sepa_details              = [
+			'type' => 'sepa_debit',
+		];
+		$sofort_details            = [
+			'type' => 'sofort',
+		];
+
+		$charge_payment_method_details  = [
+			$visa_credit_details,
+			$visa_debit_details,
+			$mastercard_credit_details,
+			$giropay_details,
+			$sepa_details,
+			$sofort_details,
+		];
+		$expected_payment_method_titles = [
+			'Visa credit card (WooCommerce Payments)',
+			'Visa debit card (WooCommerce Payments)',
+			'Mastercard credit card (WooCommerce Payments)',
+			'Giropay (WooCommerce Payments)',
+			'SEPA Direct Debit (WooCommerce Payments)',
+			'Sofort (WooCommerce Payments)',
+		];
+
+		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
+			$this->mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_details );
+			$this->assertEquals( $order->get_payment_method_title(), $expected_payment_method_titles[ $i ] );
+		}
+	}
+
 	private function setup_saved_payment_method() {
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 

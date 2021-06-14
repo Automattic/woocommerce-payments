@@ -227,11 +227,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			// Get payment intent to confirm status.
-			$intent         = $this->payments_api_client->get_intent( $intent_id );
-			$status         = $intent->get_status();
-			$charge_id      = $intent->get_charge_id();
-			$currency       = $intent->get_currency();
-			$payment_method = $intent->get_payment_method_id();
+			$intent                 = $this->payments_api_client->get_intent( $intent_id );
+			$status                 = $intent->get_status();
+			$charge_id              = $intent->get_charge_id();
+			$currency               = $intent->get_currency();
+			$payment_method         = $intent->get_payment_method_id();
+			$payment_method_details = $intent->get_payment_method_details();
 
 			$error = $intent->get_last_payment_error();
 			if ( ! empty( $error ) ) {
@@ -251,6 +252,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->set_payment_method_title_for_order( $order, $payment_method_details );
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -283,6 +285,56 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
+	}
+
+	/**
+	 * Set formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order $order WC Order being processed.
+	 * @param array    $payment_method_details Array of payment method details from charge.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_details ) {
+		if ( empty( $payment_method_details ) ) {
+			return;
+		}
+
+		switch ( $payment_method_details['type'] ) {
+			case 'card':
+				$details       = $payment_method_details['card'];
+				$funding_types = [
+					'credit'  => __( 'credit', 'woocommerce-payments' ),
+					'debit'   => __( 'debit', 'woocommerce-payments' ),
+					'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
+					'unknown' => __( 'unknown', 'woocommerce-payments' ),
+				];
+
+				$payment_method_title = sprintf(
+					// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+					__( '%1$s %2$s card', 'woocommerce-payments' ),
+					ucfirst( $details['network'] ),
+					$funding_types[ $details['funding'] ]
+				);
+				break;
+
+			case 'giropay':
+				$payment_method_title = 'Giropay';
+				break;
+
+			case 'sepa_debit':
+				$payment_method_title = 'SEPA Direct Debit';
+				break;
+
+			case 'sofort':
+				$payment_method_title = 'Sofort';
+				break;
+
+			default:
+				return;
+		}
+
+		$order->set_payment_method_title( "$payment_method_title (WooCommerce Payments)" );
+		$order->save();
 	}
 
 	/**
