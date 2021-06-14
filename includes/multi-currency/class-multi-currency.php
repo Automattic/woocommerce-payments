@@ -388,8 +388,10 @@ class Multi_Currency {
 		}
 
 		// Recalculate cart when currency changes.
-		if ( WC()->cart ) {
-			WC()->cart->calculate_totals();
+		if ( did_action( 'wp_loaded' ) ) {
+			$this->recalculate_cart();
+		} else {
+			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
 	}
 
@@ -404,6 +406,13 @@ class Multi_Currency {
 		}
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Recalculates WooCommerce cart totals.
+	 */
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
