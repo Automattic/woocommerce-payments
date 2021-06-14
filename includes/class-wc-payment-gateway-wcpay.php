@@ -873,12 +873,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 
-
 			if (
 				'requires_action' === $status &&
 				$payment_information->is_merchant_initiated()
 			) {
-				// Allow 3rd-party to trigger some action if needed
+				// Allow 3rd-party to trigger some action if needed.
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
 			}
 
