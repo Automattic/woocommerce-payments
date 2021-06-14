@@ -69,7 +69,7 @@ class Allowed_Payment_Request_Button_Types_Update_Test extends WP_UnitTestCase {
 	/**
 	 * @dataProvider deprecated_values_provider
 	 */
-	public function test_it_maps_deprecated_button_type_values( string $button_type, string $branded_type = null, string $expected_mapped_value ) {
+	public function test_it_maps_deprecated_button_type_values( string $button_type, string $branded_type, string $expected_mapped_value ) {
 		$old_settings = [
 			'payment_request_button_type'         => $button_type,
 			'payment_request_button_branded_type' => $branded_type,
@@ -117,8 +117,8 @@ class Allowed_Payment_Request_Button_Types_Update_Test extends WP_UnitTestCase {
 		return [
 			'branded with type = short mapped to default' => [ 'branded', 'short', 'default' ],
 			'branded with type != short mapped to buy'    => [ 'branded', 'foo', 'buy' ],
-			'branded with missing type mapped to buy'     => [ 'branded', null, 'buy' ],
-			'custom mapped to buy'                        => [ 'custom', null, 'buy' ],
+			'branded with missing type mapped to buy'     => [ 'branded', '', 'buy' ],
+			'custom mapped to buy'                        => [ 'custom', '', 'buy' ],
 		];
 	}
 
