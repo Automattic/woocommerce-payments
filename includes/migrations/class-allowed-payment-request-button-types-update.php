@@ -7,6 +7,8 @@
 
 namespace WCPay\Migrations;
 
+use WC_Payment_Gateway_WCPay;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,6 +28,22 @@ class Allowed_Payment_Request_Button_Types_Update {
 	const VERSION_SINCE = '2.6.0';
 
 	/**
+	 * WCPay gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
+	 * Allowed_Payment_Request_Button_Types_Update constructor.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 */
+	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
+		$this->gateway = $gateway;
+	}
+
+	/**
 	 * Only execute the migration if not applied yet.
 	 */
 	public function maybe_migrate() {
@@ -39,18 +57,13 @@ class Allowed_Payment_Request_Button_Types_Update {
 	 * Does the actual migration as described in the class docblock.
 	 */
 	private function migrate() {
-		$wcpay_settings = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$button_type  = $this->gateway->get_option( 'payment_request_button_type' );
+		$branded_type = $this->gateway->get_option( 'payment_request_button_branded_type' );
 
-		if ( ! isset( $wcpay_settings['payment_request_button_type'] ) ) {
-			return;
-		}
-
-		$button_type  = $wcpay_settings['payment_request_button_type'];
-		$branded_type = $wcpay_settings['payment_request_button_branded_type'] ?? '';
-
-		$wcpay_settings['payment_request_button_type'] = $this->map_button_type( $button_type, $branded_type );
-
-		update_option( 'woocommerce_woocommerce_payments_settings', $wcpay_settings );
+		$this->gateway->update_option(
+			'payment_request_button_type',
+			$this->map_button_type( $button_type, $branded_type )
+		);
 	}
 
 	/**
