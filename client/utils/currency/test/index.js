@@ -24,7 +24,7 @@ describe( 'Currency utilities', () => {
 	} );
 
 	test( 'format unsupported currency', () => {
-		expect( utils.formatCurrency( 1000, 'AUD' ) ).toEqual( 'AUD 10.00' );
+		expect( utils.formatCurrency( 1000, 'NOK' ) ).toEqual( 'NOK 10.00' );
 		expect( utils.formatCurrency( 1000, 'JPY' ) ).toEqual( 'JPY 1000' );
 		expect( utils.formatCurrencyName( 'jpy' ) ).toEqual( 'JPY' );
 	} );

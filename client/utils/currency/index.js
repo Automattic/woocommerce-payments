@@ -3,9 +3,27 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import Currency, { getCurrencyData } from '@woocommerce/currency';
-import { find, trimEnd, endsWith } from 'lodash';
+import { find, trimEnd, endsWith, values } from 'lodash';
 
-const currencyData = getCurrencyData();
+const currencyData = [
+	...values( getCurrencyData() ),
+	{
+		code: 'NZD',
+		symbol: '$',
+		symbolPosition: 'left',
+		thousandSeparator: ',',
+		decimalSeparator: '.',
+		precision: 2,
+	},
+	{
+		code: 'AUD',
+		symbol: '$',
+		symbolPosition: 'left',
+		thousandSeparator: ',',
+		decimalSeparator: '.',
+		precision: 2,
+	},
+];
 
 const currencyNames = {
 	aud: 'Australian dollar',
