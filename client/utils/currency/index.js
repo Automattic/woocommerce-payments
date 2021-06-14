@@ -93,9 +93,19 @@ export const formatCurrency = (
 	}
 
 	try {
-		return 'function' === typeof currency.formatAmount
-			? currency.formatAmount( amount )
-			: currency.formatCurrency( amount );
+		const formattedAmount =
+			'function' === typeof currency.formatAmount
+				? currency.formatAmount( amount )
+				: currency.formatCurrency( amount );
+
+		if (
+			omitCode ||
+			wcSettings.currency.code === currencyCode.toUpperCase()
+		) {
+			return formattedAmount;
+		}
+
+		return `${ currencyCode.toUpperCase() } ${ formattedAmount }`;
 	} catch ( err ) {
 		return composeFallbackCurrency(
 			amount,
