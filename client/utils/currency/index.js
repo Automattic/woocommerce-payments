@@ -66,12 +66,17 @@ const isZeroDecimalCurrency = ( currencyCode ) => {
 /**
  * Formats amount according to the given currency.
  *
- * @param {number} amount       Amount
- * @param {string} currencyCode Currency code
+ * @param {number}  amount       Amount
+ * @param {string}  currencyCode Currency code
+ * @param {boolean} omitCode     Whether to render fallback without currency code
  *
  * @return {string} formatted currency representation
  */
-export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
+export const formatCurrency = (
+	amount,
+	currencyCode = 'USD',
+	omitCode = false
+) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
 	if ( ! isZeroDecimal ) {
@@ -80,7 +85,11 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 
 	const currency = getCurrency( currencyCode );
 	if ( null === currency ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return composeFallbackCurrency(
+			amount,
+			omitCode ? null : currencyCode,
+			isZeroDecimal
+		);
 	}
 
 	try {
@@ -88,7 +97,11 @@ export const formatCurrency = ( amount, currencyCode = 'USD' ) => {
 			? currency.formatAmount( amount )
 			: currency.formatCurrency( amount );
 	} catch ( err ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return composeFallbackCurrency(
+			amount,
+			omitCode ? null : currencyCode,
+			isZeroDecimal
+		);
 	}
 };
 
@@ -158,11 +171,9 @@ function formatExchangeRate( from, to ) {
 
 function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	// Fallback for unsupported currencies: currency code and amount
-	return sprintf(
-		isZeroDecimal ? '%s %i' : '%s %.2f',
-		currencyCode.toUpperCase(),
-		amount
-	);
+	const numericFormat = isZeroDecimal ? '%1$i' : '%1$.2f';
+	const format = currencyCode ? `%2$s ${ numericFormat }` : numericFormat;
+	return sprintf( format, amount, currencyCode?.toUpperCase() );
 }
 
 function trimEndingZeroes( formattedCurrencyAmount = '' ) {
