@@ -12,13 +12,15 @@ import {
 	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
-import WCPayAPI from './../api';
+import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
+import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
 	const publishableKey = getConfig( 'publishableKey' );
+	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -32,6 +34,7 @@ jQuery( function ( $ ) {
 			accountId: getConfig( 'accountId' ),
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
+			isUPEEnabled,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -41,7 +44,74 @@ jQuery( function ( $ ) {
 		}
 	);
 
-	const elements = api.getStripe().elements();
+	// Object to add hidden elements to compute focus and invalid states for UPE.
+	const hiddenElementsForUPE = {
+		getHiddenContainer: function () {
+			const hiddenDiv = document.createElement( 'div' );
+			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
+			hiddenDiv.style.border = 0;
+			hiddenDiv.style.clip = 'rect(0 0 0 0)';
+			hiddenDiv.style.height = '1px';
+			hiddenDiv.style.margin = '-1px';
+			hiddenDiv.style.overflow = 'hidden';
+			hiddenDiv.style.padding = '0';
+			hiddenDiv.style.position = 'absolute';
+			hiddenDiv.style.width = '1px';
+			return hiddenDiv;
+		},
+		getHiddenInvalidRow: function () {
+			const hiddenInvalidRow = document.createElement( 'p' );
+			hiddenInvalidRow.classList.add(
+				'form-row',
+				'woocommerce-invalid',
+				'woocommerce-invalid-required-field'
+			);
+			return hiddenInvalidRow;
+		},
+		appendHiddenClone: function ( container, idToClone, hiddenCloneId ) {
+			const hiddenInput = jQuery( idToClone )
+				.clone()
+				.prop( 'id', hiddenCloneId );
+			container.appendChild( hiddenInput.get( 0 ) );
+			return hiddenInput;
+		},
+		init: function () {
+			if ( ! $( ' #billing_first_name' ).length ) {
+				return;
+			}
+			const hiddenDiv = this.getHiddenContainer();
+
+			// // Hidden focusable element.
+			$( hiddenDiv ).insertAfter( '#billing_first_name' );
+			this.appendHiddenClone(
+				hiddenDiv,
+				'#billing_first_name',
+				'wcpay-hidden-input'
+			);
+			$( '#wcpay-hidden-input' ).trigger( 'focus' );
+
+			// Hidden invalid element.
+			const hiddenInvalidRow = this.getHiddenInvalidRow();
+			this.appendHiddenClone(
+				hiddenInvalidRow,
+				'#billing_first_name',
+				'wcpay-hidden-invalid-input'
+			);
+			hiddenDiv.appendChild( hiddenInvalidRow );
+
+			// Remove transitions.
+			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
+		},
+		cleanup: function () {
+			$( '#wcpay-hidden-div' ).remove();
+		},
+	};
+
+	const elements = isUPEEnabled
+		? api.getStripe().elements( {
+				fonts: getFontRulesFromPage(),
+		  } )
+		: api.getStripe().elements();
 
 	// Customer information for Pay for Order and Save Payment method.
 	/* global wcpayCustomerData */
@@ -80,6 +150,10 @@ jQuery( function ( $ ) {
 	const sofortPayment = {
 		type: 'sofort' /* eslint-disable camelcase */,
 	};
+
+	let upeElement = null;
+	let paymentIntentId = null;
+	let isUPEComplete = false;
 
 	/**
 	 * Block UI to indicate processing and avoid duplicate submission.
@@ -139,6 +213,55 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Mounts Stripe UPE element if feature is enabled.
+	 *
+	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
+	 */
+	const mountUPEElement = function ( isSetupIntent = false ) {
+		// Do not mount UPE twice.
+		if ( upeElement || paymentIntentId ) {
+			return;
+		}
+		const intentAction = isSetupIntent
+			? api.initSetupIntent()
+			: api.createIntent();
+
+		intentAction
+			.then( ( response ) => {
+				// I repeat, do NOT mount UPE twice.
+				if ( upeElement || paymentIntentId ) {
+					return;
+				}
+
+				const { client_secret: clientSecret, id: id } = response;
+				paymentIntentId = id;
+
+				hiddenElementsForUPE.init();
+				const appearance = getAppearance();
+				hiddenElementsForUPE.cleanup();
+				const businessName = getConfig( 'accountDescriptor' );
+
+				upeElement = elements.create( 'payment', {
+					clientSecret,
+					appearance,
+					business: { name: businessName },
+				} );
+				upeElement.mount( '#wcpay-upe-element' );
+				upeElement.on( 'change', ( event ) => {
+					isUPEComplete = event.complete;
+				} );
+			} )
+			.catch( ( error ) => {
+				showError( error.message );
+				const gatewayErrorMessage =
+					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
+				$( '.payment_box.payment_method_woocommerce_payments' ).html(
+					gatewayErrorMessage
+				);
+			} );
+	};
+
+	/**
 	 * Check if Card / UPE payment is being used.
 	 *
 	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
@@ -194,6 +317,15 @@ jQuery( function ( $ ) {
 			cardElement.mount( '#wcpay-card-element' );
 		}
 
+		if (
+			$( '#wcpay-upe-element' ).length &&
+			! $( '#wcpay-upe-element' ).children().length &&
+			isUPEEnabled &&
+			! upeElement
+		) {
+			mountUPEElement();
+		}
+
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
 		}
@@ -212,6 +344,15 @@ jQuery( function ( $ ) {
 
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
+		}
+		if (
+			$( '#wcpay-upe-element' ).length &&
+			! $( '#wcpay-upe-element' ).children().length &&
+			isUPEEnabled &&
+			! upeElement
+		) {
+			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			mountUPEElement( useSetUpIntent );
 		}
 	}
 
@@ -364,6 +505,105 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Submits checkout form via AJAX to create order and uses custom
+	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
+	const handleUPEAddPayment = async ( $form ) => {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return;
+		}
+
+		const return_url = getConfig( 'confirmSetupIntentreturnURL' );
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm setup to trigger validation errors
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+			return;
+		}
+
+		blockUI( $form );
+
+		try {
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
+
+	/**
+	 * Submits checkout form via AJAX to create order and uses custom
+	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
+	const handleUPECheckout = async ( $form ) => {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return;
+		}
+
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm payment to trigger validation errors
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					return_url: '',
+				},
+			} );
+			showError( error.message );
+			return;
+		}
+
+		blockUI( $form );
+		// Create object where keys are form field names and keys are form field values
+		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
+			obj[ field.name ] = field.value;
+			return obj;
+		}, {} );
+
+		try {
+			const response = await api.processCheckout(
+				paymentIntentId,
+				formFields
+			);
+			const redirectUrl = response.redirect_url;
+			const { error } = await api.getStripe().confirmPayment( {
+				element: upeElement,
+				confirmParams: {
+					// eslint-disable-next-line camelcase
+					return_url: redirectUrl,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
+
+	/**
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
@@ -468,6 +708,9 @@ jQuery( function ( $ ) {
 					country: $( '#billing_country' ).val(),
 				};
 				paymentMethodDetails = sofortPayment;
+			} else if ( isUPEEnabled && paymentIntentId ) {
+				handleUPECheckout( $( this ) );
+				return false;
 			}
 
 			return handlePaymentMethodCreation(
@@ -504,6 +747,9 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
 				paymentMethodDetails = sofortPayment;
+			} else if ( isUPEEnabled && paymentIntentId ) {
+				handleUPEAddPayment( $( this ) );
+				return false;
 			}
 
 			return handlePaymentMethodCreation(
