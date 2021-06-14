@@ -8,7 +8,6 @@
 * Add - Error message when total size of dispute evidence files uploaded goes over limit.
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
-* Update - Migrate deprecated payment request button types: "Branded - Logo only" to "Only icon"; "Branded - Text and logo" and "Custom" to "Buy".
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
