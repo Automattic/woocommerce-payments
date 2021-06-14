@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
 
 /**
  * Internal dependencies
@@ -43,19 +44,28 @@ export const EmptyStateList = ( props ) => {
 				<img src={ props.listBanner } alt="" />
 			</div>
 			<p className="intro-copy">
-				Collect payments, track cash flow, and manage recurring revenue
-				directly from your store&apos;s dashboard -- all without setup
-				costs or monthly fees.
+				{ __(
+					"Collect payments, track cash flow, and manage recurring revenue directly from your store's \
+dashboard -- all without setup costs or monthly fees."
+				) }
 			</p>
 			<p className="terms-of-service">
-				By clicking &quot;Finish setup,&quot; you agree to the{ ' ' }
-				<a
-					href="https://wordpress.com/tos/"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Terms of Service
-				</a>
+				{ createInterpolateElement(
+					__(
+						'By clicking "Finish," you agree to the <a>Terms of Service</a>',
+						'woocommerce-payments'
+					),
+					{
+						a: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href="https://wordpress.com/tos/"
+								target="_blank"
+								rel="noreferrer"
+							/>
+						),
+					}
+				) }
 			</p>
 			<div>
 				<Button
