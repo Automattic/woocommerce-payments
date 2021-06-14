@@ -14,24 +14,33 @@ import {
 
 import { fillCardDetails, setupCheckout } from '../../utils/payments';
 
-const productName = 'Subscription signup fee product';
-const productSlug = 'subscription-signup-fee-product';
+const productName = 'Subscription free trial product';
+const productSlug = 'subscription-free-trial-product';
 
 const customerBilling = config.get( 'addresses.customer.billing' );
 
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
-	'Subscriptions > Purchase subscription with signup fee',
+	'Subscriptions > Purchase subscription without signup fee (free trial)',
 	() => {
 		beforeAll( async () => {
 			await merchant.login();
 
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct( productName, true );
+			// Create subscription product without signup fee
+			await merchantWCP.createSubscriptionProduct( productName, false );
 
 			await merchant.logout();
+		} );
 
+		afterAll( async () => {
+			await merchant.logout();
+
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
+
+		it( 'should be able to purchase a subscription with signup fee', async () => {
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -55,14 +64,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 		} );
 
-		afterAll( async () => {
-			await merchant.logout();
-
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-		} );
-
-		it( 'should have a charge for subscription cost with fee', async () => {
+		it( 'should have a charge for subscription cost without fee', async () => {
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
@@ -82,7 +84,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement(
 				'li.woocommerce-timeline-item',
 				{
-					text: 'A payment of $11.98 was successfully charged.',
+					text: 'A payment of $9.99 was successfully charged.',
 				}
 			);
 		} );
