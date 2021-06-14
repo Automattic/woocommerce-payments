@@ -9,7 +9,6 @@ import {
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
-	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
@@ -139,7 +138,7 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Check if Card / UPE payment is being used.
+	 * Check if Card payment is being used.
 	 *
 	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
 	 */
@@ -451,7 +450,6 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
-		PAYMENT_METHOD_NAME_UPE,
 	];
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )

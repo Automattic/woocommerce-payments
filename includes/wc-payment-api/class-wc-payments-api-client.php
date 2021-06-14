@@ -1404,7 +1404,8 @@ class WC_Payments_API_Client {
 			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
 			$next_action,
-			$last_payment_error
+			$last_payment_error,
+			$charge ? $charge['payment_method_details'] : null
 		);
 
 		return $intent;
