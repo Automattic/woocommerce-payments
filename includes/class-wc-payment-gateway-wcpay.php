@@ -1019,6 +1019,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$order->add_order_note( $note );
 				}
+				
+				// Allow 3rd-party to trigger some action if needed
+				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+
 				break;
 		}
 
