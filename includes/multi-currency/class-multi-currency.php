@@ -106,6 +106,8 @@ class Multi_Currency {
 		$this->payments_api_client = $payments_api_client;
 
 		add_action( 'init', [ $this, 'init' ] );
+		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
+		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
@@ -123,9 +125,6 @@ class Multi_Currency {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
-
-		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
-		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
 		new User_Settings( $this );
 
