@@ -22,6 +22,8 @@ use WCPay\Tracker;
  */
 class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
+	use WC_Payment_Gateway_WCPay_Subscriptions_Trait;
+
 	/**
 	 * Internal ID of the payment gateway.
 	 *
@@ -355,6 +357,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
+		if ( $this->is_subscriptions_enabled() ) {
+			$this->init_subscriptions();
+		}
 	}
 
 	/**
@@ -449,6 +456,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_saved_cards_enabled() {
 		return 'yes' === $this->get_option( 'saved_cards' );
+	}
+
+	/**
+	 * Checks if subscriptions are enabled on the site.
+	 *
+	 * @return bool Whether subscriptions is enabled or not.
+	 */
+	public function is_subscriptions_enabled() {
+		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
 	}
 
 	/**
@@ -760,8 +776,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type() );
 
-		// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
+		if ( $this->is_subscriptions_enabled() ) {
+			$payment_information = $this->subscription_prepare_payment_information( $payment_information, $order->get_id() );
+		}
+
 		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			// During normal orders the payment method is saved when the customer enters a new one and choses to save it.
 			$payment_information->must_save_payment_method();
 		}
 
@@ -1072,6 +1092,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// [1] https://github.com/woocommerce/woocommerce/issues/11857.
 		if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
 			$order->add_payment_token( $token );
+		}
+
+		if ( $this->is_subscriptions_enabled() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+			foreach ( $subscriptions as $subscription ) {
+				$payment_token = $this->get_payment_token( $subscription );
+				if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
+					$subscription->add_payment_token( $token );
+				}
+			}
 		}
 	}
 
@@ -1952,6 +1982,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
+		if ( $this->is_subscriptions_enabled() ) {
+			$this->subscription_schedule_order_tracking( $order_id, $order );
+		}
+
 		// If Sift is not enabled, exit out and don't do the tracking here.
 		if ( ! isset( $this->account->get_fraud_services_config()['sift'] ) ) {
 			return;
