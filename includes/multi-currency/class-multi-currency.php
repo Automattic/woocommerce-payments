@@ -539,4 +539,22 @@ class Multi_Currency {
 
 		return apply_filters( 'wcs_cart_contains_renewal', $contains_renewal );
 	}
+
+	/**
+	 * Checks to see if the product passed is in the cart as a subscription renewal.
+	 *
+	 * @param object $product Product to test.
+	 *
+	 * @return bool True if it's a subscription renewal in the cart, false if not.
+	 */
+	public function is_product_subscription_renewal( $product ): bool {
+		$subscription_renewal = $this->cart_contains_renewal();
+		if ( $subscription_renewal && $product ) {
+			if ( ( isset( $subscription_renewal['variation_id'] ) && $subscription_renewal['variation_id'] === $product->get_id() )
+				|| $subscription_renewal['product_id'] === $product->get_id() ) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

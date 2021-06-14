@@ -67,12 +67,8 @@ class Frontend_Prices {
 			return $price;
 		}
 
-		$subscription_renewal = $this->multi_currency->cart_contains_renewal();
-		if ( $subscription_renewal && $product ) {
-			if ( ( isset( $subscription_renewal['variation_id'] ) && $subscription_renewal['variation_id'] === $product->get_id() )
-				|| $subscription_renewal['product_id'] === $product->get_id() ) {
-				return $price;
-			}
+		if ( $product && $this->multi_currency->is_product_subscription_renewal( $product ) ) {
+			return $price;
 		}
 
 		return $this->multi_currency->get_price( $price, 'product' );
