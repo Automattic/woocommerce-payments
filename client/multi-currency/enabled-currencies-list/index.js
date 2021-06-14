@@ -10,16 +10,14 @@ import { Card, CardBody, CardDivider } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import { useCurrencies, useEnabledCurrencies } from 'data';
+import { useCurrencies, useDefaultCurrency, useEnabledCurrencies } from 'data';
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesModal from './modal';
 
-// TODO: Loading placeholders needed?
-// TODO: useEnabledCurrencies only works if you do useCurrencies first.
-// TODO: Deleting works, but the list does not refresh.
 const EnabledCurrencies = () => {
-	const { currencies } = useCurrencies();
+	const { isLoading } = useCurrencies();
+	const defaultCurrency = useDefaultCurrency();
 	const {
 		enabledCurrencies,
 		submitEnabledCurrenciesUpdate,
@@ -32,8 +30,7 @@ const EnabledCurrencies = () => {
 		submitEnabledCurrenciesUpdate( newCurrencies );
 	};
 
-	// TODO: currencies.enabled is used here to appease linters, see above about useCurrencies.
-	const enabledKeys = currencies.enabled
+	const enabledKeys = enabledCurrencies
 		? Object.keys( enabledCurrencies )
 		: [];
 
@@ -51,14 +48,13 @@ const EnabledCurrencies = () => {
 				<CardDivider />
 				<CardBody size={ null }>
 					<EnabledCurrenciesList className="enabled-currencies-list">
-						{ enabledCurrencies &&
+						{ ! isLoading &&
+							enabledCurrencies &&
 							enabledKeys.map( ( code ) => (
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
 									currency={ enabledCurrencies[ code ] }
-									defaultCurrencyCode={
-										currencies.default.code
-									}
+									defaultCurrencyCode={ defaultCurrency.code }
 									onDeleteClick={
 										enabledCurrencies[ code ].is_default
 											? undefined
