@@ -12,7 +12,11 @@
 		margin: 0;
 	}
 
-	.components-radio-control__option:not( :last-child ) {
+	.components-radio-control__option {
 		margin-bottom: 8px;
+	}
+
+	.components-base-control__help {
+		margin-top: unset;
 	}
 }

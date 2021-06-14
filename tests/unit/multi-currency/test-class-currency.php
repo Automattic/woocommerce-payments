@@ -33,4 +33,13 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 			$json
 		);
 	}
+
+	public function test_should_decode_entities_when_serialized() {
+		$json = wp_json_encode( new WCPay\Multi_Currency\Currency( 'WST' ) );
+
+		$this->assertSame(
+			'{"code":"WST","rate":1,"name":"Samoan t\u0101l\u0101","id":"wst","is_default":false,"flag":"\ud83c\uddfc\ud83c\uddf8","symbol":"T"}',
+			$json
+		);
+	}
 }
