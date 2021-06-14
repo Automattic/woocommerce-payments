@@ -8,6 +8,7 @@ module.exports = {
 		'^react-dom$': '<rootDir>/node_modules/react-dom',
 		'^moment$': '<rootDir>/node_modules/moment',
 		'^moment-timezone$': '<rootDir>/node_modules/moment-timezone',
+		'^wcpay(.*)$': '<rootDir>/client$1',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [

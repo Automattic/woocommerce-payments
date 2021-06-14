@@ -20,7 +20,7 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	useDigitalWalletsEnabledSettings,
 	useDigitalWalletsLocations,
-} from 'data';
+} from 'wcpay/data';
 import CardBody from '../card-body';
 import './style.scss';
 

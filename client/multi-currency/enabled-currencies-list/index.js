@@ -10,7 +10,7 @@ import { Card, CardBody, CardDivider } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import { useCurrencies, useEnabledCurrencies } from 'data';
+import { useCurrencies, useEnabledCurrencies } from 'wcpay/data';
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesModal from './modal';

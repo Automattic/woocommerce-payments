@@ -9,6 +9,11 @@
     "allowJs": true,            // allow a partial TypeScript and JavaScript codebase
     "moduleResolution": "node",
     "baseUrl": "./client",
+    "paths": {
+      "wcpay/*": [
+        "./*"
+      ]
+    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noImplicitAny": true,

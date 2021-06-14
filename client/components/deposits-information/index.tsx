@@ -10,17 +10,17 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import DepositsInformationLoading from './loading';
-import { getDetailsURL } from 'components/details-link';
+import { getDetailsURL } from 'wcpay/components/details-link';
 import {
 	getBalanceDepositCount,
 	getDepositScheduleDescriptor,
 	getDepositDate,
 	getNextDepositLabelFormatted,
-} from 'deposits/utils';
-import InstantDepositButton from 'deposits/instant-deposits';
+} from 'wcpay/deposits/utils';
+import InstantDepositButton from 'wcpay/deposits/instant-deposits';
 import DepositsInformationBlock from './block';
-import { formatCurrency, formatCurrencyName } from 'utils/currency';
-import { useAllDeposistsOverviews } from 'data';
+import { formatCurrency, formatCurrencyName } from 'wcpay/utils/currency';
+import { useAllDeposistsOverviews } from 'wcpay/data';
 
 import './style.scss';
 

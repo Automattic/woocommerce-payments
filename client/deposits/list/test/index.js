@@ -10,9 +10,9 @@ import { updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits, useDepositsSummary } from 'data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
 } ) );

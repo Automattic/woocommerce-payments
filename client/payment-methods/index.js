@@ -14,7 +14,7 @@ import './style.scss';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
-} from 'data';
+} from 'wcpay/data';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import PaymentMethodsSelector from 'settings/payment-methods-selector';

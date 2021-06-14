@@ -10,7 +10,7 @@ initStore();
 
 export const WCPAY_STORE_NAME = STORE_NAME;
 
-// We only ask for hooks when importing directly from 'data'.
+// We only ask for hooks when importing directly from 'wcpay/data'.
 export * from './deposits/hooks';
 export * from './transactions/hooks';
 export * from './charges/hooks';

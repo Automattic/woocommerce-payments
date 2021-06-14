@@ -7,9 +7,9 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import GeneralSettings from '..';
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),

@@ -10,7 +10,7 @@ import interpolateComponents from 'interpolate-components';
  * Internal dependencies
  */
 import './style.scss';
-import { useDevMode, useIsWCPayEnabled, useTestMode } from 'data';
+import { useDevMode, useIsWCPayEnabled, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 
 const GeneralSettings = () => {

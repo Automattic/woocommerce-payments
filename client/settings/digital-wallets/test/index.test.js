@@ -13,9 +13,9 @@ import DigitalWallets from '..';
 import {
 	useDigitalWalletsEnabledSettings,
 	useDigitalWalletsLocations,
-} from 'data';
+} from 'wcpay/data';
 
-jest.mock( 'data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDigitalWalletsEnabledSettings: jest.fn(),
 	useDigitalWalletsLocations: jest.fn(),
 } ) );
