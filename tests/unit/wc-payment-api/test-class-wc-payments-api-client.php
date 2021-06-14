@@ -176,7 +176,63 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 
+	/**
+	 * Test a successful call to create_setup_intent.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_setup_intent() {
+		$customer_id          = 'cus_test12345';
+		$payment_method_types = [ 'card' ];
+		$setup_intent_id      = 'seti_mock';
 
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+		->expects( $this->once() )
+		->method( 'remote_request' )
+		->with(
+			[
+				'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/setup_intents',
+				'method'          => 'POST',
+				'headers'         => [
+					'Content-Type' => 'application/json; charset=utf-8',
+					'User-Agent'   => 'Unit Test Agent/0.1.0',
+				],
+				'timeout'         => 70,
+				'connect_timeout' => 70,
+			],
+			wp_json_encode(
+				[
+					'test_mode'            => false,
+					'customer'             => $customer_id,
+					'confirm'              => 'false',
+					'payment_method_types' => $payment_method_types,
+				]
+			),
+			true,
+			false
+		)
+		->will(
+			$this->returnValue(
+				[
+					'body'     => wp_json_encode(
+						[
+							'id'     => 'seti_mock',
+							'object' => 'setup_intent',
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			)
+		);
+
+		$result = $this->payments_api_client->create_setup_intention( $customer_id, $payment_method_types );
+
+		$this->assertEquals( $setup_intent_id, $result['id'] );
+	}
 	/**
 	 * Test a successful call to create_and_confirm_setup_intent when SEPA is enabled.
 	 *
