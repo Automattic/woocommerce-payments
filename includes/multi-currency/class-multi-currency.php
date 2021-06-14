@@ -113,8 +113,6 @@ class Multi_Currency {
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
-		add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'disable_multi_cart_for_renewal' ] );
-
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
@@ -519,15 +517,6 @@ class Multi_Currency {
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
 			Note_Multi_Currency_Available::possibly_delete_note();
-		}
-	}
-
-	/**
-	 * Disables multiple items in the cart if the cart contains a subscription renewal.
-	 */
-	public function disable_multi_cart_for_renewal() {
-		if ( $this->cart_contains_renewal() ) {
-			return 'no';
 		}
 	}
 
