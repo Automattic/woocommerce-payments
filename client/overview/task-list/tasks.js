@@ -29,7 +29,13 @@ export const getTasks = ( {
 			return [];
 		}
 		return disputes.map(
-			( { amount, currency, evidence_details: evidenceDetails, id } ) => {
+			( {
+				amount,
+				currency,
+				evidence_details: evidenceDetails,
+				id,
+				status: disputeStatus,
+			} ) => {
 				return {
 					key: `dispute-resolution-${ id }`,
 					level: 3,
@@ -51,7 +57,10 @@ export const getTasks = ( {
 							).toISOString()
 						)
 					),
-					completed: false,
+					completed: ! [
+						'warning_needs_response',
+						'needs_response',
+					].includes( disputeStatus ),
 					onClick: () => {
 						window.location.href = getDetailsURL( id, 'disputes' );
 					},

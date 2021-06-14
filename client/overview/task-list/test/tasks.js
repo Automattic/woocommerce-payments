@@ -7,11 +7,7 @@ import { getTasks } from '../tasks';
 
 jest.mock( 'utils/currency', () => {
 	return {
-		formatCurrency: jest
-			.fn()
-			.mockReturnValue(
-				( amount, currency ) => `${ amount } ${ currency }`
-			),
+		formatCurrency: jest.fn().mockReturnValue( () => '10 USD' ),
 	};
 } );
 
@@ -120,6 +116,7 @@ describe( 'getTasks()', () => {
 				amount: 10,
 				currency: 'USD',
 				evidence_details: { due_by: 1624147199 },
+				status: 'needs_response',
 			},
 		];
 		/*eslint-enable camelcase*/
@@ -147,16 +144,18 @@ describe( 'getTasks()', () => {
 		/*eslint-disable camelcase*/
 		const disputes = [
 			{
-				id: 123,
+				id: 456,
 				amount: 10,
 				currency: 'USD',
 				evidence_details: { due_by: 1624147199 },
+				status: 'needs_response',
 			},
 			{
-				id: 456,
-				amount: 20,
+				id: 789,
+				amount: 10,
 				currency: 'USD',
 				evidence_details: { due_by: 1624147199 },
+				status: 'won',
 			},
 		];
 		/*eslint-enable camelcase*/
@@ -173,13 +172,13 @@ describe( 'getTasks()', () => {
 		expect( actual ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( {
-					key: 'dispute-resolution-123',
+					key: 'dispute-resolution-456',
 					completed: false,
 					level: 3,
 				} ),
 				expect.objectContaining( {
-					key: 'dispute-resolution-456',
-					completed: false,
+					key: 'dispute-resolution-789',
+					completed: true,
 					level: 3,
 				} ),
 			] )
