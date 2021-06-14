@@ -113,6 +113,8 @@ class Multi_Currency {
 
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 
+		add_filter( 'option_woocommerce_subscriptions_multiple_purchase', [ $this, 'disable_multi_cart_for_renewal' ] );
+
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
@@ -342,7 +344,10 @@ class Multi_Currency {
 		$user_id = get_current_user_id();
 		$code    = null;
 
-		if ( 0 === $user_id && WC()->session ) {
+		$subscription_renewal = $this->cart_contains_renewal();
+		if ( $subscription_renewal ) {
+			$code = get_post_meta( $subscription_renewal['subscription_renewal']['renewal_order_id'], '_order_currency', true );
+		} elseif ( 0 === $user_id && WC()->session ) {
 			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
@@ -515,5 +520,34 @@ class Multi_Currency {
 			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
 			Note_Multi_Currency_Available::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Disables multiple items in the cart if the cart contains a subscription renewal.
+	 */
+	public function disable_multi_cart_for_renewal() {
+		if ( $this->cart_contains_renewal() ) {
+			return 'no';
+		}
+	}
+
+	/**
+	 * Checks the cart to see if it contains a subscription product renewal.
+	 *
+	 * @return mixed The cart item containing the renewal as an array, else false.
+	 */
+	public function cart_contains_renewal() {
+		$contains_renewal = false;
+
+		if ( ! empty( WC()->cart->cart_contents ) ) {
+			foreach ( WC()->cart->cart_contents as $cart_item ) {
+				if ( isset( $cart_item['subscription_renewal'] ) ) {
+					$contains_renewal = $cart_item;
+					break;
+				}
+			}
+		}
+
+		return apply_filters( 'wcs_cart_contains_renewal', $contains_renewal );
 	}
 }

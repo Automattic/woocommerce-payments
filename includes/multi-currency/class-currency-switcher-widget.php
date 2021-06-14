@@ -51,6 +51,9 @@ class Currency_Switcher_Widget extends WP_Widget {
 	 * @param array $instance Saved values from database.
 	 */
 	public function widget( $args, $instance ) {
+		if ( $this->multi_currency->cart_contains_renewal() ) {
+			return;
+		}
 		$instance = wp_parse_args(
 			$instance,
 			self::DEFAULT_SETTINGS

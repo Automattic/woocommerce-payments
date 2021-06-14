@@ -30,14 +30,14 @@ class Frontend_Prices {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
 
 			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50 );
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price' ], 50, 2 );
 
 			// Variation price range hooks.
 			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
@@ -58,12 +58,21 @@ class Frontend_Prices {
 	 * Returns the price for a product.
 	 *
 	 * @param mixed $price The product's price.
+	 * @param mixed $product WC_Product or null.
 	 *
 	 * @return mixed The converted product's price.
 	 */
-	public function get_product_price( $price ) {
+	public function get_product_price( $price, $product = null ) {
 		if ( ! $price ) {
 			return $price;
+		}
+
+		$subscription_renewal = $this->multi_currency->cart_contains_renewal();
+		if ( $subscription_renewal && $product ) {
+			if ( ( isset( $subscription_renewal['variation_id'] ) && $subscription_renewal['variation_id'] === $product->get_id() )
+				|| $subscription_renewal['product_id'] === $product->get_id() ) {
+				return $price;
+			}
 		}
 
 		return $this->multi_currency->get_price( $price, 'product' );
