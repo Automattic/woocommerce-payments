@@ -21,6 +21,7 @@ use WC_Payments_API_Intention;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WC_Customer;
 use WC_Helper_Order;
 use WC_Helper_Token;
 use WC_Payments_Utils;
@@ -114,7 +115,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_intention', 'get_intent', 'get_payment_method', 'is_server_connected' ] )
+			->setMethods( [ 'create_intention', 'create_setup_intention', 'get_intent', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Create new WC_Payments_Account instance to use later.
@@ -189,6 +190,65 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->mock_upe_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );
+	}
+
+	public function test_create_setup_intent_existing_customer() {
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'create_customer_for_user' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_setup_intention' )
+			->with( 'cus_12345', [ 'card' ] )
+			->willReturn(
+				[
+					'id'            => 'seti_mock',
+					'client_secret' => 'client_secret_mock',
+				]
+			);
+
+		$result = $this->mock_upe_gateway->create_setup_intent();
+
+		$this->assertEquals( 'seti_mock', $result['id'] );
+		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
+	}
+
+	public function test_create_setup_intent_no_customer() {
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( null ) );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->will( $this->returnValue( 'cus_12346' ) );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_setup_intention' )
+			->with( 'cus_12346', [ 'card' ] )
+			->willReturn(
+				[
+					'id'            => 'seti_mock',
+					'client_secret' => 'client_secret_mock',
+				]
+			);
+
+		$result = $this->mock_upe_gateway->create_setup_intent();
+
+		$this->assertEquals( 'seti_mock', $result['id'] );
+		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
 	}
 
 	public function test_process_payment_returns_correct_redirect_url() {
