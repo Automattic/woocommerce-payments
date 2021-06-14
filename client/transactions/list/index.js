@@ -195,7 +195,7 @@ export const TransactionsList = ( props ) => {
 		const deposit = (
 			<Deposit
 				depositId={ txn.deposit_id }
-				dateAvailable={ txn.date_available }
+				dateAvailable={ txn.available_on }
 			/>
 		);
 		const currency = txn.currency.toUpperCase();
@@ -203,7 +203,10 @@ export const TransactionsList = ( props ) => {
 		// Map transaction into table row.
 		const data = {
 			// eslint-disable-next-line camelcase
-			transaction_id: { value: txn.transaction_id },
+			transaction_id: {
+				value: txn.transaction_id,
+				display: clickable( txn.transaction_id ),
+			},
 			date: {
 				value: txn.date,
 				display: clickable(

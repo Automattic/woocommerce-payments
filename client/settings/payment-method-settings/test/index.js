@@ -10,30 +10,33 @@ import { render, screen, within } from '@testing-library/react';
  */
 import PaymentMethodSettings from '..';
 
+jest.mock( '../../../data', () => ( {
+	useSettings: jest.fn().mockReturnValue( {} ),
+	useDigitalWalletsButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	useDigitalWalletsButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	useDigitalWalletsButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
 describe( 'PaymentMethodSettings', () => {
 	test( 'renders title and description', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const heading = screen.queryByRole( 'heading', {
-			name: '1-click checkouts',
+			name: 'Express checkouts',
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
 
 	test( 'renders settings', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
-		expect( screen.queryByText( 'Call to action' ) ).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'heading', { name: 'Call to action' } )
+		).toBeInTheDocument();
 	} );
 
 	test( 'renders breadcrumbs', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooCommerce Payments',
@@ -41,7 +44,7 @@ describe( 'PaymentMethodSettings', () => {
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
 		const methodName = within( breadcrumbs ).getByText(
-			'1-click checkouts'
+			'Express checkouts'
 		);
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
@@ -56,20 +59,16 @@ describe( 'PaymentMethodSettings', () => {
 	} );
 
 	test( 'renders digital wallets settings and confirm its h2 copy', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const heading = screen.queryByRole( 'heading', {
-			name: '1-click checkouts',
+			name: 'Express checkouts',
 		} );
 		expect( heading ).toBeInTheDocument();
 	} );
 
 	test( 'renders banner at the top', () => {
-		render(
-			<PaymentMethodSettings methodId="woocommerce_payments_digital_wallets" />
-		);
+		render( <PaymentMethodSettings methodId="digital_wallets" /> );
 
 		const banner = screen.queryByTitle( 'WooCommerce Payments' );
 		expect( banner ).toBeInTheDocument();

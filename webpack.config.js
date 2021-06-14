@@ -18,6 +18,7 @@ const webpackConfig = {
 		'additional-methods-setup':
 			'./client/additional-methods-setup/index.js',
 		'payment-gateways': './client/payment-gateways/index.js',
+		'multi-currency': './client/multi-currency/index.js',
 	},
 	output: {
 		filename: '[name].js',
@@ -26,8 +27,13 @@ const webpackConfig = {
 	module: {
 		rules: [
 			{
-				test: /\.(t|j)sx?$/,
-				use: [ 'ts-loader', 'babel-loader' ],
+				test: /\.tsx?$/,
+				use: [ 'babel-loader', 'ts-loader' ],
+				exclude: /node_modules/,
+			},
+			{
+				test: /\.jsx?$/,
+				loader: 'babel-loader',
 				exclude: /node_modules/,
 			},
 			{

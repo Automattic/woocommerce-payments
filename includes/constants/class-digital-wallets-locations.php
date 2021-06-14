@@ -19,5 +19,5 @@ use MyCLabs\Enum\Enum;
 class Digital_Wallets_Locations extends Enum {
 	const CART         = 'cart';
 	const CHECKOUT     = 'checkout';
-	const PRODUCT_PAGE = 'product_page';
+	const PRODUCT_PAGE = 'product';
 }

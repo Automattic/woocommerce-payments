@@ -1,7 +1,7 @@
 <?php
 /**
  * Class WC_Payments_Payment_Request_Button_Handler
- * Adds support for Apple Pay and Chrome Payment Request API buttons.
+ * Adds support for Apple Pay, Google Pay and Payment Request API buttons.
  * Utilizes the Stripe Payment Request Button to support checkout from the product detail and cart pages.
  *
  * Adapted from WooCommerce Stripe Gateway extension.
@@ -37,10 +37,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account $account Account information.
+	 * @param WC_Payments_Account      $account Account information.
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account ) {
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->account = $account;
+		$this->gateway = $gateway;
 
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -181,7 +183,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return string
 	 */
 	public function get_button_height() {
-		return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
+		if ( ! WC_Payments_Features::is_grouped_settings_enabled() ) {
+			return str_replace( 'px', '', $this->gateway->get_option( 'payment_request_button_height' ) );
+		}
+
+		$height = $this->gateway->get_option( 'payment_request_button_size' );
+		if ( 'medium' === $height ) {
+			return '48';
+		}
+
+		if ( 'large' === $height ) {
+			return '56';
+		}
+
+		// for the "default" and "catch-all" scenarios.
+		return '40';
 	}
 
 	/**
@@ -209,6 +225,22 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function custom_button_selector() {
 		return $this->is_custom_button() ? '#wcpay-custom-button' : '';
+	}
+
+	/**
+	 * Gets the product total price.
+	 *
+	 * @param object $product WC_Product_* object.
+	 * @return mixed Total price.
+	 */
+	public function get_product_price( $product ) {
+		$product_price = $product->get_price();
+		// Add subscription sign-up fees to product price.
+		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
+			$product_price = $product->get_price() + WC_Subscriptions_Product::get_sign_up_fee( $product );
+		}
+
+		return $product_price;
 	}
 
 	/**
@@ -249,7 +281,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $product->get_price() ),
+			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
 		];
 
 		if ( wc_tax_enabled() ) {
@@ -278,7 +310,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $product->get_price() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ) ),
 			'pending' => true,
 		];
 
@@ -318,12 +350,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$order        = wc_get_order( $post->ID );
 		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
 
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Apple Pay (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
-		}
-
-		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) && 'Payment Request (WooCommerce Payments)' === $method_title ) {
-			return $method_title;
+		if ( 'woocommerce_payments' === $id && ! empty( $method_title ) ) {
+			if (
+				'Apple Pay (WooCommerce Payments)' === $method_title
+				|| 'Google Pay (WooCommerce Payments)' === $method_title
+				|| 'Payment Request (WooCommerce Payments)' === $method_title
+			) {
+				return $method_title;
+			}
 		}
 
 		return $title;
@@ -592,17 +626,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
-			'button'          => [
-				'type'         => $this->gateway->get_option( 'payment_request_button_type' ),
-				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
-				'height'       => $this->get_button_height(),
-				'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
-				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ), // Default format is en_US.
-				'is_custom'    => $this->is_custom_button(),
-				'is_branded'   => $this->is_branded_button(),
-				'css_selector' => $this->custom_button_selector(),
-				'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
-			],
+			'button'          => $this->get_button_settings(),
 			'is_product_page' => $this->is_product(),
 			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'         => $this->get_product_data(),
@@ -907,7 +931,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$total = $qty * $product->get_price() + $addon_value;
+			$total = $qty * $this->get_product_price( $product ) + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
 
@@ -1388,5 +1412,44 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
+	 *
+	 * @return array
+	 */
+	public function get_button_settings() {
+		// it would be DRYer to use `array_merge`,
+		// but I thought that this approach might be more straightforward to clean up when we remove the feature flag code.
+		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
+		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
+			return [
+				'type'         => $button_type,
+				'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
+				'height'       => $this->get_button_height(),
+				// Default format is en_US.
+				'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
+				'branded_type' => 'default' === $button_type ? 'short' : 'long',
+				// these values are no longer applicable.
+				'css_selector' => '',
+				'label'        => '',
+				'is_custom'    => false,
+				'is_branded'   => false,
+			];
+		}
+
+		return [
+			'type'         => $button_type,
+			'theme'        => $this->gateway->get_option( 'payment_request_button_theme' ),
+			'height'       => $this->get_button_height(),
+			'label'        => $this->gateway->get_option( 'payment_request_button_label' ),
+			// Default format is en_US.
+			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
+			'is_custom'    => $this->is_custom_button(),
+			'is_branded'   => $this->is_branded_button(),
+			'css_selector' => $this->custom_button_selector(),
+			'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
+		];
 	}
 }

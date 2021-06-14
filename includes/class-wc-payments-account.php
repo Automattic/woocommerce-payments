@@ -168,6 +168,7 @@ class WC_Payments_Account {
 		}
 
 		return [
+			'email'           => $account['email'] ?? '',
 			'status'          => $account['status'],
 			'paymentsEnabled' => $account['payments_enabled'],
 			'depositsStatus'  => $account['deposits_status'],
@@ -251,18 +252,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Immediately redirect to the WooCommerce Admin home page.
-	 */
-	private function redirect_to_wc_admin_home() {
-		$params = [
-			'page' => 'wc-admin',
-		];
-
-		wp_safe_redirect( admin_url( add_query_arg( $params, 'admin.php' ) ) );
-		exit();
-	}
-
-	/**
 	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
 	 *
 	 * @return bool True if the redirection happened.
@@ -339,15 +328,8 @@ class WC_Payments_Account {
 			return;
 		}
 
-		if ( isset( $_GET['wcpay-connection-success'] ) ) {
-			$account_status = $this->get_account_status_data();
-
-			if ( empty( $account_status['error'] ) && $account_status['paymentsEnabled'] ) {
-				$this->redirect_to_wc_admin_home();
-			} else {
-				$message = __( 'Thanks for verifying your business details!', 'woocommerce-payments' );
-				$this->add_notice_to_settings_page( $message, 'notice-success' );
-			}
+		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
+			$this->payments_api_client->start_server_connection( WC_Payment_Gateway_WCPay::get_settings_url() );
 			return;
 		}
 
@@ -421,6 +403,64 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Payments task page url
+	 *
+	 * @return string payments task page url
+	 */
+	public static function get_payments_task_page_url() {
+		return add_query_arg(
+			[
+				'page'   => 'wc-admin',
+				'task'   => 'payments',
+				'method' => 'wcpay',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Get overview page url
+	 *
+	 * @return string overview page url
+	 */
+	public static function get_overview_page_url() {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/overview',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Checks if the current page is overview page
+	 *
+	 * @return boolean
+	 */
+	public static function is_overview_page() {
+		return isset( $_GET['path'] ) && '/payments/overview' === $_GET['path'];
+	}
+
+	/**
+	 * Get WPCOM/Jetpack reconnect url, for use in case of missing connection owner.
+	 *
+	 * @return string WPCOM/Jetpack reconnect url.
+	 */
+	public static function get_wpcom_reconnect_url() {
+		return admin_url(
+			add_query_arg(
+				[
+					'wcpay-reconnect-wpcom' => '1',
+					'_wpnonce'              => wp_create_nonce( 'wcpay-reconnect-wpcom' ),
+				],
+				'admin.php'
+			)
+		);
+	}
+
+
+	/**
 	 * Has on-boarding been disabled?
 	 *
 	 * @return boolean
@@ -439,7 +479,7 @@ class WC_Payments_Account {
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
 	private function maybe_init_jetpack_connection( $wcpay_connect_from ) {
-		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected();
+		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
 		if ( $is_jetpack_fully_connected ) {
 			return;
 		}
@@ -461,8 +501,9 @@ class WC_Payments_Account {
 	private function redirect_to_login() {
 		// Clear account transient when generating Stripe dashboard's login link.
 		$this->clear_cache();
+		$redirect_url = $this->is_overview_page() ? $this->get_overview_page_url() : WC_Payment_Gateway_WCPay::get_settings_url();
 
-		$login_data = $this->payments_api_client->get_login_data( WC_Payment_Gateway_WCPay::get_settings_url() );
+		$login_data = $this->payments_api_client->get_login_data( $redirect_url );
 		wp_safe_redirect( $login_data['url'] );
 		exit;
 	}
@@ -474,18 +515,11 @@ class WC_Payments_Account {
 	 * @return string
 	 */
 	private function get_oauth_return_url( $wcpay_connect_from ) {
-		// Usually the return URL is the WCPay plugin settings page.
-		// But if connection originated on the WCADMIN payment task page, return there.
+		// If connection originated on the WCADMIN payment task page, return there.
+		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		return 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_from
-			? add_query_arg(
-				[
-					'page'   => 'wc-admin',
-					'task'   => 'payments',
-					'method' => 'wcpay',
-				],
-				admin_url( 'admin.php' )
-			)
-			: WC_Payment_Gateway_WCPay::get_settings_url();
+			? $this->get_payments_task_page_url()
+			: $this->get_overview_page_url();
 	}
 
 	/**

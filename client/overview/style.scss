@@ -1,7 +1,7 @@
 @import 'node_modules/@woocommerce/experimental/src/style.scss';
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
-.woocommerce-payments-page.overview {
+.components-card.woocommerce-task-card {
 	.components-card__header.is-size-large,
 	.components-card__header.is-size-medium {
 		min-height: 63px;
@@ -30,5 +30,11 @@
 		.woocommerce-badge {
 			margin-left: 16px;
 		}
+	}
+}
+
+.wcpay-overview {
+	.components-notice {
+		margin: 24px 0;
 	}
 }

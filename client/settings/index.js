@@ -8,27 +8,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './style.scss';
-import AccountStatus from 'account-status';
-import AccountFees from 'account-fees';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import PaymentMethodSettings from './payment-method-settings';
-
-const statusContainer = document.getElementById(
-	'wcpay-account-status-container'
-);
-if ( statusContainer ) {
-	ReactDOM.render(
-		<AccountStatus { ...wcpayAdminSettings } />,
-		statusContainer
-	);
-}
-
-const feesContainer = document.getElementById( 'wcpay-account-fees-container' );
-if ( feesContainer ) {
-	ReactDOM.render( <AccountFees { ...wcpayAdminSettings } />, feesContainer );
-}
+import WCPaySettingsContext from './wcpay-settings-context';
 
 const settingsForm = document.querySelector( 'form#mainform' );
 const manualCaptureCheckbox = document.getElementById(
@@ -57,7 +40,7 @@ authorization and order will be canceled. Are you sure you want to enable it?',
 }
 
 window.addEventListener( 'load', () => {
-	enqueueFraudScripts( wcpayAdminSettings.fraudServices );
+	enqueueFraudScripts( wcpaySettings.fraudServices );
 } );
 
 const settingsContainer = document.getElementById(
@@ -65,7 +48,9 @@ const settingsContainer = document.getElementById(
 );
 if ( settingsContainer ) {
 	ReactDOM.render(
-		<SettingsManager { ...wcpayAdminSettings } />,
+		<WCPaySettingsContext.Provider value={ wcpaySettings }>
+			<SettingsManager />
+		</WCPaySettingsContext.Provider>,
 		settingsContainer
 	);
 }
