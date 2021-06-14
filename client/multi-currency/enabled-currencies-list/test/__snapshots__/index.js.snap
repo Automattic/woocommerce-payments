@@ -130,8 +130,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 $
-                 
-                CAD
+                 CAD
                 )
               </span>
             </label>
@@ -192,8 +191,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 £
-                 
-                GBP
+                 GBP
                 )
               </span>
             </label>
@@ -254,8 +252,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 €
-                 
-                EUR
+                 EUR
                 )
               </span>
             </label>
@@ -301,8 +298,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 د.إ
-                 
-                AED
+                 AED
                 )
               </span>
             </label>
@@ -348,8 +344,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 Fr
-                 
-                CDF
+                 CDF
                 )
               </span>
             </label>
@@ -395,8 +390,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 $
-                 
-                NZD
+                 NZD
                 )
               </span>
             </label>
@@ -441,8 +435,6 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
                 class="enabled-currency-checkbox__code"
               >
                 (
-                DKK
-                 
                 DKK
                 )
               </span>
@@ -489,8 +481,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 Fr
-                 
-                BIF
+                 BIF
                 )
               </span>
             </label>
@@ -536,8 +527,7 @@ exports[`Multi Currency enabled currencies list Available currencies modal rende
               >
                 (
                 $
-                 
-                CLP
+                 CLP
                 )
               </span>
             </label>
