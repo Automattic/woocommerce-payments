@@ -106,7 +106,7 @@ const ConnectPageOnboarding = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const whenConfirmed = () => {
-			window.location = wcpaySettings.connectUrl;
+			window.location = wcpaySettings.connect.url;
 		};
 
 		const container = document.createElement( 'div' );
@@ -122,7 +122,7 @@ const ConnectPageOnboarding = () => {
 	};
 
 	const handleSetup = ( event ) => {
-		const isCountryAvailable = 'US' !== wcpaySettings.connectCountry;
+		const isCountryAvailable = 'US' === wcpaySettings.connect.country;
 		if ( ! isCountryAvailable ) {
 			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
 			event.preventDefault();
@@ -158,7 +158,7 @@ const ConnectPageOnboarding = () => {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
-					href={ wcpaySettings.connectUrl }
+					href={ wcpaySettings.connect.url }
 				>
 					{ strings.button }
 				</Button>
