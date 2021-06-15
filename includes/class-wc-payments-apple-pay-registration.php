@@ -72,6 +72,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
 
+		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_if_configured' ] );
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -82,8 +83,6 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return  void
 	 */
 	public function init() {
-		$this->add_domain_association_rewrite_rule();
-
 		add_action( 'admin_init', [ $this, 'verify_domain_on_domain_name_change' ] );
 		add_filter( 'query_vars', [ $this, 'whitelist_domain_association_query_param' ], 10, 1 );
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
