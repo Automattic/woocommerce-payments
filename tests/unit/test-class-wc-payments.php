@@ -10,13 +10,13 @@
  */
 class WC_Payments_Test extends WP_UnitTestCase {
 
-	public function test_it_runs_upgrade_routines_during_init() {
+	public function test_it_runs_upgrade_routines_during_init_at_priority_10() {
 		$install_actions_priority = has_action(
 			'init',
 			[ WC_Payments::class, 'install_actions' ]
 		);
 
-		$this->assertIsInt( $install_actions_priority );
+		$this->assertEquals( 10, $install_actions_priority );
 	}
 
 	public function test_it_calls_upgrade_hook_during_upgrade() {
