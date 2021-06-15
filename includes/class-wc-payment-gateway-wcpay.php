@@ -260,10 +260,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			$this->form_fields['enabled_payment_method_ids'] = [
+			// previously called `enabled_payment_method_ids` - some developers might have the old setting still saved in their DB.
+			$this->form_fields['upe_enabled_payment_method_ids'] = [
 				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 				'type'    => 'multiselect',
-				'default' => [ 'woocommerce_payments' ],
+				'default' => [ 'card' ],
 				'options' => [],
 			];
 
@@ -2129,7 +2130,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids() {
-		return $this->get_option( 'enabled_payment_method_ids', [] );
+		return $this->get_option(
+			'upe_enabled_payment_method_ids',
+			[
+				'card',
+			]
+		);
 	}
 
 	/**
@@ -2142,8 +2148,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return apply_filters(
 			'wcpay_upe_available_payment_methods',
 			[
-				// TODO: at this point, with UPE, we could just get rid of the prefixes on the payment method names.
-				'woocommerce_payments',
+				'card',
 			]
 		);
 	}
