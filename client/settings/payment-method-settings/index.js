@@ -14,8 +14,7 @@ import SettingsSection from '../settings-section';
 import { getPaymentSettingsUrl } from '../../utils';
 import DigitalWalletsSettings from './digital-wallets-settings';
 import SettingsLayout from '../settings-layout';
-import { useSettings } from '../../data';
-import { LoadableBlock } from '../../components/loadable';
+import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 
 /* eslint-disable camelcase */
@@ -56,7 +55,6 @@ const methods = {
 
 const PaymentMethodSettings = ( { methodId } ) => {
 	const method = methods[ methodId ];
-	const { isLoading } = useSettings();
 
 	if ( ! method ) {
 		return (
@@ -81,9 +79,9 @@ const PaymentMethodSettings = ( { methodId } ) => {
 			</h2>
 
 			<SettingsSection Description={ Description }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 30 }>
+				<LoadableSettingsSection numLines={ 30 }>
 					<Controls />
-				</LoadableBlock>
+				</LoadableSettingsSection>
 			</SettingsSection>
 
 			<SaveSettingsSection />
