@@ -111,7 +111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Popular payment methods', 'woocommerce-payments' );
+		$this->title              = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = [
 			'products',
