@@ -5,11 +5,14 @@
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
+import ReactDOM from 'react-dom';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
+import OnboardingLocationCheckModal from './modal';
 import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
@@ -96,7 +99,17 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
-	const handleSetup = () => {
+	const handleSetup = ( event ) => {
+		const isCountryAvailable = false;
+		if ( ! isCountryAvailable ) {
+			event.preventDefault();
+			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
+			const container = document.createElement( 'div' );
+			container.id = 'wcpay-onboarding-country-check-container';
+			document.body.appendChild( container );
+			ReactDOM.render( <OnboardingLocationCheckModal />, container );
+		}
+
 		setSubmitted( true );
 		wcpayTracks.recordEvent( wcpayTracks.events.CONNECT_ACCOUNT_CLICKED, {
 			// eslint-disable-next-line camelcase
