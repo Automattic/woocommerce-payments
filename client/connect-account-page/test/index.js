@@ -9,7 +9,7 @@ import { render } from '@testing-library/react';
  */
 import ConnectAccountPage from '..';
 
-describe( 'ConnectAccountPage', () => {
+describe( 'ConnectAccountPageVariant', () => {
 	beforeEach( () => {
 		window.location.assign = jest.fn();
 		global.wcpaySettings = {
