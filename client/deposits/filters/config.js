@@ -1,7 +1,16 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _x } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import { displayStatus } from 'deposits/strings';
+
+const depositTypesOptions = Object.entries(
+	displayStatus
+).map( ( [ type, label ] ) => ( { label, value: type } ) );
 
 export const filters = [
 	{
@@ -16,6 +25,8 @@ export const filters = [
 			'date_before',
 			'date_after',
 			'date_between',
+			'status_is',
+			'status_is_not',
 		],
 		showFilters: () => false,
 		filters: [
@@ -52,6 +63,7 @@ export const filters = [
 	// Declare advanced filters here.
 ];
 
+/*eslint-disable max-len*/
 export const advancedFilters = {
 	/** translators: A sentence describing filters for deposits. See screen shot for context: https://d.pr/i/NcGpwL */
 	title: __( 'Deposits match {{select /}} filters', 'woocommerce-payments' ),
@@ -90,6 +102,45 @@ export const advancedFilters = {
 			],
 			input: {
 				component: 'Date',
+			},
+		},
+		status: {
+			labels: {
+				add: __( 'Status', 'woocommerce-payments' ),
+				remove: __(
+					'Remove deposit status filter',
+					'woocommerce-payments'
+				),
+				rule: __(
+					'Select a deposit status filter match',
+					'woocommerce-payments'
+				),
+				/* translators: A sentence describing a deposit status filter. See screen shot for context: https://d.pr/i/NcGpwL */
+				title: __(
+					'{{title}}Status{{/title}} {{rule /}} {{filter /}}',
+					'woocommerce-payments'
+				),
+				filter: __( 'Select a deposit status', 'woocommerce-payments' ),
+			},
+			rules: [
+				{
+					value: 'is',
+					/* translators: Sentence fragment, logical, "Is" refers to searching for deposits matching a chosen deposit status. Screenshot for context: https://d.pr/i/NcGpwL */
+					label: _x( 'Is', 'deposit status', 'woocommerce-payments' ),
+				},
+				{
+					value: 'is_not',
+					/* translators: Sentence fragment, logical, "Is not" refers to searching for deposits that don\'t match a chosen deposit status. Screenshot for context: https://d.pr/i/NcGpwL */
+					label: _x(
+						'Is not',
+						'deposit status',
+						'woocommerce-payments'
+					),
+				},
+			],
+			input: {
+				component: 'SelectControl',
+				options: depositTypesOptions,
 			},
 		},
 	},

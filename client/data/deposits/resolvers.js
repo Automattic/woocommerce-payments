@@ -96,6 +96,8 @@ const formatQueryFilters = ( query ) => ( {
 		formatDateValue( query.dateBetween[ 0 ] ),
 		formatDateValue( query.dateBetween[ 1 ], true ),
 	],
+	status_is: query.statusIs,
+	status_is_not: query.statusIsNot,
 } );
 /*eslint-enable camelcase*/
 

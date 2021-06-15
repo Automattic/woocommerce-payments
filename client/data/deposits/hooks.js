@@ -60,6 +60,8 @@ export const useDeposits = ( {
 	date_before: dateBefore,
 	date_after: dateAfter,
 	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -82,6 +84,8 @@ export const useDeposits = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
+				statusIs,
+				statusIsNot,
 			};
 			return {
 				deposits: getDeposits( query ),
@@ -100,6 +104,8 @@ export const useDeposits = ( {
 			dateBefore,
 			dateAfter,
 			dateBetween,
+			statusIs,
+			statusIsNot,
 		]
 	);
 
@@ -109,6 +115,8 @@ export const useDepositsSummary = ( {
 	date_before: dateBefore,
 	date_after: dateAfter,
 	date_between: dateBetween,
+	status_is: statusIs,
+	status_is_not: statusIsNot,
 } ) =>
 	useSelect(
 		( select ) => {
@@ -120,6 +128,8 @@ export const useDepositsSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
+				statusIs,
+				statusIsNot,
 			};
 
 			return {
@@ -127,7 +137,15 @@ export const useDepositsSummary = ( {
 				isLoading: isResolving( 'getDepositsSummary', [ query ] ),
 			};
 		},
-		[ storeCurrencyIs, match, dateBefore, dateAfter, dateBetween ]
+		[
+			storeCurrencyIs,
+			match,
+			dateBefore,
+			dateAfter,
+			dateBetween,
+			statusIs,
+			statusIsNot,
+		]
 	);
 
 export const useInstantDeposit = ( transactionIds ) => {
