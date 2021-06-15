@@ -22,6 +22,51 @@ use WCPay\Constants\Payment_Initiated_By;
 trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	abstract protected function get_payment_token( $order );
+
+	/**
+	 * Process the payment for a given order.
+	 *
+	 * @param WC_Cart                   $cart Cart.
+	 * @param WCPay\Payment_Information $payment_information Payment info.
+	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
+	 *
+	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                Error processing the payment.
+	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 */
+	abstract public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] );
+
+	/**
+	 * Saves the payment token to the order.
+	 *
+	 * @param WC_Order         $order The order.
+	 * @param WC_Payment_Token $token The token to save.
+	 */
+	abstract public function add_token_to_order( $order, $token );
+
+	/**
+	 * Returns a formatted token list for a user.
+	 *
+	 * @param int $user_id The user ID.
+	 */
+	abstract protected function get_user_formatted_tokens_array( $user_id );
+
+	/**
+	 * Prepares the payment information object.
+	 *
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
+	 */
+	abstract protected function prepare_payment_information( $order );
+
+	/**
 	 * Stores the payment method meta table name
 	 *
 	 * @var string
