@@ -99,31 +99,34 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
+	const handleLocationCheck = () => {
+		// Reset the 'Set up' button state if merchant decided to stop
+		const whenDeclined = () => {
+			setSubmitted( false );
+		};
+		// Redirect the merchant if merchant decided to continue
+		const whenConfirmed = () => {
+			window.location = wcpaySettings.connectUrl;
+		};
+
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-onboarding-location-check-container';
+		document.body.appendChild( container );
+		ReactDOM.render(
+			<OnboardingLocationCheckModal
+				whenDeclined={ whenDeclined }
+				whenConfirmed={ whenConfirmed }
+			/>,
+			container
+		);
+	};
+
 	const handleSetup = ( event ) => {
-		const isCountryAvailable = false;
+		const isCountryAvailable = 'US' !== wcpaySettings.connectCountry;
 		if ( ! isCountryAvailable ) {
-			event.preventDefault();
-
-			// Reset the 'Set up' button state if merchant decided to stop
-			const whenDeclined = () => {
-				setSubmitted( false );
-			};
-			// Redirect the merchant if merchant decided to continue
-			const whenConfirmed = () => {
-				window.location = wcpaySettings.connectUrl;
-			};
-
 			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
-			const container = document.createElement( 'div' );
-			container.id = 'wcpay-onboarding-country-check-container';
-			document.body.appendChild( container );
-			ReactDOM.render(
-				<OnboardingLocationCheckModal
-					whenDeclined={ whenDeclined }
-					whenConfirmed={ whenConfirmed }
-				/>,
-				container
-			);
+			event.preventDefault();
+			handleLocationCheck();
 		}
 
 		setSubmitted( true );
