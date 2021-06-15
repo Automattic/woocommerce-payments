@@ -138,7 +138,7 @@ const ConnectPageOnboarding = () => {
 		const country = wcpaySettings.connect.country;
 		const isCountryAvailable = availableCountries[ country ] !== undefined;
 		if ( ! isCountryAvailable ) {
-			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
+			// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
 			event.preventDefault();
 			handleLocationCheck( availableCountries );
 		}
