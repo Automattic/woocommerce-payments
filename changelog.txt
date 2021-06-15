@@ -17,6 +17,7 @@
 * Update - Converted payment request button size value to distinct options to align with design guidelines.
 * Tweak - Run post-upgrade actions during any request instead of only on wp-admin requests.
 * Update - Payment request button should guide users to login when necessary.
+* Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
