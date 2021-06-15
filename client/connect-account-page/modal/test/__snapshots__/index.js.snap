@@ -1,125 +1,246 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
-HTMLCollection [
+exports[`Onboarding: location check dialog renders correctly when continue button is clicked 1`] = `
+<div
+  aria-labelledby="components-modal-header-1"
+  class="components-modal__frame woocommerce-payments__onboarding_location_check-modal"
+  role="dialog"
+  tabindex="-1"
+>
   <div
-    aria-labelledby="components-modal-header-0"
-    class="components-modal__frame woocommerce-payments__onboarding_location_check-modal"
-    role="dialog"
-    tabindex="-1"
+    class="components-modal__content"
+    role="document"
   >
     <div
-      class="components-modal__content"
-      role="document"
+      class="components-modal__header"
     >
       <div
-        class="components-modal__header"
+        class="components-modal__header-heading-container"
       >
-        <div
-          class="components-modal__header-heading-container"
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-1"
         >
-          <h1
-            class="components-modal__header-heading"
-            id="components-modal-header-0"
-          >
-            WooCommerce Payments
-          </h1>
-        </div>
-        <button
-          aria-label="Close dialog"
-          class="components-button has-icon"
-          type="button"
+          WooCommerce Payments
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            height="24"
-            role="img"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="woocommerce-payments__onboarding_location_check-wrapper"
+    >
+      <div
+        class="woocommerce-payments__onboarding_location_check-modal-message"
+      >
+        It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
+        <ul
+          class="woocommerce-list"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
           >
-            <path
-              d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
-            />
-          </svg>
-        </button>
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  United Kingdom (UK)
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  United States (US)
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+         
+        <a
+          data-link-type="external"
+          href="https://docs.woocommerce.com/document/payments/countries/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Learn more
+        </a>
+         about setting up business entities in foreign countries.
       </div>
       <div
-        class="woocommerce-payments__onboarding_location_check-wrapper"
+        class="woocommerce-payments__onboarding_location_check-footer"
       >
-        <div
-          class="woocommerce-payments__onboarding_location_check-modal-message"
+        <button
+          class="components-button is-secondary is-busy"
+          type="button"
         >
-          It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
-          <ul
-            class="woocommerce-list"
-            role="menu"
-          >
-            <li
-              class="woocommerce-list__item"
-            >
-              <div
-                class="woocommerce-list__item-inner"
-              >
-                <div
-                  class="woocommerce-list__item-text"
-                >
-                  <span
-                    class="woocommerce-list__item-title"
-                  >
-                    United Kingdom (UK)
-                  </span>
-                </div>
-              </div>
-            </li>
-            <li
-              class="woocommerce-list__item"
-            >
-              <div
-                class="woocommerce-list__item-inner"
-              >
-                <div
-                  class="woocommerce-list__item-text"
-                >
-                  <span
-                    class="woocommerce-list__item-title"
-                  >
-                    United States (US)
-                  </span>
-                </div>
-              </div>
-            </li>
-          </ul>
-           
-          <a
-            data-link-type="external"
-            href="https://docs.woocommerce.com/document/payments/countries/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Learn more
-          </a>
-           about setting up business entities in foreign countries.
-        </div>
-        <div
-          class="woocommerce-payments__onboarding_location_check-footer"
+          Continue
+        </button>
+        <button
+          class="components-button is-primary"
+          disabled=""
+          type="button"
         >
-          <button
-            class="components-button is-secondary"
-            type="button"
-          >
-            Continue
-          </button>
-          <button
-            class="components-button is-primary"
-            type="button"
-          >
-            Cancel
-          </button>
-        </div>
+          Cancel
+        </button>
       </div>
     </div>
-  </div>,
-]
+  </div>
+</div>
+`;
+
+exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
+<div
+  aria-labelledby="components-modal-header-0"
+  class="components-modal__frame woocommerce-payments__onboarding_location_check-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-0"
+        >
+          WooCommerce Payments
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="woocommerce-payments__onboarding_location_check-wrapper"
+    >
+      <div
+        class="woocommerce-payments__onboarding_location_check-modal-message"
+      >
+        It appears you're attempting to set up WooCommerce Payments from an unsupported country. In order to complete the set up of WooCommerce Payments, your store is required to have a business entity in one of the following countries: 
+        <ul
+          class="woocommerce-list"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  United Kingdom (UK)
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  United States (US)
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+         
+        <a
+          data-link-type="external"
+          href="https://docs.woocommerce.com/document/payments/countries/"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Learn more
+        </a>
+         about setting up business entities in foreign countries.
+      </div>
+      <div
+        class="woocommerce-payments__onboarding_location_check-footer"
+      >
+        <button
+          class="components-button is-secondary"
+          type="button"
+        >
+          Continue
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 `;

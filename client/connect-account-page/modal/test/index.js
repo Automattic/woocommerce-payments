@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -17,9 +18,8 @@ const callbackMock = () => {};
 
 // Utility function for accessing the modal content in assertions
 const modalContent = () => {
-	return document.body.getElementsByClassName(
-		'woocommerce-payments__onboarding_location_check-modal'
-	);
+	const selector = '.woocommerce-payments__onboarding_location_check-modal';
+	return document.body.querySelector( selector );
 };
 
 describe( 'Onboarding: location check dialog', () => {
@@ -35,6 +35,20 @@ describe( 'Onboarding: location check dialog', () => {
 				whenDeclined={ callbackMock }
 			/>
 		);
+
+		expect( modalContent() ).toMatchSnapshot();
+	} );
+
+	test( 'renders correctly when continue button is clicked', () => {
+		render(
+			<OnboardingLocationCheckModal
+				countries={ countriesMock }
+				whenConfirmed={ callbackMock }
+				whenDeclined={ callbackMock }
+			/>
+		);
+		user.click( screen.getByRole( 'button', { name: /Continue/ } ) );
+
 		expect( modalContent() ).toMatchSnapshot();
 	} );
 } );
