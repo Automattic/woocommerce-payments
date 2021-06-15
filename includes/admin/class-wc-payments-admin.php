@@ -240,6 +240,7 @@ class WC_Payments_Admin {
 
 		$wcpay_settings = [
 			'connectUrl'            => WC_Payments_Account::get_connect_url(),
+			'onboardingUrl'         => WC_Payments_Account::get_onboarding_url(),
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'    => WC_Payments_Account::is_on_boarding_disabled(),

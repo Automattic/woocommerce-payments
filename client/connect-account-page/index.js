@@ -60,7 +60,7 @@ const ConnectPageOnboarding = () => {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
-					href={ wcpaySettings.connectUrl }
+					href={ wcpaySettings.onboardingUrl }
 				>
 					{ __( 'Set up', 'woocommerce-payments' ) }
 				</Button>
