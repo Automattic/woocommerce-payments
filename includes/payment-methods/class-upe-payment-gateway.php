@@ -52,7 +52,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		add_action( 'wp_ajax_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
-		add_action( 'wp', [ $this, 'maybe_process_redirect_order' ] );
+
+		add_action( 'wp_ajax_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+		add_action( 'wp_ajax_nopriv_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
+
+		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
 	}
 
 	/**
@@ -94,7 +98,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_intent = $this->payments_api_client->create_intention(
 			WC_Payments_Utils::prepare_amount( $amount, $currency ),
 			strtolower( $currency ),
-			$this->get_enabled_payment_gateways()
+			$this->get_upe_enabled_payment_method_ids()
 		);
 		return [
 			'id'            => $payment_intent->get_id(),
@@ -103,13 +107,55 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Returns enabled payment gateways.
+	 * Handle AJAX request for creating a setup intent without confirmation for Stripe UPE.
+	 *
+	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
+	 */
+	public function init_setup_intent_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Add_Payment_Method_Exception(
+					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'invalid_referrer'
+				);
+			}
+
+			wp_send_json_success( $this->create_setup_intent(), 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => $e->getMessage(),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Creates setup intent without confirmation.
 	 *
 	 * @return array
 	 */
-	public function get_enabled_payment_gateways() {
-		$enabled_gateways = [ 'card' ];
-		return $enabled_gateways;
+	public function create_setup_intent() {
+		// Determine the customer managing the payment methods, create one if we don't have one already.
+		$user        = wp_get_current_user();
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new \WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		}
+
+		$setup_intent = $this->payments_api_client->create_setup_intention(
+			$customer_id,
+			$this->get_upe_enabled_payment_method_ids()
+		);
+		return [
+			'id'            => $setup_intent['id'],
+			'client_secret' => $setup_intent['client_secret'],
+		];
 	}
 
 	/**
@@ -172,9 +218,34 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Check for a redirect payment method on order received page.
+	 * Returns true when viewing payment methods page.
+	 *
+	 * @return bool
 	 */
-	public function maybe_process_redirect_order() {
+	private function is_payment_methods_page() {
+		global $wp;
+
+		$page_id = wc_get_page_id( 'myaccount' );
+
+		return ( $page_id && is_page( $page_id ) && ( isset( $wp->query_vars['payment-methods'] ) ) );
+	}
+
+	/**
+	 * Check for a redirect payment method on order received page or setup intent on payment methods page.
+	 */
+	public function maybe_process_upe_redirect() {
+		if ( $this->is_payment_methods_page() ) {
+			// If a payment method was added using UPE, we need to clear the cache and notify the user.
+			if ( ! empty( $_GET['setup_intent_client_secret'] ) & ! empty( $_GET['setup_intent'] ) & ! empty( $_GET['redirect_status'] ) ) {
+				if ( 'succeeded' === $_GET['redirect_status'] ) {
+					wc_add_notice( __( 'Payment method successfully added.', 'woocommerce-payments' ) );
+					$user = wp_get_current_user();
+					$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+				}
+			}
+			return;
+		}
+
 		if ( ! is_order_received_page() ) {
 			return;
 		}
@@ -227,11 +298,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			// Get payment intent to confirm status.
-			$intent         = $this->payments_api_client->get_intent( $intent_id );
-			$status         = $intent->get_status();
-			$charge_id      = $intent->get_charge_id();
-			$currency       = $intent->get_currency();
-			$payment_method = $intent->get_payment_method_id();
+			$intent                 = $this->payments_api_client->get_intent( $intent_id );
+			$status                 = $intent->get_status();
+			$charge_id              = $intent->get_charge_id();
+			$currency               = $intent->get_currency();
+			$payment_method         = $intent->get_payment_method_id();
+			$payment_method_details = $intent->get_payment_method_details();
 
 			$error = $intent->get_last_payment_error();
 			if ( ! empty( $error ) ) {
@@ -251,6 +323,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+				$this->set_payment_method_title_for_order( $order, $payment_method_details );
 
 				if ( 'requires_action' === $status ) {
 					// I don't think this case should be possible, but just in case...
@@ -283,6 +356,69 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			wp_safe_redirect( wc_get_checkout_url() );
 			exit;
 		}
+	}
+
+	/**
+	 * Generates the configuration values, needed for UPE payment fields.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		$payment_fields                                = parent::get_payment_fields_js_config();
+		$payment_fields['accountDescriptor']           = $this->get_account_statement_descriptor();
+		$payment_fields['confirmSetupIntentreturnURL'] = wc_get_account_endpoint_url( 'payment-methods' );
+
+		return $payment_fields;
+	}
+
+	/**
+	 * Set formatted readable payment method title for order,
+	 * using payment method details from accompanying charge.
+	 *
+	 * @param WC_Order $order WC Order being processed.
+	 * @param array    $payment_method_details Array of payment method details from charge.
+	 */
+	public function set_payment_method_title_for_order( $order, $payment_method_details ) {
+		if ( empty( $payment_method_details ) ) {
+			return;
+		}
+
+		switch ( $payment_method_details['type'] ) {
+			case 'card':
+				$details       = $payment_method_details['card'];
+				$funding_types = [
+					'credit'  => __( 'credit', 'woocommerce-payments' ),
+					'debit'   => __( 'debit', 'woocommerce-payments' ),
+					'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
+					'unknown' => __( 'unknown', 'woocommerce-payments' ),
+				];
+
+				$payment_method_title = sprintf(
+					// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+					__( '%1$s %2$s card', 'woocommerce-payments' ),
+					ucfirst( $details['network'] ),
+					$funding_types[ $details['funding'] ]
+				);
+				break;
+
+			case 'giropay':
+				$payment_method_title = 'Giropay';
+				break;
+
+			case 'sepa_debit':
+				$payment_method_title = 'SEPA Direct Debit';
+				break;
+
+			case 'sofort':
+				$payment_method_title = 'Sofort';
+				break;
+
+			default:
+				return;
+		}
+
+		$order->set_payment_method_title( "$payment_method_title (WooCommerce Payments)" );
+		$order->save();
 	}
 
 	/**
