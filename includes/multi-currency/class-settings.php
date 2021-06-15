@@ -73,9 +73,13 @@ class Settings extends \WC_Settings_Page {
 	 * @return array
 	 */
 	public function get_settings( $current_section = '' ) {
+		global $hide_save_button;
+
 		$settings = [];
 
 		if ( '' === $current_section ) {
+			$hide_save_button = true;
+
 			$settings = apply_filters(
 				$this->id . '_enabled_currencies_settings',
 				[
