@@ -382,11 +382,17 @@ class Settings extends \WC_Settings_Page {
 		// Save all settings through the settings API.
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
-		// If the manual rate was blank, or zero, we set it to the automatic rate.
-		$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
-		if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
-			$available_currencies = $this->multi_currency->get_available_currencies();
-			update_option( $this->id . '_manual_rate_' . $current_section, $available_currencies[ strtoupper( $current_section ) ]->get_rate() );
+		// If we are saving the settings for an individual currency, we have some additional logic.
+		if ( '' !== $current_section ) {
+			// If the manual rate was blank, or zero, we set it to the automatic rate.
+			$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
+			if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
+				$available_currencies = $this->multi_currency->get_available_currencies();
+				$selected_currency    = strtoupper( $current_section );
+				if ( isset( $available_currencies[ $selected_currency ] ) ) {
+					update_option( $this->id . '_manual_rate_' . $current_section, $available_currencies[ $selected_currency ]->get_rate() );
+				}
+			}
 		}
 
 		do_action( 'woocommerce_update_options_' . $this->id );
