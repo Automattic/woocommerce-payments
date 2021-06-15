@@ -56,21 +56,6 @@
     "tube:start": "./docker/bin/jt/tunnel.sh",
     "tube:stop": "./docker/bin/jt/tunnel.sh break"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "npm run format:provided",
-      "eslint"
-    ],
-    "*.{ts,tsx}": [
-      "tsc --noEmit --jsx react"
-    ],
-    "*.{scss,css}": [
-      "npm run format:provided",
-      "npm run lint:css"
-    ],
-    "*.php": "./vendor/bin/phpcs --standard=phpcs.xml.dist --basepath=. --colors",
-    "composer.json": "composer validate --strict --no-check-all"
-  },
   "dependencies": {
     "@stripe/react-stripe-js": "1.1.2",
     "@stripe/stripe-js": "1.12.1",
