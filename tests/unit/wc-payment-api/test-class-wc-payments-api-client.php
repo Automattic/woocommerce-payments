@@ -765,14 +765,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 	public function test_get_currency_rates() {
 		$currency_from = 'USD';
-		$currencies_to = [ 'GBP', 'EUR' ];
 
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
 				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD&currencies_to%5B0%5D=GBP&currencies_to%5B1%5D=EUR',
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD',
 					'method'          => 'GET',
 					'headers'         => [
 						'Content-Type' => 'application/json; charset=utf-8',
@@ -799,7 +798,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				]
 			);
 
-		$result = $this->payments_api_client->get_currency_rates( $currency_from, $currencies_to );
+		$result = $this->payments_api_client->get_currency_rates( $currency_from );
 
 		$this->assertEquals(
 			[
