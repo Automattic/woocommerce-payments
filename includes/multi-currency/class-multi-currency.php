@@ -295,7 +295,7 @@ class Multi_Currency {
 		$cache_data    = $this->get_cached_currencies();
 
 		foreach ( $wc_currencies as $currency_code => $currency_name ) {
-			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 0.0;
+			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
 			$new_currency  = new Currency( $currency_code, $currency_rate );
 
 			// Add this to our list of available currencies.
