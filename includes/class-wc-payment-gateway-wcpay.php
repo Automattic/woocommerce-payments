@@ -68,7 +68,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
-	private $customer_service;
+	protected $customer_service;
 
 	/**
 	 * WC_Payments_Token instance for working with customer tokens
@@ -285,8 +285,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// no longer needed in the new settings.
 			unset( $this->form_fields['payment_request_button_branded_type'] );
-			// `light-outline` is no longer a valid option.
-			unset( $this->form_fields['payment_request_button_theme']['options']['light-outline'] );
 			// injecting some of the new options.
 			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
 			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
@@ -1000,7 +998,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -1019,7 +1017,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 						]
 					),
-					wc_price( $amount ),
+					wc_price( $amount, [ 'currency' => $currency ] ),
 					$intent_id
 				);
 
@@ -1038,7 +1036,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'code'   => '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
