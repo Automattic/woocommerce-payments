@@ -146,9 +146,9 @@ class WC_Payments_Utils {
 	 * List of currencies supported by Stripe, the amounts for which are already in the smallest unit.
 	 * Sourced directly from https://stripe.com/docs/currencies#zero-decimal
 	 *
-	 * @return array $currencies
+	 * @return string[]
 	 */
-	public static function zero_decimal_currencies() {
+	public static function zero_decimal_currencies(): array {
 		return [
 			'bif', // Burundian Franc.
 			'clp', // Chilean Peso.
@@ -166,6 +166,27 @@ class WC_Payments_Utils {
 			'xaf', // Central African Cfa Franc.
 			'xof', // West African Cfa Franc.
 			'xpf', // Cfp Franc.
+		];
+	}
+
+	/**
+	 * List of countries enabled for Stripe platform account. See also
+	 * https://docs.woocommerce.com/document/payments/countries/ for the most actual status.
+	 *
+	 * @return string[]
+	 */
+	public static function supported_countries(): array {
+		return [
+			'AU' => 'Australia',
+			'CA' => 'Canada',
+			'DE' => 'Germany',
+			'ES' => 'Spain',
+			'FR' => 'France',
+			'GB' => 'United Kingdom (UK)',
+			'IE' => 'Ireland',
+			'IT' => 'Italy',
+			'NZ' => 'New Zealand',
+			'US' => 'United States (US)',
 		];
 	}
 

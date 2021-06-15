@@ -244,8 +244,9 @@ class WC_Payments_Admin {
 
 		$wcpay_settings = [
 			'connect'               => [
-				'url'     => WC_Payments_Account::get_connect_url(),
-				'country' => $business_country,
+				'url'                => WC_Payments_Account::get_connect_url(),
+				'country'            => $business_country,
+				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
