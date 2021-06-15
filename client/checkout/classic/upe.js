@@ -129,28 +129,6 @@ jQuery( function ( $ ) {
 		card: cardElement,
 	};
 
-	// Giropay payment method details
-	const giropayPayment = {
-		type: 'giropay' /* eslint-disable camelcase */,
-	};
-
-	// Create a SEPA element
-	const sepaElement = elements.create( 'iban', {
-		// 'SEPA' Indicates all countries in the Single Euro Payments Area (SEPA).
-		supportedCountries: [ 'SEPA' ],
-		classes: { base: 'wcpay-sepa-mounted' },
-	} );
-
-	const sepaPayment = {
-		type: 'sepa_debit' /* eslint-disable camelcase */,
-		sepa_debit: sepaElement,
-	};
-
-	// Sofort payment method details
-	const sofortPayment = {
-		type: 'sofort' /* eslint-disable camelcase */,
-	};
-
 	let upeElement = null;
 	let paymentIntentId = null;
 	let isUPEComplete = false;
@@ -270,39 +248,6 @@ jQuery( function ( $ ) {
 		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
 	};
 
-	/**
-	 * Check if Giropay payment is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Giropay payment is being used.
-	 */
-	const isWCPayGiropayChosen = function () {
-		return $( '#payment_method_woocommerce_payments_giropay' ).is(
-			':checked'
-		);
-	};
-
-	/**
-	 * Check if SEPA Direct Debit is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not SEPA Direct Debit is being used.
-	 */
-	const isWCPaySepaChosen = function () {
-		return $( '#payment_method_woocommerce_payments_sepa' ).is(
-			':checked'
-		);
-	};
-
-	/**
-	 * Check if Sofort payment method is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Sofort payment method is being used.
-	 */
-	const isWCPaySofortChosen = function () {
-		return $( '#payment_method_woocommerce_payments_sofort' ).is(
-			':checked'
-		);
-	};
-
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -325,10 +270,6 @@ jQuery( function ( $ ) {
 		) {
 			mountUPEElement();
 		}
-
-		if ( $( '#wcpay-sepa-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-element' );
-		}
 	} );
 
 	if (
@@ -342,9 +283,6 @@ jQuery( function ( $ ) {
 			cardElement.mount( '#wcpay-card-element' );
 		}
 
-		if ( $( '#wcpay-sepa-element' ).length ) {
-			sepaElement.mount( '#wcpay-sepa-element' );
-		}
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
@@ -359,18 +297,6 @@ jQuery( function ( $ ) {
 	// Update the validation state based on the element's state.
 	cardElement.addEventListener( 'change', ( event ) => {
 		const displayError = $( '#wcpay-errors' );
-		if ( event.error ) {
-			displayError
-				.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' )
-				.text( event.error.message );
-		} else {
-			displayError.empty();
-		}
-	} );
-
-	sepaElement.addEventListener( 'change', ( event ) => {
-		const displayError = $( '#wcpay-sepa-errors' );
 		if ( event.error ) {
 			displayError
 				.html( '<ul class="woocommerce-error"><li /></ul>' )
@@ -427,12 +353,8 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
-		const paymentSelector = isWCPaySepaChosen()
-			? '#wcpay-payment-method-sepa'
-			: '#wcpay-payment-method';
-
 		// Populate form with the payment method.
-		$( paymentSelector ).val( id );
+		$( '#wcpay-payment-method' ).val( id );
 
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
@@ -443,7 +365,7 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {Object} $form The jQuery object for the form.
 	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
-	 * @param {Object}  paymentMethodDetails { type: 'card' | 'sepa_debit', card? | sepa_debit? : Stripe element  }.
+	 * @param {Object}  paymentMethodDetails { type: 'card', card? : Stripe element  }.
 	 * @return {boolean} A flag for the event handler.
 	 */
 	const handlePaymentMethodCreation = (
@@ -517,13 +439,14 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		const return_url = getConfig( 'confirmSetupIntentreturnURL' );
+		const returnUrl = getConfig( 'confirmSetupIntentreturnURL' );
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm setup to trigger validation errors
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
-					return_url: return_url,
+					// eslint-disable-next-line camelcase
+					return_url: returnUrl,
 				},
 			} );
 			$form.removeClass( 'processing' ).unblock();
@@ -537,7 +460,8 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmSetup( {
 				element: upeElement,
 				confirmParams: {
-					return_url: return_url,
+					// eslint-disable-next-line camelcase
+					return_url: returnUrl,
 				},
 			} );
 			if ( error ) {
@@ -567,6 +491,7 @@ jQuery( function ( $ ) {
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,
 				confirmParams: {
+					// eslint-disable-next-line camelcase
 					return_url: '',
 				},
 			} );
@@ -607,9 +532,7 @@ jQuery( function ( $ ) {
 	 * Displays the authentication modal to the user if needed.
 	 */
 	const maybeShowAuthenticationModal = () => {
-		const paymentMethodId = isWCPaySepaChosen()
-			? $( '#wcpay-payment-method-sepa' ).val()
-			: $( '#wcpay-payment-method' ).val();
+		const paymentMethodId = $( '#wcpay-payment-method' ).val();
 
 		const savePaymentMethod = $(
 			'#wc-woocommerce_payments-new-payment-method'
@@ -666,19 +589,6 @@ jQuery( function ( $ ) {
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
 	function isUsingSavedPaymentMethod() {
-		if ( isWCPayGiropayChosen() ) {
-			// Giropay does not use saved payment methods at this time
-			return false;
-		}
-
-		if ( isWCPaySepaChosen() ) {
-			return (
-				$( '#wc-woocommerce_payments_sepa-payment-token-new' ).length &&
-				! $( '#wc-woocommerce_payments_sepa-payment-token-new' ).is(
-					':checked'
-				)
-			);
-		}
 		return (
 			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
 			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
@@ -698,17 +608,8 @@ jQuery( function ( $ ) {
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		if ( ! isUsingSavedPaymentMethod() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				sofortPayment.sofort = {
-					country: $( '#billing_country' ).val(),
-				};
-				paymentMethodDetails = sofortPayment;
-			} else if ( isUPEEnabled && paymentIntentId ) {
+			const paymentMethodDetails = cardPayment;
+			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPECheckout( $( this ) );
 				return false;
 			}
@@ -723,31 +624,22 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if (
-			isUsingSavedPaymentMethod() ||
-			( ! isWCPayChosen() && ! isWCPaySepaChosen() )
-		) {
+		if ( isUsingSavedPaymentMethod() || ! isWCPayChosen() ) {
 			return;
 		}
 
 		return handlePaymentMethodCreation(
 			$( '#order_review' ),
 			handleOrderPayment,
-			isWCPaySepaChosen() ? sepaPayment : cardPayment
+			cardPayment
 		);
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
-			let paymentMethodDetails = cardPayment;
-			if ( isWCPaySepaChosen() ) {
-				paymentMethodDetails = sepaPayment;
-			} else if ( isWCPayGiropayChosen() ) {
-				paymentMethodDetails = giropayPayment;
-			} else if ( isWCPaySofortChosen() ) {
-				paymentMethodDetails = sofortPayment;
-			} else if ( isUPEEnabled && paymentIntentId ) {
+			const paymentMethodDetails = cardPayment;
+			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
 				return false;
 			}
