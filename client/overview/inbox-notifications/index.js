@@ -131,7 +131,6 @@ const InboxPanel = () => {
 	const { createNotice } = useDispatch( 'core/notices' );
 	const {
 		batchUpdateNotes,
-		removeAllNotes,
 		removeNote,
 		updateNote,
 		triggerNoteAction,
@@ -207,7 +206,7 @@ const InboxPanel = () => {
 	};
 
 	const closeDismissModal = async ( confirmed = false ) => {
-		const noteNameDismissAll = 'all' === dismiss.type ? true : false;
+		const noteNameDismissAll = 'all' === dismiss.type;
 
 		wcpayTracks.recordEvent( 'wcpay_inbox_action_dismiss', {
 			note_name: dismiss.note.name,
@@ -222,7 +221,13 @@ const InboxPanel = () => {
 			try {
 				let notesRemoved = [];
 				if ( removeAll ) {
-					notesRemoved = await removeAllNotes();
+					await batchUpdateNotes(
+						notes.map( ( note ) => note.id ),
+						{
+							is_deleted: 1,
+						}
+					);
+					notesRemoved = [ ...notes ];
 				} else {
 					const noteRemoved = await removeNote( noteId );
 					notesRemoved = [ noteRemoved ];
