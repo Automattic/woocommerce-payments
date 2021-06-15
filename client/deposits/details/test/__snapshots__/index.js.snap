@@ -8,9 +8,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
     <div
       class="components-card is-size-medium wcpay-deposit-automatic css-1xs3c37-CardUI e1q7k77g0"
     >
-      <div
-        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
-      >
+      <ul>
         <li
           class="woocommerce-summary__item-container"
         >
@@ -45,12 +43,12 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
             </div>
           </div>
         </li>
-        <div
+        <li
           class="wcpay-deposit-amount"
         >
           $20.00
-        </div>
-      </div>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

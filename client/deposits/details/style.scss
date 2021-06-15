@@ -41,10 +41,10 @@
 		color: $studio-green-30;
 	}
 
-	.wcpay-deposit-automatic .components-card__body {
+	.wcpay-deposit-automatic ul {
 		display: flex;
+		margin: 0;
 		list-style-type: none;
-		padding: 0;
 
 		.woocommerce-summary__item {
 			border-bottom: 0;

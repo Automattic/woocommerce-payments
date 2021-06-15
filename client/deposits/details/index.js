@@ -6,7 +6,7 @@
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Card, CardBody } from '@wordpress/components';
+import { Card } from '@wordpress/components';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
@@ -80,15 +80,15 @@ export const DepositOverview = ( { depositId } ) => {
 		<div className="wcpay-deposit-overview">
 			{ deposit.automatic ? (
 				<Card className="wcpay-deposit-automatic">
-					<CardBody>
+					<ul>
 						{ depositDateItem }
-						<div className="wcpay-deposit-amount">
+						<li className="wcpay-deposit-amount">
 							{ formatCurrency(
 								deposit.amount,
 								deposit.currency
 							) }
-						</div>
-					</CardBody>
+						</li>
+					</ul>
 				</Card>
 			) : (
 				<SummaryList
