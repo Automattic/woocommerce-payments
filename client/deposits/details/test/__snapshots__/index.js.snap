@@ -63,7 +63,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
   >
     <div
       aria-describedby="woocommerce-summary-helptext-1"
-      aria-label="Deposits overview"
+      aria-label="Deposit overview"
       aria-orientation="horizontal"
       role="menu"
     >

@@ -92,7 +92,7 @@ export const DepositOverview = ( { depositId } ) => {
 				</Card>
 			) : (
 				<SummaryList
-					label={ __( 'Deposits overview', 'woocommerce-payments' ) }
+					label={ __( 'Deposit overview', 'woocommerce-payments' ) }
 				>
 					{ () => [
 						depositDateItem,
