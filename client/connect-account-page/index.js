@@ -109,11 +109,26 @@ const ConnectPageOnboarding = () => {
 			window.location = wcpaySettings.connect.url;
 		};
 
+		// Populate translated list of supported countries we want to render in the modal window.
+		// eslint-disable-next-line prettier/prettier
+		const countries = Object.values(
+			wcpaySettings.connect.availableCountries
+		)
+			.map( ( country ) => {
+				// eslint-disable-next-line @wordpress/i18n-no-variables
+				return __( country, 'woocommerce-payments' );
+			} )
+			.sort()
+			.map( ( country ) => {
+				return { title: country };
+			} );
+
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-onboarding-location-check-container';
 		document.body.appendChild( container );
 		ReactDOM.render(
 			<OnboardingLocationCheckModal
+				countries={ countries }
 				whenDeclined={ whenDeclined }
 				whenConfirmed={ whenConfirmed }
 			/>,
@@ -122,7 +137,9 @@ const ConnectPageOnboarding = () => {
 	};
 
 	const handleSetup = ( event ) => {
-		const isCountryAvailable = 'US' === wcpaySettings.connect.country;
+		const availableCountries = wcpaySettings.connect.availableCountries;
+		const country = wcpaySettings.connect.country;
+		const isCountryAvailable = availableCountries[ country ] !== undefined;
 		if ( ! isCountryAvailable ) {
 			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
 			event.preventDefault();

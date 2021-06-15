@@ -9,7 +9,7 @@ import interpolateComponents from 'interpolate-components';
 import './style.scss';
 import { Button, Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
+import { Link, List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 
 const LearnMoreLink = ( props ) => (
@@ -22,7 +22,11 @@ const LearnMoreLink = ( props ) => (
 	/>
 );
 
-const OnboardingLocationCheckModal = ( { whenDeclined, whenConfirmed } ) => {
+const OnboardingLocationCheckModal = ( {
+	countries,
+	whenDeclined,
+	whenConfirmed,
+} ) => {
 	// Declare state attributes
 	const [ isModalOpen, setModalOpen ] = useState( true );
 	const [ isProcessingContinue, setProcessingContinue ] = useState( false );
@@ -40,17 +44,20 @@ const OnboardingLocationCheckModal = ( { whenDeclined, whenConfirmed } ) => {
 		whenDeclined();
 	};
 
-	const title = __(
-		'WooCommerce Payments: location check',
-		'woocommerce-payments'
-	);
+	const title = __( 'WooCommerce Payments', 'woocommerce-payments' );
 
 	const message = interpolateComponents( {
 		mixedString: __(
-			'… {{link}}Learn more{{/link}}',
+			"It appears you're attempting to set up WooCommerce Payments from an unsupported country. " +
+				'In order to complete the set up of WooCommerce Payments, your store is required to have a business ' +
+				'entity in one of the following countries: {{list /}} ' +
+				'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
 			'woocommerce-payments'
 		),
-		components: { link: <LearnMoreLink /> },
+		components: {
+			link: <LearnMoreLink />,
+			list: <List items={ countries } />,
+		},
 	} );
 
 	return (

@@ -16,6 +16,7 @@ describe( 'ConnectAccountPage', () => {
 			connect: {
 				url: '/wcpay-connect-url',
 				country: 'US',
+				availableCountries: { US: 'United States (US)' },
 			},
 		};
 	} );

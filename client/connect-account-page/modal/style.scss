@@ -1,8 +1,45 @@
 .woocommerce-payments__onboarding_location_check-modal {
+	max-width: 500px;
+
 	.woocommerce-payments__onboarding_location_check-modal-message {
 		font-size: 14px;
 		line-height: 21px;
 		margin: 0 0 24px 0;
+	}
+
+	.woocommerce-list {
+		margin: 0.75rem 1rem;
+
+		.woocommerce-list__item {
+			display: list-item;
+			list-style: none;
+			padding: 0;
+			border: 0;
+
+			&:hover {
+				background: none;
+				.woocommerce-list__item-title {
+					color: $studio-gray-60;
+				}
+			}
+
+			.woocommerce-list__item-inner {
+				margin: 0;
+				padding: 0;
+			}
+
+			.woocommerce-list__item-title {
+				color: $studio-gray-60;
+				margin-top: 0;
+				@include font-size( 14 );
+			}
+
+			.woocommerce-list__item-content {
+				color: $studio-gray-80;
+				margin-top: 0;
+				@include font-size( 14 );
+			}
+		}
 	}
 
 	.woocommerce-payments__onboarding_location_check-footer {
