@@ -526,18 +526,10 @@ class Multi_Currency {
 	 * @return mixed The cart item containing the renewal as an array, else false.
 	 */
 	public function cart_contains_renewal() {
-		$contains_renewal = false;
-
-		if ( ! empty( WC()->cart->cart_contents ) ) {
-			foreach ( WC()->cart->cart_contents as $cart_item ) {
-				if ( isset( $cart_item['subscription_renewal'] ) ) {
-					$contains_renewal = $cart_item;
-					break;
-				}
-			}
+		if ( ! function_exists( 'wcs_cart_contains_renewal' ) ) {
+			return false;
 		}
-
-		return apply_filters( 'wcs_cart_contains_renewal', $contains_renewal );
+		return wcs_cart_contains_renewal();
 	}
 
 	/**

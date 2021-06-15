@@ -51,6 +51,10 @@ class Frontend_Prices {
 			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
 			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
 			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+
+			// Subscription product hooks.
+			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 
@@ -68,7 +72,11 @@ class Frontend_Prices {
 		}
 
 		if ( $product && $this->multi_currency->is_product_subscription_renewal( $product ) ) {
-			return $price;
+			if ( is_cart()
+				|| is_checkout()
+				|| did_action( 'woocommerce_before_mini_cart_contents' ) !== did_action( 'woocommerce_after_mini_cart_contents' ) ) {
+				return $price;
+			}
 		}
 
 		return $this->multi_currency->get_price( $price, 'product' );
