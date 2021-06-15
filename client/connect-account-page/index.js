@@ -103,11 +103,27 @@ const ConnectPageOnboarding = () => {
 		const isCountryAvailable = false;
 		if ( ! isCountryAvailable ) {
 			event.preventDefault();
+
+			// Reset the 'Set up' button state if merchant decided to stop
+			const whenDeclined = () => {
+				setSubmitted( false );
+			};
+			// Redirect the merchant if merchant decided to continue
+			const whenConfirmed = () => {
+				window.location = wcpaySettings.connectUrl;
+			};
+
 			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
 			const container = document.createElement( 'div' );
 			container.id = 'wcpay-onboarding-country-check-container';
 			document.body.appendChild( container );
-			ReactDOM.render( <OnboardingLocationCheckModal />, container );
+			ReactDOM.render(
+				<OnboardingLocationCheckModal
+					whenDeclined={ whenDeclined }
+					whenConfirmed={ whenConfirmed }
+				/>,
+				container
+			);
 		}
 
 		setSubmitted( true );

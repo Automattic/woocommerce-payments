@@ -22,7 +22,7 @@ const LearnMoreLink = ( props ) => (
 	/>
 );
 
-const OnboardingLocationCheckModal = () => {
+const OnboardingLocationCheckModal = ( { whenDeclined, whenConfirmed } ) => {
 	// Declare state attributes
 	const [ isModalOpen, setModalOpen ] = useState( true );
 	const [ isProcessingContinue, setProcessingContinue ] = useState( false );
@@ -31,11 +31,13 @@ const OnboardingLocationCheckModal = () => {
 	}
 
 	// Declare hooks to handle button clicks
-	const onContinue = () => {
+	const handleConfirmedRequest = () => {
 		setProcessingContinue( true );
+		whenConfirmed();
 	};
-	const onCancel = () => {
+	const handleDeclinedRequest = () => {
 		setModalOpen( false );
+		whenDeclined();
 	};
 
 	const title = __(
@@ -57,7 +59,7 @@ const OnboardingLocationCheckModal = () => {
 			isDismissible={ true }
 			shouldCloseOnClickOutside={ true }
 			shouldCloseOnEsc={ true }
-			onRequestClose={ onCancel }
+			onRequestClose={ handleDeclinedRequest }
 			className="woocommerce-payments__onboarding_location_check-modal"
 		>
 			<div className="woocommerce-payments__onboarding_location_check-wrapper">
@@ -67,7 +69,7 @@ const OnboardingLocationCheckModal = () => {
 				<div className="woocommerce-payments__onboarding_location_check-footer">
 					<Button
 						isSecondary
-						onClick={ onContinue }
+						onClick={ handleConfirmedRequest }
 						isBusy={ isProcessingContinue }
 					>
 						{ __( 'Continue', 'woocommerce-payments' ) }
@@ -75,7 +77,7 @@ const OnboardingLocationCheckModal = () => {
 
 					<Button
 						isPrimary
-						onClick={ onCancel }
+						onClick={ handleDeclinedRequest }
 						disabled={ isProcessingContinue }
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
