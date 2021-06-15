@@ -89,10 +89,12 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCas
 		$_GET = [
 			'test_name'  => 'test_value',
 			'test_array' => [ 0 => [ 0 => 'test_array_value' ] ],
+			'named_key'  => [ 'key' => 'value' ],
 		];
 		$this->render_widget();
 		$this->expectOutputRegex( '/<input type="hidden" name="test_name" value="test_value" \/>/' );
 		$this->expectOutputRegex( '/<input type="hidden" name="test_array\[0\]\[0\]" value="test_array_value" \/>/' );
+		$this->expectOutputRegex( '/<input type="hidden" name="named_key\[key\]" value="value" \/>/' );
 	} //<input type="hidden" name="test_array[0][0]" value="test_array_value" />
 
 	public function test_widget_selects_selected_currency() {
