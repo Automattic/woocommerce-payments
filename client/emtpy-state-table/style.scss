@@ -1,3 +1,7 @@
+.empty-state-list {
+	padding: 20px;
+}
+
 .empty-state-table {
 	background: rgb( 255, 255, 255 );
 	box-sizing: border-box;
@@ -10,10 +14,6 @@
 
 	th {
 		border-top: 1px solid #e2e4e7;
-	}
-
-	th.is-sorted {
-		border-right: 1px solid #e2e4e7;
 	}
 
 	.components-card__header {

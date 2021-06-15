@@ -14,7 +14,7 @@ import wcpayTracks from 'tracks';
 export const EmptyStateTableHeaders = [
 	{
 		text: 'Date',
-		classNames: 'is-sorted is-left-aligned',
+		classNames: 'is-left-aligned',
 	},
 	{
 		text: 'Type',
@@ -39,7 +39,7 @@ export const EmptyStateList = ( props ) => {
 	};
 
 	return (
-		<div className="empty-state-deposits-list">
+		<div className="empty-state-list">
 			<div>
 				<img src={ props.listBanner } alt="" />
 			</div>
