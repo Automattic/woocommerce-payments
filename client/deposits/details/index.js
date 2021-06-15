@@ -6,6 +6,7 @@
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { Card, CardBody } from '@wordpress/components';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
@@ -58,28 +59,43 @@ export const DepositOverview = ( { depositId } ) => {
 		? __( 'Deposit date', 'woocommerce-payments' )
 		: __( 'Instant deposit date', 'woocommerce-payments' );
 
+	const depositDateItem = (
+		<SummaryItem
+			key="depositDate"
+			label={
+				`${ depositDateLabel }: ` +
+				dateI18n(
+					'M j, Y',
+					moment.utc( deposit.date ).toISOString(),
+					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+				)
+			}
+			value={ <Status status={ deposit.status } /> }
+			detail={ deposit.bankAccount }
+		/>
+	);
+
+	if ( isLoading ) return <SummaryListPlaceholder numberOfItems={ 2 } />;
 	return (
 		<div className="wcpay-deposit-overview">
-			{ isLoading ? (
-				<SummaryListPlaceholder numberOfItems={ 4 } />
+			{ deposit.automatic ? (
+				<Card className="wcpay-deposit-automatic">
+					<CardBody>
+						{ depositDateItem }
+						<div className="wcpay-deposit-amount">
+							{ formatCurrency(
+								deposit.amount,
+								deposit.currency
+							) }
+						</div>
+					</CardBody>
+				</Card>
 			) : (
 				<SummaryList
 					label={ __( 'Deposits overview', 'woocommerce-payments' ) }
 				>
 					{ () => [
-						<SummaryItem
-							key="depositDate"
-							label={
-								`${ depositDateLabel }: ` +
-								dateI18n(
-									'M j, Y',
-									moment.utc( deposit.date ).toISOString(),
-									true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-								)
-							}
-							value={ <Status status={ deposit.status } /> }
-							detail={ deposit.bankAccount }
-						/>,
+						depositDateItem,
 						<SummaryItem
 							key="depositAmount"
 							label={ __(

@@ -1,6 +1,62 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit overview renders correctly 1`] = `
+exports[`Deposit overview renders automatic deposit correctly 1`] = `
+<div>
+  <div
+    class="wcpay-deposit-overview"
+  >
+    <div
+      class="components-card is-size-medium wcpay-deposit-automatic css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <li
+          class="woocommerce-summary__item-container"
+        >
+          <div
+            class="woocommerce-summary__item"
+          >
+            <div
+              class="woocommerce-summary__item-label"
+            >
+              Deposit date: Jan 2, 2020
+            </div>
+            <div
+              class="woocommerce-summary__item-data"
+            >
+              <div
+                class="woocommerce-summary__item-value"
+              >
+                <div
+                  class="woocommerce-order-status"
+                >
+                  <span
+                    class="woocommerce-order-status__indicator is-paid"
+                  />
+                  Paid
+                </div>
+              </div>
+            </div>
+            <div
+              class="wcpay-summary__item-detail"
+            >
+              MOCK BANK •••• 1234 (USD)
+            </div>
+          </div>
+        </li>
+        <div
+          class="wcpay-deposit-amount"
+        >
+          $20.00
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposit overview renders instant deposit correctly 1`] = `
 <div>
   <div
     class="wcpay-deposit-overview"
@@ -29,7 +85,7 @@ exports[`Deposit overview renders correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Deposit date: Jan 2, 2020
+              Instant deposit date: Jan 2, 2020
             </div>
             <div
               class="woocommerce-summary__item-data"
