@@ -9,8 +9,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useSettings } from 'data';
-import { LoadableBlock } from '../../components/loadable';
 import AdvancedSettings from '../advanced-settings';
 import PaymentMethods from '../../payment-methods';
 import DigitalWallets from '../digital-wallets';
@@ -22,6 +20,7 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import LoadableSettingsSection from '../loadable-settings-section';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -94,31 +93,30 @@ const SettingsManager = () => {
 	const {
 		featureFlags: { upe: isUPEEnabled },
 	} = useContext( WCPaySettingsContext );
-	const { isLoading } = useSettings();
 
 	return (
 		<SettingsLayout>
 			<SettingsSection Description={ GeneralSettingsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+				<LoadableSettingsSection numLines={ 20 }>
 					<GeneralSettings />
-				</LoadableBlock>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			{ isUPEEnabled && (
 				<SettingsSection Description={ PaymentMethodsDescription }>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+					<LoadableSettingsSection numLines={ 20 }>
 						<PaymentMethods />
-					</LoadableBlock>
+					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
 			<SettingsSection Description={ DigitalWalletsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+				<LoadableSettingsSection numLines={ 20 }>
 					<DigitalWallets />
-				</LoadableBlock>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection Description={ TransactionsAndDepositsDescription }>
-				<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+				<LoadableSettingsSection numLines={ 20 }>
 					<TransactionsAndDeposits />
-				</LoadableBlock>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection />

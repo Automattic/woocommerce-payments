@@ -111,7 +111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit card', 'woocommerce-payments' );
+		$this->title              = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
 		$this->supports           = [
 			'products',
@@ -260,10 +260,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			$this->form_fields['enabled_payment_method_ids'] = [
+			// previously called `enabled_payment_method_ids` - some developers might have the old setting still saved in their DB.
+			$this->form_fields['upe_enabled_payment_method_ids'] = [
 				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 				'type'    => 'multiselect',
-				'default' => [ 'woocommerce_payments' ],
+				'default' => [ 'card' ],
 				'options' => [],
 			];
 
@@ -353,6 +354,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		/**
+		 * Add a new logo column on the right of "method" in the payment methods table.
+		 */
+		add_filter(
+			'woocommerce_payment_gateways_setting_columns',
+			function( $columns ) {
+				$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
+				$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
+
+				$columns = array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
+
+				return $columns;
+			}
+		);
 	}
 
 	/**
@@ -894,6 +910,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge_id     = $intent->get_charge_id();
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
+
+			if ( 'requires_action' === $status &&
+				$payment_information->is_merchant_initiated() ) {
+				// Allow 3rd-party to trigger some action if needed.
+				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
+			}
 		} else {
 			// For $0 orders, we need to save the payment method using a setup intent.
 			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
@@ -1041,6 +1063,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 					$order->add_order_note( $note );
 				}
+
 				break;
 		}
 
@@ -2129,7 +2152,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids() {
-		return $this->get_option( 'enabled_payment_method_ids', [] );
+		return $this->get_option(
+			'upe_enabled_payment_method_ids',
+			[
+				'card',
+			]
+		);
 	}
 
 	/**
@@ -2142,8 +2170,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return apply_filters(
 			'wcpay_upe_available_payment_methods',
 			[
-				// TODO: at this point, with UPE, we could just get rid of the prefixes on the payment method names.
-				'woocommerce_payments',
+				'card',
 			]
 		);
 	}
