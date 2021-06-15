@@ -387,7 +387,7 @@ class Settings extends \WC_Settings_Page {
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
 		// If we are saving the settings for an individual currency, we have some additional logic.
-		if ( '' !== $current_section ) {
+		if ( '' !== $current_section && 'store' !== $current_section ) {
 			// If the manual rate was blank, or zero, we set it to the automatic rate.
 			$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
 			if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
