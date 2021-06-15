@@ -182,6 +182,31 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
 	}
 
+	public function test_convert_package_rates_prices_does_not_modify_original_objects() {
+		$this->mock_multi_currency->method( 'get_price' )->willReturn( 15.0 );
+
+		$flat_rate_method        = new WC_Shipping_Rate();
+		$free_method             = new WC_Shipping_Rate();
+		$flat_rate_method->cost  = '10.0';
+		$flat_rate_method->taxes = [ '1.0', '2.0' ];
+		$free_method->cost       = '0.0';
+
+		$base_shipping_rates = [
+			'shipping_rate_1' => $flat_rate_method,
+			'shipping_rate_2' => $free_method,
+		];
+
+		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
+
+		$this->assertSame( '10.0', $flat_rate_method->cost );
+		$this->assertSame( [ '1.0', '2.0' ], $flat_rate_method->taxes );
+		$this->assertNotSame( $flat_rate_method, $shipping_rates['shipping_rate_1'] );
+		$this->assertNotSame( $flat_rate_method->taxes, $shipping_rates['shipping_rate_1']->taxes );
+
+		$this->assertSame( '0.0', $free_method->cost );
+		$this->assertNotSame( $free_method, $shipping_rates['shipping_rate_2'] );
+	}
+
 	public function test_get_coupon_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_amount( '', null ) );
 	}

@@ -102,26 +102,32 @@ class Frontend_Prices {
 
 	/**
 	 * Returns the shipping rates with their prices converted.
+	 * Creates new rate objects to avoid issues with extensions that cache
+	 * them before this hook is called.
 	 *
 	 * @param array $rates Shipping rates.
 	 *
 	 * @return array Shipping rates with converted costs.
 	 */
 	public function convert_package_rates_prices( $rates ) {
-		foreach ( $rates as $rate ) {
-			if ( $rate->cost ) {
-				$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
-			}
-			if ( $rate->taxes ) {
-				$rate->taxes = array_map(
-					function ( $tax ) {
-						return $this->multi_currency->get_price( $tax, 'tax' );
-					},
-					$rate->taxes
-				);
-			}
-		}
-		return $rates;
+		return array_map(
+			function ( $rate ) {
+				$rate = clone $rate;
+				if ( $rate->cost ) {
+					$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
+				}
+				if ( $rate->taxes ) {
+					$rate->taxes = array_map(
+						function ( $tax ) {
+							return $this->multi_currency->get_price( $tax, 'tax' );
+						},
+						$rate->taxes
+					);
+				}
+				return $rate;
+			},
+			$rates
+		);
 	}
 
 	/**
