@@ -12,6 +12,7 @@ export const filters = [
 			'per_page',
 			'orderby',
 			'order',
+			'filter',
 			'date_before',
 			'date_after',
 			'date_between',
@@ -34,9 +35,7 @@ export const filters = [
 			'per_page',
 			'orderby',
 			'order',
-			'date_before',
-			'date_after',
-			'date_between',
+			'store_currency_is',
 		],
 		showFilters: () => true,
 		filters: [
