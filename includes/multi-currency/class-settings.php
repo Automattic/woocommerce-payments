@@ -47,6 +47,7 @@ class Settings extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
+		add_action( 'admin_print_scripts', 'print_emoji_detection_script' );
 		add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
 		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_start', [ $this, 'currencies_settings_section_start' ] );
 		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
