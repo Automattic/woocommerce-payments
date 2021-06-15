@@ -182,7 +182,11 @@ class Currency_Switcher_Widget extends WP_Widget {
 		if ( empty( $_GET ) ) {
 			return;
 		}
-		foreach ( $_GET as $name => $value ) {
+		$params = explode( '&', urldecode( http_build_query( $_GET ) ) );
+		foreach ( $params as $param ) {
+			$name_value = explode( '=', $param );
+			$name       = $name_value[0];
+			$value      = $name_value[1];
 			if ( 'currency' === $name ) {
 				continue;
 			}
