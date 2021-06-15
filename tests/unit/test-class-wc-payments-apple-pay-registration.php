@@ -100,4 +100,26 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 
 		$this->assertContains( $rewrite_rule, $wp_rewrite->rewrite_rules() );
 	}
+
+	public function test_it_adds_rewrite_rules_before_init_priority_10() {
+		$add_rewrite_rules_callback_priority = has_action(
+			'init',
+			[ $this->wc_apple_pay_registration, 'add_domain_association_rewrite_rule' ]
+		);
+
+		$this->assertIsInt( $add_rewrite_rules_callback_priority );
+		$this->assertLessThan(
+			10,
+			$add_rewrite_rules_callback_priority
+		);
+	}
+
+	public function test_it_verifies_domain_during_upgrade() {
+		$verify_callback_priority = has_action(
+			'woocommerce_woocommerce_payments_updated',
+			[ $this->wc_apple_pay_registration, 'verify_domain_if_configured' ]
+		);
+
+		$this->assertIsInt( $verify_callback_priority );
+	}
 }
