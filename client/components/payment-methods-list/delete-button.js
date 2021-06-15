@@ -65,7 +65,7 @@ const DeleteButton = ( { id, label, Icon, onClick, className } ) => {
 				>
 					<PaymentDeleteIllustration
 						Icon={ Icon }
-						hasBorder={ 'woocommerce_payments' !== id }
+						hasBorder={ 'card' !== id }
 					/>
 					<p>
 						{ interpolateComponents( {
