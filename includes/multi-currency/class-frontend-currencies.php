@@ -37,9 +37,7 @@ class Frontend_Currencies {
 
 		$this->load_locale_data();
 
-		$frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
-
-		if ( $frontend_request ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
 			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );

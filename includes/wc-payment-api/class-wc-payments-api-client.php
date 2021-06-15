@@ -359,6 +359,28 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Setup an intention, without confirming it.
+	 *
+	 * @param string $customer_id          - ID of the customer.
+	 * @param array  $payment_method_types - Payment methods to include.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function create_setup_intention(
+		$customer_id,
+		$payment_method_types
+	) {
+		$request = [
+			'customer'             => $customer_id,
+			'confirm'              => 'false',
+			'payment_method_types' => $payment_method_types,
+		];
+
+		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
+	}
+
+	/**
 	 * Create a setup intent.
 	 *
 	 * @param string $payment_method_id      - ID of payment method to be saved.
@@ -1204,8 +1226,22 @@ class WC_Payments_API_Client {
 	 */
 	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
 		// If level3 data is not present for some reason, simply proceed normally.
-		if ( ! isset( $params['level3'] ) ) {
+		if ( ! isset( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
 			return $this->request( $params, $api, $method, $is_site_specific );
+		}
+
+		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
+		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
+			$params['level3']['line_items'] = [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'zero-cost-fee',
+					'product_description' => 'Zero cost fee',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			];
 		}
 
 		try {
@@ -1391,7 +1427,8 @@ class WC_Payments_API_Client {
 			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
 			$next_action,
-			$last_payment_error
+			$last_payment_error,
+			$charge ? $charge['payment_method_details'] : null
 		);
 
 		return $intent;

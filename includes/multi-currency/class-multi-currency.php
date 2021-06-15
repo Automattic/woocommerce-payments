@@ -135,6 +135,7 @@ class Multi_Currency {
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 	}
 
@@ -502,6 +503,26 @@ class Multi_Currency {
 	 */
 	public function recalculate_cart() {
 		WC()->cart->calculate_totals();
+	}
+
+	/**
+	 * Adds Multi-Currency notes to the WC-Admin inbox.
+	 */
+	public static function add_woo_admin_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
+			Note_Multi_Currency_Available::possibly_add_note();
+		}
+	}
+
+	/**
+	 * Removes Multi-Currency notes from the WC-Admin inbox.
+	 */
+	public static function remove_woo_admin_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
+			Note_Multi_Currency_Available::possibly_delete_note();
+		}
 	}
 
 	/**
