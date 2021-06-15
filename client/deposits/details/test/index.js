@@ -35,9 +35,21 @@ describe( 'Deposit overview', () => {
 		};
 	} );
 
-	test( 'renders correctly', () => {
+	test( 'renders automatic deposit correctly', () => {
 		useDeposit.mockReturnValue( {
 			deposit: mockDeposit,
+			isLoading: false,
+		} );
+
+		const { container: overview } = render(
+			<DepositOverview depositId="po_mock" />
+		);
+		expect( overview ).toMatchSnapshot();
+	} );
+
+	test( 'renders instant deposit correctly', () => {
+		useDeposit.mockReturnValue( {
+			deposit: { ...mockDeposit, automatic: false },
 			isLoading: false,
 		} );
 

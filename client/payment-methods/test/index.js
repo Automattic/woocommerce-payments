@@ -25,17 +25,15 @@ describe( 'PaymentMethods', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-			'woocommerce_payments_sepa',
+			'card',
+			'giropay',
+			'sofort',
+			'sepa_debit',
 		] );
 	} );
 
 	test( 'does not render the "Add payment method" button when there is only one payment method available', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-		] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 
 		render( <PaymentMethods /> );
 
@@ -72,7 +70,7 @@ describe( 'PaymentMethods', () => {
 
 	test( 'payment methods are rendered in expected lists', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 		] );
 
 		render( <PaymentMethods /> );
@@ -96,7 +94,7 @@ describe( 'PaymentMethods', () => {
 
 	test( 'enabled methods are rendered with "Delete" buttons', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 		] );
 
 		render( <PaymentMethods /> );
@@ -109,9 +107,7 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'when only one enabled method is rendered, the "Delete" button is not visible', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments' ],
-		] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		render( <PaymentMethods /> );
 
@@ -125,12 +121,7 @@ describe( 'PaymentMethods', () => {
 	test( 'clicking delete updates enabled method IDs', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[
-				'woocommerce_payments',
-				'woocommerce_payments_sepa',
-				'woocommerce_payments_giropay',
-				'woocommerce_payments_sofort',
-			],
+			[ 'card', 'sepa_debit', 'giropay', 'sofort' ],
 			updateEnabledMethodsMock,
 		] );
 
@@ -147,9 +138,9 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect( updateEnabledMethodsMock ).toHaveBeenCalledWith( [
-			'woocommerce_payments_sepa',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
+			'sepa_debit',
+			'giropay',
+			'sofort',
 		] );
 	} );
 } );

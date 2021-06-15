@@ -18,9 +18,9 @@ const baseUrl = config.get( 'url' );
 
 import { uiLoaded } from './helpers';
 
-const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
+const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
