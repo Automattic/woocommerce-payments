@@ -99,7 +99,7 @@ const ConnectPageOnboardingDisabled = () => (
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
-	const handleLocationCheck = () => {
+	const handleLocationCheck = ( availableCountries ) => {
 		// Reset the 'Set up' button state if merchant decided to stop
 		const whenDeclined = () => {
 			setSubmitted( false );
@@ -110,10 +110,7 @@ const ConnectPageOnboarding = () => {
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
-		// eslint-disable-next-line prettier/prettier
-		const countries = Object.values(
-			wcpaySettings.connect.availableCountries
-		)
+		const countries = Object.values( availableCountries )
 			.map( ( country ) => {
 				// eslint-disable-next-line @wordpress/i18n-no-variables
 				return __( country, 'woocommerce-payments' );
@@ -143,7 +140,7 @@ const ConnectPageOnboarding = () => {
 		if ( ! isCountryAvailable ) {
 			// Inform the merchant if configured business location is not in a supported county, but allow to proceed.
 			event.preventDefault();
-			handleLocationCheck();
+			handleLocationCheck( availableCountries );
 		}
 
 		setSubmitted( true );
