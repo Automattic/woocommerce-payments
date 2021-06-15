@@ -8,7 +8,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { uiLoaded } from '../../utils';
+import { merchantWCP } from '../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../utils/payments';
 
 let orderId;
@@ -107,14 +107,8 @@ describe( 'Order > Full refund', () => {
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
-		await Promise.all( [
-			page.goto( paymentDetailsLink, {
-				waitUntil: 'networkidle0',
-			} ),
-			uiLoaded(),
-		] );
 
-		await uiLoaded();
+		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Verify the transaction timeline reflects the refund events
 		await Promise.all( [

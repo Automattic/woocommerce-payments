@@ -103,6 +103,15 @@ const buttonThemeOptions = [
 		),
 		value: 'light',
 	},
+	{
+		label: makeButtonThemeText(
+			__(
+				'Outline {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with insufficient contrast.{{/helpText}}',
+				'woocommerce-payments'
+			)
+		),
+		value: 'light-outline',
+	},
 ];
 
 const DigitalWalletsSettings = () => {
