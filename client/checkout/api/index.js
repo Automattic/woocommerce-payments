@@ -273,6 +273,24 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Creates a setup intent without confirming it.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	initSetupIntent() {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			action: 'init_setup_intent',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+			return response.data;
+		} );
+	}
+
+	/**
 	 * Sets up an intent based on a payment method.
 	 *
 	 * @param {string} paymentMethodId The ID of the payment method.

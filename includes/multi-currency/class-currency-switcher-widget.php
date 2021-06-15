@@ -65,6 +65,7 @@ class Currency_Switcher_Widget extends WP_Widget {
 
 		?>
 		<form>
+			<?php $this->output_get_params(); ?>
 			<select
 				name="currency"
 				aria-label="<?php echo esc_attr( $title ); ?>"
@@ -168,5 +169,29 @@ class Currency_Switcher_Widget extends WP_Widget {
 		}
 
 		echo "<option value=\"$code\"$selected>$text</option>"; // phpcs:ignore WordPress.Security.EscapeOutput
+	}
+
+	/**
+	 * Output hidden inputs for every $_GET param.
+	 * This prevent the switcher form to remove them on submit.
+	 *
+	 * @return void
+	 */
+	private function output_get_params() {
+		// phpcs:disable WordPress.Security.NonceVerification
+		if ( empty( $_GET ) ) {
+			return;
+		}
+		$params = explode( '&', urldecode( http_build_query( $_GET ) ) );
+		foreach ( $params as $param ) {
+			$name_value = explode( '=', $param );
+			$name       = $name_value[0];
+			$value      = $name_value[1];
+			if ( 'currency' === $name ) {
+				continue;
+			}
+			echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . esc_attr( $value ) . '" />';
+		}
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
