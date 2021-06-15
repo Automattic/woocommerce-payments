@@ -46,7 +46,8 @@ export const EmptyStateList = ( props ) => {
 			<p className="intro-copy">
 				{ __(
 					"Collect payments, track cash flow, and manage recurring revenue directly from your store's \
-dashboard -- all without setup costs or monthly fees."
+dashboard -- all without setup costs or monthly fees.",
+					'woocommerce-payments'
 				) }
 			</p>
 			<p className="terms-of-service">
