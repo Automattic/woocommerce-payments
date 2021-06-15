@@ -6,9 +6,6 @@
 import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
 	PAYMENT_METHOD_NAME_UPE,
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
@@ -107,27 +104,9 @@ jQuery( function ( $ ) {
 		},
 	};
 
-	const elements = isUPEEnabled
-		? api.getStripe().elements( {
-				fonts: getFontRulesFromPage(),
-		  } )
-		: api.getStripe().elements();
-
-	// Customer information for Pay for Order and Save Payment method.
-	/* global wcpayCustomerData */
-	const preparedCustomerData =
-		'undefined' !== typeof wcpayCustomerData ? wcpayCustomerData : {};
-
-	// Create a card element.
-	const cardElement = elements.create( 'card', {
-		hidePostalCode: true,
-		classes: { base: 'wcpay-card-mounted' },
+	const elements = api.getStripe().elements( {
+		fonts: getFontRulesFromPage(),
 	} );
-
-	const cardPayment = {
-		type: 'card',
-		card: cardElement,
-	};
 
 	let upeElement = null;
 	let paymentIntentId = null;
@@ -239,29 +218,12 @@ jQuery( function ( $ ) {
 			} );
 	};
 
-	/**
-	 * Check if Card / UPE payment is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
-	 */
-	const isWCPayChosen = function () {
-		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
-	};
-
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
 	$( document.body ).on( 'updated_checkout', () => {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
-		if (
-			$( '#wcpay-card-element' ).length &&
-			! $( '#wcpay-card-element' ).children().length
-		) {
-			cardElement.unmount();
-			cardElement.mount( '#wcpay-card-element' );
-		}
-
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
@@ -277,13 +239,6 @@ jQuery( function ( $ ) {
 		$( 'form#order_review' ).length
 	) {
 		if (
-			$( '#wcpay-card-element' ).length &&
-			! $( '#wcpay-card-element' ).children().length
-		) {
-			cardElement.mount( '#wcpay-card-element' );
-		}
-
-		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
 			isUPEEnabled &&
@@ -293,138 +248,6 @@ jQuery( function ( $ ) {
 			mountUPEElement( useSetUpIntent );
 		}
 	}
-
-	// Update the validation state based on the element's state.
-	cardElement.addEventListener( 'change', ( event ) => {
-		const displayError = $( '#wcpay-errors' );
-		if ( event.error ) {
-			displayError
-				.html( '<ul class="woocommerce-error"><li /></ul>' )
-				.find( 'li' )
-				.text( event.error.message );
-		} else {
-			displayError.empty();
-		}
-	} );
-
-	// Create payment method on submission.
-	let paymentMethodGenerated;
-
-	/**
-	 * Creates and authorizes a setup intent, saves its ID in a hidden input, and re-submits the form.
-	 *
-	 * @param {Object} $form         The jQuery object for the form.
-	 * @param {Object} paymentMethod Payment method object.
-	 */
-	const handleAddCard = ( $form, paymentMethod ) => {
-		api.setupIntent( paymentMethod.id )
-			.then( function ( confirmedSetupIntent ) {
-				// Populate form with the setup intent and re-submit.
-				$form.append(
-					$( '<input type="hidden" />' )
-						.attr( 'id', 'wcpay-setup-intent' )
-						.attr( 'name', 'wcpay-setup-intent' )
-						.val( confirmedSetupIntent.id )
-				);
-
-				// WC core calls block() when add_payment_form is submitted, so we need to enable the ignore flag here to avoid
-				// the overlay blink when the form is blocked twice. We can restore its default value once the form is submitted.
-				const defaultIgnoreIfBlocked =
-					$.blockUI.defaults.ignoreIfBlocked;
-				$.blockUI.defaults.ignoreIfBlocked = true;
-
-				// Re-submit the form.
-				$form.removeClass( 'processing' ).submit();
-
-				// Restore default value for ignoreIfBlocked.
-				$.blockUI.defaults.ignoreIfBlocked = defaultIgnoreIfBlocked;
-			} )
-			.catch( function ( error ) {
-				paymentMethodGenerated = null;
-				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
-			} );
-	};
-
-	/**
-	 * Saves the payment method ID in a hidden input, and re-submits the form.
-	 *
-	 * @param {Object} $form         The jQuery object for the form.
-	 * @param {Object} paymentMethod Payment method object.
-	 */
-	const handleOrderPayment = ( $form, { id } ) => {
-		// Populate form with the payment method.
-		$( '#wcpay-payment-method' ).val( id );
-
-		// Re-submit the form.
-		$form.removeClass( 'processing' ).submit();
-	};
-
-	/**
-	 * Generates a payment method, saves its ID in a hidden input, and re-submits the form.
-	 *
-	 * @param {Object} $form The jQuery object for the form.
-	 * @param {Function} successHandler    Callback to be executed when payment method is generated.
-	 * @param {Object}  paymentMethodDetails { type: 'card', card? : Stripe element  }.
-	 * @return {boolean} A flag for the event handler.
-	 */
-	const handlePaymentMethodCreation = (
-		$form,
-		successHandler,
-		paymentMethodDetails
-	) => {
-		// We'll resubmit the form after populating our payment method, so if this is the second time this event
-		// is firing we should let the form submission happen.
-		if ( paymentMethodGenerated ) {
-			paymentMethodGenerated = null;
-			return;
-		}
-
-		blockUI( $form );
-		const request = api.generatePaymentMethodRequest(
-			paymentMethodDetails,
-			preparedCustomerData
-		);
-
-		// Populate payment method owner details.
-		const billingName = $( '#billing_first_name' ).length
-			? (
-					$( '#billing_first_name' ).val() +
-					' ' +
-					$( '#billing_last_name' ).val()
-			  ).trim()
-			: undefined;
-
-		request.setBillingDetail( 'name', billingName );
-		request.setBillingDetail( 'email', $( '#billing_email' ).val() );
-		request.setBillingDetail( 'phone', $( '#billing_phone' ).val() );
-		request.setAddressDetail( 'city', $( '#billing_city' ).val() );
-		request.setAddressDetail( 'country', $( '#billing_country' ).val() );
-		request.setAddressDetail( 'line1', $( '#billing_address_1' ).val() );
-		request.setAddressDetail( 'line2', $( '#billing_address_2' ).val() );
-		request.setAddressDetail(
-			'postal_code',
-			$( '#billing_postcode' ).val()
-		);
-		request.setAddressDetail( 'state', $( '#billing_state' ).val() );
-
-		request
-			.send()
-			.then( ( { paymentMethod } ) => {
-				// Flag that the payment method has been successfully generated so that we can allow the form
-				// submission next time.
-				paymentMethodGenerated = true;
-
-				successHandler( $form, paymentMethod );
-			} )
-			.catch( ( error ) => {
-				$form.removeClass( 'processing' ).unblock();
-				showError( error.message );
-			} );
-
-		// Prevent form submission so that we can fire it once a payment method has been generated.
-		return false;
-	};
 
 	/**
 	 * Submits checkout form via AJAX to create order and uses custom
@@ -598,9 +421,6 @@ jQuery( function ( $ ) {
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
-		PAYMENT_METHOD_NAME_GIROPAY,
-		PAYMENT_METHOD_NAME_SEPA,
-		PAYMENT_METHOD_NAME_SOFORT,
 		PAYMENT_METHOD_NAME_UPE,
 	];
 	const checkoutEvents = wcpayPaymentMethods
@@ -608,47 +428,20 @@ jQuery( function ( $ ) {
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		if ( ! isUsingSavedPaymentMethod() ) {
-			const paymentMethodDetails = cardPayment;
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPECheckout( $( this ) );
 				return false;
 			}
-
-			return handlePaymentMethodCreation(
-				$( this ),
-				handleOrderPayment,
-				paymentMethodDetails
-			);
 		}
-	} );
-
-	// Handle the Pay for Order form if WooCommerce Payments is chosen.
-	$( '#order_review' ).on( 'submit', () => {
-		if ( isUsingSavedPaymentMethod() || ! isWCPayChosen() ) {
-			return;
-		}
-
-		return handlePaymentMethodCreation(
-			$( '#order_review' ),
-			handleOrderPayment,
-			cardPayment
-		);
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
-			const paymentMethodDetails = cardPayment;
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
 				return false;
 			}
-
-			return handlePaymentMethodCreation(
-				$( 'form#add_payment_method' ),
-				handleAddCard,
-				paymentMethodDetails
-			);
 		}
 	} );
 
