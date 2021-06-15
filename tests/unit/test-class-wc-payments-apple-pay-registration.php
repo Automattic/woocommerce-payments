@@ -107,7 +107,7 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			[ $this->wc_apple_pay_registration, 'add_domain_association_rewrite_rule' ]
 		);
 
-		$this->assertIsInt( $add_rewrite_rules_callback_priority );
+		$this->assertInternalType( 'int', $add_rewrite_rules_callback_priority );
 		$this->assertLessThan(
 			10,
 			$add_rewrite_rules_callback_priority
@@ -120,6 +120,6 @@ class WC_Payments_Apple_Pay_Registration_Test extends WP_UnitTestCase {
 			[ $this->wc_apple_pay_registration, 'verify_domain_if_configured' ]
 		);
 
-		$this->assertIsInt( $verify_callback_priority );
+		$this->assertInternalType( 'int', $verify_callback_priority );
 	}
 }
