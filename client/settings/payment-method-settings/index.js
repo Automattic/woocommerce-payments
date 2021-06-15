@@ -20,7 +20,7 @@ import SaveSettingsSection from '../save-settings-section';
 
 /* eslint-disable camelcase */
 const methods = {
-	woocommerce_payments_digital_wallets: {
+	digital_wallets: {
 		title: 'Express checkouts',
 		description: () => (
 			<>

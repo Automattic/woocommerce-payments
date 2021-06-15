@@ -44,6 +44,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
+		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base,
@@ -100,7 +102,35 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'array',
 						'items'             => [
 							'type' => 'string',
-							'enum' => Digital_Wallets_Locations::toArray(),
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'digital_wallets_button_type'       => [
+						'description'       => __( '1-click checkout button types.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'items'             => [
+							'type' => 'string',
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_type']['options'] ),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'digital_wallets_button_size'       => [
+						'description'       => __( '1-click checkout button sizes.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'items'             => [
+							'type' => 'string',
+							// it can happen that `$wcpay_form_fields['payment_request_button_size']` is empty (in tests) - fixing temporarily.
+							'enum' => array_keys( isset( $wcpay_form_fields['payment_request_button_size']['options'] ) ? $wcpay_form_fields['payment_request_button_size']['options'] : [] ),
+						],
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'digital_wallets_button_theme'      => [
+						'description'       => __( '1-click checkout button themes.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'items'             => [
+							'type' => 'string',
+							'enum' => array_keys( $wcpay_form_fields['payment_request_button_theme']['options'] ),
 						],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -127,6 +157,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_digital_wallets_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
 				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'digital_wallets_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
+				'digital_wallets_button_size'       => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
+				'digital_wallets_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
+				'digital_wallets_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
 			]
 		);
 	}
@@ -145,6 +178,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_account_statement_descriptor( $request );
 		$this->update_is_digital_wallets_enabled( $request );
 		$this->update_digital_wallets_enabled_locations( $request );
+		$this->update_digital_wallets_appearance( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -190,7 +224,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			)
 		);
 
-		$this->wcpay_gateway->update_option( 'enabled_payment_method_ids', $payment_method_ids_to_enable );
+		$this->wcpay_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
 	}
 
 	/**
@@ -291,5 +325,26 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$digital_wallets_enabled_locations = $request->get_param( 'digital_wallets_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'payment_request_button_locations', $digital_wallets_enabled_locations );
+	}
+
+	/**
+	 * Updates appearance attributes of the digital wallets button.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_digital_wallets_appearance( WP_REST_Request $request ) {
+		$attributes = [
+			'digital_wallets_button_type'  => 'payment_request_button_type',
+			'digital_wallets_button_size'  => 'payment_request_button_size',
+			'digital_wallets_button_theme' => 'payment_request_button_theme',
+		];
+		foreach ( $attributes as $request_key => $attribute ) {
+			if ( ! $request->has_param( $request_key ) ) {
+				continue;
+			}
+
+			$value = $request->get_param( $request_key );
+			$this->wcpay_gateway->update_option( $attribute, $value );
+		}
 	}
 }

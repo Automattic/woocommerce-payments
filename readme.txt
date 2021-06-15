@@ -101,6 +101,16 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 2.6.0 - 2021-xx-xx =
+* Add - Notify the admin if WordPress.com user connection is broken.
+* Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
+* Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
+* Fix - Deposit date on Transactions list page.
+* Add - Error message when total size of dispute evidence files uploaded goes over limit.
+* Update - Pass currency to wc_price when adding intent notes to orders.
+* Update - Instant deposit inbox note wording.
+* Fix - Deposit overview details for non instant ones.
+
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Use Site Language when rendering Stripe elements.

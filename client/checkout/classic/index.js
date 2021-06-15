@@ -76,6 +76,9 @@ jQuery( function ( $ ) {
 			return hiddenInput;
 		},
 		init: function () {
+			if ( ! $( ' #billing_first_name' ).length ) {
+				return;
+			}
 			const hiddenDiv = this.getHiddenContainer();
 
 			// // Hidden focusable element.
@@ -211,13 +214,19 @@ jQuery( function ( $ ) {
 
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
+	 *
+	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = function () {
+	const mountUPEElement = function ( isSetupIntent = false ) {
 		// Do not mount UPE twice.
 		if ( upeElement || paymentIntentId ) {
 			return;
 		}
-		api.createIntent()
+		const intentAction = isSetupIntent
+			? api.initSetupIntent()
+			: api.createIntent();
+
+		intentAction
 			.then( ( response ) => {
 				// I repeat, do NOT mount UPE twice.
 				if ( upeElement || paymentIntentId ) {
@@ -230,10 +239,12 @@ jQuery( function ( $ ) {
 				hiddenElementsForUPE.init();
 				const appearance = getAppearance();
 				hiddenElementsForUPE.cleanup();
+				const businessName = getConfig( 'accountDescriptor' );
 
 				upeElement = elements.create( 'payment', {
 					clientSecret,
 					appearance,
+					business: { name: businessName },
 				} );
 				upeElement.mount( '#wcpay-upe-element' );
 				upeElement.on( 'change', ( event ) => {
@@ -334,14 +345,14 @@ jQuery( function ( $ ) {
 		if ( $( '#wcpay-sepa-element' ).length ) {
 			sepaElement.mount( '#wcpay-sepa-element' );
 		}
-
 		if (
 			$( '#wcpay-upe-element' ).length &&
 			! $( '#wcpay-upe-element' ).children().length &&
 			isUPEEnabled &&
 			! upeElement
 		) {
-			mountUPEElement();
+			const useSetUpIntent = $( 'form#add_payment_method' ).length;
+			mountUPEElement( useSetUpIntent );
 		}
 	}
 
@@ -500,6 +511,51 @@ jQuery( function ( $ ) {
 	 * @param {Object} $form The jQuery object for the form.
 	 * @return {boolean} A flag for the event handler.
 	 */
+	const handleUPEAddPayment = async ( $form ) => {
+		if ( ! upeElement ) {
+			showError( 'Your payment information is incomplete.' );
+			return;
+		}
+
+		const return_url = getConfig( 'confirmSetupIntentreturnURL' );
+		if ( ! isUPEComplete ) {
+			// If UPE fields are not filled, confirm setup to trigger validation errors
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+			return;
+		}
+
+		blockUI( $form );
+
+		try {
+			const { error } = await api.getStripe().confirmSetup( {
+				element: upeElement,
+				confirmParams: {
+					return_url: return_url,
+				},
+			} );
+			if ( error ) {
+				throw error;
+			}
+		} catch ( error ) {
+			$form.removeClass( 'processing' ).unblock();
+			showError( error.message );
+		}
+	};
+
+	/**
+	 * Submits checkout form via AJAX to create order and uses custom
+	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 *
+	 * @param {Object} $form The jQuery object for the form.
+	 * @return {boolean} A flag for the event handler.
+	 */
 	const handleUPECheckout = async ( $form ) => {
 		if ( ! upeElement ) {
 			showError( 'Your payment information is incomplete.' );
@@ -539,11 +595,11 @@ jQuery( function ( $ ) {
 				},
 			} );
 			if ( error ) {
-				throw error.message;
+				throw error;
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error );
+			showError( error.message );
 		}
 	};
 
@@ -691,7 +747,11 @@ jQuery( function ( $ ) {
 				paymentMethodDetails = giropayPayment;
 			} else if ( isWCPaySofortChosen() ) {
 				paymentMethodDetails = sofortPayment;
+			} else if ( isUPEEnabled && paymentIntentId ) {
+				handleUPEAddPayment( $( this ) );
+				return false;
 			}
+
 			return handlePaymentMethodCreation(
 				$( 'form#add_payment_method' ),
 				handleAddCard,

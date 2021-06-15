@@ -61,14 +61,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $account;
+	protected $account;
 
 	/**
 	 * WC_Payments_Customer instance for working with customer information
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
-	private $customer_service;
+	protected $customer_service;
 
 	/**
 	 * WC_Payments_Token instance for working with customer tokens
@@ -260,14 +260,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( WC_Payments_Features::is_grouped_settings_enabled() ) {
-			$this->form_fields['enabled_payment_method_ids'] = [
+			// previously called `enabled_payment_method_ids` - some developers might have the old setting still saved in their DB.
+			$this->form_fields['upe_enabled_payment_method_ids'] = [
 				'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 				'type'    => 'multiselect',
-				'default' => [ 'woocommerce_payments' ],
+				'default' => [ 'card' ],
 				'options' => [],
 			];
 
+			$this->form_fields['payment_request_button_size'] = [
+				'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
+				'type'        => 'select',
+				'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
+				'default'     => 'default',
+				'desc_tip'    => true,
+				'options'     => [
+					'default' => __( 'Default', 'woocommerce-payments' ),
+					'medium'  => __( 'Medium', 'woocommerce-payments' ),
+					'large'   => __( 'Large', 'woocommerce-payments' ),
+				],
+			];
+
+			// in the new settings, "checkout" is going to be enabled by default (if it is a new WCPay installation).
 			$this->form_fields['payment_request_button_locations']['default'][] = 'checkout';
+
+			// no longer needed in the new settings.
+			unset( $this->form_fields['payment_request_button_branded_type'] );
+			// injecting some of the new options.
+			$this->form_fields['payment_request_button_type']['options']['default'] = __( 'Only icon', 'woocommerce-payments' );
+			$this->form_fields['payment_request_button_type']['options']['book']    = __( 'Book', 'woocommerce-payments' );
+			// no longer valid options.
+			unset( $this->form_fields['payment_request_button_type']['options']['branded'] );
+			unset( $this->form_fields['payment_request_button_type']['options']['custom'] );
 		}
 
 		// Giropay option hidden behind feature flag.
@@ -463,14 +487,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function output_payments_settings_screen() {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
-		$hide_save_button                  = true;
-		$is_payment_method_settings_screen = self::GATEWAY_ID !== $this->id;
+		$hide_save_button = true;
 
-		if ( $is_payment_method_settings_screen ) :
+		if ( ! empty( $_GET['method'] ) ) :
 			?>
 			<div
 				id="wcpay-payment-method-settings-container"
-				data-method-id="<?php echo esc_attr( $this->id ); ?>"
+				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); ?>"
 			></div>
 		<?php else : ?>
 			<div id="wcpay-account-settings-container"></div>
@@ -982,7 +1005,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -1001,7 +1024,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 						]
 					),
-					wc_price( $amount ),
+					wc_price( $amount, [ 'currency' => $currency ] ),
 					$intent_id
 				);
 
@@ -1020,7 +1043,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 								'code'   => '<code>',
 							]
 						),
-						wc_price( $amount ),
+						wc_price( $amount, [ 'currency' => $currency ] ),
 						$intent_id
 					);
 					$order->add_order_note( $note );
@@ -2114,7 +2137,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_enabled_payment_method_ids() {
-		return $this->get_option( 'enabled_payment_method_ids', [] );
+		return $this->get_option(
+			'upe_enabled_payment_method_ids',
+			[
+				'card',
+			]
+		);
 	}
 
 	/**
@@ -2127,8 +2155,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return apply_filters(
 			'wcpay_upe_available_payment_methods',
 			[
-				// TODO: at this point, with UPE, we could just get rid of the prefixes on the payment method names.
-				'woocommerce_payments',
+				'card',
 			]
 		);
 	}

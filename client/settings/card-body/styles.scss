@@ -1,0 +1,22 @@
+.wcpay-card-body {
+	> :first-child {
+		margin-top: 0;
+	}
+
+	> :last-child {
+		margin-bottom: 0;
+	}
+
+	input,
+	select {
+		margin: 0;
+	}
+
+	.components-radio-control__option {
+		margin-bottom: 8px;
+	}
+
+	.components-base-control__help {
+		margin-top: unset;
+	}
+}

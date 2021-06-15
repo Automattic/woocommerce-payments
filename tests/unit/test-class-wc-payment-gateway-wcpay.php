@@ -1259,14 +1259,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_outputs_payment_method_settings_screen() {
-		$gateway     = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->disableOriginalConstructor()
-			->setMethods( null )
-			->getMock();
-		$gateway->id = 'foo';
-
+		$_GET['method'] = 'foo';
 		ob_start();
-		$gateway->output_payments_settings_screen();
+		$this->wcpay_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-payment-method-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
@@ -1311,7 +1306,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		];
 	}
 
-	public function test_payment_request_button_locations_defaults() {
+	public function test_digital_wallets_form_field_defaults_with_grouped_settings_disabled() {
 		// when the "grouped settings" flag is disabled, the default values for the `payment_request_button_locations` option should not include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '0' );
 
@@ -1333,9 +1328,23 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
 		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals(
+			[
+				'default',
+				'buy',
+				'donate',
+				'branded',
+				'custom',
+			],
+			array_keys( $form_fields['payment_request_button_type']['options'] )
+		);
+		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 
-	public function test_payment_request_button_locations_defaults_grouped_settings_enabled() {
+	public function test_digital_wallets_form_field_defaults_with_grouped_settings_enabled() {
 		// when the "grouped settings" flag is enabled, the default values for the `payment_request_button_locations` option should include "checkout".
 		update_option( '_wcpay_feature_grouped_settings', '1' );
 
@@ -1358,5 +1367,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			],
 			$this->wcpay_gateway->get_option( 'payment_request_button_locations' )
 		);
+		$this->assertEquals(
+			'default',
+			$this->wcpay_gateway->get_option( 'payment_request_button_size' )
+		);
+
+		$form_fields = $this->wcpay_gateway->get_form_fields();
+
+		$this->assertEquals( [ 'default', 'buy', 'donate', 'book' ], array_keys( $form_fields['payment_request_button_type']['options'] ) );
+		$this->assertEquals( [ 'dark', 'light', 'light-outline' ], array_keys( $form_fields['payment_request_button_theme']['options'] ) );
 	}
 }

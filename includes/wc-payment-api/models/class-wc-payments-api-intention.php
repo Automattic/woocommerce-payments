@@ -41,6 +41,13 @@ class WC_Payments_API_Intention {
 	private $status;
 
 	/**
+	 * The ID of charge associated with intention
+	 *
+	 * @var string
+	 */
+	private $charge_id;
+
+	/**
 	 * The client secret of the intention
 	 *
 	 * @var string
@@ -83,19 +90,27 @@ class WC_Payments_API_Intention {
 	private $last_payment_error;
 
 	/**
+	 * The payment method details of the charge
+	 *
+	 * @var array
+	 */
+	private $payment_method_details;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
-	 * @param string      $id                 - ID of the intention.
-	 * @param integer     $amount             - Amount charged.
-	 * @param string      $currency           - The currency of the intention.
-	 * @param string|null $customer_id        - Stripe ID of the customer.
-	 * @param string|null $payment_method_id  - Stripe ID of the payment method.
-	 * @param DateTime    $created            - Time charge created.
-	 * @param string      $status             - Intention status.
-	 * @param string      $charge_id          - ID of charge associated with intention.
-	 * @param string      $client_secret      - The client secret of the intention.
-	 * @param array       $next_action        - An array containing information for next action to take.
-	 * @param array       $last_payment_error - An array containing details of any errors.
+	 * @param string      $id                     - ID of the intention.
+	 * @param integer     $amount                 - Amount charged.
+	 * @param string      $currency               - The currency of the intention.
+	 * @param string|null $customer_id            - Stripe ID of the customer.
+	 * @param string|null $payment_method_id      - Stripe ID of the payment method.
+	 * @param DateTime    $created                - Time charge created.
+	 * @param string      $status                 - Intention status.
+	 * @param string      $charge_id              - ID of charge associated with intention.
+	 * @param string      $client_secret          - The client secret of the intention.
+	 * @param array       $next_action            - An array containing information for next action to take.
+	 * @param array       $last_payment_error     - An array containing details of any errors.
+	 * @param array       $payment_method_details - An array containing payment method details of associated charge.
 	 */
 	public function __construct(
 		$id,
@@ -108,19 +123,21 @@ class WC_Payments_API_Intention {
 		$charge_id,
 		$client_secret,
 		$next_action = [],
-		$last_payment_error = []
+		$last_payment_error = [],
+		$payment_method_details = []
 	) {
-		$this->id                 = $id;
-		$this->amount             = $amount;
-		$this->created            = $created;
-		$this->status             = $status;
-		$this->charge_id          = $charge_id;
-		$this->client_secret      = $client_secret;
-		$this->currency           = strtoupper( $currency );
-		$this->next_action        = $next_action;
-		$this->last_payment_error = $last_payment_error;
-		$this->customer_id        = $customer_id;
-		$this->payment_method_id  = $payment_method_id;
+		$this->id                     = $id;
+		$this->amount                 = $amount;
+		$this->created                = $created;
+		$this->status                 = $status;
+		$this->charge_id              = $charge_id;
+		$this->client_secret          = $client_secret;
+		$this->currency               = strtoupper( $currency );
+		$this->next_action            = $next_action;
+		$this->last_payment_error     = $last_payment_error;
+		$this->customer_id            = $customer_id;
+		$this->payment_method_id      = $payment_method_id;
+		$this->payment_method_details = $payment_method_details;
 	}
 
 	/**
@@ -220,5 +237,14 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_last_payment_error() {
 		return $this->last_payment_error;
+	}
+
+	/**
+	 * Returns the payment method details from the charge of this intention
+	 *
+	 * @return array
+	 */
+	public function get_payment_method_details() {
+		return $this->payment_method_details;
 	}
 }

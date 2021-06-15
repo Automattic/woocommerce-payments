@@ -49,6 +49,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 		update_option( '_wcpay_feature_grouped_settings', '1' );
+		$this->set_available_gateways( [ 'card' ] );
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -61,7 +62,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
-		$this->set_available_gateways( [ 'woocommerce_payments' ] );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -77,7 +77,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['enabled_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'woocommerce_payments' ],
+			[ 'card' ],
 			$enabled_method_ids
 		);
 	}
@@ -122,7 +122,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_update_settings_request_returns_status_code_200() {
 		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
 		$request->set_param( 'is_wcpay_enabled', true );
-		$request->set_param( 'enabled_payment_method_ids', [ 'woocommerce_payments' ] );
+		$request->set_param( 'enabled_payment_method_ids', [ 'card' ] );
 
 		$response = rest_do_request( $request );
 
@@ -174,7 +174,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'enabled_payment_method_ids' ) );
+		$this->assertEquals( [ 'bar' ], $this->gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
@@ -307,6 +307,39 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$request->set_param( 'account_statement_descriptor', $new_account_descriptor );
 
 		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_saves_digital_wallets_button_theme() {
+		$this->assertEquals( 'dark', $this->gateway->get_option( 'payment_request_button_theme' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_theme', 'light' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'light', $this->gateway->get_option( 'payment_request_button_theme' ) );
+	}
+
+	public function test_update_settings_saves_digital_wallets_button_size() {
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_size' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_size', 'medium' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'medium', $this->gateway->get_option( 'payment_request_button_size' ) );
+	}
+
+	public function test_update_settings_saves_digital_wallets_button_type() {
+		$this->assertEquals( 'buy', $this->gateway->get_option( 'payment_request_button_type' ) );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'digital_wallets_button_type', 'book' );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
 	public function test_update_settings_does_not_save_account_statement_descriptor_if_not_supplied() {
