@@ -334,6 +334,17 @@ class Multi_Currency {
 	}
 
 	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
+		}
+	}
+
+	/**
 	 * Gets the user selected currency, or `$default_currency` if is not set.
 	 *
 	 * @return Currency
@@ -375,16 +386,12 @@ class Multi_Currency {
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
-	}
 
-	/**
-	 * Sets the enabled currencies for the store.
-	 *
-	 * @param array $currencies Array of currency codes to be enabled.
-	 */
-	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			update_option( $this->id . '_enabled_currencies', $currencies );
+		// Recalculate cart when currency changes.
+		if ( did_action( 'wp_loaded' ) ) {
+			$this->recalculate_cart();
+		} else {
+			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
 	}
 
@@ -399,9 +406,13 @@ class Multi_Currency {
 		}
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
 
-		// Recalculate cart when currency changes.
-		add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
+	/**
+	 * Recalculates WooCommerce cart totals.
+	 */
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
@@ -441,13 +452,6 @@ class Multi_Currency {
 			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
-	}
-
-	/**
-	 * Recalculates WooCommerce cart totals.
-	 */
-	public function recalculate_cart() {
-		WC()->cart->calculate_totals();
 	}
 
 	/**

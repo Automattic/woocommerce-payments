@@ -15,19 +15,19 @@ import SofortIcon from '../../gateway-icons/sofort';
 
 const paymentMethods = {
 	/* eslint-disable camelcase */
-	woocommerce_payments: {
+	card: {
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		Icon: CreditCardIcon,
 	},
-	woocommerce_payments_giropay: {
+	giropay: {
 		label: __( 'GiroPay', 'woocommerce-payments' ),
 		Icon: GiropayIcon,
 	},
-	woocommerce_payments_sepa: {
+	sepa_debit: {
 		label: __( 'Direct Debit Payments', 'woocommerce-payments' ),
 		Icon: SepaIcon,
 	},
-	woocommerce_payments_sofort: {
+	sofort: {
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		Icon: SofortIcon,
 	},
