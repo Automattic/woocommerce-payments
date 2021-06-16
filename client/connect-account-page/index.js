@@ -5,6 +5,7 @@
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
