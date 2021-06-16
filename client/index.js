@@ -14,7 +14,8 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPageExperiment from 'connect-account-page-experiment';
+import ConnectAccountPage from 'connect-account-page';
+
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -38,7 +39,7 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPageExperiment,
+			container: ConnectAccountPage,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
