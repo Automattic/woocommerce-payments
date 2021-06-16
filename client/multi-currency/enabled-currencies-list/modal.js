@@ -91,10 +91,12 @@ const EnabledCurrenciesModal = ( { className } ) => {
 
 	const handleAddSelectedCancelClick = useCallback( () => {
 		setIsEnabledCurrenciesModalOpen( false );
+		setSearchText( '' );
 	}, [ setIsEnabledCurrenciesModalOpen ] );
 
 	const handleAddSelectedClick = () => {
 		setIsEnabledCurrenciesModalOpen( false );
+		setSearchText( '' );
 		const newCurrencies = Object.entries( selectedCurrencies )
 			.filter( ( [ , enabled ] ) => enabled )
 			.map( ( [ method ] ) => method );

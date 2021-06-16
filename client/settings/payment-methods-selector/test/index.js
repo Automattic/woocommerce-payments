@@ -24,10 +24,10 @@ describe( 'PaymentMethodsSelector', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'woocommerce_payments',
-			'woocommerce_payments_giropay',
-			'woocommerce_payments_sofort',
-			'woocommerce_payments_sepa',
+			'card',
+			'giropay',
+			'sofort',
+			'sepa_debit',
 		] );
 	} );
 
@@ -54,7 +54,7 @@ describe( 'PaymentMethodsSelector', () => {
 
 	test( 'Clicking "Add Payment Method" opens the Payment method selection', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments' ],
+			[ 'card' ],
 			jest.fn( () => {} ),
 		] );
 
@@ -122,7 +122,7 @@ describe( 'PaymentMethodsSelector', () => {
 
 	test( 'Only payment methods that are not enabled are listed', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sofort' ],
+			[ 'card', 'sofort' ],
 			jest.fn( () => {} ),
 		] );
 
@@ -143,7 +143,7 @@ describe( 'PaymentMethodsSelector', () => {
 	test( 'Selecting payment methods does not update enabled payment methods', () => {
 		const updateEnabledPaymentMethodIdsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 			updateEnabledPaymentMethodIdsMock,
 		] );
 
@@ -192,7 +192,7 @@ describe( 'PaymentMethodsSelector', () => {
 	test( 'Selecting a payment method and clicking "Add selected" adds the method and closes the modal', () => {
 		const updateEnabledPaymentMethodIdsMock = jest.fn( () => {} );
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'woocommerce_payments', 'woocommerce_payments_sepa' ],
+			[ 'card', 'sepa_debit' ],
 			updateEnabledPaymentMethodIdsMock,
 		] );
 
@@ -213,9 +213,9 @@ describe( 'PaymentMethodsSelector', () => {
 		} );
 		user.click( addSelectedButton );
 		expect( updateEnabledPaymentMethodIdsMock ).toHaveBeenCalledWith( [
-			'woocommerce_payments',
-			'woocommerce_payments_sepa',
-			'woocommerce_payments_giropay',
+			'card',
+			'sepa_debit',
+			'giropay',
 		] );
 		expect(
 			screen.queryByRole( 'button', {
