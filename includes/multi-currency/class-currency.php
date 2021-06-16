@@ -7,6 +7,8 @@
 
 namespace WCPay\Multi_Currency;
 
+use WC_Payments_Utils;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -50,6 +52,14 @@ class Currency implements \JsonSerializable {
 	private $rounding;
 
 	/**
+	 * Is currency zero decimal?
+	 *
+	 * @var bool|null
+	 */
+	private $is_zero_decimal;
+
+
+	/**
 	 * Constructor.
 	 *
 	 * @param string $code Three letter currency code.
@@ -61,6 +71,10 @@ class Currency implements \JsonSerializable {
 
 		if ( get_woocommerce_currency() === $code ) {
 			$this->is_default = true;
+		}
+
+		if ( in_array( strtolower( $code ), WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
+			$this->is_zero_decimal = true;
 		}
 	}
 
@@ -158,6 +172,15 @@ class Currency implements \JsonSerializable {
 	}
 
 	/**
+	 * Retrieves if the currency is zero decimal.
+	 *
+	 * @return bool
+	 */
+	public function get_is_zero_decimal() {
+		return $this->is_zero_decimal || false;
+	}
+
+	/**
 	 * Sets the currency's charm rate.
 	 *
 	 * @param float $charm Charm rate.
@@ -191,13 +214,14 @@ class Currency implements \JsonSerializable {
 	 */
 	public function jsonSerialize() {
 		return [
-			'code'       => $this->code,
-			'rate'       => $this->get_rate(),
-			'name'       => html_entity_decode( $this->get_name() ),
-			'id'         => $this->get_id(),
-			'is_default' => $this->get_is_default(),
-			'flag'       => $this->get_flag(),
-			'symbol'     => html_entity_decode( $this->get_symbol() ),
+			'code'            => $this->code,
+			'rate'            => $this->get_rate(),
+			'name'            => html_entity_decode( $this->get_name() ),
+			'id'              => $this->get_id(),
+			'is_default'      => $this->get_is_default(),
+			'flag'            => $this->get_flag(),
+			'symbol'          => html_entity_decode( $this->get_symbol() ),
+			'is_zero_decimal' => $this->get_is_zero_decimal(),
 		];
 	}
 }
