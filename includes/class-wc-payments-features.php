@@ -84,8 +84,8 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                  => self::is_upe_enabled(),
-				'upe_settings_preview' => self::is_upe_settings_preview_enabled(),
+				'upe'                => self::is_upe_enabled(),
+				'upeSettingsPreview' => self::is_upe_settings_preview_enabled(),
 			]
 		);
 	}

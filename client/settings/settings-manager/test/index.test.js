@@ -12,8 +12,7 @@ import WCPaySettingsContext from '../../wcpay-settings-context';
 
 describe( 'SettingsManager', () => {
 	it( 'renders the PaymentMethods section if the UPE feature flag is enabled', () => {
-		// eslint-disable-next-line camelcase
-		const context = { featureFlags: { upe_settings_preview: true } };
+		const context = { featureFlags: { upeSettingsPreview: true } };
 
 		render(
 			<WCPaySettingsContext.Provider value={ context }>
