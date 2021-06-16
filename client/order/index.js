@@ -21,18 +21,17 @@ jQuery( function ( $ ) {
 			$refundButton
 				.addClass( 'disabled' )
 				.attr( 'readonly', 'readonly' )
+				// Add the right label to indicate why the button is disabled.
+				.attr( {
+					// Tips are readable through $.data(), but jQuery.tipTip use the title attribute to generate
+					// the tooltip.
+					title: manualRefundsTip,
+				} )
 				.on( 'click', function () {
 					return false;
-				} );
-
-			// Add the right label to indicate why the button is disabled.
-			$refundButton.attr( {
-				// Tips are readable through $.data(), but jQuery.tipTip use the title attribute to generate
-				// the tooltip.
-				title: manualRefundsTip,
-			} );
-			// Regenerate the tipTip tooltip.
-			$refundButton.tipTip();
+				} )
+				// Regenerate the tipTip tooltip.
+				.tipTip();
 		} );
 	}
 } );
