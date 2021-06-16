@@ -4,6 +4,11 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
+import moment from 'moment';
+
+/**
+ * Internal dependencies
+ */
 import { STORE_NAME } from '../constants';
 
 export const useDeposit = ( id ) =>
@@ -83,7 +88,11 @@ export const useDeposits = ( {
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween,
+				dateBetween:
+					dateBetween &&
+					dateBetween.sort( ( a, b ) =>
+						moment( a ).diff( moment( b ) )
+					),
 				statusIs,
 				statusIsNot,
 			};
@@ -103,7 +112,7 @@ export const useDeposits = ( {
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			statusIs,
 			statusIsNot,
 		]
@@ -142,7 +151,7 @@ export const useDepositsSummary = ( {
 			match,
 			dateBefore,
 			dateAfter,
-			dateBetween,
+			JSON.stringify( dateBetween ),
 			statusIs,
 			statusIsNot,
 		]
