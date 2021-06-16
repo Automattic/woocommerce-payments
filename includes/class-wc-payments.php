@@ -156,7 +156,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
-		include_once __DIR__ . '/compat/subscriptions/class-wc-payment-gateway-wcpay-subscriptions-trait.php';
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
