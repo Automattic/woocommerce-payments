@@ -14,7 +14,7 @@ jQuery( function ( $ ) {
 		 * The script is included in the footer, so all the DOM must already be in place.
 		 * This allows us to modify the tip before it gets used on document.ready.
 		 */
-		$( '.do-manual-refund' ).ecah( function () {
+		$( '.do-manual-refund' ).each( function () {
 			const $refundButton = $( this );
 
 			// Disable the manual refund button.
@@ -27,9 +27,12 @@ jQuery( function ( $ ) {
 
 			// Add the right label to indicate why the button is disabled.
 			$refundButton.attr( {
-				// Tips shoudl be accessible through $.data(), but jQuery.tipTip uses attributes.
-				'data-tip': manualRefundsTip,
+				// Tips are readable through $.data(), but jQuery.tipTip use the title attribute to generate
+				// the tooltip.
+				title: manualRefundsTip,
 			} );
+			// Regenerate the tipTip tooltip.
+			$refundButton.tipTip();
 		} );
 	}
 } );
