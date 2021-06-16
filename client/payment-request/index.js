@@ -12,9 +12,11 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
-
-import { displayRedirectDialog } from './redirect-dialog';
+import {
+	shouldUseGooglePayBrand,
+	getPaymentRequest,
+	displayLoginConfirmation,
+} from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -414,6 +416,13 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
+					evt.preventDefault();
+					displayLoginConfirmation( paymentRequestType );
+					return;
+				}
+
 				// First check if product can be added to cart.
 				if ( addToCartButton.is( '.disabled' ) ) {
 					evt.preventDefault(); // Prevent showing payment request modal.
@@ -442,12 +451,6 @@ jQuery( ( $ ) => {
 				}
 
 				wcpayPaymentRequest.addToCart();
-
-				if ( wcpayPaymentRequestParams.is_login_required ) {
-					evt.preventDefault();
-					displayRedirectDialog( paymentRequestType );
-					return;
-				}
 
 				if (
 					wcpayPaymentRequest.isCustomPaymentRequestButton(
@@ -521,9 +524,10 @@ jQuery( ( $ ) => {
 
 		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
 			prButton.on( 'click', ( evt ) => {
-				if ( wcpayPaymentRequestParams.is_login_required ) {
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
 					evt.preventDefault();
-					displayRedirectDialog( paymentRequestType );
+					displayLoginConfirmation( paymentRequestType );
 					return;
 				}
 

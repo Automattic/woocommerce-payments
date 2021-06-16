@@ -18,9 +18,8 @@ import {
 	getPaymentRequestData,
 	updatePaymentRequest,
 	normalizeLineItems,
+	displayLoginConfirmation,
 } from '../utils';
-
-import { displayRedirectDialog } from '../redirect-dialog';
 
 export const useInitialization = ( {
 	api,
@@ -85,9 +84,9 @@ export const useInitialization = ( {
 	const onButtonClick = useCallback(
 		( evt, pr ) => {
 			// If login is required, display redirect confirmation dialog.
-			if ( getPaymentRequestData( 'is_login_required' ) ) {
+			if ( getPaymentRequestData( 'login_confirmation' ) ) {
 				evt.preventDefault();
-				displayRedirectDialog( paymentRequestType );
+				displayLoginConfirmation( paymentRequestType );
 				return;
 			}
 
