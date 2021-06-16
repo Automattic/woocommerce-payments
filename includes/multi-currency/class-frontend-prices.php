@@ -223,8 +223,8 @@ class Frontend_Prices {
 
 		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
 
-		$order->update_meta_data( 'wcpay_multi_currency_order_exchange_rate', $exchange_rate );
-		$order->update_meta_data( 'wcpay_multi_currency_order_default_currency', $default_currency->get_code() );
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', $default_currency->get_code() );
 		$order->save_meta_data();
 	}
 }

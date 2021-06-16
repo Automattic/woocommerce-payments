@@ -263,8 +263,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		// Get the order from the database.
 		$order = wc_get_order( $order->get_id() );
 
-		$this->assertFalse( $order->meta_exists( 'wcpay_multi_currency_order_exchange_rate' ) );
-		$this->assertFalse( $order->meta_exists( 'wcpay_multi_currency_order_default_currency' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 
 	public function test_add_order_meta() {
@@ -279,7 +279,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		// Get the order from the database.
 		$order = wc_get_order( $order->get_id() );
 
-		$this->assertSame( '0.71', $order->get_meta( 'wcpay_multi_currency_order_exchange_rate' ) );
-		$this->assertSame( 'USD', $order->get_meta( 'wcpay_multi_currency_order_default_currency' ) );
+		$this->assertSame( '0.71', $order->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertSame( 'USD', $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 }
