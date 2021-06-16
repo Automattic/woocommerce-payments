@@ -32,6 +32,13 @@ class Multi_Currency {
 	protected static $instance = null;
 
 	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Frontend_Prices instance.
 	 *
 	 * @var Frontend_Prices
@@ -102,6 +109,7 @@ class Multi_Currency {
 
 		new User_Settings( $this );
 
+		$this->compatibility       = new Compatibility( $this );
 		$this->frontend_prices     = new Frontend_Prices( $this );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
@@ -204,6 +212,15 @@ class Multi_Currency {
 			[ 'BIF', 1974 ], // Zero decimal currency.
 			[ 'CLP', 706.8 ], // Zero decimal currency.
 		];
+	}
+
+	/**
+	 * Returns the Compatibility instance.
+	 *
+	 * @return Compatibility
+	 */
+	public function get_compatibility() {
+		return $this->compatibility;
 	}
 
 	/**
@@ -342,14 +359,13 @@ class Multi_Currency {
 		$user_id = get_current_user_id();
 		$code    = null;
 
-		$subscription_renewal = $this->cart_contains_renewal();
-		if ( $subscription_renewal ) {
-			$code = get_post_meta( $subscription_renewal['subscription_renewal']['renewal_order_id'], '_order_currency', true );
-		} elseif ( 0 === $user_id && WC()->session ) {
+		if ( 0 === $user_id && WC()->session ) {
 			$code = WC()->session->get( self::CURRENCY_SESSION_KEY );
 		} elseif ( $user_id ) {
 			$code = get_user_meta( $user_id, self::CURRENCY_META_KEY, true );
 		}
+
+		$code = $this->compatibility->override_selected_currency() ? $this->compatibility->override_selected_currency() : $code;
 
 		return $this->get_enabled_currencies()[ $code ] ?? $this->default_currency;
 	}
@@ -492,6 +508,7 @@ class Multi_Currency {
 	 * Include required core files used in admin and on the frontend.
 	 */
 	protected function includes() {
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-compatibility.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-currency-switcher-widget.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-country-flags.php';
@@ -518,35 +535,5 @@ class Multi_Currency {
 			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
 			Note_Multi_Currency_Available::possibly_delete_note();
 		}
-	}
-
-	/**
-	 * Checks the cart to see if it contains a subscription product renewal.
-	 *
-	 * @return mixed The cart item containing the renewal as an array, else false.
-	 */
-	public function cart_contains_renewal() {
-		if ( ! function_exists( 'wcs_cart_contains_renewal' ) ) {
-			return false;
-		}
-		return wcs_cart_contains_renewal();
-	}
-
-	/**
-	 * Checks to see if the product passed is in the cart as a subscription renewal.
-	 *
-	 * @param object $product Product to test.
-	 *
-	 * @return bool True if it's a subscription renewal in the cart, false if not.
-	 */
-	public function is_product_subscription_renewal( $product ): bool {
-		$subscription_renewal = $this->cart_contains_renewal();
-		if ( $subscription_renewal && $product ) {
-			if ( ( isset( $subscription_renewal['variation_id'] ) && $subscription_renewal['variation_id'] === $product->get_id() )
-				|| $subscription_renewal['product_id'] === $product->get_id() ) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

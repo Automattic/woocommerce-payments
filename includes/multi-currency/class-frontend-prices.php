@@ -14,6 +14,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Frontend_Prices {
 	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	protected $compatibility;
+
+	/**
 	 * Multi-Currency instance.
 	 *
 	 * @var Multi_Currency
@@ -27,6 +34,7 @@ class Frontend_Prices {
 	 */
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
+		$this->compatibility  = $this->multi_currency->get_compatibility();
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Simple product price hooks.
@@ -71,15 +79,11 @@ class Frontend_Prices {
 			return $price;
 		}
 
-		if ( $product && $this->multi_currency->is_product_subscription_renewal( $product ) ) {
-			if ( is_cart()
-				|| is_checkout()
-				|| did_action( 'woocommerce_before_mini_cart_contents' ) !== did_action( 'woocommerce_after_mini_cart_contents' ) ) {
-				return $price;
-			}
+		if ( $this->compatibility->should_convert_product_price( $product, $price ) ) {
+			return $this->multi_currency->get_price( $price, 'product' );
 		}
 
-		return $this->multi_currency->get_price( $price, 'product' );
+		return $price;
 	}
 
 	/**
