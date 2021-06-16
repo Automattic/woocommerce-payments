@@ -83,7 +83,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Initialize subscription support and hooks.
 	 */
-	public function init_subscriptions() {
+	public function maybe_init_subscriptions() {
 		if ( ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
@@ -157,7 +157,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param int                 $order_id The order ID whose payment will be processed.
 	 * @return Payment_Information An object, which describes the payment.
 	 */
-	protected function subscription_prepare_payment_information( $payment_information, $order_id ) {
+	protected function maybe_prepare_subscription_payment_information( $payment_information, $order_id ) {
 		if ( ! $this->is_subscriptions_enabled() ) {
 			return $payment_information;
 		}
@@ -334,7 +334,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Order         $order The order.
 	 * @param WC_Payment_Token $token The token to save.
 	 */
-	public function subscriptions_add_token_to_order( $order, $token ) {
+	public function maybe_add_token_to_subscription_order( $order, $token ) {
 		if ( $this->is_subscriptions_enabled() ) {
 			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
 			foreach ( $subscriptions as $subscription ) {
@@ -573,7 +573,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param int           $order_id  The ID of the order that has been created.
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
-	public function subscription_schedule_order_tracking( $order_id, $order = null ) {
+	public function maybe_schedule_subscription_order_tracking( $order_id, $order = null ) {
 		if ( ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
