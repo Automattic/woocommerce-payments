@@ -707,6 +707,12 @@ class WC_Payments {
 			$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::$card_gateway );
 			$settings_controller->register_routes();
 		}
+
+		if ( WC_Payments_Features::is_grouped_settings_enabled() && WC_Payments_Features::is_upe_settings_preview_enabled() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
+			$upe_flag_toggle_controller = new WC_REST_Upe_Flag_Toggle_Controller( self::get_gateway() );
+			$upe_flag_toggle_controller->register_routes();
+		}
 	}
 
 	/**
