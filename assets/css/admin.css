@@ -80,3 +80,18 @@
 	background: no-repeat url( '../images/payment-methods/sofort.svg' );
 	background-size: contain;
 }
+
+.payment-method__brand--google-pay {
+	background: no-repeat url( '../images/cards/google-pay.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--apple-pay {
+	background: no-repeat url( '../images/cards/apple-pay.svg' );
+	background-size: contain;
+}
+
+.payment-method__icon {
+	border: 1px solid #ddd;
+	border-radius: 2px;
+}
