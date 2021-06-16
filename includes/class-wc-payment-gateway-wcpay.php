@@ -581,6 +581,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'forceNetworkSavedCards'   => WC_Payments::is_network_saved_cards_enabled(),
 			'locale'                   => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'             => WC_Payments_Features::is_upe_enabled(),
+			'isSavedCardsEnabled'      => $this->is_saved_cards_enabled(),
 		];
 	}
 

@@ -41,6 +41,8 @@ registerPaymentMethod( {
 	label: __( 'Credit Card', 'woocommerce-payments' ),
 	ariaLabel: __( 'Credit Card', 'woocommerce-payments' ),
 	supports: {
+		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
+		showSaveOption: getConfig( 'isSavedCardsEnabled' ) ?? false,
 		features: getConfig( 'features' ),
 	},
 } );
