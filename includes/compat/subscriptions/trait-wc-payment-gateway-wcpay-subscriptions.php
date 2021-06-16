@@ -84,7 +84,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * Initialize subscription support and hooks.
 	 */
 	public function init_subscriptions() {
-
 		$this->supports = array_merge(
 			$this->supports,
 			[
@@ -119,6 +118,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
 
+		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
 		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
 		if ( version_compare( WC_Subscriptions::$version, '3.0.7', '<=' ) ) {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
