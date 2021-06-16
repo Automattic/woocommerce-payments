@@ -59,6 +59,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the UPE settings redesign is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_upe_settings_preview_enabled() {
+		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '0' );
+	}
+
+	/**
 	 * Checks whether the customer multi-currency feature is enabled
 	 *
 	 * @return bool
@@ -73,10 +82,11 @@ class WC_Payments_Features {
 	 * @return bool[]
 	 */
 	public static function to_array() {
-		$flags = [
-			'upe' => self::is_upe_enabled(),
-		];
-
-		return array_filter( $flags );
+		return array_filter(
+			[
+				'upe'                  => self::is_upe_enabled(),
+				'upe_settings_preview' => self::is_upe_settings_preview_enabled(),
+			]
+		);
 	}
 }
