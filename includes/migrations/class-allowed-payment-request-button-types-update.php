@@ -77,9 +77,13 @@ class Allowed_Payment_Request_Button_Types_Update {
 	private function map_button_type( $button_type, $branded_type ) {
 		if ( 'branded' === $button_type && 'short' === $branded_type ) {
 			return 'default';
-		} elseif ( 'branded' === $button_type && 'short' !== $branded_type ) {
+		}
+
+		if ( 'branded' === $button_type && 'short' !== $branded_type ) {
 			return 'buy';
-		} elseif ( 'custom' === $button_type ) {
+		}
+
+		if ( 'custom' === $button_type ) {
 			return 'buy';
 		}
 
