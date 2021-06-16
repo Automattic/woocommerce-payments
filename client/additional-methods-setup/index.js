@@ -56,6 +56,7 @@ addFilter(
 							container: (
 								<WcPayUpeContextProvider
 									defaultIsUpeEnabled={
+										'1' ===
 										window.wcpayAdditionalMethodsSetup
 											.isUpeEnabled
 									}
@@ -63,6 +64,13 @@ addFilter(
 									<UpePreviewMethodSelector />
 								</WcPayUpeContextProvider>
 							),
+							completed:
+								'yes' ===
+									window.wcpayAdditionalMethodsSetup
+										.isSetupCompleted ||
+								'1' ===
+									window.wcpayAdditionalMethodsSetup
+										.isUpeEnabled,
 					  }
 					: {} ),
 			},
