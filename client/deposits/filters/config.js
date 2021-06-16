@@ -27,6 +27,7 @@ export const filters = [
 			'date_between',
 			'status_is',
 			'status_is_not',
+			'match',
 		],
 		showFilters: () => false,
 		filters: [
