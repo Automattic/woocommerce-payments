@@ -84,6 +84,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * Initialize subscription support and hooks.
 	 */
 	public function init_subscriptions() {
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return;
+		}
+
 		$this->supports = array_merge(
 			$this->supports,
 			[
@@ -126,6 +130,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Checks if subscriptions are enabled on the site.
+	 *
+	 * @return bool Whether subscriptions is enabled or not.
+	 */
+	public function is_subscriptions_enabled() {
+		return class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
+	}
+
+	/**
 	 * Returns whether this user is changing the payment method for a subscription.
 	 *
 	 * @return bool
@@ -145,6 +158,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return Payment_Information An object, which describes the payment.
 	 */
 	protected function subscription_prepare_payment_information( $payment_information, $order_id ) {
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return $payment_information;
+		}
+
 		$is_changing_payment = $this->is_changing_payment_method_for_subscription();
 		if ( ! $is_changing_payment && ! wcs_order_contains_subscription( $order_id ) ) {
 			return $payment_information;
@@ -308,6 +325,24 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				__( 'The saved payment method selected does not belong to this order\'s customer.', 'woocommerce-payments' ),
 				'payment_method_token_not_owned'
 			);
+		}
+	}
+
+	/**
+	 * Saves the payment token to the order.
+	 *
+	 * @param WC_Order         $order The order.
+	 * @param WC_Payment_Token $token The token to save.
+	 */
+	public function subscriptions_add_token_to_order( $order, $token ) {
+		if ( $this->is_subscriptions_enabled() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+			foreach ( $subscriptions as $subscription ) {
+				$payment_token = $this->get_payment_token( $subscription );
+				if ( is_null( $payment_token ) || $token->get_id() !== $payment_token->get_id() ) {
+					$subscription->add_payment_token( $token );
+				}
+			}
 		}
 	}
 
@@ -539,6 +574,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
 	public function subscription_schedule_order_tracking( $order_id, $order = null ) {
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return;
+		}
+
 		$save_meta_data = false;
 
 		if ( is_null( $order ) ) {
