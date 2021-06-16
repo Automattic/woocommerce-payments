@@ -190,6 +190,18 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->assertSame( 'GBP', get_user_meta( self::LOGGED_IN_USER_ID, WCPay\Multi_Currency\Multi_Currency::CURRENCY_META_KEY, true ) );
 	}
 
+	public function test_update_selected_currency_recalculates_cart() {
+		wp_set_current_user( self::LOGGED_IN_USER_ID );
+
+		$this->assertContains( '&#36;', WC()->cart->get_total() );
+
+		$this->multi_currency->update_selected_currency( 'GBP' );
+
+		$this->assertContains( '&pound;', WC()->cart->get_total() );
+		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
+
+	}
+
 	public function test_update_selected_currency_by_url_does_not_set_session_when_parameter_not_set() {
 		$this->multi_currency->update_selected_currency_by_url();
 
@@ -210,19 +222,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_url();
 
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\Multi_Currency\Multi_Currency::CURRENCY_SESSION_KEY ) );
-	}
-
-	public function test_update_selected_currency_by_url_recalculates_cart() {
-		wp_set_current_user( self::LOGGED_IN_USER_ID );
-		$_GET['currency'] = 'GBP';
-
-		$this->assertContains( '&#36;', WC()->cart->get_total() );
-
-		$this->multi_currency->update_selected_currency_by_url();
-
-		$this->assertContains( '&pound;', WC()->cart->get_total() );
-		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
-
 	}
 
 	public function test_get_price_returns_price_in_default_currency() {

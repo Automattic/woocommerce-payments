@@ -3,7 +3,8 @@
  * External dependencies
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -222,5 +223,31 @@ describe( 'Multi Currency enabled currencies list', () => {
 		const modal = screen.queryByRole( 'dialog', { name: /remove euro/i } );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();
+	} );
+
+	test( 'Modal should clear search term on cancel and update selected', () => {
+		for ( const name of [ /cancel/i, /update selected/i ] ) {
+			render( <EnabledCurrencies /> );
+			userEvent.click(
+				screen.getByRole( 'button', {
+					name: /add currencies/i,
+				} )
+			);
+			userEvent.type( screen.getByRole( 'textbox' ), 'dollar' );
+			userEvent.click(
+				screen.getByRole( 'button', {
+					name,
+				} )
+			);
+			userEvent.click(
+				screen.getByRole( 'button', {
+					name: /add currencies/i,
+				} )
+			);
+			expect(
+				screen.queryByDisplayValue( 'dollar' )
+			).not.toBeInTheDocument();
+			cleanup();
+		}
 	} );
 } );
