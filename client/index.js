@@ -15,7 +15,6 @@ import 'wp-mediaelement';
  */
 import './style.scss';
 import ConnectAccountPage from 'connect-account-page';
-
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
