@@ -10,6 +10,9 @@
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
 * Fix - Deposit overview details for non instant ones.
+* Add - Introduce new settings layout
+* Update - Removed "Branded" and "Custom label" options on Payment request buttons to align with design guidelines.
+* Update - Converted payment request button size value to distinct options to align with design guidelines.
 * Tweak - Run post-upgrade actions during any request instead of only on wp-admin requests.
 
 = 2.5.0 - 2021-06-02 =
