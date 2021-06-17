@@ -10,6 +10,9 @@ import ReactDOM from 'react-dom';
  */
 import EnabledCurrencies from './enabled-currencies-list';
 
+/**
+ * Mount React Component
+ */
 const currencyContainer = document.getElementById(
 	'wcpay_enabled_currencies_list'
 );
@@ -18,6 +21,9 @@ if ( currencyContainer ) {
 	ReactDOM.render( <EnabledCurrencies />, currencyContainer );
 }
 
+/**
+ * Single currency settings
+ */
 let rateType = 'automatic';
 
 const automaticRate = document.querySelector(
@@ -83,6 +89,27 @@ document.querySelectorAll( '.exchange-rate-selector' ).forEach( ( radio ) => {
 	} );
 } );
 
-[ manualRate, rounding, charm, previewAmount ].forEach( ( element ) =>
-	element.addEventListener( 'input', () => updatePreview() )
+[ manualRate, rounding, charm, previewAmount ]
+	.filter( ( _ ) => _ )
+	.forEach( ( element ) =>
+		element.addEventListener( 'input', () => updatePreview() )
+	);
+
+/**
+ * Store settings section
+ */
+const enabledCurrenciesList = document.querySelector(
+	'.enabled-currencies-list'
 );
+const storeSettingsSection = document.querySelector(
+	'#wcpay_currencies_settings_section'
+);
+
+const enabledCurrenciesObserver = new MutationObserver( () => {
+	storeSettingsSection.style.display =
+		1 >= enabledCurrenciesList.children.length ? 'none' : 'block';
+} );
+
+enabledCurrenciesObserver.observe( enabledCurrenciesList, {
+	childList: true,
+} );

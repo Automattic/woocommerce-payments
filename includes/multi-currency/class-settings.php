@@ -48,6 +48,9 @@ class Settings extends \WC_Settings_Page {
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		add_action( 'woocommerce_admin_field_wcpay_enabled_currencies_list', [ $this, 'enabled_currencies_list' ] );
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_start', [ $this, 'currencies_settings_section_start' ] );
+		add_action( 'woocommerce_admin_field_wcpay_currencies_settings_section_end', [ $this, 'currencies_settings_section_end' ] );
+
 		add_action( 'woocommerce_admin_field_wcpay_single_currency_preview_helper', [ $this, 'single_currency_preview_helper' ] );
 		parent::__construct();
 	}
@@ -73,13 +76,9 @@ class Settings extends \WC_Settings_Page {
 	 * @return array
 	 */
 	public function get_settings( $current_section = '' ) {
-		global $hide_save_button;
-
 		$settings = [];
 
 		if ( '' === $current_section ) {
-			$hide_save_button = true;
-
 			$settings = apply_filters(
 				$this->id . '_enabled_currencies_settings',
 				[
@@ -103,13 +102,11 @@ class Settings extends \WC_Settings_Page {
 						'type' => 'sectionend',
 						'id'   => $this->id . '_enabled_currencies',
 					],
-				]
-			);
-		} elseif ( 'store' === $current_section ) {
-			// TODO: Store settings are not available at the moment.
-			$settings = apply_filters(
-				$this->id . 'store_settings',
-				[
+
+					[
+						'type' => 'wcpay_currencies_settings_section_start',
+					],
+
 					[
 						'title' => __( 'Store settings', 'woocommerce-payments' ),
 						// TODO: Need learn more link.
@@ -120,6 +117,7 @@ class Settings extends \WC_Settings_Page {
 						),
 						'type'  => 'title',
 						'id'    => $this->id . '_store_settings',
+						'class' => $this->id . '_store_settings_input',
 					],
 
 					[
@@ -132,7 +130,7 @@ class Settings extends \WC_Settings_Page {
 							''
 						),
 						'id'            => $this->id . '_enable_auto_currency',
-						'default'       => 'no',
+						'default'       => 'yes',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'start',
 					],
@@ -146,7 +144,7 @@ class Settings extends \WC_Settings_Page {
 							''
 						),
 						'id'            => $this->id . '_enable_cart_switcher',
-						'default'       => 'no',
+						'default'       => 'yes',
 						'type'          => 'checkbox',
 						'checkboxgroup' => 'end',
 					],
@@ -154,6 +152,10 @@ class Settings extends \WC_Settings_Page {
 					[
 						'type' => 'sectionend',
 						'id'   => $this->id . 'store_settings',
+					],
+
+					[
+						'type' => 'wcpay_currencies_settings_section_end',
 					],
 				]
 			);
@@ -184,6 +186,24 @@ class Settings extends \WC_Settings_Page {
 				<div id="wcpay_enabled_currencies_list" aria-describedby="wcpay_enabled_currencies-description"></div>
 			</td>
 		</tr>
+		<?php
+	}
+
+	/**
+	 * Output section start for store settings.
+	 */
+	public function currencies_settings_section_start() {
+		?>
+		<div id="wcpay_currencies_settings_section" style="display: none;">
+		<?php
+	}
+
+	/**
+	 * Output section end for store settings.
+	 */
+	public function currencies_settings_section_end() {
+		?>
+		</div>
 		<?php
 	}
 
@@ -223,6 +243,8 @@ class Settings extends \WC_Settings_Page {
 		</tr>
 		<?php
 	}
+
+
 
 	/**
 	 * Returns the settings for the single currency.
@@ -391,7 +413,7 @@ class Settings extends \WC_Settings_Page {
 		\WC_Admin_Settings::save_fields( $this->get_settings( $current_section ) );
 
 		// If we are saving the settings for an individual currency, we have some additional logic.
-		if ( '' !== $current_section && 'store' !== $current_section ) {
+		if ( '' !== $current_section ) {
 			// If the manual rate was blank, or zero, we set it to the automatic rate.
 			$manual_rate = get_option( $this->id . '_manual_rate_' . $current_section, false );
 			if ( ! $manual_rate || 0 >= $manual_rate || '' === $manual_rate ) {
