@@ -1095,7 +1095,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function can_refund_order( $order ) {
 		return $order
 			&& $order->get_meta( '_charge_id', true )
-			&& 'failed' !== $order->get_meta( '_wcpay_refund_status', true );
+			&& ! $this->has_refund_failed( $order );
 	}
 
 	/**
