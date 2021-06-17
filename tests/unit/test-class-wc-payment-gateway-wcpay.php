@@ -277,7 +277,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'created'                  => 1610123467,
 					'payment_intent'           => 'pi_1234567890',
 					'reason'                   => null,
-					'reciept_number'           => null,
+					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
 					'status'                   => 'succeeded',
 					'transfer_reversal'        => null,
