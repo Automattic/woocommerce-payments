@@ -2,11 +2,12 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
+import user from '@testing-library/user-event';
 import ConnectAccountPage from '..';
 
 describe( 'ConnectAccountPage', () => {
@@ -30,5 +31,27 @@ describe( 'ConnectAccountPage', () => {
 		global.wcpaySettings.onBoardingDisabled = true;
 		const { container: page } = render( <ConnectAccountPage /> );
 		expect( page ).toMatchSnapshot();
+	} );
+
+	test( 'should prompt unsupported countries', () => {
+		global.wcpaySettings = {
+			connect: {
+				url: '/wcpay-connect-url',
+				country: 'CA',
+				availableCountries: {
+					GB: 'United Kingdom (UK)',
+					US: 'United States (US)',
+				},
+			},
+		};
+
+		const { container: page } = render( <ConnectAccountPage /> );
+		expect( page ).toMatchSnapshot();
+
+		user.click( screen.getByRole( 'link', { name: /Finish Setup/ } ) );
+
+		const modalSelector =
+			'.woocommerce-payments__onboarding_location_check-modal';
+		expect( document.body.querySelector( modalSelector ) ).not.toBeNull();
 	} );
 } );
