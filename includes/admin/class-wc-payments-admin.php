@@ -238,14 +238,10 @@ class WC_Payments_Admin {
 		$error_message = get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 		delete_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT );
 
-		// The country is identified from business address, which merchant provided after setting up WooCommerce.
-		// The default value is taken from https://github.com/woocommerce/woocommerce/issues/29499.
-		$business_country = explode( ':', get_option( 'woocommerce_default_country', 'US:CA' ), 2 )[0];
-
 		$wcpay_settings = [
 			'connect'               => [
 				'url'                => WC_Payments_Account::get_connect_url(),
-				'country'            => $business_country,
+				'country'            => wc_get_base_location()['country'],
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 			],
 			'testMode'              => $this->wcpay_gateway->is_in_test_mode(),
