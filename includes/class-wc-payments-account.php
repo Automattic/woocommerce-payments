@@ -317,9 +317,31 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-onboarding'] ) && check_admin_referer( 'wcpay-onboarding' ) ) {
+
+			// Hide menu notification badge upon starting setup.
+			update_option( 'wcpay_menu_badge_hidden', 'yes' );
+
+			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->payments_api_client->is_server_connected() ) {
+				$this->redirect_to_onboarding_page(
+					__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooCommerce Payments.', 'woocommerce-payments' )
+				);
+				return;
+			}
+
+			try {
+				$this->maybe_init_jetpack_connection( 1 );
+			} catch ( Exception $e ) {
+				$this->redirect_to_onboarding_page(
+				/* translators: error message. */
+					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
+				);
+				return;
+			}
+
 			try {
 				$this->onboard_account();
 			} catch ( Exception $e ) {
+				Logger::error( 'Account onboarding flow failed. ' . $e );
 				$this->add_notice_to_settings_page(
 					__( 'There was a problem redirecting you to the new account verification step. Please try again.', 'woocommerce-payments' ),
 					'notice-error'
@@ -549,7 +571,7 @@ class WC_Payments_Account {
 	 */
 	private function onboard_account() {
 		// Clear account transient when generating new Stripe account.
-		delete_transient( self::ACCOUNT_TRANSIENT );
+		$this->clear_cache();
 
 		$current_user = wp_get_current_user();
 		$settings_url = WC_Payment_Gateway_WCPay::get_settings_url();
@@ -558,26 +580,6 @@ class WC_Payments_Account {
 			'business_profile' => [
 				'name' => get_bloginfo( 'name' ),
 				'url'  => get_home_url(),
-			],
-			'business_type'    => 'individual',
-			'individual'       => [
-				'email'   => $current_user->user_email,
-				'address' => [
-					'line1'       => WC()->countries->get_base_address(),
-					'line2'       => WC()->countries->get_base_address_2(),
-					'city'        => WC()->countries->get_base_city(),
-					'state'       => WC()->countries->get_base_state(),
-					'postal_code' => WC()->countries->get_base_postcode(),
-					'country'     => WC()->countries->get_base_country(),
-				],
-
-				/**
-				 * 'first_name' => 'Mockfirstname',
-				 * 'last_name' => 'Mocklastname',
-				 * 'phone' => '+14152342345',
-				 * 'dob' => [ 'year' => 1966, 'month' => 1, 'day' => 11 ],
-				 * 'ssn_last_4' => 3535,
-				 */
 			],
 		];
 
@@ -589,7 +591,7 @@ class WC_Payments_Account {
 			$url = add_query_arg( [ 'wcpay-connection-success' => '1' ], $settings_url );
 		}
 
-		set_transient( 'wcpay_oauth_state', $account_data['state'], DAY_IN_SECONDS );
+		set_transient( 'wcpay_stripe_oauth_state', $account_data['state'], DAY_IN_SECONDS );
 
 		wp_safe_redirect( $url );
 		exit;
