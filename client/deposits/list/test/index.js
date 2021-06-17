@@ -46,27 +46,7 @@ describe( 'Deposits list', () => {
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
 	} );
 
-	test( 'renders correctly with single currency', () => {
-		useDeposits.mockReturnValue( {
-			deposits: mockDeposits,
-			depositsCount: 2,
-			isLoading: false,
-		} );
-
-		useDepositsSummary.mockReturnValue( {
-			depositsSummary: {
-				count: 2,
-				total: 5000,
-				// eslint-disable-next-line camelcase
-				store_currencies: [ 'usd' ],
-			},
-			isLoading: false,
-		} );
-
-		const { container } = render( <DepositsList /> );
-		expect( container ).toMatchSnapshot();
-	} );
-
+	// this also covers structural test for single currency.
 	test( 'renders correctly with multiple currencies', () => {
 		useDeposits.mockReturnValue( {
 			deposits: mockDeposits,
