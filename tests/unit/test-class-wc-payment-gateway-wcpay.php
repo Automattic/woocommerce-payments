@@ -290,7 +290,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order->get_id() );
-		$this->assertEquals( 'successful', $order->get_meta( '_wcpay_refund_status', true ) );
+		$this->assertFalse( $this->wcpay_gateway->has_refund_failed( $order ) );
 	}
 
 	public function test_process_refund_failure_sets_refund_failed_meta() {
@@ -314,7 +314,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		// Reload the order information to get the new meta.
 		$order = wc_get_order( $order_id );
-		$this->assertEquals( 'failed', $order->get_meta( '_wcpay_refund_status', true ) );
+		$this->assertTrue( $this->wcpay_gateway->has_refund_failed( $order ) );
 	}
 
 	public function test_process_refund_on_api_error() {
