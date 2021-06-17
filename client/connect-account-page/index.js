@@ -2,16 +2,15 @@
 /**
  * External dependencies
  */
+import ReactDOM from 'react-dom';
+import React from 'react';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
-import ReactDOM from 'react-dom';
-import React from 'react';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
 import OnboardingLocationCheckModal from './modal';
 import Page from 'components/page';
 import strings from './strings';
@@ -27,6 +26,7 @@ import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
+import './style.scss';
 
 const LearnMore = () => {
 	const handleClick = () => {

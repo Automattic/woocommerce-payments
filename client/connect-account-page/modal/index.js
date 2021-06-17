@@ -6,11 +6,11 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import './style.scss';
 import { Button, Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Link, List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
+import './style.scss';
 
 const LearnMoreLink = ( props ) => (
 	<Link
