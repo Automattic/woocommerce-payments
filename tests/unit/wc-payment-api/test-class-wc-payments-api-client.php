@@ -766,212 +766,25 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	/**
 	 * @dataProvider data_request_with_level3_data
 	 */
-	public function test_request_with_level3_data( $intention_args, $expected_remote_request_args ) {
+	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
 		$this->mock_http_client
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions',
-					'method'          => 'POST',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
-				wp_json_encode( $expected_remote_request_args )
+				$this->anything(),
+				$this->callback(
+					function( $request_args_json ) use ( $expected_level3_args ) {
+						$request_args = json_decode( $request_args_json, true );
+
+						$this->assertSame( $expected_level3_args, $request_args['level3'] );
+
+						return true;
+					}
+				)
 			)
 			->willReturn(
 				[
-					'body'     => wp_json_encode(
-						[
-							'id'                          => 'pi_1J2qyzR42SiAd3w0B1xdk14f',
-							'object'                      => 'payment_intent',
-							'amount'                      => 10000,
-							'amount_capturable'           => 0,
-							'amount_received'             => 10000,
-							'application'                 => 'ca_HrWs5SEMnkgOWmbL7lL6OmWI048fypU2',
-							'application_fee_amount'      => 320,
-							'canceled_at'                 => null,
-							'cancellation_reason'         => null,
-							'capture_method'              => 'automatic',
-							'charges'                     => [
-								'object'      => 'list',
-								'data'        => [
-									[
-										'id'              => 'ch_1J2qyzR42SiAd3w0FFFOESpA',
-										'object'          => 'charge',
-										'amount'          => 10000,
-										'amount_captured' => 10000,
-										'amount_refunded' => 0,
-										'application'     => 'ca_HrWs5SEMnkgOWmbL7lL6OmWI048fypU2',
-										'application_fee' => 'fee_1J2qz0R42SiAd3w0yxdF1lx8',
-										'application_fee_amount' => 320,
-										'balance_transaction' => [
-											'id'           => 'txn_1J2qz0R42SiAd3w0QDtOA7EB',
-											'object'       => 'balance_transaction',
-											'amount'       => 10000,
-											'available_on' => 1623974400,
-											'created'      => 1623820089,
-											'currency'     => 'aud',
-											'description'  => null,
-											'exchange_rate' => null,
-											'fee'          => 320,
-											'fee_details'  => [
-												[
-													'amount' => 320,
-													'application' => 'ca_HrWs5SEMnkgOWmbL7lL6OmWI048fypU2',
-													'currency' => 'aud',
-													'description' => 'Dev Shared Account WCPay application fee',
-													'type' => 'application_fee',
-												],
-											],
-											'net'          => 9680,
-											'reporting_category' => 'charge',
-											'source'       => 'ch_1J2qyzR42SiAd3w0FFFOESpA',
-											'status'       => 'pending',
-											'type'         => 'charge',
-										],
-										'billing_details' => [
-											'address' => [
-												'city'    => 'Sydney',
-												'country' => 'AU',
-												'line1'   => '100 Pitt Street',
-												'line2'   => null,
-												'postal_code' => '2000',
-												'state'   => 'NSW',
-											],
-											'email'   => 'chris@example.com',
-											'name'    => 'Chris',
-											'phone'   => '0411111111',
-										],
-										'calculated_statement_descriptor' => 'DBA444A20B82.NGROK.IO',
-										'captured'        => true,
-										'created'         => 1623820089,
-										'currency'        => 'aud',
-										'customer'        => 'cus_JeKgKIOAFflZqL',
-										'description'     => null,
-										'destination'     => null,
-										'dispute'         => null,
-										'disputed'        => false,
-										'failure_code'    => null,
-										'failure_message' => null,
-										'fraud_details'   => [],
-										'invoice'         => null,
-										'livemode'        => false,
-										'metadata'        => [
-											'customer_name' => 'Chris',
-											'customer_email' => 'chris@example.com',
-											'site_url'     => 'http://dba444a20b82.ngrok.io',
-											'order_id'     => '79',
-											'order_key'    => 'wc_order_jIRf6RgP0xPfU',
-											'payment_type' => 'single',
-										],
-										'on_behalf_of'    => null,
-										'order'           => null,
-										'outcome'         => [
-											'network_status' => 'approved_by_network',
-											'reason'     => null,
-											'risk_level' => 'normal',
-											'risk_score' => 32,
-											'seller_message' => 'Payment complete.',
-											'type'       => 'authorized',
-										],
-										'paid'            => true,
-										'payment_intent'  => 'pi_1J2qyzR42SiAd3w0B1xdk14f',
-										'payment_method'  => 'pm_1J2qyuR42SiAd3w0bQOQ4yvn',
-										'payment_method_details' => [
-											'card' => [
-												'brand'    => 'visa',
-												'checks'   => [
-													'address_line1_check' => 'pass',
-													'address_postal_code_check' => 'pass',
-													'cvc_check' => 'pass',
-												],
-												'country'  => 'US',
-												'exp_month' => 1,
-												'exp_year' => 2022,
-												'fingerprint' => 'GPNBuIQZKl9E7Sku',
-												'funding'  => 'credit',
-												'installments' => null,
-												'last4'    => '4242',
-												'network'  => 'visa',
-												'three_d_secure' => null,
-												'wallet'   => null,
-											],
-											'type' => 'card',
-										],
-										'receipt_email'   => null,
-										'receipt_number'  => null,
-										'receipt_url'     => 'https://pay.stripe.com/receipts/acct_1J0xrrR42SiAd3w0/ch_1J2qyzR42SiAd3w0FFFOESpA/rcpt_JgDP3NtQmHZHclL4LuBVazLribbvZYD',
-										'refunded'        => false,
-										'refunds'         => [
-											'object'      => 'list',
-											'data'        => [],
-											'has_more'    => false,
-											'total_count' => 0,
-											'url'         => '/v1/charges/ch_1J2qyzR42SiAd3w0FFFOESpA/refunds',
-										],
-										'review'          => null,
-										'shipping'        => null,
-										'source'          => null,
-										'source_transfer' => null,
-										'statement_descriptor' => null,
-										'statement_descriptor_suffix' => null,
-										'status'          => 'succeeded',
-										'transfer_data'   => null,
-										'transfer_group'  => null,
-									],
-								],
-								'has_more'    => false,
-								'total_count' => 1,
-								'url'         => '/v1/charges?payment_intent=pi_1J2qyzR42SiAd3w0B1xdk14f',
-							],
-							'client_secret'               => 'pi_1J2qyzR42SiAd3w0B1xdk14f_secret_AIEf79Ba7lv35W1QBRdjLfzTi',
-							'confirmation_method'         => 'automatic',
-							'created'                     => 1623820089,
-							'currency'                    => 'aud',
-							'customer'                    => 'cus_JeKgKIOAFflZqL',
-							'description'                 => null,
-							'invoice'                     => null,
-							'last_payment_error'          => null,
-							'level3'                      => null,
-							'livemode'                    => false,
-							'metadata'                    => [
-								'customer_name'  => 'Chris',
-								'customer_email' => 'chris@example.com',
-								'site_url'       => 'http://dba444a20b82.ngrok.io',
-								'order_id'       => '79',
-								'order_key'      => 'wc_order_jIRf6RgP0xPfU',
-								'payment_type'   => 'single',
-							],
-							'next_action'                 => null,
-							'on_behalf_of'                => null,
-							'payment_method'              => 'pm_1J2qyuR42SiAd3w0bQOQ4yvn',
-							'payment_method_options'      => [
-								'card' => [
-									'installments' => null,
-									'network'      => null,
-									'request_three_d_secure' => 'automatic',
-								],
-							],
-							'payment_method_types'        => [
-								'card',
-							],
-							'receipt_email'               => null,
-							'review'                      => null,
-							'setup_future_usage'          => null,
-							'shipping'                    => null,
-							'source'                      => null,
-							'statement_descriptor'        => null,
-							'statement_descriptor_suffix' => null,
-							'status'                      => 'succeeded',
-							'transfer_data'               => null,
-							'transfer_group'              => null,
-						]
-					),
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
 					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
@@ -979,156 +792,95 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				]
 			);
 
-		call_user_func_array( [ $this->payments_api_client, 'create_and_confirm_intention' ], $intention_args );
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request_with_level3_data',
+			[ $input_args, 'intentions', 'POST' ]
+		);
 	}
 
 	/**
 	 * Data provider for test_request_with_level3_data
 	 */
 	public function data_request_with_level3_data() {
+		$base_input = [
+			'amount'         => 10000,
+			'currency'       => 'aud',
+			'confirm'        => 'true',
+			'payment_method' => 'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
+			'customer'       => 'cus_JeKgKIOAFflZqL',
+			'capture_method' => 'automatic',
+			'metadata'       => [
+				'customer_name'  => 'Chris',
+				'customer_email' => 'chris@example.com',
+				'site_url'       => 'https://example.com',
+				'order_id'       => 22,
+				'order_key'      => 'wc_order_XEZjVLa8oimvY',
+			],
+		];
+
 		return [
-			// Australian merchant.
-			[
-				[
-					10000,
-					'aud',
-					'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'cus_JeKgKIOAFflZqL',
-					false,
-					false,
+			'australian_merchant'               => [
+				array_merge(
+					$base_input,
 					[
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					[],
-				],
-				[
-					'test_mode'      => false,
-					'amount'         => 10000,
-					'currency'       => 'aud',
-					'confirm'        => 'true',
-					'payment_method' => 'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'customer'       => 'cus_JeKgKIOAFflZqL',
-					'capture_method' => 'automatic',
-					'metadata'       => [
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					'level3'         => [],
-				],
+						'level3' => [],
+					]
+				),
+				[],
 			],
-			// American merchant (no line items).
-			[
-				[
-					10000,
-					'usd',
-					'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'cus_JeKgKIOAFflZqL',
-					false,
-					false,
+			'american_merchant_no_line_items'   => [
+				array_merge(
+					$base_input,
 					[
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					[
-						'merchant_reference' => 'abc123',
-					],
-				],
+						'level3' => [
+							'merchant_reference' => 'abc123',
+						],
+					]
+				),
 				[
-					'test_mode'      => false,
-					'amount'         => 10000,
-					'currency'       => 'usd',
-					'confirm'        => 'true',
-					'payment_method' => 'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'customer'       => 'cus_JeKgKIOAFflZqL',
-					'capture_method' => 'automatic',
-					'metadata'       => [
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					'level3'         => [
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'zero-cost-fee',
-								'product_description' => 'Zero cost fee',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
-							],
+					'merchant_reference' => 'abc123',
+					'line_items'         => [
+						[
+							'discount_amount'     => 0,
+							'product_code'        => 'zero-cost-fee',
+							'product_description' => 'Zero cost fee',
+							'quantity'            => 1,
+							'tax_amount'          => 0,
+							'unit_cost'           => 0,
 						],
 					],
 				],
 			],
-			// American merchant (with line items).
-			[
-				[
-					10000,
-					'usd',
-					'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'cus_JeKgKIOAFflZqL',
-					false,
-					false,
+			'american_merchant_with_line_items' => [
+				array_merge(
+					$base_input,
 					[
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					[
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'free-hug',
-								'product_description' => 'Free hug',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
+						'level3' => [
+							'merchant_reference' => 'abc123',
+							'line_items'         => [
+								[
+									'discount_amount'     => 0,
+									'product_code'        => 'free-hug',
+									'product_description' => 'Free hug',
+									'quantity'            => 1,
+									'tax_amount'          => 0,
+									'unit_cost'           => 0,
+								],
 							],
 						],
-					],
-				],
+					]
+				),
 				[
-					'test_mode'      => false,
-					'amount'         => 10000,
-					'currency'       => 'usd',
-					'confirm'        => 'true',
-					'payment_method' => 'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-					'customer'       => 'cus_JeKgKIOAFflZqL',
-					'capture_method' => 'automatic',
-					'metadata'       => [
-						'customer_name'  => 'Chris',
-						'customer_email' => 'chris@example.com',
-						'site_url'       => 'https://example.com',
-						'order_id'       => 22,
-						'order_key'      => 'wc_order_XEZjVLa8oimvY',
-					],
-					'level3'         => [
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'free-hug',
-								'product_description' => 'Free hug',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
-							],
+					'merchant_reference' => 'abc123',
+					'line_items'         => [
+						[
+							'discount_amount'     => 0,
+							'product_code'        => 'free-hug',
+							'product_description' => 'Free hug',
+							'quantity'            => 1,
+							'tax_amount'          => 0,
+							'unit_cost'           => 0,
 						],
 					],
 				],
