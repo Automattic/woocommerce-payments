@@ -8,9 +8,9 @@ import { __, _x } from '@wordpress/i18n';
  */
 import { displayStatus } from 'deposits/strings';
 
-const depositTypesOptions = Object.entries(
+const depositStatusOptions = Object.entries(
 	displayStatus
-).map( ( [ type, label ] ) => ( { label, value: type } ) );
+).map( ( [ status, label ] ) => ( { label, value: status } ) );
 
 export const filters = [
 	{
@@ -141,7 +141,7 @@ export const advancedFilters = {
 			],
 			input: {
 				component: 'SelectControl',
-				options: depositTypesOptions,
+				options: depositStatusOptions,
 			},
 		},
 	},
