@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Onboarding: location check dialog renders correctly when cancel button is clicked 1`] = `null`;
+
 exports[`Onboarding: location check dialog renders correctly when continue button is clicked 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
