@@ -98,22 +98,23 @@ const ConnectPageOnboardingDisabled = () => (
 
 const ConnectPageOnboarding = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
+	const { availableCountries, country, url } = wcpaySettings.connect;
 
-	const handleLocationCheck = ( availableCountries ) => {
+	const handleLocationCheck = () => {
 		// Reset the 'Set up' button state if merchant decided to stop
 		const handleModalDeclined = () => {
 			setSubmitted( false );
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location = wcpaySettings.connect.url;
+			window.location = url;
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
 		const countries = Object.values( availableCountries )
 			.sort()
-			.map( ( country ) => {
-				return { title: country };
+			.map( ( countryName ) => {
+				return { title: countryName };
 			} );
 
 		const container = document.createElement( 'div' );
@@ -130,8 +131,6 @@ const ConnectPageOnboarding = () => {
 	};
 
 	const handleSetup = ( event ) => {
-		const availableCountries = wcpaySettings.connect.availableCountries;
-		const country = wcpaySettings.connect.country;
 		const isCountryAvailable = availableCountries[ country ] !== undefined;
 		if ( ! isCountryAvailable ) {
 			// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
@@ -168,7 +167,7 @@ const ConnectPageOnboarding = () => {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
-					href={ wcpaySettings.connect.url }
+					href={ url }
 				>
 					{ strings.button }
 				</Button>
