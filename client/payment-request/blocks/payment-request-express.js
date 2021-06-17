@@ -62,11 +62,8 @@ const PaymentRequestExpressComponent = ( {
 	if ( isCustom ) {
 		return (
 			<CustomButton
-				onClick={ () => {
-					onButtonClick();
-					// Since we're using a custom button we must manually call
-					// `paymentRequest.show()`.
-					paymentRequest.show();
+				onClick={ ( evt ) => {
+					onButtonClick( evt, paymentRequest );
 				} }
 			/>
 		);
@@ -76,11 +73,8 @@ const PaymentRequestExpressComponent = ( {
 	if ( isBranded && shouldUseGooglePayBrand() ) {
 		return (
 			<GooglePayButton
-				onClick={ () => {
-					onButtonClick();
-					// Since we're using a custom button we must manually call
-					// `paymentRequest.show()`.
-					paymentRequest.show();
+				onClick={ ( evt ) => {
+					onButtonClick( evt, paymentRequest );
 				} }
 			/>
 		);
