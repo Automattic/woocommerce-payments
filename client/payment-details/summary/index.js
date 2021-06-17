@@ -97,7 +97,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 							>
 								{ formatCurrency(
 									charge.amount,
-									charge.currency
+									charge.currency,
+									true
 								) }
 								<span className="payment-details-summary__amount-currency">
 									{ charge.currency || 'USD' }
@@ -112,7 +113,8 @@ const PaymentDetailsSummary = ( { charge = {}, isLoading } ) => {
 								<p>
 									{ formatCurrency(
 										balance.amount,
-										balance.currency
+										balance.currency,
+										true
 									) }{ ' ' }
 									{ balance.currency.toUpperCase() }
 								</p>

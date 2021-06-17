@@ -207,19 +207,19 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
       <span
         class="progressbar__outer-progress-label"
       >
-        £12,345.56
+        GBP £12,345.56
       </span>
     </div>
     <span
       class="progressbar__total-label"
     >
-      £1,000,000.00
+      GBP £1,000,000.00
     </span>
   </div>
   <p
     class="description"
   >
-    Discounted base fee expires after the first £1,000,000.00 of total payment volume.
+    Discounted base fee expires after the first GBP £1,000,000.00 of total payment volume.
   </p>
   <p>
     <a

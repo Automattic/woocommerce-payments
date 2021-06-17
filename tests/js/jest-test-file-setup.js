@@ -46,7 +46,7 @@ wooCommercePackages.forEach( ( lib ) => {
 global.wcSettings = {
 	// adminUrl: 'https://vagrant.local/wp/wp-admin/',
 	// locale: 'en-US',
-	// currency: { code: 'USD', precision: 2, symbol: '$' },
+	currency: { code: 'USD', precision: 2, symbol: '$' },
 	// date: {
 	// 	dow: 0,
 	// },
