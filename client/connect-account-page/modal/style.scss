@@ -1,5 +1,7 @@
+@import '../../stylesheets/abstracts/variables';
+
 .woocommerce-payments__onboarding_location_check-modal {
-	max-width: 500px;
+	max-width: $modal-max-width !important;
 
 	.woocommerce-payments__onboarding_location_check-modal-message {
 		font-size: 14px;
