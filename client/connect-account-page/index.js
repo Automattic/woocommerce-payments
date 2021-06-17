@@ -2,11 +2,10 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
 import React from 'react';
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
+import { render, useState, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -120,8 +119,7 @@ const ConnectPageOnboarding = () => {
 
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-onboarding-location-check-container';
-		document.body.appendChild( container );
-		ReactDOM.render(
+		render(
 			<OnboardingLocationCheckModal
 				countries={ countries }
 				onDeclined={ handleModalDeclined }
@@ -129,6 +127,7 @@ const ConnectPageOnboarding = () => {
 			/>,
 			container
 		);
+		document.body.appendChild( container );
 	};
 
 	const handleSetup = ( event ) => {
