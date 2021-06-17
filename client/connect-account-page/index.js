@@ -107,7 +107,8 @@ const ConnectPageOnboarding = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location = url;
+			// The raw URL value has ampersands escaped and we need to unescape them for redirect to happen
+			window.location = url.replaceAll( '&amp;', '&' );
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
