@@ -846,6 +846,8 @@ class WC_Payments_API_Client {
 	 * @param array  $account_data - data to prefill the form.
 	 *
 	 * @return array An array containing the onboarding URL and other account data.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
 	public function onboard_account( $return_url, $account_data = [] ) {
 		$request_args = apply_filters(
@@ -857,7 +859,7 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::ACCOUNTS_API, self::POST );
+		return $this->request( $request_args, self::ACCOUNTS_API . '/onboard', self::POST );
 	}
 
 	/**
