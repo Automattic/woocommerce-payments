@@ -40,15 +40,36 @@ describe( 'Onboarding: location check dialog', () => {
 	} );
 
 	test( 'renders correctly when continue button is clicked', () => {
+		let confirmed = false;
+		const handleConfirmed = () => ( confirmed = true );
+
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				onConfirmed={ callbackMock }
+				onConfirmed={ handleConfirmed }
 				onDeclined={ callbackMock }
 			/>
 		);
 		user.click( screen.getByRole( 'button', { name: /Continue/ } ) );
 
+		expect( confirmed ).toBe( true );
+		expect( modalContent() ).toMatchSnapshot();
+	} );
+
+	test( 'renders correctly when cancel button is clicked', () => {
+		let cancelled = false;
+		const handleCancelled = () => ( cancelled = true );
+
+		render(
+			<OnboardingLocationCheckModal
+				countries={ countriesMock }
+				onConfirmed={ callbackMock }
+				onDeclined={ handleCancelled }
+			/>
+		);
+		user.click( screen.getByRole( 'button', { name: /Cancel/ } ) );
+
+		expect( cancelled ).toBe( true );
 		expect( modalContent() ).toMatchSnapshot();
 	} );
 } );
