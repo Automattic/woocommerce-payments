@@ -5,7 +5,6 @@
 import { Card } from '@woocommerce/components';
 import { Button, Notice } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
@@ -112,10 +111,6 @@ const ConnectPageOnboarding = () => {
 
 		// Populate translated list of supported countries we want to render in the modal window.
 		const countries = Object.values( availableCountries )
-			.map( ( country ) => {
-				// eslint-disable-next-line @wordpress/i18n-no-variables
-				return __( country, 'woocommerce-payments' );
-			} )
 			.sort()
 			.map( ( country ) => {
 				return { title: country };
