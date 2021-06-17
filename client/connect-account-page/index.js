@@ -102,11 +102,11 @@ const ConnectPageOnboarding = () => {
 
 	const handleLocationCheck = ( availableCountries ) => {
 		// Reset the 'Set up' button state if merchant decided to stop
-		const whenDeclined = () => {
+		const handleModalDeclined = () => {
 			setSubmitted( false );
 		};
 		// Redirect the merchant if merchant decided to continue
-		const whenConfirmed = () => {
+		const handleModalConfirmed = () => {
 			window.location = wcpaySettings.connect.url;
 		};
 
@@ -127,8 +127,8 @@ const ConnectPageOnboarding = () => {
 		ReactDOM.render(
 			<OnboardingLocationCheckModal
 				countries={ countries }
-				whenDeclined={ whenDeclined }
-				whenConfirmed={ whenConfirmed }
+				onDeclined={ handleModalDeclined }
+				onConfirmed={ handleModalConfirmed }
 			/>,
 			container
 		);
