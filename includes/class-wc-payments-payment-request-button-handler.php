@@ -685,7 +685,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
-			'site_url'           => get_site_url(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
 			'total_label'        => $this->get_total_label(),
