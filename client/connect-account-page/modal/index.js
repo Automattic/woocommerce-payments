@@ -24,8 +24,8 @@ const LearnMoreLink = ( props ) => (
 
 const OnboardingLocationCheckModal = ( {
 	countries,
-	whenDeclined,
-	whenConfirmed,
+	onDeclined,
+	onConfirmed,
 } ) => {
 	// Declare state attributes
 	const [ isModalOpen, setModalOpen ] = useState( true );
@@ -37,11 +37,11 @@ const OnboardingLocationCheckModal = ( {
 	// Declare hooks to handle button clicks
 	const handleConfirmedRequest = () => {
 		setProcessingContinue( true );
-		whenConfirmed();
+		onConfirmed();
 	};
 	const handleDeclinedRequest = () => {
 		setModalOpen( false );
-		whenDeclined();
+		onDeclined();
 	};
 
 	const title = __( 'WooCommerce Payments', 'woocommerce-payments' );
