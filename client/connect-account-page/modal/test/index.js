@@ -31,8 +31,8 @@ describe( 'Onboarding: location check dialog', () => {
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				whenConfirmed={ callbackMock }
-				whenDeclined={ callbackMock }
+				onConfirmed={ callbackMock }
+				onDeclined={ callbackMock }
 			/>
 		);
 
@@ -43,8 +43,8 @@ describe( 'Onboarding: location check dialog', () => {
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				whenConfirmed={ callbackMock }
-				whenDeclined={ callbackMock }
+				onConfirmed={ callbackMock }
+				onDeclined={ callbackMock }
 			/>
 		);
 		user.click( screen.getByRole( 'button', { name: /Continue/ } ) );
