@@ -58,7 +58,7 @@ class WC_Payments_Notes_Set_Https_For_Checkout {
 			self::NOTE_NAME,
 			__( 'Read more', 'woocommerce-payments' ),
 			self::NOTE_DOCUMENTATION_URL,
-			'unactioned',
+			'actioned',
 			true
 		);
 
