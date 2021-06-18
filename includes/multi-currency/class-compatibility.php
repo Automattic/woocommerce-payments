@@ -14,22 +14,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class Compatibility {
 	/**
-	 * Multi-Currency instance.
-	 *
-	 * @var Multi_Currency
-	 */
-	protected $multi_currency;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
-	 */
-	public function __construct( Multi_Currency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
-	}
-
-	/**
 	 * Checks the cart to see if it contains a subscription product renewal.
 	 *
 	 * @return mixed The cart item containing the renewal as an array, else false.

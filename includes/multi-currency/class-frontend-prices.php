@@ -31,10 +31,11 @@ class Frontend_Prices {
 	 * Constructor.
 	 *
 	 * @param Multi_Currency $multi_currency The Multi_Currency instance.
+	 * @param Compatibility  $compatibility The Compatibility instance.
 	 */
-	public function __construct( Multi_Currency $multi_currency ) {
+	public function __construct( Multi_Currency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
-		$this->compatibility  = $this->multi_currency->get_compatibility();
+		$this->compatibility  = $compatibility;
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Simple product price hooks.
@@ -59,10 +60,6 @@ class Frontend_Prices {
 			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
 			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
 			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
-
-			// Subscription product hooks.
-			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
-			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 

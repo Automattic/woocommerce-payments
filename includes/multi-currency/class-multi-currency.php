@@ -110,7 +110,7 @@ class Multi_Currency {
 		new User_Settings( $this );
 
 		$this->compatibility       = new Compatibility( $this );
-		$this->frontend_prices     = new Frontend_Prices( $this );
+		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
@@ -141,7 +141,7 @@ class Multi_Currency {
 	 * Initialize the Widgets.
 	 */
 	public function init_widgets() {
-		register_widget( new Currency_Switcher_Widget( $this ) );
+		register_widget( new Currency_Switcher_Widget( $this, $this->compatibility ) );
 	}
 
 	/**
