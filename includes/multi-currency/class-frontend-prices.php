@@ -54,6 +54,10 @@ class Frontend_Prices {
 
 			// Order hooks.
 			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 50, 2 );
+
+			// Subscription product hooks.
+			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 
