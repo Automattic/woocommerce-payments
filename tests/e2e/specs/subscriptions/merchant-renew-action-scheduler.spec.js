@@ -27,6 +27,7 @@ const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
 const customerBilling = config.get( 'addresses.customer.billing' );
 
 let orderId;
+const subscriptionId = parseInt(orderId) + 1;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
@@ -64,7 +65,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 
 		afterAll( async () => {
 			// Delete the user created with the subscription
-			//await withRestApi.deleteCustomerByEmail( customerBilling.email );
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 			await merchant.logout();
 		} );
 
@@ -92,7 +93,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 		it( 'should verify that the subscription has been renewed', async () => {
 			// Go to Subscriptions and verify the subscription renewal
 			await merchantWCP.openSubscriptions();
-			await expect( page ).toMatchElement( 'tbody#the-list > tr#post-' + orderId + ' > td.orders.column-orders > a', {text: '2'} );
+			await expect( page ).toMatchElement( 'tbody#the-list > tr#post-' + subscriptionId + ' > td.orders.column-orders > a', {text: '2'} );
 		} );
 	}
 );
