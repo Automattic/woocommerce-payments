@@ -215,9 +215,9 @@ class Settings extends \WC_Settings_Page {
 					<?php echo esc_html( $currency->get_symbol() ); ?>
 					<span style="display:inline-block;"></span>
 				</div>
-				<input type="hidden" 
-					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>" 
-					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>" 
+				<input type="hidden"
+					name="<?php echo esc_attr( $this->id . '_automatic_exchange_rate' ); ?>"
+					value="<?php echo esc_attr( $available_currencies[ $currency->get_code() ]->get_rate() ); ?>"
 				/>
 			</td>
 		</tr>
@@ -235,8 +235,6 @@ class Settings extends \WC_Settings_Page {
 		$available_currencies = $this->multi_currency->get_available_currencies();
 		$default_currency     = $this->multi_currency->get_default_currency();
 		$page_id              = $this->id . '_single_currency';
-
-		$page_title = sprintf( '%1$s (%2$s)', $currency->get_name(), $currency->get_code() );
 
 		$exchange_rate_options = [
 			'automatic' => sprintf(
@@ -291,13 +289,19 @@ class Settings extends \WC_Settings_Page {
 			$currency->get_code()
 		);
 
+		// Output breadcrumbs.
+		?>
+		<h2>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=wcpay_multi_currency' ) ); ?>"><?php esc_html_e( 'Currencies', 'woocommerce-payments' ); ?></a> &gt; <?php echo esc_html( "{$currency->get_name()} ({$currency->get_code()}) {$currency->get_flag()}" ); ?>
+		</h2>
+		<?php
+
 		return apply_filters(
 			$this->id . '_single_settings',
 			[
 				[
-					'title' => $page_title,
-					'type'  => 'title',
-					'id'    => $page_id,
+					'type' => 'title',
+					'id'   => $page_id,
 				],
 
 				[
