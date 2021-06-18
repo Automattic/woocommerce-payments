@@ -422,7 +422,7 @@ class WC_Payments_Admin {
 					'wcpay_order_config',
 					[
 						'disableManualRefunds' => ! $this->wcpay_gateway->has_refund_failed( $order ),
-						'manualRefundsTip'     => __( 'Refunds are available only through WooCommerce Payments.', 'woocommerce-payments' ),
+						'manualRefundsTip'     => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
 					]
 				);
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
