@@ -83,7 +83,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @param string $code The currency code.
 	 */
-	public function get_currency_name_from_code( $code ) {
+	public function get_currency_name_from_code( $code ): string {
 		$wc_currencies = get_woocommerce_currencies();
 		return $wc_currencies[ $code ];
 	}
@@ -93,7 +93,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Three letter currency code.
 	 */
-	public function get_code() {
+	public function get_code(): string {
 		return $this->code;
 	}
 
@@ -102,7 +102,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return float Charm rate.
 	 */
-	public function get_charm() {
+	public function get_charm(): float {
 		return is_null( $this->charm ) ? 0.00 : $this->charm;
 	}
 
@@ -111,7 +111,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Currency flag.
 	 */
-	public function get_flag() {
+	public function get_flag(): string {
 		// Maybe add param img/emoji to return which you want?
 		return Country_Flags::get_by_currency( $this->code );
 	}
@@ -121,7 +121,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Currency code lowercased.
 	 */
-	public function get_id() {
+	public function get_id(): string {
 		return strtolower( $this->code );
 	}
 
@@ -130,7 +130,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return bool
 	 */
-	public function get_is_default() {
+	public function get_is_default(): bool {
 		return $this->is_default || false;
 	}
 
@@ -139,7 +139,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Currency name.
 	 */
-	public function get_name() {
+	public function get_name(): string {
 		$wc_currencies = get_woocommerce_currencies();
 		return $wc_currencies[ $this->code ];
 	}
@@ -149,7 +149,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return float The conversion rate.
 	 */
-	public function get_rate() {
+	public function get_rate(): float {
 		return $this->rate;
 	}
 
@@ -158,7 +158,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Rounding rate.
 	 */
-	public function get_rounding() {
+	public function get_rounding(): string {
 		return is_null( $this->rounding ) ? 'none' : $this->rounding;
 	}
 
@@ -167,7 +167,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return string Currency symbol.
 	 */
-	public function get_symbol() {
+	public function get_symbol(): string {
 		return get_woocommerce_currency_symbol( $this->code );
 	}
 
@@ -176,7 +176,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @return bool
 	 */
-	public function get_is_zero_decimal() {
+	public function get_is_zero_decimal(): bool {
 		return $this->is_zero_decimal || false;
 	}
 
@@ -210,9 +210,9 @@ class Currency implements \JsonSerializable {
 	/**
 	 * Specify the data that should be serialized to JSON.
 	 *
-	 * @return mixed Serialized Currency object.
+	 * @return array Serialized Currency object.
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		return [
 			'code'            => $this->code,
 			'rate'            => $this->get_rate(),
