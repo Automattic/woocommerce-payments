@@ -42,7 +42,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @var bool|null
 	 */
-	private $is_default;
+	private $is_default = false;
 
 	/**
 	 * Currency rounding rate after conversion.
@@ -56,7 +56,7 @@ class Currency implements \JsonSerializable {
 	 *
 	 * @var bool|null
 	 */
-	private $is_zero_decimal;
+	private $is_zero_decimal = false;
 
 
 	/**
@@ -131,7 +131,7 @@ class Currency implements \JsonSerializable {
 	 * @return bool
 	 */
 	public function get_is_default(): bool {
-		return $this->is_default || false;
+		return $this->is_default;
 	}
 
 	/**
@@ -177,7 +177,7 @@ class Currency implements \JsonSerializable {
 	 * @return bool
 	 */
 	public function get_is_zero_decimal(): bool {
-		return $this->is_zero_decimal || false;
+		return $this->is_zero_decimal;
 	}
 
 	/**
