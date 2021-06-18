@@ -7,7 +7,7 @@ exports[`AccountFees renders discounted base fee 1`] = `
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.0% + $0.20 per transaction
+   2% + $0.20 per transaction
   <div
     class="progressbar"
   >
@@ -54,7 +54,7 @@ exports[`AccountFees renders discounted fee with end date 1`] = `
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.0% + $0.21 per transaction (30% discount)
+   2.03% + $0.21 per transaction (30% discount)
   <p
     class="description"
   >
@@ -79,7 +79,7 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.0% + $0.21 per transaction (30% discount)
+   2.03% + $0.21 per transaction (30% discount)
   <div
     class="progressbar"
   >
@@ -126,7 +126,7 @@ exports[`AccountFees renders discounted fee with volume limit and end date 1`] =
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.0% + $0.21 per transaction (30% discount)
+   2.03% + $0.21 per transaction (30% discount)
   <div
     class="progressbar"
   >
@@ -173,7 +173,7 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.0% + $0.21 per transaction (30% discount)
+   2.03% + $0.21 per transaction (30% discount)
   <p>
     <a
       href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
@@ -240,7 +240,7 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
   <s>
     2.9% + $0.30 per transaction
   </s>
-   2.3% + $0.24 per transaction (20% discount)
+   2.32% + $0.24 per transaction (20% discount)
   <p>
     <a
       href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
