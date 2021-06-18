@@ -23,8 +23,6 @@ const productName = 'Subscription for systems renewal';
 const productSlug = 'subscription-for-systems-renewal';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
 const customerBilling = config.get( 'addresses.customer.billing' );
-let orderId;
-const subscriptionId = parseInt(orderId) + 1;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
@@ -50,12 +48,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
-
-			// Get the order ID so we can open it in the merchant view
-			const orderIdField = await page.$(
-				'.woocommerce-order-overview__order.order > strong'
-			);
-			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 
 			await merchant.login();
 		} );
@@ -90,7 +82,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 		it( 'should verify that the subscription has been renewed', async () => {
 			// Go to Subscriptions and verify the subscription renewal
 			await merchantWCP.openSubscriptions();
-			await expect( page ).toMatchElement( 'tbody#the-list > tr#post-' + subscriptionId + ' > td.orders.column-orders > a', {text: '2'} );
+			await expect( page ).toMatchElement( 'tbody#the-list > tr > td.orders.column-orders > a', {text: '2'} );
 		} );
 	}
 );
