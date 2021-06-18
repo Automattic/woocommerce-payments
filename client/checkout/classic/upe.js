@@ -250,8 +250,8 @@ jQuery( function ( $ ) {
 	}
 
 	/**
-	 * Submits checkout form via AJAX to create order and uses custom
-	 * redirect URL in AJAX response to request payment confirmation from UPE
+	 * Submits the confirmation of the setup intent to Stripe on Add Payment Method page.
+	 * Stripe redirects to Payment Methods page on sucess.
 	 *
 	 * @param {Object} $form The jQuery object for the form.
 	 * @return {boolean} A flag for the event handler.
@@ -262,7 +262,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		const returnUrl = getConfig( 'confirmSetupIntentreturnURL' );
+		const returnUrl = getConfig( 'paymentMethodsURL' );
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm setup to trigger validation errors
 			const { error } = await api.getStripe().confirmSetup( {
