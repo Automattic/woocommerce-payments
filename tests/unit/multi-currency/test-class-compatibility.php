@@ -17,12 +17,20 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 	private $compatibility;
 
 	/**
+	 * Mock WCPay\Multi_Currency\Utils.
+	 *
+	 * @var WCPay\Multi_Currency\Utils|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_utils;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp() {
 		parent::setUp();
 
-		$this->compatibility = new WCPay\Multi_Currency\Compatibility();
+		$this->mock_utils    = $this->createMock( WCPay\Multi_Currency\Utils::class );
+		$this->compatibility = new WCPay\Multi_Currency\Compatibility( $this->mock_utils );
 
 		$this->mock_product = $this->createMock( \WC_Product::class );
 		$this->mock_product
@@ -61,17 +69,38 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WP_UnitTestCase {
 		$this->assertTrue( $this->compatibility->should_hide_widgets() );
 	}
 
-	public function test_should_convert_product_price_return_true() {
+	public function test_should_convert_product_price_return_false_when_renewal_in_cart() {
+		$this->mock_utils
+			->method( 'is_call_in_backtrace' )
+			->with(
+				[
+					'WC_Cart_Totals->calculate_item_totals',
+					'WC_Cart->get_product_subtotal',
+					'wc_get_price_excluding_tax',
+					'wc_get_price_including_tax',
+				]
+			)
+			->willReturn( true );
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertFalse( $this->compatibility->should_convert_product_price( $this->mock_product ) );
+	}
+
+	public function test_should_convert_product_price_return_true_when_backtrace_does_not_match() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
+		$this->mock_wcs_cart_contains_renewal( true );
+		$this->assertTrue( $this->compatibility->should_convert_product_price( $this->mock_product ) );
+	}
+
+	public function test_should_convert_product_price_return_true_with_no_renewal_in_cart() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->assertTrue( $this->compatibility->should_convert_product_price( $this->mock_product ) );
+	}
+
+	public function test_should_convert_product_price_return_true_when_product_null() {
+		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
+		$this->mock_wcs_cart_contains_renewal( true );
 		$this->assertTrue( $this->compatibility->should_convert_product_price( null ) );
-	}
-
-	public function test_is_call_in_backtrace_return_false() {
-		$this->assertFalse( $this->compatibility->is_call_in_backtrace( [ 'test' ] ) );
-	}
-
-	public function test_is_call_in_backtrace_return_true() {
-		$backtrace = wp_debug_backtrace_summary( null, 0, false ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
-		$this->assertTrue( $this->compatibility->is_call_in_backtrace( $backtrace ) );
 	}
 
 	private function mock_wcs_cart_contains_renewal( $value ) {

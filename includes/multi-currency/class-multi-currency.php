@@ -109,7 +109,8 @@ class Multi_Currency {
 
 		new User_Settings( $this );
 
-		$this->compatibility       = new Compatibility( $this );
+		$this->utils               = new Utils();
+		$this->compatibility       = new Compatibility( $this->utils );
 		$this->frontend_prices     = new Frontend_Prices( $this, $this->compatibility );
 		$this->frontend_currencies = new Frontend_Currencies( $this );
 
@@ -515,6 +516,7 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-utils.php';
 	}
 
 	/**

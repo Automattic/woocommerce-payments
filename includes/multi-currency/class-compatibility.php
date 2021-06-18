@@ -13,6 +13,23 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi Currency Compatibility.
  */
 class Compatibility {
+
+	/**
+	 * Utils class.
+	 *
+	 * @var Utils
+	 */
+	private $utils;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param Utils $utils Utils class.
+	 */
+	public function __construct( Utils $utils ) {
+		$this->utils = $utils;
+	}
+
 	/**
 	 * Checks the cart to see if it contains a subscription product renewal.
 	 *
@@ -82,28 +99,11 @@ class Compatibility {
 				'wc_get_price_excluding_tax',
 				'wc_get_price_including_tax',
 			];
-			if ( $this->is_call_in_backtrace( $calls ) ) {
+			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
 				return false;
 			}
 		}
 
 		return true;
-	}
-
-	/**
-	 * Checks backtrace calls to see if a certain call has been made.
-	 *
-	 * @param array $calls Array of the calls to check for.
-	 *
-	 * @return bool True if found, false if not.
-	 */
-	public function is_call_in_backtrace( array $calls ): bool {
-		$backtrace = wp_debug_backtrace_summary( null, 0, false ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
-		foreach ( $calls as $call ) {
-			if ( in_array( $call, $backtrace, true ) ) {
-				return true;
-			}
-		}
-		return false;
 	}
 }
