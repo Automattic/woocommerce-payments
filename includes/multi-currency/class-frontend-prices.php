@@ -76,7 +76,7 @@ class Frontend_Prices {
 			return $price;
 		}
 
-		if ( $this->compatibility->should_convert_product_price( $product, $price ) ) {
+		if ( $this->compatibility->should_convert_product_price( $product ) ) {
 			return $this->multi_currency->get_price( $price, 'product' );
 		}
 

@@ -18,7 +18,7 @@ class Compatibility {
 	 *
 	 * @return mixed The cart item containing the renewal as an array, else false.
 	 */
-	public function cart_contains_renewal() {
+	private function cart_contains_renewal() {
 		if ( ! function_exists( 'wcs_cart_contains_renewal' ) ) {
 			return false;
 		}
@@ -60,22 +60,20 @@ class Compatibility {
 	/**
 	 * Checks to see if the widgets should be hidden.
 	 *
-	 * @return mixed False if it shouldn't be hidden.
+	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
-	public function should_hide_widgets() {
-		return $this->cart_contains_renewal();
+	public function should_hide_widgets(): bool {
+		return $this->cart_contains_renewal() ? true : false;
 	}
 
 	/**
 	 * Checks to see if the product's price should be converted.
 	 *
-	 * @param object       $product Product object to test.
-	 * @param float|string $price Price being converted.
+	 * @param object $product Product object to test.
 	 *
 	 * @return bool True if it should be converted.
 	 */
-	public function should_convert_product_price( $product = null, $price = 0 ): bool {
-
+	public function should_convert_product_price( $product = null ): bool {
 		// If we have a product, and it's a subscription renewal.
 		if ( $product && $this->is_product_subscription_renewal( $product ) ) {
 			$calls = [
