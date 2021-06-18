@@ -74,16 +74,15 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 
 			 // Filter results by pending
 			 await page.click( 'ul.subsubsub > .pending > a' );
+			 await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			 // Search by pending subscriptions
-			 await expect( page ).toFill( 'input#plugin-search-input', {
-				 text: actionSchedulerHook
-			} );
+			 await expect( page ).toFill( 'input#plugin-search-input', actionSchedulerHook );
 			await expect( page ).toClick( 'input#search-submit.button' );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Run the Action Scheduler task to renew a subscription
-			await expect( page ).toClick( 'div.row-actions > span.run > a' );
+			await evalAndClick( 'div.row-actions > span.run > a' );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			await expect( page ).toMatchElement( 'div#message.updated > p > strong', {
 				text: actionSchedulerHook
