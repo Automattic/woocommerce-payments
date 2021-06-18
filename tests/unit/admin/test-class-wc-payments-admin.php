@@ -23,8 +23,9 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	private $payments_admin;
 
 	public function setUp() {
-		global $submenu;
+		global $menu, $submenu;
 
+		$menu    = null;
 		$submenu = null;
 
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
@@ -82,6 +83,34 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$settings_item_name = $item_names_by_urls[ WC_Payment_Gateway_WCPay::get_settings_url() ];
 
 		$this->assertEquals( 'Settings', $settings_item_name );
+	}
+
+	public function test_it_renders_payments_badge_if_stripe_is_not_connected() {
+		global $menu;
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $item_names_by_urls['wc-admin&path=/payments/connect'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+	}
+
+	public function test_it_does_not_render_payments_badge_if_stripe_is_connected() {
+		global $menu;
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
+		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/overview'] );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/connect', $item_names_by_urls );
 	}
 
 	public function feature_flag_combinations_not_causing_settings_badge_render_provider() {
