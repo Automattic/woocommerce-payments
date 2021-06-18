@@ -40,7 +40,7 @@ Our global support team is available to answer questions you may have about WooC
 
 * United States-based business.
 * WordPress 5.5 or newer.
-* WooCommerce 5.1 or newer.
+* WooCommerce 5.2 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -114,7 +114,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Deposit overview details for non instant ones.
 * Update - Payment request button should guide users to login when necessary.
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
-* Update - Bump minimum supported version of WooCommerce from 4.8 to 5.1.
+* Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
