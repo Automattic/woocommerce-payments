@@ -109,7 +109,7 @@ class Settings extends \WC_Settings_Page {
 
 					[
 						'title' => __( 'Store settings', 'woocommerce-payments' ),
-						// TODO: Need learn more link.
+						// TODO: Learn more documentation link, to be done on #1780.
 						'desc'  => sprintf(
 							/* translators: %s: url to documentation. */
 							__( 'Store settings allow your customers to choose which currency they would like to use when shopping at your store. <a href="%s">Learn more</a>', 'woocommerce-payments' ),
@@ -123,9 +123,9 @@ class Settings extends \WC_Settings_Page {
 					[
 						'title'         => __( 'Store settings', 'woocommerce-payments' ),
 						'desc'          => __( 'Automatically switch customers to the local currency if it is enabled above.', 'woocommerce-payments' ),
-						// TODO: Need preview link... what is expected?
+						// TODO: Preview link, to be done on #2258.
 						'desc_tip'      => sprintf(
-							/* translators: %s: url to preview? */
+							/* translators: %s: url to a preview of alert banner */
 							__( 'Customers will be notified via store alert banner. <a href="%s">Preview</a>', 'woocommerce-payments' ),
 							''
 						),
@@ -137,11 +137,10 @@ class Settings extends \WC_Settings_Page {
 
 					[
 						'desc'          => __( 'Add a currency switcher to the cart widget', 'woocommerce-payments' ),
-						// TODO: Need configure link... what is expected? Widgets?
 						'desc_tip'      => sprintf(
-							/* translators: %s: url to the widgets? */
+							/* translators: %s: url to the widgets page */
 							__( 'A currency switcher is also available in your widgets. <a href="%s">Configure now</a>', 'woocommerce-payments' ),
-							''
+							'widgets.php'
 						),
 						'id'            => $this->id . '_enable_cart_switcher',
 						'default'       => 'yes',
