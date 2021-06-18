@@ -51,6 +51,13 @@ class Frontend_Prices {
 			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
 			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
 			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+
+			// Order hooks.
+			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 50, 2 );
+
+			// Subscription product hooks.
+			add_filter( 'woocommerce_subscriptions_product_price', [ $this, 'get_product_price' ], 50, 2 );
+			add_filter( 'woocommerce_subscriptions_product_sign_up_fee', [ $this, 'get_product_price' ], 50, 2 );
 		}
 	}
 
@@ -202,5 +209,26 @@ class Frontend_Prices {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Adds the exchange rate and default currency to the order's meta if prices have been converted.
+	 *
+	 * @param int      $order_id The order ID.
+	 * @param WC_Order $order    The order object.
+	 */
+	public function add_order_meta( $order_id, $order ) {
+		$default_currency = $this->multi_currency->get_default_currency();
+
+		// Do not add exchange rate if order was made in the store's default currency.
+		if ( $default_currency->get_code() === $order->get_currency() ) {
+			return;
+		}
+
+		$exchange_rate = $this->multi_currency->get_price( 1, 'exchange_rate' );
+
+		$order->update_meta_data( '_wcpay_multi_currency_order_exchange_rate', $exchange_rate );
+		$order->update_meta_data( '_wcpay_multi_currency_order_default_currency', $default_currency->get_code() );
+		$order->save_meta_data();
 	}
 }
