@@ -8,7 +8,6 @@ const {
 	shopper,
 	withRestApi,
 	evalAndClick,
-	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
 
 import {
@@ -23,9 +22,7 @@ import { fillCardDetails, setupCheckout } from '../../utils/payments';
 const productName = 'Subscription for systems renewal';
 const productSlug = 'subscription-for-systems-renewal';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
-
 const customerBilling = config.get( 'addresses.customer.billing' );
-
 let orderId;
 const subscriptionId = parseInt(orderId) + 1;
 
@@ -70,15 +67,15 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 		} );
 
 		it( 'should be able to renew a subscription via Action Scheduler', async () => {
-			 // Go to Action Scheduler
-			 await merchantWCP.openActionScheduler();
+			// Go to Action Scheduler
+			await merchantWCP.openActionScheduler();
 
-			 // Filter results by pending
-			 await page.click( 'ul.subsubsub > .pending > a' );
-			 await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+			// Filter results by pending
+			await page.click( 'ul.subsubsub > .pending > a' );
+			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
-			 // Search by pending subscriptions
-			 await expect( page ).toFill( 'input#plugin-search-input', actionSchedulerHook );
+			// Search by pending subscriptions
+			await expect( page ).toFill( 'input#plugin-search-input', actionSchedulerHook );
 			await expect( page ).toClick( 'input#search-submit.button' );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
