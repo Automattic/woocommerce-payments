@@ -60,6 +60,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_subscriptions_product_price', 'get_product_price' ],
+			[ 'woocommerce_subscriptions_product_sign_up_fee', 'get_product_price' ],
 		];
 	}
 
