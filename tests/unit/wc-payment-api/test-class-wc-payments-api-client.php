@@ -803,41 +803,19 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 * Data provider for test_request_with_level3_data
 	 */
 	public function data_request_with_level3_data() {
-		$base_input = [
-			'amount'         => 10000,
-			'currency'       => 'aud',
-			'confirm'        => 'true',
-			'payment_method' => 'pm_1J2pJuR42SiAd3w0Z5UHDK3V',
-			'customer'       => 'cus_JeKgKIOAFflZqL',
-			'capture_method' => 'automatic',
-			'metadata'       => [
-				'customer_name'  => 'Chris',
-				'customer_email' => 'chris@example.com',
-				'site_url'       => 'https://example.com',
-				'order_id'       => 22,
-				'order_key'      => 'wc_order_XEZjVLa8oimvY',
-			],
-		];
-
 		return [
 			'australian_merchant'               => [
-				array_merge(
-					$base_input,
-					[
-						'level3' => [],
-					]
-				),
+				[
+					'level3' => [],
+				],
 				[],
 			],
 			'american_merchant_no_line_items'   => [
-				array_merge(
-					$base_input,
-					[
-						'level3' => [
-							'merchant_reference' => 'abc123',
-						],
-					]
-				),
+				[
+					'level3' => [
+						'merchant_reference' => 'abc123',
+					],
+				],
 				[
 					'merchant_reference' => 'abc123',
 					'line_items'         => [
@@ -853,24 +831,21 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				],
 			],
 			'american_merchant_with_line_items' => [
-				array_merge(
-					$base_input,
-					[
-						'level3' => [
-							'merchant_reference' => 'abc123',
-							'line_items'         => [
-								[
-									'discount_amount'     => 0,
-									'product_code'        => 'free-hug',
-									'product_description' => 'Free hug',
-									'quantity'            => 1,
-									'tax_amount'          => 0,
-									'unit_cost'           => 0,
-								],
+				[
+					'level3' => [
+						'merchant_reference' => 'abc123',
+						'line_items'         => [
+							[
+								'discount_amount'     => 0,
+								'product_code'        => 'free-hug',
+								'product_description' => 'Free hug',
+								'quantity'            => 1,
+								'tax_amount'          => 0,
+								'unit_cost'           => 0,
 							],
 						],
-					]
-				),
+					],
+				],
 				[
 					'merchant_reference' => 'abc123',
 					'line_items'         => [
