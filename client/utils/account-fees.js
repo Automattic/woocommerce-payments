@@ -10,6 +10,7 @@ import { __experimentalCreateInterpolateElement as createInterpolateElement } fr
  * Internal dependencies
  */
 import { formatCurrency } from 'utils/currency';
+import { formatFee } from 'utils/fees';
 
 export const getCurrentFee = ( accountFees ) => {
 	return accountFees.discount.length
@@ -23,8 +24,8 @@ export const formatAccountFeesDescription = ( accountFees ) => {
 
 	let feeDescription = sprintf(
 		/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-		__( '%1$.1f%% + %2$s per transaction', 'woocommerce-payments' ),
-		baseFee.percentage_rate * 100,
+		__( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
+		formatFee( baseFee.percentage_rate ),
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
 
@@ -45,11 +46,11 @@ export const formatAccountFeesDescription = ( accountFees ) => {
 		let descriptionString = sprintf(
 			/* translators: %1 Base fee (that don't apply to this account at this moment), %2 and %3: Current fee (e.g: 2.9% + $.30) */
 			__(
-				'<s>%1$s</s> %2$.1f%% + %3$s per transaction',
+				'<s>%1$s</s> %2$f%% + %3$s per transaction',
 				'woocommerce-payments'
 			),
 			feeDescription,
-			percentage * 100,
+			formatFee( percentage ),
 			formatCurrency( fixed, baseFee.currency )
 		);
 
@@ -57,9 +58,9 @@ export const formatAccountFeesDescription = ( accountFees ) => {
 			descriptionString +=
 				' ' +
 				sprintf(
-					/* translators: %d percentage discount to apply */
-					__( '(%1$d%% discount)', 'woocommerce-payments' ),
-					currentFee.discount * 100
+					/* translators: %f percentage discount to apply */
+					__( '(%f%% discount)', 'woocommerce-payments' ),
+					formatFee( currentFee.discount )
 				);
 		}
 
