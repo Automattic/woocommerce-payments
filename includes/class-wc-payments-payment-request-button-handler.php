@@ -53,8 +53,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		$this->gateway = WC_Payments::get_gateway();
-
 		// Add Track event on settings change.
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'track_payment_request_settings_change' ], 10, 2 );
 
@@ -74,6 +72,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
@@ -94,6 +93,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 
 		// Add a filter for the value of `wcpay_is_apple_pay_enabled`.
 		// This option does not get stored in the database at all, and this function
@@ -128,10 +129,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return bool
 	 */
 	public function is_authentication_required() {
-		// If guest checkout is disabled, authentication might be required.
-		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) ) {
-			// If account creation is not possible, authentication is required.
-			return ! $this->is_account_creation_possible();
+		// If guest checkout is disabled and account creation is not possible, authentication is required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+		// If cart contains subscription and account creation is not posible, authentication is required.
+		if ( $this->has_subscription_product() && ! $this->is_account_creation_possible() ) {
+			return true;
 		}
 
 		return false;
@@ -175,6 +179,24 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		WC()->session->set_customer_session_cookie( true );
+	}
+
+	/**
+	 * Handles payment request redirect when the redirect dialog "Continue" button is clicked.
+	 */
+	public function handle_payment_request_redirect() {
+		if (
+			! empty( $_GET['wcpay_payment_request_redirect_url'] )
+			&& ! empty( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
+		) {
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_payment_request_redirect_url'] ) ) );
+			// Sets a redirect URL cookie for 10 minutes, which we will redirect to after authentication.
+			// Users will have a 10 minute timeout to login/create account, otherwise redirect URL expires.
+			wc_setcookie( 'wcpay_payment_request_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			// Redirects to "my-account" page.
+			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
+		}
 	}
 
 	/**
@@ -433,11 +455,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
-		// User isn't authenticated and authentication is required.
-		if ( ! is_user_logged_in() && $this->is_authentication_required() ) {
-			return false;
-		}
-
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
@@ -514,11 +531,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				return false;
 			}
 
-			// Not supported for subscription products when user is not authenticated and account creation is not possible.
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
-				return false;
-			}
-
 			// Trial subscriptions with shipping are not supported.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
@@ -526,6 +538,33 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		} elseif ( $this->is_checkout() || $this->is_cart() ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+				$_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+				if ( WC_Subscriptions_Product::is_subscription( $_product ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -595,6 +634,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Returns the login redirect URL.
+	 *
+	 * @param string $redirect Default redirect URL.
+	 * @return string Redirect URL.
+	 */
+	public function get_login_redirect_url( $redirect ) {
+		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_payment_request_redirect_url'] ?? '' ) );
+
+		if ( empty( $url ) ) {
+			return $redirect;
+		}
+		wc_setcookie( 'wcpay_payment_request_redirect_url', null );
+
+		return $url;
+	}
+
+	/**
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
@@ -604,14 +660,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		$payment_request_params = [
-			'ajax_url'        => admin_url( 'admin-ajax.php' ),
-			'wc_ajax_url'     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'stripe'          => [
+			'ajax_url'           => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'stripe'             => [
 				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
-			'nonce'           => [
+			'nonce'              => [
 				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
 				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
 				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
@@ -619,18 +675,19 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 			],
-			'checkout'        => [
+			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
-			'button'          => $this->get_button_settings(),
-			'is_product_page' => $this->is_product(),
-			'has_block'       => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-			'product'         => $this->get_product_data(),
-			'total_label'     => $this->get_total_label(),
+			'button'             => $this->get_button_settings(),
+			'login_confirmation' => $this->get_login_confirmation_settings(),
+			'is_product_page'    => $this->is_product(),
+			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
+			'product'            => $this->get_product_data(),
+			'total_label'        => $this->get_total_label(),
 		];
 
 		wp_register_style( 'payment_request_styles', plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ), [], WC_Payments::get_file_version( 'dist/payment-request.css' ) );
@@ -689,11 +746,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product = $this->get_product();
 
 		if ( ! is_object( $product ) || ! in_array( $product->get_type(), $this->supported_product_types(), true ) ) {
-			return false;
-		}
-
-		// Not supported for subscription products when user is not authenticated and account creation is not possible.
-		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && ! is_user_logged_in() && ! $this->is_account_creation_possible() ) {
 			return false;
 		}
 
@@ -1450,6 +1502,32 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_branded'   => $this->is_branded_button(),
 			'css_selector' => $this->custom_button_selector(),
 			'branded_type' => $this->gateway->get_option( 'payment_request_button_branded_type' ),
+		];
+	}
+
+	/**
+	 * Settings array for the user authentication dialog and redirection.
+	 *
+	 * @return array
+	 */
+	public function get_login_confirmation_settings() {
+		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {
+			return false;
+		}
+
+		/* translators: The text encapsulated in `**` can be replaced with "Apple Pay" or "Google Pay". Please translate this text, but don't remove the `**`. */
+		$message      = __( 'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.', 'woocommerce-payments' );
+		$redirect_url = add_query_arg(
+			[
+				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
+				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ), // Current URL to redirect to after login.
+			],
+			home_url()
+		);
+
+		return [
+			'message'      => $message,
+			'redirect_url' => $redirect_url,
 		];
 	}
 }

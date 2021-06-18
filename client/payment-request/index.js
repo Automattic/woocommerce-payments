@@ -12,7 +12,11 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 
-import { shouldUseGooglePayBrand, getPaymentRequest } from './utils';
+import {
+	shouldUseGooglePayBrand,
+	getPaymentRequest,
+	displayLoginConfirmation,
+} from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -40,6 +44,8 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
+
+	let paymentRequestType;
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -123,6 +129,8 @@ jQuery( ( $ ) => {
 
 		/**
 		 * Adds the item to the cart and return cart details.
+		 *
+		 * @return {Promise} Promise for the request to the server.
 		 */
 		addToCart: () => {
 			let productId = $( '.single_add_to_cart_button' ).val();
@@ -163,7 +171,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			api.paymentRequestAddToCart( data );
+			return api.paymentRequestAddToCart( data );
 		},
 
 		/**
@@ -186,8 +194,15 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				// TODO: Don't display custom button when result.requestType
+				// TODO: Don't display custom button when paymentRequestType
 				// is `apple_pay` or `google_pay`.
+				if ( result.applePay ) {
+					paymentRequestType = 'apple_pay';
+				} else if ( result.googlePay ) {
+					paymentRequestType = 'google_pay';
+				} else {
+					paymentRequestType = 'payment_request_api';
+				}
 
 				wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
 					prButton,
@@ -401,6 +416,13 @@ jQuery( ( $ ) => {
 			const addToCartButton = $( '.single_add_to_cart_button' );
 
 			prButton.on( 'click', ( evt ) => {
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
+					evt.preventDefault();
+					displayLoginConfirmation( paymentRequestType );
+					return;
+				}
+
 				// First check if product can be added to cart.
 				if ( addToCartButton.is( '.disabled' ) ) {
 					evt.preventDefault(); // Prevent showing payment request modal.
@@ -501,22 +523,25 @@ jQuery( ( $ ) => {
 		},
 
 		attachCartPageEventListeners: ( prButton, paymentRequest ) => {
-			if (
-				( ! wcpayPaymentRequestParams.button.is_custom ||
-					! wcpayPaymentRequest.isCustomPaymentRequestButton(
-						prButton
-					) ) &&
-				( ! wcpayPaymentRequestParams.button.is_branded ||
-					! wcpayPaymentRequest.isBrandedPaymentRequestButton(
-						prButton
-					) )
-			) {
-				return;
-			}
-
 			prButton.on( 'click', ( evt ) => {
-				evt.preventDefault();
-				paymentRequest.show();
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( wcpayPaymentRequestParams.login_confirmation ) {
+					evt.preventDefault();
+					displayLoginConfirmation( paymentRequestType );
+					return;
+				}
+
+				if (
+					wcpayPaymentRequest.isCustomPaymentRequestButton(
+						prButton
+					) ||
+					wcpayPaymentRequest.isBrandedPaymentRequestButton(
+						prButton
+					)
+				) {
+					evt.preventDefault();
+					paymentRequest.show();
+				}
 			} );
 		},
 
