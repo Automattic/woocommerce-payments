@@ -111,6 +111,7 @@ Please note that our support for the checkout block is still experimental and th
 * Update - Pass currency to wc_price when adding intent notes to orders.
 * Update - Instant deposit inbox note wording.
 * Fix - Deposit overview details for non instant ones.
+* Update - Payment request button should guide users to login when necessary.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
