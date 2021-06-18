@@ -45,9 +45,7 @@ describe( 'ConnectAccountPage', () => {
 			},
 		};
 
-		const { container: page } = render( <ConnectAccountPage /> );
-		expect( page ).toMatchSnapshot();
-
+		render( <ConnectAccountPage /> );
 		user.click( screen.getByRole( 'link', { name: /Finish Setup/ } ) );
 
 		const modalSelector =
