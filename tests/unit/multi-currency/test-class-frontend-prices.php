@@ -68,6 +68,9 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
+			[ 'woocommerce_new_order', 'add_order_meta' ],
+			[ 'woocommerce_subscriptions_product_price', 'get_product_price' ],
+			[ 'woocommerce_subscriptions_product_sign_up_fee', 'get_product_price' ],
 		];
 	}
 
@@ -199,6 +202,31 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
 	}
 
+	public function test_convert_package_rates_prices_does_not_modify_original_objects() {
+		$this->mock_multi_currency->method( 'get_price' )->willReturn( 15.0 );
+
+		$flat_rate_method        = new WC_Shipping_Rate();
+		$free_method             = new WC_Shipping_Rate();
+		$flat_rate_method->cost  = '10.0';
+		$flat_rate_method->taxes = [ '1.0', '2.0' ];
+		$free_method->cost       = '0.0';
+
+		$base_shipping_rates = [
+			'shipping_rate_1' => $flat_rate_method,
+			'shipping_rate_2' => $free_method,
+		];
+
+		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
+
+		$this->assertSame( '10.0', $flat_rate_method->cost );
+		$this->assertSame( [ '1.0', '2.0' ], $flat_rate_method->taxes );
+		$this->assertNotSame( $flat_rate_method, $shipping_rates['shipping_rate_1'] );
+		$this->assertNotSame( $flat_rate_method->taxes, $shipping_rates['shipping_rate_1']->taxes );
+
+		$this->assertSame( '0.0', $free_method->cost );
+		$this->assertNotSame( $free_method, $shipping_rates['shipping_rate_2'] );
+	}
+
 	public function test_get_coupon_amount_returns_empty_amount() {
 		$this->assertSame( '', $this->frontend_prices->get_coupon_amount( '', null ) );
 	}
@@ -241,5 +269,36 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
 		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
 
 		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '5.0' ] ) );
+	}
+
+	public function test_add_order_meta_skips_default_currency() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+
+		$order = wc_create_order();
+		$order->set_currency( 'USD' );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertFalse( $order->meta_exists( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	public function test_add_order_meta() {
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\Multi_Currency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
+
+		$order = wc_create_order();
+		$order->set_currency( 'GBP' );
+
+		$this->frontend_prices->add_order_meta( $order->get_id(), $order );
+
+		// Get the order from the database.
+		$order = wc_get_order( $order->get_id() );
+
+		$this->assertSame( '0.71', $order->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
+		$this->assertSame( 'USD', $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
 	}
 }

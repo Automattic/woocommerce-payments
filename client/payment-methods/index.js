@@ -25,8 +25,8 @@ import SepaIcon from '../gateway-icons/sepa';
 
 const methodsConfiguration = {
 	// eslint-disable-next-line camelcase
-	woocommerce_payments: {
-		id: 'woocommerce_payments',
+	card: {
+		id: 'card',
 		label: __( 'Credit card / debit card', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
@@ -34,9 +34,8 @@ const methodsConfiguration = {
 		),
 		Icon: CreditCardIcon,
 	},
-	// eslint-disable-next-line camelcase
-	woocommerce_payments_giropay: {
-		id: 'woocommerce_payments_giropay',
+	giropay: {
+		id: 'giropay',
 		label: __( 'giropay', 'woocommerce-payments' ),
 		description: __(
 			'Expand your business with giropay — Germany’s second most popular payment system.',
@@ -44,9 +43,8 @@ const methodsConfiguration = {
 		),
 		Icon: GiropayIcon,
 	},
-	// eslint-disable-next-line camelcase
-	woocommerce_payments_sofort: {
-		id: 'woocommerce_payments_sofort',
+	sofort: {
+		id: 'sofort',
 		label: __( 'Sofort', 'woocommerce-payments' ),
 		description: __(
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, and Netherlands.',
@@ -55,8 +53,8 @@ const methodsConfiguration = {
 		Icon: SofortIcon,
 	},
 	// eslint-disable-next-line camelcase
-	woocommerce_payments_sepa: {
-		id: 'woocommerce_payments_sepa',
+	sepa_debit: {
+		id: 'sepa_debit',
 		label: __( 'Direct debit payment', 'woocommerce-payments' ),
 		description: __(
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
@@ -124,8 +122,7 @@ const PaymentMethods = () => {
 												'payment-methods__available-method',
 												{
 													'has-icon-border':
-														'woocommerce_payments' !==
-														id,
+														'card' !== id,
 												}
 											) }
 											aria-label={ label }

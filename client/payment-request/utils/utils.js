@@ -118,3 +118,34 @@ export const shouldUseGooglePayBrand = () => {
 	const isBrave = isChrome && window.navigator.brave;
 	return isChrome && ! isBrave;
 };
+
+/**
+ * Displays a `confirm` dialog which leads to a redirect.
+ *
+ * @param {string} paymentRequestType Can be either apple_pay, google_pay or payment_request_api.
+ */
+export const displayLoginConfirmation = ( paymentRequestType ) => {
+	if ( ! getPaymentRequestData( 'login_confirmation' ) ) {
+		return;
+	}
+
+	let message = getPaymentRequestData( 'login_confirmation' )?.message;
+
+	// Replace dialog text with specific payment request type "Apple Pay" or "Google Pay".
+	if ( 'payment_request_api' !== paymentRequestType ) {
+		message = message.replace(
+			/\*\*.*?\*\*/,
+			'apple_pay' === paymentRequestType ? 'Apple Pay' : 'Google Pay'
+		);
+	}
+
+	// Remove asterisks from string.
+	message = message.replace( /\*\*/g, '' );
+
+	if ( confirm( message ) ) {
+		// Redirect to my account page.
+		window.location.href = getPaymentRequestData(
+			'login_confirmation'
+		)?.redirect_url;
+	}
+};

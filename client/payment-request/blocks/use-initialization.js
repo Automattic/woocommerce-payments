@@ -15,8 +15,10 @@ import {
 
 import {
 	getPaymentRequest,
+	getPaymentRequestData,
 	updatePaymentRequest,
 	normalizeLineItems,
+	displayLoginConfirmation,
 } from '../utils';
 
 export const useInitialization = ( {
@@ -79,22 +81,38 @@ export const useInitialization = ( {
 	}, [ shippingData.needsShipping ] );
 
 	// When the payment button is clicked, update the request and show it.
-	const onButtonClick = useCallback( () => {
-		setIsFinished( false );
-		setExpressPaymentError( '' );
-		updatePaymentRequest( {
+	const onButtonClick = useCallback(
+		( evt, pr ) => {
+			// If login is required, display redirect confirmation dialog.
+			if ( getPaymentRequestData( 'login_confirmation' ) ) {
+				evt.preventDefault();
+				displayLoginConfirmation( paymentRequestType );
+				return;
+			}
+
+			setIsFinished( false );
+			setExpressPaymentError( '' );
+			updatePaymentRequest( {
+				paymentRequest,
+				total: billing?.cartTotal?.value,
+				displayItems: normalizeLineItems( billing?.cartTotalItems ),
+			} );
+			onClick();
+
+			// We must manually call payment request `show()` for custom buttons.
+			if ( pr ) {
+				pr.show();
+			}
+		},
+		[
+			onClick,
 			paymentRequest,
-			total: billing?.cartTotal?.value,
-			displayItems: normalizeLineItems( billing?.cartTotalItems ),
-		} );
-		onClick();
-	}, [
-		onClick,
-		paymentRequest,
-		setExpressPaymentError,
-		billing.cartTotal,
-		billing.cartTotalItems,
-	] );
+			paymentRequestType,
+			setExpressPaymentError,
+			billing.cartTotal,
+			billing.cartTotalItems,
+		]
+	);
 
 	// Whenever paymentRequest changes, hook in event listeners.
 	useEffect( () => {
