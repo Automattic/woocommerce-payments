@@ -14,7 +14,8 @@ const countriesMock = [
 	{ title: 'United Kingdom (UK)' },
 	{ title: 'United States (US)' },
 ];
-const callbackMock = () => {};
+const handleConfirmedStub = jest.fn();
+const handleDeclinedStub = jest.fn();
 
 // Utility function for accessing the modal content in assertions
 const modalContent = () => {
@@ -31,8 +32,8 @@ describe( 'Onboarding: location check dialog', () => {
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				onConfirmed={ callbackMock }
-				onDeclined={ callbackMock }
+				onConfirmed={ handleConfirmedStub }
+				onDeclined={ handleDeclinedStub }
 			/>
 		);
 
@@ -40,36 +41,30 @@ describe( 'Onboarding: location check dialog', () => {
 	} );
 
 	test( 'renders correctly when continue button is clicked', () => {
-		let confirmed = false;
-		const handleConfirmed = () => ( confirmed = true );
-
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				onConfirmed={ handleConfirmed }
-				onDeclined={ callbackMock }
+				onConfirmed={ handleConfirmedStub }
+				onDeclined={ handleDeclinedStub }
 			/>
 		);
 		user.click( screen.getByRole( 'button', { name: /Continue/ } ) );
 
-		expect( confirmed ).toBe( true );
+		expect( handleConfirmedStub ).toHaveBeenCalled();
 		expect( modalContent() ).toMatchSnapshot();
 	} );
 
 	test( 'renders correctly when cancel button is clicked', () => {
-		let cancelled = false;
-		const handleCancelled = () => ( cancelled = true );
-
 		render(
 			<OnboardingLocationCheckModal
 				countries={ countriesMock }
-				onConfirmed={ callbackMock }
-				onDeclined={ handleCancelled }
+				onConfirmed={ handleConfirmedStub }
+				onDeclined={ handleDeclinedStub }
 			/>
 		);
 		user.click( screen.getByRole( 'button', { name: /Cancel/ } ) );
 
-		expect( cancelled ).toBe( true );
+		expect( handleDeclinedStub ).toHaveBeenCalled();
 		expect( modalContent() ).toMatchSnapshot();
 	} );
 } );
