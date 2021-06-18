@@ -67,22 +67,33 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Search by pending subscriptions
-			await expect( page ).toFill( 'input#plugin-search-input', actionSchedulerHook );
+			await expect( page ).toFill(
+				'input#plugin-search-input',
+				actionSchedulerHook
+			);
 			await expect( page ).toClick( 'input#search-submit.button' );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Run the Action Scheduler task to renew a subscription
 			await evalAndClick( 'div.row-actions > span.run > a' );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-			await expect( page ).toMatchElement( 'div#message.updated > p > strong', {
-				text: actionSchedulerHook
-			} );
+			await expect( page ).toMatchElement(
+				'div#message.updated > p > strong',
+				{
+					text: actionSchedulerHook,
+				}
+			);
 		} );
 
 		it( 'should verify that the subscription has been renewed', async () => {
 			// Go to Subscriptions and verify the subscription renewal
 			await merchantWCP.openSubscriptions();
-			await expect( page ).toMatchElement( 'tbody#the-list > tr > td.orders.column-orders > a', {text: '2'} );
+			await expect(
+				page
+			).toMatchElement(
+				'tbody#the-list > tr > td.orders.column-orders > a',
+				{ text: '2' }
+			);
 		} );
 	}
 );
