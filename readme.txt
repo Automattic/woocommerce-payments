@@ -105,6 +105,14 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Notify the admin if WordPress.com user connection is broken.
 * Add - Experimental PHP client for Explat.
 * Fix - Fix fatal error if store currency is changed after enabled (multi) currencies set.
+* Fix - Use of deprecated call-style to registerPaymentMethods. WooCommerce Payments now requires WooCommerce Blocks of at least version 3.9.0.
+* Fix - Deposit date on Transactions list page.
+* Fix - Rounding error when displaying fee percentages on the Overview and Transactions pages.
+* Add - Error message when total size of dispute evidence files uploaded goes over limit.
+* Update - Pass currency to wc_price when adding intent notes to orders.
+* Update - Instant deposit inbox note wording.
+* Fix - Deposit overview details for non instant ones.
+* Update - Payment request button should guide users to login when necessary.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.

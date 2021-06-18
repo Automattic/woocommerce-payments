@@ -40,4 +40,27 @@
 	.wcpay-deposit-net {
 		color: $studio-green-30;
 	}
+
+	.wcpay-deposit-automatic ul {
+		display: flex;
+		margin: 0;
+		list-style-type: none;
+
+		.woocommerce-summary__item {
+			border-bottom: 0;
+			background-color: inherit;
+			color: inherit;
+			.woocommerce-summary__item-label:hover {
+				color: inherit;
+			}
+		}
+
+		.wcpay-deposit-amount {
+			flex-grow: 1;
+			padding: 24px;
+			text-align: right;
+			font-size: 36px;
+			line-height: 82px;
+		}
+	}
 }

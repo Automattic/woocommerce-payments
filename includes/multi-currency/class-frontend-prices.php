@@ -28,9 +28,7 @@ class Frontend_Prices {
 	public function __construct( Multi_Currency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
 
-		$frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
-
-		if ( $frontend_request ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 			// Simple product price hooks.
 			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price' ], 50 );
 			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price' ], 50 );
@@ -104,26 +102,32 @@ class Frontend_Prices {
 
 	/**
 	 * Returns the shipping rates with their prices converted.
+	 * Creates new rate objects to avoid issues with extensions that cache
+	 * them before this hook is called.
 	 *
 	 * @param array $rates Shipping rates.
 	 *
 	 * @return array Shipping rates with converted costs.
 	 */
 	public function convert_package_rates_prices( $rates ) {
-		foreach ( $rates as $rate ) {
-			if ( $rate->cost ) {
-				$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
-			}
-			if ( $rate->taxes ) {
-				$rate->taxes = array_map(
-					function ( $tax ) {
-						return $this->multi_currency->get_price( $tax, 'tax' );
-					},
-					$rate->taxes
-				);
-			}
-		}
-		return $rates;
+		return array_map(
+			function ( $rate ) {
+				$rate = clone $rate;
+				if ( $rate->cost ) {
+					$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
+				}
+				if ( $rate->taxes ) {
+					$rate->taxes = array_map(
+						function ( $tax ) {
+							return $this->multi_currency->get_price( $tax, 'tax' );
+						},
+						$rate->taxes
+					);
+				}
+				return $rate;
+			},
+			$rates
+		);
 	}
 
 	/**

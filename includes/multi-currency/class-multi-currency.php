@@ -115,6 +115,7 @@ class Multi_Currency {
 
 		if ( is_admin() ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
+			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		}
 	}
 
@@ -237,7 +238,7 @@ class Multi_Currency {
 	}
 
 	/**
-	 * Sets up the available currencies.
+	 * Sets up the available currencies, which are alphabetical by name.
 	 */
 	private function initialize_available_currencies() {
 		// Add default store currency with a rate of 1.0.
@@ -246,7 +247,14 @@ class Multi_Currency {
 
 		$currencies = $this->get_stored_currencies();
 		foreach ( $currencies as $currency ) {
-			$this->available_currencies[ $currency[0] ] = new Currency( $currency[0], $currency[1] );
+			$new_currency                                      = new Currency( $currency[0], $currency[1] );
+			$available_currencies[ $new_currency->get_name() ] = $new_currency;
+		}
+
+		ksort( $available_currencies );
+
+		foreach ( $available_currencies as $currency ) {
+			$this->available_currencies[ $currency->get_code() ] = $currency;
 		}
 	}
 
@@ -254,20 +262,22 @@ class Multi_Currency {
 	 * Sets up the enabled currencies.
 	 */
 	private function initialize_enabled_currencies() {
-		$available_currencies = $this->get_available_currencies();
-		$enabled_currencies   = get_option( $this->id . '_enabled_currencies', [] );
-		$default_code         = $this->get_default_currency()->get_code();
-		$enabled_currencies[] = $default_code;
+		$available_currencies     = $this->get_available_currencies();
+		$enabled_currency_codes   = get_option( $this->id . '_enabled_currencies', [] );
+		$default_code             = $this->get_default_currency()->get_code();
+		$enabled_currency_codes[] = $default_code;
 
-		foreach ( $enabled_currencies as $code ) {
-			// If the currency code is not found in the available currencies we skip it.
-			// This is due to merchants can use filters to add more currencies, then remove them at any time.
-			if ( ! isset( $available_currencies[ $code ] ) ) {
-				continue;
+		// This allows to keep the alphabetical sorting by name.
+		$enabled_currencies = array_filter(
+			$available_currencies,
+			function( $currency ) use ( $enabled_currency_codes ) {
+				return in_array( $currency->get_code(), $enabled_currency_codes, true );
 			}
+		);
 
+		foreach ( $enabled_currencies as $enabled_currency ) {
 			// Get the charm and rounding for each enabled currency and add the currencies to the object property.
-			$currency = clone $available_currencies[ $code ];
+			$currency = clone $enabled_currency;
 			$charm    = get_option( $this->id . '_price_charm_' . $currency->get_id(), 0.00 );
 			$rounding = get_option( $this->id . '_price_rounding_' . $currency->get_id(), 'none' );
 			$currency->set_charm( $charm );
@@ -280,10 +290,8 @@ class Multi_Currency {
 				$currency->set_rate( $manual_rate );
 			}
 
-			$this->enabled_currencies[ $code ] = $currency;
+			$this->enabled_currencies[ $currency->get_code() ] = $currency;
 		}
-
-		ksort( $this->enabled_currencies );
 
 		// Set default currency to the top of the list.
 		$default[ $default_code ] = $this->enabled_currencies[ $default_code ];
@@ -323,6 +331,17 @@ class Multi_Currency {
 	 */
 	public function get_enabled_currencies(): array {
 		return $this->enabled_currencies;
+	}
+
+	/**
+	 * Sets the enabled currencies for the store.
+	 *
+	 * @param array $currencies Array of currency codes to be enabled.
+	 */
+	public function set_enabled_currencies( $currencies = [] ) {
+		if ( 0 < count( $currencies ) ) {
+			update_option( $this->id . '_enabled_currencies', $currencies );
+		}
 	}
 
 	/**
@@ -367,16 +386,12 @@ class Multi_Currency {
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
 		}
-	}
 
-	/**
-	 * Sets the enabled currencies for the store.
-	 *
-	 * @param array $currencies Array of currency codes to be enabled.
-	 */
-	public function set_enabled_currencies( $currencies = [] ) {
-		if ( 0 < count( $currencies ) ) {
-			update_option( $this->id . '_enabled_currencies', $currencies );
+		// Recalculate cart when currency changes.
+		if ( did_action( 'wp_loaded' ) ) {
+			$this->recalculate_cart();
+		} else {
+			add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
 		}
 	}
 
@@ -391,9 +406,13 @@ class Multi_Currency {
 		}
 
 		$this->update_selected_currency( sanitize_text_field( wp_unslash( $_GET['currency'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
 
-		// Recalculate cart when currency changes.
-		add_action( 'wp_loaded', [ $this, 'recalculate_cart' ] );
+	/**
+	 * Recalculates WooCommerce cart totals.
+	 */
+	public function recalculate_cart() {
+		WC()->cart->calculate_totals();
 	}
 
 	/**
@@ -433,13 +452,6 @@ class Multi_Currency {
 			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
-	}
-
-	/**
-	 * Recalculates WooCommerce cart totals.
-	 */
-	public function recalculate_cart() {
-		WC()->cart->calculate_totals();
 	}
 
 	/**
@@ -487,5 +499,25 @@ class Multi_Currency {
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-prices.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-frontend-currencies.php';
 		include_once WCPAY_ABSPATH . 'includes/multi-currency/class-user-settings.php';
+	}
+
+	/**
+	 * Adds Multi-Currency notes to the WC-Admin inbox.
+	 */
+	public static function add_woo_admin_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
+			Note_Multi_Currency_Available::possibly_add_note();
+		}
+	}
+
+	/**
+	 * Removes Multi-Currency notes from the WC-Admin inbox.
+	 */
+	public static function remove_woo_admin_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/multi-currency/notes/class-note-multi-currency-available.php';
+			Note_Multi_Currency_Available::possibly_delete_note();
+		}
 	}
 }

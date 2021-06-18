@@ -1,0 +1,22 @@
+.digital-wallets {
+	&__additional-controls-wrapper {
+		position: relative;
+
+		&::after {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			content: ' ';
+			background: $white;
+			opacity: 0.5;
+		}
+
+		&.is-enabled {
+			&::after {
+				opacity: 0;
+			}
+		}
+	}
+}

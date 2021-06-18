@@ -17,6 +17,7 @@ import AccountStatus from 'components/account-status';
 import DepositsInformation from 'components/deposits-information';
 import TaskList from './task-list';
 import { getTasks } from './task-list/tasks';
+import InboxNotifications from './inbox-notifications';
 
 import './style.scss';
 
@@ -57,6 +58,7 @@ const OverviewPage = () => {
 			{ !! accountOverviewTaskList && 0 < tasks.length && (
 				<TaskList tasks={ tasks } />
 			) }
+			<InboxNotifications />
 		</Page>
 	);
 };
