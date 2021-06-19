@@ -310,10 +310,12 @@ jQuery( function ( $ ) {
 
 			const orderId = getConfig( 'orderId' );
 
-			// If saving payment method, we need to update setup_future_usage before confirming the intent.
-			if ( isSavingPaymentMethod ) {
-				await api.updateIntent( paymentIntentId, orderId );
-			}
+			// Update payment intent with level3 data, customer and maybe setup for future use.
+			await api.updateIntent(
+				paymentIntentId,
+				orderId,
+				savePaymentMethod
+			);
 
 			const { error } = await api.getStripe().confirmPayment( {
 				element: upeElement,

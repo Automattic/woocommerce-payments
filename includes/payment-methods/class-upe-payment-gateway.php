@@ -100,7 +100,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$payment_intent_id = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id ), 200 );
+			$save_payment_method = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -116,12 +118,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Updates payment intent to be able to save payment method.
 	 *
-	 * @param {string} $payment_intent_id The id of the payment intent to update.
-	 * @param {int}    $order_id The id of the order if intent created from Order.
+	 * @param {string}  $payment_intent_id The id of the payment intent to update.
+	 * @param {int}     $order_id The id of the order if intent created from Order.
+	 * @param {boolean} $save_payment_method True if saving the payment method.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
-	public function update_payment_intent( $payment_intent_id = '', $order_id = null ) {
+	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false ) {
 		$order = wc_get_order( $order_id );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
@@ -136,7 +139,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$payment_intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				strtolower( $currency ),
-				true,
+				$save_payment_method,
 				$customer_id,
 				$this->get_level3_data_from_order( $this->account->get_account_country(), $order )
 			);

@@ -360,19 +360,22 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Updates a payment intent with data from an order.
+	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
 	 *
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
+	 * @param {string} savePaymentMethod 'yes' if saving.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	updateIntent( paymentIntentId, orderId ) {
+	updateIntent( paymentIntentId, orderId, savePaymentMethod ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			// eslint-disable-next-line camelcase
 			wcpay_order_id: orderId,
 			// eslint-disable-next-line camelcase
 			wc_payment_intent_id: paymentIntentId,
+			// eslint-disable-next-line camelcase
+			save_payment_method: savePaymentMethod,
 			action: 'update_payment_intent',
 		} )
 			.then( ( response ) => {
